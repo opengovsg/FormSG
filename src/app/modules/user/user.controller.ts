@@ -70,12 +70,12 @@ export const _handleContactSendOtp: ControllerHandler<
 
   // Step 2: No error, send verification OTP to contact.
   const otp = createResult.value
-  const sendOtpResult = await PostmanSmsService.sendAdminContactOtp(
-    contact,
+  const sendOtpResult = await PostmanSmsService.sendAdminContactOtp({
+    recipientPhoneNumber: contact,
     otp,
     userId,
     senderIp,
-  )
+  })
 
   // Error sending OTP.
   if (sendOtpResult.isErr()) {

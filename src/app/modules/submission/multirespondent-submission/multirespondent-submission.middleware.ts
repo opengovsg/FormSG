@@ -7,6 +7,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   FormDto,
+  FormFieldDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -58,6 +59,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -182,6 +184,7 @@ type IdTaggedParsedClearAttachmentResponseV3 =
  */
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
+  formId: string,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
   | VirusScanFailedError
@@ -189,7 +192,7 @@ const asyncVirusScanning = (
   | MaliciousFileDetectedError
 >[] =>
   responses.map((response) =>
-    triggerVirusScanThenDownloadCleanFileChain(response.answer).map(
+    triggerVirusScanThenDownloadCleanFileChain(response.answer, formId).map(
       (attachmentResponse) => ({ ...response, answer: attachmentResponse }),
     ),
   )
@@ -201,6 +204,7 @@ const asyncVirusScanning = (
  */
 const devModeSyncVirusScanning = async (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
+  formId: string,
 ): Promise<
   Result<
     IdTaggedParsedClearAttachmentResponseV3,
@@ -214,6 +218,7 @@ const devModeSyncVirusScanning = async (
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
     const attachmentResponse = await triggerVirusScanThenDownloadCleanFileChain(
       response.answer,
+      formId,
     )
     if (attachmentResponse.isErr()) {
       results.push(err(attachmentResponse.error))
@@ -243,8 +248,9 @@ export const scanAndRetrieveAttachments = async (
       .map((id) => {
         const response = req.body.responses[id]
         if (
-          response.fieldType !== BasicField.Attachment ||
-          response.answer.hasBeenScanned
+          response.fieldType !== BasicField.Attachment
+          // TODO: FRM-1839 + FRM-1590 Skip scanning if attachment has already been scanned
+          // || response.answer.hasBeenScanned
         ) {
           return null
         }
@@ -264,10 +270,16 @@ export const scanAndRetrieveAttachments = async (
     // Note on .combine: if any scans or downloads error out, it will short circuit and return the first error.
     isDev
       ? Result.combine(
-          await devModeSyncVirusScanning(attachmentResponsesToRetrieve),
+          await devModeSyncVirusScanning(
+            attachmentResponsesToRetrieve,
+            req.formsg.formDef._id.toString(),
+          ),
         )
       : await ResultAsync.combine(
-          asyncVirusScanning(attachmentResponsesToRetrieve),
+          asyncVirusScanning(
+            attachmentResponsesToRetrieve,
+            req.formsg.formDef._id.toString(),
+          ),
         )
 
   if (scanAndRetrieveFilesResult.isErr()) {
@@ -293,6 +305,7 @@ export const scanAndRetrieveAttachments = async (
   // Step 3: Update responses with new values.
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
     const { id, ...attachmentResponse } = idTaggedAttachmentResponse
+    // TODO: FRM-1839 Skip scanning if attachment has already been scanned
     attachmentResponse.answer.hasBeenScanned = true
     // Store the md5 hash in the DB as well for comparison later on.
     attachmentResponse.answer.md5Hash = crypto
@@ -308,9 +321,10 @@ export const scanAndRetrieveAttachments = async (
 
 /**
  * What types of fields are there?
- *                Visible                     Not visible
- * Editable       Regular field validation    Not allowed
- * Non-editable   Not allowed / prev submiss  Not allowed
+ *              |  Visible                    | Not visible
+ * -------------|-----------------------------|-------------------
+ * Editable     |  Regular field validation   | Not allowed
+ * Non-editable |  Not allowed / prev submiss | Not allowed
  *
  * Initial submission:
  * 1. Retrieve form object
@@ -367,7 +381,9 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: undefined,
               workflowStep: 0,
               workflow: req.formsg.formDef.workflow,
-              form_fields: req.formsg.formDef.form_fields,
+              form_fields: req.formsg.formDef.form_fields.map(
+                (ff) => ff.toObject() as FormFieldDto,
+              ),
               form_logics: req.formsg.formDef.form_logics,
             }),
       )
@@ -424,6 +440,7 @@ export const validateMultirespondentSubmission = async (
               )
               .andThen(() => {
                 // Step 3: Match non-editable response fields to previous version
+
                 const nonEditableFieldIdsWithResponses = Object.keys(
                   req.body.responses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
@@ -461,10 +478,32 @@ export const validateMultirespondentSubmission = async (
                 const previousResponses =
                   previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
 
+                const previousNonEditableFieldIdsWithResponses = Object.keys(
+                  previousResponses,
+                ).filter((fieldId) => !editableFieldIds.includes(fieldId))
+
+                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
+                  // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
+                  if (!req.body.responses[fieldId]) {
+                    req.body.responses[fieldId] = previousResponses[fieldId]
+                  }
+                }
+
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) => {
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
+
+                    if (
+                      prevResField.fieldType === BasicField.ShortText ||
+                      prevResField.fieldType === BasicField.LongText
+                    ) {
+                      // NOTE: LEGACY ISSUE
+                      // Since text fields were saved without trimming prior to https://github.com/opengovsg/FormSG/pull/7937.
+                      // Without this, isFieldResponseV3Equal fails since the prevResField was not trimmed,
+                      // causing a mismatch between the newly trimmed incomingResField.
+                      prevResField.answer = prevResField.answer.trim()
+                    }
 
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
@@ -496,12 +535,19 @@ export const validateMultirespondentSubmission = async (
 
                     return ok(undefined)
                   }),
-                ).map(() => undefined)
+                ).map(() => {
+                  return previousResponses
+                })
               })
-              .andThen(() =>
-                // TODO: Step 4: Validate each field content with each field's validator rules individually.
-                ok(undefined),
-              ),
+              .andThen((previousResponses) => {
+                return validateMrfFieldResponses({
+                  formId,
+                  visibleFieldIds,
+                  formFields: form_fields,
+                  responses: req.body.responses,
+                  previousResponses,
+                })
+              }),
           )
         },
       )

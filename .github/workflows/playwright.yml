@@ -28,8 +28,8 @@ jobs:
           api-key: ${{ secrets.DD_API_KEY }}
       - name: Build
         env:
-          NODE_OPTIONS: --max-old-space-size=4096 --openssl-legacy-provider -r ${{ env.DD_TRACE_PACKAGE }}
-          REACT_APP_FORMSG_SDK_MODE: 'test'
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
+          VITE_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
       - name: Run Playwright tests (login)
         env:
@@ -46,7 +46,7 @@ jobs:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
         timeout-minutes: 15
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report

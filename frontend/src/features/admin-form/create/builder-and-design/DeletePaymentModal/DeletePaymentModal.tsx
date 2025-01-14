@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ButtonGroup,
   Modal,
@@ -28,6 +29,7 @@ export const DeletePaymentModal = (): JSX.Element => {
   const {
     deletePaymentModalDisclosure: { onClose },
   } = useBuilderAndDesignContext()
+  const { t } = useTranslation()
 
   const { deletePaymentFieldMutation } = useDeleteFormField()
 
@@ -44,29 +46,32 @@ export const DeletePaymentModal = (): JSX.Element => {
     }
   }, [deletePaymentFieldMutation, onClose, stateData, setFieldListTabIndex])
 
+  const {
+    title,
+    description: { payment: description },
+    confirmButtonText,
+  } = t('features.adminForm.modals.deleteField', { returnObjects: true })
+
   return (
     <Modal isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete field</ModalHeader>
+        <ModalHeader>{title}</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">
-            Are you sure you want to delete payment field? This action can't be
-            undone.
-          </Text>
+          <Text color="secondary.500">{description}</Text>
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button
               colorScheme="danger"
               onClick={handleDeleteConfirmation}
               isLoading={deletePaymentFieldMutation.isLoading}
             >
-              Yes, delete field
+              {confirmButtonText}
             </Button>
           </ButtonGroup>
         </ModalFooter>

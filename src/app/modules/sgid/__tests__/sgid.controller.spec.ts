@@ -40,7 +40,7 @@ jest.mock('src/app/modules/form/form.service')
 const FormService = jest.mocked(RealFormService)
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
-MockConfig.isDev = false
+MockConfig.isDevOrTest = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
 const MOCK_LOGIN_REQ = expressHandler.mockRequest({
@@ -223,7 +223,7 @@ describe('sgid.controller', () => {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: true,
           sameSite: 'lax',
-          secure: !MockConfig.isDev,
+          secure: !MockConfig.isDevOrTest,
           ...MOCK_COOKIE_SETTINGS,
         },
       )

@@ -5,7 +5,7 @@ import session, { Session } from 'supertest-session'
 import { MOCK_SERVICE_PARAMS } from '../../../modules/spcp/__tests__/spcp.test.constants'
 import { SpOidcJwksRouter } from '../sp.oidc.jwks.routes'
 
-const app = setupApp('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
+const app = setupApp('/sp/.well-known/jwks.json', SpOidcJwksRouter)
 
 describe('sp.oidc.jwks.router', () => {
   let request: Session
@@ -14,10 +14,10 @@ describe('sp.oidc.jwks.router', () => {
     request = session(app)
   })
 
-  describe('GET /singpass/.well-known/jwks.json', () => {
+  describe('GET /sp/.well-known/jwks.json', () => {
     it('should return 200 with the public jwks', async () => {
       // Act
-      const response = await request.get('/singpass/.well-known/jwks.json')
+      const response = await request.get('/sp/.well-known/jwks.json')
 
       const responseJson = JSON.parse(response.text)
       const expectedJson = JSON.parse(

@@ -1,6 +1,14 @@
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Center, Container, Flex, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Center,
+  Container,
+  Flex,
+  Skeleton,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -60,7 +68,9 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
       stripe={stripePromise}
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
-      <StripePaymentContainer paymentInfoData={paymentInfoData} />
+      <Suspense fallback={<Skeleton w={'100%'} h={'350px'} />}>
+        <StripePaymentContainer paymentInfoData={paymentInfoData} />
+      </Suspense>
     </Elements>
   )
 }

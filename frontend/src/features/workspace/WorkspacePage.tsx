@@ -10,9 +10,11 @@ import {
   Grid,
   GridItem,
   Stack,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { PAPERLESS_FORMSG_RESEARCH_LINK } from '~shared/constants'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -20,6 +22,8 @@ import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
@@ -151,6 +155,18 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
+            <InlineMessage>
+              <Text>
+                Do you still have paper forms in your agency?{' '}
+                <Link
+                  display="inline"
+                  href={PAPERLESS_FORMSG_RESEARCH_LINK}
+                  target="_blank"
+                >
+                  Tell us more so that we can help you digitalise them.
+                </Link>
+              </Text>
+            </InlineMessage>
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>

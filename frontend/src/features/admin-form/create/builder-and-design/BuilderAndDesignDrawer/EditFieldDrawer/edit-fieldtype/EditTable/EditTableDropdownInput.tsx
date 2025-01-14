@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { forwardRef } from '@chakra-ui/react'
 
 import { DropdownColumnBase } from '~shared/types'
@@ -16,6 +17,7 @@ export const EditTableDropdownInput = forwardRef<
   EditTableDropdownInputProps,
   'input'
 >(({ value, onChange }, ref) => {
+  const { t } = useTranslation()
   const [_value, setInternalValue] = useState(
     SPLIT_TEXTAREA_TRANSFORM.input(value),
   )
@@ -32,7 +34,9 @@ export const EditTableDropdownInput = forwardRef<
       ref={ref}
       value={_value}
       onChange={handleInputChange}
-      placeholder="Enter one option per line"
+      placeholder={t(
+        'features.adminForm.sidebar.fields.radio.options.placeholder',
+      )}
     />
   )
 })

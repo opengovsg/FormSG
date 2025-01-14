@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Flex,
@@ -7,6 +8,8 @@ import {
   InputGroup,
   InputLeftAddon,
 } from '@chakra-ui/react'
+
+import { BasicField } from '~shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
@@ -18,7 +21,8 @@ import Input from '~components/Input'
 
 import { VerifiableFieldType } from '../../types'
 
-import { VFN_RENDER_DATA } from './constants'
+import { EmailOtpSvgr } from './EmailOtpSvgr'
+import { MobileOtpSvgr } from './MobileOtpSvgr'
 
 type VfnFieldValues = {
   otp: string
@@ -68,6 +72,7 @@ export const VerificationBox = ({
   handleResendOtp,
   handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     formMethods: {
       register,
@@ -79,11 +84,15 @@ export const VerificationBox = ({
     handleVerifyOtp,
   })
 
-  const {
-    logo: Logo,
-    header,
-    subheader,
-  } = useMemo(() => VFN_RENDER_DATA[fieldType], [fieldType])
+  const Logo = {
+    [BasicField.Mobile]: MobileOtpSvgr,
+    [BasicField.Email]: EmailOtpSvgr,
+  }[fieldType]
+
+  const { title, description } = t(
+    `features.publicForm.components.fields.verification.modal.${fieldType}`,
+    { allowObjects: true },
+  )
 
   return (
     <Flex
@@ -92,7 +101,7 @@ export const VerificationBox = ({
       align="flex-start"
       mt="0.5rem"
     >
-      <Box d={{ base: 'none', md: 'initial' }} mr="1.5rem">
+      <Box display={{ base: 'none', md: 'initial' }} mr="1.5rem">
         <Logo />
       </Box>
       <Box>
@@ -103,7 +112,7 @@ export const VerificationBox = ({
             isInvalid={!!errors.otp}
             maxW="24.75rem"
           >
-            <FormLabel description={subheader}>{header}</FormLabel>
+            <FormLabel description={description}>{title}</FormLabel>
             <Flex>
               <InputGroup>
                 {otpPrefix ? (

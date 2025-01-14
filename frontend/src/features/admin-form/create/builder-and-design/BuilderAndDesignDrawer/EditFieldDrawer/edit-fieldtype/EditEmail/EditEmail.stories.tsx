@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, EmailFieldBase } from '~shared/types'
 
@@ -51,7 +51,7 @@ interface StoryArgs {
   field: EmailFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditEmail field={field} />
 }
 

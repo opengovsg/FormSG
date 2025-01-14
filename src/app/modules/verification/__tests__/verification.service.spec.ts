@@ -32,13 +32,11 @@ import { MailSendError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
 import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
-import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
 import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
 
 import { BasicField } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
-import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../../form/form.errors'
 import {
   FieldNotFoundInTransactionError,
@@ -72,10 +70,10 @@ const VerificationModel = getVerificationModel(mongoose)
 // Set up mocks
 jest.mock('src/app/config/formsg-sdk')
 const MockFormsgSdk = jest.mocked(formsgSdk)
-jest.mock('src/app/services/sms/sms.factory')
-const MockSmsFactory = jest.mocked(SmsFactory)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)
+jest.mock('src/app/services/postman-sms/postman-sms.service')
+const MockPostmanSmsService = jest.mocked(PostmanSmsService)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/utils/hash')
@@ -276,7 +274,6 @@ describe('Verification service', () => {
           _id: mockFieldIdObj as unknown as string,
         }),
       ],
-      msgSrvcName: 'abc',
     } as unknown as IFormSchema
 
     let updateHashSpy: jest.SpyInstance<
@@ -298,7 +295,7 @@ describe('Verification service', () => {
       }
 
       beforeEach(async () => {
-        MockSmsFactory.sendVerificationOtp.mockReturnValue(okAsync(true))
+        MockPostmanSmsService.sendVerificationOtp.mockReturnValue(okAsync(true))
         MockMailService.sendVerificationOtp.mockReturnValue(okAsync(true))
         MockFormsgSdk.verification.generateSignature.mockReturnValue(
           MOCK_SIGNED_DATA,
@@ -321,13 +318,13 @@ describe('Verification service', () => {
         )
 
         // Default mock params has fieldType: 'mobile'
-        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-          MOCK_LOCAL_RECIPIENT,
-          MOCK_OTP,
-          MOCK_OTP_PREFIX,
-          mockTransaction.formId,
-          MOCK_SENDER_IP,
-        )
+        expect(MockPostmanSmsService.sendVerificationOtp).toHaveBeenCalledWith({
+          formId: mockTransaction.formId,
+          otp: MOCK_OTP,
+          recipientPhoneNumber: MOCK_LOCAL_RECIPIENT,
+          otpPrefix: MOCK_OTP_PREFIX,
+          senderIp: MOCK_SENDER_IP,
+        })
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).toHaveBeenCalledWith({
@@ -339,48 +336,6 @@ describe('Verification service', () => {
         expect(result._unsafeUnwrap()).toEqual(mockTransactionSuccessful)
       })
 
-      it('should send OTP with postman if platform has feature flag on', async () => {
-        jest
-          .spyOn(FeatureFlagService, 'getFeatureFlag')
-          .mockReturnValue(okAsync(true))
-
-        const postmanSpy = jest
-          .spyOn(PostmanSmsService, 'sendVerificationOtp')
-          .mockResolvedValueOnce(okAsync(true))
-
-        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
-
-        // Default mock params has fieldType: 'mobile'
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
-
-        expect(postmanSpy).toHaveBeenCalledOnce()
-      })
-
-      it('should send OTP with twilio if platform has feature flag off', async () => {
-        jest
-          .spyOn(FeatureFlagService, 'getFeatureFlag')
-          .mockReturnValue(okAsync(false))
-        const postmanSpy = jest
-          .spyOn(PostmanSmsService, 'sendVerificationOtp')
-          .mockResolvedValueOnce(okAsync(true))
-
-        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
-
-        // Default mock params has fieldType: 'mobile'
-        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-          MOCK_LOCAL_RECIPIENT,
-          MOCK_OTP,
-          MOCK_OTP_PREFIX,
-          mockTransaction.formId,
-          MOCK_SENDER_IP,
-        )
-
-        // Default mock params has fieldType: 'mobile'
-        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalled()
-
-        expect(postmanSpy).not.toHaveBeenCalled()
-      })
-
       it('should return TransactionNotFoundError when transaction ID does not exist', async () => {
         const result = await VerificationService.sendNewOtp({
           ...mockSendNewFormOtpValidInput,
@@ -389,7 +344,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -416,7 +371,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -436,7 +391,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -465,7 +420,7 @@ describe('Verification service', () => {
         const result = await VerificationService.sendNewOtp(expiredOtpInput)
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -491,7 +446,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -535,7 +490,9 @@ describe('Verification service', () => {
 
         const error = new SmsSendError()
 
-        MockSmsFactory.sendVerificationOtp.mockReturnValueOnce(errAsync(error))
+        MockPostmanSmsService.sendVerificationOtp.mockReturnValueOnce(
+          errAsync(error),
+        )
         const field = generateFieldParams({
           fieldType: BasicField.Mobile,
           _id: mockFieldIdObj as unknown as string,
@@ -550,13 +507,13 @@ describe('Verification service', () => {
           transactionId: transaction._id,
         })
 
-        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-          MOCK_LOCAL_RECIPIENT,
-          MOCK_OTP,
-          MOCK_OTP_PREFIX,
-          new ObjectId(mockFormId),
-          MOCK_SENDER_IP,
-        )
+        expect(MockPostmanSmsService.sendVerificationOtp).toHaveBeenCalledWith({
+          formId: new ObjectId(mockFormId),
+          otp: MOCK_OTP,
+          recipientPhoneNumber: MOCK_LOCAL_RECIPIENT,
+          otpPrefix: MOCK_OTP_PREFIX,
+          senderIp: MOCK_SENDER_IP,
+        })
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -572,13 +529,13 @@ describe('Verification service', () => {
         )
 
         // Mock params default to mobile
-        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
-          MOCK_LOCAL_RECIPIENT,
-          MOCK_OTP,
-          MOCK_OTP_PREFIX,
-          new ObjectId(mockFormId),
-          MOCK_SENDER_IP,
-        )
+        expect(MockPostmanSmsService.sendVerificationOtp).toHaveBeenCalledWith({
+          formId: new ObjectId(mockFormId),
+          otp: MOCK_OTP,
+          recipientPhoneNumber: MOCK_LOCAL_RECIPIENT,
+          otpPrefix: MOCK_OTP_PREFIX,
+          senderIp: MOCK_SENDER_IP,
+        })
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).toHaveBeenCalledWith({
@@ -612,7 +569,7 @@ describe('Verification service', () => {
       }
 
       beforeEach(async () => {
-        MockSmsFactory.sendVerificationOtp.mockReturnValue(okAsync(true))
+        MockPostmanSmsService.sendVerificationOtp.mockReturnValue(okAsync(true))
         MockMailService.sendVerificationOtp.mockReturnValue(okAsync(true))
         MockFormsgSdk.verification.generateSignature.mockReturnValue(
           MOCK_SIGNED_DATA,
@@ -660,7 +617,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -687,7 +644,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -707,7 +664,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -736,7 +693,7 @@ describe('Verification service', () => {
         const result = await VerificationService.sendNewOtp(expiredOtpInput)
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()
@@ -762,7 +719,7 @@ describe('Verification service', () => {
         })
 
         expect(MockMailService.sendVerificationOtp).not.toHaveBeenCalled()
-        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+        expect(MockPostmanSmsService.sendVerificationOtp).not.toHaveBeenCalled()
         expect(
           MockFormsgSdk.verification.generateSignature,
         ).not.toHaveBeenCalled()

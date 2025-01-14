@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   BasicField,
@@ -49,7 +49,7 @@ interface StoryArgs {
   field: DateFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditDate field={field} />
 }
 

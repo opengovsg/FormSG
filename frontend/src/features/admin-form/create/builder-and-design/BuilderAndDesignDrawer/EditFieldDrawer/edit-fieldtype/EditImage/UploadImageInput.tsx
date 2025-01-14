@@ -32,8 +32,8 @@ export const UploadImageInput = forwardRef<UploadImageInputProps, 'div'>(
       }
     }, [value?.srcUrl])
 
-    const handleChange = (file?: File) => {
-      if (!file) return onChange({ file, srcUrl: undefined })
+    const handleChange = (file: File | null) => {
+      if (!file) return onChange({ file: undefined, srcUrl: undefined })
       return onChange({
         file,
         srcUrl: URL.createObjectURL(file),

@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
+import loadable from '@loadable/component'
 
 import {
   ADMINFORM_PREVIEW_ROUTE,
@@ -26,7 +27,6 @@ import {
   USE_TEMPLATE_REDIRECT_SUBROUTE,
 } from '~constants/routes'
 import { fillHeightCss } from '~utils/fillHeightCss'
-import { lazyRetry } from '~utils/lazyRetry'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
@@ -49,29 +49,21 @@ import { ParamIdValidator } from './ParamIdValidator'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
-const UseTemplateRedirectPage = lazy(() => import('~pages/UseTemplateRedirect'))
-const PublicFormPage = lazy(() =>
-  lazyRetry(() => import('~features/public-form/PublicFormPage')),
+const UseTemplateRedirectPage = loadable(
+  () => import('~pages/UseTemplateRedirect'),
 )
-const WorkspacePage = lazy(() => lazyRetry(() => import('~features/workspace')))
-const LandingPage = lazy(() => lazyRetry(() => import('~pages/Landing/Home')))
-const LandingPaymentsPage = lazy(() =>
-  lazyRetry(() => import('~pages/Landing/Payments')),
+const PublicFormPage = loadable(
+  () => import('~features/public-form/PublicFormPage'),
 )
-const LoginPage = lazy(() => lazyRetry(() => import('~features/login')))
-const TempLoginPage = lazy(() =>
-  lazyRetry(() => import('~features/login/TempLoginPage')),
-)
-const PrivacyPolicyPage = lazy(() =>
-  lazyRetry(() => import('~pages/PrivacyPolicy')),
-)
-const TermsOfUsePage = lazy(() => lazyRetry(() => import('~pages/TermsOfUse')))
-const PreviewFormPage = lazy(() =>
-  lazyRetry(() => import('~features/admin-form/preview')),
-)
-const TemplateFormPage = lazy(() =>
-  lazyRetry(() => import('~features/admin-form/template')),
-)
+const WorkspacePage = loadable(() => import('~features/workspace'))
+const LandingPage = loadable(() => import('~pages/Landing/Home'))
+const LandingPaymentsPage = loadable(() => import('~pages/Landing/Payments'))
+const LoginPage = loadable(() => import('~features/login'))
+const TempLoginPage = loadable(() => import('~features/login/TempLoginPage'))
+const PrivacyPolicyPage = loadable(() => import('~pages/PrivacyPolicy'))
+const TermsOfUsePage = loadable(() => import('~pages/TermsOfUse'))
+const PreviewFormPage = loadable(() => import('~features/admin-form/preview'))
+const TemplateFormPage = loadable(() => import('~features/admin-form/template'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>

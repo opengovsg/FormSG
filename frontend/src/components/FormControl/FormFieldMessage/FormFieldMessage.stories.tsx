@@ -1,5 +1,5 @@
 import { FormControl } from '@chakra-ui/form-control'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormFieldMessage, FormFieldMessageProps } from './FormFieldMessage'
 
@@ -9,7 +9,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<FormFieldMessageProps> = ({ children, ...args }) => (
+const Template: StoryFn<FormFieldMessageProps> = ({ children, ...args }) => (
   // FormControl component required to pass appropriate props into component.
   <FormControl>
     <FormFieldMessage {...args}>{children}</FormFieldMessage>

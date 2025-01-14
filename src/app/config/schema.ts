@@ -329,13 +329,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
-    // TODO(ken): to remove after twilio is no longer used
-    useMockTwilio: {
-      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
-      format: 'Boolean',
-      default: false,
-      env: 'USE_MOCK_TWILIO',
-    },
     useMockPostmanSms: {
       doc: 'Enables Postman SMS API mocking and directs SMS body over to maildev',
       format: 'Boolean',
@@ -356,11 +349,29 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
+    publicFormIssueFeedback: {
+      doc: 'Per-minute, per-IP, per form request limit for public form issue feedback endpoints',
+      format: 'int',
+      default: 3,
+      env: 'PUBLIC_FORM_ISSUE_FEEDBACK_RATE_LIMIT',
+    },
     downloadPaymentReceipt: {
       doc: 'Per-minute, per-IP request limit to download the payment receipt from Stripe',
       format: 'int',
       default: 10,
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
+    },
+    downloadFormWhitelist: {
+      doc: 'Per-minute, per-IP request limit to download the form whitelist',
+      format: 'int',
+      default: 10,
+      env: 'DOWNLOAD_FORM_WHITELIST_RATE_LIMIT',
+    },
+    uploadFormWhitelist: {
+      doc: 'Per-minute, per-IP request limit to upload the form whitelist',
+      format: 'int',
+      default: 10,
+      env: 'UPLOAD_FORM_WHITELIST_RATE_LIMIT',
     },
     publicApi: {
       doc: 'Per-minute, per-IP, per-instance request limit for public APIs',
@@ -373,6 +384,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'int',
       default: 100,
       env: 'PLATFORM_API_RATE_LIMIT',
+    },
+    makeTextPrompt: {
+      doc: 'Per-minute, per-IP request limit for making text prompts',
+      format: 'int',
+      default: 5,
+      env: 'MAKE_TEXT_PROMPT_RATE_LIMIT',
     },
   },
   reactMigration: {
@@ -434,6 +451,13 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     env: 'SES_PASS',
     sensitive: true,
   },
+  sesConfigSet: {
+    doc: 'Config set for SES when sending email',
+    format: String,
+    default: null,
+    env: 'SES_CONFIG_SET',
+    sensitive: true,
+  },
   dbHost: {
     doc: 'Database URI',
     format: (val) => {
@@ -477,7 +501,7 @@ export const loadS3BucketUrlSchema = ({
       doc: 'Endpoint for S3 buckets',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
-      default: 'https://s3.ap-southeast-1.amazonaws.com', // NOTE NO TRAILING / AT THE END OF THIS URL!
+      default: `https://s3.${region}.amazonaws.com`, // NOTE NO TRAILING / AT THE END OF THIS URL!
       env: 'AWS_ENDPOINT',
     },
     attachmentBucketUrl: {

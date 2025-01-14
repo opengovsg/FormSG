@@ -1,31 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-
-import { MailSendError } from 'src/app/services/mail/mail.errors'
-import { EncryptSubmissionDto } from 'src/types/api'
+import { errAsync } from 'neverthrow'
 
 import {
   ErrorDto,
-  FieldResponsesV3,
   FormAuthType,
-  FormWorkflowDto,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
-import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
-import {
-  Environment,
-  IPopulatedMultirespondentForm,
-} from '../../../../../src/types'
-import config from '../../../config/config'
-import {
-  createLoggerWithLabel,
-  CustomLoggerParams,
-} from '../../../config/logger'
-import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
+import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
-import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -42,37 +25,32 @@ import {
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
-  InvalidWorkflowTypeError,
   SubmissionFailedError,
+  SubmissionSaveError,
 } from '../submission.errors'
 import {
   getEncryptedSubmissionData,
   transformAttachmentMetasToSignedUrls,
-  uploadAttachments,
 } from '../submission.service'
 import { mapRouteError } from '../submission.utils'
-import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
-import { checkFormIsMultirespondent } from './multirespondent-submission.service'
 import {
-  MultirespondentSubmissionContent,
+  checkFormIsMultirespondent,
+  createMultiRespondentFormSubmission,
+  performMultiRespondentPostSubmissionCreateActions,
+  performMultiRespondentPostSubmissionUpdateActions,
+  updateMultiRespondentFormSubmission,
+} from './multirespondent-submission.service'
+import {
   SubmitMultirespondentFormHandlerRequest,
   SubmitMultirespondentFormHandlerType,
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import {
-  createMultirespondentSubmissionDto,
-  retrieveWorkflowStepEmailAddresses,
-} from './multirespondent-submission.utils'
+import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
-const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const appUrl =
-  process.env.NODE_ENV === Environment.Dev
-    ? config.app.feAppUrl
-    : config.app.appUrl
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -127,225 +105,40 @@ const submitMultirespondentForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Save Responses to Database
   const encryptedPayload = req.formsg.encryptedPayload
-  let attachmentMetadata = new Map<string, string>()
 
-  if (encryptedPayload.attachments) {
-    const attachmentUploadResult = await uploadAttachments(
-      form._id,
-      encryptedPayload.attachments,
-    )
-
-    if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    } else {
-      attachmentMetadata = attachmentUploadResult.value
-    }
-  }
-
-  // Create Incoming Submission
-  const {
-    submissionPublicKey,
-    encryptedSubmissionSecretKey,
-    submissionSecretKey,
-    encryptedContent,
-    responseMetadata,
-    version,
-    mrfVersion,
-  } = encryptedPayload
-
-  const submissionContent: MultirespondentSubmissionContent = {
-    form: form._id,
-    authType: form.authType,
-    myInfoFields: form.getUniqueMyInfoAttrs(),
-    form_fields: form.form_fields,
-    form_logics: form.form_logics,
-    workflow: form.workflow,
-    submissionPublicKey,
-    encryptedSubmissionSecretKey,
-    encryptedContent,
-    attachmentMetadata,
-    version,
-    workflowStep: 0,
-    mrfVersion,
-  }
-
-  return _createSubmission({
-    req,
-    res,
-    logMeta,
-    formId,
-    responses: encryptedPayload.responses,
-    responseMetadata,
-    submissionContent,
-    submissionSecretKey,
-    form,
-  })
-}
-
-const _createSubmission = async ({
-  req,
-  res,
-  logMeta,
-  formId,
-  responses,
-  responseMetadata,
-  submissionContent,
-  submissionSecretKey,
-  form,
-}: {
-  req: Parameters<SubmitMultirespondentFormHandlerType>[0]
-  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
-  responseMetadata: EncryptSubmissionDto['responseMetadata']
-  responses: FieldResponsesV3
-  formId: string
-  submissionContent: MultirespondentSubmissionContent
-  logMeta: CustomLoggerParams['meta']
-  form: IPopulatedMultirespondentForm
-  submissionSecretKey: string
-}) => {
-  const submission = new MultirespondentSubmission(submissionContent)
-
-  try {
-    await submission.save()
-  } catch (err) {
-    logger.error({
-      message: 'Multirespondent submission save error',
-      meta: {
-        action: 'onMultirespondentSubmissionFailure',
-        ...createReqMeta(req),
-      },
-      error: err,
+  const createMultiRespondentFormSubmissionResult =
+    await createMultiRespondentFormSubmission({
+      form,
+      encryptedPayload,
+      logMeta,
     })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
-    })
+
+  if (createMultiRespondentFormSubmissionResult.isErr()) {
+    const error = createMultiRespondentFormSubmissionResult.error
+
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const submissionId = submission.id
-  logger.info({
-    message: 'Saved submission to MongoDB',
-    meta: {
-      ...logMeta,
-      submissionId,
-      formId,
-      responseMetadata,
-    },
-  })
-
-  // TODO 6395 make responseMetadata mandatory
-  if (responseMetadata) {
-    reportSubmissionResponseTime(responseMetadata, {
-      mode: 'multirespodent',
-      payment: 'false',
-    })
-  }
+  const submission = createMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
-    submissionId,
+    submissionId: submission._id,
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  // TODO(MRF/FRM-1591): Add post-submission actions handling
-  // return await performEncryptPostSubmissionActions(submission, responses)
-
-  try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: form.workflow ?? [],
-      formTitle: form.title,
-      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-        form._id,
-        submissionId,
-        { key: submissionSecretKey },
-      )}`,
-      formId: form._id,
-      submissionId,
-      responses,
-    })
-  } catch (err) {
-    logger.error({
-      message: 'Send multirespondent workflow email error',
-      meta: {
-        ...logMeta,
-        ...createReqMeta(req),
-        currentWorkflowStep: submissionContent.workflowStep,
-        formId: form._id,
-        submissionId,
-      },
-      error: err,
-    })
-  }
+  await performMultiRespondentPostSubmissionCreateActions({
+    submissionId: submission._id.toString(),
+    form,
+    encryptedPayload,
+    logMeta,
+  })
 }
 
-const runMultirespondentWorkflow = ({
-  nextWorkflowStep,
-  formWorkflow,
-  formTitle,
-  responseUrl,
-  formId,
-  submissionId,
-  responses,
-}: {
-  nextWorkflowStep: number
-  formWorkflow: FormWorkflowDto
-  formTitle: string
-  responseUrl: string
-  formId: string
-  submissionId: string
-  responses: FieldResponsesV3
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
-  const logMeta = {
-    action: 'runMultirespondentWorkflow',
-    formId,
-    submissionId,
-    nextWorkflowStep,
-  }
-  return (
-    // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(
-      formWorkflow,
-      nextWorkflowStep,
-      responses,
-    )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failed to retrieve workflow step email addresses',
-          meta: logMeta,
-          error,
-        })
-        return error
-      })
-
-      // Step 2: send out workflow email
-      .asyncAndThen((emails) => {
-        if (!emails) return okAsync(true)
-        return MailService.sendMRFWorkflowStepEmail({
-          emails,
-          formTitle,
-          responseId: submissionId,
-          responseUrl,
-        }).orElse((error) => {
-          logger.error({
-            message: 'Failed to send workflow email',
-            meta: { ...logMeta, emails },
-            error,
-          })
-          return errAsync(error)
-        })
-      })
-  )
-}
+export const submitMultirespondentFormForTest = submitMultirespondentForm
 
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
@@ -388,83 +181,30 @@ const updateMultirespondentSubmission = async (
 
   const encryptedPayload = req.formsg.encryptedPayload
 
-  // Create Incoming Submission
-  const {
-    responseMetadata,
-    submissionPublicKey,
-    encryptedSubmissionSecretKey,
-    encryptedContent,
-    submissionSecretKey,
-    version,
-    workflowStep,
-    responses,
-    mrfVersion,
-  } = encryptedPayload
-
-  // Save Responses to Database
-  let attachmentMetadata = new Map<string, string>()
-
-  if (encryptedPayload.attachments) {
-    const attachmentUploadResult = await uploadAttachments(
-      form._id,
-      encryptedPayload.attachments,
-    )
-
-    if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    } else {
-      attachmentMetadata = attachmentUploadResult.value
-    }
-  }
-
-  const submission = await MultirespondentSubmission.findById(submissionId)
-  if (!submission) {
-    return res.status(StatusCodes.NOT_FOUND).json({
-      message: 'Not found',
-    })
-  }
-
-  submission.responseMetadata = responseMetadata
-  submission.submissionPublicKey = submissionPublicKey
-  submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
-  submission.encryptedContent = encryptedContent
-  submission.version = version
-  submission.workflowStep = workflowStep
-  submission.attachmentMetadata = attachmentMetadata
-  submission.mrfVersion = mrfVersion
-
-  try {
-    await submission.save()
-  } catch (err) {
-    logger.error({
-      message: 'Multirespondent submission save error',
-      meta: {
-        action: 'onMultirespondentSubmissionFailure',
-        ...createReqMeta(req),
-      },
-      error: err,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId,
-    })
-  }
-
-  logger.info({
-    message: 'Saved submission to MongoDB',
-    meta: {
-      ...logMeta,
-      submissionId,
+  const updateMultiRespondentFormSubmissionResult =
+    await updateMultiRespondentFormSubmission({
       formId,
-      responseMetadata,
-    },
-  })
+      submissionId,
+      form,
+      encryptedPayload,
+      logMeta,
+    })
+
+  if (updateMultiRespondentFormSubmissionResult.isErr()) {
+    const error = updateMultiRespondentFormSubmissionResult.error
+
+    if (error instanceof SubmissionSaveError) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: error.message,
+        submissionId,
+      })
+    }
+
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  const submission = updateMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -473,34 +213,19 @@ const updateMultirespondentSubmission = async (
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: submission.workflow,
-      formTitle: form.title,
-      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-        form._id,
-        submissionId,
-        { key: submissionSecretKey },
-      )}`,
-      formId: form._id,
-      submissionId,
-      responses,
-    })
-  } catch (err) {
-    logger.error({
-      message: 'Send multirespondent workflow email error',
-      meta: {
-        ...logMeta,
-        ...createReqMeta(req),
-        currentWorkflowStep: workflowStep,
-        formId: form._id,
-        submissionId,
-      },
-      error: err,
-    })
-  }
+  const currentStepNumber = submission.workflowStep
+
+  await performMultiRespondentPostSubmissionUpdateActions({
+    submissionId,
+    form,
+    currentStepNumber,
+    encryptedPayload,
+    logMeta,
+  })
 }
+
+export const updateMultirespondentSubmissionForTest =
+  updateMultirespondentSubmission
 
 export const handleMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,

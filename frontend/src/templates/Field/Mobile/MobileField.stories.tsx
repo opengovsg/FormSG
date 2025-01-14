@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -49,7 +49,10 @@ interface StoryMobileFieldProps extends MobileFieldProps {
   defaultValue?: Partial<VerifiableFieldValues>
 }
 
-const Template: Story<StoryMobileFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryMobileFieldProps> = ({
+  defaultValue,
+  ...args
+}) => {
   const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,

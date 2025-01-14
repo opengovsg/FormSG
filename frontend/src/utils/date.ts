@@ -41,13 +41,18 @@ export const isDateAfterToday = (date: number | Date) => {
 }
 
 export const normalizeDateToUtc = (date: Date | null) => {
-  if (!date) return date
+  if (!date) return null
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
 
-export const loadDateFromNormalizedDate = (date: Date | null) => {
-  if (!date) return date
-  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+export const loadDateFromNormalizedDate = (date: string | Date | null) => {
+  if (!date) return null
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date
+  return new Date(
+    parsedDate.getUTCFullYear(),
+    parsedDate.getUTCMonth(),
+    parsedDate.getUTCDate(),
+  )
 }
 
 /**
@@ -110,7 +115,6 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
   for (const key of Object.keys(body)) {
     const value = (body as Record<string, unknown>)[key]
     if (isIsoDateString(value)) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;(body as Record<string, unknown>)[key] = parseISO(value)
     } else if (typeof value === 'object') {
       mutableTransformAllIsoStringsToDate(value)

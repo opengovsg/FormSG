@@ -1,5 +1,6 @@
 import { KeyboardEventHandler, useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   FormControl,
   InputGroup,
@@ -18,6 +19,7 @@ import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const WebhookUrlInput = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading } = useAdminFormSettings()
   const { mutateFormWebhookUrl } = useMutateFormSettings()
   const {
@@ -86,8 +88,12 @@ export const WebhookUrlInput = (): JSX.Element => {
       isReadOnly={mutateFormWebhookUrl.isLoading}
       isInvalid={!!errors.url}
     >
-      <FormLabel description="For developers and IT officers usage. We will POST encrypted form responses in real-time to the HTTPS endpoint specified here.">
-        Endpoint URL
+      <FormLabel
+        description={t(
+          'features.adminForm.settings.webhooks.input.description',
+        )}
+      >
+        {t('features.adminForm.settings.webhooks.input.label')}
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
         <InputGroup>

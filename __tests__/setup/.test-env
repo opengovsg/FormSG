@@ -63,7 +63,7 @@ PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
 NODE_ENV=test
 FORMSG_SDK_MODE=test
 
-MONGO_BINARY_VERSION=4.0.22
+MONGO_BINARY_VERSION=6.0.19
 MOCK_WEBHOOK_CONFIG_FILE=webhook-server-config.csv
 MOCK_WEBHOOK_PORT=4000
 
@@ -81,7 +81,7 @@ INTRANET_IP_LIST_PATH=__tests__/setup/mock-intranet-ips.txt
 MOCKPASS_NRIC=S9812379B
 MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN for Corppass tests
 MOCKPASS_UEN=123456789A
-SP_RP_JWKS_ENDPOINT=http://localhost:5000/singpass/.well-known/jwks.json
+SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
 
 # Payment env vars

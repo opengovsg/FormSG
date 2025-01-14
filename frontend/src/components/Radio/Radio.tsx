@@ -25,6 +25,7 @@ import {
   useEffect,
   useMemo,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   chakra,
@@ -75,6 +76,10 @@ export interface RadioProps
    */
   isFullWidth?: boolean
   /**
+   * If `true`, the radio children will occupy the full width of the radio container.
+   */
+  isLabelFullWidth?: boolean
+  /**
    * Background and shadow colors.
    */
   colorScheme?: FieldColorScheme
@@ -121,6 +126,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
       spacing = '0.5rem',
       children,
       isFullWidth,
+      isLabelFullWidth = false,
       ...rest
     } = omitThemingProps(props)
 
@@ -153,6 +159,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
 
     const handleSelect = useCallback(
       (e: SyntheticEvent) => {
+        if (props.isDisabled) return
         if (isChecked && allowDeselect) {
           e.preventDefault()
           // Toggle off if onChange is given.
@@ -161,17 +168,18 @@ export const Radio = forwardRef<RadioProps, 'input'>(
           onChange?.({ target: { value: '' } })
         }
       },
-      [allowDeselect, isChecked, onChange],
+      [allowDeselect, isChecked, onChange, props.isDisabled],
     )
 
     const handleSpacebar = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
+        if (props.isDisabled) return
         if (e.key !== ' ') return
         if (isChecked && allowDeselect) {
           handleSelect(e)
         }
       },
-      [allowDeselect, handleSelect, isChecked],
+      [allowDeselect, handleSelect, isChecked, props.isDisabled],
     )
 
     // Update labelProps to include props to allow deselection of radio value if
@@ -201,6 +209,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     }
 
     const labelStyles: SystemStyleObject = {
+      width: isLabelFullWidth ? 'full' : undefined,
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,
@@ -243,6 +252,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
  * Wrapper for the radio part of the Others option.
  */
 const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
+  const { t } = useTranslation()
   const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
   const { value: valueProp } = props
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
@@ -273,7 +283,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
-      Others
+      {t('features.publicForm.components.fields.option.others')}
     </Radio>
   )
 })

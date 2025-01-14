@@ -1,3 +1,4 @@
+/* eslint-disable playwright/expect-expect -- assertions are in helper */
 import mongoose from 'mongoose'
 import {
   BasicField,
@@ -58,6 +59,7 @@ test.describe('Storage form submission', () => {
   test('Create and submit storage mode form with all fields', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -74,6 +76,7 @@ test.describe('Storage form submission', () => {
   test('Create and submit storage mode form with all fields optional', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
       createBlankVersion(createOptionalVersion(ff)),
@@ -92,6 +95,7 @@ test.describe('Storage form submission', () => {
   test('Create and submit storage mode form with all fields shown by logic', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
     const formSettings = getEncryptSettings()

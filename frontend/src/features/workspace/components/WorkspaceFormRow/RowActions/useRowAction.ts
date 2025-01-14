@@ -73,7 +73,7 @@ export const useRowAction = (
   const handleMoveForm = useCallback(
     async (destWorkspaceId: string, destWorkspaceTitle: string) => {
       await moveWorkspaceMutation.mutateAsync({
-        formIds: [formMeta._id.toString()],
+        formIds: [formMeta._id],
         destWorkspaceId,
         destWorkspaceTitle,
       })
@@ -83,7 +83,7 @@ export const useRowAction = (
 
   const handleRemoveFormFromWorkspaces = useCallback(async () => {
     await removeFormFromWorkspacesMutation.mutateAsync({
-      formId: formMeta._id.toString(),
+      formId: formMeta._id,
     })
   }, [formMeta, removeFormFromWorkspacesMutation])
 

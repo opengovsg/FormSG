@@ -31,6 +31,15 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   return (
     <Box
       flex={1}
+      /**
+       * HACK: Chromium browsers have a bug where sibling elements with `position: sticky` will not
+       * be correctly calculated during a reflow. This causes the sibling to not have the correct
+       * y-axis position.
+       *
+       * Setting the `position` to `sticky` or `relative` would workaround this issue. We're choosing
+       * not to use `sticky` since it has more side effects and gotchas.
+       */
+      position="relative"
       overflow="auto"
       bg="neutral.100"
       py={{ base: '2rem', md: '1rem' }}

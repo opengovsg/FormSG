@@ -47,11 +47,12 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
-type BuilderSidebarFieldMeta = {
+export type BuilderSidebarFieldMeta = {
   label: string
   icon: As
   // Is this fieldType included in submissions?
   isSubmitted: boolean
+  searchAliases?: string[]
 }
 
 // !!! Do not use this to reference field titles for MyInfo fields. !!!
@@ -63,126 +64,201 @@ export const BASICFIELD_TO_DRAWER_META: {
     label: 'Image',
     icon: BiImage,
     isSubmitted: false,
+    searchAliases: ['photo', 'picture'],
   },
 
   [BasicField.Statement]: {
     label: 'Paragraph',
     icon: BiText,
     isSubmitted: false,
+    searchAliases: ['description'],
   },
 
   [BasicField.Section]: {
     label: 'Heading',
     icon: BiHeading,
     isSubmitted: false,
+    searchAliases: ['header', 'title', 'section'],
   },
 
   [BasicField.Attachment]: {
     label: 'Attachment',
     icon: BiCloudUpload,
     isSubmitted: true,
+    searchAliases: ['supporting', 'screenshot', 'document', 'file', 'upload'],
   },
 
   [BasicField.Checkbox]: {
     label: 'Checkbox',
     icon: BiSelectMultiple,
     isSubmitted: true,
+    searchAliases: [
+      'choice',
+      'options',
+      'multiple',
+      'declaration',
+      'acknowledgement',
+    ],
   },
 
   [BasicField.Date]: {
     label: 'Date',
     icon: BiCalendarEvent,
     isSubmitted: true,
+    searchAliases: [
+      'birthdate',
+      'dob',
+      'date of birth',
+      'event date',
+      'start date',
+      'end date',
+      'time',
+    ],
   },
 
   [BasicField.Decimal]: {
     label: 'Decimal',
     icon: BiCalculator,
     isSubmitted: true,
+    searchAliases: ['price', 'amount', 'cost'],
   },
 
   [BasicField.Dropdown]: {
     label: 'Dropdown',
     icon: BiCaretDownSquare,
     isSubmitted: true,
+    searchAliases: ['choice', 'options', 'category', 'type', 'status'],
   },
 
   [BasicField.CountryRegion]: {
     label: 'Country/Region',
     icon: BiFlag,
     isSubmitted: true,
+    searchAliases: ['country', 'region', 'location', 'nationality'],
   },
 
   [BasicField.Email]: {
     label: 'Email',
     icon: BiMailSend,
     isSubmitted: true,
+    searchAliases: ['contact'],
   },
 
   [BasicField.HomeNo]: {
     label: 'Home number',
     icon: BiPhone,
     isSubmitted: true,
+    searchAliases: ['phone', 'contact', 'telephone'],
   },
 
   [BasicField.LongText]: {
     label: 'Long answer',
     icon: BiAlignLeft,
     isSubmitted: true,
+    searchAliases: [
+      'text',
+      'description',
+      'comments',
+      'remarks',
+      'feedback',
+      'notes',
+      'details',
+      'explanation',
+      'paragraph',
+    ],
   },
 
   [BasicField.Mobile]: {
     label: 'Mobile number',
     icon: BiMobile,
     isSubmitted: true,
+    searchAliases: ['phone', 'contact', 'telephone', 'sms'],
   },
 
   [BasicField.Nric]: {
     label: 'NRIC/FIN',
     icon: BiUser,
     isSubmitted: true,
+    searchAliases: [
+      'id',
+      'identification',
+      'national',
+      'singpass',
+      'ic number',
+    ],
   },
 
   [BasicField.Number]: {
     label: 'Number',
     icon: BiHash,
     isSubmitted: true,
+    searchAliases: ['age', 'quantity', 'count'],
   },
 
   [BasicField.Radio]: {
     label: 'Radio',
     icon: BiRadioCircleMarked,
     isSubmitted: true,
+    searchAliases: ['choice', 'options', 'mcq', 'multiple'],
   },
 
   [BasicField.Rating]: {
     label: 'Rating',
     icon: BiStar,
     isSubmitted: true,
+    searchAliases: ['satisfaction', 'quality', 'performance'],
   },
 
   [BasicField.ShortText]: {
     label: 'Short answer',
     icon: BiRename,
     isSubmitted: true,
+    searchAliases: ['name', 'text'],
   },
 
   [BasicField.Table]: {
     label: 'Table',
     icon: BiTable,
     isSubmitted: true,
+    searchAliases: [
+      'grid',
+      'spreadsheet',
+      'list',
+      'collection',
+      'entries',
+      'records',
+      'items',
+      'multiple',
+    ],
   },
 
   [BasicField.Uen]: {
     label: 'UEN',
     icon: BiBuilding,
     isSubmitted: true,
+    searchAliases: [
+      'id',
+      'business',
+      'company registration',
+      'organization',
+      'corporation',
+      'unique entity',
+      'number',
+    ],
   },
 
   [BasicField.YesNo]: {
     label: 'Yes/No',
     icon: BiToggleLeft,
     isSubmitted: true,
+    searchAliases: [
+      'consent',
+      'agreement',
+      'confirmation',
+      'approve',
+      'approval',
+      'accept',
+    ],
   },
 
   [BasicField.Children]: {
@@ -203,9 +279,10 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.Sex]: {
-    label: 'Gender',
+    label: 'Sex',
     icon: BiInfinite,
     isSubmitted: true,
+    searchAliases: ['gender'],
   },
   [MyInfoAttribute.DateOfBirth]: {
     label: 'Date of Birth',
@@ -346,7 +423,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildGender]: {
-    label: 'Gender',
+    label: 'Sex',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
@@ -361,24 +438,3 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
 }
-// TODO: remove after 28 Jun 2024 as this would have fully taken effect
-function updateLabelsBasedOnDate() {
-  const currentDate = new Date().toLocaleString('en-US', {
-    timeZone: 'Asia/Singapore',
-  })
-  const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
-    timeZone: 'Asia/Singapore',
-  })
-  if (new Date(currentDate) >= new Date(targetDate)) {
-    const sexAttribute = MYINFO_FIELD_TO_DRAWER_META[MyInfoAttribute.Sex]
-    if (sexAttribute) {
-      sexAttribute.label = 'Sex'
-    }
-    const childGenderAttribute =
-      MYINFO_FIELD_TO_DRAWER_META[MyInfoAttribute.ChildGender]
-    if (childGenderAttribute) {
-      childGenderAttribute.label = 'Sex'
-    }
-  }
-}
-updateLabelsBasedOnDate()

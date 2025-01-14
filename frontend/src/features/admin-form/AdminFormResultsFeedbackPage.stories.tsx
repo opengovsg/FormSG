@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   createFormBuilderMocks,
@@ -43,7 +43,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => {
+const Template: StoryFn = () => {
   return (
     <MemoryRouter
       initialEntries={[

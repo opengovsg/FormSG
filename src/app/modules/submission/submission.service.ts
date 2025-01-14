@@ -22,6 +22,8 @@ import {
 import {
   EmailRespondentConfirmationField,
   IAttachmentInfo,
+  IEncryptSubmissionModel,
+  IMultirespondentSubmissionModel,
   IPopulatedForm,
   ISubmissionSchema,
   StorageModeSubmissionCursorData,
@@ -35,10 +37,7 @@ import {
 import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPendingSubmissionModel from '../../models/pending_submission.server.model'
-import getSubmissionModel, {
-  getEncryptSubmissionModel,
-  getMultirespondentSubmissionModel,
-} from '../../models/submission.server.model'
+import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
@@ -96,9 +95,6 @@ import {
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
 const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
-const MultirespondentSubmissionModel =
-  getMultirespondentSubmissionModel(mongoose)
 
 /**
  * Returns number of form submissions of given form id in the given date range.
@@ -436,33 +432,55 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
     | ParsedClearAttachmentFieldResponseV3,
 >(
   response: T,
+  formId: string,
 ): ResultAsync<
   T,
   | VirusScanFailedError
   | DownloadCleanFileFailedError
   | MaliciousFileDetectedError
-> =>
+> => {
+  const logMeta = {
+    action: 'triggerVirusScanThenDownloadCleanFileChain',
+    formId,
+    quarantineFileKey: response.answer,
+  }
   // Step 3: Trigger lambda to scan attachments.
-  triggerVirusScanning(response.answer)
-    .mapErr((error) => {
-      if (error instanceof MaliciousFileDetectedError)
-        return new MaliciousFileDetectedError(response.filename)
-      return error
-    })
-    .map((lambdaOutput) => lambdaOutput.body)
-    // Step 4: Retrieve attachments from the clean bucket.
-    .andThen((cleanAttachment) =>
-      // Retrieve attachment from clean bucket.
-      downloadCleanFile(
-        cleanAttachment.cleanFileKey,
-        cleanAttachment.destinationVersionId,
-      ).map((attachmentBuffer) => ({
-        ...response,
-        // Replace content with attachmentBuffer and answer with filename.
-        content: attachmentBuffer,
-        answer: response.filename,
-      })),
-    )
+  return (
+    triggerVirusScanning(response.answer)
+      .mapErr((error) => {
+        if (error instanceof MaliciousFileDetectedError) {
+          logger.error({
+            message: 'Malicious file detected during lambda virus scan',
+            meta: logMeta,
+            error,
+          })
+          return new MaliciousFileDetectedError(response.filename)
+        }
+        return error
+      })
+      .map((lambdaOutput) => {
+        logger.info({
+          message:
+            'Successfully retrieved clean file from virus scanning lambda',
+          meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+        })
+        return lambdaOutput.body
+      })
+      // Step 4: Retrieve attachments from the clean bucket.
+      .andThen((cleanAttachment) =>
+        // Retrieve attachment from clean bucket.
+        downloadCleanFile(
+          cleanAttachment.cleanFileKey,
+          cleanAttachment.destinationVersionId,
+        ).map((attachmentBuffer) => ({
+          ...response,
+          // Replace content with attachmentBuffer and answer with filename.
+          content: attachmentBuffer,
+          answer: response.filename,
+        })),
+      )
+  )
+}
 
 type AttachmentReducerData = {
   attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>
@@ -764,8 +782,8 @@ export const getSubmissionCursor = (
   } = {},
 ): Result<
   ReturnType<
-    | typeof EncryptSubmissionModel.getSubmissionCursorByFormId
-    | typeof MultirespondentSubmissionModel.getSubmissionCursorByFormId
+    | IEncryptSubmissionModel['getSubmissionCursorByFormId']
+    | IMultirespondentSubmissionModel['getSubmissionCursorByFormId']
   >,
   MalformedParametersError
 > => {

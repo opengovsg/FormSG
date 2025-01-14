@@ -1,9 +1,36 @@
-import { AdminFormNavbar, Common, Login, PublicForm } from './features'
+import { RequiredDeep } from 'type-fest'
+
+import {
+  Common,
+  Fields,
+  HeaderAndInstructions,
+  Logic,
+  Login,
+  Meta,
+  Modals,
+  Navbar,
+  PublicForm,
+  Settings,
+  ThankYou,
+  Toasts,
+} from './features'
 
 interface Translation {
   translation: {
     features: {
-      adminFormNavbar?: AdminFormNavbar
+      adminForm?: {
+        sidebar?: {
+          fields?: Fields
+          headerAndInstructions?: HeaderAndInstructions
+          logic?: Logic
+          thankYou?: ThankYou
+        }
+        navbar?: Navbar
+        meta?: Meta
+        modals?: Modals
+        toasts?: Toasts
+        settings?: Settings
+      }
       common?: Common
       publicForm?: PublicForm
       login?: Login
@@ -13,7 +40,7 @@ interface Translation {
 
 export interface FallbackTranslation extends Translation {
   translation: {
-    features: Required<Translation['translation']['features']>
+    features: RequiredDeep<Translation['translation']['features']>
   }
 }
 

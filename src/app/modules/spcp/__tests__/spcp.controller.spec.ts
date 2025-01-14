@@ -50,7 +50,7 @@ jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
-MockConfig.isDev = false
+MockConfig.isDevOrTest = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
 
@@ -135,7 +135,7 @@ describe('spcp.controller', () => {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: true,
           sameSite: 'lax',
-          secure: !MockConfig.isDev,
+          secure: !MockConfig.isDevOrTest,
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
@@ -433,7 +433,7 @@ describe('spcp.controller', () => {
           maxAge: MOCK_COOKIE_AGE,
           httpOnly: true,
           sameSite: 'lax',
-          secure: !MockConfig.isDev,
+          secure: !MockConfig.isDevOrTest,
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)

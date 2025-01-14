@@ -1,4 +1,6 @@
-import { createContext, FC, useContext } from 'react'
+import { createContext, useContext } from 'react'
+
+import { FCC } from '~typings/react'
 
 import { useMeasure, UseMeasureRef } from '~hooks/useMeasure'
 
@@ -31,7 +33,7 @@ export const useCreatePageSidebarLayoutContext =
     }
   }
 
-export const CreatePageSideBarLayoutProvider: FC = ({ children }) => {
+export const CreatePageSideBarLayoutProvider: FCC = ({ children }) => {
   const context = useCreatePageSidebarLayoutContext()
   return (
     <CreatePageSidebarLayoutContext.Provider value={context}>

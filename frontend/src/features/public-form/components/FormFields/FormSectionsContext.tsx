@@ -7,16 +7,20 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import useScrollSpy from 'react-use-scrollspy'
 
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto, Language } from '~shared/types'
 
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
 
-export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
+export type SidebarSectionMeta = Pick<
+  FormFieldDto,
+  'title' | '_id' | 'titleTranslations'
+>
 
 interface FormSectionsContextProps {
   /** Scroll data to allow form-fillers to scroll to a particular section. */
@@ -39,7 +43,16 @@ interface FormSectionsProviderProps {
 export const FormSectionsProvider = ({
   children,
 }: FormSectionsProviderProps): JSX.Element => {
+  const { t, i18n } = useTranslation()
   const { form, isAuthRequired } = usePublicFormContext()
+
+  useEffect(() => {
+    // On page load render, if the form does not support multi-langugage
+    // set the language preference to be English.
+    if (!form?.hasMultiLang) {
+      i18n.changeLanguage(Language.ENGLISH)
+    }
+  }, [form?.hasMultiLang, i18n])
 
   const [visibleFieldIds, setVisibleFieldIds] = useState<FieldIdSet>()
 
@@ -48,7 +61,8 @@ export const FormSectionsProvider = ({
     const sections: SidebarSectionMeta[] = []
     if (form.startPage.paragraph)
       sections.push({
-        title: 'Instructions',
+        title: t('features.publicForm.components.instructions.title'),
+        titleTranslations: [],
         _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
       })
     form.form_fields.forEach((f) => {
@@ -56,11 +70,12 @@ export const FormSectionsProvider = ({
         return
       sections.push({
         title: f.title,
+        titleTranslations: f.titleTranslations,
         _id: f._id,
       })
     })
     return sections
-  }, [form, isAuthRequired, visibleFieldIds])
+  }, [form, isAuthRequired, visibleFieldIds, t])
 
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>

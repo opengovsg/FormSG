@@ -2,19 +2,17 @@ import { useMemo } from 'react'
 import ReactInputMask from 'react-input-mask'
 import {
   forwardRef,
+  Input,
   InputGroup,
   InputRightAddon,
   useMergeRefs,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
-import Input from '~components/Input'
-
 import { CalendarButton } from '../components/CalendarButton'
 import { useDatePicker } from '../DatePickerContext'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
+export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
   const {
     internalInputValue,
     handleInputChange,

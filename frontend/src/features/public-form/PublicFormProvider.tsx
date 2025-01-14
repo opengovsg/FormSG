@@ -14,6 +14,7 @@ import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import { flow } from 'lodash'
 import get from 'lodash/get'
 
 import {
@@ -24,13 +25,14 @@ import {
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
+import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
+  Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
-import { maskNric } from '~shared/utils/nric-mask'
 import { dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
@@ -67,6 +69,7 @@ import {
 
 import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
+import { postIFrameMessage } from './utils/iframeMessaging'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
@@ -123,21 +126,74 @@ export function useCommonFormProvider(formId: string) {
   }
 }
 
+// Country/region data must be upper-case in backend for myinfo-countries compatibility,
+// while displaying in title-case to users in the frontend.
+// Hence, we need to map the frontend title-case to upper-case when submitting to backend.
+const transformFormInputCountryRegionToUpperCase =
+  (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
+  (formInputs: Record<string, unknown>) => {
+    const countryRegionFieldIds = new Set(
+      form_fields
+        .filter((field) => field.fieldType === BasicField.CountryRegion)
+        .map((field) => field._id),
+    )
+
+    return Object.keys(formInputs).reduce(
+      (newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (
+          countryRegionFieldIds.has(fieldId) &&
+          typeof currentInput === 'string'
+        ) {
+          newFormInputs[fieldId] = currentInput.toUpperCase()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      },
+      {},
+    )
+  }
+
+// Trim text inputs before sending to backend to match frontend validation
+const transformFormInputTrimTextInputs =
+  (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
+  (formInputs: Record<string, unknown>) => {
+    const textFieldIds = new Set(
+      form_fields
+        .filter(
+          (field) =>
+            field.fieldType === BasicField.ShortText ||
+            field.fieldType === BasicField.LongText,
+        )
+        .map((field) => field._id),
+    )
+
+    return Object.keys(formInputs).reduce(
+      (newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
+          newFormInputs[fieldId] = currentInput.trim()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      },
+      {},
+    )
+  }
+
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const selectedLanguage = i18n.language as Language
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  const [numVisibleFields, setNumVisibleFields] = useState(0)
-  const [
-    hasSingleSubmissionValidationError,
-    setHasSingleSubmissionValidationError,
-  ] = useState(false)
 
   const {
     data,
@@ -150,22 +206,46 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  // Mask Nric if isNricMaskEnabled is true
-  if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
-    data.spcpSession.userName = maskNric(data.spcpSession.userName)
-  }
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
+
+  // Respondent access error states
+  const [
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  ] = useState(false)
+  const [
+    hasRespondentNotWhitelistedError,
+    setHasRespondentNotWhitelistedError,
+  ] = useState(false)
+
+  const clearRespondentAccessErrors = useCallback(() => {
+    setHasRespondentNotWhitelistedError(false)
+    setHasSingleSubmissionValidationError(false)
+  }, [])
+
+  const [
+    hasPreviousSubmissionDecryptionError,
+    setHasPreviousSubmissionDecryptionError,
+  ] = useState(false)
 
   useEffect(() => {
     if (
-      data?.form.isSingleSubmission &&
-      data.hasSingleSubmissionValidationFailure
+      data?.errorCodes?.find(
+        (errorCode) =>
+          errorCode === ErrorCode.respondentSingleSubmissionValidationFailure,
+      )
     ) {
       setHasSingleSubmissionValidationError(true)
     }
-  }, [
-    data?.form.isSingleSubmission,
-    data?.hasSingleSubmissionValidationFailure,
-  ])
+
+    if (
+      data?.errorCodes?.find(
+        (errorCode) => errorCode === ErrorCode.respondentNotWhitelisted,
+      )
+    ) {
+      setHasRespondentNotWhitelistedError(true)
+    }
+  }, [data?.errorCodes])
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -226,10 +306,7 @@ export const PublicFormProvider = ({
           )
         } catch (e) {
           console.error(e, 'failed to decrypt attachment', id)
-          toast({
-            status: 'danger',
-            description: 'Failed to decrypt attachment',
-          })
+          setHasPreviousSubmissionDecryptionError(true)
         }
         if (!decryptedContent) return
 
@@ -260,12 +337,7 @@ export const PublicFormProvider = ({
         setPreviousAttachments(previousAttachments)
       }
     }
-  }, [
-    encryptedPreviousSubmission,
-    previousSubmission,
-    submissionSecretKey,
-    toast,
-  ])
+  }, [encryptedPreviousSubmission, previousSubmission, submissionSecretKey])
 
   if (
     previousSubmissionId &&
@@ -369,17 +441,27 @@ export const PublicFormProvider = ({
     data?.form.responseMode === FormResponseMode.Encrypt &&
     data.form.payments_field.enabled
 
+  const hasMyInfoError = !!data?.errorCodes?.find(
+    (errorCode) => errorCode === ErrorCode.myInfo,
+  )
+
   useEffect(() => {
-    if (data?.myInfoError) {
+    if (hasMyInfoError) {
       toast({
         status: 'danger',
         description: t('features.publicForm.errors.myinfo'),
       })
     }
-  }, [data, toast, t])
+    if (hasPreviousSubmissionDecryptionError) {
+      toast({
+        status: 'danger',
+        description: 'Failed to decrypt attachment',
+      })
+    }
+  }, [hasMyInfoError, hasPreviousSubmissionDecryptionError, toast, t])
 
   const showErrorToast = useCallback(
-    (error, form: PublicFormDto) => {
+    (error: unknown, form: PublicFormDto) => {
       toast({
         status: 'danger',
         description:
@@ -435,9 +517,7 @@ export const PublicFormProvider = ({
         duration: null,
         status: 'warning',
         isClosable: true,
-        description: t('features.publicForm.errors.verifiedFieldExpired', {
-          count: numVerifiable,
-        }),
+        description: t('features.publicForm.errors.verifiedFieldExpired'),
       })
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef, t])
@@ -496,32 +576,15 @@ export const PublicFormProvider = ({
         }
       }
 
-      const countryRegionFieldIds = new Set(
-        form.form_fields
-          .filter((field) => field.fieldType === BasicField.CountryRegion)
-          .map((field) => field._id),
-      )
-      // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
-      // Country/region data in the backend needs to remain in upper-case so that they remain consistent with myinfo-countries.
-      const formInputsWithCountryRegionInUpperCase = Object.keys(
-        formInputs,
-      ).reduce((newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (
-          countryRegionFieldIds.has(fieldId) &&
-          typeof currentInput === 'string'
-        ) {
-          newFormInputs[fieldId] = currentInput.toUpperCase()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      }, {})
+      const transformedFormInputs = flow([
+        transformFormInputCountryRegionToUpperCase(form.form_fields),
+        transformFormInputTrimTextInputs(form.form_fields),
+      ])(formInputs) as typeof formInputs
 
       const formData = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
-        formInputs: formInputsWithCountryRegionInUpperCase,
+        formInputs: transformedFormInputs,
         captchaResponse,
         captchaType,
         responseMetadata: {
@@ -530,6 +593,7 @@ export const PublicFormProvider = ({
             ? numVisibleFields + 1
             : numVisibleFields,
         },
+        selectedFormLanguage: selectedLanguage,
       }
 
       const logMeta = {
@@ -551,7 +615,6 @@ export const PublicFormProvider = ({
         ) {
           data.spcpSession = undefined
         }
-        setHasSingleSubmissionValidationError(false)
         setSubmissionData({
           id: submissionId,
           timestamp,
@@ -566,6 +629,8 @@ export const PublicFormProvider = ({
           showErrorToast(error, form)
         }
       }
+
+      postIFrameMessage({ state: 'submitting' })
 
       switch (form.responseMode) {
         case FormResponseMode.Email: {
@@ -584,7 +649,7 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
-                  formInputs: formInputsWithCountryRegionInUpperCase,
+                  formInputs: transformedFormInputs,
                 },
                 { onSuccess },
               )
@@ -622,7 +687,7 @@ export const PublicFormProvider = ({
                 .mutateAsync(
                   {
                     ...formData,
-                    formInputs: formInputsWithCountryRegionInUpperCase,
+                    formInputs: transformedFormInputs,
                   },
                   { onSuccess },
                 )
@@ -700,6 +765,7 @@ export const PublicFormProvider = ({
                     paymentData,
                   }) => {
                     trackSubmitForm(form)
+                    postIFrameMessage({ state: 'submitted', submissionId })
 
                     if (paymentData) {
                       navigate(getPaymentPageUrl(formId, paymentData.paymentId))
@@ -713,7 +779,7 @@ export const PublicFormProvider = ({
                     ) {
                       data.spcpSession = undefined
                     }
-                    setHasSingleSubmissionValidationError(false)
+                    clearRespondentAccessErrors()
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
@@ -722,6 +788,7 @@ export const PublicFormProvider = ({
                 },
               )
               .catch(async (error) => {
+                postIFrameMessage({ state: 'submitError' })
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
@@ -764,6 +831,7 @@ export const PublicFormProvider = ({
                   paymentData,
                 }) => {
                   trackSubmitForm(form)
+                  postIFrameMessage({ state: 'submitted', submissionId })
                   if (paymentData) {
                     navigate(getPaymentPageUrl(formId, paymentData.paymentId))
                     storePaymentMemory(paymentData.paymentId)
@@ -776,7 +844,7 @@ export const PublicFormProvider = ({
                   ) {
                     data.spcpSession = undefined
                   }
-                  setHasSingleSubmissionValidationError(false)
+                  clearRespondentAccessErrors()
                   setSubmissionData({
                     id: submissionId,
                     timestamp,
@@ -785,6 +853,7 @@ export const PublicFormProvider = ({
               },
             )
             .catch(async (error) => {
+              postIFrameMessage({ state: 'submitError' })
               // TODO(#5826): Remove when we have resolved the Network Error
               datadogLogs.logger.warn(
                 `handleSubmitForm: submit with virus scan`,
@@ -848,6 +917,7 @@ export const PublicFormProvider = ({
       navigate,
       formId,
       storePaymentMemory,
+      clearRespondentAccessErrors,
     ],
   )
 
@@ -883,6 +953,7 @@ export const PublicFormProvider = ({
         setNumVisibleFields,
         hasSingleSubmissionValidationError,
         setHasSingleSubmissionValidationError,
+        hasRespondentNotWhitelistedError,
         encryptedPreviousSubmission,
         previousSubmission,
         previousAttachments,

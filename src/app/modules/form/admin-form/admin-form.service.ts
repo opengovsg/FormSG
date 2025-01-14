@@ -1,37 +1,57 @@
-import { AWSError, SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import {
-  CreateSecretRequest,
-  DeleteSecretRequest,
-  PutSecretValueRequest,
-} from 'aws-sdk/clients/secretsmanager'
-import { assignIn, last, omit } from 'lodash'
+import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'shared/utils/crypto'
 import type { Except, Merge } from 'type-fest'
+import validator from 'validator'
 
 import {
+  CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
+  WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
 } from '../../../../../shared/constants'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
+  DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
   FormAuthType,
+  FormFieldDto,
   FormLogoState,
+  FormMetadata,
   FormPermission,
   FormResponseMode,
   FormSettings,
+  FormWorkflowDto,
+  FormWorkflowStepDto,
   LogicDto,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
   StorageFormSettings,
+  WorkflowType,
 } from '../../../../../shared/types'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../../shared/utils/nric-validation'
+import { checkIsOptionsMismatched } from '../../../../../shared/utils/options-recipients-map-validation'
+import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
@@ -39,16 +59,20 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  IMultirespondentForm,
+  IMultirespondentFormModel,
+  IMultirespondentFormSchema,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
   IPopulatedUser,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
-import config, { aws as AwsConfig } from '../../../config/config'
+import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from '../../../models/form_whitelist.server.model'
 import { getWorkspaceModel } from '../../../models/workspace.server.model'
-import { twilioClientCache } from '../../../services/sms/sms.service'
 import {
   createPresignedPostDataPromise,
   CreatePresignedPostError,
@@ -65,15 +89,14 @@ import {
   DatabaseValidationError,
   MalformedParametersError,
   PossibleDatabaseError,
-  SecretsManagerError,
-  SecretsManagerNotFoundError,
-  TwilioCacheError,
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
+  FormInvalidResponseModeError,
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
 } from '../form.errors'
@@ -85,10 +108,6 @@ import {
   isFormEncryptMode,
 } from '../form.utils'
 
-import {
-  TwilioCredentials,
-  TwilioCredentialsData,
-} from './../../../services/sms/sms.types'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
@@ -97,8 +116,6 @@ import {
   InvalidFileTypeError,
 } from './admin-form.errors'
 import {
-  checkIsApiSecretKeyName,
-  generateTwilioCredSecretKeyName,
   getUpdatedFormFields,
   insertTableShortTextColumnDefaultValidationOptions,
   processDuplicateOverrideProps,
@@ -108,11 +125,8 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
-
-export const secretsManager = new SecretsManager({
-  region: config.aws.region,
-  endpoint: process.env.AWS_ENDPOINT,
-})
+const FormWhitelistedSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 type PresignedPostUrlParams = {
   fileId: string
@@ -467,6 +481,11 @@ export const transferAllFormsOwnership = (
   )
 }
 
+type MultirespondentFormToCreate = Merge<
+  IMultirespondentForm,
+  { admin: string }
+>
+
 /**
  * Creates a form with the given form params
  * @param formParams parameters for the form to be created.
@@ -487,6 +506,78 @@ export const createForm = (
   const logMeta = {
     action: 'createForm',
     formParams,
+  }
+
+  if (formParams.responseMode === FormResponseMode.Multirespondent) {
+    const workflow = (formParams as MultirespondentFormToCreate).workflow ?? []
+
+    const emailFieldIds = formParams.form_fields
+      ?.filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isRespondentFieldEmail = workflow?.every((step) => {
+      return (
+        step.workflow_type !== WorkflowType.Dynamic ||
+        (step.field && emailFieldIds?.includes(step.field))
+      )
+    })
+    if (!isRespondentFieldEmail) {
+      return errAsync(
+        new MalformedParametersError(
+          'All respondent fields in workflow must be email fields',
+        ),
+      )
+    }
+
+    const isFirstStepApproval = workflow[0] && workflow[0].approval_field
+    if (isFirstStepApproval) {
+      return errAsync(
+        new MalformedParametersError(
+          'First step of workflow cannot be an approval step',
+        ),
+      )
+    }
+
+    const yesNoFieldIds = formParams.form_fields
+      ?.filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isApprovalFieldYesNo = workflow.every((step) => {
+      return (
+        !step.approval_field || yesNoFieldIds?.includes(step.approval_field)
+      )
+    })
+    if (!isApprovalFieldYesNo) {
+      return errAsync(
+        new MalformedParametersError(
+          'All approval fields must be yes/no fields',
+        ),
+      )
+    }
+
+    const selectedApprovalFields = workflow
+      .map((step) => step.approval_field)
+      .filter(Boolean)
+    const isApprovalFieldUnique =
+      new Set(selectedApprovalFields).size === selectedApprovalFields.length
+    if (!isApprovalFieldUnique) {
+      return errAsync(
+        new MalformedParametersError(
+          'Each yes/no field cannot be used in more than one approval step',
+        ),
+      )
+    }
+
+    const isApprovalFieldInEditFields = workflow.every(
+      (step) =>
+        !step.approval_field ||
+        (step.edit && step.edit.includes(step.approval_field)),
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval fields must be included in edit fields.',
+        ),
+      )
+    }
   }
 
   if (workspaceId)
@@ -635,6 +726,153 @@ export const duplicateForm = (
 }
 
 /**
+ * Validates the mapping between dropdown/radio field options and recipient emails
+ * @param optionsToRecipientsMap Object mapping field options to arrays of recipient emails
+ * @param selectedConditionalFieldOptions Array of valid options for the selected field
+ * @returns Ok if validation passes, Error with appropriate message if validation fails
+ *
+ * Performs the following validations:
+ * - No duplicate options in the mapping
+ * - All options have at least one recipient email
+ * - Options cannot be empty strings
+ * - All recipient emails are valid email addresses
+ * - All options in mapping exist in the field's options and vice versa
+ */
+
+const validateOptionsToRecipientsMap = (
+  optionsToRecipientsMap: Record<string, string[]>,
+  selectedConditionalFieldOptions: string[],
+): Result<undefined, MalformedParametersError> => {
+  // Mapping is being removed
+  if (
+    !optionsToRecipientsMap ||
+    Object.entries(optionsToRecipientsMap).length === 0
+  ) {
+    return ok(undefined)
+  }
+
+  // Check for duplicate options
+  const options = Object.keys(optionsToRecipientsMap)
+  if (new Set(options).size !== options.length) {
+    return err(
+      new MalformedParametersError(
+        CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
+      ),
+    )
+  }
+  // Check if there are missing options or emails
+  for (const [option, recipients] of Object.entries(optionsToRecipientsMap)) {
+    // Check if all recipients are valid emails
+    if (
+      recipients.some((recipientEmail) => !validator.isEmail(recipientEmail))
+    ) {
+      return err(
+        new MalformedParametersError(
+          CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+        ),
+      )
+    }
+
+    if (!option || !recipients || recipients.length <= 0) {
+      return err(
+        new MalformedParametersError(
+          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+        ),
+      )
+    }
+  }
+
+  if (
+    checkIsOptionsMismatched(
+      Object.keys(optionsToRecipientsMap),
+      selectedConditionalFieldOptions,
+    )
+  ) {
+    return err(
+      new MalformedParametersError(
+        CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+      ),
+    )
+  }
+
+  return ok(undefined)
+}
+
+export const updateOptionsToRecipientsMap = (
+  form: IPopulatedForm,
+  fieldId: string,
+  optionsToRecipientsMap: Record<string, string[]>,
+): ResultAsync<
+  FormFieldSchema,
+  PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
+> => {
+  const formFieldToUpdate = getFormFieldById(form.form_fields, fieldId)
+
+  if (!formFieldToUpdate) {
+    return errAsync(new FieldNotFoundError())
+  }
+
+  if (formFieldToUpdate.fieldType !== BasicField.Dropdown) {
+    return errAsync(
+      new EditFieldError(
+        'Field is not a dropdown field, only dropdown fields contain options to recipients map',
+      ),
+    )
+  }
+
+  const validationResult = validateOptionsToRecipientsMap(
+    optionsToRecipientsMap,
+    formFieldToUpdate.fieldOptions,
+  )
+
+  if (validationResult.isErr()) {
+    logger.error({
+      message: 'Options to recipients map is invalid',
+      meta: {
+        action: 'updateOptionsToRecipientsMap',
+        formId: form._id,
+        fieldId,
+      },
+      error: validationResult.error,
+    })
+    return errAsync(validationResult.error)
+  }
+
+  const updatedFormField = {
+    ...formFieldToUpdate.toObject(),
+    optionsToRecipientsMap,
+  }
+
+  return ResultAsync.fromPromise(
+    form.updateFormFieldById(
+      fieldId,
+      updatedFormField as FormFieldDto<DropdownFieldBase>,
+    ),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating options to recipients map',
+        meta: {
+          action: 'updateOptionsToRecipientsMap',
+          formId: form._id,
+          fieldId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+
+    const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
+    return updatedFormField
+      ? okAsync(updatedFormField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Updates the targeted form field with the new field provided
  * @param form the form the field to update belongs to
  * @param fieldId the id of the field to update
@@ -779,6 +1017,72 @@ export const createFormField = (
     const updatedField = updatedForm.form_fields[indexToRetrieve]
     return updatedField
       ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
+ * Inserts new form fields into given form's fields.
+ * @param form the form to insert the new field into
+ * @param newFields the new fields to insert
+ * @param to optional index to insert the new field at
+ * @returns ok(array of created form fields)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormFields = ({
+  form,
+  newFields,
+  to,
+}: {
+  form: IPopulatedForm
+  newFields: FieldCreateDto[]
+  to?: number
+}): ResultAsync<
+  FormFieldSchema[],
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  // If MyInfo field, override field title to store name.
+  const fieldsToSave = newFields.map((newField) => {
+    if (newField.myInfo?.attr) {
+      return {
+        ...newField,
+        title:
+          MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title,
+      }
+    } else {
+      return newField
+    }
+  })
+
+  return ResultAsync.fromPromise(
+    form.insertFormFields(fieldsToSave, to),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while inserting new form fields',
+        meta: {
+          action: 'createFormFields',
+          formId: form._id,
+          newFields,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    // if to does not exist, end of prev form fields
+    let startIndex = updatedForm.form_fields.length - newFields.length
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      startIndex = to
+    }
+    const endIndex = newFields.length + startIndex
+    const updatedFields = updatedForm.form_fields.slice(startIndex, endIndex)
+    return updatedFields
+      ? okAsync(updatedFields)
       : errAsync(new FieldNotFoundError())
   })
 }
@@ -1030,6 +1334,513 @@ export const updateFormCollaborators = (
   )
 }
 
+export const checkIsWhitelistSettingValid = (
+  whitelistedSubmitterIds: string[] | null,
+): { isValid: boolean; invalidReason?: string } => {
+  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
+    return {
+      isValid: true,
+    }
+  }
+
+  // check for empty rows/entries
+  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
+    (entry: string) => entry === '',
+  )
+  if (emptyRowIndex !== -1) {
+    return {
+      isValid: false,
+      invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+    }
+  }
+
+  // check for invalid NRIC/FIN/UEN format
+  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
+    return !(
+      isNricValid(entry) ||
+      isMFinSeriesValid(entry) ||
+      isUenValid(entry)
+    )
+  })
+  // check for invalid entries
+  if (invalidEntries.length > 0) {
+    return {
+      isValid: false,
+      invalidReason:
+        FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+          invalidEntries[0],
+        ),
+    }
+  }
+
+  // check for duplicates
+  if (
+    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
+  ) {
+    return {
+      isValid: false,
+      invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+    }
+  }
+
+  return {
+    isValid: true,
+  }
+}
+
+/**
+ * Fetches the whitelist setting document without myPrivateKey for the client to use for decryption.
+ */
+export const getFormWhitelistSetting = (
+  form: IPopulatedForm,
+): ResultAsync<
+  EncryptedStringsMessageContent | null,
+  FormWhitelistSettingNotFoundError | PossibleDatabaseError
+> => {
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds } =
+    form.getWhitelistedSubmitterIds()
+
+  if (!isWhitelistEnabled) {
+    return okAsync(null)
+  }
+
+  if (isWhitelistEnabled && !encryptedWhitelistedSubmitterIds) {
+    return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+
+  return ResultAsync.fromPromise(
+    FormWhitelistedSubmitterIdsModel.findById(encryptedWhitelistedSubmitterIds)
+      .lean()
+      .exec()
+      .then((whitelistSetting) =>
+        pick(whitelistSetting, WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS),
+      ) as Promise<EncryptedStringsMessageContent>,
+    (error) => {
+      logger.error({
+        message: 'Error encountered while retrieving form whitelist setting',
+        meta: {
+          action: 'getFormWhitelistSetting',
+          formId: form._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((whitelistSetting) => {
+    if (!whitelistSetting) {
+      return errAsync(new FormWhitelistSettingNotFoundError())
+    }
+    return okAsync(whitelistSetting)
+  })
+}
+
+export const updateFormWhitelistSetting = (
+  originalForm: IPopulatedForm,
+  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
+) => {
+  if (originalForm.responseMode !== FormResponseMode.Encrypt) {
+    return errAsync(
+      new MalformedParametersError(
+        'Whitelist setting does not exist for non-encrypt mode forms',
+      ),
+    )
+  }
+
+  const FormModelToUse = getFormModelByResponseMode(originalForm.responseMode)
+
+  const updateFormWhitelistSettingPromise = async () => {
+    const session = await FormModelToUse.startSession()
+    session.startTransaction()
+
+    if (encryptedWhitelistedSubmitterIdsContent) {
+      // create whitelisted submitter id collection document and update reference to it
+      const createdWhitelistedSubmitterIdsDocument =
+        await FormWhitelistedSubmitterIdsModel.create({
+          formId: originalForm._id,
+          ...encryptedWhitelistedSubmitterIdsContent,
+        })
+      const updatedForm = await FormModelToUse.findByIdAndUpdate(
+        originalForm._id,
+        {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds:
+              createdWhitelistedSubmitterIdsDocument._id,
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      ).exec()
+
+      if (!updateForm) {
+        await session.abortTransaction()
+        return
+      }
+
+      await session.commitTransaction()
+      await session.endSession()
+
+      return updatedForm
+    } else {
+      // delete whitelisted submitter id collection document and update reference to null
+      await FormWhitelistedSubmitterIdsModel.deleteMany({
+        formId: originalForm._id,
+      })
+      const updatedForm = await FormModelToUse.findByIdAndUpdate(
+        originalForm._id,
+        {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: false,
+            encryptedWhitelistedSubmitterIds: undefined,
+          },
+        },
+        { new: true, runValidators: true },
+      ).exec()
+
+      if (!updatedForm) {
+        await session.abortTransaction()
+        return
+      }
+      await session.commitTransaction()
+      await session.endSession()
+      return updatedForm
+    }
+  }
+
+  return ResultAsync.fromPromise(
+    updateFormWhitelistSettingPromise(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form whitelist setting',
+        meta: {
+          action: 'updateFormWhitelistSetting',
+          formId: originalForm._id,
+          // Body is not logged in case sensitive data such as emails are stored.
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.getSettings())
+  })
+}
+
+export const createWorkflowStep = (
+  originalForm: IPopulatedForm,
+  newWorkflowStep: FormWorkflowStepDto,
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if (
+    newWorkflowStep.workflow_type === WorkflowType.Dynamic &&
+    newWorkflowStep.field
+  ) {
+    const emailFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isEmailField = emailFieldIds.includes(newWorkflowStep.field)
+    if (!isEmailField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Respondent field must be a valid email field',
+        ),
+      )
+    }
+  }
+
+  const isFirstStep =
+    (originalForm as IPopulatedMultirespondentForm).workflow.length === 0
+  if (isFirstStep && newWorkflowStep.approval_field) {
+    return errAsync(
+      new MalformedParametersError(
+        'First step of workflow cannot be an approval step',
+      ),
+    )
+  }
+
+  const selectedApprovalField = newWorkflowStep.approval_field
+  if (selectedApprovalField) {
+    const yesNoFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isYesNoField = yesNoFieldIds.includes(selectedApprovalField)
+    if (!isYesNoField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field must be a valid yes/no field',
+        ),
+      )
+    }
+
+    const otherApprovalFields = (
+      originalForm as IPopulatedMultirespondentForm
+    ).workflow
+      .map((step) => step.approval_field)
+      .filter(Boolean)
+
+    const isAlreadyUsed = otherApprovalFields.includes(selectedApprovalField)
+    if (isAlreadyUsed) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field has already been used in another step',
+        ),
+      )
+    }
+
+    const editFields = newWorkflowStep.edit ?? []
+    const isApprovalFieldInEditFields = editFields.includes(
+      selectedApprovalField,
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field must also be in the same step's edit fields",
+        ),
+      )
+    }
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  // Create new workflow step
+  const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while creating new form workflow step in database',
+        meta: {
+          action: 'createWorkflowStep',
+          formId: originalMrfForm._id,
+          newWorkflowStep,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
+export const updateFormWorkflowStep = (
+  originalForm: IPopulatedForm,
+  stepNumber: number,
+  updatedWorkflowStep: FormWorkflowStepDto,
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if (
+    updatedWorkflowStep.workflow_type === WorkflowType.Dynamic &&
+    updatedWorkflowStep.field
+  ) {
+    const emailFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isEmailField = emailFieldIds.includes(updatedWorkflowStep.field)
+    if (!isEmailField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Respondent field must be a valid email field',
+        ),
+      )
+    }
+  }
+
+  const isFirstStep = stepNumber === 0
+  if (isFirstStep && updatedWorkflowStep.approval_field) {
+    return errAsync(
+      new MalformedParametersError(
+        'First step of workflow cannot be an approval step',
+      ),
+    )
+  }
+
+  const selectedApprovalField = updatedWorkflowStep.approval_field
+  if (selectedApprovalField) {
+    const yesNoFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isYesNoField = yesNoFieldIds.includes(selectedApprovalField)
+    if (!isYesNoField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field must be a valid yes/no field',
+        ),
+      )
+    }
+
+    const otherApprovalFields = (
+      originalForm as IPopulatedMultirespondentForm
+    ).workflow
+      .map((step, index) => (index !== stepNumber ? step.approval_field : null))
+      .filter(Boolean)
+
+    const isAlreadyUsed = otherApprovalFields.includes(selectedApprovalField)
+    if (isAlreadyUsed) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field has already been used in another step',
+        ),
+      )
+    }
+
+    const editFields = updatedWorkflowStep.edit ?? []
+    const isApprovalFieldInEditFields = editFields.includes(
+      selectedApprovalField,
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field must also be in the same step's edit fields",
+        ),
+      )
+    }
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  const isStepNumberValid =
+    stepNumber >= 0 && stepNumber < originalWorkflow.length
+  if (!isStepNumberValid) {
+    return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+
+  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
+    index === stepNumber ? updatedWorkflowStep : step,
+  )
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while updating form workflow step in database',
+        meta: {
+          action: 'updateFormWorkflowStep',
+          formId: originalMrfForm._id,
+          stepNumber,
+          updatedWorkflowStep,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
+export const deleteFormWorkflowStep = (
+  originalForm: IPopulatedForm,
+  stepNumber: number,
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  const isStepNumberValid =
+    stepNumber >= 0 && stepNumber < originalWorkflow.length
+  if (!isStepNumberValid) {
+    return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+
+  // Remove step with stepNumber from workflow
+  const updatedWorkflow = originalWorkflow
+  updatedWorkflow.splice(stepNumber, 1)
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while deleting form workflow step in database',
+        meta: {
+          action: 'deleteFormWorkflowStep',
+          formId: originalMrfForm._id,
+          stepNumber,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
 /**
  * Updates form settings.
  * @param originalForm The original form to update settings for
@@ -1094,7 +1905,7 @@ export const updateFormSettings = (
     }).exec(),
     (error) => {
       logger.error({
-        message: 'Error encountered while updating form',
+        message: 'Error encountered while updating form settings',
         meta: {
           action: 'updateFormSettings',
           formId: originalForm._id,
@@ -1110,6 +1921,46 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
+  })
+}
+
+/**
+ * Updates the metadata of a given form by merging the new metadata with the existing metadata.
+ * @param form The form to update metadata for
+ * @param metadata The new metadata object to merge with the current one
+ * @returns ok(updated metadata object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(DatabaseError) if any database errors occur during the update
+ */
+export const updateFormMetadata = (
+  form: IPopulatedForm,
+  metadata: FormMetadata,
+): ResultAsync<FormMetadata | undefined, DatabaseError | FormNotFoundError> => {
+  const ModelToUse = getFormModelByResponseMode(form.responseMode)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(
+      form._id,
+      { metadata: { ...form.metadata, ...metadata } },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form metadata',
+        meta: {
+          action: 'updateFormMetadata',
+          formId: form._id,
+          metadata,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.metadata)
   })
 }
 
@@ -1399,318 +2250,6 @@ export const updateStartPage = (
     }
     return okAsync(updatedForm.startPage)
   })
-}
-
-/**
- * Creates msgSrvcName and updates the form in MongoDB as part of a transaction, uses the created
- * msgSrvcName as the key to store the Twilio Credentials in AWS Secrets Manager
- * @param twilioCredentials The twilio credentials to add
- * @param form The form to add Twilio Credentials
- * @returns ok(undefined) if the creation is successful
- * @returns err(SecretsManagerError) if an error occurs while creating credentials in secrets manager
- */
-export const createTwilioCredentials = (
-  twilioCredentials: TwilioCredentials,
-  form: IPopulatedForm,
-): ResultAsync<
-  unknown,
-  ReturnType<typeof transformMongoError> | SecretsManagerError
-> => {
-  const twilioCredentialsData: TwilioCredentialsData =
-    new TwilioCredentialsData(twilioCredentials)
-  const formId = form._id
-
-  const msgSrvcName = generateTwilioCredSecretKeyName(formId)
-
-  const body: CreateSecretRequest = {
-    Name: msgSrvcName,
-    SecretString: twilioCredentialsData.toString(),
-    Description: `autogenerated via API on ${new Date().toISOString()} by ${
-      form.admin._id
-    }`,
-  }
-
-  const logMeta = {
-    action: 'createTwilioCredentials',
-    formId: formId,
-    msgSrvcName,
-    body,
-  }
-
-  logger.info({
-    message: `No msgSrvcName, creating Twilio credentials for form ${formId}`,
-    meta: logMeta,
-  })
-
-  return ResultAsync.fromPromise(
-    FormModel.startSession().then((session: ClientSession) =>
-      session
-        .withTransaction(() =>
-          createTwilioTransaction(form, msgSrvcName, body, session),
-        )
-        .then(() => session.endSession()),
-    ),
-    (error) => {
-      logger.error({
-        message: 'Error encountered when creating Twilio Secret',
-        meta: logMeta,
-        error,
-      })
-
-      return error as
-        | ReturnType<typeof transformMongoError>
-        | SecretsManagerError
-    },
-  )
-}
-
-/**
- * Updates msgSrvcName of the form in the database, uses the msgSrvcName as the
- * key to store the Twilio Credentials in AWS Secrets Manager
- * @param form The form to add Twilio Credentials
- * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
- * @param body the request body used to create the secret in secrets manager
- * @param session session of the transaction
- * @returns Promise.ok(void) if the creation is successful
- */
-// Exported to use in tests
-export const createTwilioTransaction = async (
-  form: IPopulatedForm,
-  msgSrvcName: string,
-  body: CreateSecretRequest,
-  session: ClientSession,
-): Promise<void> => {
-  const meta = {
-    action: 'createTwilioTransaction',
-    formId: form._id,
-    msgSrvcName,
-    body,
-  }
-
-  try {
-    await form.updateMsgSrvcName(msgSrvcName, session)
-  } catch (err) {
-    logger.error({
-      message:
-        'Error occured when updating msgSrvcName, rolling back transaction!',
-      meta,
-      error: err,
-    })
-    throw transformMongoError(err)
-  }
-
-  try {
-    await secretsManager.createSecret(body).promise()
-  } catch (err) {
-    const awsError = err as AWSError
-
-    logger.error({
-      message:
-        'Error occured when creating secret AWS Secrets Manager, rolling back transaction!',
-      meta,
-      error: awsError,
-    })
-    throw new SecretsManagerError(awsError.message)
-  }
-}
-
-/**
- * Uses the msgSrvcName to update the Twilio Credentials in AWS Secrets Manager
- * Clears the cache entry in which the Twilio Credentials are stored under
- * @param twilioCredentials The twilio credentials to add
- * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
- * @returns ok(number) if the update is successful
- * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
- * @returns err(SecretsManagerError) if an error occurs while updating credentials in secrets manager
- */
-export const updateTwilioCredentials = (
-  msgSrvcName: string,
-  twilioCredentials: TwilioCredentials,
-): ResultAsync<
-  number,
-  SecretsManagerError | SecretsManagerNotFoundError | TwilioCacheError
-> => {
-  const twilioCredentialsData: TwilioCredentialsData =
-    new TwilioCredentialsData(twilioCredentials)
-
-  const body: PutSecretValueRequest = {
-    SecretId: msgSrvcName,
-    SecretString: twilioCredentialsData.toString(),
-  }
-
-  const logMeta = {
-    action: 'updateTwilioCredentials',
-    msgSrvcName,
-    body,
-  }
-
-  return (
-    ResultAsync.fromPromise(
-      secretsManager.getSecretValue({ SecretId: msgSrvcName }).promise(),
-      (error) => {
-        const awsError = error as AWSError
-
-        if (awsError.code === 'ResourceNotFoundException') {
-          logger.error({
-            message: 'Twilio Credentials do not exist in Secrets Manager',
-            meta: logMeta,
-            error,
-          })
-
-          return new SecretsManagerNotFoundError(awsError.message)
-        }
-
-        logger.error({
-          message: 'Error occurred when retrieving Twilio in Secret Manager!',
-          meta: {
-            ...logMeta,
-            body,
-          },
-          error,
-        })
-
-        return new SecretsManagerError(awsError.message)
-      },
-    )
-      .andThen(() => {
-        logger.info({
-          message: 'Twilio Credentials has been found in Secrets Manager',
-          meta: logMeta,
-        })
-
-        return ResultAsync.fromPromise(
-          secretsManager.putSecretValue(body).promise(),
-          (error) => {
-            logger.error({
-              message: 'Error occurred when updating Twilio in Secret Manager!',
-              meta: {
-                ...logMeta,
-                body,
-              },
-              error,
-            })
-
-            return new SecretsManagerError(
-              'Error occurred when updating Twilio in Secret Manager!',
-            )
-          },
-        )
-      })
-      // Currently, a call to get twilio credentials will cache the credentials in the twilioCache for ~10s
-      // If a call to retrieve twilio credentials occurs before 10s passes, it will be a cache hit, retrieving
-      // the wrong credentials. Hence we need to clear the cache entry
-      .map(() => twilioClientCache.del(msgSrvcName))
-  )
-}
-
-/**
- * Uses the msgSrvcName to schedule the Twilio Credentials for deletion in AWS Secrets Manager and removes
- * msgSrvcName from the form in MongoDB as part of a transaction
- *
- * Clears the cache entry in which the Twilio Credentials are stored under
- * @param form The form to delete Twilio Credentials
- * @param msgSrvcName The key under which the credentials are stored in Secrets Manager
- * @returns ok(number) if the deletion is successful
- * @returns err(SecretsManagerNotFoundError) if there is no secret stored under msgSrvcName in secrets manager
- * @returns err(SecretsManagerError) if an error occurs while deleting credentials in secrets manager
- */
-export const deleteTwilioCredentials = (
-  form: IPopulatedForm,
-): ResultAsync<
-  unknown,
-  | ReturnType<typeof transformMongoError>
-  | SecretsManagerError
-  | TwilioCacheError
-> => {
-  if (!form.msgSrvcName) return okAsync(null)
-
-  const msgSrvcName = form.msgSrvcName
-  const body: DeleteSecretRequest = {
-    SecretId: msgSrvcName,
-  }
-  /**
-   *
-   * The key-value pair will remain in SecretsManager for another 30 days before
-   * being deleted: https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_delete-secret.html
-   *
-   */
-
-  const formId = form._id
-
-  const logMeta = {
-    action: 'deleteTwilioCredentials',
-    formId,
-    msgSrvcName,
-    body,
-  }
-
-  return ResultAsync.fromPromise(
-    FormModel.startSession().then((session: ClientSession) =>
-      session
-        .withTransaction(() => deleteTwilioTransaction(form, body, session))
-        .then(() => session.endSession()),
-    ),
-    (error) => {
-      logger.error({
-        message: 'Error occurred when deleting Twilio in Secret Manager!',
-        meta: logMeta,
-        error,
-      })
-
-      return error as
-        | ReturnType<typeof transformMongoError>
-        | SecretsManagerError
-    },
-  ).map(() => twilioClientCache.del(msgSrvcName))
-}
-
-/**
- * Deletes the msgSrvcName of the specified form in the database and uses the msgSrvcName as the
- * key to delete the Twilio Credentials in AWS Secrets Manager
- * @param form The form to delete Twilio Credentials
- * @param msgSrvcName The key under which the credentials is stored in AWS Secrets Manager
- * @param body the request body used to delete the secret in secrets manager
- * @param session session of the transaction
- * @returns Promise.ok(void) if the creation is successful
- */
-const deleteTwilioTransaction = async (
-  form: IPopulatedForm,
-  body: DeleteSecretRequest,
-  session: ClientSession,
-): Promise<void> => {
-  const msgSrvcName = body.SecretId
-  const meta = {
-    action: 'deleteTwilioTransaction',
-    formId: form._id,
-    msgSrvcName,
-    body,
-  }
-
-  try {
-    await form.deleteMsgSrvcName(session)
-  } catch (err) {
-    logger.error({
-      message:
-        'Error occured when deleting msgSrvcName in MongoDB, rolling back transaction!',
-      meta,
-      error: err,
-    })
-    throw transformMongoError(err)
-  }
-
-  try {
-    if (checkIsApiSecretKeyName(msgSrvcName))
-      await secretsManager.deleteSecret(body).promise()
-  } catch (err) {
-    const awsError = err as AWSError
-    logger.error({
-      message:
-        'Error occured when deleting secret key in AWS Secrets Manager, rolling back transaction!',
-      meta,
-      error: awsError,
-    })
-    throw new SecretsManagerError(awsError.message)
-  }
 }
 
 export const archiveForms = async ({

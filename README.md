@@ -85,12 +85,6 @@ To install the relevant npm packages (frontend, backend and virus-scanner), run 
 npm install && npm --prefix serverless/virus-scanner install
 ```
 
-To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
-
-```bash
-export NODE_OPTIONS=--openssl-legacy-provider
-```
-
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
 ### Running Locally
@@ -109,7 +103,7 @@ npm run dev
 
 After the Docker image has finished building, the following local applications can be accessed:
 
-- React application can be accessed at [localhost:3000](localhost:3000)
+- React application can be accessed at [localhost:5173](localhost:5173)
 - The backend API server can be accessed at [localhost:5001](localhost:5001)
 - The development mail server can be accessed at [localhost:1080](localhost:1080)
 

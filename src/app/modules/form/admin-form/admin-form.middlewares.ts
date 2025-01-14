@@ -3,6 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import {
   FormAuthType,
   FormStatus,
+  Language,
   SettingsUpdateDto,
   WebhookSettingsUpdateDto,
   WorkflowType,
@@ -21,12 +22,14 @@ const webhookSettingsValidator = Joi.object({
 export const updateSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<SettingsUpdateDto>({
     authType: Joi.string().valid(...Object.values(FormAuthType)),
-    isNricMaskEnabled: Joi.boolean(),
+    isSubmitterIdCollectionEnabled: Joi.boolean(),
     isSingleSubmission: Joi.boolean(),
     emails: Joi.alternatives().try(
       Joi.array().items(Joi.string().email()),
       Joi.string().email({ multiple: true }),
     ),
+    stepsToNotify: Joi.array().items(Joi.string()),
+    stepOneEmailNotificationFieldId: Joi.string().allow(''),
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
     hasIssueNotification: Joi.boolean(),
@@ -40,24 +43,10 @@ export const updateSettingsValidator = celebrate({
       gstRegNo: Joi.string().allow(''),
     }),
     payments_field: Joi.object({ gst_enabled: Joi.boolean() }),
-    workflow: Joi.array()
-      .items(
-        Joi.object({
-          _id: Joi.string(),
-          workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
-          emails: Joi.when('workflow_type', {
-            is: WorkflowType.Static,
-            then: Joi.array().items(Joi.string().email()).required(),
-          }),
-          // TODO: Add regex validation that these are valid mongo IDs
-          field: Joi.when('workflow_type', {
-            is: WorkflowType.Dynamic,
-            then: Joi.string().required(),
-          }),
-          edit: Joi.array().items(Joi.string()).required(),
-        }),
-      )
-      .optional(),
+    hasMultiLang: Joi.boolean(),
+    supportedLanguages: Joi.array().items(
+      Joi.string().valid(...Object.values(Language)),
+    ),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
@@ -79,5 +68,61 @@ export const updateWebhookSettingsValidator = celebrate({
 export const getWebhookSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<{ userEmail: string }>({
     userEmail: Joi.string().email().optional(),
+  }),
+})
+
+/**
+ * Joi validator for POST /forms/:formId/workflow/ route.
+ */
+export const createWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
+    emails: Joi.when('workflow_type', {
+      is: WorkflowType.Static,
+      then: Joi.array().items(Joi.string().email()).required(),
+    }),
+    field: Joi.when('workflow_type', {
+      is: WorkflowType.Dynamic,
+      then: Joi.string().required(),
+    }),
+    edit: Joi.array().items(Joi.string()).required(),
+    approval_field: Joi.string().optional(),
+    conditional_field: Joi.when('workflow_type', {
+      is: WorkflowType.Conditional,
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden(),
+    }),
+  }),
+  [Segments.PARAMS]: Joi.object({
+    formId: Joi.string().required(),
+  }),
+})
+
+/**
+ * Joi validator for PUT /forms/:formId/workflow/:stepNumber route.
+ */
+export const updateWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    _id: Joi.string().required(),
+    workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
+    emails: Joi.when('workflow_type', {
+      is: WorkflowType.Static,
+      then: Joi.array().items(Joi.string().email()).required(),
+    }),
+    field: Joi.when('workflow_type', {
+      is: WorkflowType.Dynamic,
+      then: Joi.string().required(),
+    }),
+    edit: Joi.array().items(Joi.string().hex().length(24)).required(),
+    approval_field: Joi.string().optional(),
+    conditional_field: Joi.when('workflow_type', {
+      is: WorkflowType.Conditional,
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden(),
+    }),
+  }),
+  [Segments.PARAMS]: Joi.object({
+    formId: Joi.string().required(),
+    stepNumber: Joi.number().integer().min(0).required(),
   }),
 })

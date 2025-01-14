@@ -178,12 +178,10 @@ const addSettings = async (
   // Open the form as the last thing to do!
   if (formSettings.status === FormStatus.Public) {
     // Go back to general settings, to open the form if necessary!
-    await page.getByRole('tab', { name: 'General' }).click()
+    await page.getByRole('tab', { name: 'General' }).dispatchEvent('click')
 
     // Ensure that we are on the general settings page
-    await expect(
-      page.getByRole('heading', { name: 'General settings' }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'General' })).toBeVisible()
 
     // Toggle form to be open
     await page
@@ -195,7 +193,7 @@ const addSettings = async (
     if (formResponseMode.responseMode === FormResponseMode.Encrypt) {
       // Upload the secret key and confirm to open the form.
       await page
-        .getByPlaceholder('Enter or upload your Secret Key to continue')
+        .getByPlaceholder('Enter or drop your Secret Key to continue')
         .fill(formResponseMode.secretKey)
       await page
         .locator('label')
@@ -226,9 +224,7 @@ const addGeneralSettings = async (
   await page.getByRole('tab', { name: 'General' }).click()
 
   // Ensure that we are on the general settings page
-  await expect(
-    page.getByRole('heading', { name: 'General settings' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General' })).toBeVisible()
 
   await expectToast(page, /your form is closed to new responses/i)
 
@@ -374,7 +370,7 @@ const addAdminEmails = async (
   ).toBeVisible()
 
   if (formSettings.emails) {
-    const emailInput = page.getByLabel('Send an email copy of new responses')
+    const emailInput = page.getByLabel('Notifications for new responses')
     await emailInput.focus()
 
     // Clear the current admin email
@@ -452,7 +448,7 @@ const addBasicField = async (
     }
     // Images and Statements don't have titles
   } else {
-    await page.getByLabel('Question').fill(field.title)
+    await page.getByLabel('Field Name').fill(field.title)
   }
 
   // Toggle required for input fields except Table field (required toggled for individual columns)

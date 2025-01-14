@@ -3,7 +3,9 @@ import {
   Controller,
   ControllerRenderProps,
   UseFormReturn,
+  Validate,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -40,7 +42,7 @@ export interface EditConditionBlockProps {
   handleRemoveCondition?: (index?: number | number[] | undefined) => void
   formMethods: UseFormReturn<EditLogicInputs>
   logicableFields: Dictionary<FormFieldWithQuestionNo> | null
-  mapIdToField: Record<string, FormFieldWithQuestionNo> | null
+  idToFieldMap: Record<string, FormFieldWithQuestionNo> | null
 }
 
 export const EditConditionBlock = ({
@@ -49,8 +51,9 @@ export const EditConditionBlock = ({
   handleRemoveCondition,
   formMethods,
   logicableFields,
-  mapIdToField,
+  idToFieldMap,
 }: EditConditionBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const name = useMemo(() => `conditions.${index}` as const, [index])
 
   const {
@@ -72,23 +75,23 @@ export const EditConditionBlock = ({
   const logicTypeValue = watch('logicType')
   const showValueWatch = useWatchDependency(watch, 'show')
   const currentSelectedField = useMemo(() => {
-    if (!ifFieldIdValue || !mapIdToField) return
-    return mapIdToField[ifFieldIdValue]
-  }, [ifFieldIdValue, mapIdToField])
+    if (!ifFieldIdValue || !idToFieldMap) return
+    return idToFieldMap[ifFieldIdValue]
+  }, [ifFieldIdValue, idToFieldMap])
 
   /**
    * Effect to set value and error if the user conditions on a deleted field.
    */
   useEffect(() => {
-    if (!ifFieldIdValue || !mapIdToField) return
-    if (!(ifFieldIdValue in mapIdToField)) {
+    if (!ifFieldIdValue || !idToFieldMap) return
+    if (!(ifFieldIdValue in idToFieldMap)) {
       resetField(`${name}.field`)
       setError(`${name}.field`, {
         type: 'manual',
         message: 'This field was deleted, please select another field',
       })
     }
-  }, [ifFieldIdValue, mapIdToField, name, resetField, setError])
+  }, [ifFieldIdValue, idToFieldMap, name, resetField, setError])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
@@ -147,16 +150,21 @@ export const EditConditionBlock = ({
   }, [currentSelectedField])
 
   const conditionValueItems = useMemo(() => {
-    if (!ifFieldIdValue || !mapIdToField) return []
-    const mappedField = mapIdToField[ifFieldIdValue]
+    if (!ifFieldIdValue || !idToFieldMap) return []
+    const mappedField = idToFieldMap[ifFieldIdValue]
     if (!mappedField) return []
     switch (mappedField.fieldType) {
       case BasicField.YesNo:
-        return ['Yes', 'No']
+        return [
+          t('features.publicForm.components.fields.yesNo.yes'),
+          t('features.publicForm.components.fields.yesNo.no'),
+        ]
       case BasicField.Radio:
         if (mappedField.othersRadioButton) {
           // 'Others' does not show up in fieldOptions
-          return mappedField.fieldOptions.concat('Others')
+          return mappedField.fieldOptions.concat(
+            t('features.publicForm.components.fields.option.others'),
+          )
         }
         return mappedField.fieldOptions
       case BasicField.Dropdown:
@@ -166,7 +174,7 @@ export const EditConditionBlock = ({
       default:
         return []
     }
-  }, [ifFieldIdValue, mapIdToField])
+  }, [ifFieldIdValue, idToFieldMap, t])
 
   const logicTypeWrapperWidth = useMemo(() => {
     if (!currentSelectedField) return '9rem'
@@ -185,20 +193,26 @@ export const EditConditionBlock = ({
     return ifValueTypeValue === LogicIfValue.MultiSelect ? '0px' : 'auto'
   }, [ifValueTypeValue])
 
-  const validateValueInputComponent = useCallback(
+  const validateValueInputComponent: Validate<
+    string | number | string[] | number[]
+  > = useCallback(
     (val) => {
       switch (ifValueTypeValue) {
         case LogicIfValue.Number: {
           if (currentSelectedField?.fieldType === BasicField.Decimal)
             // Mimics behavior of actual decimal field in public forms
-            return !val || !isNaN(Number(val)) || 'Please enter a valid decimal'
+            return (
+              !val ||
+              !isNaN(Number(val)) ||
+              t('features.adminForm.sidebar.fields.number.error.validDecimal')
+            )
           return true
         }
         default:
           return true
       }
     },
-    [currentSelectedField?.fieldType, ifValueTypeValue],
+    [currentSelectedField?.fieldType, ifValueTypeValue, t],
   )
 
   const renderValueInputComponent = useCallback(
@@ -284,7 +298,7 @@ export const EditConditionBlock = ({
           }}
         >
           <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>
-            IF
+            {t('features.adminForm.sidebar.logic.logicClause.if').toUpperCase()}
           </BlockLabelText>
           {handleRemoveCondition ? (
             <IconButton
@@ -318,7 +332,9 @@ export const EditConditionBlock = ({
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
-                  placeholder="Select a field"
+                  placeholder={t(
+                    'features.adminForm.sidebar.logic.logicClause.selectField',
+                  )}
                   items={allowedIfConditionFieldsOptions}
                   {...field}
                 />
@@ -334,7 +350,7 @@ export const EditConditionBlock = ({
           spacing={{ base: 0, md: '0.5rem' }}
         >
           <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
-            IS
+            {t('features.adminForm.sidebar.logic.logicClause.is').toUpperCase()}
           </BlockLabelText>
           <Flex flexDir="column" flex={1} as="fieldset" minW={0}>
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
@@ -385,7 +401,9 @@ export const EditConditionBlock = ({
                   control={control}
                   name={`${name}.value`}
                   rules={{
-                    required: 'Please enter logic criteria.',
+                    required: t(
+                      'features.adminForm.sidebar.logic.errors.missingLogicCriteria',
+                    ),
                     validate: validateValueInputComponent,
                   }}
                   render={({ field }) => renderValueInputComponent(field)}

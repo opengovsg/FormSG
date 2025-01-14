@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   getTemplateFormErrorResponse,
@@ -41,7 +41,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <TemplateFormPage />
+const Template: StoryFn = () => <TemplateFormPage />
 export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})

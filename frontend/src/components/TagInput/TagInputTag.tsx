@@ -77,7 +77,7 @@ export const TagInputTag = ({
       onKeyDown={handleKeyDown}
       onClick={handleClick}
     >
-      <TagLabel title={label} isTruncated>
+      <TagLabel title={label} noOfLines={1}>
         {label}
       </TagLabel>
       <TagCloseButton

@@ -1,6 +1,6 @@
 import { extendTheme } from '@chakra-ui/react'
 
-import { breakpoints } from './foundations/breakpoints'
+import { BREAKPOINT_VALS } from './foundations/breakpoints'
 import { colours } from './foundations/colours'
 import { shadows } from './foundations/shadows'
 import { components } from './components'
@@ -27,21 +27,11 @@ export const theme = extendTheme({
         isolation: 'isolate',
         height: 'inherit',
       },
-      /**
-       * This will hide the focus indicator if the element receives focus via
-       * the mouse,but it will still show up on keyboard focus.
-       * Part of the steps needed to get focus-visible working.
-       * See https://www.npmjs.com/package/focus-visible#2-update-your-css.
-       */
-      '.js-focus-visible :focus:not([data-focus-visible-added])': {
-        outline: 'none',
-      },
-      '.focus-visible': { outline: 'none' },
     },
   },
   colors: colours,
   textStyles,
-  breakpoints,
+  breakpoints: BREAKPOINT_VALS,
   shadows,
   fonts: {
     heading: `'Inter var', sans-serif`,

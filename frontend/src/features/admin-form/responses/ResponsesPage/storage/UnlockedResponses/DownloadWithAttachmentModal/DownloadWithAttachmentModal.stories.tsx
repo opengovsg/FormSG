@@ -1,5 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
@@ -20,7 +20,7 @@ export default {
   },
 } as Meta<DownloadWithAttachmentModalProps>
 
-const Template: Story<DownloadWithAttachmentModalProps> = (args) => {
+const Template: StoryFn<DownloadWithAttachmentModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
   return (
     <DownloadWithAttachmentModal

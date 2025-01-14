@@ -40,10 +40,7 @@ export const LogicBlockFactory = ({
           handleOpenDeleteModal={onDeleteModalOpen}
         />
       ) : (
-        <InactiveLogicBlock
-          logic={logic}
-          handleOpenDeleteModal={onDeleteModalOpen}
-        />
+        <InactiveLogicBlock logic={logic} />
       )}
     </>
   )

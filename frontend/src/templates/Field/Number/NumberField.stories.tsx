@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   BasicField,
@@ -59,7 +59,10 @@ interface StoryNumberFieldProps extends NumberFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryNumberFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryNumberFieldProps> = ({
+  defaultValue,
+  ...args
+}) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,

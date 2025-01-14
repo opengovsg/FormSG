@@ -17,6 +17,7 @@ declare module 'react-table' {
       // feature set, this is a safe default.
       Record<string, any> {}
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface Hooks<
     D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseSortByHooks<D> {}

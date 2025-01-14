@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { PRIVACY_POLICY_ROUTE } from '~constants/routes'
 import { StoryRouter } from '~utils/storybook'
@@ -19,6 +19,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <PrivacyPolicyPage />
+const Template: StoryFn = () => <PrivacyPolicyPage />
 export const Default = Template.bind({})
 Default.storyName = 'PrivacyPolicyPage'

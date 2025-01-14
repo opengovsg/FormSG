@@ -18,7 +18,7 @@ export const ndjsonStream = (
       let data_buf = ''
 
       const processResult = (
-        result?: ReadableStreamDefaultReadResult<Uint8Array>,
+        result?: ReadableStreamReadResult<Uint8Array>,
       ): Promise<void> | undefined => {
         if (!result || (result.done && shouldCancel)) {
           return

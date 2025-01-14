@@ -1,6 +1,6 @@
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import { ButtonGroup, SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Button, ButtonProps } from './Button'
 
@@ -10,9 +10,9 @@ export default {
   parameters: { backgrounds: { default: 'light' } },
 } as Meta
 
-const ButtonTemplate: Story<ButtonProps> = (args) => <Button {...args} />
+const ButtonTemplate: StoryFn<ButtonProps> = (args) => <Button {...args} />
 
-const ButtonGroupTemplate: Story<ButtonProps> = (args) => {
+const ButtonGroupTemplate: StoryFn<ButtonProps> = (args) => {
   return (
     <SimpleGrid
       columns={2}

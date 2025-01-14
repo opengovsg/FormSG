@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
+  Controller,
   FieldArrayWithId,
   FieldError,
   useFieldArray,
@@ -35,6 +36,7 @@ import {
 } from '~shared/types'
 import { formatMyinfoDate } from '~shared/utils/dates'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
@@ -201,6 +203,8 @@ interface ChildrenBodyProps {
   error: FieldError[] | undefined
 }
 
+const CHILD_NAME_INDEX = 0
+
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
@@ -214,31 +218,17 @@ const ChildrenBody = ({
   formContext,
   error,
 }: ChildrenBodyProps): JSX.Element => {
-  const { register, getValues, setValue, watch } = formContext
+  const { register, getValues, setValue, watch, control } = formContext
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
     [schema._id, currChildBodyIdx],
   )
 
-  const validationRules = useMemo(
+  const childrenValidationRules = useMemo(
     () => createChildrenValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
-
-  const {
-    ref: childNameRegisterRef,
-    onChange: selectOnChange,
-    ...selectRest
-  } = register(childNamePath, validationRules)
-
-  const childNameRef = useRef<HTMLInputElement | null>(null)
-
-  const childNameError = error
-    ? error.find(
-        (e) => (e?.ref as HTMLInputElement)?.id === childNameRef.current?.id,
-      )
-    : undefined
 
   const childName = watch(childNamePath) as unknown as string
 
@@ -327,28 +317,34 @@ const ChildrenBody = ({
         <FormLabel gridArea="formlabel">Child</FormLabel>
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
-            <FormControl key={field.id} isRequired isInvalid={!!childNameError}>
-              <SingleSelect
-                isRequired
-                {...selectRest}
-                placeholder={"Select your child's name"}
-                colorScheme={`theme-${colorTheme}`}
-                items={childNameValues}
-                value={childName}
-                isDisabled={isSubmitting}
-                onChange={(name) => {
-                  // This is bad practice but we have no choice because our
-                  // custom Select doesn't forward the event.
-                  setValue(childNamePath, name, { shouldValidate: true })
+            <FormControl
+              key={field.id}
+              isRequired
+              isInvalid={!!error?.[CHILD_NAME_INDEX]}
+            >
+              <Controller
+                control={control}
+                name={childNamePath}
+                rules={{
+                  required: REQUIRED_ERROR,
                 }}
-                ref={(e) => {
-                  childNameRegisterRef(e)
-                  if (e) {
-                    childNameRef.current = e
-                  }
-                }}
+                render={({
+                  field: { value, onChange, onBlur, ref, ...rest },
+                }) => (
+                  <SingleSelect
+                    {...rest}
+                    placeholder={"Select your child's name"}
+                    colorScheme={`theme-${colorTheme}`}
+                    items={childNameValues}
+                    value={value as unknown as string}
+                    isDisabled={isSubmitting}
+                    onChange={onChange}
+                  />
+                )}
               />
-              <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {error?.[CHILD_NAME_INDEX]?.message}
+              </FormErrorMessage>
             </FormControl>
           </Box>
           <IconButton
@@ -357,7 +353,7 @@ const ChildrenBody = ({
             icon={<BiTrash />}
             aria-label="Remove child"
             alignSelf="end"
-            disabled={fields.length <= 1}
+            isDisabled={fields.length <= 1}
             onClick={() => {
               if (fields.length > 1) {
                 remove(fields.length - 1)
@@ -388,6 +384,8 @@ const ChildrenBody = ({
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
+            // FIXME: Fix types
+            // @ts-expect-error type inference issue
             setValue(fieldPath, myInfoFormattedValue, { shouldValidate: true })
           }
           const isDisabled = isSubmitting || !!myInfoValue
@@ -404,7 +402,7 @@ const ChildrenBody = ({
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <ChakraInput
-                    {...register(fieldPath, validationRules)}
+                    {...register(fieldPath, childrenValidationRules)}
                     value={value}
                   />
                   <FormErrorMessage>
@@ -427,17 +425,23 @@ const ChildrenBody = ({
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <SingleSelect
-                    {...register(fieldPath, validationRules)}
-                    value={value}
-                    items={
-                      MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
-                    }
-                    onChange={(option) =>
-                      // This is bad practice but we have no choice because our
-                      // custom Select doesn't forward the event.
-                      setValue(fieldPath, option, { shouldValidate: true })
-                    }
+                  <Controller
+                    control={control}
+                    name={fieldPath}
+                    rules={childrenValidationRules}
+                    render={({
+                      field: { value, onChange, onBlur, ...rest },
+                    }) => (
+                      <SingleSelect
+                        {...rest}
+                        value={value as unknown as string}
+                        items={
+                          MYINFO_ATTRIBUTE_MAP[subField]
+                            .fieldOptions as string[]
+                        }
+                        onChange={onChange}
+                      />
+                    )}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}
@@ -446,7 +450,6 @@ const ChildrenBody = ({
               )
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
-              const { onChange, ...rest } = register(fieldPath, validationRules)
               return (
                 <FormControl
                   key={key}
@@ -457,14 +460,19 @@ const ChildrenBody = ({
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <DatePicker
-                    {...rest}
-                    displayFormat={DATE_DISPLAY_FORMAT}
-                    inputValue={value}
-                    onInputValueChange={(date) => {
-                      setValue(fieldPath, date, { shouldValidate: true })
-                    }}
-                    colorScheme={`theme-${colorTheme}`}
+                  <Controller
+                    control={control}
+                    name={fieldPath}
+                    rules={childrenValidationRules}
+                    render={({ field: { value, onChange, ...rest } }) => (
+                      <DatePicker
+                        {...rest}
+                        displayFormat={DATE_DISPLAY_FORMAT}
+                        inputValue={value as unknown as string}
+                        onInputValueChange={onChange}
+                        colorScheme={`theme-${colorTheme}`}
+                      />
+                    )}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}

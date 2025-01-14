@@ -1,10 +1,15 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { Box, Divider, Stack } from '@chakra-ui/react'
 
-import { FormWorkflowStep, WorkflowType } from '~shared/types'
+import {
+  FormWorkflowStep,
+  FormWorkflowStepBase,
+  WorkflowType,
+} from '~shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { useUser } from '~features/user/queries'
 
 import {
   setToInactiveSelector,
@@ -14,6 +19,7 @@ import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { ApprovalsBlock } from './ApprovalsBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 
@@ -28,6 +34,8 @@ export interface EditLogicBlockProps {
   isLoading: boolean
 }
 
+export const FIELDS_TO_EDIT_NAME = 'edit'
+
 export const EditStepBlock = ({
   stepNumber,
   onSubmit,
@@ -41,6 +49,8 @@ export const EditStepBlock = ({
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
   })
+  const { user, isLoading: isUserLoading } = useUser()
+  const _isLoading = isLoading || isUserLoading
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -57,11 +67,38 @@ export const EditStepBlock = ({
   }, [])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
-    let step: FormWorkflowStep
+    if (inputs.approval_field === '') {
+      inputs.approval_field = undefined
+    }
+
+    if (isFirstStepByStepNumber(stepNumber)) {
+      if (inputs.field) {
+        return onSubmit({
+          ...inputs,
+          workflow_type: WorkflowType.Dynamic,
+          field: inputs.field,
+        })
+      }
+      return onSubmit({
+        ...inputs,
+        workflow_type: WorkflowType.Static,
+        emails: inputs.emails ?? [],
+      })
+    }
+
+    let step: FormWorkflowStep & { _id: string }
+
+    const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+      _id: inputs._id,
+      workflow_type: inputs.workflow_type,
+      edit: inputs.edit,
+      approval_field: inputs.approval_field,
+    }
+
     switch (inputs.workflow_type) {
       case WorkflowType.Static: {
         step = {
-          ...inputs,
+          ...workflowStepBase,
           // Need to explicitly set workflow_type in this object to help with typechecking.
           workflow_type: WorkflowType.Static,
           emails: inputs.emails ?? [],
@@ -71,15 +108,22 @@ export const EditStepBlock = ({
       case WorkflowType.Dynamic: {
         if (!inputs.field) return
         step = {
-          ...inputs,
+          ...workflowStepBase,
           workflow_type: WorkflowType.Dynamic,
           field: inputs.field,
         }
         break
       }
+      case WorkflowType.Conditional: {
+        if (!inputs.conditional_field) return
+        step = {
+          ...workflowStepBase,
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: inputs.conditional_field,
+        }
+        break
+      }
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = inputs.workflow_type
         throw new Error('Invalid workflow type')
       }
     }
@@ -91,6 +135,8 @@ export const EditStepBlock = ({
   return (
     <Stack
       ref={wrapperRef}
+      py="2rem"
+      spacing="1.5rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"
@@ -99,22 +145,27 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <Box
-        py="1.5rem"
-        px={{ base: '1.5rem', md: '2rem' }}
-        borderBottomWidth="1px"
-        borderBottomColor="secondary.200"
-      >
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
         <StepLabel stepNumber={stepNumber} />
       </Box>
+      <Divider />
       <RespondentBlock
+        user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
-        isLoading={isLoading}
+        isLoading={_isLoading}
       />
-      <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
+      <Divider />
+      <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
+      {!isFirstStep ? (
+        <>
+          <Divider />
+          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+        </>
+      ) : null}
+      <Divider />
       <SaveActionGroup
-        isLoading={isLoading}
+        isLoading={_isLoading}
         handleSubmit={handleSubmit}
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={setToInactive}

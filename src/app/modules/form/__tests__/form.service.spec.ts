@@ -456,40 +456,4 @@ describe('FormService', () => {
       expect(actual._unsafeUnwrapErr()).toEqual(new ApplicationError())
     })
   })
-
-  describe('retrievePublicFormsWithSmsVerification', () => {
-    it('should call the db method successfully', async () => {
-      // Arrange
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'retrievePublicFormsWithSmsVerification')
-        .mockResolvedValueOnce([])
-      const MOCK_ADMIN_ID = MOCK_ADMIN_OBJ_ID.toString()
-      const expected: IFormSchema[] = []
-
-      // Act
-      const actual =
-        await FormService.retrievePublicFormsWithSmsVerification(MOCK_ADMIN_ID)
-
-      // Assert
-      expect(actual._unsafeUnwrap()).toEqual(expected)
-      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
-    })
-
-    it('should propagate the error received when error occurs while querying', async () => {
-      // Arrange
-      const expected = new DatabaseError('whoops')
-      const retrieveFormSpy = jest
-        .spyOn(Form, 'retrievePublicFormsWithSmsVerification')
-        .mockRejectedValueOnce(expected)
-      const MOCK_ADMIN_ID = MOCK_ADMIN_OBJ_ID.toString()
-
-      // Act
-      const actual =
-        await FormService.retrievePublicFormsWithSmsVerification(MOCK_ADMIN_ID)
-
-      // Assert
-      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-      expect(retrieveFormSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
-    })
-  })
 })

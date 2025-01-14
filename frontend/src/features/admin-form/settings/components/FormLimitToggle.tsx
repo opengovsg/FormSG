@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types'
@@ -30,6 +31,7 @@ const FormLimitBlock = ({
   initialLimit,
   currentResponseCount,
 }: FormLimitBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const [value, setValue] = useState(initialLimit)
   const [error, setError] = useState<string>()
 
@@ -43,13 +45,15 @@ const FormLimitBlock = ({
       setValue(nextVal)
       if (parseInt(nextVal, 10) <= currentResponseCount) {
         setError(
-          `Submission limit must be greater than current submission count (${currentResponseCount})`,
+          t('features.adminForm.settings.general.limit.limitLessThanCurrent', {
+            currentResponseCount,
+          }),
         )
       } else if (error) {
         setError(undefined)
       }
     },
-    [currentResponseCount, error],
+    [currentResponseCount, error, t],
   )
 
   const handleBlur = useCallback(() => {
@@ -83,10 +87,11 @@ const FormLimitBlock = ({
     <FormControl mt="2rem" isInvalid={!!error}>
       <FormLabel
         isRequired
-        description="Your form will automatically close once it reaches the set limit. Enable
-        reCAPTCHA to prevent spam submissions from triggering this limit."
+        description={t(
+          'features.adminForm.settings.general.limit.input.description',
+        )}
       >
-        Maximum number of responses allowed
+        {t('features.adminForm.settings.general.limit.input.label')}
       </FormLabel>
       <NumberInput
         maxW="16rem"
@@ -106,6 +111,7 @@ const FormLimitBlock = ({
 }
 
 export const FormLimitToggle = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -157,12 +163,12 @@ export const FormLimitToggle = (): JSX.Element => {
         isDisabled={isMrf}
         isLoading={mutateFormLimit.isLoading}
         isChecked={isLimit}
-        label="Set a response limit"
+        label={t('features.adminForm.settings.general.limit.label')}
         onChange={() => handleToggleLimit()}
       />
       {isMrf ? (
         <InlineMessage variant="warning" mt="0.5rem">
-          Response limits cannot be applied for multi-respondent forms.
+          {t('features.adminForm.settings.general.limit.notForMRF')}
         </InlineMessage>
       ) : null}
       {settings && settings?.submissionLimit !== null && (

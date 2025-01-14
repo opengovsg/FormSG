@@ -1,5 +1,5 @@
 import { FormControl } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormErrorMessage, FormErrorMessageProps } from './FormErrorMessage'
 
@@ -9,7 +9,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<FormErrorMessageProps> = ({ children, ...args }) => (
+const Template: StoryFn<FormErrorMessageProps> = ({ children, ...args }) => (
   <FormControl isInvalid>
     <FormErrorMessage {...args}>{children}</FormErrorMessage>
   </FormControl>

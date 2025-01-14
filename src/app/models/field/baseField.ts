@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
-import { BasicField, MyInfoAttribute } from '../../../../shared/types'
+import { BasicField, Language, MyInfoAttribute } from '../../../../shared/types'
 import { IFieldSchema, IMyInfoSchema, ITableFieldSchema } from '../../../types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
@@ -44,6 +44,36 @@ export const BaseFieldSchema = new Schema<IFieldSchema>(
       type: String,
       enum: Object.values(BasicField),
       required: true,
+    },
+    titleTranslations: {
+      type: [
+        {
+          language: {
+            type: String,
+            enum: Object.values(Language),
+          },
+          translation: {
+            type: String,
+          },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
+    descriptionTranslations: {
+      type: [
+        {
+          language: {
+            type: String,
+            enum: Object.values(Language),
+          },
+          translation: {
+            type: String,
+          },
+        },
+      ],
+      default: [],
+      _id: false,
     },
   },
   {

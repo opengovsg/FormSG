@@ -1,12 +1,17 @@
 import { useState } from 'react'
-import { useQuery, UseQueryResult } from 'react-query'
+import { QueryClient, useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { FormSettings } from '~shared/types/form/form'
+import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
 
 import { adminFormKeys } from '../common/queries'
 
-import { getFormSettings, validateStripeAccount } from './SettingsService'
+import {
+  getFormEncryptedWhitelistedSubmitterIds,
+  getFormSettings,
+  validateStripeAccount,
+} from './SettingsService'
 
 export const adminFormSettingsKeys = {
   base: [...adminFormKeys.base, 'settings'] as const,
@@ -15,6 +20,8 @@ export const adminFormSettingsKeys = {
     [...adminFormSettingsKeys.id(id), 'payment_channel'] as const,
   payment_field: (id: string) =>
     [...adminFormSettingsKeys.id(id), 'payment_field'] as const,
+  whitelist: (id: string) =>
+    [...adminFormSettingsKeys.id(id), 'whitelist'] as const,
 }
 
 /**
@@ -27,6 +34,22 @@ export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
   return useQuery(
     adminFormSettingsKeys.id(formId),
     () => getFormSettings(formId),
+    { staleTime: 0 },
+  )
+}
+
+export const fetchAdminFormEncryptedWhitelistedSubmitterIds = (
+  formId: string,
+  queryClient: QueryClient,
+): Promise<{
+  encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+}> => {
+  if (!formId) throw new Error('No formId provided')
+
+  return queryClient.fetchQuery(
+    adminFormSettingsKeys.whitelist(formId),
+    () => getFormEncryptedWhitelistedSubmitterIds(formId),
+    // Disable caching by setting stale time to 0.
     { staleTime: 0 },
   )
 }

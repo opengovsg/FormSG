@@ -2,18 +2,13 @@ import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
-  BasicField,
+  ErrorCode,
   FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
-import { maskNric } from '../../../../../shared/utils/nric-mask'
-import {
-  IPopulatedEmailForm,
-  SgidFieldTitle,
-  SPCPFieldTitle,
-} from '../../../../types'
+import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -41,7 +36,6 @@ import * as EmailSubmissionMiddleware from '../email-submission/email-submission
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import * as SubmissionService from '../submission.service'
-import { ProcessedSingleAnswerResponse } from '../submission.types'
 import {
   extractEmailConfirmationData,
   generateHashedSubmitterId,
@@ -210,11 +204,12 @@ export const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: parsedResponses.addNdiResponses({
+                parsedResponses,
+                ndiUserInfo: {
                   authType,
                   uinFin: jwt.userName,
                   userInfo: jwt.userInfo,
-                }),
+                },
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -233,10 +228,11 @@ export const submitEmailModeForm: ControllerHandler<
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
-                parsedResponses: parsedResponses.addNdiResponses({
+                parsedResponses,
+                ndiUserInfo: {
                   authType,
                   uinFin: jwt.userName,
-                }),
+                },
               }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
@@ -264,10 +260,11 @@ export const submitEmailModeForm: ControllerHandler<
                     (hashedFields) => ({
                       form,
                       hashedFields,
-                      parsedResponses: parsedResponses.addNdiResponses({
+                      parsedResponses,
+                      ndiUserInfo: {
                         authType,
                         uinFin,
-                      }),
+                      },
                     }),
                   ),
               )
@@ -289,10 +286,11 @@ export const submitEmailModeForm: ControllerHandler<
               .map<IPopulatedEmailFormWithResponsesAndHash>(
                 ({ userName: uinFin }) => ({
                   form,
-                  parsedResponses: parsedResponses.addNdiResponses({
+                  parsedResponses,
+                  ndiUserInfo: {
                     authType,
                     uinFin,
-                  }),
+                  },
                 }),
               )
               .mapErr((error) => {
@@ -311,30 +309,23 @@ export const submitEmailModeForm: ControllerHandler<
             })
         }
       })
-      .andThen(({ form, parsedResponses, hashedFields }) => {
+      .andThen(({ form, parsedResponses, ndiUserInfo, hashedFields }) => {
         let submitterId: string | undefined = undefined
-        if (form.authType !== FormAuthType.NIL) {
-          const ndiResponse = parsedResponses.ndiResponses.find(
-            (response) =>
-              response.question === SPCPFieldTitle.SpNric ||
-              response.question === SPCPFieldTitle.CpUen ||
-              response.question === SgidFieldTitle.SgidNric,
-          ) as ProcessedSingleAnswerResponse
-          submitterId = ndiResponse?.answer
-            ? generateHashedSubmitterId(ndiResponse.answer, form.id)
-            : undefined
-        }
-
-        if (form.isNricMaskEnabled) {
-          parsedResponses.ndiResponses = parsedResponses.ndiResponses.map(
-            (response) => {
-              if (response.fieldType === BasicField.Nric) {
-                return { ...response, answer: maskNric(response.answer) }
-              }
-              return response
-            },
+        if (form.authType !== FormAuthType.NIL && ndiUserInfo?.uinFin) {
+          submitterId = generateHashedSubmitterId(
+            ndiUserInfo.uinFin.toUpperCase(),
+            form.id,
           )
         }
+
+        if (
+          form.authType !== FormAuthType.NIL &&
+          form.isSubmitterIdCollectionEnabled &&
+          ndiUserInfo
+        ) {
+          parsedResponses = parsedResponses.addNdiResponses(ndiUserInfo)
+        }
+
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
           parsedResponses.getAllResponses(),
@@ -450,7 +441,7 @@ export const submitEmailModeForm: ControllerHandler<
           return res.status(StatusCodes.BAD_REQUEST).json({
             message:
               'Your NRIC/FIN/UEN has already been used to respond to this form.',
-            hasSingleSubmissionValidationFailure: true,
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
           })
         }
         // Send email confirmations

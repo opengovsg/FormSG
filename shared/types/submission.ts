@@ -8,6 +8,7 @@ import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
 import { FormWorkflowDto, LogicDto, ProductItem } from './form'
+import { ErrorCode } from './errorCodes'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -237,7 +238,7 @@ export type SubmissionResponseDto = {
 
 export type SubmissionErrorDto = ErrorDto & {
   spcpSubmissionFailure?: true
-  hasSingleSubmissionValidationFailure?: true
+  errorCodes?: ErrorCode[]
 }
 
 export type SubmissionCountQueryDto =

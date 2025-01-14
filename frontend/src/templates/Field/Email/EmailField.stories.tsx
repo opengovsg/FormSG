@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
@@ -58,7 +58,7 @@ interface StoryEmailFieldProps extends EmailFieldProps {
   defaultValue?: Partial<VerifiableFieldValues>
 }
 
-const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,

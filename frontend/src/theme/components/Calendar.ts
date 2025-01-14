@@ -46,7 +46,8 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
       bg: isSelected ? `${c}.500` : `${c}.200`,
     },
     _focus: {
-      boxShadow: `0 0 0 4px ${getColor(theme, `${c}.300`)}`,
+      boxShadow: `0 0 0 2px ${getColor(theme, `${c}.300`)}`,
+      zIndex: 1,
     },
     _disabled: {
       color: 'secondary.300',

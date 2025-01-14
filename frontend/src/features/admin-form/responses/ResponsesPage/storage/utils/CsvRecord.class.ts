@@ -13,6 +13,7 @@ import {
 /** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
 export class CsvRecord {
   downloadBlob?: Blob
+  downloadBlobURL?: string
   submissionData?: DecryptedSubmissionData
 
   #statusMessage: string

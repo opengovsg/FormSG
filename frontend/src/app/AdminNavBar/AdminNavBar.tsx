@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
-import { GoPrimitiveDot } from 'react-icons/go'
+import { GoDotFill } from 'react-icons/go'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
@@ -17,7 +17,7 @@ import { SeenFlags } from '~shared/types'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
-import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
+import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
 import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
@@ -48,7 +48,7 @@ const BrandSmallLogo = chakra(BrandMarkSvg)
 type AdminNavBarLinkProps = {
   label: string
   href: string
-  MobileIcon?: As
+  MobileIcon: As
 }
 
 const NAV_LINKS: AdminNavBarLinkProps[] = [
@@ -76,7 +76,7 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
         as="a"
         href={href}
         aria-label={label}
-        icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
+        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
       />
     )
   }
@@ -117,7 +117,7 @@ const WhatsNewNavBarTab = ({
         />
         {shouldShowNotiifcation && (
           <Icon
-            as={GoPrimitiveDot}
+            as={GoDotFill}
             color="danger.500"
             position="absolute"
             ml="-15px"
@@ -140,12 +140,7 @@ const WhatsNewNavBarTab = ({
         {WHATS_NEW_LABEL}
       </Button>
       {shouldShowNotiifcation && (
-        <Icon
-          as={GoPrimitiveDot}
-          color="danger.500"
-          position="absolute"
-          ml="-5px"
-        />
+        <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
       )}
     </Box>
   )

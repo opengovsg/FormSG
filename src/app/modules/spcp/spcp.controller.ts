@@ -101,7 +101,7 @@ export const handleSpcpOidcLogin: (
         maxAge: cookieDuration,
         httpOnly: true,
         sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-        secure: !config.isDev,
+        secure: !config.isDevOrTest,
         ...oidcService.getCookieSettings(),
       })
       return res.redirect(destination)

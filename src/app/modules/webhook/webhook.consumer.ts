@@ -41,7 +41,7 @@ export const startWebhookConsumer = (
     // creates a new TCP connection for every new request.
     // In production, pass an SQS instance to avoid the cost
     // of establishing new connections.
-    sqs: config.isDev
+    sqs: config.isDevOrTest
       ? undefined
       : new aws.SQS({
           region: config.aws.region,

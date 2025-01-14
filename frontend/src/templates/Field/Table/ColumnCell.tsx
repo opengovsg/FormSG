@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 import {
   BasicField,
   Column,
@@ -20,6 +21,7 @@ import {
   createDropdownValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
+import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -82,11 +84,48 @@ const DropdownColumnCell = ({
   inputName,
   colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
+  const { i18n } = useTranslation()
   const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(
     () => createDropdownValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
+
+  const selectedLanguage = i18n.language as Language
+
+  // This has to be done because of how the SingleSelect function
+  // extracts the value attribute from the fieldOption to set
+  // as the selected option which will then be used to validate
+  // against the schema fieldOptions which are the defaultFieldOptions.
+  const fieldOptions: ComboboxItem[] = useMemo(() => {
+    const defaultEnglishFieldOptions = schema.fieldOptions ?? []
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+    const translationIdx = fieldOptionsTranslations.findIndex(
+      (translation) => translation.language === selectedLanguage,
+    )
+
+    if (
+      translationIdx !== -1 &&
+      fieldOptionsTranslations[translationIdx].translation.length ===
+        defaultEnglishFieldOptions.length
+    ) {
+      const translatedFieldOptions =
+        fieldOptionsTranslations[translationIdx].translation
+
+      return translatedFieldOptions.map((translatedFieldOption, index) => {
+        return {
+          value: defaultEnglishFieldOptions[index],
+          label: translatedFieldOption,
+        }
+      })
+    } else {
+      return defaultEnglishFieldOptions.map((fieldOption) => {
+        return {
+          value: fieldOption,
+        }
+      })
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 
   return (
     <Controller
@@ -99,7 +138,7 @@ const DropdownColumnCell = ({
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           // Possibility of fieldOptions being undefined during table field creation.
-          items={schema.fieldOptions ?? []}
+          items={fieldOptions ?? []}
           {...field}
         />
       )}
@@ -180,6 +219,7 @@ export const ColumnCell = ({
         // be shown in the individual column cells.
         isMobile ? (
           <FormErrorMessage>
+            {/* @ts-expect-error FIXME: type inference */}
             {get(errors, `${inputName}.message`)}
           </FormErrorMessage>
         ) : null

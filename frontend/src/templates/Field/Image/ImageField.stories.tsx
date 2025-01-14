@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 import { rest } from 'msw'
 
@@ -48,7 +48,7 @@ interface StoryImageFieldProps extends ImageFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryImageFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryImageFieldProps> = ({ defaultValue, ...args }) => {
   return <ImageFieldComponent {...args} />
 }
 

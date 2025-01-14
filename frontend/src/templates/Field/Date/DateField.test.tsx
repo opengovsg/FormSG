@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/testing-react'
+import { composeStories } from '@storybook/react'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { addDays, isBefore, lightFormat } from 'date-fns'

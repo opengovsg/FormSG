@@ -521,7 +521,7 @@ export const handleMyInfoChildHashResponse = (
     // Validate each answer (child)
     childAnswer.forEach((attrAnswer, subFieldIndex) => {
       const key = getMyInfoChildHashKey(
-        field._id as string,
+        field._id,
         subFields[subFieldIndex],
         childIndex,
         childName,

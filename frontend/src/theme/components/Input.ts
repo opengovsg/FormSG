@@ -1,15 +1,37 @@
 import { inputAnatomy } from '@chakra-ui/anatomy'
+import {
+  createMultiStyleConfigHelpers,
+  cssVar,
+  defineStyle,
+} from '@chakra-ui/react'
 import { getColor, StyleFunctionProps } from '@chakra-ui/theme-tools'
+
+// Additional success part.
+const parts = inputAnatomy.extend('success')
+
+export const $height = cssVar('input-height')
+export const $padding = cssVar('input-padding')
+export const $borderRadius = cssVar('input-border-radius')
+
+const { definePartsStyle } = createMultiStyleConfigHelpers(parts.keys)
 
 /**
  * Override with more if we have more sizes.
  */
 const size = {
-  md: {
-    px: '1rem',
-    h: '2.75rem',
-    borderRadius: '0.25rem',
-  },
+  md: defineStyle({
+    [$padding.variable]: '1rem',
+    [$height.variable]: '2.75rem',
+    [$borderRadius.variable]: '4px',
+  }),
+}
+
+const sizes = {
+  md: definePartsStyle({
+    element: size.md,
+    field: size.md,
+    addon: size.md,
+  }),
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -94,20 +116,11 @@ const outlineVariant = (props: StyleFunctionProps) => {
   }
 }
 
-// Additional success part.
-const parts = inputAnatomy.extend('success')
-
 export const Input = {
-  parts: parts.keys,
   variants: {
     outline: outlineVariant,
   },
-  sizes: {
-    md: {
-      field: size.md,
-      addon: size.md,
-    },
-  },
+  sizes,
   defaultProps: {
     variant: 'outline',
     size: 'md',

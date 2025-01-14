@@ -1,12 +1,6 @@
-import { useEffect, useMemo } from 'react'
-import {
-  BiCodeBlock,
-  BiCog,
-  BiDollar,
-  BiKey,
-  BiMailSend,
-  BiMessage,
-} from 'react-icons/bi'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -19,11 +13,11 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-import { isNonEmpty } from '~shared/utils/isNonEmpty'
-
+import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+
+import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
@@ -32,8 +26,8 @@ import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
+import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
-import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 interface TabEntry {
@@ -46,7 +40,9 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { data: settings } = useAdminFormSettings()
+  const { isLoading: isFormSettingLoading } = useAdminFormSettings()
+  const { user, isLoading: isUserLoading } = useUser()
+  const { t } = useTranslation()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -60,55 +56,52 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
-  const tabConfig = useMemo(() => {
-    const emailsNotificationsTab =
-      settings?.responseMode === FormResponseMode.Encrypt ||
-      settings?.responseMode === FormResponseMode.Email
-        ? {
-            label: 'Email notifications',
-            icon: BiMailSend,
-            component: SettingsEmailsPage,
-            path: 'email-notifications',
-            showRedDot: true,
-          }
-        : null
+  const multiLangTab =
+    !isUserLoading &&
+    !isFormSettingLoading &&
+    user?.betaFlags?.multiLangTranslation
+      ? {
+          label: 'Multi-language',
+          icon: LanguageTranslation,
+          component: SettingsMultiLangPage,
+          path: 'language',
+        }
+      : null
 
-    const baseConfig: (TabEntry | null)[] = [
-      {
-        label: 'General',
-        icon: BiCog,
-        component: SettingsGeneralPage,
-        path: 'general',
-      },
-      {
-        label: 'Singpass',
-        icon: BiKey,
-        component: SettingsAuthPage,
-        path: 'singpass',
-      },
-      emailsNotificationsTab,
-      {
-        label: 'Twilio credentials',
-        icon: BiMessage,
-        component: SettingsTwilioPage,
-        path: 'twilio-credentials',
-      },
-      {
-        label: 'Webhooks',
-        icon: BiCodeBlock,
-        component: SettingsWebhooksPage,
-        path: 'webhooks',
-      },
-      {
-        label: 'Payments',
-        icon: BiDollar,
-        component: SettingsPaymentsPage,
-        path: 'payments',
-      },
-    ]
-
-    return baseConfig.filter(isNonEmpty)
-  }, [settings?.responseMode])
+  const tabConfig: TabEntry[] = [
+    {
+      label: t('features.adminForm.settings.general.title'),
+      icon: BiCog,
+      component: SettingsGeneralPage,
+      path: 'general',
+    },
+    {
+      label: t('features.adminForm.settings.singpass.title'),
+      icon: BiKey,
+      component: SettingsAuthPage,
+      path: 'singpass',
+    },
+    {
+      label: t('features.adminForm.settings.emailNotifications.title'),
+      icon: BiMailSend,
+      component: SettingsEmailsPage,
+      path: 'email-notifications',
+      showRedDot: true,
+    },
+    {
+      label: t('features.adminForm.settings.webhooks.title'),
+      icon: BiCodeBlock,
+      component: SettingsWebhooksPage,
+      path: 'webhooks',
+    },
+    {
+      label: t('features.adminForm.settings.payments.title'),
+      icon: BiDollar,
+      component: SettingsPaymentsPage,
+      path: 'payments',
+    },
+    multiLangTab,
+  ].filter(Boolean) as TabEntry[]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
@@ -121,7 +114,19 @@ export const SettingsPage = (): JSX.Element => {
   }
 
   return (
-    <Box overflow="auto" flex={1}>
+    <Box
+      overflow="auto"
+      /**
+       * HACK: Chromium browsers have a bug where sibling elements with `position: sticky` will not
+       * be correctly calculated during a reflow. This causes the sibling to not have the correct
+       * y-axis position.
+       *
+       * Setting the `position` to `sticky` or `relative` would workaround this issue. We're choosing
+       * not to use `sticky` since it has more side effects and gotchas.
+       */
+      position="relative"
+      flex={1}
+    >
       <Tabs
         isLazy
         isManual
@@ -132,7 +137,6 @@ export const SettingsPage = (): JSX.Element => {
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
-          tabConfig[index]
         }}
       >
         <Flex

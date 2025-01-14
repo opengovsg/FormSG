@@ -1,13 +1,17 @@
 import { useCallback, useMemo } from 'react'
-import { BiTrash } from 'react-icons/bi'
+import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { Dictionary } from 'lodash'
 
+import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
+import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
 import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
@@ -18,18 +22,83 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
-  handleOpenDeleteModal: () => void
+}
+
+interface RespondentBadgeProps {
+  step: FormWorkflowStepDto
+  idToFieldMap: Dictionary<FormFieldWithQuestionNo<FormField>>
+}
+
+const SubsequentStepRespondentBadges = ({
+  step,
+  idToFieldMap,
+}: RespondentBadgeProps): JSX.Element => {
+  switch (step.workflow_type) {
+    case WorkflowType.Static:
+      return (
+        <>
+          {step.emails.map((email) => (
+            <LogicBadge key={email}>{email}</LogicBadge>
+          ))}
+        </>
+      )
+    case WorkflowType.Dynamic:
+      return <FieldLogicBadge field={idToFieldMap[step.field]} />
+    case WorkflowType.Conditional: {
+      const selectedConditionalField = idToFieldMap[step.conditional_field]
+      if (
+        !selectedConditionalField ||
+        selectedConditionalField.fieldType !== BasicField.Dropdown
+      ) {
+        return <FieldLogicBadge field={selectedConditionalField} />
+      }
+      const selectedConditionalFieldOptions =
+        selectedConditionalField.fieldOptions
+      const optionsToRecipientsMapOptions = Object.keys(
+        selectedConditionalField.optionsToRecipientsMap || {},
+      )
+      const isOptionsMismatched = checkIsOptionsMismatched(
+        optionsToRecipientsMapOptions,
+        selectedConditionalFieldOptions,
+      )
+      return (
+        <Stack direction="column" spacing="0.5rem">
+          <FieldLogicBadge
+            field={
+              step.conditional_field
+                ? idToFieldMap[step.conditional_field]
+                : undefined
+            }
+          />
+          {isOptionsMismatched ? (
+            <FieldLogicBadge
+              defaults={{
+                variant: 'error',
+                message: 'Please update your CSV options and emails',
+              }}
+            />
+          ) : null}
+        </Stack>
+      )
+    }
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _: never = step
+      throw new Error('Unexpected workflow type encountered')
+    }
+  }
 }
 
 export const InactiveStepBlock = ({
   stepNumber,
   step,
-  handleOpenDeleteModal,
 }: InactiveStepBlockProps): JSX.Element | null => {
-  const { mapIdToField } = useAdminFormWorkflow()
+  const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
 
@@ -45,20 +114,6 @@ export const InactiveStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  const respondentBadges = useMemo(() => {
-    switch (step.workflow_type) {
-      case WorkflowType.Static:
-        return step.emails.map((email) => <LogicBadge>{email}</LogicBadge>)
-      case WorkflowType.Dynamic:
-        return <FieldLogicBadge field={mapIdToField[step.field]} />
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = step
-        throw new Error('Unexpected workflow type encountered')
-      }
-    }
-  }, [mapIdToField, step])
-
   const questionBadges = useMemo(() => {
     if (step.edit.length === 0) {
       return (
@@ -71,7 +126,7 @@ export const InactiveStepBlock = ({
       )
     }
 
-    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
+    const allInvalid = step.edit.every((fieldId) => !(fieldId in idToFieldMap))
 
     if (allInvalid) {
       return (
@@ -88,15 +143,14 @@ export const InactiveStepBlock = ({
     return step.edit.map((fieldId, index) => (
       <FieldLogicBadge
         key={index}
-        field={mapIdToField[fieldId]}
+        field={idToFieldMap[fieldId]}
         defaults={{
           variant: 'info',
-          message:
-            'This field was deleted and has been removed from your workflow',
+          message: 'This field was deleted, please select another field',
         }}
       />
     ))
-  }, [mapIdToField, step.edit])
+  }, [idToFieldMap, step.edit])
 
   return (
     <Box pos="relative">
@@ -110,19 +164,9 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
         disabled={isPreventEdit}
         aria-disabled={isPreventEdit}
-        _hover={{
-          _disabled: {
-            bg: 'white',
-          },
-          bg: 'primary.100',
-        }}
-        _focus={{
-          boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
-        }}
-        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} />
@@ -130,7 +174,7 @@ export const InactiveStepBlock = ({
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
             {isFirstStep ? (
-              <Text>Anyone you share the form link with</Text>
+              <Text>Anyone who has access to your form</Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}
@@ -138,7 +182,10 @@ export const InactiveStepBlock = ({
                 rowGap={{ md: '0.5rem' }}
                 wrap="wrap"
               >
-                {respondentBadges}
+                <SubsequentStepRespondentBadges
+                  step={step}
+                  idToFieldMap={idToFieldMap}
+                />
               </Flex>
             )}
           </Stack>
@@ -149,20 +196,23 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
+          {!isFirstStep ? (
+            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+          ) : null}
         </Stack>
       </chakra.button>
-      {!isFirstStep && (
+      {
         <IconButton
           top={{ base: '0.5rem', md: '2rem' }}
           right={{ base: '0.5rem', md: '2rem' }}
           pos="absolute"
-          aria-label="Delete step"
+          aria-label="Click to edit"
           variant="clear"
-          colorScheme="danger"
-          onClick={handleOpenDeleteModal}
-          icon={<BiTrash fontSize="1.5rem" />}
+          onClick={handleClick}
+          icon={<BiPencil fontSize="1.5rem" />}
+          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
         />
-      )}
+      }
     </Box>
   )
 }

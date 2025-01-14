@@ -25,6 +25,8 @@ import {
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
+  WhitelistedSubmitterIds,
+  WhitelistedSubmitterIdsWithReferenceOid,
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -47,8 +49,6 @@ export type FormOtpData = {
     email: IUserSchema['email']
     userId: IUserSchema['_id']
   }
-  // Used for sending with the correct twilio
-  msgSrvcName?: string
 }
 
 /**
@@ -63,7 +63,7 @@ type FormDefaultableKey =
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'status'
   | 'inactiveMessage'
@@ -103,7 +103,7 @@ export type PickDuplicateForm = Pick<
   | 'startPage'
   | 'endPage'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -177,6 +177,19 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   ): Promise<T | null>
 
   /**
+   * Inserts an array of form fields into the form
+   * @param newFields new fields to insert
+   * @param to Optional position to insert the field at. If not provided, field will be inserted at the end.
+   * @returns updated form after the insertion if field insertion is successful
+   * @throws validation error on invalid updates
+   */
+  insertFormFields<T>(
+    this: T,
+    newFields: FormField[],
+    to?: number,
+  ): Promise<T | null>
+
+  /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
    * @returns dashboard form view object
@@ -187,6 +200,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Retrieve form settings.
    */
   getSettings(): FormSettings
+
+  /**
+   * Retrieve the full whitelistedSubmitterId property of the form document.
+   */
+  getWhitelistedSubmitterIds(): WhitelistedSubmitterIdsWithReferenceOid
+
   /**
    * Retrieve form webhook settings.
    */
@@ -235,22 +254,6 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-
-  /**
-   * Updates the msgSrvcName of the form with the specified msgSrvcName
-   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
-   * @param session transaction session in which update operation is a part of
-   */
-  updateMsgSrvcName(
-    msgSrvcName: string,
-    session?: ClientSession,
-  ): Promise<IFormSchema>
-
-  /**
-   * Deletes the msgSrvcName of the form
-   * @param session transaction session in which delete operation is a part of
-   */
-  deleteMsgSrvcName(session?: ClientSession): Promise<IFormSchema>
 }
 
 /**
@@ -263,7 +266,9 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
-  isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
+  isSubmitterIdCollectionEnabled: NonNullable<
+    T['isSubmitterIdCollectionEnabled']
+  >
   isSingleSubmission: NonNullable<T['isSingleSubmission']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
@@ -293,6 +298,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: string[]
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -319,8 +325,9 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IMultirespondentForm extends IForm {
   publicKey: string
-  emails?: never
   workflow: FormWorkflowDto
+  stepsToNotify: string[]
+  stepOneEmailNotificationFieldId: string
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema
@@ -366,15 +373,6 @@ export interface IFormModel extends Model<IFormSchema> {
   retrieveFormsOwnedByUserId(
     userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]>
-
-  /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  retrievePublicFormsWithSmsVerification(
-    userId: IUserSchema['_id'],
-  ): Promise<IFormDocument[]>
 
   /**
    * Update the end page of form with given endpage object.
@@ -461,11 +459,4 @@ export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 export type IMultirespondentFormModel = IFormModel &
   Model<IMultirespondentFormSchema>
 
-export type IOnboardedForm<T extends IForm> = T & {
-  msgSrvcName: string
-}
-
-export type FormLinkView<T extends IFormDocument> = {
-  title: T['title']
-  link: string
-}
+export type IOnboardedForm<T extends IForm> = T

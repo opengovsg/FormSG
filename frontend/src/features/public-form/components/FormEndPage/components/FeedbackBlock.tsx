@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { chakra, Flex, FormControl } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types/form'
@@ -27,6 +28,8 @@ export const FeedbackBlock = ({
   onSubmit,
   colorTheme = FormColorTheme.Blue,
 }: FeedbackBlockProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const {
     control,
     register,
@@ -39,8 +42,8 @@ export const FeedbackBlock = ({
   const { isPaymentEnabled } = usePublicFormContext()
 
   const feedbackTitle = isPaymentEnabled
-    ? 'How was your experience making payment on this form?'
-    : 'How was your form filling experience today?'
+    ? t('features.publicForm.components.feedbackBlock.title.payment')
+    : t('features.publicForm.components.feedbackBlock.title.general')
 
   const colorScheme = useMemo(() => {
     return `theme-${colorTheme}` as const
@@ -54,13 +57,19 @@ export const FeedbackBlock = ({
             {feedbackTitle}
           </FormLabel>
           <Controller
-            rules={{ required: 'Please select a rating' }}
+            rules={{
+              required: t(
+                'features.publicForm.components.feedbackBlock.rating.error',
+              ),
+            }}
             control={control}
             name="rating"
             render={({ field }) => (
               <Rating
                 isRequired
-                fieldTitle="Form feedback rating"
+                fieldTitle={t(
+                  'features.publicForm.components.feedbackBlock.rating.label',
+                )}
                 colorScheme={colorScheme}
                 numberOfRatings={5}
                 variant="star"
@@ -74,8 +83,12 @@ export const FeedbackBlock = ({
           isReadOnly={isSubmitting}
           mt="1rem"
           {...register('comment')}
-          aria-label="Tell us more about your experience"
-          placeholder="Tell us more about your experience"
+          aria-label={t(
+            'features.publicForm.components.feedbackBlock.commentPlaceholder',
+          )}
+          placeholder={t(
+            'features.publicForm.components.feedbackBlock.commentPlaceholder',
+          )}
         />
         <Button
           mt="1.5rem"
@@ -84,7 +97,7 @@ export const FeedbackBlock = ({
           colorScheme={colorScheme}
           isLoading={isSubmitting}
         >
-          Submit feedback
+          {t('features.publicForm.components.feedbackBlock.submitButton')}
         </Button>
       </chakra.form>
     </Flex>

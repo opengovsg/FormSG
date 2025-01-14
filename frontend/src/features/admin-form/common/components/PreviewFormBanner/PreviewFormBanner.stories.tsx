@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormAuthType } from '~shared/types'
 
@@ -31,7 +31,7 @@ export default {
   ],
 } as Meta
 
-const Template: Story = () => <PreviewFormBannerComponent />
+const Template: StoryFn = () => <PreviewFormBannerComponent />
 
 export const Desktop = Template.bind({})
 

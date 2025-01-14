@@ -1,10 +1,10 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
+import { FormControl } from '@chakra-ui/react'
 
-import { BxsInfoCircleAlt } from '~assets/icons'
+import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Tooltip from '~components/Tooltip'
+import FormLabel from '~components/FormControl/FormLabel'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -12,6 +12,9 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+
+import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -22,7 +25,7 @@ export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
-  const { formFields = [], mapIdToField } = useAdminFormWorkflow()
+  const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
     control,
@@ -36,39 +39,33 @@ export const QuestionsBlock = ({
     )
     .map((f) => ({
       value: f._id,
-      label: getLogicFieldLabel(mapIdToField[f._id]),
+      label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
   return (
-    <Stack
-      direction="column"
-      spacing="0.75rem"
-      py="1.5rem"
-      px={{ base: '1.5rem', md: '2rem' }}
-      borderTopWidth="1px"
-      borderTopColor="secondary.200"
-    >
-      <Flex alignItems="center" gap="0.5rem">
-        <Text textStyle="subhead-3">Fields to fill</Text>
-        <Tooltip label="Respondent will only be able to fill the fields you have selected">
-          <Icon as={BxsInfoCircleAlt} />
-        </Tooltip>
-      </Flex>
-
+    <EditStepBlockContainer>
       <FormControl
         isReadOnly={isLoading}
-        id="edit"
+        id={FIELDS_TO_EDIT_NAME}
         isRequired
         isInvalid={!!errors.edit}
       >
+        <FormLabel
+          style={textStyles.h4}
+          tooltipVariant="info"
+          tooltipPlacement="top"
+          tooltipText="Respondent will only be able to fill the fields you have selected"
+        >
+          Select field(s) for this respondent to fill
+        </FormLabel>
         <Controller
           control={control}
-          name="edit"
-          render={({ field: { value, ...field } }) => (
+          name={FIELDS_TO_EDIT_NAME}
+          render={({ field: { value = [], ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}
-              placeholder="Select fields from your form"
+              placeholder="Select field(s) from your form"
               items={items}
               isSelectedItemFullWidth
               values={value}
@@ -78,6 +75,6 @@ export const QuestionsBlock = ({
         />
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
-    </Stack>
+    </EditStepBlockContainer>
   )
 }

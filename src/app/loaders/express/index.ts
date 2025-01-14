@@ -20,6 +20,7 @@ import {
   catchNonExistentStaticRoutesMiddleware,
   errorHandlerMiddlewares,
 } from './error-handler'
+import growthbookMiddleware from './growthbook'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
@@ -84,7 +85,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.set('showStackError', true)
 
   // Set EJS as the template engine
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   app.engine('server.view.html', require('ejs').__express)
 
   // Set views path and view engine
@@ -105,11 +106,21 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
-  // jwks endpoint for SP OIDC
+  // Growthbook should not be enabled in test environment to avoid flakiness
+  if (!config.isTest) {
+    app.use(growthbookMiddleware)
+  }
+
+  /**
+   * jwks endpoint for SP OIDC
+   */
+  app.use('/sp/.well-known/jwks.json', SpOidcJwksRouter)
+  /** Legacy route for backward compatibility
+   * @deprecated TODO(FRM-1893): remove after config on Singpass portal is also updated for Prod
+   */
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   // Registered routes with sgID
   app.use('/sgid', SgidRouter)
-  // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
   // Legacy frontend routes which may still be in use

@@ -1,107 +1,136 @@
-import { menuAnatomy as parts } from '@chakra-ui/anatomy'
-import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
+import { menuAnatomy } from '@chakra-ui/anatomy'
+import { createMultiStyleConfigHelpers, cssVar } from '@chakra-ui/react'
+import { StyleFunctionProps } from '@chakra-ui/theme-tools'
 
-export type MenuVariant = 'outline' | 'clear'
+const parts = menuAnatomy.extend('chevron')
 
-const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
-  const { colorScheme: c, isStretch, theme, focusItemBorderColor: fc } = props
+const { definePartsStyle, defineMultiStyleConfig } =
+  createMultiStyleConfigHelpers(parts.keys)
+
+const $bg = cssVar('menu-bg')
+const $shadow = cssVar('menu-shadow')
+
+const getListItemColors = ({ colorScheme: c }: StyleFunctionProps) => {
+  return {
+    hoverBg: `${c}.100`,
+    activeBg: `${c}.200`,
+  }
+}
+
+const baseStyle = definePartsStyle((props) => {
+  const { hoverBg, activeBg } = getListItemColors(props)
+
   return {
     button: {
-      width: isStretch ? '100%' : undefined,
       textAlign: 'left',
       justifyContent: 'space-between',
-      _hover: {
-        color: `${c}.900`,
-      },
-      _active: {
-        color: `${c}.500`,
-        _hover: {
-          color: `${c}.900`,
-        },
-      },
-    },
-    item: {
-      padding: '0.75rem 1rem',
-      fontWeight: '400',
-      color: 'secondary.700',
-      _hover: {
-        bg: `${c}.100`,
-        borderWidth: '0rem',
-      },
-      _focus: {
-        bg: `${c}.100`,
-        boxShadow: `0 0 0 2px ${getColor(theme, fc)}`,
-        _active: {
-          bg: `${c}.200`,
-        },
-      },
-      _active: {
-        bg: `${c}.200`,
-        fontWeight: 500,
-      },
-      _disabled: {
-        opacity: 0.6,
-        bg: 'initial',
-        _hover: {
-          bg: 'initial',
-        },
-        _active: {
-          fontWeight: 'initial',
-        },
-        cursor: 'not-allowed',
-      },
     },
     list: {
+      mt: '0.5rem',
       border: 'none',
       borderRadius: 0,
       minWidth: '0rem',
-      shadow: 'var(--chakra-shadows-sm) !important',
+      [$shadow.variable]: 'shadows.sm',
+      [$bg.variable]: 'white',
+      boxShadow: $shadow.reference,
     },
-  }
-}
-
-const variantClear: PartsStyleFunction<typeof parts> = (_props) => {
-  return {
-    button: {
-      minH: 'auto',
-      outline: 'none',
-      border: 'none',
-      boxShadow: 'none',
-    },
-  }
-}
-
-const variantOutline: PartsStyleFunction<typeof parts> = ({
-  colorScheme: c,
-  theme,
-}) => {
-  return {
-    button: {
+    item: {
+      padding: '0.75rem 1rem',
+      // Required for items to also have variable colors
+      bg: $bg.reference,
+      [$bg.variable]: 'white',
+      textStyle: 'body-1',
+      fontWeight: '400',
+      color: 'secondary.700',
       _hover: {
-        borderColor: `${c}.900`,
+        [$bg.variable]: `colors.${hoverBg}`,
       },
-      _active: {
-        boxShadow: `0 0 0 1px ${getColor(theme, `${c}.500`)}`,
-        _hover: {
-          boxShadow: `0 0 0 1px ${getColor(theme, `${c}.900`)}`,
+      _disabled: {
+        color: 'secondary.300',
+        opacity: 1,
+        cursor: 'not-allowed',
+      },
+      _focus: {
+        [$bg.variable]: `colors.${hoverBg}`,
+        _active: {
+          [$bg.variable]: `colors.${activeBg}`,
         },
       },
+      _focusVisible: {
+        boxShadow: `0 0 0 2px var(--chakra-colors-primary-500)`,
+        _active: {
+          [$bg.variable]: `colors.${activeBg}`,
+        },
+      },
+      _active: {
+        [$bg.variable]: `colors.${activeBg}`,
+      },
+    },
+    divider: {
+      borderColor: 'secondary.100',
+      opacity: 1,
+      my: 0,
     },
   }
+})
+
+const getClearButtonColors = ({ colorScheme: c }: StyleFunctionProps) => {
+  return {
+    color: `${c}.500`,
+    hoverColor: `${c}.600`,
+    activeColor: `${c}.700`,
+  }
 }
+
+const variantClear = definePartsStyle((props) => {
+  const { color, hoverColor, activeColor } = getClearButtonColors(props)
+  return {
+    button: {
+      bg: 'transparent',
+      color,
+      _hover: {
+        color: hoverColor,
+      },
+      _active: {
+        color: activeColor,
+      },
+    },
+  }
+})
 
 const variants = {
   clear: variantClear,
-  outline: variantOutline,
+  outline: {},
 }
 
-export const Menu = {
-  parts: parts.keys,
+const sizes = {
+  sm: definePartsStyle({
+    chevron: {
+      fontSize: '1.25rem',
+    },
+    item: {
+      textStyle: 'subhead-2',
+      padding: '0.625rem 0.75rem',
+    },
+  }),
+  md: definePartsStyle({
+    chevron: {
+      fontSize: '1.25rem',
+    },
+    item: {
+      textStyle: 'body-1',
+      padding: '0.75rem 1rem',
+    },
+  }),
+}
+
+export const Menu = defineMultiStyleConfig({
   baseStyle,
+  sizes,
   variants,
   defaultProps: {
     colorScheme: 'secondary',
-    focusItemBorderColor: 'primary.500',
     variant: 'outline',
+    size: 'md',
   },
-}
+})

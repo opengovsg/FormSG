@@ -1,13 +1,15 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { times } from 'lodash'
 import { rest } from 'msw'
 
+import { UserId } from '~shared/types'
 import {
   AdminDashboardFormMetaDto,
   FormResponseMode,
   FormStatus,
 } from '~shared/types/form/form'
 
+import { envHandlers } from '~/mocks/msw/handlers/env'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
@@ -56,6 +58,24 @@ const THIRTY_FORMS = [
   ...createForm(29),
 ]
 
+const BASE_MSW_HANDLERS = [
+  ...envHandlers,
+  rest.get<AdminDashboardFormMetaDto[]>(
+    '/api/v3/admin/forms',
+    (req, res, ctx) => {
+      return res(ctx.json(THIRTY_FORMS))
+    },
+  ),
+  getWorkspaces(),
+  getUser({
+    delay: 0,
+    mockUser: {
+      ...MOCK_USER,
+      email: 'super_super_super_super_super_long_name@example.com',
+    },
+  }),
+]
+
 export default {
   title: 'Pages/WorkspacePage',
   component: WorkspacePage,
@@ -74,26 +94,11 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     mockdate: new Date('2021-12-01T06:22:27.219Z'),
-    msw: [
-      rest.get<AdminDashboardFormMetaDto[]>(
-        '/api/v3/admin/forms',
-        (req, res, ctx) => {
-          return res(ctx.json(THIRTY_FORMS))
-        },
-      ),
-      getWorkspaces(),
-      getUser({
-        delay: 0,
-        mockUser: {
-          ...MOCK_USER,
-          email: 'super_super_super_super_super_long_name@example.com',
-        },
-      }),
-    ],
+    msw: BASE_MSW_HANDLERS,
   },
 } as Meta
 
-const Template: Story = () => <WorkspacePage />
+const Template: StoryFn = () => <WorkspacePage />
 export const Desktop = Template.bind({})
 export const Mobile = Template.bind({})
 Mobile.parameters = {
@@ -156,17 +161,41 @@ AllOpenDesktop.parameters = {
         )
       },
     ),
+    ...BASE_MSW_HANDLERS,
+  ],
+}
+
+export const AllOpenDesktopNoAnnouncementModal = Template.bind({})
+AllOpenDesktopNoAnnouncementModal.parameters = {
+  ...AllOpenDesktop.parameters,
+  msw: [
+    ...envHandlers,
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(ctx.json(THIRTY_FORMS))
+      },
+    ),
+    getWorkspaces(),
     getUser({
       delay: 0,
       mockUser: {
         ...MOCK_USER,
-        email: 'user@example.com',
+        _id: 'undefined' as UserId,
+        email: 'meh@example.com',
       },
     }),
   ],
 }
+
 export const AllOpenMobile = Template.bind({})
 AllOpenMobile.parameters = {
   ...Mobile.parameters,
   ...AllOpenDesktop.parameters,
+}
+
+export const AllOpenMobileNoAnnouncementModal = Template.bind({})
+AllOpenMobileNoAnnouncementModal.parameters = {
+  ...Mobile.parameters,
+  ...AllOpenDesktopNoAnnouncementModal.parameters,
 }

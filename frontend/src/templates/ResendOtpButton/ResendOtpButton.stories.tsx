@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { ResendOtpButton, ResendOtpButtonProps } from './ResendOtpButton'
 import {
@@ -12,7 +12,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<ResendOtpButtonProps> = (args) => (
+const Template: StoryFn<ResendOtpButtonProps> = (args) => (
   <ResendOtpButton {...args} />
 )
 export const Default = Template.bind({})
@@ -29,7 +29,7 @@ InProgress.args = {
   isDisabled: true,
 }
 
-export const Playground: Story<ResendOtpButtonContainerProps> = (args) => (
+export const Playground: StoryFn<ResendOtpButtonContainerProps> = (args) => (
   <ResendOtpButtonContainer {...args} />
 )
 Playground.args = {

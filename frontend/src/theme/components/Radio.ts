@@ -85,6 +85,7 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
       _disabled: {
         borderColor: 'neutral.500',
         bg: 'white',
+        cursor: 'not-allowed',
         _checked: {
           borderColor: 'neutral.500',
           color: 'neutral.500',

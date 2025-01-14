@@ -1,7 +1,8 @@
 import { Button } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { FORM_GUIDE } from '~constants/links'
 import {
   getMobileViewParameters,
   getTabletViewParameters,
@@ -17,12 +18,8 @@ const DEFAULT_ARGS: PublicHeaderProps = {
   ),
   publicHeaderLinks: [
     {
-      label: 'Products',
-      href: '',
-    },
-    {
       label: 'Help',
-      href: 'https://guide.form.gov.sg',
+      href: FORM_GUIDE,
       showOnMobile: true,
       MobileIcon: BxsHelpCircle,
     },
@@ -39,7 +36,9 @@ export default {
   args: DEFAULT_ARGS,
 } as Meta
 
-const Template: Story<PublicHeaderProps> = (args) => <PublicHeader {...args} />
+const Template: StoryFn<PublicHeaderProps> = (args) => (
+  <PublicHeader {...args} />
+)
 export const Default = Template.bind({})
 
 export const WithoutCTA = Template.bind({})

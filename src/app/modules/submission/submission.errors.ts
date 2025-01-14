@@ -11,6 +11,16 @@ export class ConflictError extends ApplicationError {
   }
 }
 
+export class SubmissionSaveError extends ApplicationError {
+  constructor() {
+    super(
+      'Failed to save submission. Please try again later.',
+      undefined,
+      ErrorCodes.SUBMISSION_SAVE_FAILURE,
+    )
+  }
+}
+
 export class SubmissionNotFoundError extends ApplicationError {
   constructor(message = 'Submission not found for given ID') {
     super(message, undefined, ErrorCodes.SUBMISSION_NOT_FOUND)
@@ -48,11 +58,23 @@ export class ProcessingError extends ApplicationError {
 }
 
 /**
- * A custom error class returned when given submission has field validation failure
+ * A custom error class returned when given submission has field level response validation failure
  */
 export class ValidateFieldError extends ApplicationError {
-  constructor(message = 'Error validating field.', status = 400) {
+  constructor(message = 'Error when validating field response', status = 400) {
     super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD)
+  }
+}
+
+/**
+ * A custom error class returned when given submission has field level response validation failure
+ */
+export class ValidateFieldErrorV3 extends ApplicationError {
+  constructor(
+    message = 'Error when validating V3 field response',
+    status = 400,
+  ) {
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V3)
   }
 }
 
@@ -201,5 +223,21 @@ export class InvalidWorkflowTypeError extends ApplicationError {
 export class AttachmentUploadError extends ApplicationError {
   constructor(message = 'Error while uploading encrypted attachments to S3') {
     super(message, undefined, ErrorCodes.SUBMISSION_ATTACHMENT_UPLOAD)
+  }
+}
+
+export class InvalidApprovalFieldTypeError extends ApplicationError {
+  constructor(
+    message = 'Invalid field type for approval step selected. Please select a Yes/No field',
+  ) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_APPROVAL_FIELD_TYPE)
+  }
+}
+
+export class ExpectedResponseNotFoundError extends ApplicationError {
+  constructor(
+    message = 'Response for the Yes/No field for this approval step is not found',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_EXPECTED_RESPONSE_NOT_FOUND)
   }
 }

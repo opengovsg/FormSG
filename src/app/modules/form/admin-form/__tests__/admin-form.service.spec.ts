@@ -6,13 +6,18 @@ import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { Workspace } from 'shared/types/workspace'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'shared/utils/crypto'
 
-import config, { aws } from 'src/app/config/config'
+import { aws } from 'src/app/config/config'
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from 'src/app/models/form_whitelist.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import {
   ApplicationError,
@@ -24,7 +29,6 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { TwilioCredentials } from 'src/app/services/sms/sms.types'
 import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
@@ -33,12 +37,21 @@ import {
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IUserSchema,
   PickDuplicateForm,
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
 
+import {
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
+} from '../../../../../../shared/constants/errors'
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
   AdminDashboardFormMetaDto,
@@ -61,7 +74,6 @@ import {
   PaymentType,
   SettingsUpdateDto,
 } from '../../../../../../shared/types'
-import * as SmsService from '../../../../services/sms/sms.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -77,19 +89,16 @@ import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
-import { secretsManager } from './../admin-form.service'
-
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormWhitelistedSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = jest.mocked(UserService)
-
-jest.mock('../../../../services/sms/sms.service')
-const MockSmsService = jest.mocked(SmsService)
 
 describe('admin-form.service', () => {
   beforeEach(async () => {
@@ -2721,160 +2730,472 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('createTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-    const MOCK_ADMIN_ID = new mongoose.Types.ObjectId()
+  describe('checkIsWhitelistSettingValid', () => {
+    const MOCK_VALID_UEN = '53244311W'
+    const MOCK_VALID_FIN = 'F1612366T'
+    const MOCK_VALID_NRIC = 'S7101844Z'
 
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      admin: {
-        _id: MOCK_ADMIN_ID,
-      },
-    } as unknown as IPopulatedForm
-
-    const MOCK_ACCOUNT_SID = 'AC12345678'
-    const MOCK_API_KEY_SID = 'SK12345678'
-    const MOCK_API_KEY_SECRET = 'AZ12345678'
-    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-
-    const TWILIO_CREDENTIALS: TwilioCredentials = {
-      accountSid: MOCK_ACCOUNT_SID,
-      apiKey: MOCK_API_KEY_SID,
-      apiSecret: MOCK_API_KEY_SECRET,
-      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
-    }
-
-    const sessionSpy = jest.spyOn(FormModel, 'startSession')
-
-    it('should return undefined when Twilio credentials was created successfully', async () => {
+    it('should return isValid as true without invalidReason if whitelist setting contains valid submitterIds', () => {
       // Arrange
-      sessionSpy.mockResolvedValueOnce({
-        withTransaction: () => {
-          return {
-            then: () => undefined,
-          }
-        },
-      } as any)
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+      ]
 
       // Act
-      const actualResult = await AdminFormService.createTwilioCredentials(
-        TWILIO_CREDENTIALS,
-        MOCK_FORM,
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
       )
 
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(undefined)
-
-      expect(sessionSpy).toHaveBeenCalled()
+      expect(result).toEqual({
+        isValid: true,
+      })
     })
-  })
 
-  describe('updateTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-
-    const MOCK_ACCOUNT_SID = 'AC12345678'
-    const MOCK_API_KEY_SID = 'SK12345678'
-    const MOCK_API_KEY_SECRET = 'AZ12345678'
-    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-
-    const TWILIO_CREDENTIALS: TwilioCredentials = {
-      accountSid: MOCK_ACCOUNT_SID,
-      apiKey: MOCK_API_KEY_SID,
-      apiSecret: MOCK_API_KEY_SECRET,
-      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
-    }
-
-    it('should return the response of performing PutSecretValue operation on the SecretsManager', async () => {
+    it('should return isValid as true without invalidReason if whitelist setting contains no submitterIds', () => {
       // Arrange
-      const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
-
-      const getSecretsSpy = jest
-        .spyOn(secretsManager, 'getSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
-
-      const twilioCacheSpy = jest
-        .spyOn(MockSmsService.twilioClientCache, 'del')
-        .mockReturnValueOnce(1)
-
-      const putSecretsSpy = jest
-        .spyOn(secretsManager, 'putSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
+      const MOCK_WHITELIST_SETTING: string[] = []
 
       // Act
-
-      const actualResult = await AdminFormService.updateTwilioCredentials(
-        msgSrvcName,
-        TWILIO_CREDENTIALS,
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
       )
 
       // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(1)
-
-      expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
+      expect(result).toEqual({
+        isValid: true,
       })
-      expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
-      expect(putSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
-        SecretString: JSON.stringify(TWILIO_CREDENTIALS),
+    })
+
+    it('should return isValid as true without invalidReason if whitelist setting is null which means setting as isWhitelistEnabled to false', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = null
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: true,
+      })
+    })
+
+    it('should return duplicate submitter id error message if whitelist csv string has duplicate submitter ids', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+        MOCK_VALID_UEN,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+      })
+    })
+
+    it('should return empty row not allowed error message if whitelist csv string has empty rows', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        '',
+        MOCK_VALID_UEN,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+      })
+    })
+
+    it('should return invalid submitter id error message if whitelist csv string has invalid submitter ids', () => {
+      // Arrange
+      const invalidSubmitterId = 'invalid'
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+        invalidSubmitterId,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason:
+          FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+            invalidSubmitterId,
+          ),
       })
     })
   })
 
-  describe('deleteTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-    const sessionSpy = jest.spyOn(FormModel, 'startSession')
-    const MSG_SRVC_NAME = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      save: () => MOCK_FORM,
-      msgSrvcName: MSG_SRVC_NAME,
-    } as unknown as IPopulatedForm
-
-    it('should return result of clearing TwilioCache entry when Twilio credentials was successfully deleted', async () => {
+  describe('getFormWhitelistSetting', () => {
+    it('should not include myPrivateKey when fetching the whitelist setting', async () => {
       // Arrange
-      sessionSpy.mockResolvedValueOnce({
-        withTransaction: () => {
-          return {
-            then: () => undefined,
-          }
-        },
-      } as any)
+      const MOCK_FORM_ID = new ObjectId()
 
-      // formSpy.mockResolvedValueOnce(MOCK_FORM)
+      const MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT: EncryptedStringsMessageContent =
+        {
+          myPublicKey: 'some public key',
+          cipherTexts: ['abc', 'def'],
+          nonce: 'some nonce',
+        }
+      const MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT_WITH_PK: EncryptedStringsMessageContentWithMyPrivateKey =
+        {
+          ...MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT,
+          myPrivateKey: 'some private key',
+        }
 
-      const twilioCacheSpy = jest
-        .spyOn(MockSmsService.twilioClientCache, 'del')
-        .mockReturnValueOnce(1)
+      const LEAN_WHITELISTED_SUBMITTER_IDS_DOC = {
+        formId: MOCK_FORM_ID,
+        ...MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT_WITH_PK,
+      }
+
+      const MOCK_WHITELISTED_SUBMITTER_ID_QUERY = {
+        exec: jest.fn().mockResolvedValue(LEAN_WHITELISTED_SUBMITTER_IDS_DOC),
+      }
+
+      const formWhitelistedSubmitterIdsModelCreateSpy = jest
+        .spyOn(FormWhitelistedSubmitterIdsModel, 'findById')
+        .mockReturnValueOnce({
+          lean: jest
+            .fn()
+            .mockReturnValue(MOCK_WHITELISTED_SUBMITTER_ID_QUERY) as any,
+        } as any)
+
+      const MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID = new ObjectId()
+
+      const MOCK_FORM_DOCUMENT = {
+        getWhitelistedSubmitterIds: jest.fn().mockReturnValue({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds:
+            MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
+        }),
+      } as unknown as IPopulatedEncryptedForm
 
       // Act
+      const whitelistedSettingResult =
+        await AdminFormService.getFormWhitelistSetting(MOCK_FORM_DOCUMENT)
 
-      const actualResult =
-        await AdminFormService.deleteTwilioCredentials(MOCK_FORM)
+      // Assert no error occurred
+      expect(formWhitelistedSubmitterIdsModelCreateSpy).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
+      )
+      expect(whitelistedSettingResult.isOk()).toEqual(true)
+      // Assert that the myPrivateKey is not included in the fetched whitelist settings
+      expect(whitelistedSettingResult._unsafeUnwrap()).toEqual(
+        MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT,
+      )
+    })
+  })
 
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(1)
+  describe('updateOptionsToRecipientsMap', () => {
+    describe('validation of field', () => {
+      it('should return error if field is not a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.ShortText,
+          },
+        ]
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormFields],
+          }),
+        } as unknown as IPopulatedForm
 
-      expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
+        const optionsMap = {}
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+      })
+
+      it('should allow operation if field is a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1'],
+            toObject: jest.fn().mockReturnValue({
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1'],
+            }),
+          },
+        ]
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: mockFormFields,
+          }),
+        } as unknown as IPopulatedForm
+
+        const optionsMap = {
+          option1: ['test1@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+      })
+    })
+
+    describe('validation of options to recipients map', () => {
+      it('should return error if options to recipients map has options that are not in the field options', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', 'option2'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const invalidOptionsMap = {
+          option1: ['test1@example.com'],
+          option2: ['test2@example.com'],
+          option3: ['test3@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          invalidOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if options to recipients map does not have options that are in the field options', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', 'option2'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const incompleteOptionsMap = {
+          option2: ['test2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          incompleteOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if some options is empty string', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', ''],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const emptyOptionsMap = {
+          '': ['test@example.com'],
+          option2: ['test2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          emptyOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if some recipients are invalid emails', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const invalidEmailsMap = {
+          option1: ['invalid-email', 'valid-email@example.com'],
+          option2: ['valid-email2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          invalidEmailsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+        )
+      })
+
+      it('should save if the options to recipients map is valid', async () => {
+        // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1', 'option2'],
+          }),
+        }
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
+        }
+
+        const validOptionsMap = {
+          option1: ['test@example.com'],
+          option2: [
+            'test2@example.com',
+            'test3@example.com',
+            'test4@example.com',
+          ],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm as unknown as IPopulatedForm,
+          'fieldId',
+          validOptionsMap,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(mockForm.updateFormFieldById).toHaveBeenCalledWith('fieldId', {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          optionsToRecipientsMap: validOptionsMap,
+        })
+      })
+
+      it('should save if the options to recipients map is empty aka deleted', async () => {
+        // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1'],
+          }),
+        }
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm as unknown as IPopulatedForm,
+          'fieldId',
+          {},
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(mockForm.updateFormFieldById).toHaveBeenCalledWith('fieldId', {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1'],
+          optionsToRecipientsMap: {},
+        })
+      })
     })
   })
 })

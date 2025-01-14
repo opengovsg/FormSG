@@ -46,11 +46,11 @@ const pathMapper = [
   },
   {
     regex: /^\/forms\/?$/,
-    getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
+    getTarget: () => `${DASHBOARD_ROUTE}`,
   },
   {
     regex: /^\/examples\/?$/,
-    getTarget: (m: FormRegExpMatchArray) => `/examples`,
+    getTarget: () => `/examples`,
   },
 ]
 

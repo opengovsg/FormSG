@@ -5,16 +5,18 @@ import {
   useRef,
 } from 'react'
 import { useFocusEffect, useRovingTabIndex } from 'react-roving-tabindex'
-import { chakra, forwardRef, useMergeRefs, useStyles } from '@chakra-ui/react'
+import { chakra, forwardRef, useMergeRefs } from '@chakra-ui/react'
 
 import { InputProps } from '~components/Input'
+
+import { useTagInputStyles } from './TagInputProvider'
 
 export const TagInputInput = forwardRef<Omit<InputProps, 'size'>, 'input'>(
   (
     { onKeyDown, isDisabled = false, isReadOnly, isInvalid, onClick, ...props },
     ref,
   ) => {
-    const styles = useStyles()
+    const styles = useTagInputStyles()
     // The ref of the input to be controlled.
     const focusedRef = useRef<HTMLElement>(null)
 

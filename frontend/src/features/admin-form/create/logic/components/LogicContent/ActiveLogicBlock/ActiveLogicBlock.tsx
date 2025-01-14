@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { LogicDto } from '~shared/types'
 
@@ -19,6 +20,7 @@ export const ActiveLogicBlock = ({
   logic,
   handleOpenDeleteModal,
 }: ActiveLogicBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const { updateLogicMutation } = useLogicMutations()
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const handleSubmit = useCallback(
@@ -38,7 +40,7 @@ export const ActiveLogicBlock = ({
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
       defaultValues={logic}
-      submitButtonLabel="Save changes"
+      submitButtonLabel={t('features.adminForm.sidebar.logic.saveChangesBtn')}
     />
   )
 }

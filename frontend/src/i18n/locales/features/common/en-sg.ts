@@ -15,6 +15,7 @@ export const enSG: Common = {
     product: 'product',
   },
   save: 'Save',
+  saveField: 'Save field',
   create: 'Create',
   removeReenter: 'Remove and re-enter',
   share: 'Share',
@@ -29,6 +30,7 @@ export const enSG: Common = {
   back: 'Back',
   edit: 'Edit',
   loading: 'Loading',
+  loadingWithEllipsis: 'Loading...',
   saving: 'Saving',
   responses: 'Responses',
   feedback: 'Feedback',
@@ -54,9 +56,7 @@ export const enSG: Common = {
   tooltip: {
     deleteField: 'Delete field',
     duplicateField: 'Duplicate field',
-  },
-  dropdown: {
-    placeholder: 'Select an option',
+    editField: 'Edit field',
   },
   days: {
     Mondays: 'Monday',
@@ -79,4 +79,8 @@ export const enSG: Common = {
     storage: 'Storage mode',
   },
   formName: 'Form name',
+  editForm: {
+    text: 'Edit form',
+    ariaLabel: 'Click to edit the form',
+  },
 }

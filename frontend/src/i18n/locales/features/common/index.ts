@@ -15,6 +15,7 @@ export interface Common {
     product: string
   }
   save: string
+  saveField: string
   create: string
   removeReenter: string
   share: string
@@ -29,6 +30,7 @@ export interface Common {
   back: string
   edit: string
   loading: string
+  loadingWithEllipsis: string
   saving: string
   responses: string
   feedback: string
@@ -54,9 +56,7 @@ export interface Common {
   tooltip: {
     deleteField: string
     duplicateField: string
-  }
-  dropdown: {
-    placeholder: string
+    editField: string
   }
   days: {
     Mondays: string
@@ -79,4 +79,8 @@ export interface Common {
     storage: string
   }
   formName: string
+  editForm: {
+    text: string
+    ariaLabel: string
+  }
 }

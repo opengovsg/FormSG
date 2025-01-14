@@ -4,7 +4,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from '@chakra-ui/form-control'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import Button from '../Button'
 
@@ -16,7 +16,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<NumberInputProps> = (args) => <NumberInput {...args} />
+const Template: StoryFn<NumberInputProps> = (args) => <NumberInput {...args} />
 export const Default = Template.bind({})
 Default.args = {
   placeholder: 'Test placeholder',
@@ -53,7 +53,7 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name,
   label,
   isDisabled,

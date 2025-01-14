@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
-import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
@@ -12,6 +12,7 @@ import {
   Flex,
   Icon,
 } from '@chakra-ui/react'
+import { Draggable } from '@hello-pangea/dnd'
 import { isEqual, times } from 'lodash'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types'
@@ -335,6 +336,7 @@ const FieldButtonGroup = ({
   isMobile,
   handleBuilderClick,
 }: FieldButtonGroupProps) => {
+  const { t } = useTranslation()
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   const { data: form } = useCreateTabForm()
@@ -406,7 +408,7 @@ const FieldButtonGroup = ({
           <IconButton
             variant="clear"
             colorScheme="secondary"
-            aria-label="Edit field"
+            aria-label={t('features.common.tooltip.editField')}
             icon={<BiCog fontSize="1.25rem" />}
             onClick={handleEditFieldClick}
           />
@@ -414,9 +416,9 @@ const FieldButtonGroup = ({
         {
           // Fields which are not yet created cannot be duplicated
           fieldBuilderState !== FieldBuilderState.CreatingField && (
-            <Tooltip label="Duplicate field">
+            <Tooltip label={t('features.common.tooltip.duplicateField')}>
               <IconButton
-                aria-label="Duplicate field"
+                aria-label={t('features.common.tooltip.duplicateField')}
                 isDisabled={isAnyMutationLoading}
                 onClick={handleDuplicateClick}
                 isLoading={duplicateFieldMutation.isLoading}
@@ -425,10 +427,10 @@ const FieldButtonGroup = ({
             </Tooltip>
           )
         }
-        <Tooltip label="Delete field">
+        <Tooltip label={t('features.common.tooltip.deleteField')}>
           <IconButton
             colorScheme="danger"
-            aria-label="Delete field"
+            aria-label={t('features.common.tooltip.deleteField')}
             icon={<BiTrash fontSize="1.25rem" />}
             onClick={handleDeleteClick}
             isLoading={deleteFieldMutation.isLoading}
@@ -456,14 +458,10 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Statement:
       return <ParagraphField schema={field} {...rest} />
     case BasicField.Attachment: {
-      const enableDownload =
+      const showDownload =
         rest.responseMode === FormResponseMode.Multirespondent
       return (
-        <AttachmentField
-          schema={field}
-          {...rest}
-          enableDownload={enableDownload}
-        />
+        <AttachmentField schema={field} {...rest} showDownload={showDownload} />
       )
     }
     case BasicField.Checkbox:
@@ -471,7 +469,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Mobile:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <MobileFieldInput schema={field} responseMode={rest.responseMode} />
+          <MobileFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <MobileField schema={field} {...rest} />
@@ -481,7 +479,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Email:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <EmailFieldInput schema={field} responseMode={rest.responseMode} />
+          <EmailFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <EmailField schema={field} {...rest} />

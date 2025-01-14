@@ -1,20 +1,20 @@
+import { useTranslation } from 'react-i18next'
 import { Skeleton, Wrap } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
-
-import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { useAdminFormSettings } from '../queries'
 
 import { CategoryHeader } from './CategoryHeader'
 
 export const GeneralTabHeader = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
   const readableFormResponseMode = !settings
-    ? 'Loading...'
-    : RESPONSE_MODE_TO_TEXT[settings.responseMode]
+    ? t('features.common.loadingWithEllipsis')
+    : t(`features.adminForm.meta.responseModeText.${settings.responseMode}`)
 
   return (
     <Wrap
@@ -23,7 +23,9 @@ export const GeneralTabHeader = (): JSX.Element => {
       justify="space-between"
       mb="2.5rem"
     >
-      <CategoryHeader mb={0}>General settings</CategoryHeader>
+      <CategoryHeader mb={0}>
+        {t('features.adminForm.settings.general.title')}
+      </CategoryHeader>
       <Skeleton isLoaded={!isLoadingSettings}>
         <Badge variant="subtle" colorScheme="primary" color="secondary.500">
           {readableFormResponseMode}

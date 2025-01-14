@@ -29,6 +29,24 @@ import { FormResponseOptions } from './FormResponseOptions'
 /** The length of form title to start showing warning text */
 const FORM_TITLE_LENGTH_WARNING = 65
 
+const getTrackingSubmissionActionName = (
+  responseModeValue: FormResponseMode,
+) => {
+  switch (responseModeValue) {
+    case FormResponseMode.Email:
+      return 'dashboard.create.create_email'
+    case FormResponseMode.Encrypt:
+      return 'dashboard.create.create_encrypt'
+    case FormResponseMode.Multirespondent:
+      return 'dashboard.create.create_multirespondent'
+
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustiveCheck: never = responseModeValue
+    }
+  }
+}
+
 export const CreateFormDetailsScreen = (): JSX.Element => {
   const {
     formMethods,
@@ -98,9 +116,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
                 useMarkdownForDescription
-                description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+                description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
               >
-                Emails where responses will be sent
+                Notifications for new responses
               </FormLabel>
               <EmailFormRecipientsInput />
             </FormControl>
@@ -112,6 +130,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             isDisabled={isFetching}
             onClick={handleDetailsSubmit}
             isFullWidth
+            data-dd-action-name={getTrackingSubmissionActionName(
+              responseModeValue,
+            )}
           >
             <Text lineHeight="1.5rem">Next step</Text>
           </Button>

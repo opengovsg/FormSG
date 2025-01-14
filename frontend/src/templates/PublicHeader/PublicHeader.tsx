@@ -4,13 +4,14 @@ import {
   Flex,
   FlexProps,
   HStack,
+  Icon,
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { ReactComponent as BrandHortDarkSvg } from '~assets/svgs/brand/brand-hort-dark.svg'
-import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
-import { ReactComponent as BrandMarkDarkSvg } from '~assets/svgs/brand/brand-mark-dark.svg'
+import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
+import BrandHortDarkSvg from '~assets/svgs/brand/brand-hort-dark.svg?react'
+import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
+import BrandMarkDarkSvg from '~assets/svgs/brand/brand-mark-dark.svg?react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
@@ -19,7 +20,7 @@ type PublicHeaderLinkProps = {
   label: string
   href: string
   showOnMobile?: boolean
-  MobileIcon?: As
+  MobileIcon: As
   bg?: string
 }
 
@@ -27,7 +28,7 @@ export interface PublicHeaderProps {
   /** Header links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLinkProps[]
   /** Call to action element to render, if any. */
-  ctaElement?: React.ReactChild
+  ctaElement?: React.ReactNode
   /** Background colour to use for the header, if specified. */
   bg?: string
 }
@@ -52,7 +53,7 @@ const PublicHeaderLink = ({
         as="a"
         href={href}
         aria-label={label}
-        icon={<MobileIcon fontSize="1.25rem" color="primary.500" />}
+        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
       />
     )
   }

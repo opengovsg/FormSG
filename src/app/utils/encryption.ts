@@ -24,6 +24,7 @@ export const checkIsEncryptedEncoding = (
     decodeBase64(nonce)
     decodeBase64(encrypted)
     return ok(true)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return err(new InvalidEncodingError('Incorrect characters'))
   }

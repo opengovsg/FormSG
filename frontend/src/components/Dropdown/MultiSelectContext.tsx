@@ -17,6 +17,7 @@ interface MultiSelectContextReturn<Item extends ComboboxItem = ComboboxItem>
     > {
   maxItems: number | null
   isSelectedItemFullWidth?: boolean
+  onBlur?: () => void
 }
 
 export const MultiSelectContext = createContext<

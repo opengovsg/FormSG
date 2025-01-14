@@ -1,6 +1,6 @@
 import { Virtuoso } from 'react-virtuoso'
 import { List, ListItem } from '@chakra-ui/react'
-import { FloatingPortal } from '@floating-ui/react-dom-interactions'
+import { FloatingPortal } from '@floating-ui/react'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'

@@ -26,7 +26,7 @@ const loggingMiddleware = () => {
     format: winston.format.combine(
       winston.format.label({ label: LOGGER_LABEL }),
       winston.format.timestamp(),
-      config.isDev
+      config.isDevOrTest
         ? winston.format.combine(winston.format.colorize(), customFormat)
         : winston.format.json(),
     ),

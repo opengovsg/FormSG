@@ -6,8 +6,6 @@ pull_request_rules:
     actions:
       review:
         type: APPROVE
-      merge:
-        method: squash
   - name: Approve and merge non-major Snyk.io upgrades
     conditions:
       - author=snyk-bot

@@ -5,6 +5,7 @@ import {
   useFormContext,
   useFormState,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiPlus, BiTrash } from 'react-icons/bi'
 import {
   FormControl,
@@ -54,6 +55,7 @@ interface EditTableColumnsProps {
 export const EditTableColumns = ({
   isLoading,
 }: EditTableColumnsProps): JSX.Element => {
+  const { t } = useTranslation()
   const { register, control, getValues } = useFormContext<EditTableInputs>()
   const { errors } = useFormState<EditTableInputs>()
   const { fields, append, remove } = useFieldArray<EditTableInputs>({
@@ -83,7 +85,9 @@ export const EditTableColumns = ({
             isInvalid={!!errors?.columns?.[index]?.title}
           >
             <Grid templateColumns="1fr auto">
-              <FormLabel>{`Column ${index + 1}`}</FormLabel>
+              <FormLabel>{`${t('features.adminForm.sidebar.fields.table.column')} ${
+                index + 1
+              }`}</FormLabel>
               {fields.length !== 1 && (
                 <IconButton
                   mt="-0.75rem"
@@ -91,7 +95,9 @@ export const EditTableColumns = ({
                   colorScheme="danger"
                   fontSize="1.25rem"
                   icon={<BiTrash />}
-                  aria-label="Delete column"
+                  aria-label={t(
+                    'features.adminForm.sidebar.fields.table.ariaLabelDelete',
+                  )}
                   onClick={() => remove(index)}
                 />
               )}
@@ -133,7 +139,9 @@ export const EditTableColumns = ({
           <FormControl isReadOnly={isLoading}>
             <Toggle
               {...register(`columns.${index}.required`)}
-              label="Required"
+              label={t(
+                'features.adminForm.sidebar.fields.commonFieldComponents.required',
+              )}
             />
           </FormControl>
         </Stack>
@@ -145,7 +153,7 @@ export const EditTableColumns = ({
         onClick={handleAddColumn}
         isDisabled={isLoading}
       >
-        Add column
+        {t('features.adminForm.sidebar.fields.table.addColumn')}
       </Button>
     </Stack>
   )

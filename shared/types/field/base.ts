@@ -1,3 +1,5 @@
+import { Language } from '../form'
+
 export enum BasicField {
   Section = 'section',
   Statement = 'statement',
@@ -21,6 +23,23 @@ export enum BasicField {
   Table = 'table',
   Uen = 'uen',
   Children = 'children',
+}
+
+/**
+ * Contains field types where the answer is a generic string type
+ */
+export enum GenericStringAnswerResponseFieldV3 {
+  Number = 'number',
+  Decimal = 'decimal',
+  ShortText = 'textfield',
+  LongText = 'textarea',
+  HomeNo = 'homeno',
+  Dropdown = 'dropdown',
+  Rating = 'rating',
+  Nric = 'nric',
+  Uen = 'uen',
+  Date = 'date',
+  CountryRegion = 'country_region',
 }
 
 export enum MyInfoAttribute {
@@ -71,6 +90,17 @@ export enum MyInfoChildAttributes {
   ChildSecondaryRace = 'childsecondaryrace',
 }
 
+export type AllowedMyInfoFieldOption = Exclude<
+  MyInfoAttribute,
+  | MyInfoAttribute.ChildName
+  | MyInfoAttribute.ChildBirthCertNo
+  | MyInfoAttribute.ChildDateOfBirth
+  | MyInfoAttribute.ChildVaxxStatus
+  | MyInfoAttribute.ChildGender
+  | MyInfoAttribute.ChildRace
+  | MyInfoAttribute.ChildSecondaryRace
+>
+
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
 }>
@@ -85,6 +115,11 @@ export type VerifiableFieldBase = {
   isVerifiable: boolean
 }
 
+export type TranslationMapping = {
+  language: Language
+  translation: string
+}
+
 export type FieldBase = {
   globalId?: string
   title: string
@@ -92,6 +127,8 @@ export type FieldBase = {
   required: boolean
   disabled: boolean
   fieldType: BasicField
+  titleTranslations?: TranslationMapping[]
+  descriptionTranslations?: TranslationMapping[]
 }
 
 export type MyInfoableFieldBase = FieldBase & AllowMyInfoBase

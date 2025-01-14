@@ -1,5 +1,7 @@
-import { FC, forwardRef, useCallback } from 'react'
+import { forwardRef, useCallback } from 'react'
 import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
+
+import { FCC } from '~typings/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -9,7 +11,7 @@ import { useSelectContext } from '../../SelectContext'
 
 import { SelectedItems } from './SelectedItems'
 
-const MultiItemsContainer: FC = ({ children }) => {
+const MultiItemsContainer: FCC = ({ children }) => {
   return (
     <Box
       display="inline-flex"
@@ -43,7 +45,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       getToggleButtonProps,
     } = useSelectContext()
 
-    const { getDropdownProps } = useMultiSelectContext()
+    const { getDropdownProps, onBlur } = useMultiSelectContext()
 
     const mergedRefs = useMergeRefs(inputRef, ref)
 
@@ -75,6 +77,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         aria-readonly={isReadOnly}
         __css={styles.fieldwrapper}
         onClick={handleToggleMenu}
+        onBlur={onBlur}
       >
         <MultiItemsContainer>
           <SelectedItems />

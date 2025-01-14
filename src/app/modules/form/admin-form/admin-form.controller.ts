@@ -8,6 +8,7 @@ import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
 import {
+  KB,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants/file'
@@ -31,6 +32,9 @@ import {
   FormSettings,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
+  FormWorkflowStepDto,
+  Language,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -40,11 +44,14 @@ import {
   PrivateFormErrorDto,
   PublicFormDto,
   SettingsUpdateDto,
-  SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
+import {
+  EncryptedStringsMessageContent,
+  encryptStringsMessage,
+} from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -52,10 +59,8 @@ import {
   ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
-import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
-import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -86,7 +91,6 @@ import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
-import { TwilioCredentials } from './../../../services/sms/sms.types'
 import {
   PREVIEW_CORPPASS_UID,
   PREVIEW_CORPPASS_UINFIN,
@@ -94,9 +98,11 @@ import {
 } from './admin-form.constants'
 import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
+  createWorkflowStepValidator,
   getWebhookSettingsValidator,
   updateSettingsValidator,
   updateWebhookSettingsValidator,
+  updateWorkflowStepValidator,
 } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
@@ -1405,6 +1411,26 @@ export const _handleUpdateSettings: ControllerHandler<
     })
 }
 
+/**
+ * Handler for PATCH /forms/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings = [
+  updateSettingsValidator,
+  _handleUpdateSettings,
+] as ControllerHandler[]
+
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,
@@ -1463,26 +1489,6 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
 }
 
 /**
- * Handler for PATCH /forms/:formId/settings.
- * @security session
- *
- * @returns 200 with updated form settings
- * @returns 400 when body is malformed
- * @returns 403 when current user does not have permissions to update form settings
- * @returns 404 when form to update settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
- * @returns 410 when updating settings for archived form
- * @returns 413 when updating settings causes form to be too large to be saved in the database
- * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-export const handleUpdateSettings = [
-  updateSettingsValidator,
-  _handleUpdateSettings,
-] as ControllerHandler[]
-
-/**
  * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
  *
@@ -1500,6 +1506,290 @@ export const handleUpdateSettings = [
 export const handleUpdateWebhookSettings = [
   updateWebhookSettingsValidator,
   _handleUpdateWebhookSettings,
+] as ControllerHandler[]
+
+export const _handleCreateWorkflowStep: ControllerHandler<
+  { formId: string },
+  FormWorkflowDto | ErrorDto,
+  FormWorkflowStepDto
+> = (req, res) => {
+  const { formId } = req.params
+  const workflowStepToCreate = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to create form field with provided body.
+      .andThen((form) =>
+        AdminFormService.createWorkflowStep(form, workflowStepToCreate),
+      )
+      .map((updatedWorkflow) =>
+        res.status(StatusCodes.OK).json(updatedWorkflow),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form field',
+          meta: {
+            action: 'handleCreateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            workflowStepToCreate,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleCreateWorkflowStep = [
+  createWorkflowStepValidator,
+  _handleCreateWorkflowStep,
+]
+
+const _handleUpdateWorkflowStep: ControllerHandler<
+  {
+    formId: string
+    stepNumber: number
+  },
+  FormWorkflowDto | ErrorDto,
+  FormWorkflowStepDto
+> = (req, res) => {
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const updatedWorkflowStep = req.body
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormWorkflowStep(
+        retrievedForm,
+        stepNumber,
+        updatedWorkflowStep,
+      ),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form workflow step',
+        meta: {
+          action: 'handleUpdateWorkflowStep',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          updatedWorkflowStep,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateWorkflowStep = [
+  updateWorkflowStepValidator,
+  _handleUpdateWorkflowStep,
+] as ControllerHandler[]
+
+export const handleDeleteWorkflowStep: ControllerHandler<
+  {
+    formId: string
+    stepNumber: number
+  },
+  FormWorkflowDto | ErrorDto
+> = (req, res) => {
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Delete workflow step.
+      .andThen((retrievedForm) =>
+        AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
+      )
+      .map((updatedWorkflow) =>
+        res.status(StatusCodes.OK).json(updatedWorkflow),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form workflow step',
+          meta: {
+            action: 'handleDeleteWorkflowStep',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            stepNumber,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+const TWO_HUNDRED_FIFTY = 250
+const TWO_HUNDRED_FIFTY_KB_IN_BYTES = TWO_HUNDRED_FIFTY * KB
+const _handleUpdateWhitelistSettingValidator = celebrate({
+  [Segments.PARAMS]: Joi.object({
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  }),
+  [Segments.BODY]: Joi.object({
+    whitelistCsvString: Joi.string()
+      .allow(null) // for removal of whitelist
+      .max(TWO_HUNDRED_FIFTY_KB_IN_BYTES)
+      .pattern(/^[a-zA-Z0-9,\r\n]+$/)
+      .messages({
+        'string.empty': 'Your csv is empty.',
+        'string.pattern.base': 'Your csv has one or more invalid characters.',
+        'string.max': `You have exceeded the file size limit, please upload a file below ${TWO_HUNDRED_FIFTY} kB.`,
+      }),
+  }),
+})
+
+const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
+  if (!whitelistCsvString) {
+    return null
+  }
+  return whitelistCsvString.split('\r\n').map((entry: string) => entry.trim())
+}
+
+const _handleUpdateWhitelistSetting: ControllerHandler<
+  { formId: string },
+  object,
+  { whitelistCsvString: string | null }
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: '_handleUpdateWhitelistSetting',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+  }
+
+  // Step 1: Retrieve form only if currently logged in user has write permissions for form.
+  const formResult = await UserService.getPopulatedUserById(
+    sessionUserId,
+  ).andThen((user) =>
+    AuthService.getFormAfterPermissionChecks({
+      user,
+      formId,
+      level: PermissionLevel.Write,
+    }),
+  )
+
+  if (formResult.isErr()) {
+    const { error } = formResult
+    logger.error({
+      message: 'Error occurred when updating form settings',
+      meta: logMeta,
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  const form = formResult.value
+
+  const { whitelistCsvString } = req.body
+  const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
+
+  const upperCaseWhitelistedSubmitterIds =
+    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
+      ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
+      : null
+
+  // Step 2: perform validation on submitted whitelist setting
+  const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
+    upperCaseWhitelistedSubmitterIds,
+  )
+  if (!isWhitelistSettingValid.isValid) {
+    logger.error({
+      message: 'Invalid whitelist setting',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: isWhitelistSettingValid.invalidReason,
+    })
+  }
+
+  // Step 3: Encrypt whitelist settings
+  if (!form.publicKey) {
+    logger.error({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+  const formPublicKey = form.publicKey
+  const encryptedWhitelistSubmitterIdsContent = upperCaseWhitelistedSubmitterIds
+    ? encryptStringsMessage(upperCaseWhitelistedSubmitterIds, formPublicKey)
+    : null
+
+  // Step 4: Update form with encrypted whitelist settings
+  return AdminFormService.updateFormWhitelistSetting(
+    form,
+    encryptedWhitelistSubmitterIdsContent,
+  )
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          // do not log the whitelist setting as it may contain sensitive data and be large in size
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const _handleUpdateWhitelistSettingForTest =
+  _handleUpdateWhitelistSetting
+
+export const handleUpdateWhitelistSetting = [
+  _handleUpdateWhitelistSettingValidator,
+  _handleUpdateWhitelistSetting,
 ] as ControllerHandler[]
 
 /**
@@ -1588,6 +1878,51 @@ export const handleGetSettings: ControllerHandler<
         message: 'Error occurred when retrieving form settings',
         meta: {
           action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleGetWhitelistSetting: ControllerHandler<
+  {
+    formId: string
+  },
+  | {
+      encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+    }
+  | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
+    .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
+    .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
+    .map((formWhitelistedSubmitterIds) => {
+      return res.status(StatusCodes.OK).json({
+        encryptedWhitelistedSubmitterIds: formWhitelistedSubmitterIds,
+      })
+    })
+    .mapErr((error: Error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form whitelist settings',
+        meta: {
+          action: 'handleGetWhitelistSetting',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
@@ -1934,6 +2269,69 @@ export const handleUpdateFormField = [
   _handleUpdateFormField,
 ]
 
+const _handleUpdateOptionsToRecipientsMap: ControllerHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  FormFieldDto | ErrorDto,
+  { optionsToRecipientsMap: Record<string, string[]> }
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const { optionsToRecipientsMap } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => {
+      return AdminFormService.updateOptionsToRecipientsMap(
+        form,
+        fieldId,
+        optionsToRecipientsMap,
+      )
+    })
+    .map((updatedFormField) =>
+      res.status(StatusCodes.OK).json(updatedFormField as FormFieldDto),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating options to recipients map',
+        meta: {
+          action: '_handleUpdateOptionsToRecipientsMap',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          fieldId,
+          optionsToRecipientsMap,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateOptionsToRecipientsMap = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      optionsToRecipientsMap: Joi.object(),
+    }),
+    [Segments.PARAMS]: Joi.object({
+      formId: Joi.string().required(),
+      fieldId: Joi.string().required(),
+    }),
+  }),
+  _handleUpdateOptionsToRecipientsMap,
+] as ControllerHandler[]
+
 /**
  * NOTE: Exported for testing.
  * Private handler for POST /forms/:formId/fields
@@ -2090,6 +2488,23 @@ const joiLogicBody = {
     is: LogicType.PreventSubmit,
     then: Joi.string().required(),
   }),
+  preventSubmitMessageTranslations: Joi.alternatives().conditional(
+    'logicType',
+    {
+      is: LogicType.PreventSubmit,
+      then: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
+    },
+  ),
 }
 
 /**
@@ -2451,6 +2866,28 @@ export const handleUpdateEndPage = [
         .message('Please enter a valid HTTP or HTTPS URI'),
       buttonText: Joi.string().allow(''),
       // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+      titleTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
+      paragraphTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
     }).unknown(true),
   }),
   _handleUpdateEndPage,
@@ -2737,186 +3174,20 @@ export const handleUpdateStartPage = [
           otherwise: Joi.any().forbidden(),
         }),
       }).required(),
+      paragraphTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
     },
   }),
   _handleUpdateStartPage,
-] as ControllerHandler[]
-
-/**
- * Handler to retrieve the free sms counts used by a form's administrator and the sms verifications quota
- * This is the controller for GET /admin/forms/:formId/verified-sms/count/free
- * @param formId The id of the form to retrieve the free sms counts for
- * @returns 200 with free sms counts and quota when successful
- * @returns 404 when the formId is not found in the database
- * @returns 500 when a database error occurs during retrieval
- */
-export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
-  {
-    formId: string
-  },
-  ErrorDto | SmsCountsDto
-> = (req, res) => {
-  const { formId } = req.params
-  const logMeta = {
-    action: 'handleGetFreeSmsCountForFormAdmin',
-    ...createReqMeta(req),
-    formId,
-  }
-
-  // Step 1: Check that the form exists
-  return (
-    FormService.retrieveFormById(formId)
-      // Step 2: Retrieve the free sms count
-      .andThen(({ admin }) => {
-        return SmsService.retrieveFreeSmsCounts(String(admin))
-      })
-      // Step 3: Map/MapErr accordingly
-      .map((freeSmsCountForAdmin) =>
-        res.status(StatusCodes.OK).json({
-          freeSmsCounts: freeSmsCountForAdmin,
-          quota: smsConfig.smsVerificationLimit,
-        }),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error while retrieving sms counts for user',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
-}
-
-// Validates Twilio Credentials
-const validateTwilioCredentials = celebrate({
-  [Segments.BODY]: Joi.object().keys({
-    accountSid: Joi.string().required().pattern(new RegExp('^AC')),
-    apiKey: Joi.string().required().pattern(new RegExp('^SK')),
-    apiSecret: Joi.string().required(),
-    messagingServiceSid: Joi.string().required().pattern(new RegExp('^MG')),
-  }),
-})
-/**
- * Handler for PUT /:formId/twilio.
- * @security session
- *
- * @returns 200 with twilio credentials succesfully updated
- * @returns 400 with twilio credentials are invalid
- * @returns 401 when user is not logged in
- * @returns 403 when user does not have permissions to update the form
- * @returns 404 when form to update cannot be found
- * @returns 422 when id of user who is updating the form cannot be found
- * @returns 500 when database error occurs
- */
-export const updateTwilioCredentials: ControllerHandler<
-  { formId: string },
-  unknown,
-  TwilioCredentials
-> = (req, res) => {
-  const { formId } = req.params
-  const twilioCredentials = req.body
-
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    )
-    .andThen((retrievedForm) => {
-      const { msgSrvcName } = retrievedForm
-
-      return msgSrvcName
-        ? AdminFormService.updateTwilioCredentials(
-            msgSrvcName,
-            twilioCredentials,
-          )
-        : AdminFormService.createTwilioCredentials(
-            twilioCredentials,
-            retrievedForm,
-          )
-    })
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully updated Twilio credentials' }),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred when updating twilio credentials',
-        meta: {
-          action: 'handleUpdateTwilio',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          formId,
-          twilioCredentials,
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * Handler for DELETE /:formId/twilio.
- * @security session
- *
- * @returns 200 with twilio credentials succesfully updated
- * @returns 401 when user is not logged in
- * @returns 403 when user does not have permissions to update the form
- * @returns 404 when form to delete credentials cannot be found
- * @returns 422 when id of user who is updating the form cannot be found
- * @returns 500 when database error occurs
- */
-export const handleDeleteTwilio: ControllerHandler<{ formId: string }> = (
-  req,
-  res,
-) => {
-  const { formId } = req.params
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Delete,
-      }),
-    )
-    .andThen((retrievedForm) => {
-      return AdminFormService.deleteTwilioCredentials(retrievedForm)
-    })
-    .map(() =>
-      res
-        .status(StatusCodes.OK)
-        .json({ message: 'Successfully deleted Twilio credentials' }),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred when deleting twilio credentials',
-        meta: {
-          action: 'handleDeleteTwilio',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          formId,
-        },
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-// Handler for PUT /admin/forms/:formId/twilio
-export const handleUpdateTwilio = [
-  validateTwilioCredentials,
-  updateTwilioCredentials,
 ] as ControllerHandler[]
 
 export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (

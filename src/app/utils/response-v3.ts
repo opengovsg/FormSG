@@ -37,8 +37,9 @@ export const isFieldResponseV3Equal = (
       const rMd5 = rAnswer.md5Hash
 
       return (
-        (!lMd5 || !rMd5 || lMd5 === rMd5) &&
-        l.answer.hasBeenScanned === rAnswer.hasBeenScanned
+        !lMd5 || !rMd5 || lMd5 === rMd5
+        // TODO: FRM-1839 + FRM-1590 Skip scanning if attachment has already been scanned
+        // && l.answer.hasBeenScanned === rAnswer.hasBeenScanned
       )
     }
     case BasicField.Section:

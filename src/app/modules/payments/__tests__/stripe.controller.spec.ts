@@ -146,15 +146,15 @@ describe('stripe.controller', () => {
       expect(mockRes.redirect).toHaveBeenCalledWith(
         `${config.app.appUrl}/admin/form/${MOCK_FORM_ID}/settings/payments`,
       )
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledOnceWith(
-        MOCK_FORM_ID,
-      )
+      expect(
+        MockFormService.retrieveFullFormById,
+      ).toHaveBeenCalledExactlyOnceWith(MOCK_FORM_ID)
       expect(
         MockStripeService.exchangeCodeForAccessToken,
-      ).toHaveBeenCalledOnceWith('someCode')
+      ).toHaveBeenCalledExactlyOnceWith('someCode')
       expect(
         MockStripeService.linkStripeAccountToForm,
-      ).toHaveBeenCalledOnceWith(mockForm, {
+      ).toHaveBeenCalledExactlyOnceWith(mockForm, {
         accountId: mockStripeToken.stripe_user_id,
         publishableKey: mockStripeToken.stripe_publishable_key,
       })
@@ -183,9 +183,9 @@ describe('stripe.controller', () => {
       expect(mockRes.redirect).toHaveBeenCalledWith(
         `${config.app.appUrl}/admin/form/formId/settings/payments`,
       )
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledOnceWith(
-        'formId',
-      )
+      expect(
+        MockFormService.retrieveFullFormById,
+      ).toHaveBeenCalledExactlyOnceWith('formId')
       expect(
         MockStripeService.exchangeCodeForAccessToken,
       ).not.toHaveBeenCalledWith()

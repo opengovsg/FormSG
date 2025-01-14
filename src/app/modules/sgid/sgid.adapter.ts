@@ -161,6 +161,12 @@ export class SGIDMyInfoData
    */
   _formatFieldValue(attr: ExternalAttr): string | undefined {
     const fieldValue = this.#payload[attr]
+    // returned payload might be empty if the form fields were edited after the initial scope sent to sgid
+    // sgid would then respond only the data initially requested
+    // but the form now expects more fields
+    if (!fieldValue) {
+      return ''
+    }
     switch (attr) {
       case ExternalAttr.RegisteredAddress:
         return formatAddress(fieldValue)

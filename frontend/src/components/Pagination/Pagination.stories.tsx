@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 
@@ -11,7 +11,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<PaginationProps> = (args) => {
+const Template: StoryFn<PaginationProps> = (args) => {
   const [currentPage, setCurrentPage] = useState(args.currentPage)
 
   useEffect(() => {

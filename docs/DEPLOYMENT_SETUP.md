@@ -265,9 +265,9 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 [Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable                   | Description                   |
-| :------------------------- | ----------------------------- |
-| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
+| Variable                  | Description                   |
+| :------------------------ | ----------------------------- |
+| `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### SMS with Twilio
 
@@ -297,7 +297,7 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                                               |
 | `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                                   |
 | `SP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Singpass Redirect URL                                                                                                                                                       |
-| `SP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /singpass/.well-known/jwks.json endpoint.                          |
+| `SP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.                                |
 | `SP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI                                                                                            |
 | `CP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Corppass OIDC Discovery Endpoint                                                                                                                                                          |
 | `CP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Corppass OIDC JWKS Endpoint                                                                                                                                                               |

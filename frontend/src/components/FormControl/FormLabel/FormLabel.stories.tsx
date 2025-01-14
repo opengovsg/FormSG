@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormLabel, FormLabelProps } from './FormLabel'
 
@@ -8,7 +8,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<FormLabelProps> = (args) => <FormLabel {...args} />
+const Template: StoryFn<FormLabelProps> = (args) => <FormLabel {...args} />
 export const Default = Template.bind({})
 Default.args = {
   children: 'This is a label that is very very very long',

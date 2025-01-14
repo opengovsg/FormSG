@@ -4,8 +4,7 @@ import { useDateRangePicker } from '../DateRangePickerContext'
 
 import { DateRangePickerInput } from './DateRangePickerInput'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const DateRangePickerWrapper = forwardRef<{}, 'input'>(
+export const DateRangePickerWrapper = forwardRef<object, 'input'>(
   ({ children }, ref) => {
     const {
       styles,

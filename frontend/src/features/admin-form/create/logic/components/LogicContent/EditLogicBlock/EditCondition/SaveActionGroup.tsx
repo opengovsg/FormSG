@@ -28,10 +28,7 @@ export const SaveActionGroup = ({
     <Flex
       justify="space-between"
       align="center"
-      py="0.375rem"
-      px={{ base: '1rem', md: '2rem' }}
-      borderTop="1px solid"
-      borderColor="neutral.300"
+      px={{ base: '1.5rem', md: '2rem' }}
     >
       {handleDelete ? (
         <IconButton
@@ -51,7 +48,7 @@ export const SaveActionGroup = ({
         w="100%"
       >
         <Button
-          isLoading={isLoading}
+          isDisabled={isLoading}
           onClick={handleSubmit}
           isFullWidth={isMobile}
         >

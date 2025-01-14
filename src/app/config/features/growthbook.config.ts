@@ -1,5 +1,7 @@
 import convict, { Schema } from 'convict'
 
+import { isTest } from '../config'
+
 export interface IGrowthbook {
   growthbookClientKey: string
 }
@@ -13,6 +15,6 @@ const growthbookSchema: Schema<IGrowthbook> = {
   },
 }
 
-export const growthbookConfig = convict(growthbookSchema)
-  .validate({ allowed: 'strict' })
-  .getProperties()
+export const growthbookConfig = isTest
+  ? convict(growthbookSchema).getProperties()
+  : convict(growthbookSchema).validate({ allowed: 'strict' }).getProperties()

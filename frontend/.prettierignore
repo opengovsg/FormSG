@@ -26,7 +26,6 @@ storybook-static
 build-storybook.log
 
 tsconfig.json
-tsconfig.dd.json
 
 # all asset json files
 **/assets/**/*.json

@@ -1,9 +1,6 @@
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
-// Some webpack pipelines (Chromatic for ours) fails with the default export, but works with /dist export.
-// Due to not recognizing export from the package's package.json.
-// See https://github.com/sindresorhus/p-queue/issues/145
-import PQueue from 'p-queue/dist'
+import PQueue from 'p-queue'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -18,7 +15,7 @@ import { CsvRecord } from '../utils/CsvRecord.class'
 
 // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
 // Something to do with babel-loader.
-if (process.env.NODE_ENV !== 'production') {
+if (import.meta.env.NODE_ENV !== 'production') {
   // eslint-disable-next-line
   ;(global as any).$RefreshReg$ = () => {}
   // eslint-disable-next-line
@@ -66,7 +63,10 @@ function verifySignature(
  * main thread.
  * @param data The data to decrypt into a csvRecord.
  */
-async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
+async function decryptIntoCsv(
+  data: LineData,
+  isFasterDownloadsEnabled: boolean,
+): Promise<MaterializedCsvRecord> {
   // This needs to be dynamically imported due to sharing code between main app and worker code.
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
   // Something to do with babel-loader.
@@ -189,7 +189,11 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             CsvRecordStatus.Ok,
             'Success (with Downloaded Attachment)',
           )
-          csvRecord.setDownloadBlob(downloadBlob)
+          if (isFasterDownloadsEnabled) {
+            csvRecord.downloadBlobURL = URL.createObjectURL(downloadBlob)
+          } else {
+            csvRecord.setDownloadBlob(downloadBlob)
+          }
         } catch (error) {
           csvRecord.setStatus(
             CsvRecordStatus.AttachmentError,
@@ -220,5 +224,4 @@ const exports = {
 
 expose(exports)
 
-export default {} as typeof Worker & { new (): Worker }
 export type DecryptionWorkerApi = typeof exports

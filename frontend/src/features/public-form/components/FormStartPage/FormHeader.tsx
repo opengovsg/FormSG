@@ -86,7 +86,7 @@ export const MiniHeader = ({
               aria-label="Mobile section sidebar"
               fontSize="1.5rem"
               icon={<BxMenuAltLeft />}
-              d={{ base: 'flex', md: 'none' }}
+              display={{ base: 'flex', md: 'none' }}
               onClick={onMobileDrawerOpen}
             />
           ) : null}

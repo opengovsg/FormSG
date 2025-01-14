@@ -5,7 +5,7 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 export default {
   title: 'Components/Avatar',
@@ -17,11 +17,11 @@ export default {
   },
 } as Meta<AvatarProps>
 
-const Template: Story<AvatarProps> = (args) => {
+const Template: StoryFn<AvatarProps> = (args) => {
   return <Avatar {...args} />
 }
 
-const GroupTemplate: Story = () => {
+const GroupTemplate: StoryFn = () => {
   return (
     <SimpleGrid
       columns={3}

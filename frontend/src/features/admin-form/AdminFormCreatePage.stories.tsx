@@ -1,6 +1,6 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
-import { PaymentChannel, UserId } from '~shared/types'
+import { PaymentChannel, PaymentType, UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -17,7 +17,6 @@ import {
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
@@ -25,6 +24,7 @@ import {
   getMobileViewParameters,
   getTabletViewParameters,
   LoggedInDecorator,
+  mockDateDecorator,
   ViewedFeatureTourDecorator,
 } from '~utils/storybook'
 
@@ -55,7 +55,6 @@ const buildMswRoutes = (
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
     }),
-    getFreeSmsQuota({ delay }),
   ]
 }
 
@@ -66,6 +65,7 @@ export default {
     ViewedFeatureTourDecorator,
     AdminFormCreatePageDecorator,
     LoggedInDecorator,
+    mockDateDecorator,
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
@@ -74,11 +74,12 @@ export default {
     chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
     msw: buildMswRoutes(),
+    mockdate: new Date('2022-12-25T06:22:27.219Z'),
     userId: 'adminFormTestUserId',
   },
 } as Meta
 
-const Template: Story = () => <CreatePage />
+const Template: StoryFn = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
@@ -104,6 +105,7 @@ TabletAllFields.parameters = {
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   ...getTabletViewParameters(),
+  mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: buildMswRoutes({}, 'infinite'),
 }
 
@@ -162,8 +164,10 @@ FormWithPayment.parameters = {
     },
     payments_field: {
       enabled: true,
-      amount_cents: 5000,
       description: 'Test event registration fee',
+      payment_type: PaymentType.Variable,
+      min_amount: 1000,
+      max_amount: 5000,
     },
   }),
 }

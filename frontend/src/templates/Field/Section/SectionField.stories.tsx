@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -29,7 +29,10 @@ interface StorySectionFieldProps extends SectionFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StorySectionFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StorySectionFieldProps> = ({
+  defaultValue,
+  ...args
+}) => {
   return <SectionFieldComponent {...args} />
 }
 

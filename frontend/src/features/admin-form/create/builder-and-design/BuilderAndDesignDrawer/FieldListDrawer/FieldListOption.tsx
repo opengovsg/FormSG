@@ -1,14 +1,16 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
+import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
   DraggableProvided,
   DraggableStateSnapshot,
-} from 'react-beautiful-dnd'
-import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
+} from '@hello-pangea/dnd'
 
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import { FormResponseMode } from '~shared/types'
+import { AllowedMyInfoFieldOption, BasicField } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Badge from '~components/Badge'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -50,7 +52,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 interface DraggableBasicFieldOptionProps
@@ -62,13 +64,12 @@ interface DraggableBasicFieldOptionProps
 interface DraggableMyInfoFieldOptionProps
   extends Omit<FieldOptionProps, 'isActive'> {
   index: number
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 export const DraggableBasicFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableBasicFieldOptionProps): JSX.Element => {
@@ -111,7 +112,6 @@ export const DraggableBasicFieldListOption = ({
 export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
@@ -154,7 +154,8 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       [fieldType],
     )
     const { data: form } = useCreateTabForm()
-    const numFields = useMemo(() => form?.form_fields?.length ?? 0, [form])
+    const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+    const numFields = form?.form_fields?.length ?? 0
 
     const newFieldMeta = useMemo(
       () => getFieldCreationMeta(fieldType),
@@ -178,6 +179,11 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
+        {isMrf && fieldType === BasicField.YesNo ? (
+          <Badge maxW="100%" variant="subtle" colorScheme="secondary">
+            <Text noOfLines={1}>Use for approvals</Text>
+          </Badge>
+        ) : null}
       </FieldListOption>
     )
   },

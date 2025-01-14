@@ -26,18 +26,43 @@ import {
   ITableFieldSchema,
   SingleAnswerFieldResponse,
 } from 'src/types'
+import {
+  ParsedClearAttachmentFieldResponseV3,
+  ParsedClearAttachmentResponseV3,
+} from 'src/types/api'
 
 import {
   AllowMyInfoBase,
   AttachmentSize,
   BasicField,
+  CheckboxFieldResponsesV3,
   CheckboxResponse,
+  CheckboxResponseV3,
   Column,
   DropdownFieldBase,
+  EmailResponseV3,
   FormField,
+  FormFieldDto,
+  GenericStringAnswerFieldResponseV3,
+  MobileResponseV3,
+  RadioFieldResponsesV3,
+  RadioResponseV3,
   ShortTextFieldBase,
+  StringAnswerResponseV3,
+  TableFieldResponsesV3,
+  TableResponseV3,
   TableRow,
+  VerifiableFieldResponseV3,
+  YesNoFieldResponseV3,
+  YesNoResponseV3,
 } from '../../../../shared/types'
+
+export const generateDefaultFieldV3 = (
+  fieldType: BasicField,
+  customParams?: Partial<FormField> & { _id?: string },
+): FormFieldDto => {
+  return generateDefaultField(fieldType, customParams) as FormFieldDto
+}
 
 export const generateDefaultField = (
   fieldType: BasicField,
@@ -51,6 +76,8 @@ export const generateDefaultField = (
     fieldType,
     required: true,
     disabled: false,
+    titleTranslations: [],
+    descriptionTranslations: [],
   }
   switch (fieldType) {
     case BasicField.Table:
@@ -77,6 +104,7 @@ export const generateDefaultField = (
       return {
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
+        fieldOptionsTranslations: [],
         getQuestion: () => defaultParams.title,
         ValidationOptions: {
           customMin: null,
@@ -116,6 +144,7 @@ export const generateDefaultField = (
       return {
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
+        fieldOptionsTranslations: [],
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDropdownFieldSchema
@@ -368,7 +397,7 @@ export const generateNewTableResponse = (
 })
 
 export const generateTableDropdownColumn = (
-  customParams?: Partial<DropdownFieldBase>,
+  customParams?: Partial<DropdownFieldBase> & { _id?: string },
 ): Column => {
   return {
     title: 'some title',
@@ -376,6 +405,7 @@ export const generateTableDropdownColumn = (
     required: true,
     _id: new ObjectId().toHexString(),
     fieldOptions: ['a', 'b', 'c'],
+    fieldOptionsTranslations: [],
     ...customParams,
     toObject() {
       // mock toObject method of mongoose document
@@ -385,6 +415,7 @@ export const generateTableDropdownColumn = (
         required: true,
         _id: new ObjectId().toHexString(),
         fieldOptions: ['a', 'b', 'c'],
+        fieldOptionsTranslations: [],
         ...customParams,
       }
     },
@@ -392,7 +423,7 @@ export const generateTableDropdownColumn = (
 }
 
 export const generateTableShortTextColumn = (
-  customParams?: Partial<ShortTextFieldBase>,
+  customParams?: Partial<ShortTextFieldBase> & { _id?: string },
 ): Column => {
   return {
     title: 'some title',
@@ -419,4 +450,80 @@ export const generateTableShortTextColumn = (
       }
     },
   } as Column
+}
+
+export const generateGenericStringAnswerResponseV3 = ({
+  fieldType,
+  answer = 'answer',
+}: {
+  fieldType: GenericStringAnswerFieldResponseV3['fieldType']
+  answer: StringAnswerResponseV3
+}): GenericStringAnswerFieldResponseV3 => {
+  return {
+    fieldType,
+    answer,
+  }
+}
+
+export const generateYesNoAnswerResponseV3 = (
+  answer: YesNoFieldResponseV3 = 'Yes',
+): YesNoResponseV3 => {
+  return {
+    fieldType: BasicField.YesNo,
+    answer: answer,
+  }
+}
+
+export const generateAttachmentResponseV3 = (
+  answer: ParsedClearAttachmentFieldResponseV3 = {
+    filename: 'Attachment filename',
+    content: Buffer.from('Attachment content'),
+    answer: 'Attachment answer',
+    hasBeenScanned: false,
+  },
+): ParsedClearAttachmentResponseV3 => {
+  return {
+    fieldType: BasicField.Attachment,
+    answer,
+  }
+}
+
+export const generateVerifiableAnswerResponseV3 = ({
+  fieldType,
+  answer,
+}: {
+  fieldType: BasicField.Email | BasicField.Mobile
+  answer: VerifiableFieldResponseV3
+}): EmailResponseV3 | MobileResponseV3 => {
+  return {
+    fieldType,
+    answer,
+  }
+}
+
+export const generateTableResponseV3 = (
+  answer: TableFieldResponsesV3,
+): TableResponseV3 => {
+  return {
+    fieldType: BasicField.Table,
+    answer,
+  }
+}
+
+export const generateRadioResponseV3 = (
+  answer: RadioFieldResponsesV3,
+): RadioResponseV3 => {
+  return {
+    fieldType: BasicField.Radio,
+    answer,
+  }
+}
+
+export const generateCheckboxResponseV3 = (
+  answer: CheckboxFieldResponsesV3,
+): CheckboxResponseV3 => {
+  return {
+    fieldType: BasicField.Checkbox,
+    answer,
+  }
 }

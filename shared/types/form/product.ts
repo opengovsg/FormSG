@@ -1,21 +1,27 @@
-import { Opaque } from 'type-fest'
+import { z } from 'zod'
 
-export type ProductId = Opaque<string, 'ProductId'>
-export type Product = {
-  name: string
-  description: string
-  multi_qty: boolean
-  min_qty: number
-  max_qty: number
-  amount_cents: number
-  _id: ProductId
-}
+export const ProductId = z.string().brand<'ProductId'>()
+export type ProductId = z.infer<typeof ProductId>
 
-export type ProductItem = {
-  data: Product
-  selected: boolean
-  quantity: number
-}
+export const ProductDto = z.object({
+  _id: ProductId,
+  name: z.string(),
+  description: z.string(),
+  multi_qty: z.boolean(),
+  min_qty: z.number().nonnegative(),
+  max_qty: z.number().nonnegative(),
+  amount_cents: z.number().nonnegative(),
+})
+export type Product = z.infer<typeof ProductDto>
+
+export const ProductItemDto = z.object({
+  data: ProductDto,
+  selected: z.boolean(),
+  quantity: z.number().nonnegative(),
+})
+
+export type ProductItem = z.infer<typeof ProductItemDto>
+export type ProductItemInput = z.input<typeof ProductItemDto>
 
 export type ProductItemForReceipt = {
   name: string

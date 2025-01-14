@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
@@ -19,6 +20,7 @@ import Spinner from '~components/Spinner'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
+import { useUser } from '~features/user/queries'
 
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -75,11 +77,14 @@ const StackRow = ({
 }
 
 export const IndividualResponsePage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
 
   const { data: form } = useAdminForm()
+
+  const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
 
@@ -153,7 +158,9 @@ export const IndividualResponsePage = (): JSX.Element => {
           />
           <StackRow
             label="Timestamp"
-            value={data?.submissionTime ?? 'Loading...'}
+            value={
+              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+            }
             isLoading={isLoading}
             isError={isError}
           />
@@ -187,14 +194,15 @@ export const IndividualResponsePage = (): JSX.Element => {
               </Skeleton>
             </Stack>
           )}
-          {form?.responseMode === FormResponseMode.Multirespondent && (
-            <StackRow
-              label="Response link"
-              value={responseLinkWithKey}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          )}
+          {form?.responseMode === FormResponseMode.Multirespondent &&
+            user?.betaFlags?.mrfAdminSubmissionKey && (
+              <StackRow
+                label="Response link"
+                value={responseLinkWithKey}
+                isLoading={isLoading}
+                isError={isError}
+              />
+            )}
         </Stack>
         {isLoading || isError ? (
           <LoadingDecryption />

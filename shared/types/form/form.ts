@@ -1,5 +1,10 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto, MyInfoChildData } from '../field'
+import {
+  FormField,
+  FormFieldDto,
+  MyInfoChildData,
+  TranslationMapping,
+} from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Tagged, PartialDeep } from 'type-fest'
@@ -16,7 +21,8 @@ import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
-import { FormWorkflow, FormWorkflowDto } from './workflow'
+import { FormWorkflow, FormWorkflowDto, FormWorkflowStepDto } from './workflow'
+import { ErrorCode } from '../errorCodes'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -35,11 +41,17 @@ export type FormPermission = {
   write: boolean
 }
 
+export type TranslationOptionMapping = {
+  language: Language
+  translation: string[]
+}
+
 export type FormStartPage = {
   logo: FormLogo
   colorTheme: FormColorTheme
   estTimeTaken?: number
   paragraph?: string
+  paragraphTranslations?: TranslationMapping[]
 }
 
 export type FormEndPage = {
@@ -49,6 +61,8 @@ export type FormEndPage = {
   buttonText: string
   paymentTitle: string
   paymentParagraph: string
+  titleTranslations?: TranslationMapping[]
+  paragraphTranslations?: TranslationMapping[]
 }
 
 export enum FormAuthType {
@@ -60,10 +74,22 @@ export enum FormAuthType {
   SGID_MyInfo = 'SGID_MyInfo',
 }
 
+export enum Language {
+  ENGLISH = 'en-SG',
+  CHINESE = 'zh-SG',
+  MALAY = 'ms-SG',
+  TAMIL = 'ta-SG',
+}
+
 export enum FormStatus {
   Private = 'PRIVATE',
   Public = 'PUBLIC',
   Archived = 'ARCHIVED',
+}
+
+export type FormSupportedLanguages = {
+  nextSupportedLanguages?: Language[]
+  selectedLanguage?: Language | null
 }
 
 export type FormWebhook = {
@@ -75,6 +101,10 @@ export enum FormResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
   Multirespondent = 'multirespondent',
+}
+
+export interface FormMetadata {
+  mfb?: boolean
 }
 
 export type FormPaymentsChannel = {
@@ -145,7 +175,7 @@ export interface FormBase {
   hasCaptcha: boolean
   hasIssueNotification: boolean
   authType: FormAuthType
-  isNricMaskEnabled: boolean
+  isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean
 
   status: FormStatus
@@ -156,6 +186,11 @@ export interface FormBase {
 
   esrvcId?: string
 
+  /**
+   * LEGACY: Was previously used for sending with the correct Twilio.
+   * @deprecated Twilio support is removed and replaced with postman-sms.
+   * This is retained since DB records may still contain this field for backward compatibility.
+   */
   msgSrvcName?: string
 
   webhook: FormWebhook
@@ -163,11 +198,24 @@ export interface FormBase {
   responseMode: FormResponseMode
 
   goLinkSuffix?: string
+
+  metadata?: FormMetadata
+  hasMultiLang?: boolean
+  supportedLanguages?: Language[]
 }
 
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
+}
+
+export interface WhitelistedSubmitterIds {
+  isWhitelistEnabled: boolean
+}
+
+export interface WhitelistedSubmitterIdsWithReferenceOid
+  extends WhitelistedSubmitterIds {
+  encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
 export interface StorageFormBase extends FormBase {
@@ -177,12 +225,16 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
 export interface MultirespondentFormBase extends FormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
+  emails: string[]
+  stepsToNotify: FormWorkflowStepDto['_id'][]
+  stepOneEmailNotificationFieldId?: string
 }
 
 /**
@@ -302,17 +354,11 @@ export type PublicFormViewDto = {
   form: PublicFormDto
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
-  myInfoError?: true
   myInfoChildrenBirthRecords?: MyInfoChildData
-  hasSingleSubmissionValidationFailure?: true
+  errorCodes?: ErrorCode[]
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
-
-export type SmsCountsDto = {
-  quota: number
-  freeSmsCounts: number
-}
 
 export type AdminFormViewDto = {
   form: AdminFormDto

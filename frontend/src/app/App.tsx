@@ -1,4 +1,3 @@
-import React from 'react'
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -33,18 +32,18 @@ const queryClient = new QueryClient({
 
 // Init Datadog browser logs
 datadogLogs.init({
-  clientToken: process.env.REACT_APP_DD_RUM_CLIENT_TOKEN || '',
-  env: process.env.REACT_APP_DD_RUM_ENV,
+  clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
+  env: import.meta.env.VITE_APP_DD_RUM_ENV,
   site: 'datadoghq.com',
   service: 'formsg',
   // Specify a version number to identify the deployed version of your application in Datadog
-  version: process.env.REACT_APP_VERSION,
+  version: import.meta.env.VITE_APP_VERSION,
   forwardErrorsToLogs: true,
   sampleRate: 100,
 })
 
 export const App = (): JSX.Element => {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = import.meta.env.NODE_ENV === 'development'
 
   return (
     <>
@@ -65,6 +64,8 @@ export const App = (): JSX.Element => {
         />
       )}
       <HelmetProvider>
+        {/* FIXME: react 18 types */}
+        {/* @ts-expect-error missing FC type in old version */}
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />

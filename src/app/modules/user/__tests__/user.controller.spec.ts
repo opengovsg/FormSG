@@ -62,12 +62,12 @@ describe('user.controller', () => {
         MOCK_REQ.body.userId,
         MOCK_REQ.body.contact,
       )
-      expect(MockPostmanSmsService.sendAdminContactOtp).toHaveBeenCalledWith(
-        MOCK_REQ.body.contact,
-        expectedOtp,
-        MOCK_REQ.body.userId,
-        'MOCK_IP',
-      )
+      expect(MockPostmanSmsService.sendAdminContactOtp).toHaveBeenCalledWith({
+        recipientPhoneNumber: MOCK_REQ.body.contact,
+        otp: expectedOtp,
+        userId: MOCK_REQ.body.userId,
+        senderIp: 'MOCK_IP',
+      })
       expect(mockRes.sendStatus).toHaveBeenCalledWith(200)
     })
 

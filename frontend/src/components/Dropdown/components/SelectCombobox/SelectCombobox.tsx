@@ -33,6 +33,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       isOpen,
       resetInputValue,
       inputRef,
+      onBlur,
     } = useSelectContext()
 
     const mergedInputRef = useMergeRefs(inputRef, ref)
@@ -51,8 +52,15 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
     }, [isDisabled, isReadOnly, toggleMenu])
 
     return (
-      <Flex>
-        <InputGroup pos="relative" display="grid" gridTemplateColumns="1fr">
+      <Flex onBlur={onBlur}>
+        <InputGroup
+          pos="relative"
+          display="grid"
+          gridTemplateColumns="1fr"
+          _focusWithin={{
+            zIndex: 1,
+          }}
+        >
           <Stack
             visibility={inputValue ? 'hidden' : 'initial'}
             direction="row"
@@ -87,6 +95,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             isInvalid={isInvalid}
             isDisabled={isDisabled}
             placeholder={selectedItem ? undefined : placeholder}
+            hasInputRightElement
             sx={styles.field}
             {...getInputProps({
               onClick: handleToggleMenu,

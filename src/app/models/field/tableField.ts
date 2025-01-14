@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
-import { BasicField } from '../../../../shared/types'
+import { BasicField, Language } from '../../../../shared/types'
 import { IColumnSchema, ITableFieldSchema } from '../../../types'
 
 const createColumnSchema = () => {
@@ -15,6 +15,20 @@ const createColumnSchema = () => {
       required: {
         type: Boolean,
         required: true,
+      },
+      titleTranslations: {
+        type: [
+          {
+            language: {
+              type: String,
+              enum: Object.values(Language),
+            },
+            translation: {
+              type: String,
+            },
+          },
+        ],
+        default: [],
       },
     },
     {
@@ -48,7 +62,7 @@ const createTableFieldSchema = () => {
       min: 2,
       validate: {
         validator: function (this: ITableFieldSchema, v?: number) {
-          return !v || v > this.minimumRows
+          return !v || v > (this.minimumRows || 0)
         },
         message: 'Maximum number of rows must be greater than minimum.',
       },

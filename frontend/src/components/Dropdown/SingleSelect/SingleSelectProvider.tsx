@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
@@ -24,8 +25,9 @@ export interface SingleSelectProviderProps<
   value: string
   /** Controlled selected item onChange handler */
   onChange: (value: string) => void
+  onBlur?: () => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
-  filter?(items: Item[], value: string): Item[]
+  filter?: (items: Item[], value: string) => Item[]
   /** Initial dropdown opened state. */
   initialIsOpen?: boolean
   /** Props to override default useComboboxProps, if any. */
@@ -45,10 +47,10 @@ export interface SingleSelectProviderProps<
 export const SingleSelectProvider = ({
   items: rawItems,
   value,
+  onBlur,
   onChange,
   name,
   filter = defaultFilter,
-  nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
   clearButtonLabel = 'Clear selection',
   isClearable = true,
@@ -67,6 +69,7 @@ export const SingleSelectProvider = ({
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
+  const { t } = useTranslation()
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
@@ -79,8 +82,15 @@ export const SingleSelectProvider = ({
 
   const placeholder = useMemo(() => {
     if (placeholderProp === null) return ''
-    return placeholderProp ?? 'Select an option'
-  }, [placeholderProp])
+    return (
+      placeholderProp ??
+      t('features.publicForm.components.fields.dropdown.placeholder')
+    )
+  }, [placeholderProp, t])
+
+  const nothingFoundLabel = t(
+    'features.publicForm.components.fields.dropdown.nothingFound',
+  )
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>
@@ -272,6 +282,7 @@ export const SingleSelectProvider = ({
         virtualListRef,
         virtualListHeight,
         fullWidth,
+        onBlur,
       }}
     >
       {children}

@@ -1,10 +1,22 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
-import { PaymentChannel, PaymentType } from '~shared/types'
-import { FormResponseMode, FormSettings, FormStatus } from '~shared/types/form'
+import {
+  BasicField,
+  FormFieldDto,
+  PaymentChannel,
+  PaymentType,
+} from '~shared/types'
+import {
+  AdminFormDto,
+  FormDto,
+  FormResponseMode,
+  FormStatus,
+  WorkflowType,
+} from '~shared/types/form'
 
 import {
   getAdminFormSettings,
+  getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -69,10 +81,11 @@ const buildMswRoutes = ({
   mode,
   delay,
 }: {
-  overrides?: Partial<FormSettings>
+  overrides?: Partial<FormDto & AdminFormDto>
   mode?: FormResponseMode
   delay?: number | 'infinite'
 } = {}) => [
+  getAdminFormView({ overrides, mode, delay }),
   getAdminFormSettings({ overrides, mode, delay }),
   patchAdminFormSettings({ overrides, mode, delay }),
 ]
@@ -88,7 +101,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsEmailsPage />
+const Template: StoryFn = () => <SettingsEmailsPage />
 
 export const PrivateStorageForm = Template.bind({})
 PrivateStorageForm.parameters = {
@@ -112,6 +125,82 @@ PrivateEmailForm.parameters = {
   }),
 }
 
+export const PrivateMultiRespondentForm = Template.bind({})
+PrivateMultiRespondentForm.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      form_fields: [
+        {
+          _id: 'email_field_id',
+          fieldType: BasicField.Email,
+          title: 'Respondent 1 Email',
+        } as FormFieldDto,
+      ],
+      status: FormStatus.Private,
+      stepOneEmailNotificationFieldId: 'email_field_id',
+      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+      stepsToNotify: ['field_id_2'],
+      workflow: [
+        {
+          _id: 'field_id_1',
+          workflow_type: WorkflowType.Dynamic,
+          field: 'email_field_id',
+          edit: [],
+        },
+        {
+          _id: 'field_id_2',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ],
+    },
+  }),
+}
+
+export const PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId =
+  Template.bind({})
+PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId.parameters =
+  {
+    msw: buildMswRoutes({
+      mode: FormResponseMode.Multirespondent,
+      overrides: {
+        status: FormStatus.Private,
+        stepOneEmailNotificationFieldId: 'invalid_field_id',
+        emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+        stepsToNotify: ['field_id_2'],
+        workflow: [
+          {
+            _id: 'field_id_1',
+            workflow_type: WorkflowType.Dynamic,
+            field: 'email_field_id',
+            edit: [],
+          },
+          {
+            _id: 'field_id_2',
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [],
+          },
+        ],
+      },
+    }),
+  }
+
+export const PrivateMultiRespondentFormNothingSelected = Template.bind({})
+PrivateMultiRespondentFormNothingSelected.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status: FormStatus.Private,
+      emails: [],
+      stepsToNotify: [],
+      stepOneEmailNotificationFieldId: undefined,
+    },
+  }),
+}
+
 export const PublicForm = Template.bind({})
 PublicForm.parameters = {
   msw: buildMswRoutes({
@@ -120,6 +209,40 @@ PublicForm.parameters = {
       status: FormStatus.Public,
       emails: [],
       ...PAYMENTS_DISABLED,
+    },
+  }),
+}
+
+export const PublicMultiRespondentForm = Template.bind({})
+PublicMultiRespondentForm.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      form_fields: [
+        {
+          _id: 'email_field_id',
+          fieldType: BasicField.Email,
+          title: 'Respondent 1 Email',
+        } as FormFieldDto,
+      ],
+      status: FormStatus.Public,
+      stepOneEmailNotificationFieldId: 'email_field_id',
+      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+      stepsToNotify: ['field_id_2'],
+      workflow: [
+        {
+          _id: 'field_id_1',
+          workflow_type: WorkflowType.Dynamic,
+          field: 'email_field_id',
+          edit: [],
+        },
+        {
+          _id: 'field_id_2',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ],
     },
   }),
 }

@@ -54,19 +54,6 @@ export const mapRouteError: MapRouteError = (error) => {
 }
 
 /**
- * Checks whether attachmentMap contains the given response
- * @param attachmentMap Map of field IDs to attachments
- * @param response The response to check
- * @returns true if response is in map, false otherwise
- */
-const isAttachmentResponseFromMap = (
-  attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  response: ParsedClearFormFieldResponse,
-): response is ParsedClearAttachmentResponse => {
-  return !!attachmentMap[response._id]
-}
-
-/**
  * Adds the attachment's content, filename to each response,
  * based on their fieldId.
  * The response's answer is also changed to the attachment's filename.
@@ -98,12 +85,16 @@ export const addAttachmentToResponses = (
     if (responses) {
       // matches responses to attachments using id, adding filename and content to response
       responses.forEach((response) => {
-        if (isAttachmentResponseFromMap(attachmentMap, response)) {
+        if (
+          response.fieldType === BasicField.Attachment &&
+          response._id in attachmentMap
+        ) {
           const file = attachmentMap[response._id]
-          response.filename = file.filename
-          response.content = file.content
+          const attachmentResponse = response as ParsedClearAttachmentResponse
+          attachmentResponse.filename = file.filename
+          attachmentResponse.content = file.content
           if (!isVirusScannerEnabled) {
-            response.answer = file.filename
+            attachmentResponse.answer = file.filename
           }
         }
       })
@@ -113,7 +104,7 @@ export const addAttachmentToResponses = (
   if (isBodyVersion3AndAbove(body)) {
     Object.keys(body.responses).forEach((id) => {
       const response = body.responses[id] as ParsedClearFormFieldResponseV3
-      if (response.fieldType === BasicField.Attachment) {
+      if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
         const file = attachmentMap[id]
         response.answer.filename = file.filename
         response.answer.content = file.content

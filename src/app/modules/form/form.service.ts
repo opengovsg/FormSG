@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { decodeBase64 } from 'tweetnacl-util'
 
 import {
   BasicField,
@@ -11,10 +12,10 @@ import {
   FormStatus,
   PublicFormDto,
 } from '../../../../shared/types'
+import { encryptString } from '../../../../shared/utils/crypto'
 import {
   IEmailFormModel,
   IEncryptedFormModel,
-  IFormDocument,
   IFormSchema,
   IMultirespondentFormModel,
   IPopulatedForm,
@@ -25,6 +26,7 @@ import getFormModel, {
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from '../../models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import {
   getMongoErrorMessage,
@@ -41,6 +43,7 @@ import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from './form.errors'
 
@@ -50,6 +53,8 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const FormWhitelistSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 /**
  * Deactivates a given form by its id
@@ -275,6 +280,81 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   })
 }
 
+export const checkHasRespondentNotWhitelistedFailure = (
+  form: IPopulatedForm,
+  submitterId: string,
+): ResultAsync<boolean, ApplicationError> => {
+  // check since whitelist is only for encrypt mode forms
+  if (form.responseMode !== FormResponseMode.Encrypt) {
+    return okAsync(false)
+  }
+  if (form.authType === FormAuthType.NIL) {
+    return okAsync(false)
+  }
+
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds: whitelistId } =
+    form.getWhitelistedSubmitterIds()
+
+  if (!isWhitelistEnabled) {
+    return okAsync(false)
+  }
+  if (isWhitelistEnabled && !whitelistId) {
+    return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+
+  const formPublicKey = form.publicKey
+  if (!formPublicKey) {
+    logger.error({
+      message: 'Encrypt mode form does not have a public key',
+      meta: {
+        action: 'checkHasRespondentNotWhitelistedFailure',
+        formId: form._id,
+      },
+    })
+    return errAsync(
+      new ApplicationError('Encrypt mode form does not have a public key'),
+    )
+  }
+  return ResultAsync.fromPromise(
+    FormWhitelistSubmitterIdsModel.findEncryptionPropertiesById(
+      whitelistId,
+    ).then(({ myPublicKey, myPrivateKey, nonce }) => {
+      const myKeyPair = {
+        publicKey: myPublicKey,
+        privateKey: myPrivateKey,
+      }
+      const usedNonce = decodeBase64(nonce)
+
+      const upperCaseSubmitterId = submitterId.toUpperCase()
+
+      const submitterIdForLookup = encryptString(
+        upperCaseSubmitterId,
+        formPublicKey,
+        usedNonce,
+        myKeyPair,
+      ).cipherText
+
+      return FormWhitelistSubmitterIdsModel.checkIfSubmitterIdIsWhitelisted(
+        whitelistId,
+        submitterIdForLookup,
+      ).then((isWhitelisted) => !isWhitelisted)
+    }),
+    (err) => {
+      logger.error({
+        message: 'Error while checking if submitterId is whitelisted',
+        meta: {
+          action: 'checkHasRespondentNotWhitelistedFailure',
+          formId: form._id,
+          err,
+        },
+      })
+      return new ApplicationError(
+        'Error while checking if submitterId is whitelisted',
+      )
+    },
+  )
+}
+
 /**
  * Verify that if the form is a single submission per submitterId form, the submitterId does not exist.
  * @param form the form to check for
@@ -366,41 +446,6 @@ export const checkIsIntranetFormAccess = (
     })
   }
   return isIntranetUser
-}
-
-export const retrievePublicFormsWithSmsVerification = (
-  userId: string,
-): ResultAsync<IFormDocument[], PossibleDatabaseError> => {
-  return ResultAsync.fromPromise(
-    FormModel.retrievePublicFormsWithSmsVerification(userId),
-    (error) => {
-      logger.error({
-        message: 'Error retrieving public forms with sms verifications',
-        meta: {
-          action: 'retrievePublicFormsWithSmsVerification',
-          userId: userId,
-        },
-        error,
-      })
-
-      return transformMongoError(error)
-    },
-  ).andThen((forms) => {
-    if (!forms.length) {
-      // NOTE: Warn here because this is supposed to be called to generate a list of form titles
-      // When the admin has used up their sms verification limit.
-      // It is not an error because there are potential cases where the admins privatize their form after.
-      logger.warn({
-        message:
-          'Attempted to retrieve public forms with sms verifications but none was found',
-        meta: {
-          action: 'retrievePublicFormsWithSmsVerification',
-          userId: userId,
-        },
-      })
-    }
-    return okAsync(forms)
-  })
 }
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {

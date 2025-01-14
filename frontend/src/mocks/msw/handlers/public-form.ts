@@ -486,10 +486,28 @@ export const getPublicFormWithoutSectionsResponse = ({
   )
 }
 
+export const getPublicFormSubmissionSuccessResponse = (
+  type: 'email' | 'storage' = 'email',
+) => {
+  return rest.post(
+    `/api/v3/forms/:formId/submissions/${type}`,
+    (_req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          message: 'Form submission successful.',
+          submissionId: '6625dfd68f4364af26332097',
+          timestamp: 1713758166140,
+        }),
+      )
+    },
+  )
+}
+
 export const getPublicFormErrorResponse = ({
   delay = 0,
   status = 404,
-  message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
+  message = 'If you require further assistance, please contact the agency that gave you the form link.',
 }: {
   delay?: number | 'infinite'
   status?: number

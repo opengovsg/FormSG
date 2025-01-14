@@ -41,6 +41,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  Language,
   LogicConditionState,
   LogicDto,
   LogicType,
@@ -109,7 +110,9 @@ import LogicSchema, {
   ShowFieldsLogicSchema,
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
+import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
+  WorkflowStepConditionalSchema,
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
@@ -192,6 +195,21 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+const whitelistedSubmitterIdNestedPath = {
+  isWhitelistEnabled: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  encryptedWhitelistedSubmitterIds: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+    required: false,
+    default: undefined,
+  },
+  _id: { id: false },
+}
+
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
     type: String,
@@ -217,6 +235,16 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     // is non-empty. We allow this field to not exist for backwards compatibility
     // TODO: Make this required after all forms have been migrated
     required: false,
+  },
+  whitelistedSubmitterIds: {
+    type: whitelistedSubmitterIdNestedPath,
+    get: (v: { isWhitelistEnabled: boolean }) => ({
+      // remove the ObjectId link to whitelist collection's document by default unless asked for.
+      isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
+    default: () => ({
+      isWhitelistEnabled: false,
+    }),
   },
   payments_channel: {
     channel: {
@@ -253,7 +281,13 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
-EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
+  return this.get('whitelistedSubmitterIds', null, {
+    getters: false,
+  })
+}
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = function ({
   accountId,
   publishableKey,
 }: {
@@ -316,6 +350,42 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   workflow: {
     type: [WorkflowStepSchema],
   },
+  emails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    set: transformEmails,
+    validate: [
+      (v: string[]) => {
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return true
+        return v.every((email) => validator.isEmail(email))
+      },
+      'Please provide valid email addresses',
+    ],
+    required: true,
+  },
+  stepsToNotify: {
+    type: [{ type: String }],
+    validate: [
+      {
+        validator: (v: string[]) => {
+          if (!Array.isArray(v)) return false
+          if (v.length === 0) return true
+          return v.every((fieldId) => ObjectId.isValid(fieldId))
+        },
+        message: 'Please provide valid form field ids',
+      },
+    ],
+    required: true,
+  },
+  stepOneEmailNotificationFieldId: {
+    type: String,
+    default: '',
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -329,6 +399,10 @@ MultirespondentFormWorkflowPath.discriminator(
 MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Dynamic,
   WorkflowStepDynamicSchema,
+)
+MultirespondentFormWorkflowPath.discriminator(
+  WorkflowType.Conditional,
+  WorkflowStepConditionalSchema,
 )
 
 const compileFormModel = (db: Mongoose): IFormModel => {
@@ -469,6 +543,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: FormLogoSchema,
           default: () => ({}),
         },
+        paragraphTranslations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
+        },
       },
 
       endPage: {
@@ -489,6 +578,36 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         paymentParagraph: {
           type: String,
           default: 'Your form has been submitted and payment has been made.',
+        },
+        titleTranslations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
+        },
+        paragraphTranslations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
         },
       },
 
@@ -517,7 +636,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
-      isNricMaskEnabled: {
+      isSubmitterIdCollectionEnabled: {
         type: Boolean,
         default: false,
       },
@@ -560,7 +679,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       inactiveMessage: {
         type: String,
         default:
-          'If you think this is a mistake, please contact the agency that gave you the form link.',
+          'If you require further assistance, please contact the agency that gave you the form link.',
       },
 
       isListed: {
@@ -584,6 +703,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
+      /**
+       * LEGACY: Was previously used for sending with the correct Twilio.
+       * @deprecated Twilio support is removed and replaced with postman-sms.
+       * This is retained since DB records may still contain this field for backward compatibility.
+       */
       msgSrvcName: {
         // Name of credentials for messaging service, stored in secrets manager
         type: String,
@@ -601,6 +725,25 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         default: '',
+      },
+
+      metadata: {
+        type: Object,
+        required: false,
+      },
+      // boolean value to indicate if form supports multi
+      // language
+      hasMultiLang: {
+        type: Boolean,
+        required: false,
+        default: false,
+      },
+
+      // languages that is supported by form for translations
+      supportedLanguages: {
+        type: [String],
+        enum: Object.values(Language),
+        require: false,
       },
     },
     formSchemaOptions,
@@ -710,7 +853,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
-      'isNricMaskEnabled',
+      'isSubmitterIdCollectionEnabled',
       'isSingleSubmission',
       'inactiveMessage',
       'responseMode',
@@ -728,22 +871,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
     this.status = FormStatus.Archived
     return this.save()
-  }
-
-  FormSchema.methods.updateMsgSrvcName = async function (
-    msgSrvcName: string,
-    session?: ClientSession,
-  ) {
-    this.msgSrvcName = msgSrvcName
-
-    return this.save({ session })
-  }
-
-  FormSchema.methods.deleteMsgSrvcName = async function (
-    session?: ClientSession,
-  ) {
-    this.msgSrvcName = undefined
-    return this.save({ session })
   }
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
@@ -914,6 +1041,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.insertFormFields = function (
+    newFields: FormField[],
+    to?: number,
+  ) {
+    const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formFields.splice(to, 0, ...(newFields as any[])) // Typings are not complete for splice.
+    } else {
+      formFields.push(...newFields)
+    }
+    return this.save()
+  }
+
   FormDocumentSchema.method<IFormDocument>(
     'duplicateFormFieldByIdAndIndex',
     function (fieldId: string, insertionIndex: number) {
@@ -956,7 +1098,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (formId: string) {
     try {
-      const data = await this.findById(formId, 'msgSrvcName admin').populate({
+      const data = await this.findById(formId, 'admin').populate({
         path: 'admin',
         select: 'email',
       })
@@ -967,7 +1109,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               email: data.admin.email,
               userId: data.admin._id,
             },
-            msgSrvcName: data.msgSrvcName,
           } as FormOtpData)
         : null
     } catch {
@@ -1163,27 +1304,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
-  /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * This only retrieves forms that are using FormSG credentials
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  FormSchema.statics.retrievePublicFormsWithSmsVerification = async function (
-    userId: IUserSchema['_id'],
-  ) {
-    return this.find({
-      admin: userId,
-      'form_fields.fieldType': BasicField.Mobile,
-      'form_fields.isVerifiable': true,
-      status: FormStatus.Public,
-      msgSrvcName: {
-        $exists: false,
-      },
-    })
-      .read('secondary')
-      .exec()
-  }
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }

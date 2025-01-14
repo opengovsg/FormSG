@@ -14,6 +14,7 @@ import {
 import {
   CSSObject,
   FormControlProps,
+  ThemingProps,
   useControllableState,
   useDisclosure,
   UseDisclosureReturn,
@@ -22,7 +23,6 @@ import {
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { DateRangeValue } from '~components/Calendar'
 
@@ -51,7 +51,7 @@ interface DateRangePickerContextReturn {
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
   labelSeparator: string
-  colorScheme: ThemeColorScheme
+  colorScheme?: ThemingProps<'DatePicker'>['colorScheme']
   monthsToDisplay?: number
 }
 
@@ -96,7 +96,6 @@ const useProvideDateRangePicker = ({
   allowManualInput = true,
   allowInvalidDates = true,
   closeCalendarOnChange = true,
-  onBlur,
   onClick,
   colorScheme = 'primary',
   monthsToDisplay,
@@ -180,8 +179,8 @@ const useProvideDateRangePicker = ({
     ...props,
   })
 
-  const handleInputBlur: FocusEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
+  const handleInputBlur: FocusEventHandler<HTMLInputElement> =
+    useCallback(() => {
       const startDate = parse(startInputDisplay, dateFormat, new Date())
       const endDate = parse(endInputDisplay, dateFormat, new Date())
       // Clear if input is invalid on blur if invalid dates are not allowed.
@@ -192,15 +191,13 @@ const useProvideDateRangePicker = ({
         setEndInputDisplay('')
       }
       handleUpdateInputs([startDate, endDate])
-    },
-    [
+    }, [
       startInputDisplay,
       dateFormat,
       endInputDisplay,
       allowInvalidDates,
       handleUpdateInputs,
-    ],
-  )
+    ])
 
   const handleInputClick: MouseEventHandler<HTMLInputElement> = useCallback(
     (e) => {

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { mockDateDecorator } from '~utils/storybook'
 
@@ -13,7 +13,7 @@ export default {
   },
 } as Meta<DateRangePickerProps>
 
-const Template: Story<DateRangePickerProps> = (args) => (
+const Template: StoryFn<DateRangePickerProps> = (args) => (
   <DateRangePicker {...args} />
 )
 export const Default = Template.bind({})

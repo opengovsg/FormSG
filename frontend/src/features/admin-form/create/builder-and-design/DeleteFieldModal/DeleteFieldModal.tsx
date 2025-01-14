@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ButtonGroup,
   Icon,
@@ -27,15 +28,16 @@ import {
 } from '../useFieldBuilderStore'
 
 export const DeleteFieldModal = (): JSX.Element => {
+  const { t } = useTranslation()
   const stateData = useFieldBuilderStore(stateDataSelector)
   const {
     deleteFieldModalDisclosure: { onClose },
   } = useBuilderAndDesignContext()
-  const { mapIdToField, logicedFieldIdsSet } = useAdminFormLogic()
+  const { idToFieldMap, logicedFieldIdsSet } = useAdminFormLogic()
 
   const { fieldIsInLogic, fieldIcon, fieldLabel } = useMemo(() => {
     if (stateData.state !== FieldBuilderState.EditingField) return {}
-    const questionNumber = mapIdToField?.[stateData.field._id].questionNumber
+    const questionNumber = idToFieldMap?.[stateData.field._id].questionNumber
     const fieldTitle = stateData.field.title
     return {
       fieldIsInLogic: logicedFieldIdsSet?.has(stateData.field._id),
@@ -44,7 +46,7 @@ export const DeleteFieldModal = (): JSX.Element => {
         ? `${questionNumber}. ${fieldTitle}`
         : fieldTitle,
     }
-  }, [mapIdToField, stateData, logicedFieldIdsSet])
+  }, [idToFieldMap, stateData, logicedFieldIdsSet])
 
   const { deleteFieldMutation } = useDeleteFormField()
 
@@ -56,21 +58,20 @@ export const DeleteFieldModal = (): JSX.Element => {
     }
   }, [deleteFieldMutation, onClose, stateData])
 
+  const {
+    title,
+    description: { field, logic },
+    confirmButtonText,
+  } = t('features.adminForm.modals.deleteField', { returnObjects: true })
+
   return (
     <Modal isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete field</ModalHeader>
+        <ModalHeader>{title}</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">
-            {fieldIsInLogic
-              ? `This field is used in your form logic, so deleting it may cause
-                your logic to stop working correctly. Are you sure you want to 
-                delete this field?`
-              : `Are you sure you want to delete this field? This action
-                cannot be undone.`}
-          </Text>
+          <Text color="secondary.500">{fieldIsInLogic ? logic : field}</Text>
           <UnorderedList
             spacing="0.5rem"
             listStyleType="none"
@@ -96,14 +97,14 @@ export const DeleteFieldModal = (): JSX.Element => {
         <ModalFooter>
           <ButtonGroup>
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button
               colorScheme="danger"
               onClick={handleDeleteConfirmation}
               isLoading={deleteFieldMutation.isLoading}
             >
-              Yes, delete field
+              {confirmButtonText}
             </Button>
           </ButtonGroup>
         </ModalFooter>

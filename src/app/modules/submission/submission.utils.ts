@@ -91,7 +91,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
 import { MyInfoKey } from '../myinfo/myinfo.types'
-import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
 import {
   InvalidPaymentProductsError,
   PaymentNotFoundError,
@@ -132,8 +131,10 @@ import {
   ResponseModeError,
   SubmissionFailedError,
   SubmissionNotFoundError,
+  SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
+  ValidateFieldErrorV3,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -170,6 +171,11 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case SubmissionSaveError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
       }
     case CreateRedirectUrlError:
       return {
@@ -303,6 +309,7 @@ const errorMapper: MapRouteError = (
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
       }
     case ValidateFieldError:
+    case ValidateFieldErrorV3:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:
@@ -744,17 +751,12 @@ export const getAnswersForChild = (
     return []
   }
   return response.answerArray.flatMap((arr, childIdx) => {
-    // First array element is always child name
-    const childName = arr[0]
     return arr.map((answer, idx) => {
       const subfield = subFields[idx]
       return {
-        _id: getMyInfoChildHashKey(
-          response._id,
-          subFields[idx],
-          childIdx,
-          childName,
-        ),
+        // Recreates the individual _id of the child field based on the parent field's _id and the subfield
+        // e.g., childrenbirthrecords.67585515e1ced6d790a91e14.childname.0
+        _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
         fieldType: response.fieldType,
         // qnChildIdx represents the index of the MyInfo field
         // childIdx represents the index of the child in this MyInfo field

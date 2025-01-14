@@ -4,25 +4,28 @@ export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
 
 export type FieldResponseV3 =
   | HeaderResponseV3
+  | RadioResponseV3
+  | CheckboxResponseV3
+  | AttachmentResponseV3
+  | TableResponseV3
+  | ChildBirthRecordsResponseV3
+  | YesNoResponseV3
   | EmailResponseV3
   | MobileResponseV3
-  | HomeNoResponseV3
+  | GenericStringAnswerFieldResponseV3
+
+export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
   | DecimalResponseV3
   | ShortTextResponseV3
   | LongTextResponseV3
+  | HomeNoResponseV3
   | DropdownResponseV3
-  | CountryRegionResponseV3
-  | YesNoResponseV3
-  | CheckboxResponseV3
-  | RadioResponseV3
-  | AttachmentResponseV3
-  | DateResponseV3
   | RatingResponseV3
   | NricResponseV3
-  | TableResponseV3
   | UenResponseV3
-  | ChildBirthRecordsResponseV3
+  | DateResponseV3
+  | CountryRegionResponseV3
 
 export type HeaderResponseV3 = FieldResponseFactoryV3<BasicField.Section>
 export type EmailResponseV3 = FieldResponseFactoryV3<BasicField.Email>
@@ -57,25 +60,14 @@ export type FieldResponseV3Base = {
   fieldType: BasicField
 }
 export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
-  F extends
-    | BasicField.Number
-    | BasicField.Decimal
-    | BasicField.ShortText
-    | BasicField.LongText
-    | BasicField.HomeNo
-    | BasicField.Dropdown
-    | BasicField.Rating
-    | BasicField.Nric
-    | BasicField.Uen
-    | BasicField.Date
-    | BasicField.CountryRegion
-    ? SingleAnswerResponseV3
+  F extends GenericStringAnswerResponseFieldTypeV3
+    ? StringAnswerResponseV3
     : F extends BasicField.YesNo
       ? YesNoFieldResponseV3
       : F extends BasicField.Attachment
         ? AttachmentFieldResponseV3
         : F extends BasicField.Email | BasicField.Mobile
-          ? VerifiableFieldResponsesV3
+          ? VerifiableFieldResponseV3
           : F extends BasicField.Table
             ? TableFieldResponsesV3
             : F extends BasicField.Radio
@@ -86,9 +78,22 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                   ? ChildrenCompoundFieldResponsesV3
                   : never
 
-export type SingleAnswerResponseV3 = string
+export type GenericStringAnswerResponseFieldTypeV3 =
+  | NumberResponseV3['fieldType']
+  | DecimalResponseV3['fieldType']
+  | ShortTextResponseV3['fieldType']
+  | LongTextResponseV3['fieldType']
+  | HomeNoResponseV3['fieldType']
+  | DropdownResponseV3['fieldType']
+  | RatingResponseV3['fieldType']
+  | NricResponseV3['fieldType']
+  | UenResponseV3['fieldType']
+  | DateResponseV3['fieldType']
+  | CountryRegionResponseV3['fieldType']
+
+export type StringAnswerResponseV3 = string
 export type YesNoFieldResponseV3 = 'Yes' | 'No'
-export type VerifiableFieldResponsesV3 = {
+export type VerifiableFieldResponseV3 = {
   signature?: string
   value: string
 }

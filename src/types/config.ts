@@ -54,14 +54,19 @@ export type MailConfig = {
   }
   official: string
   transporter: Mail
+  sesConfigSet: string
 }
 
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  publicFormIssueFeedback: number
   downloadPaymentReceipt: number
+  downloadFormWhitelist: number
+  uploadFormWhitelist: number
   publicApi: number
   platformApi: number
+  makeTextPrompt: number
 }
 
 export type PublicApiConfig = {
@@ -82,8 +87,9 @@ export type Config = {
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
+  isTest: boolean
+  isDevOrTest: boolean
   nodeEnv: Environment
-  useMockTwilio: boolean
   useMockPostmanSms: boolean
   port: number
   sessionSecret: string
@@ -116,6 +122,7 @@ export interface IProdOnlyVarsSchema {
   user: string
   pass: string
   dbHost: string
+  sesConfigSet: string
 }
 
 export interface ICompulsoryVarsSchema {
@@ -157,7 +164,6 @@ export interface IOptionalVarsSchema {
     otpLifeSpan: number
     submissionsTopUp: number
     nodeEnv: Environment
-    useMockTwilio: boolean
     useMockPostmanSms: boolean
   }
   banner: {
@@ -186,9 +192,13 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    publicFormIssueFeedback: number
     downloadPaymentReceipt: number
+    downloadFormWhitelist: number
+    uploadFormWhitelist: number
     publicApi: number
     platformApi: number
+    makeTextPrompt: number
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved

@@ -1,12 +1,14 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
+import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio, { OthersInput } from '~components/Radio'
 
@@ -28,6 +30,7 @@ export const RadioField = ({
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: RadioFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
     [colorTheme],
@@ -50,6 +53,8 @@ export const RadioField = ({
     [disableRequiredValidation, schema],
   )
 
+  const englishRadioOptions = schema.fieldOptions
+
   const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
     name: schema._id,
@@ -68,6 +73,12 @@ export const RadioField = ({
     }),
     [getValues, radioInputName, schema.othersRadioButton],
   )
+
+  const fieldOptions = getFieldOptionsInSelectedLanguage({
+    defaultValue: englishRadioOptions,
+    translations: schema.fieldOptionsTranslations,
+    selectedLanguage: i18n.language as Language,
+  })
 
   return (
     <FieldContainer schema={schema} errorKey={radioInputName}>
@@ -93,13 +104,18 @@ export const RadioField = ({
             }
             aria-required={schema.required}
           >
-            {schema.fieldOptions.map((option, idx) => (
+            {fieldOptions.map((option, idx) => (
               <Radio
                 key={idx}
-                value={option}
+                // Value will always be the default english field option
+                // so that upon form submission, the selected value submitted
+                // and collected will always be the english field option regardless
+                // of the language of the form.
+                value={englishRadioOptions[idx]}
                 {...(idx === 0 ? { ref } : {})}
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
+                isDisabled={schema.disabled}
               >
                 {option}
               </Radio>
@@ -123,6 +139,7 @@ export const RadioField = ({
                     ml={styles.othersInput?.ml as string}
                     mb={0}
                   >
+                    {/* @ts-expect-error FIXME: type inference */}
                     {get(errors, `${othersInputName}.message`)}
                   </FormErrorMessage>
                 </FormControl>

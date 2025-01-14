@@ -2,6 +2,7 @@ import { Document } from 'mongoose'
 
 import {
   FormWorkflowStepBase,
+  FormWorkflowStepConditional,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
   WorkflowType,
@@ -33,6 +34,11 @@ export interface IWorkflowStepDynamicSchema
   edit: IFieldSchema['_id'][]
 }
 
-export type FormWorkflowStepSchema =
-  | IWorkflowStepStaticSchema
-  | IWorkflowStepDynamicSchema
+export interface IWorkflowStepConditionalSchema
+  extends IWorkflowStepSchema,
+    FormWorkflowStepConditional,
+    Document {
+  workflow_type: WorkflowType.Conditional
+  edit: IFieldSchema['_id'][]
+  conditional_field: IFieldSchema['_id']
+}

@@ -14,11 +14,13 @@ import {
 } from '~shared/types/field'
 import {
   FormLogic,
+  Language,
   LogicConditionState,
   LogicIfValue,
   LogicType,
 } from '~shared/types/form'
 import {
+  AdminDashboardFormMetaDto,
   AdminFormDto,
   AdminFormViewDto,
   FormAuthType,
@@ -330,6 +332,262 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   },
 ]
 
+// To check for translation feature, mock form fields of the following only:
+// 1. Header
+// 2. Dropdown
+// 3. Table
+// 4. Checkbox
+// 5. Radio
+export const MOCK_FORM_FIELDS_WITH_NO_TRANSLATIONS: FormFieldDto[] = [
+  {
+    title: 'Header',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Section,
+    _id: '5da04e8ce397fc0013f63c71',
+    globalId: '1rHoFJPl5hOsS3t1zIqhFSKGccxPVk4lg8sVIEAYMoH',
+  },
+  {
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    title: 'Dropdown',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Dropdown,
+    _id: '5da04eb23738d10012607737',
+    globalId: 'wzV4A56NIxpfdjdB0WJO0vcovDOiY7wjuE8ZH4Pr9at',
+  },
+  {
+    addMoreRows: false,
+    title: 'Table',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Table,
+    _id: '5da04f833738d1001260777f',
+    columns: [
+      {
+        ValidationOptions: {
+          customVal: null,
+          selectedValidation: null,
+        },
+        allowPrefill: false,
+        columnType: BasicField.ShortText,
+        title: 'Text Field',
+        required: true,
+        _id: cuid(),
+      },
+      {
+        fieldOptions: ['Option 1', 'Option 2'],
+        columnType: BasicField.Dropdown,
+        title: 'Db',
+        required: true,
+        _id: cuid(),
+      },
+    ],
+    minimumRows: 2,
+    globalId: 'E7udA19YGZOZuiFhlDSm5FwmogBiz9DaUulRFe9ygGD',
+  },
+  {
+    ValidationOptions: {
+      customMax: null,
+      customMin: null,
+    },
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: false,
+    validateByValue: false,
+    title: 'Checkbox',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Checkbox,
+    _id: '5da04eb7e397fc0013f63c80',
+    globalId: 'l4gMDfFhA1ITmhUPQCjA05aUAOROUOwlNAjMJMkwmJ7',
+  },
+  {
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: false,
+    title: 'Radio',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Radio,
+    _id: '5da04eb93738d10012607738',
+    globalId: 'pJc2jhdmSk0auIes9O4Y1Wwq3xLVab1e3D3VrMWuJVt',
+  },
+]
+
+export const MOCK_FORM_FIELDS_WITH_TRANSLATIONS: FormFieldDto[] = [
+  {
+    title: 'Header',
+    description: 'Header description',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Section,
+    _id: '5da04e8ce397fc0013f63c71',
+    globalId: '1rHoFJPl5hOsS3t1zIqhFSKGccxPVk4lg8sVIEAYMoH',
+    titleTranslations: [
+      { language: Language.CHINESE, translation: 'Fake title translation' },
+    ],
+    descriptionTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: 'Fake description translation',
+      },
+    ],
+  },
+  {
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    title: 'Dropdown',
+    description: 'Test Description',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Dropdown,
+    _id: '5da04eb23738d10012607737',
+    globalId: 'wzV4A56NIxpfdjdB0WJO0vcovDOiY7wjuE8ZH4Pr9at',
+    titleTranslations: [
+      { language: Language.CHINESE, translation: 'Fake title translation' },
+    ],
+    descriptionTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: 'Fake description translation',
+      },
+    ],
+    fieldOptionsTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: [
+          'Fake translation 1',
+          'Fake translation 2',
+          'Fake translation 3',
+        ],
+      },
+    ],
+  },
+  {
+    addMoreRows: false,
+    title: 'Table',
+    description: 'Test table descriptions',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Table,
+    _id: '5da04f833738d1001260777f',
+    columns: [
+      {
+        ValidationOptions: {
+          customVal: null,
+          selectedValidation: null,
+        },
+        allowPrefill: false,
+        columnType: BasicField.ShortText,
+        title: 'Text Field',
+        titleTranslations: [
+          { language: Language.CHINESE, translation: 'Fake title translation' },
+        ],
+        required: true,
+        _id: cuid(),
+      },
+      {
+        fieldOptions: ['Option 1', 'Option 2'],
+        columnType: BasicField.Dropdown,
+        title: 'Db',
+        titleTranslations: [
+          {
+            language: Language.CHINESE,
+            translation: 'Fake dropdown title translation',
+          },
+        ],
+        required: true,
+        _id: cuid(),
+        fieldOptionsTranslations: [
+          {
+            language: Language.CHINESE,
+            translation: ['Fake translation 1', 'Fake translation 2'],
+          },
+        ],
+      },
+    ],
+    minimumRows: 2,
+    globalId: 'E7udA19YGZOZuiFhlDSm5FwmogBiz9DaUulRFe9ygGD',
+    titleTranslations: [
+      { language: Language.CHINESE, translation: 'Fake title translation' },
+    ],
+    descriptionTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: 'Fake description translation',
+      },
+    ],
+  },
+  {
+    ValidationOptions: {
+      customMax: null,
+      customMin: null,
+    },
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: false,
+    validateByValue: false,
+    title: 'Checkbox',
+    description: 'Test Description',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Checkbox,
+    _id: '5da04eb7e397fc0013f63c80',
+    globalId: 'l4gMDfFhA1ITmhUPQCjA05aUAOROUOwlNAjMJMkwmJ7',
+    titleTranslations: [
+      { language: Language.CHINESE, translation: 'Fake title translation' },
+    ],
+    descriptionTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: 'Fake description translation',
+      },
+    ],
+    fieldOptionsTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: [
+          'Fake translation 1',
+          'Fake translation 2',
+          'Fake translation 3',
+        ],
+      },
+    ],
+  },
+  {
+    fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+    othersRadioButton: false,
+    title: 'Radio',
+    description: 'Test radio description',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Radio,
+    _id: '5da04eb93738d10012607738',
+    globalId: 'pJc2jhdmSk0auIes9O4Y1Wwq3xLVab1e3D3VrMWuJVt',
+    titleTranslations: [
+      { language: Language.CHINESE, translation: 'Fake title translation' },
+    ],
+    descriptionTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: 'Fake description translation',
+      },
+    ],
+    fieldOptionsTranslations: [
+      {
+        language: Language.CHINESE,
+        translation: [
+          'Fake translation 1',
+          'Fake translation 2',
+          'Fake translation 3',
+        ],
+      },
+    ],
+  },
+]
+
 const DEFAULT_STORAGE_METADATA = [
   [
     {
@@ -603,7 +861,7 @@ export const createMockForm = (
         authType: FormAuthType.NIL,
         status: FormStatus.Public,
         inactiveMessage:
-          'If you think this is a mistake, please contact the agency that gave you the form link!',
+          'If you require further assistance, please contact the agency that gave you the form link.',
         submissionLimit: null,
         form_fields: [],
         form_logics: [],
@@ -668,7 +926,6 @@ export const createFormBuilderMocks = (
           _id: cuid(),
         } as FormFieldDto
         if (req.body.fieldType === BasicField.Table) {
-          // eslint-disable-next-line @typescript-eslint/no-extra-semi
           ;(newField as TableFieldDto).columns = req.body.columns.map(
             (col) => ({
               ...col,
@@ -815,4 +1072,14 @@ export const deleteLogic = (delay?: number | 'infinite') => {
       return res(ctx.delay(delay), ctx.status(200))
     },
   )
+}
+
+export const getAdminForms = {
+  empty: () =>
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(ctx.json([]))
+      },
+    ),
 }

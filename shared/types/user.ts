@@ -21,9 +21,14 @@ export const UserBase = z.object({
       payment: z.boolean().optional(),
       children: z.boolean().optional(),
       postmanSms: z.boolean().optional(),
+      mrfEmailNotifications: z.boolean().optional(), // Previously used for MRF email notifications, not currently used
+      mrfAdminSubmissionKey: z.boolean().optional(),
+      mrfConditionalRouting: z.boolean().optional(),
+      mfb: z.boolean().optional(),
+      multiLangTranslation: z.boolean().optional(),
     })
     .optional(),
-  flags: z.map(z.nativeEnum(SeenFlags), z.number()).optional(),
+  flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),

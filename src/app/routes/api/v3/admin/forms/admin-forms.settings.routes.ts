@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
+import { limitRate } from '../../../../../utils/limit-rate'
 
 export const AdminFormsSettingsRouter = Router()
 
@@ -38,6 +40,16 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    * @returns 500 when database error occurs
    */
   .get(AdminFormController.handleGetSettings)
+
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings/whitelist')
+  .get(
+    limitRate({ max: rateLimitConfig.downloadFormWhitelist }),
+    AdminFormController.handleGetWhitelistSetting,
+  )
+  .put(
+    limitRate({ max: rateLimitConfig.uploadFormWhitelist }),
+    AdminFormController.handleUpdateWhitelistSetting,
+  )
 
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
   /**

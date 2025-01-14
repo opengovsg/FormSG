@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
@@ -86,6 +87,7 @@ const transformImageEditFormToField = (
 }
 
 export const EditImage = ({ field }: EditImageProps): JSX.Element => {
+  const { t } = useTranslation()
   const toast = useToast({ status: 'danger' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -160,13 +162,17 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         isReadOnly={isLoading || isSubmitting}
         isInvalid={!isEmpty(errors.attachment)}
       >
-        <FormLabel>Uploaded image</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.imageAttachment.title')}
+        </FormLabel>
         <Controller
           control={control}
           rules={{
             validate: (val) => {
               if (val?.file && val.srcUrl) return true
-              return 'Please upload an image'
+              return t(
+                'features.adminForm.sidebar.fields.imageAttachment.requiredError',
+              )
             },
           }}
           name="attachment"
@@ -187,7 +193,11 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         isReadOnly={isLoading || isSubmitting}
         isInvalid={!!errors.description}
       >
-        <FormLabel isRequired>Description</FormLabel>
+        <FormLabel isRequired>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description', requiredValidationRule)} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

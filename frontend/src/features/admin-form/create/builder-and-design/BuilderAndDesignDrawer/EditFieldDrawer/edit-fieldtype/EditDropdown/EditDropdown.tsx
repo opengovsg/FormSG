@@ -1,16 +1,20 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { WorkflowType } from '~shared/types'
 import { DropdownFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useAdminFormWorkflow } from '../../../../../../create/workflow/hooks/useAdminFormWorkflow'
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
   SPLIT_TEXTAREA_TRANSFORM,
@@ -49,6 +53,8 @@ const transformDropdownEditFormToField = (
 }
 
 export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
+  const { t } = useTranslation()
+  const { formWorkflow } = useAdminFormWorkflow()
   const {
     register,
     formState: { errors },
@@ -70,15 +76,29 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
     [],
   )
 
+  const isFieldUsedForConditionalRouting = useMemo(() => {
+    return formWorkflow?.some(
+      (workflow) =>
+        workflow.workflow_type === WorkflowType.Conditional &&
+        workflow.conditional_field === field._id,
+    )
+  }, [formWorkflow, field._id])
+
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Question</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
@@ -90,9 +110,13 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.fieldOptionsString}
       >
-        <FormLabel>Options</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.radio.options.title')}
+        </FormLabel>
         <Textarea
-          placeholder="Enter one option per line"
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}
@@ -100,6 +124,13 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.fieldOptionsString?.message}
         </FormErrorMessage>
+        {isFieldUsedForConditionalRouting ? (
+          <InlineMessage mt="1rem" variant="warning">
+            This field is linked to a step in your workflow. If you make any
+            changes, ensure that the options and emails are updated in your CSV
+            file.
+          </InlineMessage>
+        ) : null}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}

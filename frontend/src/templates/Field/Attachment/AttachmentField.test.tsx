@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/testing-react'
+import { composeStories } from '@storybook/react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import JSZip from 'jszip'
@@ -165,7 +165,7 @@ describe('attachment validation', () => {
     // Assert
     // Should show error message.
     const error = screen.getByText(
-      /You have exceeded the limit, please upload a file below 1 MB/i,
+      /You have exceeded the file size limit, please upload a file below 1 MB/i,
     )
     expect(error).not.toBeNull()
   })
@@ -202,7 +202,7 @@ describe('attachment validation', () => {
     // Should show error message.
     await waitFor(() => {
       const error = screen.queryByText(
-        /The following file extension in your zip file is not valid: .rubbish/i,
+        /The following file extensions in your zip file are not valid: .rubbish/i,
       )
       expect(error).not.toBeNull()
     })

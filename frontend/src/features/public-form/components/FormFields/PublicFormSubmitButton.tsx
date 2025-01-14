@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
-import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
+import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
@@ -39,7 +40,7 @@ export const PublicFormSubmitButton = ({
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
 
   const isMobile = useIsMobile()
@@ -64,6 +65,12 @@ export const PublicFormSubmitButton = ({
       formLogics,
     })
   }, [formInputs, formFields, formLogics])
+
+  const preventSubmissionMessage = getValueInSelectedLanguage({
+    defaultValue: preventSubmissionLogic?.preventSubmitMessage ?? '',
+    translations: preventSubmissionLogic?.preventSubmitMessageTranslations,
+    selectedLanguage: i18n.language as Language,
+  })
 
   // For payments submit and pay modal
   const {
@@ -92,7 +99,9 @@ export const PublicFormSubmitButton = ({
 
   const isSingleSubmissionOnlyModalOpen = hasSingleSubmissionValidationError
   const onSingleSubmissionModalClose = () => {
-    setHasSingleSubmissionValidationError(false)
+    // the setter will only exist for public forms and will be undefined for preview
+    if (setHasSingleSubmissionValidationError)
+      setHasSingleSubmissionValidationError(false)
   }
 
   return (
@@ -127,30 +136,22 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText={t(
-          'features.publicForm.components.PublicFormSubmitButton.loadingText',
+          'features.publicForm.components.submitButton.loadingText',
         )}
         onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
       >
         <VisuallyHidden>
-          {t(
-            'features.publicForm.components.PublicFormSubmitButton.visuallyHidden',
-          )}
+          {t('features.publicForm.components.submitButton.visuallyHidden')}
         </VisuallyHidden>
         {preventSubmissionLogic
-          ? t(
-              'features.publicForm.components.PublicFormSubmitButton.preventSubmission',
-            )
+          ? t('features.publicForm.components.submitButton.preventSubmission')
           : isPaymentEnabled
-            ? t(
-                'features.publicForm.components.PublicFormSubmitButton.proceedToPay',
-              )
-            : t(
-                'features.publicForm.components.PublicFormSubmitButton.submitNow',
-              )}
+            ? t('features.publicForm.components.submitButton.proceedToPay')
+            : t('features.publicForm.components.submitButton.submitNow')}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
-          {preventSubmissionLogic.preventSubmitMessage}
+          {preventSubmissionMessage}
         </InlineMessage>
       ) : null}
     </Stack>

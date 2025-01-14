@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
@@ -6,7 +6,6 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser } from '~/mocks/msw/handlers/user'
 
 import { AdminFormCreatePageDecorator } from '~utils/storybook'
@@ -21,7 +20,6 @@ const buildMswRoutes = (
     ...createFormBuilderMocks(overrides, delay),
     getUser(),
     getAdminFormCollaborators(),
-    getFreeSmsQuota({ delay }),
   ]
 }
 
@@ -39,6 +37,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <CreatePage />
+const Template: StoryFn = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})

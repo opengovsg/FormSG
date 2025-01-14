@@ -3,9 +3,11 @@ import { keyBy } from 'lodash'
 
 import {
   BasicField,
+  DropdownFieldBase,
   EmailFieldBase,
   FormFieldDto,
   FormResponseMode,
+  YesNoFieldBase,
 } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -20,7 +22,7 @@ export const useAdminFormWorkflow = () => {
     form?.form_fields.map(augmentWithMyInfo) ?? [],
   )
 
-  const mapIdToField = useMemo(
+  const idToFieldMap = useMemo(
     () => keyBy(augmentedFormFields, '_id'),
     [augmentedFormFields],
   )
@@ -36,14 +38,40 @@ export const useAdminFormWorkflow = () => {
     [augmentedFormFields],
   )
 
+  const yesNoFormFields = useMemo(
+    () =>
+      augmentedFormFields.filter(
+        (
+          field,
+        ): field is FormFieldWithQuestionNo<FormFieldDto<YesNoFieldBase>> =>
+          field.fieldType === BasicField.YesNo,
+      ),
+    [augmentedFormFields],
+  )
+
+  const dropdownFormFields = useMemo(
+    () =>
+      augmentedFormFields.filter(
+        (
+          field,
+        ): field is FormFieldWithQuestionNo<FormFieldDto<DropdownFieldBase>> =>
+          field.fieldType === BasicField.Dropdown,
+      ),
+    [augmentedFormFields],
+  )
+
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+
   return {
     isLoading,
     formFields: form?.form_fields,
-    formWorkflow:
-      form?.responseMode !== FormResponseMode.Multirespondent
-        ? undefined
-        : form?.workflow,
-    mapIdToField,
+    formWorkflow,
+    idToFieldMap,
     emailFormFields,
+    yesNoFormFields,
+    dropdownFormFields,
   }
 }

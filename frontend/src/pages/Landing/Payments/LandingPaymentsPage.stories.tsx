@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { LANDING_PAYMENTS_ROUTE } from '~constants/routes'
 import {
@@ -23,7 +23,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <LandingPaymentsPage />
+const Template: StoryFn = () => <LandingPaymentsPage />
 export const Default = Template.bind({})
 
 export const Loading = Template.bind({})

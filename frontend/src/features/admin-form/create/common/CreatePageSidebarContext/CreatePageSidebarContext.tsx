@@ -1,12 +1,13 @@
 import {
   createContext,
-  FC,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react'
+
+import { FCC } from '~typings/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
@@ -180,7 +181,7 @@ export const useCreatePageSidebarContext =
  * Provider component that makes drawer context object available to any
  * child component that calls `useCreatePageDrawer()`.
  */
-export const CreatePageSidebarProvider: FC = ({ children }) => {
+export const CreatePageSidebarProvider: FCC = ({ children }) => {
   const context = useCreatePageSidebarContext()
 
   return (

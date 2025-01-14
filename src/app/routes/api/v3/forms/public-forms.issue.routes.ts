@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as IssueController from '../../../../modules/issue/issue.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsIssueRouter = Router()
 
@@ -19,5 +21,6 @@ export const PublicFormsIssueRouter = Router()
  * @returns 500 if database error occurs
  */
 PublicFormsIssueRouter.route('/:formId([a-fA-F0-9]{24})/issue').post(
+  limitRate({ max: rateLimitConfig.publicFormIssueFeedback }),
   IssueController.handleSubmitFormIssue,
 )

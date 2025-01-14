@@ -4,7 +4,7 @@ import {
   FieldResponseAnswerMapV3,
   LogicableField,
   RadioFieldResponsesV3,
-  SingleAnswerResponseV3,
+  StringAnswerResponseV3,
 } from '../../../shared/types'
 
 type SingleAnswerLogicableField = Exclude<LogicableField, BasicField.Radio>
@@ -15,7 +15,7 @@ export const isLogicableField = (args: {
 }): args is
   | {
       fieldType: SingleAnswerLogicableField
-      input: SingleAnswerResponseV3
+      input: StringAnswerResponseV3
     }
   | {
       fieldType: BasicField.Radio

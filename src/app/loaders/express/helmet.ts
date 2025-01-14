@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
 
@@ -13,6 +14,12 @@ const helmetMiddlewares = () => {
     } else next()
   }
 
+  const generateNonceMiddleware: RequestHandler = (req, res, next) => {
+    res.locals.nonce =
+      res.locals.nonce || crypto.randomBytes(32).toString('hex')
+
+    next()
+  }
   const xssFilterMiddleware = helmet.xssFilter()
 
   const noSniffMiddleware = helmet.noSniff()
@@ -29,7 +36,7 @@ const helmetMiddlewares = () => {
 
   const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
-  const cspOptionalDirectives = config.isDev
+  const cspOptionalDirectives = config.isDevOrTest
     ? // Remove upgradeInsecureRequest CSP header if config.isDev
       // See https://github.com/helmetjs/helmet for use of null to disable default
       { upgradeInsecureRequests: null }
@@ -37,12 +44,14 @@ const helmetMiddlewares = () => {
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     useDefaults: true,
+    // @ts-expect-error: cspCoreDirectives types are not properly exported by helmet
     directives: {
       ...cspCoreDirectives,
       ...cspOptionalDirectives,
     },
   })
   return [
+    generateNonceMiddleware,
     xssFilterMiddleware,
     noSniffMiddleware,
     ieNoOpenMiddlware,

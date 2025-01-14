@@ -2,10 +2,11 @@ import {
   Box,
   BoxProps,
   forwardRef,
-  StylesProvider,
   TabsProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+
+import { NavigationTabStylesProvider } from './NavigationTabContext'
 
 interface NavigationTabListProps extends BoxProps {
   variant?: TabsProps['variant']
@@ -17,7 +18,7 @@ export const NavigationTabList = forwardRef<NavigationTabListProps, 'div'>(
     const styles = useMultiStyleConfig('Tabs', { ...props, variant })
 
     return (
-      <StylesProvider value={styles}>
+      <NavigationTabStylesProvider value={styles}>
         <Box
           ref={ref}
           onMouseDown={onMouseDown}
@@ -26,7 +27,7 @@ export const NavigationTabList = forwardRef<NavigationTabListProps, 'div'>(
         >
           {children}
         </Box>
-      </StylesProvider>
+      </NavigationTabStylesProvider>
     )
   },
 )

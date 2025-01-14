@@ -15,6 +15,7 @@ import {
 import {
   expectAttachment,
   expectContains,
+  expectNotToContain,
   // expectToast,
   getAutoreplyEmail,
   getResponseArray,
@@ -127,7 +128,10 @@ export const verifyEmailSubmission = async (
     expectAttachment(field, submission.attachments)
   }
 
-  if (formSettings.authType !== FormAuthType.NIL) {
+  if (
+    formSettings.isSubmitterIdCollectionEnabled &&
+    formSettings.authType !== FormAuthType.NIL
+  ) {
     // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
     if (!formSettings.nric) throw new Error('No nric provided!')
     switch (formSettings.authType) {
@@ -216,7 +220,10 @@ export const verifyEncryptSubmission = async (
       expectAttachment(field, submission.attachments)
     }
 
-    if (formSettings.authType !== FormAuthType.NIL) {
+    if (
+      formSettings.isSubmitterIdCollectionEnabled &&
+      formSettings.authType !== FormAuthType.NIL
+    ) {
       // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
       if (!formSettings.nric) throw new Error('No nric provided!')
       switch (formSettings.authType) {
@@ -232,6 +239,23 @@ export const verifyEncryptSubmission = async (
         case FormAuthType.SGID:
           expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
           break
+      }
+    }
+
+    const expectSubmissionNotToContain = expectNotToContain(submission.html)
+    if (!formSettings.isSubmitterIdCollectionEnabled) {
+      // Verify that the submission does not contain any singpass or corppass validated fields
+      expectSubmissionNotToContain([
+        SPCPFieldTitle.SpNric,
+        SPCPFieldTitle.CpUid,
+        SPCPFieldTitle.CpUen,
+        SgidFieldTitle.SgidNric,
+      ])
+      if (formSettings.nric) {
+        expectSubmissionNotToContain([formSettings.nric])
+      }
+      if (formSettings.uen) {
+        expectSubmissionNotToContain([formSettings.uen])
       }
     }
   }

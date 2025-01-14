@@ -3,13 +3,14 @@ import Stripe from 'stripe'
 import {
   EmailFormSettings,
   FormSettings,
+  MultirespondentFormSettings,
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
+import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
-import { TwilioCredentials } from '../../../../../shared/types/twilio'
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
@@ -20,6 +21,21 @@ type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
 type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   formId: string,
   settingsToUpdate: StorageFormSettings[T],
+) => Promise<FormSettings>
+
+export interface MrfEmailNotificationSettings {
+  emails: string[]
+  stepsToNotify: string[]
+  stepOneEmailNotificationFieldId: string
+}
+
+type UpdateMultiRespondentFormFn<
+  T extends Partial<MultirespondentFormSettings>,
+> = (formId: string, settingsToUpdate: T) => Promise<FormSettings>
+
+type UpdateStorageFormWhitelistSettingFn = (
+  formId: string,
+  whitelistCsvString: Promise<string> | null,
 ) => Promise<FormSettings>
 
 type UpdateFormFn<T extends keyof FormSettings> = (
@@ -35,6 +51,18 @@ export const getFormSettings = async (
   ).then(({ data }) => data)
 }
 
+export const getFormEncryptedWhitelistedSubmitterIds = async (
+  formId: string,
+): Promise<{
+  encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+}> => {
+  return ApiService.get<{
+    encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+  }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
+    responseType: 'json',
+  }).then(({ data }) => data)
+}
+
 export const updateFormStatus: UpdateFormFn<'status'> = async (
   formId,
   status,
@@ -47,6 +75,23 @@ export const updateFormLimit: UpdateFormFn<'submissionLimit'> = async (
   newLimit,
 ) => {
   return updateFormSettings(formId, { submissionLimit: newLimit })
+}
+
+export const updateFormHasMultiLang: UpdateFormFn<'hasMultiLang'> = async (
+  formId,
+  newHasMultiLang,
+) => {
+  return updateFormSettings(formId, {
+    hasMultiLang: newHasMultiLang,
+  })
+}
+
+export const updateFormSupportedLanguages: UpdateFormFn<
+  'supportedLanguages'
+> = async (formId, newSupportedLanguages) => {
+  return updateFormSettings(formId, {
+    supportedLanguages: newSupportedLanguages,
+  })
 }
 
 export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
@@ -84,6 +129,12 @@ export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
   return updateFormSettings(formId, { emails: newEmails })
 }
 
+export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
+  MrfEmailNotificationSettings
+> = async (formId, newSettings) => {
+  return updateFormSettings(formId, newSettings)
+}
+
 export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   formId,
   newAuthType,
@@ -91,12 +142,11 @@ export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   return updateFormSettings(formId, { authType: newAuthType })
 }
 
-export const updateFormNricMask: UpdateFormFn<'isNricMaskEnabled'> = async (
-  formId,
-  newIsNricMaskEnabled,
-) => {
+export const updateIsSubmitterIdCollectionEnabled: UpdateFormFn<
+  'isSubmitterIdCollectionEnabled'
+> = async (formId, nextIsSubmitterIdCollectionEnabled) => {
   return updateFormSettings(formId, {
-    isNricMaskEnabled: newIsNricMaskEnabled,
+    isSubmitterIdCollectionEnabled: nextIsSubmitterIdCollectionEnabled,
   })
 }
 
@@ -169,21 +219,16 @@ const updateFormSettings = async (
   ).then(({ data }) => data)
 }
 
-export const updateTwilioCredentials = async (
-  formId: string,
-  credentials: TwilioCredentials,
-) => {
-  return ApiService.put<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
-    credentials,
-  ).then(({ data }) => data)
-}
-
-export const deleteTwilioCredentials = async (formId: string) => {
-  return ApiService.delete<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
-  ).then(({ data }) => data)
-}
+// TODO: update this to work with backend
+export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
+  async (formId: string, whitelistCsvString: Promise<string> | null) => {
+    return ApiService.put<FormSettings>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
+      {
+        whitelistCsvString: await whitelistCsvString,
+      },
+    ).then(({ data }) => data)
+  }
 
 export const createStripeAccount = async (formId: string) => {
   return ApiService.post<{ authUrl: string }>(

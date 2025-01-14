@@ -21,7 +21,7 @@ export const SectionBodyText = ({
   })
 
   return (
-    <Box mt="1rem" {...props}>
+    <Box {...props}>
       <MarkdownText components={mdComponents}>{children}</MarkdownText>
     </Box>
   )

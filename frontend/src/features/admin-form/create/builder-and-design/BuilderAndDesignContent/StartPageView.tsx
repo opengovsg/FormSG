@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCog } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
@@ -6,10 +7,7 @@ import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
-import {
-  PREVIEW_MASKED_MOCK_UINFIN as PREVIEW_MASKED_MOCK_UINFIN,
-  PREVIEW_MOCK_UINFIN,
-} from '~features/admin-form/preview/constants'
+import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
 import {
@@ -40,6 +38,7 @@ import {
 } from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const { data: form, isLoading } = useCreateTabForm()
   const setFieldBuilderToInactive = useFieldBuilderStore(
@@ -200,9 +199,7 @@ export const StartPageView = () => {
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? form.isNricMaskEnabled
-                ? PREVIEW_MASKED_MOCK_UINFIN
-                : PREVIEW_MOCK_UINFIN
+              ? PREVIEW_MOCK_UINFIN
               : undefined
           }
           {...formHeaderProps}
@@ -264,7 +261,7 @@ export const StartPageView = () => {
                         <IconButton
                           variant="clear"
                           colorScheme="secondary"
-                          aria-label="Edit field"
+                          aria-label={t('features.common.tooltip.editField')}
                           icon={<BiCog fontSize="1.25rem" />}
                           onClick={handleEditInstructionsClick}
                         />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import {
@@ -15,10 +16,11 @@ import {
 import { get, head, uniq } from 'lodash'
 import simplur from 'simplur'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
@@ -46,18 +48,29 @@ export const TableField = ({
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
   const isMobile = useIsMobile()
 
+  const selectedLanguage = i18n.language as Language
+
   const columnsData = useMemo(() => {
-    return schema.columns.map((c) => ({
-      Header: (
-        <ColumnHeader title={c.title} isRequired={c.required} id={c._id} />
-      ),
-      accessor: c._id,
-      Cell: ColumnCell,
-    }))
-  }, [schema.columns])
+    return schema.columns.map((c) => {
+      const title = getValueInSelectedLanguage({
+        defaultValue: c.title,
+        translations: c.titleTranslations ?? [],
+        selectedLanguage,
+      })
+
+      return {
+        Header: (
+          <ColumnHeader title={title} isRequired={c.required} id={c._id} />
+        ),
+        accessor: c._id,
+        Cell: ColumnCell,
+      }
+    })
+  }, [schema.columns, selectedLanguage])
 
   const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
@@ -87,14 +100,15 @@ export const TableField = ({
   useEffect(() => {
     // Update field array when min rows changes.
     if (hasMinRowsChanged) {
+      const minRows = schema.minimumRows || 0
       const prevRowLength = fields.length
-      if (schema.minimumRows > prevRowLength) {
-        for (let i = prevRowLength; i < schema.minimumRows; i++) {
+      if (minRows > prevRowLength) {
+        for (let i = prevRowLength; i < minRows; i++) {
           appendTableRow()
         }
       } else {
         // Remove rows from field array
-        for (let i = prevRowLength; i > schema.minimumRows; i--) {
+        for (let i = prevRowLength; i > minRows; i--) {
           remove(i - 1)
         }
       }
@@ -102,7 +116,11 @@ export const TableField = ({
   }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns: columnsData, data: fields })
+    useTable({
+      // @ts-expect-error Loose types, cell props will be passed during render, but will be fixed if upgrade to v8.
+      columns: columnsData,
+      data: fields,
+    })
 
   const handleAddRow = useCallback(() => {
     if (
@@ -115,7 +133,8 @@ export const TableField = ({
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
-      if (fields.length <= schema.minimumRows || rowIndex >= fields.length) {
+      const minRows = schema.minimumRows || 0
+      if (fields.length <= minRows || rowIndex >= fields.length) {
         return
       }
       return remove(rowIndex)
@@ -148,7 +167,7 @@ export const TableField = ({
   return (
     <TableFieldContainer schema={schema}>
       <Box
-        d="block"
+        display="block"
         w="100%"
         overflowX="auto"
         sx={{
@@ -216,6 +235,7 @@ export const TableField = ({
                         disableRequiredValidation,
                         columnSchema: schema.columns[j],
                         colorTheme,
+                        selectedLanguage,
                       })}
                     </Td>
                   ))}
@@ -228,7 +248,8 @@ export const TableField = ({
                     >
                       <IconButton
                         isDisabled={
-                          schema.disabled || fields.length <= schema.minimumRows
+                          schema.disabled ||
+                          fields.length <= (schema.minimumRows || 0)
                         }
                         variant="clear"
                         colorScheme="danger"

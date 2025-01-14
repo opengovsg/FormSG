@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -17,7 +17,7 @@ export default {
   },
 } as Meta<VerificationBoxProps>
 
-const Template: Story<VerificationBoxProps> = (args) => (
+const Template: StoryFn<VerificationBoxProps> = (args) => (
   <VerificationBox {...args} />
 )
 export const MobileVerificationBox = Template.bind({})

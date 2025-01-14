@@ -1,48 +1,32 @@
-import {
-  FormSettings,
-  FormWorkflow,
-  FormWorkflowDto,
-  FormWorkflowStep,
-  MultirespondentFormSettings,
-} from '~shared/types/form'
+import { FormWorkflowDto, FormWorkflowStep } from '~shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
 
-export const updateFormWorkflow = async (
+export const createWorkflowStep = (
   formId: string,
-  newWorkflowSettings: MultirespondentFormSettings['workflow'],
+  createStepBody: FormWorkflowStep,
 ) => {
-  return ApiService.patch<FormSettings>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
-    { workflow: newWorkflowSettings },
+  return ApiService.post<FormWorkflowDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/workflow`,
+    createStepBody,
   ).then(({ data }) => data)
 }
 
-export const createWorkflowStep = (
-  formId: string,
-  formWorkflow: FormWorkflow,
-  createStepBody: FormWorkflowStep,
-  // @ts-expect-error Argument of type 'FormWorkflow' is not assignable to parameter of type 'FormWorkflowDto'.
-) => updateFormWorkflow(formId, [...formWorkflow, createStepBody])
-
-export const deleteWorkflowStep = (
-  formId: string,
-  formWorkflow: FormWorkflowDto,
-  stepNumber: number,
-) => {
-  formWorkflow.splice(stepNumber, 1)
-  return updateFormWorkflow(formId, formWorkflow)
+export const deleteWorkflowStep = (formId: string, stepNumber: number) => {
+  return ApiService.delete<FormWorkflowDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
+  ).then(({ data }) => data)
 }
 
 export const updateWorkflowStep = (
   formId: string,
-  formWorkflow: FormWorkflowDto,
   stepNumber: number,
   updateStepBody: FormWorkflowStep,
 ) => {
-  // @ts-expect-error Argument of type 'FormWorkflow' is not assignable to parameter of type 'FormWorkflowDto'.
-  formWorkflow.splice(stepNumber, 1, updateStepBody)
-  return updateFormWorkflow(formId, formWorkflow)
+  return ApiService.put<FormWorkflowDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
+    updateStepBody,
+  ).then(({ data }) => data)
 }

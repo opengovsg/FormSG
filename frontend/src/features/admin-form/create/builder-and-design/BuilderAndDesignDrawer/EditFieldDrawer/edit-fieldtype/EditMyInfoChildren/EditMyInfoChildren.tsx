@@ -61,34 +61,9 @@ export const EditMyInfoChildren = ({
     },
   })
 
-  function conditionallyDisplayInfoBox() {
-    const currentDate = new Date().toLocaleString('en-US', {
-      timeZone: 'Asia/Singapore',
-    })
-    const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
-      timeZone: 'Asia/Singapore',
-    })
-
-    if (new Date(currentDate) <= new Date(targetDate)) {
-      return (
-        <>
-          <Box pb="1.5rem">
-            <InlineMessage variant="warning">
-              To align with MyInfo terminology, the “Gender” field will be
-              renamed to “Sex” from 28 Jun 2024.
-            </InlineMessage>
-          </Box>{' '}
-        </>
-      )
-    } else {
-      return null
-    }
-  }
-
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
-        {conditionallyDisplayInfoBox()}
         <Text textStyle="subhead-1">Data source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">

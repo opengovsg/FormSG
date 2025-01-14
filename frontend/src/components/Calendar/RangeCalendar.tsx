@@ -2,12 +2,12 @@ import { useCallback, useState } from 'react'
 import {
   Box,
   forwardRef,
-  StylesProvider,
   useControllableState,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
 
+import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 import {
   CalendarAria,
   CalendarBaseProps,
@@ -140,13 +140,13 @@ export const RangeCalendar = forwardRef<RangeCalendarProps, 'input'>(
         isDateInRange={isDateInRange}
         {...props}
       >
-        <StylesProvider value={styles}>
+        <CalendarStylesProvider value={styles}>
           <CalendarAria />
           <Box sx={styles.container}>
             <CalendarPanel ref={initialFocusRef} />
             <CalendarTodayButton />
           </Box>
-        </StylesProvider>
+        </CalendarStylesProvider>
       </CalendarProvider>
     )
   },

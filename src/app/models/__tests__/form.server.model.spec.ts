@@ -2,7 +2,7 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
+import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
@@ -24,6 +24,8 @@ import {
   LogicType,
   PaymentChannel,
   PaymentType,
+  StorageFormSettings,
+  WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'shared/types'
 
@@ -72,28 +74,33 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
-  isNricMaskEnabled: false,
+  isSubmitterIdCollectionEnabled: false,
   isSingleSubmission: false,
   inactiveMessage:
-    'If you think this is a mistake, please contact the agency that gave you the form link.',
+    'If you require further assistance, please contact the agency that gave you the form link.',
   isListed: true,
   startPage: {
     colorTheme: 'blue',
     logo: {
       state: FormLogoState.Default,
     },
+    paragraphTranslations: [],
   },
   endPage: {
     title: 'Thank you for filling out the form.',
     buttonText: 'Submit another response',
     paymentTitle: 'Thank you, your payment has been made successfully.',
     paymentParagraph: 'Your form has been submitted and payment has been made.',
+    titleTranslations: [],
+    paragraphTranslations: [],
   },
   hasCaptcha: true,
   hasIssueNotification: true,
+  hasMultiLang: false,
   form_fields: [],
   form_logics: [],
   permissionList: [],
+  supportedLanguages: [],
   webhook: {
     url: '',
     isRetryEnabled: false,
@@ -101,6 +108,13 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
+}
+
+const ENCRYPT_MODE_SETTINGS_DEFAULTS = {
+  emails: [],
+  whitelistedSubmitterIds: {
+    isWhitelistEnabled: false,
+  },
 }
 
 const PAYMENTS_DEFAULTS = {
@@ -242,6 +256,7 @@ describe('Form Model', () => {
               ],
               logicType: 'preventSubmit',
               preventSubmitMessage: '',
+              preventSubmitMessageTranslations: [],
             },
           ],
         }
@@ -445,8 +460,9 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt', emails: [] },
+        { responseMode: 'encrypt' },
         FORM_DEFAULTS,
+        ENCRYPT_MODE_SETTINGS_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
 
@@ -876,11 +892,42 @@ describe('Form Model', () => {
           '`null` is not a valid enum value for path `payments_field.payment_type`',
         )
       })
+
+      it('should not get full list of whitelisted submitter id when getSettings', async () => {
+        // Arrange
+        const whitelistData = {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: new ObjectId(),
+          },
+        }
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          ...whitelistData,
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST,
+        )
+
+        // Act
+        const settings = validForm.getSettings() as StorageFormSettings
+
+        // Assert
+        expect(settings.whitelistedSubmitterIds).toEqual(
+          pick(whitelistData.whitelistedSubmitterIds, 'isWhitelistEnabled'),
+        )
+      })
     })
 
     describe('Multirespondent form schema', () => {
       const MULTIRESPONDENT_FORM_DEFAULTS = merge(
-        { responseMode: 'multirespondent' },
+        {
+          responseMode: 'multirespondent',
+          stepsToNotify: [],
+          emails: [],
+          stepOneEmailNotificationFieldId: '',
+        },
         FORM_DEFAULTS,
       )
 
@@ -1368,11 +1415,7 @@ describe('Form Model', () => {
 
       it('should return otpData of an email form when formId is valid', async () => {
         // Arrange
-        const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(emailFormParams)
+        const form = await Form.create(MOCK_EMAIL_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1387,18 +1430,13 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: emailFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
 
       it('should return otpData of an encrypt form when formId is valid', async () => {
         // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(encryptFormParams)
+        const form = await Form.create(MOCK_ENCRYPTED_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1413,7 +1451,6 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: encryptFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
@@ -1837,7 +1874,11 @@ describe('Form Model', () => {
         expect(actual?.toObject()).toEqual({
           ...form,
           lastModified: expect.any(Date),
-          endPage: { ...updatedEndPage },
+          endPage: {
+            ...updatedEndPage,
+            paragraphTranslations: [],
+            titleTranslations: [],
+          },
         })
       })
 
@@ -1868,6 +1909,8 @@ describe('Form Model', () => {
             paymentParagraph:
               'Your form has been submitted and payment has been made.',
             paymentTitle: 'Thank you, your payment has been made successfully.',
+            paragraphTranslations: [],
+            titleTranslations: [],
           },
         })
       })
@@ -2131,6 +2174,7 @@ describe('Form Model', () => {
             logo: {
               state: FormLogoState.Default,
             },
+            paragraphTranslations: [],
           },
         })
       })
@@ -2155,55 +2199,6 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
-      })
-    })
-
-    describe('retrievePublicFormsWithSmsVerification', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should retrieve only public forms with verifiable mobile fields that are not onboarded', async () => {
-        // Arrange
-        const mockFormPromises = range(8).map((_, idx) => {
-          // Extract bits and use them to represent state
-          const isPublic = !!(idx % 2)
-          const isVerifiable = !!((idx >> 1) % 2)
-          const isOnboarded = !!((idx >> 2) % 2)
-          return Form.create({
-            admin: populatedAdmin._id,
-            responseMode: FormResponseMode.Email,
-            title: 'mock mobile form',
-            emails: [populatedAdmin.email],
-            status: isPublic ? FormStatus.Public : FormStatus.Private,
-            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
-            form_fields: [
-              generateDefaultField(BasicField.Mobile, { isVerifiable }),
-            ],
-          })
-        })
-        await Promise.all(mockFormPromises)
-
-        // Act
-        const forms = await Form.retrievePublicFormsWithSmsVerification(
-          populatedAdmin._id,
-        )
-
-        // Assert
-        expect(forms.length).toBe(1)
-        expect(forms[0].form_fields[0].isVerifiable).toBe(true)
-        expect(forms[0].status).toBe(FormStatus.Public)
-        expect(forms[0].msgSrvcName).toBeUndefined()
-      })
-
-      it('should return an empty array when there are no forms', async () => {
-        // NOTE: This is an edge case and should never happen in prod as this method is called when
-        // a public form has a certain amount of verifications
-
-        // Act
-        const forms = await Form.retrievePublicFormsWithSmsVerification(
-          populatedAdmin._id,
-        )
-
-        // Assert
-        expect(forms.length).toBe(0)
       })
     })
   })
@@ -2635,7 +2630,7 @@ describe('Form Model', () => {
           title: 'Test Form',
           admin: MOCK_ADMIN_OBJ_ID,
           authType: FormAuthType.SP,
-          isNricMaskEnabled: true,
+          isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
@@ -2659,8 +2654,8 @@ describe('Form Model', () => {
           MOCK_ALL_OVERRIDE_PARAMS.submissionLimit,
         )
         expect(duplicatedForm.authType).toEqual(MOCK_ALL_FORM_PARAMS.authType)
-        expect(duplicatedForm.isNricMaskEnabled).toEqual(
-          MOCK_ALL_FORM_PARAMS.isNricMaskEnabled,
+        expect(duplicatedForm.isSubmitterIdCollectionEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSubmitterIdCollectionEnabled,
         )
         expect(duplicatedForm.inactiveMessage).toEqual(
           MOCK_ALL_FORM_PARAMS.inactiveMessage,
@@ -2668,6 +2663,29 @@ describe('Form Model', () => {
         expect(duplicatedForm.isSingleSubmission).toEqual(
           MOCK_ALL_FORM_PARAMS.isSingleSubmission,
         )
+      })
+
+      it('should not duplicate unwanted fields', () => {
+        const whitelistedSubmitterIdsParam: WhitelistedSubmitterIdsWithReferenceOid =
+          {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: 'some object id',
+          }
+        const MOCK_ALL_FORM_PARAMS = {
+          whitelistedSubmitterIds: whitelistedSubmitterIdsParam,
+        }
+        const MOCK_ALL_OVERRIDE_PARAMS = {
+          admin: 'duplicated admin',
+          title: 'duplicated title',
+          responseMode: FormResponseMode.Encrypt,
+        }
+
+        const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
+        const duplicatedForm = sourceForm.getDuplicateParams(
+          MOCK_ALL_OVERRIDE_PARAMS,
+        )
+
+        expect(duplicatedForm).not.toHaveProperty('whitelistedSubmitterIds')
       })
     })
 
@@ -2954,40 +2972,6 @@ describe('Form Model', () => {
         await expect(actual).rejects.toBeInstanceOf(
           mongoose.Error.ValidationError,
         )
-      })
-    })
-
-    describe('updateMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should update msgSrvcName of form to new msgSrvcName', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-        })
-
-        // Act
-        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
-        // Assert
-        expect(updatedForm?.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
-      })
-    })
-
-    describe('deleteMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should delete msgSrvcName of form', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-          msgSrvcName: MOCK_MSG_SRVC_NAME,
-        })
-
-        // Act
-        const updatedForm = await form.deleteMsgSrvcName()
-
-        // Assert
-        expect(updatedForm?.msgSrvcName).toBeUndefined()
       })
     })
   })

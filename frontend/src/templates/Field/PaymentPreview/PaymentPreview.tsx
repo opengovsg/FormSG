@@ -10,7 +10,6 @@ import {
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
-import { useSectionColor } from '~templates/Field/Section/SectionField'
 
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
@@ -23,6 +22,8 @@ import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
+
+import { useSectionColor } from '../Section/useSectionColor'
 
 import { PRODUCT_ITEM_PLACEHOLDER } from './constants'
 

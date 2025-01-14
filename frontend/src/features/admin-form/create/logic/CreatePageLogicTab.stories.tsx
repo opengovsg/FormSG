@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AttachmentSize, BasicField, FormFieldDto } from '~shared/types/field'
 import {
@@ -129,7 +129,7 @@ const FORM_WITH_LOGIC: Partial<AdminFormDto> = {
   form_logics: [if_12_show_34, if_12_preventsubmit],
 }
 
-const Template: Story = () => <CreatePageLogicTab />
+const Template: StoryFn = () => <CreatePageLogicTab />
 export const NoLogic = Template.bind({})
 NoLogic.parameters = {
   msw: buildMswRoutes({ form_logics: [] }),

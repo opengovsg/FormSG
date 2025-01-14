@@ -14,6 +14,7 @@ export const comboboxParts = anatomy('combobox').parts(
   'list',
   'item',
   'icon',
+  'inputStack',
   'emptyItem',
 )
 
@@ -22,7 +23,7 @@ export const parts = anatomy('singleselect')
   .extend('field', 'clearbutton')
 
 const itemBaseStyle: SystemStyleFunction = (props) => {
-  const { item: menuItemStyle = {} } = Menu.baseStyle(props)
+  const menuItemStyle = Menu.baseStyle?.(props).item ?? {}
   return merge(menuItemStyle, {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -31,12 +32,13 @@ const itemBaseStyle: SystemStyleFunction = (props) => {
 }
 
 const listBaseStyle: SystemStyleFunction = (props) => {
-  const { list: menuListStyle = {} } = Menu.baseStyle(props)
+  const menuListStyle = Menu.baseStyle?.(props).list ?? {}
   return merge(menuListStyle, {
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
     bg: 'white',
+    shadow: 'sm',
   })
 }
 
@@ -98,14 +100,12 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
 
 const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
   const { isClearable, colorScheme: c } = props
-  const menuVariantOutline = Menu.variants.outline(props)
   const inputVariantOutline = Input.variants.outline(props)
 
   return {
-    list: merge(menuVariantOutline.list, { py: 0 }),
-    item: merge(menuVariantOutline.item, { cursor: 'pointer' }),
+    list: { py: 0 },
+    item: { cursor: 'pointer' },
     field: merge(inputVariantOutline.field, {
-      zIndex: 1,
       borderRightRadius: isClearable ? 0 : undefined,
       bg: 'white',
       gridArea: '1 / 1 / 2 / 3',

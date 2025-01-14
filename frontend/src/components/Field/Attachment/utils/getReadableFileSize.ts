@@ -8,6 +8,9 @@ import { DECIMAL_BYTE_UNITS } from '~shared/constants/file'
  * @returns the human-readable file size string
  */
 export const getReadableFileSize = (fileSizeInBytes: number): string => {
+  if (fileSizeInBytes === 0) {
+    return '0 B'
+  }
   const i = Math.floor(Math.log(fileSizeInBytes) / Math.log(1000))
   const size = Number((fileSizeInBytes / Math.pow(1000, i)).toFixed(2))
   return size + ' ' + DECIMAL_BYTE_UNITS[i]

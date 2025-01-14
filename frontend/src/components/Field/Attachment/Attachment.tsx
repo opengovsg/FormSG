@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   forwardRef,
-  StylesProvider,
   Text,
   useFormControl,
   UseFormControlProps,
@@ -12,13 +12,14 @@ import {
 } from '@chakra-ui/react'
 import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
-import simplur from 'simplur'
 
 import { MB } from '~shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
+import { downloadFile } from './utils/downloadFile'
+import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
 import {
@@ -72,12 +73,32 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Show attachment download button.
    */
-  enableDownload?: boolean
+  showDownload?: boolean
+
+  /**
+   * Disable download button.
+   */
+  isDownloadDisabled?: boolean
+
+  /**
+   * Disable remove button.
+   */
+  isRemoveDisabled?: boolean
 
   /**
    * Show attachment removal button
    */
-  enableRemove?: boolean
+  showRemove?: boolean
+
+  /**
+   * Override callback function that is invoked when download button is clicked.
+   */
+  handleDownloadFileOverride?: () => void
+
+  /**
+   * Override callback function that is invoked when remove button is clicked.
+   */
+  handleRemoveFileOverride?: () => void
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -92,12 +113,17 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       name,
       colorScheme,
       title,
-      enableDownload,
-      enableRemove,
+      showDownload,
+      showRemove,
+      isDownloadDisabled,
+      isRemoveDisabled,
+      handleDownloadFileOverride,
+      handleRemoveFileOverride,
       ...props
     },
     ref,
   ) => {
+    const { t } = useTranslation()
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -121,11 +147,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           switch (firstError.code) {
             case 'file-invalid-type': {
               const fileExt = getFileExtension(rejectedFiles[0].file.name)
-              errorMessage = `Your file's extension ending in *${fileExt} is not allowed`
+              errorMessage = t(
+                `features.publicForm.components.fields.attachment.error.fileInvalidType`,
+                { fileExt },
+              )
               break
             }
             case 'too-many-files': {
-              errorMessage = 'You can only upload a single file in this input'
+              errorMessage = t(
+                `features.publicForm.components.fields.attachment.error.tooManyFiles`,
+              )
               break
             }
             default:
@@ -144,15 +175,19 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             const numInvalidFiles = invalidFilesInZip.length
             // There are invalid files, return error.
             if (numInvalidFiles !== 0) {
-              const hiddenQty = [numInvalidFiles, null]
               const stringOfInvalidExtensions = invalidFilesInZip.join(', ')
               return onError?.(
-                simplur`The following file ${hiddenQty} extension[|s] in your zip file ${hiddenQty} [is|are] not valid: ${stringOfInvalidExtensions}`,
+                t(
+                  'features.publicForm.components.fields.attachment.error.zipFileInvalidType',
+                  { stringOfInvalidExtensions },
+                ),
               )
             }
           } catch {
             return onError?.(
-              'An error has occurred whilst parsing your zip file',
+              t(
+                'features.publicForm.components.fields.attachment.error.zipParsing',
+              ),
             )
           }
         }
@@ -179,7 +214,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
         onChange(acceptedFile)
       },
-      [accept, maxSize, onChange, onError],
+      [accept, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
@@ -188,19 +223,24 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           if (maxSize && file.size > maxSize) {
             return {
               code: 'file-too-large',
-              message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
+              message: t(
+                'features.publicForm.components.fields.attachment.error.fileTooLarge',
+                { readableMaxSize },
+              ),
             }
           }
           if (file.size === 0) {
             return {
               code: 'file-empty',
-              message: `You have uploaded an empty file, please upload a valid attachment`,
+              message: t(
+                'features.publicForm.components.fields.attachment.error.zipParsing',
+              ),
             }
           }
         }
         return null
       },
-      [maxSize, readableMaxSize],
+      [maxSize, readableMaxSize, t],
     )
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
@@ -220,21 +260,20 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       colorScheme,
     })
 
-    const handleRemoveFile = useCallback(() => {
+    const _handleRemoveFile = useCallback(() => {
       onChange(null)
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
-    const handleDownloadFile = useCallback(() => {
+    const handleRemoveFile = handleRemoveFileOverride ?? _handleRemoveFile
+
+    const _handleDownloadFile = useCallback(() => {
       if (value) {
-        const url = URL.createObjectURL(value)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = value.name
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadFile(value)
       }
     }, [value])
+
+    const handleDownloadFile = handleDownloadFileOverride ?? _handleDownloadFile
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
@@ -261,7 +300,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     }, [getInputProps, inputProps, name])
 
     return (
-      <StylesProvider value={styles}>
+      <AttachmentStylesProvider value={styles}>
         <Box __css={styles.container}>
           <Box
             {...processedRootProps}
@@ -274,8 +313,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 file={value}
                 handleRemoveFile={handleRemoveFile}
                 handleDownloadFile={handleDownloadFile}
-                enableDownload={enableDownload}
-                enableRemove={enableRemove}
+                showDownload={showDownload}
+                showRemove={showRemove}
+                isDownloadDisabled={isDownloadDisabled}
+                isRemoveDisabled={isRemoveDisabled}
               />
             ) : (
               <AttachmentDropzone
@@ -294,11 +335,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              Maximum file size: {readableMaxSize}
+              {t(
+                'features.publicForm.components.fields.attachment.maxFileSize',
+                {
+                  readableMaxSize,
+                },
+              )}
             </Text>
           ) : null}
         </Box>
-      </StylesProvider>
+      </AttachmentStylesProvider>
     )
   },
 )

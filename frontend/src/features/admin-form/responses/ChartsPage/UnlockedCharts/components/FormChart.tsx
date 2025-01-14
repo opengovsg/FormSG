@@ -82,7 +82,12 @@ export const FormChart = ({
 
   return (
     <VStack w="100%" gap="0" sx={toolTipFlickerFix}>
-      <Flex alignItems="center" justifyContent="space-between" w="100%">
+      <Flex
+        alignItems="center"
+        justifyContent="space-between"
+        w="100%"
+        mb="0.25rem"
+      >
         <Text textStyle="h4" mr="1rem">
           {title}
         </Text>

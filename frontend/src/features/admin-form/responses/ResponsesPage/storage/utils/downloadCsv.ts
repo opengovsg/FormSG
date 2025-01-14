@@ -6,3 +6,10 @@ export const downloadResponseAttachment = async (
 ) => {
   return FileSaver.saveAs(blob, 'RefNo ' + submissionId + '.zip')
 }
+
+export const downloadResponseAttachmentURL = async (
+  blobURL: string,
+  submissionId: string,
+) => {
+  return FileSaver.saveAs(blobURL, 'RefNo ' + submissionId + '.zip')
+}

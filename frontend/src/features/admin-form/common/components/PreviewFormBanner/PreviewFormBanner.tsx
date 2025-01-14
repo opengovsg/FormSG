@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Waypoint } from 'react-waypoint'
@@ -27,7 +28,8 @@ import Link from '~components/Link'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
+// Explicit import to avoid circular dependency warnings by rollup
+import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal/DuplicateFormModal'
 
 export const StickyPreviewHeader = ({
   isOpen,
@@ -55,6 +57,7 @@ const textProps: TextProps = {
 export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId, isPaymentEnabled } = usePublicFormContext()
   const { data: { secretEnv } = {} } = useEnv()
   const {
@@ -104,7 +107,7 @@ export const PreviewFormBanner = ({
               <Stack
                 spacing="1rem"
                 direction="row"
-                d={{ base: 'none', md: 'flex' }}
+                display={{ base: 'none', md: 'flex' }}
               >
                 <Link
                   variant="standalone"
@@ -132,11 +135,11 @@ export const PreviewFormBanner = ({
             </>
           ) : (
             <Button
-              aria-label="Click to edit the form"
+              aria-label={t('features.common.editForm.ariaLabel')}
               as={ReactLink}
               to={`${ADMINFORM_ROUTE}/${formId}`}
             >
-              Edit form
+              {t('features.common.editForm.text')}
             </Button>
           )}
         </Flex>

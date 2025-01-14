@@ -4,9 +4,9 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
-import { HeaderBlock } from './HeaderBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
+import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
@@ -14,14 +14,14 @@ export const WorkflowContent = (): JSX.Element | null => {
   if (isLoading) return null
 
   return (
-    <Stack color="secondary.500" spacing="1rem">
-      <HeaderBlock />
+    <Stack color="secondary.500" spacing="2.75rem">
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
         ))}
         <NewStepBlock />
       </Stack>
+      <WorkflowCompletionMessageBlock />
     </Stack>
   )
 }

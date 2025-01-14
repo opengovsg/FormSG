@@ -4,20 +4,20 @@ import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
 
 import {
-  AdminFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormSupportedLanguages,
   StorageFormSettings,
 } from '~shared/types/form/form'
-import { TwilioCredentials } from '~shared/types/twilio'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
+import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
 import { formatOrdinal } from '~utils/stringFormat'
 
 import { updateFormPayments } from '../common/AdminFormPageService'
@@ -26,24 +26,27 @@ import { adminFormKeys } from '../common/queries'
 import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
-  deleteTwilioCredentials,
+  MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
   updateFormEmails,
   updateFormEsrvcId,
+  updateFormHasMultiLang,
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
-  updateFormNricMask,
   updateFormStatus,
+  updateFormSupportedLanguages,
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
+  updateFormWhitelistSetting,
   updateGstEnabledFlag,
   updateIsSingleSubmission,
-  updateTwilioCredentials,
+  updateIsSubmitterIdCollectionEnabled,
+  updateMrfEmailNotifications,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -58,7 +61,7 @@ export const useMutateFormSettings = () => {
     (newData: FormSettings) => {
       queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
       // Only update adminForm if it already has prior data.
-      queryClient.setQueryData<AdminFormDto | undefined>(
+      queryClient.setQueryData<FormSettings | undefined>(
         adminFormKeys.id(formId),
         (oldData) =>
           oldData
@@ -72,6 +75,27 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const generateErrorToast = useCallback(
+    (message: string) => {
+      toast.closeAll()
+      toast({
+        description: message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const generateSuccessToast = useCallback(
+    (message: string) => {
+      toast.closeAll()
+      toast({
+        description: message,
+      })
+    },
+    [toast],
+  )
+
   const handleSuccess = useCallback(
     ({
       newData,
@@ -80,24 +104,17 @@ export const useMutateFormSettings = () => {
       newData: FormSettings
       toastDescription: string
     }) => {
-      toast.closeAll()
       updateFormData(newData)
-      toast({
-        description: toastDescription,
-      })
+      generateSuccessToast(toastDescription)
     },
-    [toast, updateFormData],
+    [updateFormData, generateSuccessToast],
   )
 
   const handleError = useCallback(
     (error: Error) => {
-      toast.closeAll()
-      toast({
-        description: error.message,
-        status: 'danger',
-      })
+      generateErrorToast(error.message)
     },
-    [toast],
+    [generateErrorToast],
   )
 
   const mutateFormStatus = useMutation(
@@ -138,6 +155,53 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormHasMultiLang = useMutation(
+    (nextHasMultiLang: boolean) =>
+      updateFormHasMultiLang(formId, nextHasMultiLang),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.hasMultiLang
+            ? 'Multi-language enabled. Respondents can now select other languages to view your form in.'
+            : 'Multi-language disabled.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormSupportedLanguages = useMutation(
+    (nextSupportedLanguages?: FormSupportedLanguages) =>
+      updateFormSupportedLanguages(
+        formId,
+        nextSupportedLanguages?.nextSupportedLanguages,
+      ),
+    {
+      onSuccess: (newData, newSupportedLanguages) => {
+        if (newSupportedLanguages && newSupportedLanguages.selectedLanguage) {
+          const supportedLanguages =
+            newSupportedLanguages.nextSupportedLanguages ?? []
+          const languageToDisplay = convertUnicodeLocaleToLanguage(
+            newSupportedLanguages.selectedLanguage,
+          )
+
+          const isSelectedLanguageSupported = supportedLanguages.includes(
+            newSupportedLanguages.selectedLanguage,
+          )
+            ? `Respondents will now be able to select and view your form in ${languageToDisplay}.`
+            : `${languageToDisplay} is now hidden. Respondents will not be able to see it.`
+
+          handleSuccess({
+            newData,
+            toastDescription: isSelectedLanguageSupported,
+          })
+        }
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormCaptcha = useMutation(
     (nextHasCaptcha: boolean) => updateFormCaptcha(formId, nextHasCaptcha),
     {
@@ -160,7 +224,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `Email notifications for reports are now ${
+          toastDescription: `Email notifications for issues reported are now ${
             newData.hasIssueNotification ? 'enabled' : 'disabled'
           } on your form.`,
         })
@@ -207,6 +271,20 @@ export const useMutateFormSettings = () => {
 
   const mutateFormEmails = useMutation(
     (nextEmails: string[]) => updateFormEmails(formId, nextEmails),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Emails successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateMrfEmailNotifications = useMutation(
+    (MrfEmailNotificationSettings: MrfEmailNotificationSettings) =>
+      updateMrfEmailNotifications(formId, MrfEmailNotificationSettings),
     {
       onSuccess: (newData) => {
         handleSuccess({
@@ -306,16 +384,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateNricMask = useMutation(
-    (nextIsNricMaskEnabled: boolean) =>
-      updateFormNricMask(formId, nextIsNricMaskEnabled),
+  const mutateIsSubmitterIdCollectionEnabled = useMutation(
+    (nextIsSubmitterIdCollectionEnabled: boolean) =>
+      updateIsSubmitterIdCollectionEnabled(
+        formId,
+        nextIsSubmitterIdCollectionEnabled,
+      ),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: newData.isNricMaskEnabled
-            ? 'NRIC masking is now enabled on your form.'
-            : 'NRIC masking is now disabled on your form.',
+          toastDescription: newData.isSubmitterIdCollectionEnabled
+            ? 'NRIC/FIN/UEN collection is now enabled on your form.'
+            : 'NRIC/FIN/UEN collection is now disabled on your form.',
         })
       },
       onError: handleError,
@@ -339,6 +420,24 @@ export const useMutateFormSettings = () => {
         })
       },
       onError: handleError,
+    },
+  )
+
+  const mutateFormWhitelistSetting = useMutation(
+    (whitelistCsvString: Promise<string> | null) => {
+      return updateFormWhitelistSetting(formId, whitelistCsvString)
+    },
+    {
+      onSuccess: (_newData, variable) => {
+        generateSuccessToast(
+          variable
+            ? 'Your CSV has been uploaded successfully.'
+            : 'Your CSV has been removed successfully.',
+        )
+      },
+      onError: (error: Error) => {
+        generateErrorToast(error.message)
+      },
     },
   )
 
@@ -405,73 +504,21 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormHasMultiLang,
+    mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,
+    mutateMrfEmailNotifications,
     mutateFormTitle,
     mutateFormAuthType,
-    mutateNricMask,
+    mutateIsSubmitterIdCollectionEnabled,
     mutateIsSingleSubmission,
+    mutateFormWhitelistSetting,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,
-  }
-}
-
-export const useMutateTwilioCreds = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
-  const queryClient = useQueryClient()
-  const toast = useToast({ status: 'success', isClosable: true })
-
-  const mutateFormTwilioDetails = useMutation(
-    (credentials: TwilioCredentials) =>
-      updateTwilioCredentials(formId, credentials),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(adminFormKeys.id(formId))
-        toast.closeAll()
-        // Show toast on success.
-        toast({
-          description: 'Updated Twilio credentials',
-        })
-      },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
-    },
-  )
-
-  const mutateFormTwilioDeletion = useMutation(
-    () => deleteTwilioCredentials(formId),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(adminFormKeys.id(formId))
-        toast.closeAll()
-        // Show toast on success.
-        toast({
-          description: 'Deleted Twilio credentials',
-        })
-      },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
-    },
-  )
-
-  return {
-    mutateFormTwilioDeletion,
-    mutateFormTwilioDetails,
   }
 }
 

@@ -29,7 +29,7 @@ export const FormSingpassAuthToggle = ({
         ? DEFAULT_FORM_AUTH_TYPE
         : FormAuthType.NIL
     return mutateFormAuthType.mutate(nextAuthType)
-  }, [mutateFormAuthType, settings, DEFAULT_FORM_AUTH_TYPE])
+  }, [mutateFormAuthType, settings])
 
   return (
     <Toggle

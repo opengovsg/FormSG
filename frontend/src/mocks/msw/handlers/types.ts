@@ -1,9 +1,7 @@
-import { DefaultRequestBody, DelayMode, MockedRequest, RestHandler } from 'msw'
+import { DefaultBodyType, DelayMode, MockedRequest, RestHandler } from 'msw'
 
 export type WithDelayProps = {
   delay?: number | DelayMode
 }
 
-export type DefaultRequestReturn = RestHandler<
-  MockedRequest<DefaultRequestBody>
->
+export type DefaultRequestReturn = RestHandler<MockedRequest<DefaultBodyType>>

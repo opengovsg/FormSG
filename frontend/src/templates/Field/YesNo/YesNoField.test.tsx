@@ -1,5 +1,6 @@
-import { composeStories } from '@storybook/testing-react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { composeStories } from '@storybook/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
@@ -14,7 +15,7 @@ describe('ValidationRequired', () => {
     const submitButton = screen.getByText('Submit')
 
     // Act
-    fireEvent.click(submitButton)
+    await userEvent.click(submitButton)
     await waitFor(() => submitButton.textContent !== 'Submitting')
 
     // Assert
@@ -32,9 +33,9 @@ describe('ValidationRequired', () => {
 
     // Act
     // Test scenario where user changes their choice.
-    fireEvent.click(noOption)
-    fireEvent.click(yesOption)
-    fireEvent.click(submitButton)
+    await userEvent.click(noOption)
+    await userEvent.click(yesOption)
+    await userEvent.click(submitButton)
     await waitFor(() => submitButton.textContent !== 'Submitting')
 
     // Assert
@@ -53,7 +54,7 @@ describe('ValidationOptional', () => {
     const submitButton = screen.getByText('Submit')
 
     // Act
-    fireEvent.click(submitButton)
+    await userEvent.click(submitButton)
     await waitFor(() => submitButton.textContent !== 'Submitting')
 
     // Assert
@@ -71,9 +72,9 @@ describe('ValidationOptional', () => {
 
     // Act
     // Test scenario where user changes their choice.
-    fireEvent.click(yesOption)
-    fireEvent.click(noOption)
-    fireEvent.click(submitButton)
+    await userEvent.click(yesOption)
+    await userEvent.click(noOption)
+    await userEvent.click(submitButton)
     await waitFor(() => submitButton.textContent !== 'Submitting')
 
     // Assert

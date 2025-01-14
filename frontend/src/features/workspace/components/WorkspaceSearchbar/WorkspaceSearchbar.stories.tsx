@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   WorkspaceSearchbar,
@@ -11,6 +11,6 @@ export default {
   decorators: [],
 } as Meta
 
-export const Default: Story<WorkspaceSearchbarProps> = (args) => {
+export const Default: StoryFn<WorkspaceSearchbarProps> = (args) => {
   return <WorkspaceSearchbar {...args} />
 }

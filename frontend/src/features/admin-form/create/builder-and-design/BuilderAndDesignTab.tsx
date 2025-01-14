@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
+import { useDisclosure } from '@chakra-ui/react'
 import {
   DragDropContext,
   DragStart,
   DragUpdate,
   DropResult,
-} from 'react-beautiful-dnd'
-import { useDisclosure } from '@chakra-ui/react'
+} from '@hello-pangea/dnd'
 
 import {
   getFieldCreationMeta,

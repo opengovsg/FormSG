@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 
 import { BasicField, RatingShape } from '~shared/types/field'
@@ -48,7 +48,7 @@ interface StoryRatingFieldProps extends RatingFieldProps {
   triggerValidation?: boolean
 }
 
-const Template: Story<StoryRatingFieldProps> = ({
+const Template: StoryFn<StoryRatingFieldProps> = ({
   triggerValidation,
   ...args
 }) => {
