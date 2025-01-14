@@ -10,7 +10,10 @@ import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
-import { useMutateDownloadAttachments } from './mutations'
+import {
+  handleAddressResponseDisplay,
+  useMutateDownloadAttachments,
+} from './mutations'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -104,6 +107,18 @@ const DecryptedAttachmentRow = ({
   )
 }
 
+const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
+  const transformedAddress = handleAddressResponseDisplay(
+    row.answerArray as string[],
+  ).join(', ')
+  return (
+    <Stack>
+      <DecryptedQuestionLabel row={row} />
+      <Text textStyle="body-1">{transformedAddress}</Text>
+    </Stack>
+  )
+}
+
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
     switch (row.fieldType) {
@@ -118,6 +133,8 @@ export const DecryptedRow = memo(
         )
       case BasicField.Table:
         return <DecryptedTableRow row={row} />
+      case BasicField.Address:
+        return <DecryptedAddressRow row={row} />
       default:
         return (
           <Stack>

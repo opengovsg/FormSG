@@ -7,7 +7,10 @@ import type { Merge } from 'type-fest'
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
-import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
+import {
+  getAddressDecryptedResponseInstances,
+  getDecryptedResponseInstance,
+} from '../getDecryptedResponseInstance'
 import { processFormulaInjectionText } from '../processFormulaInjection'
 
 type UnprocessedRecord = Merge<
@@ -44,32 +47,25 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
   addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
+    const fieldRecords: Response[] = []
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
-    const fieldRecords = record.map((content) => {
-      const fieldRecord = getDecryptedResponseInstance(content)
-      if (!fieldRecord.isHeader) {
-        const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
-        // Only set new mapping if it does not exist or this record is a later
-        // submission.
-        // Might need to differentiate the question headers if we allow
-        // signed-but-failed-verification rows to proceed.
-        if (!currentMapping || created > currentMapping.created) {
-          this.fieldIdToQuestion.set(fieldRecord.id, {
-            created,
-            question: fieldRecord.question,
-          })
-        }
-        // Number of columns needed by this answer in the CSV
-        const contentNumCols = fieldRecord.numCols
-        // Number of columns currently allocated to the field
-        const currentNumCols = this.fieldIdToNumCols[fieldRecord.id]
-        // Update the number of columns allocated
-        this.fieldIdToNumCols[fieldRecord.id] = currentNumCols
-          ? Math.max(currentNumCols, contentNumCols)
-          : contentNumCols
+    record.forEach((content) => {
+      //split address record (answerArray) into individual columns
+      if (content.fieldType.toString() === 'address') {
+        const addressFieldRecords: Response[] =
+          getAddressDecryptedResponseInstances(content) // returns a list of Responses
+        addressFieldRecords.forEach((fieldRecord) => {
+          this._prepareFieldResponse(fieldRecord, created)
+          fieldRecords.push(fieldRecord)
+        })
+        return //skip to next record in fieldRecords
       }
-      return fieldRecord
+
+      const fieldRecord = getDecryptedResponseInstance(content)
+      this._prepareFieldResponse(fieldRecord, created)
+      fieldRecords.push(fieldRecord)
+      // return fieldRecord
     })
 
     // Rearrange record to be an object identified by field ID.
@@ -118,6 +114,32 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       this.addLine(row)
     })
     this.hasBeenProcessed = true
+  }
+  /**
+   * Prepares a fieldRecord
+   */
+  private _prepareFieldResponse(fieldRecord: Response, created: string): void {
+    if (!fieldRecord.isHeader) {
+      const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
+      // Only set new mapping if it does not exist or this record is a later
+      // submission.
+      // Might need to differentiate the question headers if we allow
+      // signed-but-failed-verification rows to proceed.
+      if (!currentMapping || created > currentMapping.created) {
+        this.fieldIdToQuestion.set(fieldRecord.id, {
+          created,
+          question: fieldRecord.question,
+        })
+      }
+      // Number of columns needed by this answer in the CSV
+      const contentNumCols = fieldRecord.numCols
+      // Number of columns currently allocated to the field
+      const currentNumCols = this.fieldIdToNumCols[fieldRecord.id]
+      // Update the number of columns allocated
+      this.fieldIdToNumCols[fieldRecord.id] = currentNumCols
+        ? Math.max(currentNumCols, contentNumCols)
+        : contentNumCols
+    }
   }
 
   /**

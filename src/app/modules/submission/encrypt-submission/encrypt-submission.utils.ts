@@ -13,10 +13,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
-import {
-  isProcessedAddressResponse,
-  isProcessedChildResponse,
-} from '../../../../app/utils/field-validation/field-validation.guards'
+import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -30,7 +27,7 @@ import {
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { ProcessedFieldResponse } from '../submission.types'
 import {
-  getAnswersForAddress,
+  // getAnswersForAddress,
   getAnswersForChild,
   getMyInfoPrefix,
 } from '../submission.utils'
@@ -171,18 +168,6 @@ export const formatMyInfoStorageResponseData = (
       }
     })
   }
-}
-
-export const formatAddressStorageResponseData = (
-  parsedResponses: ProcessedFieldResponse[],
-) => {
-  return parsedResponses.flatMap((response) => {
-    if (isProcessedAddressResponse(response)) {
-      return getAnswersForAddress(response)
-    } else {
-      return omitResponseKeys(response)
-    }
-  })
 }
 
 export const getStripePaymentMethod = (

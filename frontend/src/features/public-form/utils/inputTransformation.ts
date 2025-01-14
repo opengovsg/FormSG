@@ -236,8 +236,8 @@ const transformToAddressOutput = (
     Object.entries(input.addressSubFields).map(([key, value]) => {
       answerArray.push(`${key}_${value}`)
     })
+    answerArray.push(answerArray.shift()!) // move postal code to the end of array
   }
-  console.log(answerArray)
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,

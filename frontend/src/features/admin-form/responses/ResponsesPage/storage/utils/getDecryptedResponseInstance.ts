@@ -20,7 +20,6 @@ import {
 export const getDecryptedResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
-  console.log(fieldRecordData)
   if (
     isNestedResponse(fieldRecordData) &&
     fieldRecordData.fieldType === BasicField.Table
@@ -31,15 +30,41 @@ export const getDecryptedResponseInstance = (
     fieldRecordData.fieldType === BasicField.Checkbox
   ) {
     return new ArrayAnswerResponse(fieldRecordData)
-  } else if (
-    isArrayResponse(fieldRecordData) &&
-    fieldRecordData.fieldType === BasicField.Address
-  ) {
-    return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {
     return new SingleAnswerResponse(fieldRecordData)
   } else {
     throw new Error('Response did not match any known type')
+  }
+}
+
+/**
+ * Converts an address field record into an array of SingleAnswerResponses for separate csv columns output
+ * @param fieldRecordData Field record
+ * @returns Response[]
+ * @throws Address parsing error
+ */
+export const getAddressDecryptedResponseInstances = (
+  fieldRecordData: DisplayedResponseWithoutAnswer,
+): Response[] => {
+  if (
+    isArrayResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === BasicField.Address
+  ) {
+    const responses: Response[] = fieldRecordData.answerArray.map(
+      (answer, index) => {
+        const r = {
+          _id: fieldRecordData._id + index,
+          fieldType: fieldRecordData.fieldType,
+          question: fieldRecordData.question + `-${answer.split('_')[0]}`,
+          answer: answer.split('_')[1],
+          isHeader: fieldRecordData.isHeader,
+        }
+        return new SingleAnswerResponse(r)
+      },
+    )
+    return responses
+  } else {
+    throw new Error('Error parsing address response')
   }
 }
 

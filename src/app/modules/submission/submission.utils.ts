@@ -777,43 +777,6 @@ export const getAnswersForChild = (
 }
 
 /**
- * Expands addressfield into individual fields, so that they are no longer nested under
- * 1 parent field.
- * @param response
- * @param response.answerArray is of string[]
- * @returns the response with formatted answer
- */
-export const getAnswersForAddress = (
-  response: ProcessedAddressResponse,
-): ProcessedSingleAnswerResponse[] => {
-  const fields = response.answerArray
-  if (!fields) {
-    return []
-  }
-
-  // move postalCode to the back of array to be displayed similarly in csv
-  const firstElement = fields.shift()
-  if (firstElement !== undefined) fields.push(firstElement)
-
-  const subFieldResponses: ProcessedSingleAnswerResponse[] = []
-  Object.entries(fields).forEach((subField, index) => {
-    const key = subField[1][0].split('_')[0]
-    const value = subField[1][0].split('_')[1]
-    const subFieldId = `${response._id}${index}` //add incremental index to give each subfield a uniqueID
-    subFieldResponses.push({
-      _id: subFieldId,
-      fieldType: response.fieldType,
-      question: response.question + ' - ' + key,
-      myInfo: response.myInfo,
-      isVisible: response.isVisible,
-      isUserVerified: response.isUserVerified,
-      answer: value,
-    })
-  })
-  return subFieldResponses
-}
-
-/**
  * Generates a hash to mask the original submitterId.
  * @param id
  * @returns

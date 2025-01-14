@@ -27,10 +27,7 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
-import {
-  getAddressResponseDisplay,
-  useMutateDownloadAttachments,
-} from './mutations'
+import { useMutateDownloadAttachments } from './mutations'
 import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
 
@@ -137,10 +134,6 @@ export const IndividualResponsePage = (): JSX.Element => {
         label="Enter or upload Secret Key"
       />
     )
-  // console.log(data?.responses)
-  // Logic to handle parsing address field into 1 line (from single responses)
-  if (data?.responses !== undefined)
-    data.responses = getAddressResponseDisplay(data.responses)
 
   const responseLinkWithKey = `${
     window.location.origin

@@ -74,15 +74,12 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 import {
+  ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import {
-  getAnswersForAddress,
-  getAnswersForChild,
-  getMyInfoPrefix,
-} from '../submission.utils'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -193,6 +190,23 @@ export const getAnswerForCheckbox = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
+  }
+}
+
+/**
+ * Creates a response for address, with its answer formatted from the answerArray
+ */
+export const getAnswerForAddress = (
+  response: ProcessedAddressResponse,
+): ResponseFormattedForEmail => {
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: handleAddressResponseDisplayForEmail(response.answerArray), //TODO Update this
   }
 }
 
@@ -448,9 +462,8 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
       getFormattedFunction(childField, hashedFields),
     )
   } else if (isProcessedAddressResponse(response)) {
-    return getAnswersForAddress(response).map((subField) =>
-      getFormattedFunction(subField, hashedFields),
-    )
+    const address = getAnswerForAddress(response)
+    return [getFormattedFunction(address, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -626,4 +639,22 @@ export class SubmissionEmailObj {
       ),
     )
   }
+}
+
+const handleAddressResponseDisplayForEmail = (responses: string[]) => {
+  const ans = responses
+  if (Array.isArray(ans)) {
+    let arr: string[] = []
+    if (ans.every((item) => typeof item === 'string')) {
+      arr = ans.map((item) => (item as string).split('_')[1])
+    }
+    if (arr && arr[arr.length - 1])
+      arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
+    if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
+      const combinedUnit = '#' + arr[arr.length - 2] + '-' + arr[arr.length - 3]
+      arr.splice(arr.length - 3, 2, combinedUnit)
+    }
+    return arr.join(', ')
+  }
+  return responses.join(', ')
 }

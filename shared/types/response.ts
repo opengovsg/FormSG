@@ -194,4 +194,3 @@ export type FieldResponse =
   | ChildBirthRecordsResponse
   | SingleChildSubRecordResponse
   | AddressResponse
-  | AddressSubFieldResponse
