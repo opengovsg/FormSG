@@ -8,6 +8,7 @@ import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'
+import { Box } from '@chakra-ui/react'
 
 export interface ParagraphFieldProps extends BaseFieldProps {
   schema: ParagraphFieldSchema
@@ -37,10 +38,10 @@ export const ParagraphField = ({
   })
 
   return (
-    <div>
+    <Box>
       <MarkdownText multilineBreaks components={mdComponents}>
         {description}
       </MarkdownText>
-    </div>
+    </Box>
   )
 }
