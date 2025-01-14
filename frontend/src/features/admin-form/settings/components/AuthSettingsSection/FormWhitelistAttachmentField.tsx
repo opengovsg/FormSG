@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Controller,
   ControllerRenderProps,
@@ -8,14 +8,13 @@ import {
 import { useParams } from 'react-router'
 import { Box, Skeleton } from '@chakra-ui/react'
 
-import { MB } from '~shared/constants'
-import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
+import { KB } from '~shared/constants'
+import { StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import Attachment from '~components/Field/Attachment'
-import { AttachmentFieldSchema } from '~templates/Field'
-import { FieldContainer } from '~templates/Field/FieldContainer'
+import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -26,6 +25,7 @@ interface FormWhitelistAttachmentFieldProps {
   isDisabled: boolean
 }
 
+const MAX_SIZE_IN_BYTES = 250 * KB
 const FormWhitelistAttachmentFieldContainerName =
   'whitelist-csv-attachment-field-container'
 const FormWhitelistAttachmentFieldName = 'whitelist-csv-attachment-field'
@@ -45,7 +45,7 @@ export const FormWhitelistAttachmentField = ({
 
   const standardCsvDownloadFileName = `whitelist_${formId}.csv`
 
-  const fieldContainerSchema: AttachmentFieldSchema = {
+  const fieldContainerSchema: BaseFieldProps['schema'] = {
     _id: FormWhitelistAttachmentFieldContainerName,
     title: 'Restrict form to eligible NRIC/FIN/UENs only',
     description:
@@ -53,8 +53,6 @@ export const FormWhitelistAttachmentField = ({
       '[Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
     required: true,
     disabled: isDisabled,
-    fieldType: BasicField.Attachment,
-    attachmentSize: AttachmentSize.TwentyMb,
   }
 
   const { publicKey, whitelistedSubmitterIds } = settings
@@ -72,13 +70,6 @@ export const FormWhitelistAttachmentField = ({
       })
     }
   }, [isWhitelistEnabled, setValue, standardCsvDownloadFileName])
-
-  const maxSizeInBytes = useMemo(() => {
-    if (!fieldContainerSchema.attachmentSize) {
-      return
-    }
-    return parseInt(fieldContainerSchema.attachmentSize) * MB
-  }, [fieldContainerSchema.attachmentSize])
 
   const setWhitelistAttachmentFieldError = useCallback(
     (errMsg: string) => {
@@ -168,7 +159,7 @@ export const FormWhitelistAttachmentField = ({
                     handleDownloadFileOverride={triggerSecretKeyInputTransition}
                     handleRemoveFileOverride={removeWhitelist}
                     showFileSize
-                    maxSize={maxSizeInBytes}
+                    maxSize={MAX_SIZE_IN_BYTES}
                     showDownload
                     showRemove
                     isDownloadDisabled={false}

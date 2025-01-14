@@ -165,7 +165,7 @@ describe('attachment validation', () => {
     // Assert
     // Should show error message.
     const error = screen.getByText(
-      /You have exceeded the limit, please upload a file below 1 MB/i,
+      /You have exceeded the file size limit, please upload a file below 1 MB/i,
     )
     expect(error).not.toBeNull()
   })
