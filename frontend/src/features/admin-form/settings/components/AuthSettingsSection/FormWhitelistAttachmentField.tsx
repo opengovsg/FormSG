@@ -8,7 +8,7 @@ import {
 import { useParams } from 'react-router'
 import { Box, Skeleton } from '@chakra-ui/react'
 
-import { KB } from '~shared/constants'
+import { MB } from '~shared/constants'
 import { StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
@@ -25,7 +25,7 @@ interface FormWhitelistAttachmentFieldProps {
   isDisabled: boolean
 }
 
-const MAX_SIZE_IN_BYTES = 250 * KB
+const MAX_SIZE_IN_BYTES = 3 * MB
 const FormWhitelistAttachmentFieldContainerName =
   'whitelist-csv-attachment-field-container'
 const FormWhitelistAttachmentFieldName = 'whitelist-csv-attachment-field'
