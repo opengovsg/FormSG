@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Box } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
@@ -8,7 +9,6 @@ import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'
-import { Box } from '@chakra-ui/react'
 
 export interface ParagraphFieldProps extends BaseFieldProps {
   schema: ParagraphFieldSchema
@@ -38,6 +38,9 @@ export const ParagraphField = ({
   })
 
   return (
+    // <MarkdownText> returns an array of components, this causes styles that affect
+    // the immediate child layouts (i.e., gap) to be applied on the MarkdownText elements themselves.
+    // Wrapping in a Box component isolates the elements to avoid this.
     <Box>
       <MarkdownText multilineBreaks components={mdComponents}>
         {description}
