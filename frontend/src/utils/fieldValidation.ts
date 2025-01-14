@@ -229,6 +229,9 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         schema,
         disableRequiredValidation,
       ),
+      validOnlyNumbers: (value: string) => {
+        return validateNoNonNumerical(value)
+      },
       validPostalCode: (value: string) => {
         if (value === '') return
         return validatePostalCode(value)

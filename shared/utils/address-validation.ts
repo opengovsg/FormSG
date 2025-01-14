@@ -2,8 +2,8 @@
 export const INVALID_POSTAL_CODE_ERROR = 'Please enter a valid postal code'
 export const VALID_POSTAL_CODE_NO_ADDRESS_ERROR =
   'Address cannot be found. Please fill in details manually'
-export const INVALID_BLOCK_UNIT_ERROR = 'Please use numbers and alphabets only'
-export const INVALID_LEVEL_ERROR = 'Please use numbers only'
+export const INVALID_BLOCK_UNIT_ERROR = 'Please use numbers and letters only'
+export const INVALID_NON_NUMERICAL_ERROR = 'Please use numbers only'
 export const INVALID_LEVEL_UNIT_ERROR = 'Both or none inputs are required' // check with Alicia & Kenneth
 
 export const validatePostalCode = (value: string) => {
@@ -22,7 +22,7 @@ export const validateNoSpecialCharacters = (value: string) => {
 
 export const validateNoNonNumerical = (value: string) => {
   if (!/^[0-9]+$/.test(value)) {
-    return INVALID_LEVEL_ERROR
+    return INVALID_NON_NUMERICAL_ERROR
   }
   return true
 }

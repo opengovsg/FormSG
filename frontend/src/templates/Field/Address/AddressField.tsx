@@ -165,10 +165,6 @@ export const AddressCompoundField = ({
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
                     placeholder="e.g. 650161"
-                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
-                      const value = e.currentTarget.value
-                      e.currentTarget.value = value.replace(/\D/g, '') // Allow only digits
-                    }}
                   />
                   <Button
                     onClick={handleVerifyAddress}
