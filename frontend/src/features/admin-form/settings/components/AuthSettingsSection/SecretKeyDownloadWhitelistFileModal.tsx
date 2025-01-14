@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useQueryClient } from 'react-query'
 import { UseDisclosureReturn } from '@chakra-ui/react'
 import Papa from 'papaparse'
@@ -30,6 +30,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
 }: SecretKeyDownloadWhitelistFileModalProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
   const errorToast = useToast({ status: 'danger', isClosable: true })
+  const [isDecrypting, setIsDecrypting] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -63,6 +64,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   )
   const handleWhitelistCsvDownload = useCallback(
     ({ secretKey }: { secretKey: string }) => {
+      setIsDecrypting(true)
       fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
         .then((data) => {
           const { encryptedWhitelistedSubmitterIds } = data
@@ -111,6 +113,9 @@ export const SecretKeyDownloadWhitelistFileModal = ({
         .catch((error: Error) => {
           toastErrorMessage(error.message)
         })
+        .finally(() => {
+          setIsDecrypting(false)
+        })
     },
     [
       formId,
@@ -125,7 +130,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
 
   return (
     <SecretKeyFormModal
-      isLoading={false}
+      isLoading={isDecrypting}
       onSubmit={handleWhitelistCsvDownload}
       onClose={onClose}
       isOpen={isOpen}
