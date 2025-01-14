@@ -5,7 +5,7 @@ import { vi } from 'vitest'
 
 import {
   INVALID_BLOCK_UNIT_ERROR,
-  INVALID_POSTAL_CODE_ERROR,
+  INVALID_NON_NUMERICAL_ERROR,
   VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
 } from '~shared/utils/address-validation'
 
@@ -61,7 +61,7 @@ describe('validation required', () => {
     const submitButton = screen.getByText('Submit')
 
     await user.click(submitButton)
-    const error = screen.queryByText(INVALID_POSTAL_CODE_ERROR)
+    const error = screen.queryByText(INVALID_NON_NUMERICAL_ERROR)
     expect(error).not.toBeNull()
   })
 

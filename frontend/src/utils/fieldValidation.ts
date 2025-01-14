@@ -230,6 +230,7 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validOnlyNumbers: (value: string) => {
+        if (value === '') return
         return validateNoNonNumerical(value)
       },
       validPostalCode: (value: string) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
@@ -167,8 +167,8 @@ InvalidLevelUnit.args = {
         blockNumber: '1',
         streetName: 'Bukit Batok Street',
         buildingName: '50',
-        levelNumber: '04#',
-        unitNumber: '5A',
+        levelNumber: '04',
+        unitNumber: '5A#',
       },
     },
   },
