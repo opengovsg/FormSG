@@ -25,7 +25,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import CSV_TEMPLATE_EXAMPLE_GIF from './conditional-routing-example-resize3.gif'
+import CSV_TEMPLATE_EXAMPLE_GIF from './conditional-routing-example.gif'
 import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import { FieldItem } from './types'
 
