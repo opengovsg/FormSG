@@ -201,12 +201,14 @@ const whitelistedSubmitterIdNestedPath = {
     required: true,
     default: false,
   },
-  encryptedWhitelistedSubmitterIds: {
-    type: Schema.Types.ObjectId,
-    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-    required: false,
-    default: undefined,
-  },
+  encryptedWhitelistedSubmitterIds: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+      required: false,
+      default: undefined,
+    },
+  ],
   _id: { id: false },
 }
 
@@ -282,9 +284,26 @@ const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
 EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
-  return this.get('whitelistedSubmitterIds', null, {
+  const whitelistedSubmitterIds = this.get('whitelistedSubmitterIds', null, {
     getters: false,
   })
+
+  // NOTE: this is to support legacy format for encryptedWhitelistedSubmitterIds which only stores 1 document.
+  const whitelistedSubmitterIdsObject = whitelistedSubmitterIds
+  if (
+    !Array.isArray(
+      whitelistedSubmitterIdsObject.encryptedWhitelistedSubmitterIds,
+    )
+  ) {
+    return {
+      ...whitelistedSubmitterIdsObject,
+      encryptedWhitelistedSubmitterIds: [
+        whitelistedSubmitterIdsObject.encryptedWhitelistedSubmitterIds,
+      ],
+    }
+  }
+
+  return whitelistedSubmitterIdsObject
 }
 
 EncryptedFormDocumentSchema.methods.addPaymentAccountId = function ({

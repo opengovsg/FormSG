@@ -22,7 +22,7 @@ export interface IFormWhitelistedSubmitterIdsModel
   >
 
   checkIfSubmitterIdIsWhitelisted(
-    whitelistId: string,
+    whitelistId: string[],
     submitterId: string,
   ): Promise<boolean>
 }

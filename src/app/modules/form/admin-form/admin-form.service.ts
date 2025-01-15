@@ -1388,6 +1388,22 @@ export const checkIsWhitelistSettingValid = (
   }
 }
 
+const combineFormWhitelistedSubmitterIdsBuckets = (
+  whitelistSettingBuckets: EncryptedStringsMessageContent[],
+): EncryptedStringsMessageContent => {
+  const whitelistedSubmitterIds = whitelistSettingBuckets.reduce(
+    (acc, bucket) => {
+      return acc.concat(bucket.cipherTexts)
+    },
+    [] as string[],
+  )
+  return {
+    myPublicKey: whitelistSettingBuckets[0].myPublicKey,
+    nonce: whitelistSettingBuckets[0].nonce,
+    cipherTexts: whitelistedSubmitterIds,
+  }
+}
+
 /**
  * Fetches the whitelist setting document without myPrivateKey for the client to use for decryption.
  */
@@ -1403,15 +1419,17 @@ export const getFormWhitelistSetting = (
   if (!isWhitelistEnabled) {
     return okAsync(null)
   }
-
   if (isWhitelistEnabled && !encryptedWhitelistedSubmitterIds) {
     return errAsync(new FormWhitelistSettingNotFoundError())
   }
 
   return ResultAsync.fromPromise(
-    FormWhitelistedSubmitterIdsModel.findById(encryptedWhitelistedSubmitterIds)
+    FormWhitelistedSubmitterIdsModel.where({
+      _id: { $in: encryptedWhitelistedSubmitterIds },
+    })
       .lean()
       .exec()
+      .then(combineFormWhitelistedSubmitterIdsBuckets)
       .then((whitelistSetting) =>
         pick(whitelistSetting, WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS),
       ) as Promise<EncryptedStringsMessageContent>,
@@ -1434,6 +1452,26 @@ export const getFormWhitelistSetting = (
   })
 }
 
+const NUM_SUBMITTER_IDS_PER_BUCKET = 200_000
+const getFormWhitelistedSubmitterIdsBuckets = (
+  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey,
+) => {
+  const buckets: string[][] = []
+  for (
+    let i = 0;
+    i < encryptedWhitelistedSubmitterIdsContent.cipherTexts.length;
+    i += NUM_SUBMITTER_IDS_PER_BUCKET
+  ) {
+    buckets.push(
+      encryptedWhitelistedSubmitterIdsContent.cipherTexts.slice(
+        i,
+        i + NUM_SUBMITTER_IDS_PER_BUCKET,
+      ),
+    )
+  }
+  return buckets
+}
+
 export const updateFormWhitelistSetting = (
   originalForm: IPopulatedForm,
   encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
@@ -1453,19 +1491,30 @@ export const updateFormWhitelistSetting = (
     session.startTransaction()
 
     if (encryptedWhitelistedSubmitterIdsContent) {
-      // create whitelisted submitter id collection document and update reference to it
-      const createdWhitelistedSubmitterIdsDocument =
-        await FormWhitelistedSubmitterIdsModel.create({
-          formId: originalForm._id,
-          ...encryptedWhitelistedSubmitterIdsContent,
-        })
+      const whitelistedSubmitterIdsBuckets =
+        getFormWhitelistedSubmitterIdsBuckets(
+          encryptedWhitelistedSubmitterIdsContent,
+        )
+
+      const documentIds = await FormWhitelistedSubmitterIdsModel.insertMany(
+        whitelistedSubmitterIdsBuckets.map((bucket) => {
+          const bucketContent = {
+            ...encryptedWhitelistedSubmitterIdsContent,
+            cipherTexts: bucket,
+          }
+          return {
+            formId: originalForm._id,
+            ...bucketContent,
+          }
+        }),
+      )
+
       const updatedForm = await FormModelToUse.findByIdAndUpdate(
         originalForm._id,
         {
           whitelistedSubmitterIds: {
             isWhitelistEnabled: true,
-            encryptedWhitelistedSubmitterIds:
-              createdWhitelistedSubmitterIdsDocument._id,
+            encryptedWhitelistedSubmitterIds: documentIds,
           },
         },
         {

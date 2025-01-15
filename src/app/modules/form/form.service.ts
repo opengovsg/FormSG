@@ -292,13 +292,13 @@ export const checkHasRespondentNotWhitelistedFailure = (
     return okAsync(false)
   }
 
-  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds: whitelistId } =
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds: whitelistIds } =
     form.getWhitelistedSubmitterIds()
 
   if (!isWhitelistEnabled) {
     return okAsync(false)
   }
-  if (isWhitelistEnabled && !whitelistId) {
+  if (isWhitelistEnabled && (!whitelistIds || whitelistIds.length <= 0)) {
     return errAsync(new FormWhitelistSettingNotFoundError())
   }
 
@@ -317,7 +317,7 @@ export const checkHasRespondentNotWhitelistedFailure = (
   }
   return ResultAsync.fromPromise(
     FormWhitelistSubmitterIdsModel.findEncryptionPropertiesById(
-      whitelistId,
+      whitelistIds[0],
     ).then(({ myPublicKey, myPrivateKey, nonce }) => {
       const myKeyPair = {
         publicKey: myPublicKey,
@@ -335,7 +335,7 @@ export const checkHasRespondentNotWhitelistedFailure = (
       ).cipherText
 
       return FormWhitelistSubmitterIdsModel.checkIfSubmitterIdIsWhitelisted(
-        whitelistId,
+        whitelistIds,
         submitterIdForLookup,
       ).then((isWhitelisted) => !isWhitelisted)
     }),

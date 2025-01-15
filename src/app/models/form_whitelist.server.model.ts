@@ -44,9 +44,9 @@ const formWhitelistedSubmitterIdsSchema = new Schema<
 })
 
 formWhitelistedSubmitterIdsSchema.statics.checkIfSubmitterIdIsWhitelisted =
-  async function (whitelistId: string, submitterId: string) {
+  async function (whitelistId: string[], submitterId: string) {
     return this.exists({
-      _id: whitelistId,
+      _id: { $in: whitelistId },
       cipherTexts: submitterId,
     }).exec()
   }

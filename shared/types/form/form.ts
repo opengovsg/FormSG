@@ -215,7 +215,7 @@ export interface WhitelistedSubmitterIds {
 
 export interface WhitelistedSubmitterIdsWithReferenceOid
   extends WhitelistedSubmitterIds {
-  encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
+  encryptedWhitelistedSubmitterIds: string[] // Object ids of the encrypted whitelist
 }
 
 export interface StorageFormBase extends FormBase {
