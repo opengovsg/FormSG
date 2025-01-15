@@ -49,6 +49,7 @@ export const CSP_CORE_DIRECTIVES = {
     'https://*.google-analytics.com',
     'https://*.analytics.google.com',
     'https://*.googletagmanager.com',
+    'https://www.onemap.gov.sg/api/common/elastic/search?searchVal=*&returnGeom=Y&getAddrDetails=Y',
   ],
   frameSrc: [
     "'self'",
