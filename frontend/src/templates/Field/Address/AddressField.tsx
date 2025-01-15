@@ -59,13 +59,15 @@ export const AddressCompoundField = ({
   const levelNumber = watch(`${schema._id}.addressSubFields.levelNumber`)
 
   const levelNumberValidationRules = useMemo(
-    () => createLevelNumberValidationRules(unitNumber, levelNumber),
-    [unitNumber, levelNumber], // Recompute when unitNumber or levelNumber change
+    () =>
+      createLevelNumberValidationRules(unitNumber, levelNumber, isSubmitting),
+    [unitNumber, levelNumber, isSubmitting],
   )
 
   const unitNumberValidationRules = useMemo(
-    () => createUnitNumberValidationRules(unitNumber, levelNumber),
-    [unitNumber, levelNumber],
+    () =>
+      createUnitNumberValidationRules(unitNumber, levelNumber, isSubmitting),
+    [unitNumber, levelNumber, isSubmitting],
   )
 
   useEffect(() => {

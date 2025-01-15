@@ -274,6 +274,7 @@ export const createStreetNameValidationRules: ValidationRuleFn<
 export const createLevelNumberValidationRules = (
   unitNumber: string,
   levelNumber: string,
+  isSubmitting: boolean,
 ): RegisterOptions => {
   return {
     validate: {
@@ -282,6 +283,7 @@ export const createLevelNumberValidationRules = (
         return validateNoNonNumerical(value)
       },
       validInput: () => {
+        if (!isSubmitting) return true
         return validateLevelUnit(unitNumber, levelNumber)
       },
     },
@@ -291,6 +293,7 @@ export const createLevelNumberValidationRules = (
 export const createUnitNumberValidationRules = (
   unitNumber: string,
   levelNumber: string,
+  isSubmitting: boolean,
 ): RegisterOptions => {
   return {
     validate: {
@@ -299,6 +302,7 @@ export const createUnitNumberValidationRules = (
         return validateNoSpecialCharacters(value)
       },
       validInput: () => {
+        if (!isSubmitting) return true // display error message only on submission
         return validateLevelUnit(unitNumber, levelNumber)
       },
     },
