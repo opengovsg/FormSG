@@ -4,7 +4,8 @@ export const VALID_POSTAL_CODE_NO_ADDRESS_ERROR =
   'Address cannot be found. Please fill in details manually'
 export const INVALID_BLOCK_UNIT_ERROR = 'Please use numbers and letters only'
 export const INVALID_NON_NUMERICAL_ERROR = 'Please use numbers only'
-export const INVALID_LEVEL_UNIT_ERROR = 'Please include level and unit numbers' // check with Alicia & Kenneth
+export const INVALID_LEVEL_UNIT_ERROR =
+  'Please include both level and unit number' // check with Alicia & Kenneth
 
 export const validatePostalCode = (value: string) => {
   if (!/^[0-9]+$/.test(value) || value.length !== 6) {
