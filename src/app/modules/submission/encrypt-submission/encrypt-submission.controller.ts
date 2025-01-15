@@ -802,7 +802,7 @@ const _createSubmission = async ({
         created: createdTime,
         id: submission.id,
       },
-      attachments: undefined, // Don't send attachments in the email notifications
+      attachments: unencryptedAttachments,
       formData: emailData.formData,
     })
   }
