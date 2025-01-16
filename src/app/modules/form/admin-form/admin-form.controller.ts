@@ -1771,7 +1771,7 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
       logger.error({
         message: 'Error occurred when updating form settings',
         meta: {
-          action: 'handleUpdateSettings',
+          action: '_handleUpdateSettings',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
