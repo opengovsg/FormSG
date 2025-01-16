@@ -76,7 +76,7 @@ export const AddressCompoundField = ({
   }, [levelNumber, formContext, schema])
 
   useEffect(() => {
-    // Trigger validation for the level number when unit number changes
+    // Trigger validation for the level number when level number changes
     formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
   }, [unitNumber, formContext, schema])
 

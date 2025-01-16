@@ -29,6 +29,6 @@ export const validateNoNonNumerical = (value: string) => {
 }
 
 export const validateLevelUnit = (unitNumber: string, levelNumber: string) => {
-  if (!unitNumber && !levelNumber) return true
-  return unitNumber && levelNumber ? true : INVALID_LEVEL_UNIT_ERROR
+  if ((!unitNumber && !levelNumber) || (unitNumber && levelNumber)) return true
+  return unitNumber ? true : INVALID_LEVEL_UNIT_ERROR
 }

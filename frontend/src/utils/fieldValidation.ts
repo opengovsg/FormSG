@@ -283,8 +283,10 @@ export const createLevelNumberValidationRules = (
         return validateNoNonNumerical(value)
       },
       validInput: () => {
-        if (!isSubmitting) return true
-        return validateLevelUnit(unitNumber, levelNumber)
+        // console.log('level validation')
+        // console.log(isSubmitting)
+        if (!isSubmitting) return
+        return validateLevelUnit(levelNumber, unitNumber)
       },
     },
   }
@@ -302,7 +304,7 @@ export const createUnitNumberValidationRules = (
         return validateNoSpecialCharacters(value)
       },
       validInput: () => {
-        if (!isSubmitting) return true // display error message only on submission
+        if (!isSubmitting) return
         return validateLevelUnit(unitNumber, levelNumber)
       },
     },
