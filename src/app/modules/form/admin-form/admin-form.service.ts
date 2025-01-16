@@ -1452,7 +1452,7 @@ export const getFormWhitelistSetting = (
   })
 }
 
-const NUM_SUBMITTER_IDS_PER_BUCKET = 200_000
+const NUM_SUBMITTER_IDS_PER_BUCKET = 50_000
 const getFormWhitelistedSubmitterIdsBuckets = (
   encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey,
 ) => {
@@ -1496,18 +1496,24 @@ export const updateFormWhitelistSetting = (
           encryptedWhitelistedSubmitterIdsContent,
         )
 
-      const documentIds = await FormWhitelistedSubmitterIdsModel.insertMany(
-        whitelistedSubmitterIdsBuckets.map((bucket) => {
-          const bucketContent = {
-            ...encryptedWhitelistedSubmitterIdsContent,
-            cipherTexts: bucket,
-          }
-          return {
-            formId: originalForm._id,
-            ...bucketContent,
-          }
-        }),
-      )
+      const documentIds = (
+        await FormWhitelistedSubmitterIdsModel.insertMany(
+          whitelistedSubmitterIdsBuckets.map((bucket) => {
+            const bucketContent = {
+              ...encryptedWhitelistedSubmitterIdsContent,
+              cipherTexts: bucket,
+            }
+            return {
+              formId: originalForm._id,
+              ...bucketContent,
+            }
+          }),
+          {
+            ordered: false,
+            lean: true,
+          },
+        )
+      ).map((doc) => doc._id)
 
       const updatedForm = await FormModelToUse.findByIdAndUpdate(
         originalForm._id,
