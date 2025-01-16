@@ -71,14 +71,10 @@ export const AddressCompoundField = ({
   )
 
   useEffect(() => {
-    // Trigger validation for the unit number when level number changes
-    formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
-  }, [levelNumber, formContext, schema])
-
-  useEffect(() => {
-    // Trigger validation for the level number when level number changes
+    // Trigger validation for the level and unit number when it changes
     formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
-  }, [unitNumber, formContext, schema])
+    formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+  }, [unitNumber, levelNumber, formContext, schema])
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(schema.disabled)
 

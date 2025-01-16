@@ -283,8 +283,14 @@ export const createLevelNumberValidationRules = (
         return validateNoNonNumerical(value)
       },
       validInput: () => {
-        // console.log('level validation')
-        // console.log(isSubmitting)
+        // const validCombination = validateLevelUnit(levelNumber, unitNumber)
+        // console.log(`${levelNumber} - ${unitNumber}, ${validCombination}`)
+        // if (typeof validCombination === 'string' && isSubmitting)
+        //   return validCombination
+        // return
+        // only want to return the error if it exists and it is submission
+        // sometimes submission will be false, but i still return validCombination
+        console.log(`${levelNumber} - ${unitNumber}, ${isSubmitting}`)
         if (!isSubmitting) return true
         return validateLevelUnit(levelNumber, unitNumber)
       },
@@ -304,6 +310,7 @@ export const createUnitNumberValidationRules = (
         return validateNoSpecialCharacters(value)
       },
       validInput: () => {
+        console.log(`${levelNumber} - ${unitNumber}, ${isSubmitting}`)
         if (!isSubmitting) return true
         return validateLevelUnit(unitNumber, levelNumber)
       },
