@@ -285,7 +285,7 @@ export const createLevelNumberValidationRules = (
       validInput: () => {
         // console.log('level validation')
         // console.log(isSubmitting)
-        if (!isSubmitting) return
+        if (!isSubmitting) return true
         return validateLevelUnit(levelNumber, unitNumber)
       },
     },
@@ -304,7 +304,7 @@ export const createUnitNumberValidationRules = (
         return validateNoSpecialCharacters(value)
       },
       validInput: () => {
-        if (!isSubmitting) return
+        if (!isSubmitting) return true
         return validateLevelUnit(unitNumber, levelNumber)
       },
     },
