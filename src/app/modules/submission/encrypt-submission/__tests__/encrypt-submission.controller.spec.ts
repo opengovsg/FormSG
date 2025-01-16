@@ -29,7 +29,11 @@ import {
   SpVerifiedContent,
 } from 'src/app/modules/verified-content/verified-content.types'
 import MailService from 'src/app/services/mail/mail.service'
-import { FormFieldSchema, IPopulatedEncryptedForm } from 'src/types'
+import {
+  FormFieldSchema,
+  IAttachmentInfo,
+  IPopulatedEncryptedForm,
+} from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
 import { SubmissionEmailObj } from '../../email-submission/email-submission.util'
@@ -1327,6 +1331,71 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][2]).toEqual(
         emailData,
+      )
+    })
+  })
+
+  describe('submitEncryptModeForm', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
+    })
+
+    it('should call sendSubmissionToAdmin with the attachments', async () => {
+      // Arrange
+      jest
+        .spyOn(MailService, 'sendSubmissionToAdmin')
+        .mockReturnValue(okAsync(true))
+
+      const mockFormId = new ObjectId()
+      const mockForm = {
+        _id: mockFormId,
+        title: 'Test Form',
+        authType: FormAuthType.NIL,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockAttachments: IAttachmentInfo[] = [
+        {
+          filename: 'test.pdf',
+          content: Buffer.from('this is a test file'),
+          fieldId: 'test-field-id',
+        },
+      ]
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: mockFormId.toHexString() },
+          body: {
+            responses: [],
+            attachments: mockAttachments,
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'mockEncryptedContent',
+              version: 1,
+            },
+            formDef: {},
+            encryptedFormDef: mockForm,
+            unencryptedAttachments: mockAttachments,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert (done)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: mockAttachments,
+        }),
       )
     })
   })
