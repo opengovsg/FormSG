@@ -2875,11 +2875,11 @@ describe('admin-form.service', () => {
       }
 
       const MOCK_WHITELISTED_SUBMITTER_ID_QUERY = {
-        exec: jest.fn().mockResolvedValue(LEAN_WHITELISTED_SUBMITTER_IDS_DOC),
+        exec: jest.fn().mockResolvedValue([LEAN_WHITELISTED_SUBMITTER_IDS_DOC]),
       }
 
       const formWhitelistedSubmitterIdsModelCreateSpy = jest
-        .spyOn(FormWhitelistedSubmitterIdsModel, 'findById')
+        .spyOn(FormWhitelistedSubmitterIdsModel, 'where')
         .mockReturnValueOnce({
           lean: jest
             .fn()
@@ -2891,8 +2891,9 @@ describe('admin-form.service', () => {
       const MOCK_FORM_DOCUMENT = {
         getWhitelistedSubmitterIds: jest.fn().mockReturnValue({
           isWhitelistEnabled: true,
-          encryptedWhitelistedSubmitterIds:
+          encryptedWhitelistedSubmitterIds: [
             MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
+          ],
         }),
       } as unknown as IPopulatedEncryptedForm
 
@@ -2901,9 +2902,9 @@ describe('admin-form.service', () => {
         await AdminFormService.getFormWhitelistSetting(MOCK_FORM_DOCUMENT)
 
       // Assert no error occurred
-      expect(formWhitelistedSubmitterIdsModelCreateSpy).toHaveBeenCalledWith(
-        MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
-      )
+      expect(formWhitelistedSubmitterIdsModelCreateSpy).toHaveBeenCalledWith({
+        _id: { $in: [MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID] },
+      })
       expect(whitelistedSettingResult.isOk()).toEqual(true)
       // Assert that the myPrivateKey is not included in the fetched whitelist settings
       expect(whitelistedSettingResult._unsafeUnwrap()).toEqual(
