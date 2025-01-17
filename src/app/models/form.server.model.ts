@@ -201,14 +201,12 @@ const whitelistedSubmitterIdNestedPath = {
     required: true,
     default: false,
   },
-  encryptedWhitelistedSubmitterIds: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-      required: false,
-      default: undefined,
-    },
-  ],
+  encryptedWhitelistedSubmitterIds: {
+    type: [Schema.Types.ObjectId],
+    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+    required: false,
+    default: undefined,
+  },
   _id: { id: false },
 }
 
