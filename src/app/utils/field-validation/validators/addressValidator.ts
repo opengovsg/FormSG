@@ -67,10 +67,10 @@ const validUnitNumber: AddressValidator = (response) => {
     subField.startsWith('unitNumber'),
   )
   const level = answerArray.find((subField) =>
-    subField.startsWith('unitNumber'),
+    subField.startsWith('levelNumber'),
   )
-  const unitNumber = entry ? entry[0].split('_')[1] : ''
-  const levelNumber = level ? level[0].split('_')[1] : ''
+  const unitNumber = entry ? entry.split('_')[1] : ''
+  const levelNumber = level ? level.split('_')[1] : ''
   return validateNoSpecialCharacters(unitNumber) &&
     validateLevelUnit(unitNumber, levelNumber)
     ? right(response)
@@ -83,8 +83,8 @@ const validLevelNumber: AddressValidator = (response) => {
     subField.startsWith('levelNumber'),
   )
   const unit = answerArray.find((subField) => subField.startsWith('unitNumber'))
-  const levelNumber = entry ? entry[0].split('_')[1] : ''
-  const unitNumber = unit ? unit[0].split('_')[1] : ''
+  const levelNumber = entry ? entry.split('_')[1] : ''
+  const unitNumber = unit ? unit.split('_')[1] : ''
   return validateNoNonNumerical(levelNumber) &&
     validateLevelUnit(levelNumber, unitNumber)
     ? right(response)

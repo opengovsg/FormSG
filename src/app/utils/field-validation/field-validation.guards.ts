@@ -62,7 +62,7 @@ export const isProcessedAddressResponse = (
   return (
     response.fieldType === BasicField.Address &&
     'answerArray' in response &&
-    Array.isArray(response.answerArray)
+    isStringArray(response.answerArray)
   )
 }
 

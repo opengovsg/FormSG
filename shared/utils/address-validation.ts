@@ -5,7 +5,7 @@ export const VALID_POSTAL_CODE_NO_ADDRESS_ERROR =
 export const INVALID_BLOCK_UNIT_ERROR = 'Please use numbers and letters only'
 export const INVALID_NON_NUMERICAL_ERROR = 'Please use numbers only'
 export const INVALID_LEVEL_UNIT_ERROR =
-  'Please include both level and unit number' // check with Alicia & Kenneth
+  'Please include both level and unit number'
 
 export const validatePostalCode = (value: string) => {
   if (!/^[0-9]+$/.test(value) || value.length !== 6) {
@@ -28,7 +28,8 @@ export const validateNoNonNumerical = (value: string) => {
   return true
 }
 
-export const validateLevelUnit = (unitNumber: string, levelNumber: string) => {
-  if ((!unitNumber && !levelNumber) || (unitNumber && levelNumber)) return true
-  return unitNumber ? true : INVALID_LEVEL_UNIT_ERROR
+export const validateLevelUnit = (firstNumber: string, otherNumber: string) => {
+  if ((!firstNumber && !otherNumber) || (firstNumber && otherNumber))
+    return true
+  return firstNumber ? true : INVALID_LEVEL_UNIT_ERROR
 }

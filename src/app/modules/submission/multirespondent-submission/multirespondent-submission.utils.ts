@@ -221,16 +221,15 @@ export const getQuestionTitleAnswerString = ({
         })
         continue
       case BasicField.Address:
-        for (const key in response.answer.addressSubFields) {
-          answer =
-            response.answer.addressSubFields[key as keyof AddressAttributes]
-          if (answer !== '') {
+        // Iterate over the keys of the answer object
+        Object.entries(response.answer.addressSubFields).forEach(
+          ([key, value]) => {
             questionAnswerPair.push({
               question: `${questionTitle} - ${key}`,
-              answer,
+              answer: value, // Assign the specific value for the key
             })
-          }
-        }
+          },
+        )
         continue
       case BasicField.Email:
       case BasicField.Mobile:
