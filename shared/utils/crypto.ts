@@ -26,15 +26,17 @@ export type EncryptedStringsMessageContent = {
   cipherTexts: string[]
 }
 
-// Should only be used for encryption which requires lookup as well.
-// WARNING: By storing private key, confidentiality is still enforced but authenticity is compromised.
-// NOTE: my private key should not be passed to client and should be kept in server only.
-// Rationale: This tradeoff is necessary for lookup functionality ie. generate same ciphertext for given plaintext.
 export type EncryptedStringsMessageContentWithMyPrivateKey =
   EncryptedStringsMessageContent & {
     myPrivateKey: string
   }
 
+/**
+ * Should only be used for encryption which requires lookup as well.
+ * WARNING: By storing private key, confidentiality is still enforced but authenticity is compromised.
+ * NOTE: my private key should not be passed to client and should be kept in server only.
+ * Rationale: This tradeoff is necessary for lookup functionality ie. generate same ciphertext for given plaintext.
+ */
 export const encryptStringsMessage = (
   plainTexts: string[],
   peerPublicKey: string,
@@ -46,7 +48,7 @@ export const encryptStringsMessage = (
     myPublicKey: generatedKeyPair.publicKey,
     myPrivateKey: generatedKeyPair.privateKey,
     nonce: encodeBase64(nonce),
-    cipherTexts: encryptStrings(
+    cipherTexts: precomputedEncryptStrings(
       plainTexts,
       peerPublicKey,
       nonce,
@@ -57,6 +59,7 @@ export const encryptStringsMessage = (
 
 /**
  * Encrypts a list of strings with the given nonce and publicKey.
+ * Uses precomputation of shared key to speed up bulk encryption.
  * Note: each nonce should be unique per message.
  * In this case, this list of strings is considered a single message.
  * @param plainTexts
@@ -64,15 +67,44 @@ export const encryptStringsMessage = (
  * @param peerPublicKey
  * @returns
  */
-const encryptStrings = (
+const precomputedEncryptStrings = (
   plainTexts: string[],
   peerPublicKey: string,
-  nonce?: Uint8Array,
+  nonce: Uint8Array,
   myKeyPair?: { publicKey: string; privateKey: string },
 ): EncryptedStringContent[] => {
-  return plainTexts.map((plainText) =>
-    encryptString(plainText, peerPublicKey, nonce, myKeyPair),
+  if (!myKeyPair) {
+    myKeyPair = _generateKeyPair()
+  }
+
+  const precomputedSharedKey = nacl.box.before(
+    decodeBase64(peerPublicKey),
+    decodeBase64(myKeyPair.privateKey),
   )
+
+  return plainTexts.map((plainText) =>
+    precomputedEncryptString(
+      plainText,
+      nonce,
+      myKeyPair.publicKey,
+      precomputedSharedKey,
+    ),
+  )
+}
+
+const precomputedEncryptString = (
+  plainText: string,
+  nonce: Uint8Array,
+  myPublicKey: string,
+  sharedKey: Uint8Array,
+): EncryptedStringContent => {
+  const plainTextBinary = decodeUTF8(plainText)
+
+  return {
+    myPublicKey: myPublicKey,
+    nonce: encodeBase64(nonce),
+    cipherText: encodeBase64(nacl.box.after(plainTextBinary, nonce, sharedKey)),
+  }
 }
 
 export const encryptString = (
@@ -103,6 +135,9 @@ export const encryptString = (
   }
 }
 
+/**
+ * Uses precomputed shared key to speed up bulk decryption.
+ */
 export const decryptStringMessage = (
   peerPrivateKey: string,
   encryptedStringsMessageContent: EncryptedStringsMessageContent,
@@ -110,24 +145,29 @@ export const decryptStringMessage = (
   const nonce = encryptedStringsMessageContent.nonce
   const myPublicKey = encryptedStringsMessageContent.myPublicKey
 
-  return encryptedStringsMessageContent.cipherTexts.map((cipherText) =>
-    decryptString(peerPrivateKey, {
+  const precomputedSharedKey = nacl.box.before(
+    decodeBase64(myPublicKey),
+    decodeBase64(peerPrivateKey),
+  )
+
+  return encryptedStringsMessageContent.cipherTexts.map((cipherText) => {
+    const encryptStringContent = {
       myPublicKey,
       nonce,
       cipherText,
-    }),
-  )
+    }
+    return precomputedDecryptString(encryptStringContent, precomputedSharedKey)
+  })
 }
 
-const decryptString = (
-  peerPrivateKey: string,
+const precomputedDecryptString = (
   encryptStringContent: EncryptedStringContent,
+  sharedKey: Uint8Array,
 ): string | null => {
-  const decryptedBinary = nacl.box.open(
+  const decryptedBinary = nacl.box.open.after(
     decodeBase64(encryptStringContent.cipherText),
     decodeBase64(encryptStringContent.nonce),
-    decodeBase64(encryptStringContent.myPublicKey),
-    decodeBase64(peerPrivateKey),
+    sharedKey,
   )
 
   if (!decryptedBinary) {
