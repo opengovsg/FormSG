@@ -654,7 +654,10 @@ const handleAddressResponseDisplayForEmail = (responses: string[]) => {
       const combinedUnit = '#' + arr[arr.length - 2] + '-' + arr[arr.length - 3]
       arr.splice(arr.length - 3, 2, combinedUnit)
     }
-    return arr.join(', ')
+
+    // remove empty inputs from array
+    const cleanedArr = arr.filter((item) => item !== '')
+    return cleanedArr.join(', ')
   }
   return responses.join(', ')
 }

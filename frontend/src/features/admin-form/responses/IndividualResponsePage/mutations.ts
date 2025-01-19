@@ -92,16 +92,26 @@ export const handleAddressResponseDisplay = (responses: string[]) => {
   const ans = responses
   if (Array.isArray(ans)) {
     let arr: string[] = []
+
+    // remove all address prefixes
     if (ans.every((item) => typeof item === 'string')) {
       arr = ans.map((item) => (item as string).split('_')[1])
     }
+
+    // handle postal code additions
     if (arr && arr[arr.length - 1])
       arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
+
+    // handle leve;/unit number additions
     if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
       const combinedUnit = '#' + arr[arr.length - 2] + '-' + arr[arr.length - 3]
       arr.splice(arr.length - 3, 2, combinedUnit)
     }
-    return arr
+
+    // remove empty inputs from array
+    const cleanedArr = arr.filter((item) => item !== '')
+
+    return cleanedArr
   }
   return responses
 }
