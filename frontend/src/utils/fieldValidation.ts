@@ -2,7 +2,7 @@
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
-import { RegisterOptions } from 'react-hook-form'
+import { RegisterOptions, UseFormGetValues } from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
 import { identity } from 'lodash'
 import simplur from 'simplur'
@@ -57,6 +57,7 @@ import {
   REQUIRED_ERROR,
 } from '~constants/validation'
 import {
+  AddressCompoundFieldInput,
   CheckboxFieldValues,
   SingleAnswerValue,
   VerifiableFieldValues,
@@ -95,6 +96,11 @@ type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
   schema: MinimumFieldValidationPropsEmailAndMobile<T>,
   disableRequiredValidation?: boolean,
   validationErrorMessages?: EmailValidationErrorMessages,
+) => RegisterOptions
+
+type ValidationRuleFnUnitAndLevelNo<T extends FieldBase = FieldBase> = (
+  schema: MinimumFieldValidationProps<T> & { _id: string },
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ) => RegisterOptions
 
 const requiredSingleAnswerValidationFn =
@@ -271,10 +277,11 @@ export const createStreetNameValidationRules: ValidationRuleFn<
   }
 }
 
-export const createLevelNumberValidationRules = (
-  unitNumber: string,
-  levelNumber: string,
-  isSubmitting: boolean,
+export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+  AddressCompoundFieldBase
+> = (
+  schema,
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
   return {
     validate: {
@@ -283,25 +290,20 @@ export const createLevelNumberValidationRules = (
         return validateNoNonNumerical(value)
       },
       validInput: () => {
-        // const validCombination = validateLevelUnit(levelNumber, unitNumber)
-        // console.log(`${levelNumber} - ${unitNumber}, ${validCombination}`)
-        // if (typeof validCombination === 'string' && isSubmitting)
-        //   return validCombination
-        // return
-        // only want to return the error if it exists and it is submission
-        // sometimes submission will be false, but i still return validCombination
-        console.log(`${levelNumber} - ${unitNumber}, ${isSubmitting}`)
-        if (!isSubmitting) return true
-        return validateLevelUnit(levelNumber, unitNumber)
+        if (!getValues) return true
+        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
+        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+        return validateLevelUnit(levelNo, unitNo)
       },
     },
   }
 }
 
-export const createUnitNumberValidationRules = (
-  unitNumber: string,
-  levelNumber: string,
-  isSubmitting: boolean,
+export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+  AddressCompoundFieldBase
+> = (
+  schema,
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
   return {
     validate: {
@@ -310,9 +312,10 @@ export const createUnitNumberValidationRules = (
         return validateNoSpecialCharacters(value)
       },
       validInput: () => {
-        console.log(`${levelNumber} - ${unitNumber}, ${isSubmitting}`)
-        if (!isSubmitting) return true
-        return validateLevelUnit(unitNumber, levelNumber)
+        if (!getValues) return true
+        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
+        return validateLevelUnit(unitNo, levelNo)
       },
     },
   }

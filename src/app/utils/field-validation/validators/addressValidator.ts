@@ -9,6 +9,7 @@ import {
 
 import { AddressResponseV3, BasicField } from '../../../../../shared/types'
 import {
+  validateLevelUnit,
   validateNoNonNumerical,
   validateNoSpecialCharacters,
   validatePostalCode,
@@ -65,8 +66,13 @@ const validUnitNumber: AddressValidator = (response) => {
   const entry = answerArray.find((subField) =>
     subField.startsWith('unitNumber'),
   )
+  const level = answerArray.find((subField) =>
+    subField.startsWith('unitNumber'),
+  )
   const unitNumber = entry ? entry[0].split('_')[1] : ''
-  return validateNoSpecialCharacters(unitNumber)
+  const levelNumber = level ? level[0].split('_')[1] : ''
+  return validateNoSpecialCharacters(unitNumber) &&
+    validateLevelUnit(unitNumber, levelNumber)
     ? right(response)
     : left(`AddressValidator:\t unit number is not valid`)
 }
@@ -76,8 +82,11 @@ const validLevelNumber: AddressValidator = (response) => {
   const entry = answerArray.find((subField) =>
     subField.startsWith('levelNumber'),
   )
+  const unit = answerArray.find((subField) => subField.startsWith('unitNumber'))
   const levelNumber = entry ? entry[0].split('_')[1] : ''
-  return validateNoNonNumerical(levelNumber)
+  const unitNumber = unit ? unit[0].split('_')[1] : ''
+  return validateNoNonNumerical(levelNumber) &&
+    validateLevelUnit(levelNumber, unitNumber)
     ? right(response)
     : left(`AddressValidator:\t level number is not valid`)
 }

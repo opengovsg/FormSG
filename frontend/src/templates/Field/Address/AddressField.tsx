@@ -58,23 +58,24 @@ export const AddressCompoundField = ({
   const unitNumber = watch(`${schema._id}.addressSubFields.unitNumber`)
   const levelNumber = watch(`${schema._id}.addressSubFields.levelNumber`)
 
-  const levelNumberValidationRules = useMemo(
-    () =>
-      createLevelNumberValidationRules(unitNumber, levelNumber, isSubmitting),
-    [unitNumber, levelNumber, isSubmitting],
-  )
+  const levelNumberValidationRules = useMemo(() => {
+    return createLevelNumberValidationRules(schema, getValues)
+  }, [schema, getValues])
 
-  const unitNumberValidationRules = useMemo(
-    () =>
-      createUnitNumberValidationRules(unitNumber, levelNumber, isSubmitting),
-    [unitNumber, levelNumber, isSubmitting],
-  )
+  const unitNumberValidationRules = useMemo(() => {
+    return createUnitNumberValidationRules(schema, getValues)
+  }, [schema, getValues])
 
   useEffect(() => {
-    // Trigger validation for the level and unit number when it changes
-    formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
-    formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
-  }, [unitNumber, levelNumber, formContext, schema])
+    if (unitNumber && levelNumber) {
+      formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
+      formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+    }
+    if (!unitNumber && !levelNumber) {
+      formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
+      formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+    }
+  }, [unitNumber, levelNumber, formContext, trigger, schema])
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(schema.disabled)
 
