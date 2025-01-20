@@ -305,7 +305,7 @@ describe('Address validation', () => {
           blockNumber: '',
           streetName: '',
           buildingName: '',
-          levelNumber: '',
+          levelNumber: '1',
           unitNumber: '',
         },
       })
