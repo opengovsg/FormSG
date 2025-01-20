@@ -6,10 +6,9 @@ import { vi } from 'vitest'
 import {
   INVALID_BLOCK_UNIT_ERROR,
   INVALID_NON_NUMERICAL_ERROR,
+  REQUIRED_ERROR,
   VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
-} from '~shared/utils/address-validation'
-
-import { REQUIRED_ERROR } from '~constants/validation'
+} from '~constants/validation'
 
 import { verifyAddress } from '../../../../../src/app/services/address/address.service'
 
