@@ -44,7 +44,7 @@ const validPostalCode: AddressValidator = (response) => {
   const entry = answerArray.find((subField) =>
     subField.startsWith('postalCode'),
   )
-  const postalCode = entry ? entry[0].split('_')[1] : ''
+  const postalCode = entry ? entry.split('_')[1] : ''
   return validatePostalCode(postalCode)
     ? right(response)
     : left(`AddressValidator:\t postal code is not valid`)
@@ -55,7 +55,7 @@ const validBlockNumber: AddressValidator = (response) => {
   const entry = answerArray.find((subField) =>
     subField.startsWith('blockNumber'),
   )
-  const blockNumber = entry ? entry[0].split('_')[1] : ''
+  const blockNumber = entry ? entry.split('_')[1] : ''
   return validateNoSpecialCharacters(blockNumber)
     ? right(response)
     : left(`AddressValidator:\t block number is not valid`)
@@ -71,8 +71,10 @@ const validUnitNumber: AddressValidator = (response) => {
   )
   const unitNumber = entry ? entry.split('_')[1] : ''
   const levelNumber = level ? level.split('_')[1] : ''
-  return validateNoSpecialCharacters(unitNumber) &&
-    validateLevelUnit(unitNumber, levelNumber)
+  const validUnitNumber = unitNumber
+    ? validateNoSpecialCharacters(unitNumber)
+    : true
+  return validUnitNumber && validateLevelUnit(unitNumber, levelNumber)
     ? right(response)
     : left(`AddressValidator:\t unit number is not valid`)
 }
@@ -85,8 +87,11 @@ const validLevelNumber: AddressValidator = (response) => {
   const unit = answerArray.find((subField) => subField.startsWith('unitNumber'))
   const levelNumber = entry ? entry.split('_')[1] : ''
   const unitNumber = unit ? unit.split('_')[1] : ''
-  return validateNoNonNumerical(levelNumber) &&
-    validateLevelUnit(levelNumber, unitNumber)
+
+  const validLevelNumber = levelNumber
+    ? validateNoNonNumerical(levelNumber)
+    : true
+  return validLevelNumber && validateLevelUnit(levelNumber, unitNumber)
     ? right(response)
     : left(`AddressValidator:\t level number is not valid`)
 }
@@ -99,6 +104,9 @@ export const constructAddressValidator: AddressValidatorConstructor = () =>
     chain(validUnitNumber),
     chain(validLevelNumber),
   )
+
+export const constructOptionalAddressValidator: AddressValidatorConstructor =
+  () => flow(validLevelNumber, chain(validUnitNumber))
 
 // v3
 const isAddressResponseV3: ResponseValidator<
@@ -135,7 +143,11 @@ const addressUnitNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
   response,
 ) => {
   const { addressSubFields } = response.answer
-  return validateNoSpecialCharacters(addressSubFields.unitNumber)
+  const validUnitNumber = addressSubFields.unitNumber
+    ? validateNoSpecialCharacters(addressSubFields.unitNumber)
+    : true
+  return validUnitNumber &&
+    validateLevelUnit(addressSubFields.unitNumber, addressSubFields.levelNumber)
     ? right(response)
     : left(`AddressValidator:\t unit number is not valid`)
 }
@@ -144,7 +156,11 @@ const addressLevelNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
   response,
 ) => {
   const { addressSubFields } = response.answer
-  return validateNoNonNumerical(addressSubFields.levelNumber)
+  const validLevelNumber = addressSubFields.levelNumber
+    ? validateNoNonNumerical(addressSubFields.levelNumber)
+    : true
+  return validLevelNumber &&
+    validateLevelUnit(addressSubFields.levelNumber, addressSubFields.unitNumber)
     ? right(response)
     : left(`AddressValidator:\t level number is not valid`)
 }
@@ -158,6 +174,17 @@ export const constructAddressValidatorV3: ResponseValidatorConstructor<
     isAddressResponseV3,
     chain(addressPostalCodeValidatorV3),
     chain(addressBlockNumberValidatorV3),
+    chain(addressLevelNumberValidatorV3),
+    chain(addressUnitNumberValidatorV3),
+  )
+
+export const constructOptionalAddressValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAddressCompoundFieldSchema>,
+  ParsedClearFormFieldResponseV3,
+  AddressResponseV3
+> = () =>
+  flow(
+    isAddressResponseV3,
     chain(addressLevelNumberValidatorV3),
     chain(addressUnitNumberValidatorV3),
   )

@@ -16,6 +16,8 @@ import {
 import {
   constructAddressValidator,
   constructAddressValidatorV3,
+  constructOptionalAddressValidator,
+  constructOptionalAddressValidatorV3,
 } from './validators/addressValidator'
 import {
   constructAttachmentFieldValidatorV3,
@@ -184,6 +186,15 @@ export const constructAddressFieldValidator = (
   return () => left('Unsupported field type')
 }
 
+export const constructOptionalAddressFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedAddressResponse> => {
+  if (formField.fieldType === BasicField.Address) {
+    return constructOptionalAddressValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
 export const constructFieldResponseValidatorV3 = ({
   formId,
   formField,
@@ -239,7 +250,8 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Children:
       return constructChildrenValidatorV3(formField)
     case BasicField.Address:
-      return constructAddressValidatorV3(formField)
+      if (formField.required) return constructAddressValidatorV3(formField)
+      return constructOptionalAddressValidatorV3(formField)
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>

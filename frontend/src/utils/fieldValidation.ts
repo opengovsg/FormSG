@@ -51,9 +51,13 @@ import { isUenValid } from '~shared/utils/uen-validation'
 import { Fields } from '~/i18n/locales/features/public-form/fields'
 
 import {
+  INVALID_BLOCK_UNIT_ERROR,
   INVALID_COUNTRY_REGION_OPTION_ERROR,
   INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_ERROR,
+  INVALID_LEVEL_UNIT_ERROR,
+  INVALID_NON_NUMERICAL_ERROR,
+  INVALID_POSTAL_CODE_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
 import {
@@ -236,12 +240,12 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validOnlyNumbers: (value: string) => {
-        if (value === '') return
-        return validateNoNonNumerical(value)
+        if (value === '') return true
+        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
       },
       validPostalCode: (value: string) => {
-        if (value === '') return
-        return validatePostalCode(value)
+        if (value === '') return true
+        return validatePostalCode(value) || INVALID_POSTAL_CODE_ERROR
       },
     },
   }
@@ -257,8 +261,8 @@ export const createBlockNumberValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validBlock: (value: string) => {
-        if (value === '') return
-        return validateNoSpecialCharacters(value)
+        if (value === '') return true
+        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
       },
     },
   }
@@ -286,14 +290,14 @@ export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   return {
     validate: {
       validLevel: (value: string) => {
-        if (value === '') return
-        return validateNoNonNumerical(value)
+        if (value === '') return true
+        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
       },
       validInput: () => {
         if (!getValues) return true
         const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
         const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
-        return validateLevelUnit(levelNo, unitNo)
+        return validateLevelUnit(levelNo, unitNo) || INVALID_LEVEL_UNIT_ERROR
       },
     },
   }
@@ -308,14 +312,14 @@ export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   return {
     validate: {
       validUnit: (value: string) => {
-        if (value === '') return
-        return validateNoSpecialCharacters(value)
+        if (value === '') return true
+        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
       },
       validInput: () => {
         if (!getValues) return true
         const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
         const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
-        return validateLevelUnit(unitNo, levelNo)
+        return validateLevelUnit(unitNo, levelNo) || INVALID_LEVEL_UNIT_ERROR
       },
     },
   }

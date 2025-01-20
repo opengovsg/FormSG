@@ -2,11 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
-import {
-  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
-  validatePostalCode,
-} from '~shared/utils/address-validation'
+import { validatePostalCode } from '~shared/utils/address-validation'
 
+import { VALID_POSTAL_CODE_NO_ADDRESS_ERROR } from '~constants/validation'
 import {
   createBlockNumberValidationRules,
   createLevelNumberValidationRules,

@@ -3,7 +3,6 @@ import { err, ok, Result } from 'neverthrow'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
-  AddressAttributes,
   BasicField,
   FieldResponsesV3,
   FormFieldDto,

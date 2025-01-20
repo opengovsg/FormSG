@@ -31,6 +31,7 @@ import {
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
+  constructOptionalAddressFieldValidator,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
@@ -101,6 +102,10 @@ const isResponsePresentOnHiddenField = (
     ) {
       return true
     }
+  } else if (isProcessedAddressResponse(response)) {
+    if (!response.answerArray.every((row) => row.split('_')[1] === '')) {
+      return true
+    }
   }
   return false
 }
@@ -152,8 +157,9 @@ const tableRequiresValidation = (
 const addressRequiresValidation = (
   formField: FieldValidationSchema,
   response: ProcessedAddressResponse,
-) =>
-  (formField.required && response.isVisible) || response.answerArray.length > 0
+) => {
+  return formField.required && response.isVisible
+}
 
 /**
  * Generic logging function for invalid fields.
@@ -293,6 +299,15 @@ export const validateField = (
         formField,
         response,
       )
+    } else if (!formField.required) {
+      //even if address is optional, still need to validate level/unit number
+      const validator = constructOptionalAddressFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
     }
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
@@ -362,6 +377,13 @@ const isResponsePresentOnHiddenFieldV3 = ({
           (response.answer.child.length === 1 &&
             response.answer.child[0] &&
             response.answer.child[0].every((val) => val !== '')), // If only 1 element which has fields all empty, same as no child selected.
+      )
+    case BasicField.Address:
+      return ok(
+        response.answer.addressSubFields &&
+          !Object.values(response.answer.addressSubFields).every(
+            (value) => value === '',
+          ),
       )
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
@@ -444,7 +466,7 @@ const isValidationRequiredV3 = ({
       )
     case BasicField.Address: {
       const answerObjectDefined = !!response.answer
-      return ok((formField.required && isVisible) || answerObjectDefined)
+      return ok(answerObjectDefined) // address will require validation required or optional
     }
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')

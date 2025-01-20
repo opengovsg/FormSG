@@ -34,7 +34,9 @@ import {
 } from 'src/types/api'
 
 import {
+  AddressCompoundFieldResponseV3,
   AddressResponse,
+  AddressResponseV3,
   AllowMyInfoBase,
   AttachmentSize,
   BasicField,
@@ -470,14 +472,6 @@ export const generateNewAddressResponse = (
     'unitNumber_',
     'postalCode_650161',
   ],
-  // answerArray: [
-  //   'postalCode_650161',,
-  //   'blockNumber_161',
-  //   'streetName_BUKIT BATOK STREET 11',
-  //   'buildingName_',
-  //   'levelNumber_',
-  //   'unitNumber_',
-  // ],
   fieldType: BasicField.Address,
   isVisible: true,
   ...customParams,
@@ -585,6 +579,15 @@ export const generateCheckboxResponseV3 = (
 ): CheckboxResponseV3 => {
   return {
     fieldType: BasicField.Checkbox,
+    answer,
+  }
+}
+
+export const generateAddressResponseV3 = (
+  answer: AddressCompoundFieldResponseV3,
+): AddressResponseV3 => {
+  return {
+    fieldType: BasicField.Address,
     answer,
   }
 }

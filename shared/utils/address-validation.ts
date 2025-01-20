@@ -1,29 +1,20 @@
-// local address field errors
-export const INVALID_POSTAL_CODE_ERROR = 'Please enter a valid postal code'
-export const VALID_POSTAL_CODE_NO_ADDRESS_ERROR =
-  'Address cannot be found. Please fill in details manually'
-export const INVALID_BLOCK_UNIT_ERROR = 'Please use numbers and letters only'
-export const INVALID_NON_NUMERICAL_ERROR = 'Please use numbers only'
-export const INVALID_LEVEL_UNIT_ERROR =
-  'Please include both level and unit number'
-
 export const validatePostalCode = (value: string) => {
   if (!/^[0-9]+$/.test(value) || value.length !== 6) {
-    return INVALID_POSTAL_CODE_ERROR
+    return false
   }
   return true
 }
 
 export const validateNoSpecialCharacters = (value: string) => {
   if (!/^[A-Za-z0-9]+$/.test(value)) {
-    return INVALID_BLOCK_UNIT_ERROR
+    return false
   }
   return true
 }
 
 export const validateNoNonNumerical = (value: string) => {
   if (!/^[0-9]+$/.test(value)) {
-    return INVALID_NON_NUMERICAL_ERROR
+    return false
   }
   return true
 }
@@ -31,5 +22,5 @@ export const validateNoNonNumerical = (value: string) => {
 export const validateLevelUnit = (firstNumber: string, otherNumber: string) => {
   if ((!firstNumber && !otherNumber) || (firstNumber && otherNumber))
     return true
-  return firstNumber ? true : INVALID_LEVEL_UNIT_ERROR
+  return !!firstNumber
 }

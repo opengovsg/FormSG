@@ -1,5 +1,7 @@
 import {
+  generateAddressResponseV3,
   generateDefaultField,
+  generateDefaultFieldV3,
   generateNewAddressResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { mongo as mongodb } from 'mongoose'
@@ -27,19 +29,19 @@ describe('Address validation', () => {
       })
       const response = generateNewAddressResponse({
         answerArray: [
-          'postalCode_',
           'blockNumber_',
           'streetName_',
           'buildingName_',
           'levelNumber_',
           'unitNumber_',
+          'postalCode_',
         ],
       })
       const validateResult = validateField(formId, formField, response)
-      // expect(validateResult.isErr()).toBe(true)
-      // expect(validateResult._unsafeUnwrapErr()).toEqual(
-      //   new ValidateFieldError('Invalid answer submitted'),
-      // )
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
 
     it('should allow empty submission if address is optional', () => {
@@ -57,12 +59,12 @@ describe('Address validation', () => {
       })
       const response = generateNewAddressResponse({
         answerArray: [
-          'postalCode_',
           'blockNumber_',
           'streetName_',
           'buildingName_',
           'levelNumber_',
           'unitNumber_',
+          'postalCode_',
         ],
       })
       const validateResult = validateField(formId, formField, response)
@@ -76,8 +78,8 @@ describe('Address validation', () => {
         blockNumber: '',
         streetName: '',
         buildingName: '',
-        levelNumber: '',
-        unitNumber: '1',
+        levelNumber: '1',
+        unitNumber: '',
       }
       const formField = generateDefaultField(BasicField.Address, {
         required: false,
@@ -94,19 +96,229 @@ describe('Address validation', () => {
         ],
       })
       const validateResult = validateField(formId, formField, response)
-      // expect(validateResult.isErr()).toBe(true)
-      // expect(validateResult._unsafeUnwrapErr()).toEqual(
-      //   new ValidateFieldError('Invalid answer submitted'),
-      // )
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
     })
   })
 
   describe('Validation of field options', () => {
-    it('should disallow responses submitted for hidden fields', () => {})
-    it('should disallow responses with invalid local postal codes', () => {})
-    it('should disallow responses with invalid block numbers', () => {})
-    it('should disallow responses with invalid street name with commas', () => {})
+    it('should disallow responses submitted for hidden fields', () => {
+      const addressSubFields = {
+        postalCode: '650161',
+        blockNumber: '161',
+        streetName: 'BUKIT BATOK STREET 11',
+        buildingName: '',
+        levelNumber: '1',
+        unitNumber: '1',
+      }
+      const formField = generateDefaultField(BasicField.Address, {
+        addressSubFields,
+      })
+      const response = generateNewAddressResponse({
+        answerArray: [
+          'postalCode_650161',
+          'blockNumber_161',
+          'streetName_BUKIT BATOK STREET 11',
+          'buildingName_',
+          'levelNumber_1',
+          'unitNumber_1',
+        ],
+      })
+      response.isVisible = false
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError(
+          'Attempted to submit response on a hidden field',
+        ),
+      )
+    })
+    it('should disallow responses with invalid local postal codes', () => {
+      const addressSubFields = {
+        postalCode: '650161a',
+        blockNumber: '161',
+        streetName: 'BUKIT BATOK STREET 11',
+        buildingName: '',
+        levelNumber: '1',
+        unitNumber: '1',
+      }
+      const formField = generateDefaultField(BasicField.Address, {
+        addressSubFields,
+      })
+      const response = generateNewAddressResponse({
+        answerArray: [
+          'postalCode_650161a',
+          'blockNumber_161',
+          'streetName_BUKIT BATOK STREET 11',
+          'buildingName_',
+          'levelNumber_1',
+          'unitNumber_1',
+        ],
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+    it('should disallow responses with invalid block numbers', () => {
+      const addressSubFields = {
+        postalCode: '650161',
+        blockNumber: '161@',
+        streetName: 'BUKIT BATOK STREET 11',
+        buildingName: '',
+        levelNumber: '1',
+        unitNumber: '1',
+      }
+      const formField = generateDefaultField(BasicField.Address, {
+        addressSubFields,
+      })
+      const response = generateNewAddressResponse({
+        answerArray: [
+          'postalCode_650161',
+          'blockNumber_161@',
+          'streetName_BUKIT BATOK STREET 11',
+          'buildingName_',
+          'levelNumber_1',
+          'unitNumber_1',
+        ],
+      })
+      const validateResult = validateField(formId, formField, response)
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
   })
 
-  describe('Address field validation tests V3', () => {})
+  // TODO
+  describe('Address field validation tests V3', () => {
+    it('should disallow responses submitted for hidden fields', () => {
+      const addressSubFields = {
+        postalCode: '650161',
+        blockNumber: '161',
+        streetName: 'BUKIT BATOK STREET 11',
+        buildingName: '',
+        levelNumber: '1',
+        unitNumber: '1',
+      }
+      const formField = generateDefaultFieldV3(BasicField.Address, {
+        addressSubFields,
+      })
+      const response = generateAddressResponseV3({
+        addressSubFields: {
+          postalCode: '650161',
+          blockNumber: '161',
+          streetName: 'BUKIT BATOK STREET 11',
+          buildingName: '',
+          levelNumber: '1',
+          unitNumber: '1',
+        },
+      })
+
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: false,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError(
+          'Attempted to submit response on a hidden field',
+        ),
+      )
+    })
+
+    it('should disallow empty submission if address field is required', () => {
+      const addressSubFields = {
+        postalCode: '',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '',
+        unitNumber: '',
+      }
+      const formField = generateDefaultFieldV3(BasicField.Address, {
+        addressSubFields,
+      })
+      const response = generateAddressResponseV3({
+        addressSubFields: addressSubFields,
+      })
+
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should allow empty submission if address is optional', () => {
+      const addressSubFields = {
+        postalCode: '',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '',
+        unitNumber: '',
+      }
+      const formField = generateDefaultFieldV3(BasicField.Address, {
+        required: false,
+        addressSubFields,
+      })
+      const response = generateAddressResponseV3({
+        addressSubFields: addressSubFields,
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should disallow submission if address is optional, only level number is populated', () => {
+      const addressSubFields = {
+        postalCode: '',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '1',
+        unitNumber: '',
+      }
+      const formField = generateDefaultFieldV3(BasicField.Address, {
+        required: false,
+        addressSubFields,
+      })
+      const response = generateAddressResponseV3({
+        addressSubFields: {
+          postalCode: '',
+          blockNumber: '',
+          streetName: '',
+          buildingName: '',
+          levelNumber: '',
+          unitNumber: '',
+        },
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+  })
 })
