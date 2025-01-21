@@ -13,6 +13,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { PAPERLESS_FORMSG_RESEARCH_LINK } from '~shared/constants'
 import { Workspace } from '~shared/types/workspace'
@@ -25,7 +26,7 @@ import { Banner } from '~components/Banner'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import { useEnv } from '~features/env/queries'
+// import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
@@ -37,7 +38,9 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  // const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const siteBannerContent = useFeatureValue('site-banner-content', '')
+  const adminBannerContent = useFeatureValue('admin-banner-content', '')
 
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()

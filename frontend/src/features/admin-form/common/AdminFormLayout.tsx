@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { get } from 'lodash'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
@@ -9,8 +10,8 @@ import { Banner } from '~components/Banner'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
-import { useEnv } from '~features/env/queries'
 
+// import { useEnv } from '~features/env/queries'
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
 import AdminFormNavbar from './components/AdminFormNavbar'
@@ -23,7 +24,9 @@ export const AdminFormLayout = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  // const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const siteBannerContent = useFeatureValue('site-banner-content', '')
+  const adminBannerContent = useFeatureValue('admin-banner-content', '')
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
