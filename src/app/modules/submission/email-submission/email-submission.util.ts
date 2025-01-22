@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
-import { BasicField, FormAuthType, ProductItemDto } from '../../../../../shared/types'
+import { BasicField, FormAuthType } from '../../../../../shared/types'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -210,7 +210,7 @@ export const getAnswerForAddress = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: handleAddressResponseDisplayForEmail(response.answerArray), //TODO Update this
+    answer: handleAddressResponseDisplayEmail(response.answerArray), //TODO Update this
   }
 }
 
