@@ -47,12 +47,46 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
   addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
+    // const managedRecords = combineAddressSingleAnswers(record)
+    //   const fieldRecords = record.map((content) => {
+    //     const fieldRecord = getDecryptedResponseInstance(content)
+    //     if (!fieldRecord.isHeader) {
+    //       const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
+    //       // Only set new mapping if it does not exist or this record is a later
+    //       // submission.
+    //       // Might need to differentiate the question headers if we allow
+    //       // signed-but-failed-verification rows to proceed.
+    //       if (!currentMapping || created > currentMapping.created) {
+    //         this.fieldIdToQuestion.set(fieldRecord.id, {
+    //           created,
+    //           question: fieldRecord.question,
+    //         })
+    //       }
+    //       // Number of columns needed by this answer in the CSV
+    //       const contentNumCols = fieldRecord.numCols
+    //       // Number of columns currently allocated to the field
+    //       const currentNumCols = this.fieldIdToNumCols[fieldRecord.id]
+    //       // Update the number of columns allocated
+    //       this.fieldIdToNumCols[fieldRecord.id] = currentNumCols
+    //         ? Math.max(currentNumCols, contentNumCols)
+    //         : contentNumCols
+    //     }
+    //     return fieldRecord
+    //   })
+
+    //   // Rearrange record to be an object identified by field ID.
+    //   this.unprocessed.push({
+    //     created,
+    //     submissionId,
+    //     record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
+    //   })
+    // }
     const fieldRecords: Response[] = []
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     record.forEach((content) => {
-      //split address record (answerArray) into individual columns
-      if (content.fieldType.toString() === 'address') {
+      //split address record (answerArray, stored in MRF) into individual columns
+      if (content.fieldType.toString() === 'address' && content.answerArray) {
         const addressFieldRecords: Response[] =
           getAddressDecryptedResponseInstances(content) // returns a list of Responses
         addressFieldRecords.forEach((fieldRecord) => {

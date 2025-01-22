@@ -57,7 +57,10 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
+import {
+  formatAddressResponseData,
+  formatMyInfoStorageResponseData,
+} from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -434,6 +437,13 @@ export const validateStorageSubmission = async (
       const storageFormData = formatMyInfoStorageResponseData(
         parsedResponses.getAllResponses(),
         hashedFields,
+      )
+      req.body.responses = storageFormData
+      return { parsedResponses, hashedFields }
+    })
+    .map(({ parsedResponses }) => {
+      const storageFormData = formatAddressResponseData(
+        parsedResponses.getAllResponses(),
       )
       req.body.responses = storageFormData
       return next()

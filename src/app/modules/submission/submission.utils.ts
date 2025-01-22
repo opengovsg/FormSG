@@ -139,6 +139,7 @@ import {
 } from './submission.errors'
 import {
   FilteredResponse,
+  ProcessedAddressResponse,
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
@@ -773,6 +774,24 @@ export const getAnswersForChild = (
       }
     })
   })
+}
+
+export const getAnswersForAddress = (
+  response: ProcessedAddressResponse,
+): ProcessedSingleAnswerResponse[] => {
+  const subFields = response.answerArray
+  if (!subFields) return []
+  const addressSingleAnswerResponse = response.answerArray.map((key_value) => {
+    const key = key_value.split('_')[0]
+    const value = key_value.split('_')[1]
+    return {
+      _id: `${response._id}_${key}`,
+      fieldType: response.fieldType,
+      question: `${response.question} - ${key}`,
+      answer: value,
+    }
+  })
+  return addressSingleAnswerResponse
 }
 
 /**

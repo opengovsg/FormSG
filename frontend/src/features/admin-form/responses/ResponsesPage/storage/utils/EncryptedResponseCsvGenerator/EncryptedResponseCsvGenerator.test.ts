@@ -798,6 +798,15 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedSubmissionRow2,
         ])
       })
+
+      // if('should handle submissions with address answerArray', () => {
+      //   const mockDecryptedRecord = [
+      //     generateRecord(
+      //       1,
+      //       []
+      //     )
+      //   ]
+      // })
     })
   })
 })

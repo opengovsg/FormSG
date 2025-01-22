@@ -11,6 +11,7 @@ import {
   SingleResponse,
   TableResponse,
 } from './csv-response-classes'
+
 /**
  * Converts a field record into a custom response instance
  * @param fieldRecordData Field record

@@ -27,7 +27,10 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
-import { useMutateDownloadAttachments } from './mutations'
+import {
+  manageAddressResponseDisplay,
+  useMutateDownloadAttachments,
+} from './mutations'
 import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
 
@@ -141,6 +144,10 @@ export const IndividualResponsePage = (): JSX.Element => {
     key: data?.submissionSecretKey || '',
   })}`
 
+  // combine address fields into 1 display response
+
+  const responses = manageAddressResponseDisplay(data?.responses)
+
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
@@ -209,7 +216,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         ) : (
           <>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
-              {data?.responses.map((r, idx) => (
+              {responses?.map((r, idx) => (
                 <DecryptedRow
                   row={r}
                   attachmentDecryptionKey={attachmentDecryptionKey}

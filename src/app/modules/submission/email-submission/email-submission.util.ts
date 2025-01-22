@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
-import { BasicField, FormAuthType } from '../../../../../shared/types'
+import { BasicField, FormAuthType, ProductItemDto } from '../../../../../shared/types'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -79,7 +79,11 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
+import {
+  getAnswersForAddress,
+  getAnswersForChild,
+  getMyInfoPrefix,
+} from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -462,8 +466,10 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
       getFormattedFunction(childField, hashedFields),
     )
   } else if (isProcessedAddressResponse(response)) {
-    const address = getAnswerForAddress(response)
-    return [getFormattedFunction(address, hashedFields)]
+    return getAnswersForAddress(response).map((subField) =>
+      // splitting into single responses for JSON output (similar to webhook)
+      getFormattedFunction(subField, hashedFields),
+    )
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -631,6 +637,18 @@ export class SubmissionEmailObj {
    * Getter function to return formData which is used to send responses to admin
    */
   get formData(): EmailAdminDataField[] {
+    // const managedResponse = this.parsedResponses.map((response) => {
+    //   if (
+    //     response.fieldType === BasicField.Address &&
+    //     'answerArray' in response
+    //   ) {
+    //     response.answerArray = handleAddressResponseDisplayEmail(
+    //       response.answerArray,
+    //     )
+    //   }
+    //   return response
+    // })
+
     return this.parsedResponses.flatMap((response) =>
       createFormattedDataForOneField(
         response,
@@ -641,23 +659,32 @@ export class SubmissionEmailObj {
   }
 }
 
-const handleAddressResponseDisplayForEmail = (responses: string[]) => {
+export const handleAddressResponseDisplayEmail = (
+  responses: string[],
+): string[] => {
   const ans = responses
   if (Array.isArray(ans)) {
     let arr: string[] = []
+
+    // remove all address prefixes
     if (ans.every((item) => typeof item === 'string')) {
       arr = ans.map((item) => (item as string).split('_')[1])
     }
+
+    // handle postal code additions
     if (arr && arr[arr.length - 1])
       arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
+
+    // handle leve;/unit number additions
     if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
-      const combinedUnit = '#' + arr[arr.length - 2] + '-' + arr[arr.length - 3]
+      const combinedUnit = '#' + arr[arr.length - 3] + '-' + arr[arr.length - 2]
       arr.splice(arr.length - 3, 2, combinedUnit)
     }
 
     // remove empty inputs from array
-    const cleanedArr = arr.filter((item) => item !== '')
-    return cleanedArr.join(', ')
+    const cleanedArr = arr.filter((item) => item !== '').join(', ')
+
+    return [cleanedArr]
   }
-  return responses.join(', ')
+  return responses
 }

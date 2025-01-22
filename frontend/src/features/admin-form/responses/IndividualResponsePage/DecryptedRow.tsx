@@ -121,6 +121,7 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
+    console.log(row)
     switch (row.fieldType) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
@@ -133,8 +134,9 @@ export const DecryptedRow = memo(
         )
       case BasicField.Table:
         return <DecryptedTableRow row={row} />
-      case BasicField.Address:
-        return <DecryptedAddressRow row={row} />
+      // case BasicField.Address:
+      //   if (row.answer? typeof )
+      //   return <DecryptedAddressRow row={row} />
       default:
         return (
           <Stack>
