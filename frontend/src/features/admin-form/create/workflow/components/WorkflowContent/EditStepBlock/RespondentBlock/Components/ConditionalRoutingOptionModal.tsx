@@ -94,7 +94,7 @@ const StepOneModalContent = ({
               </Text>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Column A
+                  Option
                 </Text>
                 <Text textStyle="body-2">
                   This contains all the options from your field.{' '}
@@ -105,7 +105,7 @@ const StepOneModalContent = ({
               </Box>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Column B
+                  Email(s)
                 </Text>
                 <Text textStyle="body-2">
                   Add the emails to send the form to for each option.{' '}
