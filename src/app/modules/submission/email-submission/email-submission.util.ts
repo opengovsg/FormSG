@@ -210,7 +210,7 @@ export const getAnswerForAddress = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: handleAddressResponseDisplayEmail(response.answerArray), //TODO Update this
+    answer: handleAddressResponseDisplayEmail(response.answerArray).join(', '), //TODO Update this
   }
 }
 
