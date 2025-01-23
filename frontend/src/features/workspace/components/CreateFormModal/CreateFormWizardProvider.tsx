@@ -72,7 +72,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode }) => {
+    ({ title, responseMode, emails }) => {
       switch (responseMode) {
         case FormResponseMode.Encrypt:
           return createStorageModeFormMutation.mutate({
@@ -80,7 +80,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
-            emails: [],
+            emails: emails.filter(Boolean),
           })
         case FormResponseMode.Email:
           return
