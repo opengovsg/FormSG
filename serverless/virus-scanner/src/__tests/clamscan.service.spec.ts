@@ -12,12 +12,8 @@ let scanResult: {
 jest.mock('clamscan', () => {
   return jest.fn().mockImplementation(() => {
     return {
-      init: jest.fn().mockImplementation(() => {
-        return {
-          scanStream: jest.fn().mockImplementation(() => {
-            return scanResult
-          }),
-        }
+      init: jest.fn().mockResolvedValue({
+        scanStream: jest.fn().mockResolvedValue(scanResult),
       }),
     }
   })

@@ -1,4 +1,4 @@
-FROM node:16.20-bullseye-slim
+FROM node:18.12-bullseye-slim
 
 # Install aws-lambda-cpp build dependencies
 RUN apt-get update && \
