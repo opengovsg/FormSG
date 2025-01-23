@@ -804,6 +804,7 @@ const _createSubmission = async ({
       },
       attachments: unencryptedAttachments,
       formData: emailData.formData,
+      dataCollationData: emailData.dataCollationData,
     })
   }
 
