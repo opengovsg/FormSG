@@ -27,6 +27,7 @@ import MailService from '../../../services/mail/mail.service'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -406,11 +407,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   submissionId,
   form,
   encryptedPayload,
+  submission,
   logMeta,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
+  submission: IMultirespondentSubmissionSchema
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
@@ -452,6 +455,16 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         responses,
         submissionId,
       })
+    })
+    .andThen(() => {
+      const webhookUrl = form.webhook?.url
+      if (!webhookUrl) return okAsync(true)
+
+      return WebhookFactory.sendInitialWebhook(
+        submission,
+        webhookUrl,
+        !!form.webhook?.isRetryEnabled,
+      ).andThen(() => okAsync(true))
     })
     .mapErr((error) => {
       logger.error({
@@ -548,12 +561,15 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   form,
   currentStepNumber,
   encryptedPayload,
+  submission,
   logMeta,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
   currentStepNumber: number
   encryptedPayload: MultirespondentSubmissionDto
+
+  submission: IMultirespondentSubmissionSchema
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   boolean,
@@ -641,14 +657,25 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         formId: form._id,
         submissionId,
         responses,
-      }).mapErr((error) => {
-        logger.error({
-          message: 'Send multirespondent workflow email error',
-          meta: logMeta,
-          error,
+      })
+        .andThen(() => {
+          const webhookUrl = form.webhook?.url
+          if (!webhookUrl) return okAsync(true)
+
+          return WebhookFactory.sendInitialWebhook(
+            submission,
+            webhookUrl,
+            !!form.webhook?.isRetryEnabled,
+          ).andThen(() => okAsync(true))
         })
-        return error
-      }),
+        .mapErr((error) => {
+          logger.error({
+            message: 'Send multirespondent workflow email error',
+            meta: logMeta,
+            error,
+          })
+          return error
+        }),
     )
 }
 

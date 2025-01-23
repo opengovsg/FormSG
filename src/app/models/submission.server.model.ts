@@ -514,7 +514,6 @@ export const MultirespondentSubmissionSchema = new Schema<
   IMultirespondentSubmissionSchema,
   IMultirespondentSubmissionModel
 >({
-  //TODO(MRF/FRM-1592): Clean this up
   form_fields: [],
   form_logics: [],
   workflow: [],
@@ -550,6 +549,34 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
   },
 })
+
+MultirespondentSubmissionSchema.methods.getWebhookView = async function (
+  this: IMultirespondentSubmissionSchema,
+): Promise<WebhookView> {
+  const formId = this.populated('form')
+    ? String(this.form._id)
+    : String(this.form)
+
+  const attachmentRecords = Object.fromEntries(
+    this.attachmentMetadata ?? new Map(),
+  )
+
+  const webhookData: WebhookData = {
+    formId,
+    submissionId: String(this._id),
+    encryptedContent: this.encryptedContent,
+    verifiedContent: undefined, // this.verifiedContent myinfo not available yet.
+    version: this.version,
+    created: this.created,
+    attachmentDownloadUrls: attachmentRecords,
+    workflowStep: this.workflowStep,
+    encryptedSubmissionSecretKey: this.encryptedSubmissionSecretKey,
+  }
+
+  return {
+    data: webhookData,
+  }
+}
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,

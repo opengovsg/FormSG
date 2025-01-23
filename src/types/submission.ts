@@ -17,7 +17,12 @@ import {
 import { IFormSchema } from './form'
 import { IPaymentSchema } from './payment'
 
-export interface WebhookData {
+interface MultirespondentWebhookData {
+  workflowStep: number
+  encryptedSubmissionSecretKey: string
+}
+
+export interface WebhookData extends Partial<MultirespondentWebhookData> {
   formId: string
   submissionId: string
   encryptedContent: IEncryptedSubmissionSchema['encryptedContent']
@@ -120,7 +125,7 @@ export interface IMultirespondentSubmissionSchema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
   submissionType: SubmissionType.Multirespondent
-  getWebhookView(): Promise<null>
+  getWebhookView(): Promise<WebhookView>
   mrfVersion: number
 }
 

@@ -134,6 +134,7 @@ const submitMultirespondentForm = async (
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
+    submission,
     logMeta,
   })
 }
@@ -220,6 +221,7 @@ const updateMultirespondentSubmission = async (
     form,
     currentStepNumber,
     encryptedPayload,
+    submission,
     logMeta,
   })
 }
