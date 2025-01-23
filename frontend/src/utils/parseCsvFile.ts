@@ -1,15 +1,14 @@
 import Papa from 'papaparse'
 
-export const parseCsvFileToCsvString = (
+export const parseCsvFile = (
   file: File,
   validateHeader?: (headerRow: string[]) => {
     isValid: boolean
     invalidReason: string
   },
-): Promise<string> => {
+): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
-      delimiter: ',',
       complete: ({ data }: { data: string[][] }) => {
         const hasHeader = !!validateHeader
         const headerRow = hasHeader ? data[0] : null
@@ -20,16 +19,13 @@ export const parseCsvFileToCsvString = (
             reject(new Error(invalidReason))
           }
         }
-        const csvString = Papa.unparse(contentRows, {
-          newline: '\r\n',
-        })
-        // strip quotes to account for mixed CRLF and LF line endings.
-        // strip newline/empty spaces at the end of string to account for invisible trailing newlines and empty last rows.
-        const strippedCsvString = csvString.replaceAll('"', '').trim()
-        if (!strippedCsvString) {
+        const nonEmptyContentRows = contentRows
+          .map((row) => row.map((cell) => cell.trim()))
+          .filter((row) => !row.every((cell) => cell === ''))
+        if (nonEmptyContentRows.length === 0) {
           reject(new Error('Your CSV file body cannot be empty.'))
         }
-        resolve(strippedCsvString)
+        resolve(nonEmptyContentRows)
       },
       error: (error) => {
         reject(error)

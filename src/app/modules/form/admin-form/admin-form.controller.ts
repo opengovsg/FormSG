@@ -1682,7 +1682,7 @@ const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
   if (!whitelistCsvString) {
     return null
   }
-  return whitelistCsvString.split('\r\n').map((entry: string) => entry.trim())
+  return whitelistCsvString.split(',').map((entry: string) => entry.trim())
 }
 
 const _handleUpdateWhitelistSetting: ControllerHandler<

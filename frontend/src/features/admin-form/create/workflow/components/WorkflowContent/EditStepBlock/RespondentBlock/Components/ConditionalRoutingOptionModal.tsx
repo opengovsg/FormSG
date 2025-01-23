@@ -25,7 +25,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import CSV_TEMPLATE_EXAMPLE_IMAGE from './conditional-routing-example.png'
+import CSV_TEMPLATE_EXAMPLE_GIF from './conditional-routing-example.gif'
 import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import { FieldItem } from './types'
 
@@ -94,7 +94,7 @@ const StepOneModalContent = ({
               </Text>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Column A
+                  Option
                 </Text>
                 <Text textStyle="body-2">
                   This contains all the options from your field.{' '}
@@ -105,7 +105,7 @@ const StepOneModalContent = ({
               </Box>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Column B
+                  Email(s)
                 </Text>
                 <Text textStyle="body-2">
                   Add the emails to send the form to for each option.{' '}
@@ -117,9 +117,9 @@ const StepOneModalContent = ({
             </Stack>
           </Box>
           <Stack spacing="1rem" alignItems="center">
-            <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_IMAGE} />
+            <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_GIF} />
             <Text color="secondary.400" textStyle="caption-2">
-              Your CSV template should look like this
+              How to set up your CSV
             </Text>
           </Stack>
         </Stack>
