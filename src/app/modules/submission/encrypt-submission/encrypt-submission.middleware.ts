@@ -438,16 +438,20 @@ export const validateStorageSubmission = async (
         parsedResponses.getAllResponses(),
         hashedFields,
       )
-      req.body.responses = storageFormData
-      return { parsedResponses, hashedFields }
-    })
-    .map(({ parsedResponses }) => {
-      const storageFormData = formatAddressResponseData(
-        parsedResponses.getAllResponses(),
-      )
-      req.body.responses = storageFormData
+
+      const storageFormDataAddress = formatAddressResponseData(storageFormData)
+      req.body.responses = storageFormDataAddress
+      console.log(req.body.responses)
       return next()
     })
+    // .map(({ parsedResponses }) => {
+    //   const storageFormData = formatAddressResponseData(
+    //     parsedResponses.getAllResponses(),
+    //   )
+    //   req.body.responses = storageFormData
+    //   console.log(req.body.responses)
+    //   return next()
+    // })
     .mapErr((error) => {
       logger.error({
         message: 'Error saving responses in req.body',

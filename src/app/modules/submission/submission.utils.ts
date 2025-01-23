@@ -787,7 +787,7 @@ export const getAnswersForAddress = (
     return {
       _id: `${response._id}.${key}`,
       fieldType: response.fieldType,
-      question: `${response.question} - ${key}`,
+      question: `${response.question} ${key}`,
       answer: value,
     }
   })
