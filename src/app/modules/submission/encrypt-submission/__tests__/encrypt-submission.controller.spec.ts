@@ -1341,6 +1341,58 @@ describe('encrypt-submission.controller', () => {
       MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
     })
 
+    it('should call sendSubmissionToAdmin with no attachments', async () => {
+      // Arrange
+      jest
+        .spyOn(MailService, 'sendSubmissionToAdmin')
+        .mockReturnValue(okAsync(true))
+
+      const mockFormId = new ObjectId()
+      const mockForm = {
+        _id: mockFormId,
+        title: 'Test Form',
+        authType: FormAuthType.NIL,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockAttachments: IAttachmentInfo[] = []
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: mockFormId.toHexString() },
+          body: {
+            responses: [],
+            attachments: mockAttachments,
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'mockEncryptedContent',
+              version: 1,
+            },
+            formDef: {},
+            encryptedFormDef: mockForm,
+            unencryptedAttachments: mockAttachments,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert (done)
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: mockAttachments,
+        }),
+      )
+    })
+
     it('should call sendSubmissionToAdmin with the attachments', async () => {
       // Arrange
       jest
