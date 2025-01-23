@@ -475,6 +475,35 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   }
 }
 
+const createFormattedDataDisplayForOneField = <
+  T extends EmailDataFields | undefined,
+>(
+  response: ProcessedFieldResponse,
+  hashedFields: Set<MyInfoKey>,
+  getFormattedFunction: (
+    response: ResponseFormattedForEmail,
+    hashedFields: Set<MyInfoKey>,
+  ) => T,
+): T[] => {
+  if (isProcessedTableResponse(response)) {
+    return getAnswerRowsForTable(response).map((row) =>
+      getFormattedFunction(row, hashedFields),
+    )
+  } else if (isProcessedCheckboxResponse(response)) {
+    const checkbox = getAnswerForCheckbox(response)
+    return [getFormattedFunction(checkbox, hashedFields)]
+  } else if (isProcessedChildResponse(response)) {
+    return getAnswersForChild(response).map((childField) =>
+      getFormattedFunction(childField, hashedFields),
+    )
+  } else if (isProcessedAddressResponse(response)) {
+    const address = getAnswerForAddress(response)
+    return [getFormattedFunction(address, hashedFields)]
+  } else {
+    return [getFormattedFunction(response, hashedFields)]
+  }
+}
+
 /**
  * Helper function to mask the front of a string
  * Used to mask NRICs in Corppass Validated UID
@@ -637,20 +666,8 @@ export class SubmissionEmailObj {
    * Getter function to return formData which is used to send responses to admin
    */
   get formData(): EmailAdminDataField[] {
-    // const managedResponse = this.parsedResponses.map((response) => {
-    //   if (
-    //     response.fieldType === BasicField.Address &&
-    //     'answerArray' in response
-    //   ) {
-    //     response.answerArray = handleAddressResponseDisplayEmail(
-    //       response.answerArray,
-    //     )
-    //   }
-    //   return response
-    // })
-
     return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
+      createFormattedDataDisplayForOneField(
         response,
         this.hashedFields,
         getFormFormattedResponse,

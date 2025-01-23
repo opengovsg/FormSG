@@ -175,7 +175,7 @@ const combineOneAddressDisplay = (
   arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
   // update level/unit number
   if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
-    const combinedUnit = '#' + arr[arr.length - 2] + '-' + arr[arr.length - 3]
+    const combinedUnit = '#' + arr[arr.length - 3] + '-' + arr[arr.length - 2]
     arr.splice(arr.length - 3, 2, combinedUnit)
   }
   const answer = arr.filter((item) => item !== '').join(', ')

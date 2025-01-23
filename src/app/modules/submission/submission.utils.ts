@@ -785,7 +785,7 @@ export const getAnswersForAddress = (
     const key = key_value.split('_')[0]
     const value = key_value.split('_')[1]
     return {
-      _id: `${response._id}_${key}`,
+      _id: `${response._id}.${key}`,
       fieldType: response.fieldType,
       question: `${response.question} - ${key}`,
       answer: value,

@@ -31,7 +31,6 @@ import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { ProcessedFieldResponse } from '../submission.types'
 import {
   getAnswersForAddress,
-  // getAnswersForAddress,
   getAnswersForChild,
   getMyInfoPrefix,
 } from '../submission.utils'

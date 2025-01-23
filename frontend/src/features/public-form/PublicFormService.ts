@@ -294,7 +294,8 @@ export const submitStorageModeForm = async ({
     },
     fieldIdToQuarantineKeyMap,
   )
-
+  console.log(formFields)
+  console.log(formInputs)
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
     formData,
