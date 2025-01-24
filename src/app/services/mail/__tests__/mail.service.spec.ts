@@ -379,7 +379,13 @@ describe('mail.service', () => {
         id: 'mockSubmissionId',
         created: new Date(),
       },
-      attachments: [],
+      attachments: [
+        {
+          filename: 'test.pdf',
+          content: Buffer.from('this is a test file'),
+          fieldId: 'test-field-id',
+        },
+      ],
       dataCollationData: [
         {
           question: 'some question',
