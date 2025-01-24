@@ -55,6 +55,7 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
@@ -791,6 +792,16 @@ const _createSubmission = async ({
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
+
+  // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
+  // we want to remove it for the dataCollationData
+  const dataCollationData = emailData.dataCollationData.map((item) => ({
+    question: item.question.startsWith(MYINFO_PREFIX)
+      ? item.question.slice(MYINFO_PREFIX.length)
+      : item.question,
+    answer: item.answer,
+  }))
+
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -804,7 +815,7 @@ const _createSubmission = async ({
       },
       attachments: unencryptedAttachments,
       formData: emailData.formData,
-      dataCollationData: emailData.dataCollationData,
+      dataCollationData,
     })
   }
 
