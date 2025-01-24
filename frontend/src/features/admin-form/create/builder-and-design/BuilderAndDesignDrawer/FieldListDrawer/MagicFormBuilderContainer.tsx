@@ -1,33 +1,10 @@
 import { forwardRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { BiSolidMagicWand, BiTrash } from 'react-icons/bi'
-import { HiSparkles } from 'react-icons/hi2'
+import { BiSolidMagicWand } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Button,
-  Flex,
-  FormControl,
-  FormLabel,
-  HStack,
-  Icon,
-  Popover,
-  PopoverAnchor,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
-  Portal,
-  Text,
-  Textarea,
-  Tooltip,
-} from '@chakra-ui/react'
+import { Button, Flex, Icon, Portal, Text, Tooltip } from '@chakra-ui/react'
 
-import { BxCheck } from '~/assets/icons'
-
-import { useIsMobile } from '~hooks/useIsMobile'
-import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
+import { NextAndBackButtonGroup } from '~components/Button'
+import BottomHugBox from '~components/Hug/BottomHugBox'
 
 import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
 
@@ -36,30 +13,12 @@ import {
   recentlyCreatedFieldIdsSelector,
   useMagicFormBuilderStore,
 } from '../../useMagicFormBuilderStore'
-
-const TEXT_PROMPT_IDEAS = [
-  {
-    label: 'Employee satisfaction survey',
-    prompt:
-      'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement, and comments on company culture.',
-  },
-  {
-    label: 'Community issue reports',
-    prompt:
-      'community issue reports from citizens, including fields for location, description of the issue, and optional photo uploads.',
-  },
-  {
-    label: 'Government grant applications',
-    prompt:
-      'applications for government grants from business entities, incorporating sections for project details, budget breakdown, and applicant qualifications.',
-  },
-]
-
-const GENERATE_FORM_PLACEHOLDER = 'Describe form, fields and sections to create'
+import MagicFormBuilderPromptModal, {
+  TextPromptInputs,
+} from '../MagicFormBuilderPromptModal'
 
 export const MagicFormBuilderContainer = () => {
   const { formId } = useParams()
-  const isMobile = useIsMobile()
 
   const [isOpen, setIsOpen] = useState(false)
 
@@ -81,25 +40,50 @@ export const MagicFormBuilderContainer = () => {
 
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
 
+  const deleteRecentlyCreatedFieldIds = () => {
+    if (formId) {
+      deleteMultipleFormFieldsMutation.mutate(
+        Array.from(recentlyCreatedFieldIds[formId]),
+        {
+          onSuccess: onClickDefaults,
+        },
+      )
+    }
+  }
+
+  const { useMakeTextPromptMutation } = useAssistanceMutations()
+
+  const submitGenerateFormTextPrompt = async ({ prompt }: TextPromptInputs) => {
+    useMakeTextPromptMutation.mutate(prompt, {
+      onSuccess: () => {
+        setIsOpen(false)
+      },
+    })
+  }
+
   const fieldIds = formId ? recentlyCreatedFieldIds[formId] : null
   const isAcceptDenyOpen = !!fieldIds && fieldIds.size > 0
 
-  return !isMobile ? (
-    <MagicFormBuilderPopover
-      isOpen={isOpen}
-      isAcceptDenyOpen={isAcceptDenyOpen}
-      onMfbClick={() => setIsOpen(!isOpen)}
-      onClose={() => setIsOpen(false)}
-      onAccept={onClickDefaults}
-      onDeny={() => {
-        onClickDefaults()
-        if (!formId) return
-        deleteMultipleFormFieldsMutation.mutate(
-          Array.from(recentlyCreatedFieldIds[formId]),
-        )
-      }}
-    />
-  ) : null
+  return (
+    <>
+      <MagicFormBuilderPromptModal
+        isOpen={isOpen}
+        onSubmit={submitGenerateFormTextPrompt}
+        isSubmitLoading={useMakeTextPromptMutation.isLoading}
+        onClose={() => setIsOpen(false)}
+      />
+      {isAcceptDenyOpen ? (
+        <MagicFormBuilderAcceptDeny
+          onAccept={onClickDefaults}
+          onDeny={deleteRecentlyCreatedFieldIds}
+        />
+      ) : null}
+      <MagicFormBuilderButton
+        isActive={isOpen}
+        onClick={() => setIsOpen(!isOpen)}
+      />
+    </>
+  )
 }
 
 const MagicFormBuilderButton = forwardRef(
@@ -134,183 +118,27 @@ const MagicFormBuilderButton = forwardRef(
     )
   },
 )
-const PromptSelectorBar = ({
-  promptIdeas,
-  onClick,
-}: {
-  promptIdeas: {
-    label: string
-    prompt: string
-  }[]
-  onClick: (prompt: string) => void
-}) => {
-  return (
-    <Flex direction="column">
-      <Text textStyle="body-2">Or, try a sample:</Text>
-      <HStack
-        overflowX="auto"
-        gap="0.25rem"
-        mt="0.25rem"
-        pt="0.25rem"
-        pb="1rem"
-      >
-        {promptIdeas.map((idea) => (
-          <Button
-            key={idea.label}
-            variant="clear"
-            size="xs"
-            borderRadius="3rem"
-            bgColor="secondary.100"
-            _hover={{
-              backgroundColor: 'primary.200',
-            }}
-            onClick={() => onClick(idea.prompt)}
-          >
-            {idea.label}
-          </Button>
-        ))}
-      </HStack>
-    </Flex>
-  )
-}
-
-const MagicFormBuilderCreateFormPrompt = ({
-  onClose,
-}: {
-  onClose: () => void
-}) => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<TextPromptInputs>()
-
-  const { useMakeTextPromptMutation } = useAssistanceMutations()
-
-  const onSubmit = async ({ prompt }: TextPromptInputs) => {
-    useMakeTextPromptMutation.mutate(prompt)
-  }
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <PopoverHeader>
-        <Text textStyle="h4">Generate form</Text>
-      </PopoverHeader>
-      <PopoverCloseButton onClick={onClose} />
-      <PopoverBody>
-        <FormControl isRequired isInvalid={!!errors.prompt?.message}>
-          <FormLabel>I want to create a form that collects</FormLabel>
-          <Textarea
-            placeholder={GENERATE_FORM_PLACEHOLDER}
-            {...register('prompt', {
-              required: 'Please enter a prompt.',
-              maxLength: {
-                value: 500,
-                message: 'Please enter at most 500 characters.',
-              },
-            })}
-          />
-          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-        </FormControl>
-        <Box mt="0.5rem">
-          <PromptSelectorBar
-            promptIdeas={TEXT_PROMPT_IDEAS}
-            onClick={(prompt) => setValue('prompt', prompt)}
-          />
-        </Box>
-      </PopoverBody>
-      <PopoverFooter>
-        <Flex justifyContent="flex-end">
-          <Button
-            leftIcon={<HiSparkles fontSize="1.5rem" />}
-            type="submit"
-            isLoading={useMakeTextPromptMutation.isLoading}
-          >
-            Generate
-          </Button>
-        </Flex>
-      </PopoverFooter>
-    </form>
-  )
-}
 
 const MagicFormBuilderAcceptDeny = ({
   onAccept,
   onDeny,
-  onClose,
 }: {
   onAccept: () => void
   onDeny: () => void
-  onClose: () => void
 }) => {
   return (
-    <>
-      <PopoverHeader>
-        <Text textStyle="h4">Keep these changes?</Text>
-      </PopoverHeader>
-      <PopoverCloseButton onClick={onClose} />
-      <PopoverBody>
-        <Flex direction="column" gap="0.25rem">
-          <Button
-            leftIcon={<BxCheck />}
-            variant="solid"
-            onClick={onAccept}
-            colorScheme="success"
-          >
-            Accept
-          </Button>
-          <Button
-            leftIcon={<BiTrash />}
-            variant="solid"
-            onClick={onDeny}
-            colorScheme="danger"
-          >
-            Deny
-          </Button>
+    <Portal>
+      <BottomHugBox>
+        <Flex direction="column" gap="1rem">
+          <Text>Use these fields?</Text>
+          <NextAndBackButtonGroup
+            handleBack={onDeny}
+            handleNext={onAccept}
+            nextButtonLabel="Yes, keep them"
+            backButtonLabel="No, delete them"
+          />
         </Flex>
-      </PopoverBody>
-    </>
-  )
-}
-
-interface TextPromptInputs {
-  prompt: string
-}
-
-export const MagicFormBuilderPopover = ({
-  isOpen,
-  onMfbClick,
-  onClose,
-  isAcceptDenyOpen,
-  onAccept,
-  onDeny,
-}: {
-  isOpen: boolean
-  onMfbClick: () => void
-  onClose: () => void
-  isAcceptDenyOpen: boolean
-  onAccept: () => void
-  onDeny: () => void
-}) => {
-  return (
-    <Popover isLazy placement="right-start" isOpen={isOpen}>
-      <PopoverAnchor>
-        <MagicFormBuilderButton isActive={isOpen} onClick={onMfbClick} />
-      </PopoverAnchor>
-      <Portal>
-        <PopoverContent bg="white">
-          {!isAcceptDenyOpen ? (
-            <MagicFormBuilderCreateFormPrompt onClose={onClose} />
-          ) : (
-            <MagicFormBuilderAcceptDeny
-              onAccept={onAccept}
-              onDeny={onDeny}
-              onClose={onClose}
-            />
-          )}
-        </PopoverContent>
-      </Portal>
-    </Popover>
+      </BottomHugBox>
+    </Portal>
   )
 }
