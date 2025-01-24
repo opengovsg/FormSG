@@ -31,6 +31,7 @@ import {
   PaymentsInputPanel,
 } from './field-panels'
 import { MagicFormBuilderContainer } from './MagicFormBuilderContainer'
+import MagicFormBuilderSmallButton from './MagicFormBuilderSmallButton'
 
 const FieldSearchBar = ({
   searchValue,
@@ -56,7 +57,16 @@ const FieldSearchBar = ({
           placeholder="Search fields"
         />
         {/* TODO (MFB-v1.1): Remove this beta flag and isTest check when out of beta*/}
-        {user?.betaFlags?.mfb || isTest ? <MagicFormBuilderContainer /> : null}
+        {user?.betaFlags?.mfb || isTest ? (
+          <MagicFormBuilderContainer
+            renderClickable={({ onClick, isActive }) => (
+              <MagicFormBuilderSmallButton
+                onClick={onClick}
+                isActive={isActive}
+              />
+            )}
+          />
+        ) : null}
       </InputGroup>
     </>
   )

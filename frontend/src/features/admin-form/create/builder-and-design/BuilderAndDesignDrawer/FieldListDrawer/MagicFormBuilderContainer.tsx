@@ -1,7 +1,6 @@
-import { forwardRef, useState } from 'react'
-import { BiSolidMagicWand } from 'react-icons/bi'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Button, Flex, Icon, Portal, Text, Tooltip } from '@chakra-ui/react'
+import { Flex, Portal, Text } from '@chakra-ui/react'
 
 import { NextAndBackButtonGroup } from '~components/Button'
 import BottomHugBox from '~components/Hug/BottomHugBox'
@@ -17,7 +16,17 @@ import MagicFormBuilderPromptModal, {
   TextPromptInputs,
 } from '../MagicFormBuilderPromptModal'
 
-export const MagicFormBuilderContainer = () => {
+export const MagicFormBuilderContainer = ({
+  renderClickable,
+}: {
+  renderClickable: ({
+    isActive,
+    onClick,
+  }: {
+    isActive?: boolean
+    onClick: () => void
+  }) => JSX.Element
+}) => {
   const { formId } = useParams()
 
   const [isOpen, setIsOpen] = useState(false)
@@ -78,46 +87,10 @@ export const MagicFormBuilderContainer = () => {
           onDeny={deleteRecentlyCreatedFieldIds}
         />
       ) : null}
-      <MagicFormBuilderButton
-        isActive={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
-      />
+      {renderClickable({ isActive: isOpen, onClick: () => setIsOpen(!isOpen) })}
     </>
   )
 }
-
-const MagicFormBuilderButton = forwardRef(
-  (
-    {
-      isActive,
-      onClick,
-      ...styleProps
-    }: { isActive: boolean; onClick: () => void } & React.ComponentProps<
-      typeof Button
-    >,
-    ref,
-  ) => {
-    return (
-      <Tooltip openDelay={500} hasArrow label="Create fields with AI">
-        <Button
-          ref={ref} // Rationale: forward ref allows the popover placement to work.
-          variant="outline"
-          onClick={onClick}
-          padding="0"
-          borderColor="primary.200"
-          backgroundColor={isActive ? 'primary.200' : undefined}
-          _hover={{
-            backgroundColor: 'primary.200',
-          }}
-          borderWidth="1px"
-          {...styleProps}
-        >
-          <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
-        </Button>
-      </Tooltip>
-    )
-  },
-)
 
 const MagicFormBuilderAcceptDeny = ({
   onAccept,

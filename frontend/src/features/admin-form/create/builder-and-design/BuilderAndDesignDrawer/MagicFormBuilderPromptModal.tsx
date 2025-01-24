@@ -51,8 +51,10 @@ const PromptSelectorBar = ({
 }) => {
   return (
     <Flex direction="column">
-      <Text textStyle="body-2">Need inspiration? Try one of these:</Text>
+      <Text textStyle="subhead-1">Need inspiration? Try one of these:</Text>
       <HStack
+        display="flex"
+        justifyContent="space-between"
         overflowX="auto"
         gap="0.25rem"
         mt="0.25rem"
@@ -64,7 +66,7 @@ const PromptSelectorBar = ({
             key={idea.label}
             variant="clear"
             size="xs"
-            borderRadius="3rem"
+            borderRadius="4px"
             bgColor="secondary.100"
             _hover={{
               backgroundColor: 'primary.200',
@@ -79,7 +81,8 @@ const PromptSelectorBar = ({
   )
 }
 
-const GENERATE_FORM_PLACEHOLDER = 'Describe form, fields and sections to create'
+const GENERATE_FORM_PLACEHOLDER =
+  'Describe your form, including fields and sections to create'
 
 export interface TextPromptInputs {
   prompt: string
@@ -103,11 +106,14 @@ const MagicFormBuilderCreateFormPrompt = ({
 
   return (
     <>
-      <ModalHeader>Create fields with AI</ModalHeader>
+      <ModalHeader textStyle="h2">Create fields with AI</ModalHeader>
       <ModalBody>
         <FormControl isRequired isInvalid={!!errors.prompt?.message}>
-          <FormLabel>I want to create a form that collects</FormLabel>
+          <FormLabel textStyle="subhead-1">
+            I want to create a form for...
+          </FormLabel>
           <Textarea
+            borderRadius="4px"
             placeholder={GENERATE_FORM_PLACEHOLDER}
             {...register('prompt', {
               required: 'Please enter a prompt.',

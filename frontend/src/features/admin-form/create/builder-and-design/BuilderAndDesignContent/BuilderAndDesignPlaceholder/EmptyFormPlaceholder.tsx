@@ -4,6 +4,7 @@ import {
   ButtonProps,
   Center,
   chakra,
+  Flex,
   forwardRef,
   Icon,
   Text,
@@ -11,6 +12,34 @@ import {
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
+
+import { useUser } from '~features/user/queries'
+
+import { MagicFormBuilderContainer } from '../../BuilderAndDesignDrawer/FieldListDrawer/MagicFormBuilderContainer'
+
+import MagicFormBuilderButton from './MagicFormBuilderButton'
+
+const OrDivider = ({ isMobile }: { isMobile: boolean }) => (
+  <Flex
+    width="100%"
+    maxW={isMobile ? '12rem' : '18rem'}
+    flexDir="row"
+    alignItems="center"
+    justifyContent="space-around"
+    verticalAlign="middle"
+  >
+    <Box flexGrow={1} height="1px" bgColor="black" />
+    <Text
+      textStyle="subhead-2"
+      color="secondary.500"
+      px="1.5rem"
+      textAlign={'center'}
+    >
+      OR
+    </Text>
+    <Box flexGrow={1} height="1px" bgColor="black" />
+  </Flex>
+)
 
 interface EmptyFormPlaceholderProps extends ButtonProps {
   isDraggingOver: boolean
@@ -22,6 +51,10 @@ export const EmptyFormPlaceholder = forwardRef<
   'button'
 >(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
   const isMobile = useIsMobile()
+  const { user } = useUser()
+  // TODO: (MFB) Remove isTest check when MFB is out of beta
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+  const isMagicFormBuilderEnabled = isTest || user?.betaFlags?.mfb
 
   const placeholderText = useMemo(() => {
     if (isDraggingOver) {
@@ -66,8 +99,30 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
+          {isMagicFormBuilderEnabled ? (
+            <>
+              <OrDivider isMobile={isMobile} />
+              <Box h="2.75rem">Box</Box>
+            </>
+          ) : null}
         </Center>
       </chakra.button>
+      {isMagicFormBuilderEnabled ? (
+        <Box
+          bottom="2.375rem"
+          w="100%"
+          px="2rem"
+          position="absolute"
+          display="flex"
+          justifyContent="center"
+        >
+          <MagicFormBuilderContainer
+            renderClickable={({ onClick }) => (
+              <MagicFormBuilderButton onClick={onClick} />
+            )}
+          />
+        </Box>
+      ) : null}
     </Box>
   )
 })
