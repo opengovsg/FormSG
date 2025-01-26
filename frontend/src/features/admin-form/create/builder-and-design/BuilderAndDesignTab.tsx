@@ -57,6 +57,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     onModalClose,
     isSubmissionLoading,
   } = useMagicFormBuilder()
+
   const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
   const { data } = useCreateTabForm()
 
