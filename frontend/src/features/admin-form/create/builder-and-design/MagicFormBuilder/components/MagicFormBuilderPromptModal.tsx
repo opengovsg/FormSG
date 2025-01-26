@@ -23,19 +23,24 @@ import { NextAndBackButtonGroup } from '~components/Button'
 
 const TEXT_PROMPT_IDEAS = [
   {
-    label: 'Employee satisfaction survey',
+    label: 'Approval of request (AOR)',
     prompt:
-      'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement, and comments on company culture.',
+      'Create a purchase request application form which is to be approved by a manager, including sections for requester information, a section for details of items purchased in a table field (which may include name, quantity, unit price, total price, and justification for purchase), and a section for approval by manager.',
   },
   {
-    label: 'Community issue reports',
+    label: 'Data consent form',
     prompt:
-      'community issue reports from citizens, including fields for location, description of the issue, and optional photo uploads.',
+      'Create a data collection consent form, including a section for personal details, a section for sample data usage purposes and terms and conditions, and a section for agreement to the above.',
   },
   {
-    label: 'Government grant applications',
+    label: 'MOP feedback',
     prompt:
-      'applications for government grants from business entities, incorporating sections for project details, budget breakdown, and applicant qualifications.',
+      'Create a feedback survey for members of public, including rating scales for service quality satisfaction, justification for rating, specific feedback on what is good and what is bad and potential suggestions for improvement for each aspect.',
+  },
+  {
+    label: 'Sign-in/out timesheet',
+    prompt:
+      'Create a sign-in and out timesheet form to be filled each time an employee enters and leaves the office, including a section for employee information, a section for recording of visit date and time, whether it is a sign in or sign out, and a section for purpose of visit.',
   },
 ]
 
