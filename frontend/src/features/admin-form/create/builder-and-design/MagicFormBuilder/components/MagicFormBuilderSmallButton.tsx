@@ -1,6 +1,6 @@
 import { forwardRef } from 'react'
 import { BiSolidMagicWand } from 'react-icons/bi'
-import { Button, Icon, Tooltip } from '@chakra-ui/react'
+import { Box, Button, Flex, Icon, Text, Tooltip } from '@chakra-ui/react'
 
 const MagicFormBuilderSmallButton = forwardRef(
   (
@@ -16,6 +16,9 @@ const MagicFormBuilderSmallButton = forwardRef(
     return (
       <Tooltip openDelay={500} hasArrow label="Create fields with AI">
         <Button
+          flexDirection="row"
+          justifyContent="center"
+          alignItems="center"
           ref={ref} // Rationale: forward ref allows the popover placement to work.
           variant="outline"
           onClick={onClick}
@@ -29,6 +32,9 @@ const MagicFormBuilderSmallButton = forwardRef(
           {...styleProps}
         >
           <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
+          <Text mr="0.25rem" fontSize="0.75rem">
+            AI
+          </Text>
         </Button>
       </Tooltip>
     )
