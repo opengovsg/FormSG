@@ -15,9 +15,8 @@ import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useUser } from '~features/user/queries'
 
-import { MagicFormBuilderContainer } from '../../BuilderAndDesignDrawer/FieldListDrawer/MagicFormBuilderContainer'
-
-import MagicFormBuilderButton from './MagicFormBuilderButton'
+import MagicFormBuilderButton from '../../MagicFormBuilder/components/MagicFormBuilderButton'
+import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
 
 const OrDivider = ({ isMobile }: { isMobile: boolean }) => (
   <Flex
@@ -55,6 +54,8 @@ export const EmptyFormPlaceholder = forwardRef<
   // TODO: (MFB) Remove isTest check when MFB is out of beta
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isMagicFormBuilderEnabled = isTest || user?.betaFlags?.mfb
+
+  const { toggleIsModalOpen } = useMagicFormBuilder()
 
   const placeholderText = useMemo(() => {
     if (isDraggingOver) {
@@ -116,11 +117,7 @@ export const EmptyFormPlaceholder = forwardRef<
           display="flex"
           justifyContent="center"
         >
-          <MagicFormBuilderContainer
-            renderClickable={({ onClick }) => (
-              <MagicFormBuilderButton onClick={onClick} />
-            )}
-          />
+          <MagicFormBuilderButton onClick={toggleIsModalOpen} />
         </Box>
       ) : null}
     </Box>

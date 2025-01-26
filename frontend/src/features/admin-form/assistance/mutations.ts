@@ -5,7 +5,7 @@ import { makeTextPrompt } from '~features/admin-form/assistance/AssistanceServic
 
 import { useToast } from '../../../hooks/useToast'
 import { adminFormKeys } from '../common/queries'
-import { useMagicFormBuilderStore } from '../create/builder-and-design/useMagicFormBuilderStore'
+import { useMagicFormBuilderStore } from '../create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
 
 export const useAssistanceMutations = () => {
   const { formId } = useParams()

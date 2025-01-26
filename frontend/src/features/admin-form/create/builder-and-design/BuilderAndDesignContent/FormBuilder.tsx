@@ -21,16 +21,16 @@ import {
   usePaymentStore,
 } from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FIELD_LIST_DROP_ID } from '../constants'
+import {
+  recentlyCreatedFieldIdsSelector,
+  useMagicFormBuilderStore,
+} from '../MagicFormBuilder/useMagicFormBuilderStore'
 import { DndPlaceholderProps } from '../types'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
   setToInactiveSelector as setFieldBuilderToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-import {
-  recentlyCreatedFieldIdsSelector,
-  useMagicFormBuilderStore,
-} from '../useMagicFormBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'

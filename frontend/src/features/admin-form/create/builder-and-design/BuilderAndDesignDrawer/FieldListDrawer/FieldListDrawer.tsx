@@ -24,14 +24,14 @@ import { useUser } from '~features/user/queries'
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
 import { FieldListTabIndex } from '../../constants'
+import MagicFormBuilderSmallButton from '../../MagicFormBuilder/components/MagicFormBuilderSmallButton'
+import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
 
 import {
   BasicFieldPanel,
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
-import { MagicFormBuilderContainer } from './MagicFormBuilderContainer'
-import MagicFormBuilderSmallButton from './MagicFormBuilderSmallButton'
 
 const FieldSearchBar = ({
   searchValue,
@@ -43,6 +43,8 @@ const FieldSearchBar = ({
   // TODO (MFB-v1.1): Remove useUser and isTest which is used for beta flag when out of beta
   const { user } = useUser()
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
+  const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
 
   return (
     <>
@@ -58,13 +60,9 @@ const FieldSearchBar = ({
         />
         {/* TODO (MFB-v1.1): Remove this beta flag and isTest check when out of beta*/}
         {user?.betaFlags?.mfb || isTest ? (
-          <MagicFormBuilderContainer
-            renderClickable={({ onClick, isActive }) => (
-              <MagicFormBuilderSmallButton
-                onClick={onClick}
-                isActive={isActive}
-              />
-            )}
+          <MagicFormBuilderSmallButton
+            onClick={toggleIsModalOpen}
+            isActive={isModalOpen}
           />
         ) : null}
       </InputGroup>

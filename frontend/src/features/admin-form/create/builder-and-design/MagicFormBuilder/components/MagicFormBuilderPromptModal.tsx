@@ -93,7 +93,7 @@ const MagicFormBuilderCreateFormPrompt = ({
   isSubmitLoading,
   onCancel,
 }: {
-  onSubmit: (textPromptInputs: TextPromptInputs) => void
+  onSubmit: (textPromptInputs: string) => void
   isSubmitLoading: boolean
   onCancel: () => void
 }) => {
@@ -135,7 +135,7 @@ const MagicFormBuilderCreateFormPrompt = ({
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
           nextButtonIcon={<HiSparkles fontSize="1.5rem" />}
-          handleNext={handleSubmit(onSubmit)}
+          handleNext={handleSubmit(({ prompt }) => onSubmit(prompt))}
           isNextLoading={isSubmitLoading}
           handleBack={onCancel}
           nextButtonLabel="Generate fields"
@@ -148,7 +148,7 @@ const MagicFormBuilderCreateFormPrompt = ({
 
 interface MagicFormBuilderPromptModalProps {
   isOpen: boolean
-  onSubmit: (textPromptInputs: TextPromptInputs) => void
+  onSubmit: (textPrompt: string) => void
   isSubmitLoading: boolean
   onClose: () => void
 }
