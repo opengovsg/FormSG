@@ -5,12 +5,12 @@ import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
-  BoxProps,
   ButtonGroup,
   chakra,
   Collapse,
   Fade,
   Flex,
+  FlexProps,
   Icon,
 } from '@chakra-ui/react'
 import { Draggable } from '@hello-pangea/dnd'
@@ -101,23 +101,30 @@ export interface FieldRowContainerProps {
 /**
  * Used for highlighting fields that were created by Magic Form Builder.
  */
-const HighlightableBox = ({
-  children,
+const HighlightableFlex = ({
   isHighlighted,
+  ref,
   ...props
 }: {
-  children: React.ReactNode
   isHighlighted?: boolean
-} & BoxProps) => {
+  ref?: React.RefObject<HTMLDivElement>
+} & FlexProps) => {
+  const { children } = props
+
+  const augmentedProps = isHighlighted
+    ? {
+        ...props,
+        borderColor: 'primary.500',
+        borderRadius: '0.25rem',
+        borderWidth: '0.125rem',
+        bg: 'secondary.100',
+      }
+    : props
+
   return (
-    <Box
-      borderColor="danger.300"
-      borderRadius="0.25rem"
-      borderWidth={isHighlighted ? '0.125rem' : '0'}
-      {...props}
-    >
+    <Flex {...augmentedProps} ref={ref}>
       {children}
-    </Box>
+    </Flex>
   )
 }
 
@@ -246,8 +253,8 @@ const FieldRowContainer = ({
             placement="top"
             label="This field may be hidden by your form logic"
           >
-            <Flex
-              // Offset for focus boxShadow
+            <HighlightableFlex
+              isHighlighted={isHighlighted} // Offset for focus boxShadow
               my="2px"
               // Focusable
               tabIndex={0}
@@ -311,8 +318,7 @@ const FieldRowContainer = ({
                   )}
                 </chakra.button>
               </Fade>
-              <HighlightableBox
-                isHighlighted={isHighlighted}
+              <Box
                 px={{ base: '0.75rem', md: '1.5rem' }}
                 pb={{ base: '0.75rem', md: '1.5rem' }}
                 w="100%"
@@ -327,7 +333,7 @@ const FieldRowContainer = ({
                     showMyInfoBadge={isMyInfoField}
                   />
                 </FormProvider>
-              </HighlightableBox>
+              </Box>
               <Collapse in={isActive} style={{ width: '100%' }}>
                 {isActive && (
                   <FieldButtonGroup
@@ -338,7 +344,7 @@ const FieldRowContainer = ({
                   />
                 )}
               </Collapse>
-            </Flex>
+            </HighlightableFlex>
           </Tooltip>
         </Box>
       )}
