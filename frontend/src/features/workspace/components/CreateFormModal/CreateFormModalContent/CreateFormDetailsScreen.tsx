@@ -120,6 +120,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               mb="2.25rem"
             >
               <FormLabel
+                isRequired={responseModeValue === FormResponseMode.Email}
                 useMarkdownForDescription
                 description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
               >
