@@ -19,6 +19,7 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 
+import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
 
 const TEXT_PROMPT_IDEAS = [
@@ -111,7 +112,17 @@ const MagicFormBuilderCreateFormPrompt = ({
 
   return (
     <>
-      <ModalHeader textStyle="h2">Create fields with AI</ModalHeader>
+      <ModalHeader display="flex" alignItems="center">
+        <Text textStyle="h2">Create fields with AI</Text>
+        <Badge
+          colorScheme="primary"
+          variant="subtle"
+          color="secondary.500"
+          ml="0.5rem"
+        >
+          Beta
+        </Badge>
+      </ModalHeader>
       <ModalBody>
         <FormControl isRequired isInvalid={!!errors.prompt?.message}>
           <FormLabel textStyle="subhead-1">
