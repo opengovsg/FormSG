@@ -40,10 +40,6 @@ const FieldSearchBar = ({
   searchValue: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) => {
-  // TODO (MFB-v1.1): Remove useUser and isTest which is used for beta flag when out of beta
-  const { user } = useUser()
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
   const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
 
   return (
@@ -58,13 +54,10 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder="Search fields"
         />
-        {/* TODO (MFB-v1.1): Remove this beta flag and isTest check when out of beta*/}
-        {user?.betaFlags?.mfb || isTest ? (
-          <MagicFormBuilderSmallButton
-            onClick={toggleIsModalOpen}
-            isActive={isModalOpen}
-          />
-        ) : null}
+        <MagicFormBuilderSmallButton
+          onClick={toggleIsModalOpen}
+          isActive={isModalOpen}
+        />
       </InputGroup>
     </>
   )

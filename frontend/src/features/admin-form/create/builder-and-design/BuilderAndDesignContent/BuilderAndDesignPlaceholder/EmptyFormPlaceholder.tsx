@@ -50,10 +50,6 @@ export const EmptyFormPlaceholder = forwardRef<
   'button'
 >(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
   const isMobile = useIsMobile()
-  const { user } = useUser()
-  // TODO: (MFB) Remove isTest check when MFB is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const isMagicFormBuilderEnabled = isTest || user?.betaFlags?.mfb
 
   const { toggleIsModalOpen } = useMagicFormBuilder()
 
@@ -100,26 +96,22 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
-          {isMagicFormBuilderEnabled ? (
-            <>
-              <OrDivider isMobile={isMobile} />
-              <Box h="2.75rem">Box</Box>
-            </>
-          ) : null}
+          <>
+            <OrDivider isMobile={isMobile} />
+            <Box h="2.75rem">Box</Box>
+          </>
         </Center>
       </chakra.button>
-      {isMagicFormBuilderEnabled ? (
-        <Box
-          bottom="2.375rem"
-          w="100%"
-          px="2rem"
-          position="absolute"
-          display="flex"
-          justifyContent="center"
-        >
-          <MagicFormBuilderButton onClick={toggleIsModalOpen} />
-        </Box>
-      ) : null}
+      <Box
+        bottom="2.375rem"
+        w="100%"
+        px="2rem"
+        position="absolute"
+        display="flex"
+        justifyContent="center"
+      >
+        <MagicFormBuilderButton onClick={toggleIsModalOpen} />
+      </Box>
     </Box>
   )
 })
