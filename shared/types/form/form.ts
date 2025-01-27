@@ -104,7 +104,7 @@ export enum FormResponseMode {
 }
 
 export interface FormMetadata {
-  mfb?: boolean
+  mfb_text_prompt_count?: number
 }
 
 export type FormPaymentsChannel = {

@@ -334,7 +334,10 @@ export const createFormFieldsUsingTextPrompt = ({
       return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
     })
     .map((updatedFields) => {
-      updateFormMetadata(form, { ...form.metadata, mfb: true })
+      updateFormMetadata(form, {
+        ...form.metadata,
+        mfb_text_prompt_count: (form.metadata?.mfb_text_prompt_count ?? 0) + 1,
+      })
       return updatedFields.map((field) => field._id)
     })
 }
