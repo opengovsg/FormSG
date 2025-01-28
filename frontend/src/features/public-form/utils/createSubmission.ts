@@ -174,7 +174,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       ...formDataArgsRest,
     }),
   )
-  console.log(formData.get('body'))
+
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {
       if (attachment) {

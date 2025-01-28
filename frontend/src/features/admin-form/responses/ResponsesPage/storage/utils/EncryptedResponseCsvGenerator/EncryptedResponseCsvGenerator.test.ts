@@ -801,24 +801,25 @@ describe('EncryptedResponseCsvGenerator', () => {
 
       it('should handle submissions with address answerArray', () => {
         // Arrange
-        const mockDecryptedRecord = [
-          generateRecord(
-            1,
-            ['blockNumber_161',
-              'streetName_BUKIT BATOK STREET 11',
-              'buildingName_',
-              'levelNumber_1',
-              'unitNumber_1',
-              'postalCode_650161'
-            ],
-            'address',
-          ),
+        const addressAnswerArray = [
+          'blockNumber_161',
+          'streetName_BUKIT BATOK STREET 11',
+          'buildingName_',
+          'levelNumber_1',
+          'unitNumber_1',
+          'postalCode_650161',
         ]
+        const mockDecryptedRecord = [
+          generateRecord(1, addressAnswerArray, 'address'),
+        ]
+
         const mockRecord = {
           record: mockDecryptedRecord,
           created: mockCreatedEarly,
           submissionId: 'mockSubmissionId',
         }
+
+        // const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
         generator.addRecord(mockRecord)
 
         // Act
@@ -827,29 +828,36 @@ describe('EncryptedResponseCsvGenerator', () => {
         // Assert
         //Should have 1 header row and 1 submission row
         expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const questionSuffix = addressAnswerArray.map((resp) => {
+          return '-' + resp.split('_')[0]
+        })
         const expectedHeaderRow = stringify([
           'Response ID',
           'Timestamp',
-          mockDecryptedRecord[0].question,
-          mockDecryptedRecord[1].question,
-          mockDecryptedRecord[2].question,
-          mockDecryptedRecord[3].question,
-          mockDecryptedRecord[4].question,
-          mockDecryptedRecord[5].question,
+          mockDecryptedRecord[0].question + questionSuffix[0],
+          mockDecryptedRecord[0].question + questionSuffix[1],
+          mockDecryptedRecord[0].question + questionSuffix[2],
+          mockDecryptedRecord[0].question + questionSuffix[3],
+          mockDecryptedRecord[0].question + questionSuffix[4],
+          mockDecryptedRecord[0].question + questionSuffix[5],
         ])
 
+        const answerArr = addressAnswerArray.map((resp) => {
+          return resp.split('_')[1]
+        })
         const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           getFormattedDate(mockRecord.created),
-          mockDecryptedRecord[0].answer,
-          mockDecryptedRecord[1].answer,
-          mockDecryptedRecord[2].answer,
-          mockDecryptedRecord[3].answer,
-          mockDecryptedRecord[4].answer,
-          mockDecryptedRecord[5].answer,
+          answerArr[0],
+          answerArr[1],
+          answerArr[2],
+          answerArr[3],
+          answerArr[4],
+          answerArr[5],
         ])
 
         expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
           expectedHeaderRow,
           expectedSubmissionRow,
         ])
