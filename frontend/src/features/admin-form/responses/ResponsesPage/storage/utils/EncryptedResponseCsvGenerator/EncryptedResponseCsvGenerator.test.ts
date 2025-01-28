@@ -799,14 +799,61 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
       })
 
-      // if('should handle submissions with address answerArray', () => {
-      //   const mockDecryptedRecord = [
-      //     generateRecord(
-      //       1,
-      //       []
-      //     )
-      //   ]
-      // })
+      it('should handle submissions with address answerArray', () => {
+        // Arrange
+        const mockDecryptedRecord = [
+          generateRecord(
+            1,
+            ['blockNumber_161',
+              'streetName_BUKIT BATOK STREET 11',
+              'buildingName_',
+              'levelNumber_1',
+              'unitNumber_1',
+              'postalCode_650161'
+            ],
+            'address',
+          ),
+        ]
+        const mockRecord = {
+          record: mockDecryptedRecord,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        //Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockDecryptedRecord[0].question,
+          mockDecryptedRecord[1].question,
+          mockDecryptedRecord[2].question,
+          mockDecryptedRecord[3].question,
+          mockDecryptedRecord[4].question,
+          mockDecryptedRecord[5].question,
+        ])
+
+        const expectedSubmissionRow = stringify([
+          mockRecord.submissionId,
+          getFormattedDate(mockRecord.created),
+          mockDecryptedRecord[0].answer,
+          mockDecryptedRecord[1].answer,
+          mockDecryptedRecord[2].answer,
+          mockDecryptedRecord[3].answer,
+          mockDecryptedRecord[4].answer,
+          mockDecryptedRecord[5].answer,
+        ])
+
+        expect(generator.records).toEqual([
+          expectedHeaderRow,
+          expectedSubmissionRow,
+        ])
+      })
     })
   })
 })

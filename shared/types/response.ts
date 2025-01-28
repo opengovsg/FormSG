@@ -132,15 +132,10 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
-// TODO: check fo multivalue response as a string[]
-export type AddressSubField = {
-  key: string
-  value: string
-}
-
 export const AddressResponse = ResponseBase.extend({
   fieldType: z.literal(BasicField.Address),
   answerArray: z.array(z.string()) as unknown as z.Schema<string[]>,
+  // attributes: z.array(z.string()) as unknown as z.Schema<string[]>, // TODO: pass in addressAttributes as additional info
 })
 export type AddressResponse = z.infer<typeof AddressResponse>
 

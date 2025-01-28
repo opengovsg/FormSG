@@ -134,9 +134,8 @@ export const DecryptedRow = memo(
         )
       case BasicField.Table:
         return <DecryptedTableRow row={row} />
-      // case BasicField.Address:
-      //   if (row.answer? typeof )
-      //   return <DecryptedAddressRow row={row} />
+      case BasicField.Address:
+        return <DecryptedAddressRow row={row} />
       default:
         return (
           <Stack>

@@ -21,7 +21,6 @@ import {
 } from '~shared/types/field'
 import {
   AddressResponse,
-  AddressSubField,
   AttachmentResponse,
   CheckboxResponse,
   ChildBirthRecordsResponse,
@@ -232,15 +231,18 @@ const transformToAddressOutput = (
   input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
   const answerArray: string[] = []
+  // const attributes: string[] = [] // TODO: see if adding a [] of attributes for reference can help
   if (input !== undefined) {
     Object.entries(input.addressSubFields).map(([key, value]) => {
       answerArray.push(`${key}_${value}`)
+      // attributes.push(`${key}`)
     })
     answerArray.push(answerArray.shift()!) // move postal code to the end of array
   }
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,
+    // attributes,
   }
 }
 

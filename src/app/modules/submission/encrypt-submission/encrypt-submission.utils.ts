@@ -13,10 +13,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
-import {
-  isProcessedAddressResponse,
-  isProcessedChildResponse,
-} from '../../../../app/utils/field-validation/field-validation.guards'
+import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -29,11 +26,7 @@ import {
 } from '../../../../types/api'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { ProcessedFieldResponse } from '../submission.types'
-import {
-  getAnswersForAddress,
-  getAnswersForChild,
-  getMyInfoPrefix,
-} from '../submission.utils'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 /**
  * Typeguard to check if given submission is an encrypt mode submission.
@@ -171,18 +164,6 @@ export const formatMyInfoStorageResponseData = (
       }
     })
   }
-}
-
-export const formatAddressResponseData = (
-  parsedResponses: ProcessedFieldResponse[],
-) => {
-  return parsedResponses.flatMap((response) => {
-    if (isProcessedAddressResponse(response)) {
-      return getAnswersForAddress(response)
-    } else {
-      return omitResponseKeys(response)
-    }
-  })
 }
 
 export const getStripePaymentMethod = (

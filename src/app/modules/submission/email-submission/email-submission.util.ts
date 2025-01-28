@@ -79,11 +79,7 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import {
-  getAnswersForAddress,
-  getAnswersForChild,
-  getMyInfoPrefix,
-} from '../submission.utils'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -211,6 +207,7 @@ export const getAnswerForAddress = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: handleAddressResponseDisplayEmail(response.answerArray).join(', '), //TODO Update this
+    // answer: response.answerArray.join(', '),
   }
 }
 
@@ -466,37 +463,6 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
       getFormattedFunction(childField, hashedFields),
     )
   } else if (isProcessedAddressResponse(response)) {
-    return getAnswersForAddress(response).map((subField) =>
-      // splitting into single responses for JSON output (similar to webhook)
-      getFormattedFunction(subField, hashedFields),
-    )
-  } else {
-    return [getFormattedFunction(response, hashedFields)]
-  }
-}
-
-const createFormattedDataDisplayForOneField = <
-  T extends EmailDataFields | undefined,
->(
-  response: ProcessedFieldResponse,
-  hashedFields: Set<MyInfoKey>,
-  getFormattedFunction: (
-    response: ResponseFormattedForEmail,
-    hashedFields: Set<MyInfoKey>,
-  ) => T,
-): T[] => {
-  if (isProcessedTableResponse(response)) {
-    return getAnswerRowsForTable(response).map((row) =>
-      getFormattedFunction(row, hashedFields),
-    )
-  } else if (isProcessedCheckboxResponse(response)) {
-    const checkbox = getAnswerForCheckbox(response)
-    return [getFormattedFunction(checkbox, hashedFields)]
-  } else if (isProcessedChildResponse(response)) {
-    return getAnswersForChild(response).map((childField) =>
-      getFormattedFunction(childField, hashedFields),
-    )
-  } else if (isProcessedAddressResponse(response)) {
     const address = getAnswerForAddress(response)
     return [getFormattedFunction(address, hashedFields)]
   } else {
@@ -627,13 +593,13 @@ export class SubmissionEmailObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const dataCollationFormattedData = this.parsedResponses.flatMap(
-      (response) =>
-        createFormattedDataForOneField(
-          response,
-          this.hashedFields,
-          getDataCollationFormattedResponse,
-        ),
+    const splitAddressData = splitAddressResponse(this.parsedResponses)
+    const dataCollationFormattedData = splitAddressData.flatMap((response) =>
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getDataCollationFormattedResponse,
+      ),
     )
 
     // Compact is necessary because getDataCollationFormattedResponse
@@ -667,7 +633,7 @@ export class SubmissionEmailObj {
    */
   get formData(): EmailAdminDataField[] {
     return this.parsedResponses.flatMap((response) =>
-      createFormattedDataDisplayForOneField(
+      createFormattedDataForOneField(
         response,
         this.hashedFields,
         getFormFormattedResponse,
@@ -676,6 +642,10 @@ export class SubmissionEmailObj {
   }
 }
 
+/**
+ * @param responses answerArray from address field
+ * @returns human-readable format of address, similar to handleAddressResponseDisplay (mutations.ts)
+ */
 export const handleAddressResponseDisplayEmail = (
   responses: string[],
 ): string[] => {
@@ -702,6 +672,31 @@ export const handleAddressResponseDisplayEmail = (
     const cleanedArr = arr.filter((item) => item !== '').join(', ')
 
     return [cleanedArr]
+  }
+  return responses
+}
+
+const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
+  const responses: ProcessedFieldResponse[] = []
+  for (const i in parsedResponses) {
+    const response = parsedResponses[i]
+    if (
+      response.fieldType === BasicField.Address &&
+      isProcessedAddressResponse(response)
+    ) {
+      response.answerArray.map((answer) => {
+        const key = answer.split('_')[0]
+        const value = answer.split('_')[1]
+        responses.push({
+          _id: `${response._id}.${key}`,
+          fieldType: response.fieldType,
+          question: `${response.question} - ${key}`,
+          answer: value,
+        })
+      })
+    } else {
+      responses.push(response)
+    }
   }
   return responses
 }

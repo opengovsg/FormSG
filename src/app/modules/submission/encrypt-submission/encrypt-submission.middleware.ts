@@ -57,10 +57,7 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import {
-  formatAddressResponseData,
-  formatMyInfoStorageResponseData,
-} from './encrypt-submission.utils'
+import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -438,20 +435,9 @@ export const validateStorageSubmission = async (
         parsedResponses.getAllResponses(),
         hashedFields,
       )
-
-      const storageFormDataAddress = formatAddressResponseData(storageFormData)
-      req.body.responses = storageFormDataAddress
-      console.log(req.body.responses)
+      req.body.responses = storageFormData
       return next()
     })
-    // .map(({ parsedResponses }) => {
-    //   const storageFormData = formatAddressResponseData(
-    //     parsedResponses.getAllResponses(),
-    //   )
-    //   req.body.responses = storageFormData
-    //   console.log(req.body.responses)
-    //   return next()
-    // })
     .mapErr((error) => {
       logger.error({
         message: 'Error saving responses in req.body',
