@@ -1656,8 +1656,8 @@ export const handleDeleteWorkflowStep: ControllerHandler<
   )
 }
 
-const TWO_HUNDRED_FIFTY = 250
-const TWO_HUNDRED_FIFTY_KB_IN_BYTES = TWO_HUNDRED_FIFTY * KB
+const LIMIT_IN_KB = 250
+const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
@@ -1668,12 +1668,12 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.BODY]: Joi.object({
     whitelistCsvString: Joi.string()
       .allow(null) // for removal of whitelist
-      .max(TWO_HUNDRED_FIFTY_KB_IN_BYTES)
+      .max(STRING_MAX_LENGTH)
       .pattern(/^[a-zA-Z0-9,\r\n]+$/)
       .messages({
         'string.empty': 'Your csv is empty.',
         'string.pattern.base': 'Your csv has one or more invalid characters.',
-        'string.max': `You have exceeded the file size limit, please upload a file below ${TWO_HUNDRED_FIFTY} kB.`,
+        'string.max': `You have exceeded the file size limit, please upload a file below ${LIMIT_IN_KB} kB.`,
       }),
   }),
 })
@@ -1682,7 +1682,7 @@ const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
   if (!whitelistCsvString) {
     return null
   }
-  return whitelistCsvString.split('\r\n').map((entry: string) => entry.trim())
+  return whitelistCsvString.split(',').map((entry: string) => entry.trim())
 }
 
 const _handleUpdateWhitelistSetting: ControllerHandler<
