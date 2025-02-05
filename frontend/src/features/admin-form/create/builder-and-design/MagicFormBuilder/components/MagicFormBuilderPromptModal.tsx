@@ -24,24 +24,24 @@ import { NextAndBackButtonGroup } from '~components/Button'
 
 const TEXT_PROMPT_IDEAS = [
   {
-    label: 'Approval of request (AOR)',
+    label: 'Employee satisfaction',
     prompt:
-      'Create a purchase request application form which is to be approved by a manager, including sections for requester information, a section for details of items purchased in a table field (which may include name, quantity, unit price, total price, and justification for purchase), and a section for approval by manager.',
+      'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement and comments on company culture.',
   },
   {
-    label: 'Data consent form',
+    label: 'Event registration',
     prompt:
-      'Create a data collection consent form, including a section for personal details, a section for sample data usage purposes and terms and conditions, and a section for agreement to the above.',
+      'registrations for an event, including sections for personal details, event details and acknowledgement to terms and conditions.',
   },
   {
-    label: 'MOP feedback',
+    label: 'Grant applications',
     prompt:
-      'Create a feedback survey for members of public, including rating scales for service quality satisfaction, justification for rating, specific feedback on what is good and what is bad and potential suggestions for improvement for each aspect.',
+      'applications for government grants from business entities, incorporating sections for project details, budget breakdown and applicant qualifications.',
   },
   {
-    label: 'Sign-in/out timesheet',
+    label: 'Feedback collection',
     prompt:
-      'Create a sign-in and out timesheet form to be filled each time an employee enters and leaves the office, including a section for employee information, a section for recording of visit date and time, whether it is a sign in or sign out, and a section for purpose of visit.',
+      'feedback including rating scales for service quality satisfaction, justification for rating, specific feedback on what is good and what is bad and potential suggestions for improvement.',
   },
 ]
 
@@ -71,6 +71,7 @@ const PromptSelectorBar = ({
             variant="clear"
             size="xs"
             borderRadius="4px"
+            backgroundColor="primary.100"
             _focus={{
               backgroundColor: 'primary.200',
               textColor: 'primary.600',
@@ -132,6 +133,7 @@ const MagicFormBuilderCreateFormPrompt = ({
             I want to create a form that collects...
           </FormLabel>
           <Textarea
+            minH="9rem"
             borderRadius="4px"
             placeholder={GENERATE_FORM_PLACEHOLDER}
             {...register('prompt', {
