@@ -63,9 +63,7 @@ const PromptSelectorBar = ({
         justifyContent="space-between"
         overflowX="auto"
         gap="0.25rem"
-        mt="0.25rem"
-        pt="0.25rem"
-        pb="1rem"
+        mt="0.75rem"
       >
         {promptIdeas.map((idea) => (
           <Button
@@ -73,11 +71,16 @@ const PromptSelectorBar = ({
             variant="clear"
             size="xs"
             borderRadius="4px"
-            bgColor="secondary.100"
+            _focus={{
+              backgroundColor: 'primary.200',
+              textColor: 'primary.600',
+            }}
             _hover={{
               backgroundColor: 'primary.200',
             }}
-            onClick={() => onClick(idea.prompt)}
+            onClick={() => {
+              onClick(idea.prompt)
+            }}
           >
             {idea.label}
           </Button>
@@ -126,7 +129,7 @@ const MagicFormBuilderCreateFormPrompt = ({
       <ModalBody>
         <FormControl isRequired isInvalid={!!errors.prompt?.message}>
           <FormLabel textStyle="subhead-1">
-            I want to create a form for...
+            I want to create a form that collects...
           </FormLabel>
           <Textarea
             borderRadius="4px"
@@ -141,7 +144,7 @@ const MagicFormBuilderCreateFormPrompt = ({
           />
           <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
         </FormControl>
-        <Box mt="0.5rem">
+        <Box mt="1rem">
           <PromptSelectorBar
             promptIdeas={TEXT_PROMPT_IDEAS}
             onClick={(prompt) => setValue('prompt', prompt)}

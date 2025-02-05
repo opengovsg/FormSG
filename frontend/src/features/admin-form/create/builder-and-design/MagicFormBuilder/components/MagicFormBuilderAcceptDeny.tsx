@@ -16,7 +16,7 @@ const MagicFormBuilderAcceptDeny = ({
     <Portal>
       <BottomHugBox>
         <Flex direction="column" gap="1rem">
-          <Text>Use these fields?</Text>
+          <Text textStyle="h6">Use these fields?</Text>
           <NextAndBackButtonGroup
             handleBack={onDeny}
             handleNext={onAccept}

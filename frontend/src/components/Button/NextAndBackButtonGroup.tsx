@@ -38,6 +38,7 @@ export const NextAndBackButtonGroup = ({
       w="100%"
     >
       <Button
+        textStyle="subhead-2"
         isLoading={isNextLoading}
         colorScheme={nextButtonColorScheme}
         isDisabled={isNextDisabled}
@@ -49,6 +50,7 @@ export const NextAndBackButtonGroup = ({
       </Button>
       <Button
         variant="clear"
+        textStyle="subhead-2"
         colorScheme="secondary"
         isDisabled={isBackDisabled}
         onClick={handleBack}
