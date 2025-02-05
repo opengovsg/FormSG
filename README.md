@@ -148,7 +148,7 @@ FormSG requires some environment variables to function.
 More information about the required environment variables are in
 [DEPLOYMENT_SETUP.md](/docs/DEPLOYMENT_SETUP.md).
 
-We provide a [`.template-env`](./.template-env) file with the secrets blanked out. You can copy and
+We provide a [`.env.example`](./.env.example) file with the secrets blanked out. You can copy and
 paste the variables described into a self-created `.env` file, replacing the
 required values with your own.
 
