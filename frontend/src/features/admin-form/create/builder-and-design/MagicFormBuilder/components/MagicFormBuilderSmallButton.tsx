@@ -14,7 +14,7 @@ const MagicFormBuilderSmallButton = ({
         variant="outline"
         onClick={onClick}
         padding="0"
-        borderColor="primary.200"
+        borderColor="primary.500"
         backgroundColor={isActive ? 'primary.200' : undefined}
         _hover={{
           backgroundColor: 'primary.200',

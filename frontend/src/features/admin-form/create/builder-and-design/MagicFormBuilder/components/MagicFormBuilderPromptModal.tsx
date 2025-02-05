@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { HiSparkles } from 'react-icons/hi2'
+import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
   Button,
@@ -155,7 +155,7 @@ const MagicFormBuilderCreateFormPrompt = ({
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
-          nextButtonIcon={<HiSparkles fontSize="1.5rem" />}
+          nextButtonIcon={<BiSolidMagicWand fontSize="1.5rem" />}
           handleNext={handleSubmit(({ prompt }) => onSubmit(prompt))}
           isNextLoading={isSubmitLoading}
           handleBack={onCancel}
