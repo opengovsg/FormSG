@@ -9,11 +9,12 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
-
-import { useUser } from '~features/user/queries'
 
 import MagicFormBuilderButton from '../../MagicFormBuilder/components/MagicFormBuilderButton'
 import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
@@ -96,22 +97,26 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
-          <>
-            <OrDivider isMobile={isMobile} />
-            <Box h="2.75rem">Box</Box>
-          </>
+          {useFeatureIsOn(featureFlags.mfb) ? (
+            <>
+              <OrDivider isMobile={isMobile} />
+              <Box h="2.75rem"></Box>
+            </>
+          ) : null}
         </Center>
       </chakra.button>
-      <Box
-        bottom="2.375rem"
-        w="100%"
-        px="2rem"
-        position="absolute"
-        display="flex"
-        justifyContent="center"
-      >
-        <MagicFormBuilderButton onClick={toggleIsModalOpen} />
-      </Box>
+      {useFeatureIsOn(featureFlags.mfb) ? (
+        <Box
+          bottom="2.375rem"
+          w="100%"
+          px="2rem"
+          position="absolute"
+          display="flex"
+          justifyContent="center"
+        >
+          <MagicFormBuilderButton onClick={toggleIsModalOpen} />
+        </Box>
+      ) : null}
     </Box>
   )
 })

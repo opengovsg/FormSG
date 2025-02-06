@@ -15,11 +15,13 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
@@ -54,10 +56,12 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder="Search fields"
         />
-        <MagicFormBuilderSmallButton
-          onClick={toggleIsModalOpen}
-          isActive={isModalOpen}
-        />
+        {useFeatureIsOn(featureFlags.mfb) ? (
+          <MagicFormBuilderSmallButton
+            onClick={toggleIsModalOpen}
+            isActive={isModalOpen}
+          />
+        ) : null}
       </InputGroup>
     </>
   )
