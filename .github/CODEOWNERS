@@ -1,0 +1,17 @@
+# This is a comment.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in
+# the repo. Unless a later match takes precedence,
+# @opengovsg/formsg-engineers will be requested for
+# review when someone opens a pull request.
+* @opengovsg/formsg-engineers
+
+# Don't automatically assign reviewers on PRs that only modify these files.
+# As they have no owner listed, these files are not owned by anyone.
+# Mostly to avoid dependabot noise
+package.json
+package-lock.json
+# Since this is a monorepo, we need to also ignore package.json in subdirectories
+**/package.json
+**/package-lock.json
