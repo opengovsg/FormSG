@@ -2799,7 +2799,7 @@ export const handleDeleteFormField: ControllerHandler<
 }
 
 /**
- * Handler for PATCH /forms/:formId/fields/
+ * Handler for POST /forms/:formId/fields/delete
  * @security session
  *
  * @returns 204 when deletion is successful
