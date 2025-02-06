@@ -112,9 +112,15 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               </InlineMessage>
             )}
           </FormControl>
-          {responseModeValue === FormResponseMode.Email && (
-            <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
+          {(responseModeValue === FormResponseMode.Encrypt ||
+            responseModeValue === FormResponseMode.Email) && (
+            <FormControl
+              isRequired={responseModeValue === FormResponseMode.Email}
+              isInvalid={!!errors.emails}
+              mb="2.25rem"
+            >
               <FormLabel
+                isRequired={responseModeValue === FormResponseMode.Email}
                 useMarkdownForDescription
                 description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
               >
