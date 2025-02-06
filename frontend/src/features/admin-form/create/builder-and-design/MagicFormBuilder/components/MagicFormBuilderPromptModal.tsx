@@ -140,7 +140,7 @@ const MagicFormBuilderCreateFormPrompt = ({
               required: 'Please enter a prompt',
               maxLength: {
                 value: 500,
-                message: 'Please enter at most 500 characters.',
+                message: 'Please enter at most 500 characters',
               },
             })}
           />
