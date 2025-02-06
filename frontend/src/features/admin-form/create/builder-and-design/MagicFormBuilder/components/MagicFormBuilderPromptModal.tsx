@@ -137,7 +137,7 @@ const MagicFormBuilderCreateFormPrompt = ({
             borderRadius="4px"
             placeholder={GENERATE_FORM_PLACEHOLDER}
             {...register('prompt', {
-              required: 'Please enter a prompt.',
+              required: 'Please enter a prompt',
               maxLength: {
                 value: 500,
                 message: 'Please enter at most 500 characters.',
