@@ -13,6 +13,8 @@ import {
 import * as AdminFormService from '../admin-form.service'
 import * as AiModel from '../ai-model'
 
+import { VALID_ALL_FIELDS_INCLUDED_RESPONSE } from './admin-form.assistance.service.spec.constants'
+
 const MockedAiModel = jest.mocked(AiModel)
 
 jest.mock('../admin-form.service', () => ({
@@ -197,9 +199,6 @@ describe('admin-form.assistance.service', () => {
 
       it('should return created field ids provided by return value of AdminFormService.createFormFields', async () => {
         // Arrange
-        const VALID_ALL_FIELDS_INCLUDED_RESPONSE =
-          '[{"title":"Cat Information","fieldType":"Section","required":false},{"title":"Please provide the name of your cat.","fieldType":"Statement","required":true,"description":"This information is needed to identify your pet."},{"title":"Your Email Address","fieldType":"Email","required":true},{"title":"Your Mobile Number","fieldType":"Mobile","required":true},{"title":"Your Home Phone Number","fieldType":"HomeNo","required":false},{"title":"How many cats do you have?","fieldType":"Number","required":true},{"title":"How much do you spend on cat care monthly?","fieldType":"Decimal","required":true},{"title":"Cat\'s Name (Short)","fieldType":"ShortText","required":true},{"title":"Tell us more about your cat (Long)","fieldType":"LongText","required":false},{"title":"Select your favorite cat breed","fieldType":"Dropdown","required":true,"fieldOptions":["Siamese","Persian","Maine Coon","Bengal","Sphynx"]},{"title":"Country/Region","fieldType":"CountryRegion","required":true},{"title":"Do you agree to share your cat\'s name for our records?","fieldType":"YesNo","required":true},{"title":"Do you want to receive updates about cat care?","fieldType":"Checkbox","required":false,"fieldOptions":["Yes, send me emails","No, thank you"]},{"title":"Select your preferred communication method","fieldType":"Radio","required":true,"fieldOptions":["Email","Phone","SMS"]},{"title":"Upload a picture of your cat","fieldType":"Attachment","required":false},{"title":"Select the date of your cat\'s birthday","fieldType":"Date","required":true},{"title":"Rate your satisfaction with our cat services (1-5)","fieldType":"Rating","required":true},{"title":"Your NRIC Number","fieldType":"Nric","required":true},{"title":"Your Business UEN (if applicable)","fieldType":"Uen","required":false},{"title":"Cat Care Records","fieldType":"Table","required":true,"columns":["Date","Activity","Notes"],"minimumRows":1,"addMoreRows":true}]'
-
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_ALL_FIELDS_INCLUDED_RESPONSE))
