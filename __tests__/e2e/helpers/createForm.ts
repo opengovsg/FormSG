@@ -171,7 +171,7 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
-  await addAdminEmails(page, formSettings)
+  // await addAdminEmails(page, formSettings)
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 

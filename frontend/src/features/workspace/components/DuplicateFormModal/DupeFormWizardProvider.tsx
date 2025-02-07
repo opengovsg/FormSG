@@ -72,7 +72,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode }) => {
+    ({ title, responseMode, emails }) => {
       if (!activeFormMeta?._id) {
         return
       }
@@ -85,6 +85,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
+            emails: emails.filter(Boolean),
           })
         case FormResponseMode.Email:
           return

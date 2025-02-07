@@ -3,7 +3,12 @@ import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { REQUIRED_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
+import { FormResponseMode } from '~shared/types/form/form'
+
+import {
+  OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
+  REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
+} from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import { TagInput } from '~components/TagInput'
@@ -15,6 +20,10 @@ import { useCreateFormWizard } from '../CreateFormWizardContext'
 export const EmailFormRecipientsInput = (): JSX.Element => {
   const { user, isLoading } = useUser()
   const { formMethods } = useCreateFormWizard()
+
+  const { watch } = formMethods
+  const responseModeValue = watch('responseMode')
+
   const {
     control,
     formState: { errors },
@@ -35,7 +44,11 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         control={control}
         defaultValue={[user.email]}
         name="emails"
-        rules={REQUIRED_ADMIN_EMAIL_VALIDATION_RULES}
+        rules={
+          responseModeValue === FormResponseMode.Email
+            ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
+            : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES
+        }
         render={({ field }) => (
           <TagInput
             placeholder="Separate emails with a comma"
