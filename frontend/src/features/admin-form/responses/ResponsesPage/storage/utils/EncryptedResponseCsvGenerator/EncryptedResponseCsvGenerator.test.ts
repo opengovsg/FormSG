@@ -3,6 +3,8 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
+import { answerKey } from '~shared/utils/address'
+
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
   DisplayedResponseWithoutAnswer,
@@ -11,7 +13,6 @@ import {
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 
 import { EncryptedResponseCsvGenerator } from './EncryptedResponseCsvGenerator'
-import { answerKey } from '~shared/utils/address'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 const BOM_LENGTH = 1
@@ -832,12 +833,12 @@ describe('EncryptedResponseCsvGenerator', () => {
         const expectedHeaderRow = stringify([
           'Response ID',
           'Timestamp',
-          mockDecryptedRecord[0].question + answerKey[0],
-          mockDecryptedRecord[0].question + answerKey[1],
-          mockDecryptedRecord[0].question + answerKey[2],
-          mockDecryptedRecord[0].question + answerKey[3],
-          mockDecryptedRecord[0].question + answerKey[4],
-          mockDecryptedRecord[0].question + answerKey[5],
+          mockDecryptedRecord[0].question + `-${answerKey[0]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[1]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[2]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[3]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[4]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[5]}`,
         ])
 
         const expectedSubmissionRow = stringify([

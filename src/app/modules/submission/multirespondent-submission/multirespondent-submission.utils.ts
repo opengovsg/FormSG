@@ -212,6 +212,7 @@ export const getQuestionTitleAnswerString = ({
     if (!response || !questionTitle) continue
 
     let answer = ''
+    let answerArray: string[] = []
     switch (response.fieldType) {
       case BasicField.Attachment:
         answer = response.answer.answer
@@ -220,9 +221,11 @@ export const getQuestionTitleAnswerString = ({
           answer,
         })
         continue
-      case BasicField.Address: //TODO: fix this confirmation email
-        // answer = handleAddressResponseDisplayEmail(response.answer)[0]
-        // Iterate over the keys of the answer object
+      case BasicField.Address:
+        answerArray = Object.values(response.answer.addressSubFields)
+        if (answerArray.length > 0) {
+          answerArray.push(answerArray.shift() ?? '')
+        } // move postal code to the end of array
         questionAnswerPair.push({
           question: `${questionTitle}`,
           answer: handleAddressResponseDisplay(

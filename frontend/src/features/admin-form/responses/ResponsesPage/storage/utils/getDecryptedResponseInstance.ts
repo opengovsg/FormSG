@@ -58,7 +58,7 @@ export const getAddressDecryptedResponseInstances = (
         const r = {
           _id: fieldRecordData._id + index,
           fieldType: fieldRecordData.fieldType,
-          question: fieldRecordData.question + `- ${answerKey[index]}`,
+          question: fieldRecordData.question + `-${answerKey[index]}`,
           answer: answer,
           isHeader: fieldRecordData.isHeader,
         }
