@@ -33,7 +33,7 @@ export const useAssistanceMutations = () => {
         queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()
         toast({
-          description: 'Fields generated successfully',
+          description: 'Fields created successfully',
           status: 'success',
         })
       },

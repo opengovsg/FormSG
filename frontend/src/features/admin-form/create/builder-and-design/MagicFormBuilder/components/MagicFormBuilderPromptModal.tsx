@@ -159,7 +159,7 @@ const MagicFormBuilderCreateFormPrompt = ({
           handleNext={handleSubmit(({ prompt }) => onSubmit(prompt))}
           isNextLoading={isSubmitLoading}
           handleBack={onCancel}
-          nextButtonLabel="Generate fields"
+          nextButtonLabel="Create fields"
           backButtonLabel="Cancel"
         />
       </ModalFooter>
