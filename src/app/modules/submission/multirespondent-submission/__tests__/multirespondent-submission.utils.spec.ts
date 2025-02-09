@@ -386,28 +386,8 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         {
-          question: 'Address - postalCode',
-          answer: '650161',
-        },
-        {
-          question: 'Address - blockNumber',
-          answer: '161',
-        },
-        {
-          question: 'Address - streetName',
-          answer: 'BUKIT BATOK STREET 11',
-        },
-        {
-          question: 'Address - buildingName',
-          answer: '',
-        },
-        {
-          question: 'Address - levelNumber',
-          answer: '1',
-        },
-        {
-          question: 'Address - unitNumber',
-          answer: '1',
+          question: 'Address',
+          answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
         },
       ])
     })

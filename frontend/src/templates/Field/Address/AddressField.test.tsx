@@ -23,7 +23,7 @@ const {
 } = composeStories(stories)
 
 // Mock the verifyAddress function
-vi.mock('../../../../../src/app/services/address/address.service', () => ({
+vi.mock('~/api/address.service', () => ({
   verifyAddress: vi.fn(),
 }))
 
