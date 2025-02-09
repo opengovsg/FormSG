@@ -5,9 +5,8 @@ const BottomHugBox = ({ children }: { children: JSX.Element }) => {
     <Flex
       position="fixed"
       bottom="1.5rem"
-      justifyContent="center"
-      margin="auto"
-      width="100%"
+      left="50%"
+      transform="translateX(-50%)"
       zIndex="2"
     >
       <Flex
@@ -16,6 +15,7 @@ const BottomHugBox = ({ children }: { children: JSX.Element }) => {
         bgColor="white"
         boxShadow="md"
         borderRadius="0.25rem"
+        width="fit-content"
       >
         {children}
       </Flex>
