@@ -24,7 +24,6 @@ export async function verifyAddress(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: '_toffsuid=rB8uPWZEP/wp9bsoBHUZAg==', // check this
     },
   })
 

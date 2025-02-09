@@ -3,6 +3,7 @@ import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
+import { handleAddressResponseDisplay } from '~shared/utils/address'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -10,10 +11,7 @@ import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
-import {
-  handleAddressResponseDisplay,
-  useMutateDownloadAttachments,
-} from './mutations'
+import { useMutateDownloadAttachments } from './mutations'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -121,7 +119,6 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
-    console.log(row)
     switch (row.fieldType) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />

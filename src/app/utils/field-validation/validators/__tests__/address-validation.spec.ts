@@ -28,14 +28,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'blockNumber_',
-          'streetName_',
-          'buildingName_',
-          'levelNumber_',
-          'unitNumber_',
-          'postalCode_',
-        ],
+        answerArray: ['', '', '', '', '', ''],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -58,14 +51,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'blockNumber_',
-          'streetName_',
-          'buildingName_',
-          'levelNumber_',
-          'unitNumber_',
-          'postalCode_',
-        ],
+        answerArray: ['', '', '', '', '', ''],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isOk()).toBe(true)
@@ -86,14 +72,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'postalCode_',
-          'blockNumber_',
-          'streetName_',
-          'buildingName_',
-          'levelNumber_1',
-          'unitNumber_',
-        ],
+        answerArray: ['', '', '', '', '1', ''],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -117,14 +96,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'postalCode_650161',
-          'blockNumber_161',
-          'streetName_BUKIT BATOK STREET 11',
-          'buildingName_',
-          'levelNumber_1',
-          'unitNumber_1',
-        ],
+        answerArray: ['161', 'BUKIT BATOK STREET 11', '', '1', '1', '650161'],
       })
       response.isVisible = false
       const validateResult = validateField(formId, formField, response)
@@ -148,14 +120,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'postalCode_650161a',
-          'blockNumber_161',
-          'streetName_BUKIT BATOK STREET 11',
-          'buildingName_',
-          'levelNumber_1',
-          'unitNumber_1',
-        ],
+        answerArray: ['161', 'BUKIT BATOK STREET 11', '', '1', '1', '650161a'],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -176,14 +141,7 @@ describe('Address validation', () => {
         addressSubFields,
       })
       const response = generateNewAddressResponse({
-        answerArray: [
-          'postalCode_650161',
-          'blockNumber_161@',
-          'streetName_BUKIT BATOK STREET 11',
-          'buildingName_',
-          'levelNumber_1',
-          'unitNumber_1',
-        ],
+        answerArray: ['161@', 'BUKIT BATOK STREET 11', '', '1', '1', '650161'],
       })
       const validateResult = validateField(formId, formField, response)
       expect(validateResult.isErr()).toBe(true)
@@ -193,7 +151,6 @@ describe('Address validation', () => {
     })
   })
 
-  // TODO
   describe('Address field validation tests V3', () => {
     it('should disallow responses submitted for hidden fields', () => {
       const addressSubFields = {

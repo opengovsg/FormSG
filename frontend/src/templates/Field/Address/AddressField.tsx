@@ -17,7 +17,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { verifyAddress } from '../../../../../src/app/services/address/address.service'
+import { verifyAddress } from '../../../api/address.service'
 import { BaseFieldProps } from '../FieldContainer'
 import { AddressCompoundFieldInput, AddressCompoundFieldSchema } from '../types'
 

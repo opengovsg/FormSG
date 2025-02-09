@@ -464,14 +464,7 @@ export const generateNewAddressResponse = (
 ): ProcessedAddressResponse => ({
   _id: new ObjectId().toHexString(),
   question: `Address question`,
-  answerArray: [
-    'blockNumber_161',
-    'streetName_BUKIT BATOK STREET 11',
-    'buildingName_',
-    'levelNumber_',
-    'unitNumber_',
-    'postalCode_650161',
-  ],
+  answerArray: ['161', 'BUKIT BATOK STREET 11', '', '', '', '650161'],
   fieldType: BasicField.Address,
   isVisible: true,
   ...customParams,

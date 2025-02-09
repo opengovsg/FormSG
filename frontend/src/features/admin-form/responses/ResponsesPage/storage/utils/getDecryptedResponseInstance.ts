@@ -1,4 +1,5 @@
 import { BasicField } from '~shared/types/field'
+import { answerKey } from '~shared/utils/address'
 import { hasProp } from '~shared/utils/has-prop'
 
 import {
@@ -40,7 +41,8 @@ export const getDecryptedResponseInstance = (
 
 /**
  * Converts an address field record into an array of SingleAnswerResponses for separate csv columns output
- * @param fieldRecordData Field record
+ * @param fieldRecordData Field record (answerArray is a 6 element array of strings formatted
+ * as ['blockNumber', 'streetName', 'buildingName', 'levelNumber', 'unitNumber', 'postalCode'])
  * @returns Response[]
  * @throws Address parsing error
  */
@@ -56,8 +58,8 @@ export const getAddressDecryptedResponseInstances = (
         const r = {
           _id: fieldRecordData._id + index,
           fieldType: fieldRecordData.fieldType,
-          question: fieldRecordData.question + `-${answer.split('_')[0]}`,
-          answer: answer.split('_')[1],
+          question: fieldRecordData.question + `- ${answerKey[index]}`,
+          answer: answer,
           isHeader: fieldRecordData.isHeader,
         }
         return new SingleAnswerResponse(r)

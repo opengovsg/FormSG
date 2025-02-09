@@ -27,6 +27,7 @@ type AddressValidatorConstructor = (
 
 /**
  * Returns a validator to address field is legitimate (must have 6 subfields)
+ * in the order of block number, street name, building name, level number, unit number, postal code
  */
 const addressAnswerValidator: AddressValidator = (response) => {
   const { answerArray } = response
@@ -41,36 +42,23 @@ const addressAnswerValidator: AddressValidator = (response) => {
  */
 const validPostalCode: AddressValidator = (response) => {
   const { answerArray } = response
-  const entry = answerArray.find((subField) =>
-    subField.startsWith('postalCode'),
-  )
-  const postalCode = entry ? entry.split('_')[1] : ''
-  return validatePostalCode(postalCode)
+
+  return validatePostalCode(answerArray[5])
     ? right(response)
     : left(`AddressValidator:\t postal code is not valid`)
 }
 
 const validBlockNumber: AddressValidator = (response) => {
   const { answerArray } = response
-  const entry = answerArray.find((subField) =>
-    subField.startsWith('blockNumber'),
-  )
-  const blockNumber = entry ? entry.split('_')[1] : ''
-  return validateNoSpecialCharacters(blockNumber)
+  return validateNoSpecialCharacters(answerArray[0])
     ? right(response)
     : left(`AddressValidator:\t block number is not valid`)
 }
 
 const validUnitNumber: AddressValidator = (response) => {
   const { answerArray } = response
-  const entry = answerArray.find((subField) =>
-    subField.startsWith('unitNumber'),
-  )
-  const level = answerArray.find((subField) =>
-    subField.startsWith('levelNumber'),
-  )
-  const unitNumber = entry ? entry.split('_')[1] : ''
-  const levelNumber = level ? level.split('_')[1] : ''
+  const unitNumber = answerArray[4]
+  const levelNumber = answerArray[3]
   const validUnitNumber = unitNumber
     ? validateNoSpecialCharacters(unitNumber)
     : true
@@ -81,12 +69,8 @@ const validUnitNumber: AddressValidator = (response) => {
 
 const validLevelNumber: AddressValidator = (response) => {
   const { answerArray } = response
-  const entry = answerArray.find((subField) =>
-    subField.startsWith('levelNumber'),
-  )
-  const unit = answerArray.find((subField) => subField.startsWith('unitNumber'))
-  const levelNumber = entry ? entry.split('_')[1] : ''
-  const unitNumber = unit ? unit.split('_')[1] : ''
+  const unitNumber = answerArray[4]
+  const levelNumber = answerArray[3]
 
   const validLevelNumber = levelNumber
     ? validateNoNonNumerical(levelNumber)

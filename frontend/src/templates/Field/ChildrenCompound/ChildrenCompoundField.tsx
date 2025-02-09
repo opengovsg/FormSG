@@ -259,7 +259,7 @@ const ChildrenBody = ({
   }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
 
   const childNameValues = useMemo(() => {
-    return [childName, ...namesNotSelected(), 'test'].filter((name) => {
+    return [childName, ...namesNotSelected()].filter((name) => {
       if (name === '' || name === undefined) {
         return false
       } else return true

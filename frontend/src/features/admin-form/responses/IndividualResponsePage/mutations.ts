@@ -82,39 +82,3 @@ export const useMutateDownloadAttachments = () => {
 
   return { downloadAttachmentMutation, downloadAttachmentsAsZipMutation }
 }
-
-/**
- * Converts address field info as Single Responses into single-line string for response page display
- * String manipulation done on frontend in DecryptRow
- * since backend requires inputs to be single responses for info to be separate csv columns
- *
- * responses format:
- * ["blockNumber_161","streetName_BUKIT BATOK STREET 11","buildingName_","levelNumber_","unitNumber_","postalCode_650161"]
- */
-export const handleAddressResponseDisplay = (responses: string[]): string[] => {
-  const ans = responses
-  if (Array.isArray(ans)) {
-    let arr: string[] = []
-
-    // remove all address prefixes
-    if (ans.every((item) => typeof item === 'string')) {
-      arr = ans.map((item) => (item as string).split('_')[1])
-    }
-
-    // handle postal code additions
-    if (arr && arr[arr.length - 1])
-      arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
-
-    // handle leve;/unit number additions
-    if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
-      const combinedUnit = '#' + arr[arr.length - 3] + '-' + arr[arr.length - 2]
-      arr.splice(arr.length - 3, 2, combinedUnit)
-    }
-
-    // remove empty inputs from array
-    const cleanedArr = arr.filter((item) => item !== '').join(', ')
-
-    return [cleanedArr]
-  }
-  return responses
-}

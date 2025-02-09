@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
 import { BasicField, FormAuthType } from '../../../../../shared/types'
+import { answerKey, handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -206,8 +207,7 @@ export const getAnswerForAddress = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: handleAddressResponseDisplayEmail(response.answerArray).join(', '), //TODO Update this
-    // answer: response.answerArray.join(', '),
+    answer: handleAddressResponseDisplay(response.answerArray).join(', '), //TODO Update this
   }
 }
 
@@ -642,40 +642,6 @@ export class SubmissionEmailObj {
   }
 }
 
-/**
- * @param responses answerArray from address field
- * @returns human-readable format of address, similar to handleAddressResponseDisplay (mutations.ts)
- */
-export const handleAddressResponseDisplayEmail = (
-  responses: string[],
-): string[] => {
-  const ans = responses
-  if (Array.isArray(ans)) {
-    let arr: string[] = []
-
-    // remove all address prefixes
-    if (ans.every((item) => typeof item === 'string')) {
-      arr = ans.map((item) => (item as string).split('_')[1])
-    }
-
-    // handle postal code additions
-    if (arr && arr[arr.length - 1])
-      arr[arr.length - 1] = 'SINGAPORE ' + arr[arr.length - 1]
-
-    // handle leve;/unit number additions
-    if (arr && arr[arr.length - 2] && arr[arr.length - 3]) {
-      const combinedUnit = '#' + arr[arr.length - 3] + '-' + arr[arr.length - 2]
-      arr.splice(arr.length - 3, 2, combinedUnit)
-    }
-
-    // remove empty inputs from array
-    const cleanedArr = arr.filter((item) => item !== '').join(', ')
-
-    return [cleanedArr]
-  }
-  return responses
-}
-
 const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {
@@ -684,14 +650,12 @@ const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
       response.fieldType === BasicField.Address &&
       isProcessedAddressResponse(response)
     ) {
-      response.answerArray.map((answer) => {
-        const key = answer.split('_')[0]
-        const value = answer.split('_')[1]
+      response.answerArray.map((answer, index) => {
         responses.push({
-          _id: `${response._id}.${key}`,
+          _id: `${response._id}.${index}`,
           fieldType: response.fieldType,
-          question: `${response.question} - ${key}`,
-          answer: value,
+          question: `${response.question} - ${answerKey[index]}`,
+          answer: answer,
         })
       })
     } else {

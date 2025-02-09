@@ -11,6 +11,7 @@ import {
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
+import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import {
   FormFieldSchema,
   IPopulatedForm,
@@ -219,16 +220,15 @@ export const getQuestionTitleAnswerString = ({
           answer,
         })
         continue
-      case BasicField.Address:
+      case BasicField.Address: //TODO: fix this confirmation email
+        // answer = handleAddressResponseDisplayEmail(response.answer)[0]
         // Iterate over the keys of the answer object
-        Object.entries(response.answer.addressSubFields).forEach(
-          ([key, value]) => {
-            questionAnswerPair.push({
-              question: `${questionTitle} - ${key}`,
-              answer: value, // Assign the specific value for the key
-            })
-          },
-        )
+        questionAnswerPair.push({
+          question: `${questionTitle}`,
+          answer: handleAddressResponseDisplay(
+            Object.values(response.answer.addressSubFields),
+          ),
+        })
         continue
       case BasicField.Email:
       case BasicField.Mobile:
