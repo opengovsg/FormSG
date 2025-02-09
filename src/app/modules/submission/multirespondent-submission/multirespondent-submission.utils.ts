@@ -227,7 +227,7 @@ export const getQuestionTitleAnswerString = ({
           question: `${questionTitle}`,
           answer: handleAddressResponseDisplay(
             Object.values(response.answer.addressSubFields),
-          ),
+          ).join(', '),
         })
         continue
       case BasicField.Email:

@@ -802,12 +802,12 @@ describe('EncryptedResponseCsvGenerator', () => {
       it('should handle submissions with address answerArray', () => {
         // Arrange
         const addressAnswerArray = [
-          'blockNumber_161',
-          'streetName_BUKIT BATOK STREET 11',
-          'buildingName_',
-          'levelNumber_1',
-          'unitNumber_1',
-          'postalCode_650161',
+          '161',
+          'BUKIT BATOK STREET 11',
+          '',
+          '1',
+          '1',
+          '650161',
         ]
         const mockDecryptedRecord = [
           generateRecord(1, addressAnswerArray, 'address'),

@@ -3,14 +3,14 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 
+import { verifyAddress } from '~/api/address.service'
+
 import {
   INVALID_BLOCK_UNIT_ERROR,
   INVALID_NON_NUMERICAL_ERROR,
   REQUIRED_ERROR,
   VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
 } from '~constants/validation'
-
-import { verifyAddress } from '../../../../../src/app/services/address/address.service'
 
 import * as stories from './AddressField.stories'
 

@@ -2,7 +2,10 @@ import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
 import { BasicField, FormAuthType } from '../../../../../shared/types'
-import { answerKey, handleAddressResponseDisplay } from '../../../../../shared/utils/address'
+import {
+  answerKey,
+  handleAddressResponseDisplay,
+} from '../../../../../shared/utils/address'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
