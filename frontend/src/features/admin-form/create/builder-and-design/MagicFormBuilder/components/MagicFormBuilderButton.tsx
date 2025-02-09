@@ -8,15 +8,14 @@ const MagicFormBuilderButton = ({
   onClick: () => void
 }): JSX.Element => {
   return (
-    <>
-      <Button
-        maxW="100%"
-        rightIcon={<BiSolidMagicWand fontSize="1.5rem" />}
-        onClick={onClick}
-      >
-        Create fields with AI
-      </Button>
-    </>
+    <Button
+      maxW="100%"
+      rightIcon={<BiSolidMagicWand fontSize="1.5rem" />}
+      onClick={onClick}
+      isTruncated
+    >
+      Create fields with AI
+    </Button>
   )
 }
 
