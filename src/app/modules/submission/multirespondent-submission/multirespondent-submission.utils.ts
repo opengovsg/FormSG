@@ -228,9 +228,9 @@ export const getQuestionTitleAnswerString = ({
         } // move postal code to the end of array
         questionAnswerPair.push({
           question: `${questionTitle}`,
-          answer: handleAddressResponseDisplay(
-            Object.values(response.answer.addressSubFields),
-          ).join(', '),
+          answer: handleAddressResponseDisplay(Object.values(answerArray)).join(
+            ', ',
+          ),
         })
         continue
       case BasicField.Email:
