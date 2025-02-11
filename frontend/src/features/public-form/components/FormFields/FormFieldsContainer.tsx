@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
+import { useLocalStorage } from 'react-use'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from '~shared/types'
+
+import { useToast } from '~hooks/useToast'
+import { FormFieldValues } from '~templates/Field/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -10,7 +14,13 @@ import { FormAuth } from '../FormAuth'
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
-export const FormFieldsContainer = (): JSX.Element | null => {
+export const FormFieldsContainer = ({
+  onCloseSaveDraft,
+  isSaveDraftOpen,
+}: {
+  onCloseSaveDraft?: () => void
+  isSaveDraftOpen?: boolean
+}): JSX.Element | null => {
   const {
     form,
     isAuthRequired,
@@ -23,6 +33,26 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     previousSubmission,
     previousAttachments,
   } = usePublicFormContext()
+
+  const [localStorage, saveLocalStorage] =
+    useLocalStorage<Record<string, FormFieldValues>>('formsg')
+  const formId = form?._id.toString()
+  const draftValues = localStorage && formId ? localStorage[formId] : undefined
+  const toast = useToast()
+
+  const saveDraftValues = useMemo(() => {
+    return (values: FormFieldValues) => {
+      if (!formId) return
+      saveLocalStorage({
+        ...localStorage,
+        [formId]: values,
+      })
+      if (onCloseSaveDraft) {
+        onCloseSaveDraft()
+      }
+      toast({ description: 'Your responses have been saved on your device.' })
+    }
+  }, [localStorage, saveLocalStorage, formId, toast, onCloseSaveDraft])
 
   const { workflowStep } = encryptedPreviousSubmission ?? {}
 
@@ -52,6 +82,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
     return (
       <FormFields
+        isSaveDraftOpen={isSaveDraftOpen}
+        onCloseSaveDraft={onCloseSaveDraft}
         previousResponses={previousSubmission?.responses}
         previousAttachments={previousAttachments}
         formFields={form.form_fields}
@@ -67,6 +99,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
         }
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
+        draftValues={draftValues}
+        onSaveDraft={saveDraftValues}
       />
     )
   }, [
@@ -79,6 +113,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,
+    isSaveDraftOpen,
+    onCloseSaveDraft,
+    draftValues,
+    saveDraftValues,
   ])
 
   if (submissionData) return null
