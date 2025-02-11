@@ -26,8 +26,8 @@ export const RetryToggle = (): JSX.Element | null => {
     <Toggle
       isLoading={mutateWebhookRetries.isLoading}
       isChecked={settings.webhook.isRetryEnabled}
-      {...t('features.adminForm.settings.webhooks.retry', {
-        returnObjects: true,
+      label={t('features.adminForm.settings.webhooks.retry.label')}
+      description={t('features.adminForm.settings.webhooks.retry.description', {
         url: GUIDE_WEBHOOKS,
       })}
       onChange={handleToggleRetry}
