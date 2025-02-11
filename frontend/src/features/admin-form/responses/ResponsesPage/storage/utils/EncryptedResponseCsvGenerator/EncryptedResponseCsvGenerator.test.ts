@@ -6,13 +6,13 @@ import { SetOptional } from 'type-fest'
 import { WorkflowStatus } from '~shared/types/submission'
 
 import {
-  getCurrentStepString,
+  getPendingResponseAtString,
   MRF_STATUS,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
-  MRF_CURRENT_STEP_LABEL,
-  MRF_FIRST_STEP_TIMESTAMP_LABEL,
-  MRF_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
@@ -386,6 +386,7 @@ describe('EncryptedResponseCsvGenerator', () => {
             workflowStatus: WorkflowStatus.REJECTED,
             workflowCurrentStepNumber: 2,
             workflowNumTotalSteps: 3,
+            lastSubmittedAt: '2024-01-01T00:00:00.000Z',
           },
         }
         mrfGenerator.addRecord(mockRecord)
@@ -398,18 +399,19 @@ describe('EncryptedResponseCsvGenerator', () => {
         expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_STATUS_LABEL,
-          MRF_CURRENT_STEP_LABEL,
-          MRF_FIRST_STEP_TIMESTAMP_LABEL,
+          MRF_WORKFLOW_STATUS_LABEL,
+          MRF_PENDING_RESPONSE_AT_LABEL,
+          MRF_RESPONSE_TIMESTAMP_LABEL,
           mockDecryptedRecord[0].question,
         ])
         const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           MRF_STATUS.COMPLETED,
-          getCurrentStepString(
-            mockRecord.mrfMeta.workflowCurrentStepNumber,
-            mockRecord.mrfMeta.workflowNumTotalSteps,
-          ),
+          getPendingResponseAtString({
+            workflowCurrentStepNumber:
+              mockRecord.mrfMeta.workflowCurrentStepNumber,
+            workflowNumTotalSteps: mockRecord.mrfMeta.workflowNumTotalSteps,
+          }),
           getFormattedDate(mockRecord.created),
           mockDecryptedRecord[0].answer,
         ])

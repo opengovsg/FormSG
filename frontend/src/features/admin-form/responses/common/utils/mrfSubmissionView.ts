@@ -5,14 +5,38 @@ export enum MRF_STATUS {
   PENDING = 'Pending',
 }
 
+interface CurrentStepInfo {
+  workflowCurrentStepNumber: number | undefined
+  workflowNumTotalSteps: number | undefined
+}
+
+/** Gets the business friendly message for the current pending step of the workflow.  */
+export const getPendingResponseAtString = ({
+  workflowCurrentStepNumber,
+  workflowNumTotalSteps,
+}: CurrentStepInfo) => {
+  if (!workflowCurrentStepNumber || !workflowNumTotalSteps) {
+    return ''
+  }
+  const isPending = workflowCurrentStepNumber < workflowCurrentStepNumber
+  if (!isPending) {
+    return ''
+  }
+  return getCurrentStepString({
+    workflowCurrentStepNumber,
+    workflowNumTotalSteps,
+  })
+}
+
 /** Gets the business friendly string for current step of workflow. */
-export const getCurrentStepString = (
-  workflowCurrentStepNumber: number | undefined,
-  workflowNumTotalSteps: number | undefined,
-) =>
-  workflowCurrentStepNumber && workflowNumTotalSteps
+const getCurrentStepString = ({
+  workflowCurrentStepNumber,
+  workflowNumTotalSteps,
+}: CurrentStepInfo) => {
+  return workflowCurrentStepNumber && workflowNumTotalSteps
     ? `Step ${workflowCurrentStepNumber} of ${workflowNumTotalSteps}`
     : ''
+}
 
 /** Gets the business friendly string for MRF submission status. */
 export const getStatusFromWorkflowStatus = (

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo } from 'react'
-import { BiCheckDouble, BiSolidHourglass } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
@@ -9,16 +8,16 @@ import {
   useTable,
 } from 'react-table'
 import {
+  BadgeProps,
   Flex,
-  Icon,
   Table,
   Tbody,
   Td,
-  Text,
   Th,
   Thead,
   Tr,
 } from '@chakra-ui/react'
+import moment from 'moment-timezone'
 
 import {
   FormResponseMode,
@@ -30,41 +29,69 @@ import { centsToDollars } from '~shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
-  MRF_CURRENT_STEP_LABEL,
-  MRF_FIRST_STEP_TIMESTAMP_LABEL,
-  MRF_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
-import { getCurrentStepString } from '../../../../common/utils/mrfSubmissionView'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { getNetAmount } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
 
-const PendingBadge = () => (
+const StatusBadge = ({
+  textColor,
+  backgroundColor,
+  statusText,
+}: {
+  textColor: BadgeProps['textColor']
+  backgroundColor: BadgeProps['backgroundColor']
+  statusText: string
+}) => (
   <Badge
     width="fit-content"
     display="flex"
-    textColor="warning.700"
-    backgroundColor="warning.100"
+    textColor={textColor}
+    textStyle="caption-1"
+    backgroundColor={backgroundColor}
   >
-    <Icon as={BiSolidHourglass} mr="0.25rem" fontSize="1rem" />
-    <Text textStyle="caption-1">Pending</Text>
+    {statusText}
   </Badge>
 )
 
+const PendingBadge = () => (
+  <StatusBadge
+    textColor="warning.700"
+    backgroundColor="warning.100"
+    statusText="Pending"
+  />
+)
+
 const CompletedBadge = () => (
-  <Badge
-    width="fit-content"
-    display="flex"
+  <StatusBadge
     textColor="success.700"
     backgroundColor="success.100"
-  >
-    <Icon as={BiCheckDouble} mr="0.25rem" fontSize="1rem" />
-    <Text textStyle="caption-1">Completed</Text>
-  </Badge>
+    statusText="Completed"
+  />
+)
+
+const ApprovedBadge = () => (
+  <StatusBadge
+    textColor="success.700"
+    backgroundColor="success.100"
+    statusText="Approved"
+  />
+)
+
+const NotApprovedBadge = () => (
+  <StatusBadge
+    textColor="danger.700"
+    backgroundColor="danger.100"
+    statusText="Not approved"
+  />
 )
 
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
@@ -169,7 +196,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 300,
   },
   {
-    Header: MRF_STATUS_LABEL,
+    Header: MRF_WORKFLOW_STATUS_LABEL,
     accessor: ({ mrf }) => {
       if (!mrf?.workflowStatus) {
         return ''
@@ -177,26 +204,39 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (mrf.workflowStatus === WorkflowStatus.PENDING) {
         return <PendingBadge />
       }
-      return <CompletedBadge />
+      if (mrf.workflowStatus === WorkflowStatus.APPROVED) {
+        return <ApprovedBadge />
+      }
+      if (mrf.workflowStatus === WorkflowStatus.REJECTED) {
+        return <NotApprovedBadge />
+      }
+      if (mrf.workflowStatus === WorkflowStatus.COMPLETED) {
+        return <CompletedBadge />
+      }
     },
     width: 200,
     minWidth: 180,
     maxWidth: 220,
   },
   {
-    Header: MRF_CURRENT_STEP_LABEL,
+    Header: MRF_PENDING_RESPONSE_AT_LABEL,
     accessor: ({ mrf }) =>
-      getCurrentStepString(
-        mrf?.workflowCurrentStepNumber,
-        mrf?.workflowNumTotalSteps,
-      ),
+      getPendingResponseAtString({
+        workflowCurrentStepNumber: mrf?.workflowCurrentStepNumber,
+        workflowNumTotalSteps: mrf?.workflowNumTotalSteps,
+      }),
     width: 200,
     minWidth: 180,
     maxWidth: 220,
   },
   {
-    Header: MRF_FIRST_STEP_TIMESTAMP_LABEL,
-    accessor: 'submissionTime',
+    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    accessor: ({ mrf }) =>
+      mrf?.lastSubmittedAt
+        ? moment(mrf.lastSubmittedAt)
+            .tz('Asia/Singapore')
+            .format('Do MMM YYYY, h:mm:ss a')
+        : '',
     width: 250,
     minWidth: 250,
     disableResizing: true,
@@ -300,11 +340,17 @@ export const ResponsesTable = () => {
           <Tr
             as="div"
             {...headerGroup.getHeaderGroupProps()}
+            key={headerGroup.getHeaderGroupProps().key}
             // To toggle _groupHover styles to show divider when header is hovered.
             data-group
           >
             {headerGroup.headers.map((column) => (
-              <Th as="div" pos="relative" {...column.getHeaderProps()}>
+              <Th
+                as="div"
+                pos="relative"
+                {...column.getHeaderProps()}
+                key={column.getHeaderProps().key}
+              >
                 <Flex align="center">{column.render('Header')}</Flex>
 
                 {column.disableResizing ? null : (
@@ -347,6 +393,7 @@ export const ResponsesTable = () => {
             <Tr
               as="div"
               {...row.getRowProps()}
+              key={row.getRowProps().key}
               px={0}
               onClick={() =>
                 handleRowClick(row.values.refNo, row.values.number)
@@ -361,7 +408,11 @@ export const ResponsesTable = () => {
             >
               {row.cells.map((cell) => {
                 return (
-                  <Td as="div" {...cell.getCellProps()}>
+                  <Td
+                    as="div"
+                    {...cell.getCellProps()}
+                    key={cell.getCellProps().key}
+                  >
                     {cell.render('Cell')}
                   </Td>
                 )

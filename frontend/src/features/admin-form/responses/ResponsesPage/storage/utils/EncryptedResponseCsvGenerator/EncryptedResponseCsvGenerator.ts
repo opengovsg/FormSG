@@ -5,14 +5,14 @@ import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
 import {
-  MRF_CURRENT_STEP_LABEL,
-  MRF_FIRST_STEP_TIMESTAMP_LABEL,
-  MRF_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
 import {
-  getCurrentStepString,
+  getPendingResponseAtString,
   getStatusFromWorkflowStatus,
 } from '../../../../common/utils/mrfSubmissionView'
 import type { DecryptedSubmissionData } from '../../types'
@@ -27,9 +27,9 @@ type UnprocessedRecord = Merge<
 
 const MRF_CSV_HEADERS = [
   'Response ID',
-  MRF_STATUS_LABEL,
-  MRF_CURRENT_STEP_LABEL,
-  MRF_FIRST_STEP_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
 ]
 
 const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
@@ -134,26 +134,38 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.unprocessed.forEach((up) => {
       const row = [up.submissionId]
 
-      if (this.isMrf) {
-        const workflowStatus = up.mrfMeta?.workflowStatus
-        const mrfSubmissionStatus = workflowStatus
-          ? getStatusFromWorkflowStatus(workflowStatus)
-          : ''
-        row.push(mrfSubmissionStatus)
-        const currentStepString = getCurrentStepString(
-          up.mrfMeta?.workflowCurrentStepNumber,
-          up.mrfMeta?.workflowNumTotalSteps,
-        )
-        row.push(currentStepString)
-      }
-
-      const formattedDate = isValid(parseISO(up.created))
+      let formattedDate = isValid(parseISO(up.created))
         ? formatInTimeZone(
             up.created,
             'Asia/Singapore',
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
+
+      if (this.isMrf) {
+        const workflowStatus = up.mrfMeta?.workflowStatus
+        const mrfSubmissionStatus = workflowStatus
+          ? getStatusFromWorkflowStatus(workflowStatus)
+          : ''
+        row.push(mrfSubmissionStatus)
+        const pendingAtString = getPendingResponseAtString({
+          workflowCurrentStepNumber: up.mrfMeta?.workflowCurrentStepNumber,
+          workflowNumTotalSteps: up.mrfMeta?.workflowNumTotalSteps,
+        })
+        row.push(pendingAtString)
+
+        const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
+        if (lastSubmittedAt) {
+          formattedDate = isValid(parseISO(lastSubmittedAt))
+            ? formatInTimeZone(
+                lastSubmittedAt,
+                'Asia/Singapore',
+                'dd MMM yyyy hh:mm:ss a',
+              )
+            : lastSubmittedAt
+        }
+      }
+
       row.push(formattedDate)
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {

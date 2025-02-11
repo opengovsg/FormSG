@@ -11,6 +11,7 @@ import {
   sumBy,
   uniqBy,
 } from 'lodash'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
@@ -872,9 +873,15 @@ export const buildMrfMetadata = ({
     submittedSteps ?? [],
     workflow.length,
   )
+
+  const lastSubmittedAt =
+    submittedSteps && submittedSteps.length > 0
+      ? submittedSteps[submittedSteps.length - 1].submittedAt.toString()
+      : undefined
   return {
     workflowCurrentStepNumber,
     workflowNumTotalSteps,
     workflowStatus,
+    lastSubmittedAt,
   }
 }

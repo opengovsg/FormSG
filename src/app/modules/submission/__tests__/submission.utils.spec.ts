@@ -9,7 +9,10 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from '../../../../../shared/types'
-import { SingleAnswerFieldResponse } from '../../../../types'
+import {
+  IMultirespondentSubmissionSchema,
+  SingleAnswerFieldResponse,
+} from '../../../../types'
 import {
   areAttachmentsMoreThanLimit,
   buildMrfMetadata,
@@ -103,14 +106,50 @@ describe('submission.utils', () => {
       approval_field: YES_NO_FIELD._id,
     }
 
+    it('should return undefined for lastSubmittedAt when submittedSteps is empty', () => {
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+        workflowStep: 0,
+        submittedSteps: [],
+      })
+      expect(metadata!.lastSubmittedAt).toBeUndefined()
+    })
+
+    it('should extract correct lastSubmittedAt timing based on submittedSteps', () => {
+      const submittedSteps: IMultirespondentSubmissionSchema['submittedSteps'] =
+        [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+          },
+          {
+            isApproval: true,
+            status: WorkflowStatus.APPROVED,
+            submittedAt: '2024-01-02T00:00:00.000Z',
+          },
+          {
+            isApproval: false,
+            submittedAt: '2024-01-03R00:00:00.000Z',
+          },
+        ]
+
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP, WORKFLOW_STEP_2],
+        workflowStep: 2,
+        submittedSteps,
+      })
+      expect(metadata!.lastSubmittedAt).toBe(submittedSteps[2].submittedAt)
+    })
+
     it('should build mrf metadata successfully for pending submission without approval step', () => {
+      const submittedAt = '2024-01-01T00:00:00.000Z'
       const metadata = buildMrfMetadata({
         workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
         workflowStep: 0,
         submittedSteps: [
           {
             isApproval: false,
-            submittedAt: '2024-01-01T00:00:00.000Z',
+            submittedAt,
           },
         ],
       })
@@ -119,14 +158,13 @@ describe('submission.utils', () => {
         workflowCurrentStepNumber: 1,
         workflowNumTotalSteps: 2,
         workflowStatus: WorkflowStatus.PENDING,
+        lastSubmittedAt: submittedAt,
       })
     })
 
     it('should build mrf metadata successfully for completed submission without approval step', () => {
-      const metadata = buildMrfMetadata({
-        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
-        workflowStep: 1,
-        submittedSteps: [
+      const submittedSteps: IMultirespondentSubmissionSchema['submittedSteps'] =
+        [
           {
             isApproval: false,
             submittedAt: '2024-01-01T00:00:00.000Z',
@@ -135,13 +173,19 @@ describe('submission.utils', () => {
             isApproval: false,
             submittedAt: '2024-01-02T00:00:00.000Z',
           },
-        ],
+        ]
+
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+        workflowStep: 1,
+        submittedSteps,
       })
 
       expect(metadata).toEqual({
         workflowCurrentStepNumber: 2,
         workflowNumTotalSteps: 2,
         workflowStatus: WorkflowStatus.COMPLETED,
+        lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
       })
     })
 
@@ -166,14 +210,13 @@ describe('submission.utils', () => {
         workflowCurrentStepNumber: 2,
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.PENDING,
+        lastSubmittedAt: '2024-01-02T00:00:00.000Z',
       })
     })
 
     it('should build mrf metadata successfully for approval submission with approval step', () => {
-      const metadata = buildMrfMetadata({
-        workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP, WORKFLOW_STEP_2],
-        workflowStep: 2,
-        submittedSteps: [
+      const submittedSteps: IMultirespondentSubmissionSchema['submittedSteps'] =
+        [
           {
             isApproval: false,
             submittedAt: '2024-01-01T00:00:00.000Z',
@@ -187,13 +230,19 @@ describe('submission.utils', () => {
             isApproval: false,
             submittedAt: '2024-01-03T00:00:00.000Z',
           },
-        ],
+        ]
+
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP, WORKFLOW_STEP_2],
+        workflowStep: 2,
+        submittedSteps,
       })
 
       expect(metadata).toEqual({
         workflowCurrentStepNumber: 3,
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.APPROVED,
+        lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
       })
     })
 
@@ -218,6 +267,7 @@ describe('submission.utils', () => {
         workflowCurrentStepNumber: 2,
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.REJECTED,
+        lastSubmittedAt: '2024-01-02T00:00:00.000Z',
       })
     })
   })

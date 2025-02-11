@@ -53,6 +53,12 @@ describe('multirespondent-submission.utils', () => {
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
       // Arrange
+      const submittedSteps = [
+        {
+          isApproval: false,
+          submittedAt: '2024-01-01T00:00:00.000Z',
+        },
+      ]
       const createdDate = new Date()
       const submissionData = {
         submissionType: SubmissionType.Multirespondent,
@@ -68,12 +74,7 @@ describe('multirespondent-submission.utils', () => {
         attachmentMetadata: {},
         version: 3,
         mrfVersion: 3,
-        submittedSteps: [
-          {
-            isApproval: false,
-            submittedAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
+        submittedSteps,
       } as unknown as MultirespondentSubmissionData
       const attachmentPresignedUrls = {
         someSubmissionId: 'some presigned url',
@@ -107,6 +108,8 @@ describe('multirespondent-submission.utils', () => {
           workflowCurrentStepNumber: 1,
           workflowNumTotalSteps: 1,
           workflowStatus: WorkflowStatus.COMPLETED,
+          lastSubmittedAt:
+            submittedSteps[submittedSteps.length - 1].submittedAt,
         },
       })
     })

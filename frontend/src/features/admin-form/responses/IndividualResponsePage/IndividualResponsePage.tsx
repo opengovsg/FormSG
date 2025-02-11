@@ -10,6 +10,7 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import moment from 'moment'
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
@@ -23,14 +24,14 @@ import { FormActivationSvg } from '~features/admin-form/settings/components/Form
 import { useUser } from '~features/user/queries'
 
 import {
-  getCurrentStepString,
+  getPendingResponseAtString,
   getStatusFromWorkflowStatus,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
-  MRF_CURRENT_STEP_LABEL,
-  MRF_FIRST_STEP_TIMESTAMP_LABEL,
-  MRF_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -157,6 +158,12 @@ export const IndividualResponsePage = (): JSX.Element => {
     ? getStatusFromWorkflowStatus(workflowStatus)
     : ''
 
+  const lastSubmittedAt = data?.mrf?.lastSubmittedAt
+    ? moment(data.mrf.lastSubmittedAt)
+        .tz('Asia/Singapore')
+        .format('ddd, D MMM YYYY, hh:mm:ss A')
+    : ''
+
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
@@ -175,26 +182,28 @@ export const IndividualResponsePage = (): JSX.Element => {
           {isMrf ? (
             <>
               <StackRow
-                label={MRF_STATUS_LABEL}
+                label={MRF_WORKFLOW_STATUS_LABEL}
                 value={responseMrfStatus}
                 isLoading={isLoading}
                 isError={isError}
               />
               <StackRow
-                label={MRF_CURRENT_STEP_LABEL}
-                value={getCurrentStepString(
-                  data?.mrf?.workflowCurrentStepNumber,
-                  data?.mrf?.workflowNumTotalSteps,
-                )}
+                label={MRF_PENDING_RESPONSE_AT_LABEL}
+                value={getPendingResponseAtString({
+                  workflowCurrentStepNumber:
+                    data?.mrf?.workflowCurrentStepNumber,
+                  workflowNumTotalSteps: data?.mrf?.workflowNumTotalSteps,
+                })}
                 isLoading={isLoading}
                 isError={isError}
               />
             </>
           ) : null}
           <StackRow
-            label={isMrf ? MRF_FIRST_STEP_TIMESTAMP_LABEL : 'Timestamp'}
+            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
             value={
-              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+              (isMrf ? lastSubmittedAt : data?.submissionTime) ??
+              t('features.common.loadingWithEllipsis')
             }
             isLoading={isLoading}
             isError={isError}

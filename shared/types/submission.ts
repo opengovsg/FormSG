@@ -233,6 +233,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowCurrentStepNumber: z.number(),
       workflowNumTotalSteps: z.number(),
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
+      lastSubmittedAt: z.string(),
     }),
   })
 
@@ -259,6 +260,7 @@ export type SubmissionMrfMetadata =
       workflowCurrentStepNumber: number
       workflowNumTotalSteps: number
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
+      lastSubmittedAt: string | undefined
     }
   | undefined
 
@@ -268,7 +270,7 @@ export type SubmissionMetadata = {
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
   payments: SubmissionPaymentMetadata
-  mrf: SubmissionMrfMetadata
+  mrf?: SubmissionMrfMetadata
 }
 
 export type SubmissionMetadataList = {
