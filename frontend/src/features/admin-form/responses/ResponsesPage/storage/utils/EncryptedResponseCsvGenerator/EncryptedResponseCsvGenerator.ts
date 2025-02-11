@@ -135,9 +135,10 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       const row = [up.submissionId]
 
       if (this.isMrf) {
-        const mrfSubmissionStatus = getStatusFromWorkflowStatus(
-          up.mrfMeta?.workflowStatus,
-        )
+        const workflowStatus = up.mrfMeta?.workflowStatus
+        const mrfSubmissionStatus = workflowStatus
+          ? getStatusFromWorkflowStatus(workflowStatus)
+          : ''
         row.push(mrfSubmissionStatus)
         const currentStepString = getCurrentStepString(
           up.mrfMeta?.workflowCurrentStepNumber,

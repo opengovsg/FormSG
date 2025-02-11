@@ -152,6 +152,11 @@ export const IndividualResponsePage = (): JSX.Element => {
     key: data?.submissionSecretKey || '',
   })}`
 
+  const workflowStatus = data?.mrf?.workflowStatus
+  const responseMrfStatus = workflowStatus
+    ? getStatusFromWorkflowStatus(workflowStatus)
+    : ''
+
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
@@ -171,7 +176,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             <>
               <StackRow
                 label={MRF_STATUS_LABEL}
-                value={getStatusFromWorkflowStatus(data?.mrf?.workflowStatus)}
+                value={responseMrfStatus}
                 isLoading={isLoading}
                 isError={isError}
               />
@@ -188,7 +193,7 @@ export const IndividualResponsePage = (): JSX.Element => {
           ) : null}
           <StackRow
             label="Status"
-            value={getStatusFromWorkflowStatus(data?.mrf?.workflowStatus)}
+            value={responseMrfStatus}
             isLoading={isLoading}
             isError={isError}
           />
