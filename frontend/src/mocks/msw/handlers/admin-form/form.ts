@@ -31,7 +31,10 @@ import {
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
-import { SubmissionMetadataList } from '~shared/types/submission'
+import {
+  SubmissionMetadataList,
+  WorkflowStatus,
+} from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
@@ -588,6 +591,63 @@ export const MOCK_FORM_FIELDS_WITH_TRANSLATIONS: FormFieldDto[] = [
   },
 ]
 
+const DEFAULT_MULTIRESPONDENT_METADATA = [
+  [
+    {
+      number: 1,
+      refNo: '62a8a7476f4f3e005bcd5ab7',
+      submissionTime: '14th Jun 2022, 11:20:39 pm',
+      mrf: {
+        workflowCurrentStepNumber: 1,
+        workflowNumTotalSteps: 5,
+        workflowStatus: WorkflowStatus.PENDING,
+      },
+    },
+    {
+      number: 2,
+      refNo: '62a8a7476f4f3e005bcd5ab8',
+      submissionTime: '14th Jun 2022, 11:21:39 pm',
+      mrf: {
+        workflowCurrentStepNumber: 3,
+        workflowNumTotalSteps: 3,
+        workflowStatus: WorkflowStatus.APPROVED,
+      },
+    },
+    {
+      number: 3,
+      refNo: '62a8a7476f4f3e005bcd5ab9',
+      submissionTime: '14th Jun 2022, 11:22:39 pm',
+      mrf: {
+        workflowCurrentStepNumber: 2,
+        workflowNumTotalSteps: 3,
+        workflowStatus: WorkflowStatus.REJECTED,
+      },
+    },
+    {
+      number: 4,
+      refNo: '62a8a7476f4f3e005bcd5ac0',
+      submissionTime: '14th Jun 2022, 11:23:39 pm',
+      mrf: {
+        workflowCurrentStepNumber: 4,
+        workflowNumTotalSteps: 4,
+        workflowStatus: WorkflowStatus.COMPLETED,
+      },
+    },
+    // simulates a submission prior to https://github.com/opengovsg/FormSG/pull/7965
+    // which the workflowStatus cannot be determined as submittedSteps is undefined.
+    {
+      number: 5,
+      refNo: '62a8a7476f4f3e005bcd5ac1',
+      submissionTime: '14th Jun 2022, 11:24:39 pm',
+      mrf: {
+        workflowCurrentStepNumber: 1,
+        workflowNumTotalSteps: 4,
+        workflowStatus: undefined,
+      },
+    },
+  ],
+]
+
 const DEFAULT_STORAGE_METADATA = [
   [
     {
@@ -1041,8 +1101,33 @@ export const getStorageSubmissionMetadataResponse = (
         ctx.json<SubmissionMetadataList>(
           merge(
             {
-              count: 39,
+              count: DEFAULT_STORAGE_METADATA.flat().length,
               metadata: DEFAULT_STORAGE_METADATA[pageNum - 1],
+            },
+            props,
+          ),
+        ),
+      )
+    },
+  )
+}
+
+export const getMultiRespondentSubmissionMetadataResponse = (
+  props: Partial<SubmissionMetadataList> = {},
+  delay: number | 'infinite' | 'real' = 0,
+) => {
+  return rest.get<SubmissionMetadataList>(
+    '/api/v3/admin/forms/:formId/submissions/metadata',
+    (req, res, ctx) => {
+      const pageNum = parseInt(req.url.searchParams.get('page') ?? '1')
+      return res(
+        ctx.delay(delay),
+        ctx.status(200),
+        ctx.json<SubmissionMetadataList>(
+          merge(
+            {
+              count: DEFAULT_MULTIRESPONDENT_METADATA.flat().length,
+              metadata: DEFAULT_MULTIRESPONDENT_METADATA[pageNum - 1],
             },
             props,
           ),
