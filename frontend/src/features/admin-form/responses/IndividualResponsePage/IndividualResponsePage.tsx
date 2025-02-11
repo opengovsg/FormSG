@@ -192,21 +192,6 @@ export const IndividualResponsePage = (): JSX.Element => {
             </>
           ) : null}
           <StackRow
-            label="Status"
-            value={responseMrfStatus}
-            isLoading={isLoading}
-            isError={isError}
-          />
-          <StackRow
-            label="Current step"
-            value={getCurrentStepString(
-              data?.mrf?.workflowCurrentStepNumber,
-              data?.mrf?.workflowNumTotalSteps,
-            )}
-            isLoading={isLoading}
-            isError={isError}
-          />
-          <StackRow
             label={isMrf ? MRF_FIRST_STEP_TIMESTAMP_LABEL : 'Timestamp'}
             value={
               data?.submissionTime ?? t('features.common.loadingWithEllipsis')
