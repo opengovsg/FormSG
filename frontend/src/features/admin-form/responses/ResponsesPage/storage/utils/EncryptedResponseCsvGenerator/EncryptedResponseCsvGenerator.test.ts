@@ -412,7 +412,7 @@ describe('EncryptedResponseCsvGenerator', () => {
               mockRecord.mrfMeta.workflowCurrentStepNumber,
             workflowNumTotalSteps: mockRecord.mrfMeta.workflowNumTotalSteps,
           }),
-          getFormattedDate(mockRecord.created),
+          getFormattedDate(mockRecord.mrfMeta.lastSubmittedAt),
           mockDecryptedRecord[0].answer,
         ])
         expect(mrfGenerator.records).toEqual([
