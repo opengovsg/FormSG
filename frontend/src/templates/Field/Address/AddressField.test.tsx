@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 
-import { verifyAddress } from '~/api/address.service'
+import { verifyAddress } from '~/services/OneMapService'
 
 import {
   INVALID_BLOCK_UNIT_ERROR,
@@ -23,7 +23,7 @@ const {
 } = composeStories(stories)
 
 // Mock the verifyAddress function
-vi.mock('~/api/address.service', () => ({
+vi.mock('~/services/OneMapService', () => ({
   verifyAddress: vi.fn(),
 }))
 
