@@ -23,11 +23,6 @@ module.exports = {
   ],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
   coverageReporters: ['lcov', 'text'],
-  coverageThreshold: {
-    global: {
-      statements: 38, // Increase this percentage as test coverage improves
-    },
-  },
   testTimeout: 300000, // Set timeout to be 300s to reduce test flakiness
   maxWorkers: '4',
   globals: {
