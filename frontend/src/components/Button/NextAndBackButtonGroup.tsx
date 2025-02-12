@@ -8,7 +8,9 @@ interface NextAndBackButtonProps {
   handleBack: () => void
   handleNext: () => void
   nextButtonLabel?: string
+  nextButtonIcon?: JSX.Element
   backButtonLabel?: string
+  isNextLoading?: boolean
   isNextDisabled?: boolean
   isBackDisabled?: boolean
   nextButtonColorScheme?: 'danger'
@@ -18,7 +20,9 @@ export const NextAndBackButtonGroup = ({
   handleBack,
   handleNext,
   nextButtonLabel = 'Next',
+  nextButtonIcon,
   backButtonLabel = 'Back',
+  isNextLoading = false,
   isNextDisabled = false,
   isBackDisabled = false,
   nextButtonColorScheme,
@@ -34,15 +38,19 @@ export const NextAndBackButtonGroup = ({
       w="100%"
     >
       <Button
+        textStyle="subhead-2"
+        isLoading={isNextLoading}
         colorScheme={nextButtonColorScheme}
         isDisabled={isNextDisabled}
         onClick={handleNext}
         isFullWidth={isMobile}
+        leftIcon={nextButtonIcon}
       >
         {nextButtonLabel}
       </Button>
       <Button
         variant="clear"
+        textStyle="subhead-2"
         colorScheme="secondary"
         isDisabled={isBackDisabled}
         onClick={handleBack}

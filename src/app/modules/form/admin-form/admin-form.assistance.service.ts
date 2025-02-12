@@ -12,7 +12,7 @@ import {
   RadioFieldBase,
   TableFieldBase,
 } from '../../../../../shared/types'
-import { IPopulatedForm } from '../../../../types'
+import { FormFieldSchema, IPopulatedForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../form.errors'
@@ -274,7 +274,7 @@ export const createFormFieldsUsingTextPrompt = ({
   form: IPopulatedForm
   userPrompt: string
 }): ResultAsync<
-  undefined,
+  FormFieldSchema['_id'][],
   | ModelResponseFailureError
   | ModelResponseInvalidSchemaFormatError
   | ModelResponseInvalidSyntaxError
@@ -333,6 +333,11 @@ export const createFormFieldsUsingTextPrompt = ({
       )
       return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
     })
-    .andThen(() => updateFormMetadata(form, { ...form.metadata, mfb: true }))
-    .map(() => undefined)
+    .map((updatedFields) => {
+      updateFormMetadata(form, {
+        ...form.metadata,
+        mfb_text_prompt_count: (form.metadata?.mfb_text_prompt_count ?? 0) + 1,
+      })
+      return updatedFields.map((field) => field._id)
+    })
 }

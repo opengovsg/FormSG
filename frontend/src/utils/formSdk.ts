@@ -21,7 +21,7 @@ const formsgSdk = formsgPackage({
   // test (when using npm test) or production (when using npm build)
   mode: isPackageMode(import.meta.env.VITE_APP_FORMSG_SDK_MODE)
     ? import.meta.env.VITE_APP_FORMSG_SDK_MODE
-    : import.meta.env.NODE_ENV,
+    : (import.meta.env.MODE as PackageMode),
   verificationOptions: {
     transactionExpiry: TRANSACTION_EXPIRE_AFTER_SECONDS,
   },

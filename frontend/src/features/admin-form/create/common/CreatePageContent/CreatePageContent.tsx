@@ -4,6 +4,7 @@ import {
 } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTab'
+import MagicFormBuilderProvider from '../../builder-and-design/MagicFormBuilder/MagicFormBuilderProvider'
 import { EndPageTab } from '../../end-page/EndPageTab'
 import { CreatePageLogicTab } from '../../logic/CreatePageLogicTab'
 import { CreatePageWorkflowTab } from '../../workflow/CreatePageWorkflowTab'
@@ -19,6 +20,10 @@ export const CreatePageContent = (): JSX.Element => {
       return <CreatePageWorkflowTab />
     default:
       // builder or design
-      return <BuilderAndDesignTab />
+      return (
+        <MagicFormBuilderProvider>
+          <BuilderAndDesignTab />
+        </MagicFormBuilderProvider>
+      )
   }
 }

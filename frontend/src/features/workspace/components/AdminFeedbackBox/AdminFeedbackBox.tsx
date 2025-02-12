@@ -8,6 +8,7 @@ import { AdminFeedbackRating } from '~shared/types'
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import BottomHugBox from '~components/Hug/BottomHugBox'
 import IconButton from '~components/IconButton'
 import Textarea from '~components/Textarea'
 
@@ -60,31 +61,16 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
     setContentState(FeedbackBoxContentState.CommentBox)
 
   return (
-    <Flex
-      position="fixed"
-      bottom="1.5rem"
-      justifyContent="center"
-      margin="auto"
-      width="100%"
-      zIndex="2"
-    >
-      <Flex
-        px="1.5rem"
-        py="1rem"
-        bgColor="white"
-        boxShadow="md"
-        borderRadius="0.25rem"
-      >
-        <AdminFeedbackBoxContentBuilder
-          state={contentState}
-          onRatingClick={handleRatingClick}
-          onCallForCommentClick={handleCallForCommentClick}
-          onCommentClick={handleCommentClick}
-          onClose={onClose}
-          ratingValue={ratingValue}
-        />
-      </Flex>
-    </Flex>
+    <BottomHugBox>
+      <AdminFeedbackBoxContentBuilder
+        state={contentState}
+        onRatingClick={handleRatingClick}
+        onCallForCommentClick={handleCallForCommentClick}
+        onCommentClick={handleCommentClick}
+        onClose={onClose}
+        ratingValue={ratingValue}
+      />
+    </BottomHugBox>
   )
 }
 

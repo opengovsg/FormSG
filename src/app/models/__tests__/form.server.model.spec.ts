@@ -1847,6 +1847,94 @@ describe('Form Model', () => {
       })
     })
 
+    describe('deleteFormFieldsByIds', () => {
+      it('should delete multiple form fields and return updated form when successful', async () => {
+        // Arrange
+        const fieldToDelete1 = generateDefaultField(BasicField.Decimal)
+        const fieldToDelete2 = generateDefaultField(BasicField.ShortText)
+        const fieldWhichShouldRemain = generateDefaultField(BasicField.Mobile)
+        const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
+          admin: populatedAdmin,
+          form_fields: [fieldToDelete1, fieldWhichShouldRemain, fieldToDelete2],
+        })
+        const form = await Form.create(formParams)
+
+        // Act
+        const actual = await Form.deleteFormFieldsByIds(form._id, [
+          fieldToDelete1._id,
+          fieldToDelete2._id,
+        ])
+
+        // Assert
+        // Only non-deleted form field remains
+        const expectedFormFieldIds = [
+          form.toObject<IFormDocument>().form_fields[1]._id.toString(),
+        ]
+        const retrievedForm = await Form.findById(form._id).lean()
+        // Check return shape.
+        expect(
+          actual?.toObject().form_fields.map((f: any) => f._id.toString()),
+        ).toEqual(expectedFormFieldIds)
+        // Check db state
+        expect(retrievedForm).not.toBeNull()
+        expect(
+          retrievedForm?.form_fields?.map((f) => f._id.toString()),
+        ).toEqual(expectedFormFieldIds)
+      })
+
+      it('should return form unchanged when all field ids are invalid', async () => {
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          form_fields: [
+            generateDefaultField(BasicField.Date),
+            generateDefaultField(BasicField.Mobile),
+          ],
+        })
+        const form = await Form.create(formParams)
+
+        // Act
+        const actual = await Form.deleteFormFieldsByIds(form._id, [
+          new ObjectId().toHexString(),
+          new ObjectId().toHexString(),
+        ])
+
+        // Assert
+        expect(actual?.toObject()).toEqual({
+          ...form.toObject(),
+          lastModified: expect.any(Date),
+        })
+      })
+
+      it('should only delete field ids which are valid and ignore invalid field ids', async () => {
+        const fieldToDelete = generateDefaultField(BasicField.Date)
+        const fieldWhichShouldRemain = generateDefaultField(BasicField.Mobile)
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          admin: MOCK_ADMIN_OBJ_ID,
+          form_fields: [fieldToDelete, fieldWhichShouldRemain],
+        })
+
+        const form = await Form.create(formParams)
+
+        const actual = await Form.deleteFormFieldsByIds(form._id, [
+          fieldToDelete._id,
+          new ObjectId().toHexString(),
+        ])
+
+        // Assert
+        const expectedFormFieldIds = [fieldWhichShouldRemain._id.toString()]
+        const retrievedForm = await Form.findById(form._id).lean()
+        // Check return shape.
+        expect(
+          actual?.toObject().form_fields.map((f: any) => f._id.toString()),
+        ).toEqual(expectedFormFieldIds)
+        // Check db state
+        expect(retrievedForm).not.toBeNull()
+        expect(
+          retrievedForm?.form_fields?.map((f) => f._id.toString()),
+        ).toEqual(expectedFormFieldIds)
+      })
+    })
+
     describe('updateEndPageById', () => {
       it('should update end page and return updated form when successful', async () => {
         // Arrange

@@ -12,6 +12,9 @@ import {
   getMyInfoFieldCreationMeta,
 } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
+import MagicFormBuilderAcceptDeny from './MagicFormBuilder/components/MagicFormBuilderAcceptDeny'
+import MagicFormBuilderPromptModal from './MagicFormBuilder/components/MagicFormBuilderPromptModal'
+import { useMagicFormBuilder } from './MagicFormBuilder/useMagicFormBuilder'
 import { useReorderFormField } from './mutations/useReorderFormField'
 import {
   getPlaceholderStartProps,
@@ -45,6 +48,16 @@ import {
 } from './useFieldBuilderStore'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
+  const {
+    isModalOpen,
+    isAcceptDenyOpen,
+    onAccept,
+    onDeny,
+    onMfbTextPromptSubmit,
+    onModalClose,
+    isSubmissionLoading,
+  } = useMagicFormBuilder()
+
   const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
   const { data } = useCreateTabForm()
 
@@ -163,6 +176,17 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           deletePaymentModalDisclosure,
         }}
       >
+        <MagicFormBuilderPromptModal
+          isOpen={isModalOpen}
+          onSubmit={onMfbTextPromptSubmit}
+          isSubmitLoading={isSubmissionLoading}
+          onClose={onModalClose}
+        />
+        <MagicFormBuilderAcceptDeny
+          isOpen={isAcceptDenyOpen}
+          onAccept={onAccept}
+          onDeny={onDeny}
+        />
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
         {deleteFieldModalDisclosure.isOpen && <DeleteFieldModal />}

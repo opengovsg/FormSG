@@ -43,7 +43,7 @@ datadogLogs.init({
 })
 
 export const App = (): JSX.Element => {
-  const isDev = import.meta.env.NODE_ENV === 'development'
+  const isDev = import.meta.env.MODE === 'development'
 
   return (
     <>
