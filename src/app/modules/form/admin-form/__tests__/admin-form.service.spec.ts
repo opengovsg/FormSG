@@ -33,6 +33,7 @@ import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
+  FormFieldSchema,
   FormLogicSchema,
   IEmailFormSchema,
   IFormDocument,
@@ -2425,6 +2426,131 @@ describe('admin-form.service', () => {
         String(mockForm._id),
         fieldToDelete._id,
       )
+    })
+  })
+
+  describe('deleteFormFields', () => {
+    const deleteFormFieldsSpy = jest.spyOn(FormModel, 'deleteFormFieldsByIds')
+
+    it('should return updated form when all fields to delete are found and deleted successfully', async () => {
+      // Arrange
+      const fieldsToDelete = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      } as IFormSchema
+
+      const mockForm = {
+        ...mockUpdatedForm,
+        form_fields: [
+          ...fieldsToDelete,
+          ...(mockUpdatedForm.form_fields as FormFieldSchema[]),
+        ],
+      } as unknown as IPopulatedForm
+
+      deleteFormFieldsSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await AdminFormService.deleteFormFields(
+        mockForm,
+        fieldsToDelete.map((f) => String(f._id)),
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm)
+      expect(deleteFormFieldsSpy).toHaveBeenCalledWith(
+        mockForm._id,
+        fieldsToDelete.map((f) => f._id),
+      )
+    })
+
+    it('should return FormNotFoundError when form cannot be found', async () => {
+      // Arrange
+      const mockForm = {
+        _id: new ObjectId(),
+        form_fields: [generateDefaultField(BasicField.Mobile)],
+      } as unknown as IPopulatedForm
+
+      deleteFormFieldsSpy.mockResolvedValueOnce(null)
+
+      // Act
+      const actual = await AdminFormService.deleteFormFields(mockForm, [
+        mockForm.form_fields[0]._id,
+      ])
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormNotFoundError())
+      expect(deleteFormFieldsSpy).toHaveBeenCalledWith(mockForm._id, [
+        mockForm.form_fields[0]._id,
+      ])
+    })
+
+    it('should return updated form when some fields to delete are found and some are not found', async () => {
+      // Arrange
+      const fieldsToDelete = [
+        generateDefaultField(BasicField.Mobile),
+        generateDefaultField(BasicField.Image),
+      ]
+
+      const mockUpdatedForm = {
+        title: 'some mock form',
+        form_fields: [generateDefaultField(BasicField.Nric)],
+      } as IFormSchema
+
+      const mockForm = {
+        ...mockUpdatedForm,
+        form_fields: [
+          ...fieldsToDelete,
+          ...(mockUpdatedForm.form_fields as FormFieldSchema[]),
+        ],
+      } as unknown as IPopulatedForm
+
+      deleteFormFieldsSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      // Act
+      const actual = await AdminFormService.deleteFormFields(
+        mockForm,
+        fieldsToDelete.map((f) => String(f._id)),
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm)
+      expect(deleteFormFieldsSpy).toHaveBeenCalledWith(
+        mockForm._id,
+        fieldsToDelete.map((f) => f._id),
+      )
+    })
+
+    it('should return unchanged form when no fields to delete are found', async () => {
+      // Arrange
+      const mockForm = {
+        title: 'some mock form',
+        form_fields: [generateDefaultField(BasicField.Nric)],
+        _id: new ObjectId(),
+      } as unknown as IPopulatedForm
+
+      const mockUpdatedForm = {
+        ...mockForm,
+      } as IFormSchema
+
+      deleteFormFieldsSpy.mockResolvedValueOnce(mockUpdatedForm)
+
+      const nonExistentFieldId = new ObjectId().toHexString()
+
+      // Act
+      const actual = await AdminFormService.deleteFormFields(mockForm, [
+        nonExistentFieldId,
+      ])
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(mockUpdatedForm)
+      expect(deleteFormFieldsSpy).toHaveBeenCalledWith(mockForm._id, [
+        nonExistentFieldId,
+      ])
     })
   })
 

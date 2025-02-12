@@ -1450,5 +1450,123 @@ describe('encrypt-submission.controller', () => {
         }),
       )
     })
+
+    it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockForm = {
+        _id: mockFormId,
+        title: 'Test Form',
+        authType: FormAuthType.NIL,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockResponses = [
+        {
+          _id: new ObjectId(),
+          question: '[MyInfo] Test Question',
+          answer: 'Test Answer',
+          fieldType: 'text',
+          isVisible: true,
+        },
+      ]
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: mockFormId.toHexString() },
+          body: {
+            responses: mockResponses,
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'mockEncryptedContent',
+              version: 1,
+            },
+            formDef: {},
+            encryptedFormDef: mockForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dataCollationData: expect.arrayContaining([
+            expect.objectContaining({
+              question: 'Test Question',
+              answer: 'Test Answer',
+            }),
+          ]),
+        }),
+      )
+    })
+
+    it('should strip [MyInfo] prefix from expected dataCollationData to sendSubmissionToAdmin', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockForm = {
+        _id: mockFormId,
+        title: 'Test Form',
+        authType: FormAuthType.NIL,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockResponses = [
+        {
+          _id: new ObjectId(),
+          question: '[MyInfo] Name',
+          answer: 'Test Answer',
+          fieldType: 'text',
+          isVisible: true,
+        },
+      ]
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: mockFormId.toHexString() },
+          body: {
+            responses: mockResponses,
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'mockEncryptedContent',
+              version: 1,
+            },
+            formDef: {},
+            encryptedFormDef: mockForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dataCollationData: expect.arrayContaining([
+            expect.objectContaining({
+              question: 'Name',
+              answer: 'Test Answer',
+            }),
+          ]),
+        }),
+      )
+    })
   })
 })

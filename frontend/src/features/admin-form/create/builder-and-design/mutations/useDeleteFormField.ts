@@ -22,7 +22,10 @@ import {
   stateSelector,
   usePaymentStore,
 } from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
-import { deleteSingleFormField } from '../UpdateFormFieldService'
+import {
+  deleteMultipleFormFields,
+  deleteSingleFormField,
+} from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
   setToInactiveSelector,
@@ -137,6 +140,38 @@ export const useDeleteFormField = () => {
     },
   )
 
+  const handleDeleteMultipleFieldsSuccess = useCallback(
+    (_data: unknown, fieldIds: string[]) => {
+      queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
+        // Should not happen, should not be able to update field if there is no
+        // existing data.
+        if (!oldForm) throw new Error('Query should have been set')
+        const deletedFieldIndices = fieldIds
+          .map((fieldId) =>
+            oldForm.form_fields.findIndex((ff) => ff._id === fieldId),
+          )
+          .filter((index) => index >= 0)
+        oldForm.form_fields = oldForm.form_fields.filter(
+          (_field, index) => !deletedFieldIndices.includes(index),
+        )
+        return oldForm
+      })
+      setToInactive()
+    },
+    [adminFormKey, queryClient, setToInactive],
+  )
+
+  const handleDeleteMultipleFieldsError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
   return {
     deleteFieldMutation: useMutation(
       (fieldId: string) =>
@@ -147,6 +182,17 @@ export const useDeleteFormField = () => {
       {
         onSuccess: handleSuccess,
         onError: handleError,
+      },
+    ),
+    deleteMultipleFormFieldsMutation: useMutation(
+      (fieldIds: string[]) =>
+        deleteMultipleFormFields({
+          formId,
+          fieldIds,
+        }),
+      {
+        onSuccess: handleDeleteMultipleFieldsSuccess,
+        onError: handleDeleteMultipleFieldsError,
       },
     ),
     deletePaymentFieldMutation,

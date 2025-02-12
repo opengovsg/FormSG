@@ -19,6 +19,7 @@ interface BuilderFieldsProps {
   responseMode: AdminFormDto['responseMode']
   fields: AdminFormDto['form_fields']
   visibleFieldIds: FieldIdSet
+  highlightFieldIds: FieldIdSet
   isDraggingOver: boolean
 }
 
@@ -26,6 +27,7 @@ export const BuilderFields = ({
   responseMode,
   fields,
   visibleFieldIds,
+  highlightFieldIds,
   isDraggingOver,
 }: BuilderFieldsProps) => {
   const fieldsWithQuestionNos = augmentWithQuestionNo(fields)
@@ -64,6 +66,7 @@ export const BuilderFields = ({
             handleBuilderClick={handleBuilderClick}
             isDirty={isDirty}
             colorTheme={colorTheme}
+            isHighlighted={highlightFieldIds.has(f._id)}
             {...activeFieldExtraProps}
           />
         )

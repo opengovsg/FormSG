@@ -363,6 +363,11 @@ export interface IFormModel extends Model<IFormSchema> {
     fieldId: string,
   ): Promise<IFormSchema | null>
 
+  deleteFormFieldsByIds(
+    formId: string,
+    fieldIds: string[],
+  ): Promise<IFormSchema | null>
+
   deactivateById(formId: string): Promise<IFormSchema | null>
 
   getMetaByUserIdOrEmail(

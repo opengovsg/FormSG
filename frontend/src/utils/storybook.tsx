@@ -116,9 +116,10 @@ export const EditFieldDrawerDecorator: Decorator = (storyFn) => {
   )
 }
 
+export const ADMIN_FORM_CREATE_PAGE_FORM_ID = '12345'
 export const AdminFormCreatePageDecorator: Decorator = (storyFn) => {
   return (
-    <MemoryRouter initialEntries={['/12345']}>
+    <MemoryRouter initialEntries={[`/${ADMIN_FORM_CREATE_PAGE_FORM_ID}`]}>
       <Routes>
         <Route path={'/:formId'} element={<AdminFormLayout />}>
           <Route index element={storyFn()} />

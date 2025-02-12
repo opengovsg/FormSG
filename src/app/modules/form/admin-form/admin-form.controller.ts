@@ -2799,6 +2799,58 @@ export const handleDeleteFormField: ControllerHandler<
 }
 
 /**
+ * Handler for POST /forms/:formId/fields/delete
+ * @security session
+ *
+ * @returns 204 when deletion is successful
+ * @returns 403 when current user does not have permissions to delete form fields
+ * @returns 404 when form cannot be found
+ * @returns 410 when deleting fields of an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs during deletion
+ */
+export const handleDeleteFormFields: ControllerHandler<
+  { formId: string },
+  { message: string } | ErrorDto,
+  { fieldIds: string[] }
+> = (req, res) => {
+  const { formId } = req.params
+  const { fieldIds } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Delete form fields.
+      .andThen((form) => AdminFormService.deleteFormFields(form, fieldIds))
+      .map(() => res.sendStatus(StatusCodes.NO_CONTENT))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form fields',
+          meta: {
+            action: 'handleDeleteFormFields',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            fieldIds,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
  * NOTE: Exported for testing.
  * Private handler for PUT /forms/:formId/end-page
  * @precondition Must be preceded by request validation

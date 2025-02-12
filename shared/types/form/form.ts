@@ -104,7 +104,7 @@ export enum FormResponseMode {
 }
 
 export interface FormMetadata {
-  mfb?: boolean
+  mfb_text_prompt_count?: number
 }
 
 export type FormPaymentsChannel = {
@@ -379,6 +379,7 @@ export type DuplicateFormOverwriteDto = {
   | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
+      emails: string[]
     }
   | {
       responseMode: FormResponseMode.Multirespondent

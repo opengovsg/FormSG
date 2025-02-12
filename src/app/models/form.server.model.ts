@@ -1243,6 +1243,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
+  FormSchema.statics.deleteFormFieldsByIds = async function (
+    formId: string,
+    fieldIds: string[],
+  ): Promise<IFormSchema | null> {
+    return this.findByIdAndUpdate(
+      formId,
+      { $pull: { form_fields: { _id: { $in: fieldIds } } } },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
   // Updates specified form logic.
   FormSchema.statics.updateFormLogic = async function (
     formId: string,

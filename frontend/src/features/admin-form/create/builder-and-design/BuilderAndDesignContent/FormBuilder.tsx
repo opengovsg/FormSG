@@ -1,13 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Flex,
-  FlexProps,
-  Skeleton,
-  Stack,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
 import Button from '~components/Button'
@@ -28,6 +21,10 @@ import {
   usePaymentStore,
 } from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FIELD_LIST_DROP_ID } from '../constants'
+import {
+  recentlyCreatedFieldIdsSelector,
+  useMagicFormBuilderStore,
+} from '../MagicFormBuilder/useMagicFormBuilderStore'
 import { DndPlaceholderProps } from '../types'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'
 import {
@@ -40,7 +37,6 @@ import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPla
 import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
-import { TextPromptModal } from './MagicFormBuilderModal'
 import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'
@@ -67,9 +63,13 @@ export const FormBuilder = ({
     setEditingEndPageState: setToEditingEndPageSelector(state),
   }))
 
-  const { isOpen, onClose, onOpen } = useDisclosure()
-
-  const handleMagicFormButtonClick = onOpen
+  const recentlyCreatedFieldIds = useMagicFormBuilderStore(
+    recentlyCreatedFieldIdsSelector,
+  )
+  const highlightFieldIds: Set<string> =
+    form?._id && recentlyCreatedFieldIds[String(form._id)]
+      ? recentlyCreatedFieldIds[String(form._id)]
+      : new Set()
 
   const visibleFieldIds = useMemo(
     () =>
@@ -110,7 +110,6 @@ export const FormBuilder = ({
 
   return (
     <>
-      <TextPromptModal isOpen={isOpen} onClose={onClose} />
       <Flex
         mb={0}
         flex={1}
@@ -160,6 +159,7 @@ export const FormBuilder = ({
                           responseMode={form?.responseMode}
                           fields={builderFields}
                           visibleFieldIds={visibleFieldIds}
+                          highlightFieldIds={highlightFieldIds}
                           isDraggingOver={snapshot.isDraggingOver}
                         />
                         {provided.placeholder}
@@ -174,7 +174,6 @@ export const FormBuilder = ({
                         {...provided.droppableProps}
                         isDraggingOver={snapshot.isDraggingOver}
                         onClick={handlePlaceholderClick}
-                        onMagicFormButtonClick={handleMagicFormButtonClick}
                       />
                     )
                   }

@@ -13,6 +13,8 @@ import {
 import * as AdminFormService from '../admin-form.service'
 import * as AiModel from '../ai-model'
 
+import { VALID_ALL_FIELDS_INCLUDED_RESPONSE } from './admin-form.assistance.service.spec.constants'
+
 const MockedAiModel = jest.mocked(AiModel)
 
 jest.mock('../admin-form.service', () => ({
@@ -48,7 +50,7 @@ describe('admin-form.assistance.service', () => {
       beforeEach(() => {
         const mockedCreateFormFields =
           AdminFormService.createFormFields as jest.Mock
-        mockedCreateFormFields.mockReturnValue(okAsync({} as FormFieldSchema[]))
+        mockedCreateFormFields.mockReturnValue(okAsync([] as FormFieldSchema[]))
       })
 
       it('should successfully invoke createNewFields with correct # of fields when model response is valid', async () => {
@@ -193,6 +195,55 @@ describe('admin-form.assistance.service', () => {
         expect(calledNewFields[0].fieldType).toEqual(BasicField.Statement)
         expect(calledNewFields[0].description).toBeTruthy()
         expect(calledNewFields[0].description.trim()).not.toBe('')
+      })
+
+      it('should return created field ids provided by return value of AdminFormService.createFormFields', async () => {
+        // Arrange
+        MockedAiModel.sendUserTextPrompt = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_ALL_FIELDS_INCLUDED_RESPONSE))
+
+        const CREATED_FIELD_SCHEMAS = [
+          { _id: '507f1f77bcf86cd799439011' },
+          { _id: '507f1f77bcf86cd799439012' },
+          { _id: '507f1f77bcf86cd799439013' },
+          { _id: '507f1f77bcf86cd799439014' },
+          { _id: '507f1f77bcf86cd799439015' },
+          { _id: '507f1f77bcf86cd799439016' },
+          { _id: '507f1f77bcf86cd799439017' },
+          { _id: '507f1f77bcf86cd799439018' },
+          { _id: '507f1f77bcf86cd799439019' },
+          { _id: '507f1f77bcf86cd799439020' },
+          { _id: '507f1f77bcf86cd799439021' },
+          { _id: '507f1f77bcf86cd799439022' },
+          { _id: '507f1f77bcf86cd799439023' },
+          { _id: '507f1f77bcf86cd799439024' },
+          { _id: '507f1f77bcf86cd799439025' },
+          { _id: '507f1f77bcf86cd799439026' },
+          { _id: '507f1f77bcf86cd799439027' },
+          { _id: '507f1f77bcf86cd799439028' },
+          { _id: '507f1f77bcf86cd799439029' },
+          { _id: '507f1f77bcf86cd799439030' },
+        ]
+
+        const mockedCreateFormFields =
+          AdminFormService.createFormFields as jest.Mock
+        mockedCreateFormFields.mockReturnValueOnce(
+          okAsync(CREATED_FIELD_SCHEMAS as FormFieldSchema[]),
+        )
+
+        // Act
+        const createdFieldIds = await createFormFieldsUsingTextPrompt({
+          form: mockForm,
+          userPrompt: mockUserPrompt,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(createdFieldIds.isOk()).toBe(true)
+        expect(createdFieldIds._unsafeUnwrap()).toEqual(
+          CREATED_FIELD_SCHEMAS.map((field) => field._id),
+        )
       })
     })
 
