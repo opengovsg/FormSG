@@ -17,7 +17,7 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
-import moment from 'moment-timezone'
+import { formatInTimeZone } from 'date-fns-tz'
 
 import {
   FormResponseMode,
@@ -233,9 +233,11 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: ({ mrf }) =>
       mrf?.lastSubmittedAt
-        ? moment(mrf.lastSubmittedAt)
-            .tz('Asia/Singapore')
-            .format('Do MMM YYYY, h:mm:ss a')
+        ? formatInTimeZone(
+            mrf.lastSubmittedAt,
+            'Asia/Singapore',
+            'do MMM yyyy, hh:mm:ss a',
+          )
         : '',
     width: 250,
     minWidth: 250,

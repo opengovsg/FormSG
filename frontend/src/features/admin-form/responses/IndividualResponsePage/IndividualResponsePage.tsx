@@ -10,7 +10,7 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import moment from 'moment'
+import { formatInTimeZone } from 'date-fns-tz'
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
@@ -159,9 +159,11 @@ export const IndividualResponsePage = (): JSX.Element => {
     : ''
 
   const lastSubmittedAt = data?.mrf?.lastSubmittedAt
-    ? moment(data.mrf.lastSubmittedAt)
-        .tz('Asia/Singapore')
-        .format('ddd, D MMM YYYY, hh:mm:ss A')
+    ? formatInTimeZone(
+        data.mrf.lastSubmittedAt,
+        'Asia/Singapore',
+        'eee, d MMM yyyy, hh:mm:ss a',
+      )
     : ''
 
   return (
