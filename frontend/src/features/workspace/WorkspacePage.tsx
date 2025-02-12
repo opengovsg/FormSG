@@ -26,7 +26,7 @@ import { Banner } from '~components/Banner'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-// import { useEnv } from '~features/env/queries'
+import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
@@ -38,9 +38,9 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
-  // const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
-  const siteBannerContent = useFeatureValue('site-banner-content', '')
-  const adminBannerContent = useFeatureValue('admin-banner-content', '')
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const siteBannerContentGB = useFeatureValue('site-banner-content', '')
+  const adminBannerContentGB = useFeatureValue('admin-banner-content', '')
 
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
@@ -54,9 +54,15 @@ export const WorkspacePage = (): JSX.Element => {
     () => siteBannerContent || adminBannerContent,
     [adminBannerContent, siteBannerContent],
   )
+
+  const bannerContentGB = useMemo(
+    () => siteBannerContentGB || adminBannerContentGB,
+    [adminBannerContentGB, siteBannerContentGB],
+  )
+
   const bannerProps = useMemo(
-    () => getBannerProps(bannerContent),
-    [bannerContent],
+    () => getBannerProps(bannerContent || bannerContentGB),
+    [bannerContent, bannerContentGB],
   )
 
   const DEFAULT_WORKSPACE = useMemo(() => {
