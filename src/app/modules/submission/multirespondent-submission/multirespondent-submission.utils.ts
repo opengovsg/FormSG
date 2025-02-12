@@ -221,11 +221,23 @@ export const getQuestionTitleAnswerString = ({
           answer,
         })
         continue
-      case BasicField.Address:
-        answerArray = Object.values(response.answer.addressSubFields)
-        if (answerArray.length > 0) {
-          answerArray.push(answerArray.shift() ?? '')
-        } // move postal code to the end of array
+      case BasicField.Address: {
+        const {
+          postalCode,
+          blockNumber,
+          streetName,
+          buildingName,
+          levelNumber,
+          unitNumber,
+        } = response.answer.addressSubFields
+        answerArray = [
+          blockNumber,
+          streetName,
+          buildingName,
+          levelNumber,
+          unitNumber,
+          postalCode,
+        ] // move postal code to end of array
         questionAnswerPair.push({
           question: `${questionTitle}`,
           answer: handleAddressResponseDisplay(Object.values(answerArray)).join(
@@ -233,6 +245,7 @@ export const getQuestionTitleAnswerString = ({
           ),
         })
         continue
+      }
       case BasicField.Email:
       case BasicField.Mobile:
         answer = response.answer.value

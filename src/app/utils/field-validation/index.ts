@@ -103,7 +103,7 @@ const isResponsePresentOnHiddenField = (
       return true
     }
   } else if (isProcessedAddressResponse(response)) {
-    if (!response.answerArray.every((row) => row.split('_')[1] === '')) {
+    if (!response.answerArray.every((row) => row === '')) {
       return true
     }
   }
