@@ -1043,6 +1043,7 @@ describe('admin-form.form.routes', () => {
         responseMode: FormResponseMode.Encrypt,
         title: 'new duplicated form title',
         publicKey: 'some public key',
+        emails: [],
       }
 
       // Act
@@ -1167,6 +1168,7 @@ describe('admin-form.form.routes', () => {
         .send({
           title: 'new storage mode form',
           responseMode: FormResponseMode.Encrypt,
+          emails: [],
           // publicKey missing.
         })
 
@@ -1195,6 +1197,7 @@ describe('admin-form.form.routes', () => {
         title: 'new storage mode form',
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'another random key',
+        emails: [],
       }
       const response = await request
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
@@ -1229,6 +1232,7 @@ describe('admin-form.form.routes', () => {
         title: 'new storage mode form',
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'another random key',
+        emails: [],
       }
       const response = await request
         .post(`/admin/forms/${formToDupe._id}/duplicate`)
@@ -1262,6 +1266,7 @@ describe('admin-form.form.routes', () => {
           title: 'new storage mode form',
           responseMode: FormResponseMode.Encrypt,
           publicKey: '',
+          emails: [],
         })
 
       // Assert
@@ -1276,7 +1281,7 @@ describe('admin-form.form.routes', () => {
       )
     })
 
-    it('should return 400 when body.emails is present when duplicating to a storage mode form', async () => {
+    it('should return 200 when body.emails is present when duplicating to a storage mode form', async () => {
       // Arrange
       const formToDupe = await EncryptFormModel.create({
         title: 'some form',
@@ -1296,15 +1301,7 @@ describe('admin-form.form.routes', () => {
         })
 
       // Assert
-      expect(response.status).toEqual(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'emails',
-            message: '"emails" is not allowed',
-          },
-        }),
-      )
+      expect(response.status).toEqual(200)
     })
 
     it('should return 400 when body.title is missing', async () => {
@@ -1405,6 +1402,7 @@ describe('admin-form.form.routes', () => {
           responseMode: FormResponseMode.Encrypt,
           title: 'new duplicated form title',
           publicKey: 'some public key',
+          emails: [],
         })
 
       // Assert
@@ -1425,6 +1423,7 @@ describe('admin-form.form.routes', () => {
           responseMode: FormResponseMode.Encrypt,
           title: 'new duplicated form title',
           publicKey: 'some public key',
+          emails: [],
         })
 
       // Assert
@@ -1468,6 +1467,7 @@ describe('admin-form.form.routes', () => {
           responseMode: FormResponseMode.Encrypt,
           title: 'does not matter',
           publicKey: 'some public key',
+          emails: [],
         })
 
       // Assert
