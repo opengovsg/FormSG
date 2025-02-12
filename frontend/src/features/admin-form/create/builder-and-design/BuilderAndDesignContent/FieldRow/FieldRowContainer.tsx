@@ -10,6 +10,7 @@ import {
   Collapse,
   Fade,
   Flex,
+  FlexProps,
   Icon,
 } from '@chakra-ui/react'
 import { Draggable } from '@hello-pangea/dnd'
@@ -95,6 +96,37 @@ export interface FieldRowContainerProps {
   colorTheme?: FormColorTheme
   // handleBuilderClick is passed down to prevent unnecessary re-renders from useContext
   handleBuilderClick: CreatePageSidebarContextProps['handleBuilderClick']
+  isHighlighted?: boolean
+}
+
+/**
+ * Used for highlighting fields that were created by Magic Form Builder.
+ */
+const HighlightableFlex = ({
+  isHighlighted,
+  ref,
+  ...props
+}: {
+  isHighlighted?: boolean
+  ref?: React.RefObject<HTMLDivElement>
+} & FlexProps) => {
+  const { children } = props
+
+  const augmentedProps = isHighlighted
+    ? {
+        ...props,
+        borderColor: 'primary.500',
+        borderRadius: '0.25rem',
+        borderWidth: '0.125rem',
+        bg: 'secondary.100',
+      }
+    : props
+
+  return (
+    <Flex {...augmentedProps} ref={ref}>
+      {children}
+    </Flex>
+  )
 }
 
 const FieldRowContainer = ({
@@ -107,6 +139,7 @@ const FieldRowContainer = ({
   isDirty,
   colorTheme,
   handleBuilderClick,
+  isHighlighted,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
@@ -221,8 +254,8 @@ const FieldRowContainer = ({
             placement="top"
             label="This field may be hidden by your form logic"
           >
-            <Flex
-              // Offset for focus boxShadow
+            <HighlightableFlex
+              isHighlighted={isHighlighted} // Offset for focus boxShadow
               my="2px"
               // Focusable
               tabIndex={0}
@@ -312,7 +345,7 @@ const FieldRowContainer = ({
                   />
                 )}
               </Collapse>
-            </Flex>
+            </HighlightableFlex>
           </Tooltip>
         </Box>
       )}

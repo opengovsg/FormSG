@@ -14,12 +14,14 @@ import {
   getAdminFormCollaborators,
   getAdminFormSettings,
   getAdminFormSubmissions,
+  MOCK_FORM_FIELDS,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
+  ADMIN_FORM_CREATE_PAGE_FORM_ID,
   AdminFormCreatePageDecorator,
   getMobileViewParameters,
   getTabletViewParameters,
@@ -29,6 +31,8 @@ import {
 } from '~utils/storybook'
 
 import { CreatePage } from '~features/admin-form/create/CreatePage'
+
+import { useMagicFormBuilderStore } from './create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -89,6 +93,25 @@ DesktopAllFields.parameters = {
     responseMode: FormResponseMode.Email,
   }),
 }
+
+export const DesktopFieldsWithAcceptDeny = Template.bind({})
+DesktopFieldsWithAcceptDeny.parameters = {
+  msw: buildMswRoutes({
+    form_fields: MOCK_FORM_FIELDS,
+  }),
+}
+DesktopFieldsWithAcceptDeny.decorators = [
+  (Story) => {
+    const store = useMagicFormBuilderStore.getState()
+    store.recentlyCreatedFieldIds = {
+      [ADMIN_FORM_CREATE_PAGE_FORM_ID]: new Set(
+        MOCK_FORM_FIELDS.slice(0, 5).map((field) => field._id),
+      ),
+    }
+
+    return <Story />
+  },
+]
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {

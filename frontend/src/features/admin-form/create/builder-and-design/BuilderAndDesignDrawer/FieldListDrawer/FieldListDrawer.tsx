@@ -1,15 +1,23 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiSearch } from 'react-icons/bi'
 import {
   Box,
   Divider,
   Flex,
+  Icon,
+  Input,
+  InputGroup,
+  InputLeftElement,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { Tab } from '~components/Tabs'
 
@@ -18,13 +26,46 @@ import { useCreatePageSidebar } from '~features/admin-form/create/common/CreateP
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
 import { FieldListTabIndex } from '../../constants'
+import MagicFormBuilderSmallButton from '../../MagicFormBuilder/components/MagicFormBuilderSmallButton'
+import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
 
 import {
   BasicFieldPanel,
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
-import { FieldSearchBar } from './FieldSearchBar'
+
+const FieldSearchBar = ({
+  searchValue,
+  onChange,
+}: {
+  searchValue: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) => {
+  const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
+
+  return (
+    <>
+      <InputGroup>
+        <InputLeftElement>
+          <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+        </InputLeftElement>
+        <Input
+          mr="0.5rem"
+          value={searchValue}
+          onChange={onChange}
+          placeholder="Search fields"
+        />
+        {useFeatureIsOn(featureFlags.mfb) ? (
+          <MagicFormBuilderSmallButton
+            onClick={toggleIsModalOpen}
+            isActive={isModalOpen}
+          />
+        ) : null}
+      </InputGroup>
+    </>
+  )
+}
 
 export const FieldListDrawer = (): JSX.Element => {
   const { t } = useTranslation()
