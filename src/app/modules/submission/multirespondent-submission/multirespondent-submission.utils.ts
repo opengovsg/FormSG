@@ -26,6 +26,7 @@ import {
   ProcessingError,
   ValidateFieldErrorV3,
 } from '../submission.errors'
+import { buildMrfMetadata } from '../submission.utils'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -53,6 +54,11 @@ export const createMultirespondentSubmissionDto = (
     version: submissionData.version,
     workflowStep: submissionData.workflowStep,
     mrfVersion: submissionData.mrfVersion,
+    mrfMeta: buildMrfMetadata({
+      workflow: submissionData.workflow,
+      workflowStep: submissionData.workflowStep,
+      submittedSteps: submissionData.submittedSteps,
+    }),
   }
 }
 

@@ -90,6 +90,15 @@ async function decryptIntoCsv(
       submission.submissionType === SubmissionType.Encrypt
         ? submission.payment
         : undefined,
+      submission.submissionType === SubmissionType.Multirespondent
+        ? {
+            workflowStatus: submission.mrfMeta.workflowStatus,
+            workflowCurrentStepNumber:
+              submission.mrfMeta.workflowCurrentStepNumber,
+            workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
+            lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
+          }
+        : undefined,
     )
     try {
       let decryptedSubmission, submissionSecretKey
@@ -195,7 +204,7 @@ async function decryptIntoCsv(
     } catch (error) {
       csvRecord.setStatus(CsvRecordStatus.Error, 'Decryption Error')
     }
-  } catch (err) {
+  } catch (error) {
     csvRecord = new CsvRecord(
       CsvRecordStatus.Error,
       formatInTimeZone(new Date(), 'Asia/Singapore', 'dd MMM yyyy hh:mm:ss z'),

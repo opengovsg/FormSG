@@ -331,6 +331,7 @@ describe('multiresponodent-submision.controller', () => {
       expect(
         MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission,
       ).toHaveBeenCalledOnce()
+
       expect(
         omit(
           MockMultiRespondentSubmissionService
@@ -338,7 +339,6 @@ describe('multiresponodent-submision.controller', () => {
           'logMeta',
         ),
       ).toEqual({
-        formId: mockFormId,
         submissionId: mockSubmissionId,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         form: mockSubmitMrfReq.formsg.formDef,

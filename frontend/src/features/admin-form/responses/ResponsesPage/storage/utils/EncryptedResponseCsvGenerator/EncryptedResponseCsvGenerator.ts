@@ -4,7 +4,17 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+
 import { CsvGenerator } from '../../../../common/utils'
+import {
+  getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
+} from '../../../../common/utils/mrfSubmissionView'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import {
@@ -18,14 +28,28 @@ type UnprocessedRecord = Merge<
   { record: Dictionary<Response> }
 >
 
+const MRF_CSV_HEADERS = [
+  'Response ID',
+  MRF_WORKFLOW_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+]
+
+const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
+
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
   fieldIdToQuestion: Map<string, { created: string; question: string }>
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
+  isMrf: boolean
 
-  constructor(expectedNumberOfRecords: number, numOfMetaDataRows: number) {
+  constructor(
+    expectedNumberOfRecords: number,
+    numOfMetaDataRows: number,
+    isMrf: boolean,
+  ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
@@ -33,6 +57,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
+    this.isMrf = isMrf
   }
 
   /**
@@ -46,7 +71,11 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * Extracts information from input record, rearranges record and then adds an UnprocessedRecord to `this.unprocessed`
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
-  addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
+  addRecord({
+    record,
+    created,
+    ...otherSubmissionProperties
+  }: DecryptedSubmissionData): void {
     const fieldRecords: Response[] = []
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
@@ -71,8 +100,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // Rearrange record to be an object identified by field ID.
     this.unprocessed.push({
       created,
-      submissionId,
       record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
+      ...otherSubmissionProperties,
     })
   }
 
@@ -85,9 +114,12 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Response ID', 'Timestamp']
+    // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
+    // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
+    const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...BASE_CSV_HEADERS]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
+        // TODO: (Code quality) Refactor to avoid mutating the `headers` array.
         headers.push(value.question)
       }
     })
@@ -96,14 +128,41 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
     this.unprocessed.forEach((up) => {
-      const formattedDate = isValid(parseISO(up.created))
+      const row = [up.submissionId]
+
+      let formattedDate = isValid(parseISO(up.created))
         ? formatInTimeZone(
             up.created,
             'Asia/Singapore',
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
-      const row = [up.submissionId, formattedDate]
+
+      if (this.isMrf) {
+        const workflowStatus = up.mrfMeta?.workflowStatus
+        const mrfSubmissionStatus = workflowStatus
+          ? getStatusFromWorkflowStatus(workflowStatus)
+          : ''
+        row.push(mrfSubmissionStatus)
+        const pendingAtString = getPendingResponseAtString({
+          workflowCurrentStepNumber: up.mrfMeta?.workflowCurrentStepNumber,
+          workflowNumTotalSteps: up.mrfMeta?.workflowNumTotalSteps,
+        })
+        row.push(pendingAtString)
+
+        const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
+        if (lastSubmittedAt) {
+          formattedDate = isValid(parseISO(lastSubmittedAt))
+            ? formatInTimeZone(
+                lastSubmittedAt,
+                'Asia/Singapore',
+                'dd MMM yyyy hh:mm:ss a',
+              )
+            : lastSubmittedAt
+        }
+      }
+
+      row.push(formattedDate)
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]

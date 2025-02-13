@@ -5,6 +5,7 @@ import {
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
+  SubmittedStep,
 } from '../../../../../shared/types'
 import {
   MultirespondentFormCompleteDto,
@@ -88,6 +89,7 @@ export type MultirespondentSubmissionContent = {
   version: number
   workflowStep: number
   mrfVersion: number
+  submittedSteps: SubmittedStep[]
 }
 
 export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {

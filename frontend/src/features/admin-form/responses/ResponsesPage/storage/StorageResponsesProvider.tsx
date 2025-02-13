@@ -45,8 +45,9 @@ export const StorageResponsesProvider = ({
       responsesCount: dateRangeResponsesCount,
       startDate: dateRange[0],
       endDate: dateRange[1],
+      isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     }
-  }, [dateRange, dateRangeResponsesCount, secretKey])
+  }, [dateRange, dateRangeResponsesCount, secretKey, form?.responseMode])
 
   return (
     <StorageResponsesContext.Provider
