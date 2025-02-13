@@ -7,7 +7,9 @@ import mongoose from 'mongoose'
 import getSubmissionModel, {
   getEmailSubmissionModel,
   getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
+import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
 
 import {
   BasicField,
@@ -29,6 +31,7 @@ const MockDns = jest.mocked(dns)
 
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
 const PaymentSubmission = getPaymentModel(mongoose)
 
@@ -91,6 +94,7 @@ describe('Submission Model', () => {
           field: new ObjectId(),
         },
       ],
+      submittedSteps: [],
       submissionPublicKey: 'This is a public key',
       encryptedSubmissionSecretKey: 'This is an encrypted secret key',
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -568,6 +572,141 @@ describe('Submission Model', () => {
 
         // Assert
         expect(actualResult).toEqual([])
+      })
+    })
+
+    describe('findSingleMetadata', () => {
+      it('should not return mrf metadata for storage mode form', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: FormAuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        // Act
+        const result = await EncryptedSubmission.findSingleMetadata(
+          String(formId),
+          String(submission._id),
+        )
+
+        // Assert
+        expect(result?.mrf).toBeUndefined()
+      })
+
+      it('should return mrf metadata for an mrf form', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const workflowId = new ObjectId()
+        const fieldId = new ObjectId()
+        const submission = await MultirespondentSubmission.create({
+          form: formId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [{ _id: fieldId, fieldType: BasicField.ShortText }],
+          form_logics: [],
+          workflow: [
+            { _id: workflowId, workflow_type: WorkflowType.Static, emails: [] },
+          ],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: 'test encrypted content',
+          version: 1,
+          workflowStep: 0,
+          submittedSteps: [],
+        })
+
+        await submission.save()
+
+        // Act
+        const result = await MultirespondentSubmission.findSingleMetadata(
+          String(formId),
+          String(submission._id),
+        )
+
+        // Assert
+        expect(result).toBeDefined()
+        expect(result?.mrf).toEqual(
+          buildMrfMetadata({
+            workflow: submission.workflow,
+            workflowStep: submission.workflowStep,
+            submittedSteps: submission.submittedSteps,
+          }),
+        )
+        expect(result?.refNo).toBeDefined()
+        expect(result?.number).toEqual(1)
+      })
+    })
+
+    describe('findAllMetadataByFormId', () => {
+      it('should not return mrf metadata for storage mode form', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: FormAuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        // Act
+        const result = await EncryptedSubmission.findAllMetadataByFormId(
+          String(formId),
+        )
+
+        // Assert
+        expect(result.metadata[0].mrf).toBeUndefined()
+        expect(result.metadata[0].refNo).toBeDefined()
+        expect(result.metadata[0].number).toEqual(1)
+        expect(result.count).toEqual(1)
+      })
+
+      it('should return mrf metadata for an mrf form', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const workflowId = new ObjectId()
+        const fieldId = new ObjectId()
+        const submission = await MultirespondentSubmission.create({
+          form: formId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [{ _id: fieldId, fieldType: BasicField.ShortText }],
+          form_logics: [],
+          workflow: [
+            { _id: workflowId, workflow_type: WorkflowType.Static, emails: [] },
+          ],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: 'test encrypted content',
+          version: 1,
+          workflowStep: 0,
+          submittedSteps: [],
+        })
+
+        await submission.save()
+
+        // Act
+        const result = await MultirespondentSubmission.findAllMetadataByFormId(
+          String(formId),
+        )
+
+        // Assert
+        expect(result.count).toEqual(1)
+        expect(result.metadata[0].mrf).toEqual(
+          buildMrfMetadata({
+            workflowStep: submission.workflowStep,
+            workflow: submission.workflow,
+            submittedSteps: submission.submittedSteps,
+          }),
+        )
+        expect(result.metadata[0].refNo).toBeDefined()
+        expect(result.metadata[0].number).toEqual(1)
       })
     })
   })

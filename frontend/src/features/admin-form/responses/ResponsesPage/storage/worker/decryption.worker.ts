@@ -13,15 +13,6 @@ import {
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 
-// Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
-// Something to do with babel-loader.
-if (import.meta.env.MODE !== 'production') {
-  // eslint-disable-next-line
-  ;(global as any).$RefreshReg$ = () => {}
-  // eslint-disable-next-line
-  ;(global as any).$RefreshSig$ = () => () => {}
-}
-
 const queue = new PQueue({ concurrency: 1 })
 
 /**
@@ -98,6 +89,15 @@ async function decryptIntoCsv(
       hostOrigin,
       submission.submissionType === SubmissionType.Encrypt
         ? submission.payment
+        : undefined,
+      submission.submissionType === SubmissionType.Multirespondent
+        ? {
+            workflowStatus: submission.mrfMeta.workflowStatus,
+            workflowCurrentStepNumber:
+              submission.mrfMeta.workflowCurrentStepNumber,
+            workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
+            lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
+          }
         : undefined,
     )
     try {
@@ -204,7 +204,7 @@ async function decryptIntoCsv(
     } catch (error) {
       csvRecord.setStatus(CsvRecordStatus.Error, 'Decryption Error')
     }
-  } catch (err) {
+  } catch (error) {
     csvRecord = new CsvRecord(
       CsvRecordStatus.Error,
       formatInTimeZone(new Date(), 'Asia/Singapore', 'dd MMM yyyy hh:mm:ss z'),
