@@ -3,22 +3,25 @@ import { WorkflowStatus } from '~shared/types'
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
   PENDING = 'Pending',
+  APPROVED = 'Approved',
+  REJECTED = 'Not approved',
 }
 
-interface CurrentStepInfo {
-  workflowCurrentStepNumber: number | undefined
-  workflowNumTotalSteps: number | undefined
+interface CurrentWorkflowInfo {
+  workflowStatus: WorkflowStatus
+  workflowCurrentStepNumber: number // note that this is 1-indexed
+  workflowNumTotalSteps: number
 }
 
 /** Gets the business friendly message for the current pending step of the workflow.  */
 export const getPendingResponseAtString = ({
+  workflowStatus,
   workflowCurrentStepNumber,
   workflowNumTotalSteps,
-}: CurrentStepInfo) => {
-  if (!workflowCurrentStepNumber || !workflowNumTotalSteps) {
-    return ''
-  }
-  const isPending = workflowCurrentStepNumber < workflowCurrentStepNumber
+}: CurrentWorkflowInfo) => {
+  const isPending =
+    workflowStatus === WorkflowStatus.PENDING &&
+    workflowCurrentStepNumber < workflowNumTotalSteps
   if (!isPending) {
     return ''
   }
@@ -32,7 +35,10 @@ export const getPendingResponseAtString = ({
 const getCurrentStepString = ({
   workflowCurrentStepNumber,
   workflowNumTotalSteps,
-}: CurrentStepInfo) => {
+}: Pick<
+  CurrentWorkflowInfo,
+  'workflowNumTotalSteps' | 'workflowCurrentStepNumber'
+>) => {
   return workflowCurrentStepNumber && workflowNumTotalSteps
     ? `Step ${workflowCurrentStepNumber} of ${workflowNumTotalSteps}`
     : ''
@@ -44,9 +50,11 @@ export const getStatusFromWorkflowStatus = (
 ): MRF_STATUS => {
   switch (workflowStatus) {
     case WorkflowStatus.COMPLETED:
-    case WorkflowStatus.APPROVED:
-    case WorkflowStatus.REJECTED:
       return MRF_STATUS.COMPLETED
+    case WorkflowStatus.APPROVED:
+      return MRF_STATUS.APPROVED
+    case WorkflowStatus.REJECTED:
+      return MRF_STATUS.REJECTED
     case WorkflowStatus.PENDING:
       return MRF_STATUS.PENDING
     default: {
