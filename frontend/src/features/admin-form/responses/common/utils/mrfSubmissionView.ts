@@ -3,6 +3,8 @@ import { WorkflowStatus } from '~shared/types'
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
   PENDING = 'Pending',
+  APPROVED = 'Approved',
+  REJECTED = 'Not approved',
 }
 
 interface CurrentWorkflowInfo {
@@ -48,9 +50,11 @@ export const getStatusFromWorkflowStatus = (
 ): MRF_STATUS => {
   switch (workflowStatus) {
     case WorkflowStatus.COMPLETED:
-    case WorkflowStatus.APPROVED:
-    case WorkflowStatus.REJECTED:
       return MRF_STATUS.COMPLETED
+    case WorkflowStatus.APPROVED:
+      return MRF_STATUS.APPROVED
+    case WorkflowStatus.REJECTED:
+      return MRF_STATUS.REJECTED
     case WorkflowStatus.PENDING:
       return MRF_STATUS.PENDING
     default: {
