@@ -407,8 +407,9 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
         const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
-          MRF_STATUS.COMPLETED,
+          MRF_STATUS.REJECTED,
           getPendingResponseAtString({
+            workflowStatus: mockRecord.mrfMeta.workflowStatus,
             workflowCurrentStepNumber:
               mockRecord.mrfMeta.workflowCurrentStepNumber,
             workflowNumTotalSteps: mockRecord.mrfMeta.workflowNumTotalSteps,
