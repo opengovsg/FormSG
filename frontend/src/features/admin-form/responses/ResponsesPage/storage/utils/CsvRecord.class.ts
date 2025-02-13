@@ -1,6 +1,6 @@
 import { cloneDeep } from 'lodash'
 
-import { SubmissionPaymentDto } from '~shared/types'
+import { SubmissionMrfMetadata, SubmissionPaymentDto } from '~shared/types'
 
 import { getPaymentDataView } from '~features/admin-form/responses/common/utils/getPaymentDataView'
 
@@ -34,6 +34,7 @@ export class CsvRecord {
     public form: string,
     public hostOrigin: string,
     public paymentData?: SubmissionPaymentDto,
+    public mrfData?: SubmissionMrfMetadata,
   ) {
     this.#statusMessage = status
     this.#record = []
@@ -135,6 +136,7 @@ export class CsvRecord {
     this.submissionData = {
       created: this.created,
       submissionId: this.id,
+      mrfMeta: this.mrfData,
       record: output,
     }
   }

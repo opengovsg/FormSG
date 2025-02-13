@@ -138,6 +138,10 @@ export const getDecryptedSubmissionById = async ({
       encryptedSubmission.submissionType === SubmissionType.Encrypt
         ? encryptedSubmission.payment
         : undefined,
+    mrf:
+      encryptedSubmission.submissionType === SubmissionType.Multirespondent
+        ? encryptedSubmission.mrfMeta
+        : undefined,
     responses,
     mrfVersion,
   }

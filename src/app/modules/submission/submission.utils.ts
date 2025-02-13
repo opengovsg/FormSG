@@ -25,6 +25,10 @@ import {
   MyInfoAttribute,
   SubmissionAttachment,
   SubmissionAttachmentsMap,
+  SubmissionMrfMetadata,
+  SubmittedApprovalStep,
+  SubmittedStep,
+  WorkflowStatus,
 } from '../../../../shared/types'
 import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
@@ -34,6 +38,7 @@ import {
   IEncryptSubmissionModel,
   IFormDocument,
   IMultirespondentSubmissionModel,
+  IMultirespondentSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
@@ -145,10 +150,6 @@ import {
 } from './submission.types'
 
 const logger = createLoggerWithLabel(module)
-
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
-const MultirespondentSubmissionModel =
-  getMultirespondentSubmissionModel(mongoose)
 
 type ResponseModeFilterParam = {
   fieldType: BasicField
@@ -401,6 +402,10 @@ export const getEncryptedSubmissionModelByResponseMode = (
   IEncryptSubmissionModel | IMultirespondentSubmissionModel,
   ResponseModeError
 > => {
+  const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+  const MultirespondentSubmissionModel =
+    getMultirespondentSubmissionModel(mongoose)
+
   switch (responseMode) {
     case FormResponseMode.Encrypt:
       return ok(EncryptSubmissionModel)
@@ -818,5 +823,73 @@ export const getCookieNameByAuthType = (
       return SGID_COOKIE_NAME
     default:
       return JwtName[authType]
+  }
+}
+
+/**
+ * Determines the workflow status of a submission based on the submitted steps and the total number of steps.
+ * @param submittedSteps - The submitted steps of the submission.
+ * @param numTotalSteps - The total number of steps in the workflow.
+ * @returns The workflow status of the submission based on the enum `WorkflowStatus`.
+ * Otherwise, returns `undefined` if no submitted steps or total steps are found or when no workflow has been defined by the form admin.
+ */
+const getMrfSubmissionWorkflowStatus = (
+  submittedSteps: SubmittedStep[],
+  numTotalSteps: number,
+): WorkflowStatus | undefined => {
+  if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
+    // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
+    return undefined
+  }
+  const latestSubmittedStep = submittedSteps[submittedSteps.length - 1]
+  if (
+    latestSubmittedStep.isApproval &&
+    latestSubmittedStep.status === WorkflowStatus.REJECTED
+  ) {
+    return WorkflowStatus.REJECTED
+  }
+  if (submittedSteps.length === numTotalSteps) {
+    const latestApprovalStep = submittedSteps
+      .slice()
+      .reverse()
+      .find((step) => step.isApproval) as SubmittedApprovalStep | undefined
+    if (
+      latestApprovalStep &&
+      latestApprovalStep.status === WorkflowStatus.APPROVED
+    ) {
+      return WorkflowStatus.APPROVED
+    }
+    return WorkflowStatus.COMPLETED
+  }
+  return WorkflowStatus.PENDING
+}
+
+/**
+ * Builds the metadata for a multirespondent form submission.
+ */
+export const buildMrfMetadata = ({
+  workflow,
+  workflowStep,
+  submittedSteps,
+}: Pick<
+  IMultirespondentSubmissionSchema,
+  'workflow' | 'workflowStep' | 'submittedSteps'
+>): SubmissionMrfMetadata => {
+  const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
+  const workflowNumTotalSteps = workflow.length
+  const workflowStatus = getMrfSubmissionWorkflowStatus(
+    submittedSteps ?? [],
+    workflow.length,
+  )
+
+  const lastSubmittedAt =
+    submittedSteps && submittedSteps.length > 0
+      ? submittedSteps[submittedSteps.length - 1].submittedAt.toString()
+      : undefined
+  return {
+    workflowCurrentStepNumber,
+    workflowNumTotalSteps,
+    workflowStatus,
+    lastSubmittedAt,
   }
 }

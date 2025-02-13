@@ -3,7 +3,13 @@ import { ObjectId } from 'bson'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
-import { SubmissionMetadata, SubmissionType } from 'shared/types'
+import {
+  BasicField,
+  SubmissionMetadata,
+  SubmissionType,
+  WorkflowStatus,
+  WorkflowType,
+} from 'shared/types'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,
@@ -24,6 +30,34 @@ describe('Multirespondent Submission Model', () => {
   const MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY = 'This is an encrypted secret key'
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
 
+  const YES_NO_FIELD = {
+    _id: 'yes_no_field_id',
+    title: 'Yes or No',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.YesNo,
+  }
+  const WORKFLOW_STEP_1 = {
+    _id: 'step_1_id',
+    workflow_type: WorkflowType.Static,
+    emails: ['example@example.com'],
+    edit: [],
+  }
+  const WORKFLOW_STEP_2 = {
+    _id: 'step_2_id',
+    workflow_type: WorkflowType.Static,
+    emails: ['example@example.com'],
+    edit: [YES_NO_FIELD._id],
+  }
+  const WORKFLOW_APPROVAL_STEP = {
+    _id: 'approval_step_id',
+    workflow_type: WorkflowType.Static,
+    emails: ['example@example.com'],
+    edit: [YES_NO_FIELD._id],
+    approval_field: YES_NO_FIELD._id,
+  }
+
   describe('Statics', () => {
     describe('findSingleMetadata', () => {
       it('should return submission metadata', async () => {
@@ -34,15 +68,26 @@ describe('Multirespondent Submission Model', () => {
         const validSubmission = await MultirespondentSubmission.create({
           form: validFormId,
           submissionType: SubmissionType.Multirespondent,
-          form_fields: [],
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
           form_logics: [],
-          workflow: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
           submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
           encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 3,
           created: createdDate,
-          workflowStep: 0,
+          workflowStep: 1,
+          submittedSteps: [
+            {
+              isApproval: false,
+              submittedAt: '2024-01-01T00:00:00.000Z',
+            },
+            {
+              isApproval: true,
+              status: WorkflowStatus.REJECTED,
+              submittedAt: '2024-01-01T00:00:00.000Z',
+            },
+          ],
         })
 
         // Act
@@ -59,6 +104,12 @@ describe('Multirespondent Submission Model', () => {
           submissionTime: moment(createdDate)
             .tz('Asia/Singapore')
             .format('Do MMM YYYY, h:mm:ss a'),
+          mrf: {
+            workflowCurrentStepNumber: 2,
+            workflowNumTotalSteps: 2,
+            workflowStatus: WorkflowStatus.REJECTED,
+            lastSubmittedAt: '2024-01-01T00:00:00.000Z',
+          },
         }
         expect(result).toEqual(expected)
       })
@@ -118,13 +169,19 @@ describe('Multirespondent Submission Model', () => {
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
-            workflow: [],
+            workflow: [WORKFLOW_STEP_1],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
             workflowStep: 0,
+            submittedSteps: [
+              {
+                isApproval: false,
+                submittedAt: '2024-01-01T00:00:00.000Z',
+              },
+            ],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -146,6 +203,12 @@ describe('Multirespondent Submission Model', () => {
               submissionTime: moment(data.created)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
+              mrf: {
+                workflowCurrentStepNumber: 1,
+                workflowNumTotalSteps: 1,
+                workflowStatus: WorkflowStatus.COMPLETED,
+                lastSubmittedAt: '2024-01-01T00:00:00.000Z',
+              },
             }))
             .reverse(),
         }
@@ -161,13 +224,24 @@ describe('Multirespondent Submission Model', () => {
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
-            workflow: [],
+            workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
-            workflowStep: 0,
+            workflowStep: 1,
+            submittedSteps: [
+              {
+                isApproval: false,
+                submittedAt: '2024-01-01T00:00:00.000Z',
+              },
+              {
+                isApproval: true,
+                status: WorkflowStatus.APPROVED,
+                submittedAt: '2024-01-01T00:00:00.000Z',
+              },
+            ],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -194,6 +268,12 @@ describe('Multirespondent Submission Model', () => {
               submissionTime: moment(secondSubmission.created)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
+              mrf: {
+                workflowCurrentStepNumber: 2,
+                workflowNumTotalSteps: 2,
+                workflowStatus: WorkflowStatus.APPROVED,
+                lastSubmittedAt: '2024-01-01T00:00:00.000Z',
+              },
             },
           ],
         }
@@ -209,13 +289,23 @@ describe('Multirespondent Submission Model', () => {
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
-            workflow: [],
+            workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
-            workflowStep: 0,
+            workflowStep: 1,
+            submittedSteps: [
+              {
+                isApproval: false,
+                submittedAt: '2024-01-01T00:00:00.000Z',
+              },
+              {
+                isApproval: false,
+                submittedAt: '2024-01-02T00:00:00.000Z',
+              },
+            ],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -242,6 +332,12 @@ describe('Multirespondent Submission Model', () => {
               submissionTime: moment(latestSubmission.created)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
+              mrf: {
+                workflowCurrentStepNumber: 2,
+                workflowNumTotalSteps: 2,
+                workflowStatus: WorkflowStatus.COMPLETED,
+                lastSubmittedAt: '2024-01-02T00:00:00.000Z',
+              },
             },
           ],
         }
@@ -332,6 +428,8 @@ describe('Multirespondent Submission Model', () => {
           'encryptedContent',
           'submissionType',
           'version',
+          'submittedSteps',
+          'workflowStep',
         )
         // Native-ify arrays as mongoose documents contain a mongoose-specific array type.
         expectedSubmission.form_fields = JSON.parse(
@@ -417,6 +515,7 @@ describe('Multirespondent Submission Model', () => {
           'submissionType',
           'version',
           'workflowStep',
+          'submittedSteps',
         )
         expect(actual).not.toBeNull()
         expect(actual?.toJSON()).toEqual(expected)

@@ -7,6 +7,9 @@ import {
   FieldResponsesV3,
   FormResponseMode,
   FormWorkflowStepDto,
+  SubmittedApprovalStep,
+  SubmittedNonApprovalStep,
+  WorkflowStatus,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
@@ -356,6 +359,11 @@ export const createMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
+      const submittedStepMeta: SubmittedNonApprovalStep = {
+        isApproval: false, // first step cannot be approval step
+        submittedAt: new Date().toISOString(),
+      }
+
       const submissionContent: MultirespondentSubmissionContent = {
         form: form._id,
         authType: form.authType,
@@ -370,6 +378,7 @@ export const createMultiRespondentFormSubmission = ({
         version,
         workflowStep: 0,
         mrfVersion,
+        submittedSteps: [submittedStepMeta],
       }
 
       const submission = new MultirespondentSubmission(submissionContent)
@@ -478,7 +487,6 @@ export const updateMultiRespondentFormSubmission = ({
   encryptedPayload,
   logMeta,
 }: {
-  formId: string
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -521,6 +529,41 @@ export const updateMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
+      const isApprovalForm = checkIsFormApproval(form)
+      const isStepRejectedResult = checkIsStepRejected({
+        zeroIndexedStepNumber: workflowStep,
+        form,
+        responses: encryptedPayload.responses,
+      })
+      if (isStepRejectedResult.isErr()) {
+        logger.error({
+          message: 'Error occurred when checking if step is rejected',
+          meta: logMeta,
+          error: isStepRejectedResult.error,
+        })
+        return errAsync(isStepRejectedResult.error)
+      }
+
+      const isStepRejected = isStepRejectedResult.value
+      const submittedStepMeta = isApprovalForm
+        ? ({
+            status: isStepRejected
+              ? WorkflowStatus.REJECTED
+              : WorkflowStatus.APPROVED,
+            stepNumber: workflowStep,
+            isApproval: true,
+            submittedAt: new Date().toISOString(),
+          } as SubmittedApprovalStep)
+        : ({
+            isApproval: false,
+            stepNumber: workflowStep,
+            submittedAt: new Date().toISOString(),
+          } as SubmittedNonApprovalStep)
+
+      submission.submittedSteps = [
+        ...(submission.submittedSteps ?? []),
+        submittedStepMeta,
+      ]
       submission.responseMetadata = responseMetadata
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey

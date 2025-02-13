@@ -18,6 +18,7 @@ import {
   SubmissionMetadata,
   SubmissionMetadataList,
   SubmissionPaymentDto,
+  SubmissionType,
 } from '../../../../shared/types'
 import {
   EmailRespondentConfirmationField,
@@ -26,6 +27,7 @@ import {
   IMultirespondentSubmissionModel,
   IPopulatedForm,
   ISubmissionSchema,
+  MultirespondentSubmissionCursorData,
   StorageModeSubmissionCursorData,
   SubmissionData,
 } from '../../../types'
@@ -86,6 +88,7 @@ import {
 } from './submission.types'
 import {
   areAttachmentsMoreThanLimit,
+  buildMrfMetadata,
   fileSizeLimitBytes,
   getEncryptedSubmissionModelByResponseMode,
   getInvalidFileExtensions,
@@ -798,6 +801,36 @@ export const getSubmissionCursor = (
     (modelToUse) =>
       ok(modelToUse.getSubmissionCursorByFormId(formId, dateRange)),
   )
+}
+
+/**
+ * Adds mrf metadata to each submission.
+ */
+export const addMrfMetadata = (): Transform => {
+  return new Transform({
+    objectMode: true,
+    transform: async (
+      data:
+        | StorageModeSubmissionCursorData
+        | MultirespondentSubmissionCursorData,
+      _encoding,
+      callback,
+    ) => {
+      if (data.submissionType === SubmissionType.Multirespondent) {
+        const { workflow, workflowStep, submittedSteps, ...rest } = data
+        const dataWithMrfMeta = {
+          ...rest,
+          mrfMeta: buildMrfMetadata({
+            workflow,
+            workflowStep,
+            submittedSteps,
+          }),
+        }
+        return callback(null, dataWithMrfMeta)
+      }
+      return callback(null, data)
+    },
+  })
 }
 
 /**

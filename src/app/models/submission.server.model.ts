@@ -35,6 +35,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -366,7 +367,11 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     const paymentMeta = result.payments?.[0]
 
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1, paymentMeta)
+    const metadata = buildSubmissionMetadata({
+      result,
+      currentNumber: 1,
+      paymentMeta,
+    })
 
     return metadata
   })
@@ -435,11 +440,11 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 
     const metadata = results.map((result) => {
       const paymentMeta = result.payments?.[0]
-      const metadataEntry = buildSubmissionMetadata(
+      const metadataEntry = buildSubmissionMetadata({
         result,
         currentNumber,
         paymentMeta,
-      )
+      })
 
       currentNumber--
       return metadataEntry
@@ -549,22 +554,35 @@ export const MultirespondentSubmissionSchema = new Schema<
   mrfVersion: {
     type: Number,
   },
+  submittedSteps: {
+    type: Array,
+    default: [],
+  },
 })
+
+type MultiRespondentAggregates = Pick<
+  IMultirespondentSubmissionSchema,
+  'workflowStep' | 'workflow' | 'submittedSteps'
+>
+type MultiRespondentAggregateResult = MetadataAggregateResult &
+  MultiRespondentAggregates
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
 ): Promise<SubmissionMetadata | null> {
-  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
-    {
-      $match: {
-        submissionType: SubmissionType.Multirespondent,
-        form: new mongoose.Types.ObjectId(formId),
-        _id: new mongoose.Types.ObjectId(submissionId),
+  const pageResults: Promise<MultiRespondentAggregateResult[]> = this.aggregate(
+    [
+      {
+        $match: {
+          submissionType: SubmissionType.Multirespondent,
+          form: new mongoose.Types.ObjectId(formId),
+          _id: new mongoose.Types.ObjectId(submissionId),
+        },
       },
-    },
-    { $limit: 1 },
-  ]).exec()
+      { $limit: 1 },
+    ],
+  ).exec()
 
   return Promise.resolve(pageResults).then((results) => {
     if (!results || results.length <= 0) {
@@ -572,9 +590,17 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
     }
 
     const result = results[0]
-
+    const mrfMeta = {
+      workflowStep: result.workflowStep,
+      workflow: result.workflow,
+      submittedSteps: result.submittedSteps,
+    }
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1)
+    const metadata = buildSubmissionMetadata({
+      result,
+      currentNumber: 1,
+      mrfMeta,
+    })
 
     return metadata
   })
@@ -595,18 +621,23 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
 }> {
   const numToSkip = (page - 1) * pageSize
   // return documents within the page
-  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
-    { $match: { form: new mongoose.Types.ObjectId(formId) } },
-    { $sort: { created: -1 } },
-    { $skip: numToSkip },
-    { $limit: pageSize },
-    {
-      $project: {
-        _id: 1,
-        created: 1,
+  const pageResults: Promise<MultiRespondentAggregateResult[]> = this.aggregate(
+    [
+      { $match: { form: new mongoose.Types.ObjectId(formId) } },
+      { $sort: { created: -1 } },
+      { $skip: numToSkip },
+      { $limit: pageSize },
+      {
+        $project: {
+          _id: 1,
+          created: 1,
+          workflowStep: 1,
+          workflow: 1,
+          submittedSteps: 1,
+        },
       },
-    },
-  ]).exec()
+    ],
+  ).exec()
 
   const count =
     this.countDocuments({
@@ -619,11 +650,17 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
 
     const metadata = results.map((result) => {
       const paymentMeta = result.payments?.[0]
-      const metadataEntry = buildSubmissionMetadata(
+      const mrfMeta = {
+        workflowStep: result.workflowStep,
+        workflow: result.workflow,
+        submittedSteps: result.submittedSteps,
+      }
+      const metadataEntry = buildSubmissionMetadata({
         result,
         currentNumber,
         paymentMeta,
-      )
+        mrfMeta,
+      })
 
       currentNumber--
       return metadataEntry
@@ -657,6 +694,8 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         form_fields: 1,
         form_logics: 1,
         workflow: 1,
+        workflowStep: 1,
+        submittedSteps: 1,
         encryptedSubmissionSecretKey: 1,
         encryptedContent: 1,
         attachmentMetadata: 1,
@@ -698,6 +737,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       version: 1,
       workflowStep: 1,
       mrfVersion: 1,
+      submittedSteps: 1,
     })
     .exec()
 }
@@ -755,11 +795,17 @@ export const getMultirespondentSubmissionModel = (
   >(SubmissionType.Multirespondent)
 }
 
-const buildSubmissionMetadata = (
-  result: MetadataAggregateResult,
-  currentNumber: number,
-  paymentMeta?: PaymentAggregates,
-): SubmissionMetadata => {
+const buildSubmissionMetadata = ({
+  result,
+  currentNumber,
+  paymentMeta,
+  mrfMeta,
+}: {
+  result: MetadataAggregateResult
+  currentNumber: number
+  paymentMeta?: PaymentAggregates
+  mrfMeta?: MultiRespondentAggregates
+}): SubmissionMetadata => {
   return {
     number: currentNumber,
     refNo: result._id,
@@ -779,6 +825,13 @@ const buildSubmissionMetadata = (
           email: paymentMeta.email,
         }
       : null,
+    mrf: mrfMeta
+      ? buildMrfMetadata({
+          workflow: mrfMeta.workflow,
+          workflowStep: mrfMeta.workflowStep,
+          submittedSteps: mrfMeta.submittedSteps,
+        })
+      : undefined,
   }
 }
 

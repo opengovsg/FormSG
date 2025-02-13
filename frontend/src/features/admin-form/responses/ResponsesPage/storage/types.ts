@@ -2,6 +2,8 @@ import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
 
+import { SubmissionMrfMetadata } from '~shared/types'
+
 import { CsvRecord } from './utils/CsvRecord.class'
 import { DecryptionWorkerApi } from './worker/decryption.worker'
 
@@ -23,6 +25,7 @@ export type CsvRecordData = FormField
 export type DecryptedSubmissionData = {
   created: string
   submissionId: string
+  mrfMeta?: SubmissionMrfMetadata
   record: CsvRecordData[]
 }
 
