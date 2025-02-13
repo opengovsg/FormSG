@@ -26,6 +26,7 @@ import {
   EditMyInfoChildren,
 } from './edit-fieldtype/EditMyInfoChildren'
 import {
+  EditAddress,
   EditAttachment,
   EditCheckbox,
   EditCountryRegion,
@@ -167,6 +168,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
+      case BasicField.Address:
+        return <EditAddress {...props} field={field} />
       default:
         return <div>TODO: Insert field options here</div>
     }

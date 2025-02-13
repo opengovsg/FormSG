@@ -4,6 +4,7 @@ import { err, ok, Result } from 'neverthrow'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { BasicField, FormField, FormFieldDto } from '../../../../shared/types'
 import {
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
@@ -25,15 +26,18 @@ import {
 } from '../../modules/submission/submission.errors'
 
 import {
+  constructAddressFieldValidator,
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
+  constructOptionalAddressFieldValidator,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
 import {
   isGenericStringAnswerResponseV3,
+  isProcessedAddressResponse,
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
@@ -98,6 +102,10 @@ const isResponsePresentOnHiddenField = (
     ) {
       return true
     }
+  } else if (isProcessedAddressResponse(response)) {
+    if (!response.answerArray.every((row) => row === '')) {
+      return true
+    }
   }
   return false
 }
@@ -144,6 +152,13 @@ const tableRequiresValidation = (
     row.every((elem) => elem === ''),
   )
   return requiredVisible || answerPresent
+}
+
+const addressRequiresValidation = (
+  formField: FieldValidationSchema,
+  response: ProcessedAddressResponse,
+) => {
+  return formField.required && response.isVisible
 }
 
 /**
@@ -275,6 +290,25 @@ export const validateField = (
         response,
       )
     }
+  } else if (isProcessedAddressResponse(response)) {
+    if (addressRequiresValidation(formField, response)) {
+      const validator = constructAddressFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    } else if (!formField.required) {
+      //even if address is optional, still need to validate level/unit number
+      const validator = constructOptionalAddressFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
     return err(new ValidateFieldError('Response has invalid shape'))
@@ -343,6 +377,13 @@ const isResponsePresentOnHiddenFieldV3 = ({
           (response.answer.child.length === 1 &&
             response.answer.child[0] &&
             response.answer.child[0].every((val) => val !== '')), // If only 1 element which has fields all empty, same as no child selected.
+      )
+    case BasicField.Address:
+      return ok(
+        response.answer.addressSubFields &&
+          !Object.values(response.answer.addressSubFields).every(
+            (value) => value === '',
+          ),
       )
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
@@ -423,6 +464,10 @@ const isValidationRequiredV3 = ({
           response.answer.child.length > 0 ||
           response.answer.childFields.length > 0,
       )
+    case BasicField.Address: {
+      const answerObjectDefined = !!response.answer
+      return ok(answerObjectDefined) // address will require validation required or optional
+    }
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldErrorV3('Response has invalid shape'))

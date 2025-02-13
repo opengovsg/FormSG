@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import type { Opaque } from 'type-fest'
 
 import {
+  AddressResponse,
   BasicField,
   CheckboxResponse,
   ChildBirthRecordsResponse,
@@ -69,6 +70,7 @@ export type ProcessedChildrenResponse = ChildBirthRecordsResponse &
     childSubFieldsArray?: MyInfoChildAttributes[]
     childIdx?: number
   }
+export type ProcessedAddressResponse = AddressResponse & ProcessedResponse
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected
@@ -87,6 +89,7 @@ export type ProcessedFieldResponse =
   | ProcessedTableResponse
   | ProcessedAttachmentResponse
   | ProcessedChildrenResponse
+  | ProcessedAddressResponse
 
 /**
  * Virus scanner types

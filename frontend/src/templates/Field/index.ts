@@ -1,3 +1,4 @@
+import AddressCompoundField from './Address'
 import AttachmentField from './Attachment'
 import CheckboxField from './Checkbox'
 import ChildrenCompoundField from './ChildrenCompound'
@@ -27,6 +28,7 @@ export * from './types'
 const SectionField = SectionFieldContainer
 
 export {
+  AddressCompoundField,
   AttachmentField,
   CheckboxField,
   ChildrenCompoundField,

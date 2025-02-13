@@ -43,6 +43,7 @@ import {
   BiUser,
   BiUserVoice,
 } from 'react-icons/bi'
+import { SlLocationPin } from 'react-icons/sl'
 import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
@@ -265,6 +266,24 @@ export const BASICFIELD_TO_DRAWER_META: {
     label: 'Children',
     icon: BiGroup,
     isSubmitted: true,
+  },
+
+  [BasicField.Address]: {
+    label: 'Local address',
+    icon: SlLocationPin,
+    isSubmitted: true,
+    searchAliases: [
+      'address',
+      'location',
+      'place',
+      'destination',
+      'directions',
+      'postal code',
+      'street',
+      'building',
+      'road',
+      'venue',
+    ],
   },
 }
 

@@ -2,7 +2,7 @@
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
-import { RegisterOptions } from 'react-hook-form'
+import { RegisterOptions, UseFormGetValues } from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
 import { identity } from 'lodash'
 import simplur from 'simplur'
@@ -10,6 +10,7 @@ import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
+  AddressCompoundFieldBase,
   AttachmentFieldBase,
   BasicField,
   CheckboxFieldBase,
@@ -33,6 +34,12 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
+import {
+  validateLevelUnit,
+  validateNoNonNumerical,
+  validateNoSpecialCharacters,
+  validatePostalCode,
+} from '~shared/utils/address-validation'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
@@ -44,12 +51,17 @@ import { isUenValid } from '~shared/utils/uen-validation'
 import { Fields } from '~/i18n/locales/features/public-form/fields'
 
 import {
+  INVALID_BLOCK_UNIT_ERROR,
   INVALID_COUNTRY_REGION_OPTION_ERROR,
   INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_ERROR,
+  INVALID_LEVEL_UNIT_ERROR,
+  INVALID_NON_NUMERICAL_ERROR,
+  INVALID_POSTAL_CODE_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
 import {
+  AddressCompoundFieldInput,
   CheckboxFieldValues,
   SingleAnswerValue,
   VerifiableFieldValues,
@@ -88,6 +100,11 @@ type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
   schema: MinimumFieldValidationPropsEmailAndMobile<T>,
   disableRequiredValidation?: boolean,
   validationErrorMessages?: EmailValidationErrorMessages,
+) => RegisterOptions
+
+type ValidationRuleFnUnitAndLevelNo<T extends FieldBase = FieldBase> = (
+  schema: MinimumFieldValidationProps<T> & { _id: string },
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ) => RegisterOptions
 
 const requiredSingleAnswerValidationFn =
@@ -208,6 +225,101 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
       validHomeNo: (val?: string) => {
         if (!val) return true
         return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+      },
+    },
+  }
+}
+
+export const createPostalCodeValidationRules: ValidationRuleFn<
+  AddressCompoundFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+      validOnlyNumbers: (value: string) => {
+        if (value === '') return true
+        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+      },
+      validPostalCode: (value: string) => {
+        if (value === '') return true
+        return validatePostalCode(value) || INVALID_POSTAL_CODE_ERROR
+      },
+    },
+  }
+}
+
+export const createBlockNumberValidationRules: ValidationRuleFn<
+  AddressCompoundFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+      validBlock: (value: string) => {
+        if (value === '') return true
+        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
+      },
+    },
+  }
+}
+
+export const createStreetNameValidationRules: ValidationRuleFn<
+  AddressCompoundFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+    },
+  }
+}
+
+export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+  AddressCompoundFieldBase
+> = (
+  schema,
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
+): RegisterOptions => {
+  return {
+    validate: {
+      validLevel: (value: string) => {
+        if (value === '') return true
+        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+      },
+      validInput: () => {
+        if (!getValues) return true
+        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
+        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+        return validateLevelUnit(levelNo, unitNo) || INVALID_LEVEL_UNIT_ERROR
+      },
+    },
+  }
+}
+
+export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+  AddressCompoundFieldBase
+> = (
+  schema,
+  getValues: UseFormGetValues<AddressCompoundFieldInput>,
+): RegisterOptions => {
+  return {
+    validate: {
+      validUnit: (value: string) => {
+        if (value === '') return true
+        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
+      },
+      validInput: () => {
+        if (!getValues) return true
+        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
+        return validateLevelUnit(unitNo, levelNo) || INVALID_LEVEL_UNIT_ERROR
       },
     },
   }

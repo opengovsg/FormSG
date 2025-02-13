@@ -1,4 +1,5 @@
 import { BasicField } from '~shared/types/field'
+import { answerKey } from '~shared/utils/address'
 import { hasProp } from '~shared/utils/has-prop'
 
 import {
@@ -11,6 +12,7 @@ import {
   SingleResponse,
   TableResponse,
 } from './csv-response-classes'
+
 /**
  * Converts a field record into a custom response instance
  * @param fieldRecordData Field record
@@ -34,6 +36,38 @@ export const getDecryptedResponseInstance = (
     return new SingleAnswerResponse(fieldRecordData)
   } else {
     throw new Error('Response did not match any known type')
+  }
+}
+
+/**
+ * Converts an address field record into an array of SingleAnswerResponses for separate csv columns output
+ * @param fieldRecordData Field record (answerArray is a 6 element array of strings formatted
+ * as ['blockNumber', 'streetName', 'buildingName', 'levelNumber', 'unitNumber', 'postalCode'])
+ * @returns Response[]
+ * @throws Address parsing error
+ */
+export const getAddressDecryptedResponseInstances = (
+  fieldRecordData: DisplayedResponseWithoutAnswer,
+): Response[] => {
+  if (
+    isArrayResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === BasicField.Address
+  ) {
+    const responses: Response[] = fieldRecordData.answerArray.map(
+      (answer, index) => {
+        const r = {
+          _id: fieldRecordData._id + index,
+          fieldType: fieldRecordData.fieldType,
+          question: fieldRecordData.question + `-${answerKey[index]}`,
+          answer: answer,
+          isHeader: fieldRecordData.isHeader,
+        }
+        return new SingleAnswerResponse(r)
+      },
+    )
+    return responses
+  } else {
+    throw new Error('Error parsing address response')
   }
 }
 

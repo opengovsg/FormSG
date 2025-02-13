@@ -163,6 +163,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       return response
     },
   )
+
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
@@ -279,6 +280,21 @@ const createResponsesV3 = (
           | FormFieldValue<typeof ff.fieldType>
           | undefined
         if (!input) break
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input,
+        } as FieldResponseV3
+        break
+      }
+      case BasicField.Address: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          !input ||
+          Object.values(input.addressSubFields).every((value) => !value)
+        )
+          break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input,

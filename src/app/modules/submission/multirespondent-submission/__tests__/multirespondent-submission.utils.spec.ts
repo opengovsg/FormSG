@@ -4,6 +4,8 @@ import moment from 'moment-timezone'
 import { ok } from 'neverthrow'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
 import {
+  AddressAttributes,
+  AddressResponseV3,
   AttachmentResponseV3,
   BasicField,
   CheckboxResponseV3,
@@ -23,6 +25,7 @@ import {
 
 import {
   FormFieldSchema,
+  IAddressCompoundFieldSchema,
   IAttachmentFieldSchema,
   ICheckboxFieldSchema,
   IEmailFieldSchema,
@@ -388,6 +391,40 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
+      ])
+    })
+
+    it('should handle address fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Address',
+          fieldType: BasicField.Address,
+        } as IAddressCompoundFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Address,
+          answer: {
+            addressSubFields: {
+              postalCode: '650161',
+              blockNumber: '161',
+              streetName: 'BUKIT BATOK STREET 11',
+              buildingName: '',
+              levelNumber: '1',
+              unitNumber: '1',
+            } as AddressAttributes,
+          },
+        } as AddressResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        {
+          question: 'Address',
+          answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
+        },
       ])
     })
   })

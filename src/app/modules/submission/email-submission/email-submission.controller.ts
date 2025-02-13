@@ -401,6 +401,7 @@ export const submitEmailModeForm: ControllerHandler<
               mode: 'email',
             })
           }
+
           // Send response to admin
           // NOTE: This should short circuit in the event of an error.
           // This is why sendSubmissionToAdmin is separated from sendEmailConfirmations in 2 blocks

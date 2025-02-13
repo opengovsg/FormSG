@@ -1,8 +1,10 @@
+import { Address } from 'cluster'
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
+  AddressCompoundFieldResponseV3,
   AttachmentFieldResponseV3,
   CheckboxFieldResponsesV3,
   ChildrenCompoundFieldResponsesV3,
@@ -12,8 +14,13 @@ import {
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
 } from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+} from '~shared/types/field'
+import {
+  AddressResponse,
   AttachmentResponse,
   CheckboxResponse,
   ChildBirthRecordsResponse,
@@ -29,6 +36,8 @@ import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
+  AddressCompoundFieldSchema,
+  AddressCompoundFieldValues,
   AttachmentFieldSchema,
   BaseFieldOutput,
   CheckboxFieldSchema,
@@ -217,6 +226,37 @@ const transformToChildOutput = (
   }
 }
 
+const transformToAddressOutput = (
+  schema: AddressCompoundFieldSchema,
+  input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
+): AddressResponse => {
+  let answerArray: string[] = []
+  // const attributes: string[] = [] // TODO: see if adding a [] of attributes for reference can help
+  if (input !== undefined) {
+    const {
+      postalCode,
+      blockNumber,
+      streetName,
+      buildingName,
+      levelNumber,
+      unitNumber,
+    } = input.addressSubFields
+    answerArray = [
+      blockNumber,
+      streetName,
+      buildingName,
+      levelNumber,
+      unitNumber,
+      postalCode,
+    ] // move postal code to the end of array
+  }
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answerArray,
+    // attributes,
+  }
+}
+
 type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
   | FormFieldValue<T>
   | FieldResponseAnswerMapV3<T>
@@ -293,6 +333,11 @@ export const transformInputsToOutputs = (
       return null
     case BasicField.Children:
       return transformToChildOutput(
+        field,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
+      )
+    case BasicField.Address:
+      return transformToAddressOutput(
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )

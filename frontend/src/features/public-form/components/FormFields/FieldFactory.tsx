@@ -4,6 +4,7 @@ import { BasicField } from '~shared/types/field'
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import {
+  AddressCompoundField,
   AttachmentField,
   CheckboxField,
   ChildrenCompoundField,
@@ -119,6 +120,8 @@ export const FieldFactory = memo(
         return <ImageField schema={field} {...rest} />
       case BasicField.Table:
         return <TableField schema={field} {...rest} />
+      case BasicField.Address:
+        return <AddressCompoundField schema={field} {...rest} />
       case BasicField.Children:
         return (
           <ChildrenCompoundField

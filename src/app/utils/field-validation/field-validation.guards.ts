@@ -11,6 +11,7 @@ import {
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
@@ -52,6 +53,16 @@ export const isProcessedChildResponse = (
     response.answerArray.every((subArr) => isStringArray(subArr)) &&
     'childSubFieldsArray' in response &&
     isStringArray(response.childSubFieldsArray)
+  )
+}
+
+export const isProcessedAddressResponse = (
+  response: ProcessedFieldResponse,
+): response is ProcessedAddressResponse => {
+  return (
+    response.fieldType === BasicField.Address &&
+    'answerArray' in response &&
+    isStringArray(response.answerArray)
   )
 }
 

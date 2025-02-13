@@ -1,4 +1,9 @@
-import { BasicField, FormFieldDto, MyInfoChildAttributes } from './field'
+import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+  MyInfoChildAttributes,
+} from './field'
 
 export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
 
@@ -13,6 +18,7 @@ export type FieldResponseV3 =
   | EmailResponseV3
   | MobileResponseV3
   | GenericStringAnswerFieldResponseV3
+  | AddressResponseV3
 
 export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
@@ -49,6 +55,7 @@ export type UenResponseV3 = FieldResponseFactoryV3<BasicField.Uen>
 export type ChildBirthRecordsResponseV3 =
   FieldResponseFactoryV3<BasicField.Children>
 export type AttachmentResponseV3 = FieldResponseFactoryV3<BasicField.Attachment>
+export type AddressResponseV3 = FieldResponseFactoryV3<BasicField.Address>
 
 export type FieldResponseFactoryV3<F extends BasicField = BasicField> =
   FieldResponseV3Base & {
@@ -76,7 +83,9 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                 ? CheckboxFieldResponsesV3
                 : F extends BasicField.Children
                   ? ChildrenCompoundFieldResponsesV3
-                  : never
+                  : F extends BasicField.Address
+                    ? AddressCompoundFieldResponseV3
+                    : never
 
 export type GenericStringAnswerResponseFieldTypeV3 =
   | NumberResponseV3['fieldType']
@@ -120,4 +129,8 @@ export type AttachmentFieldResponseV3 = {
   hasBeenScanned: boolean
   answer: string
   md5Hash?: string
+}
+
+export type AddressCompoundFieldResponseV3 = {
+  addressSubFields: AddressAttributes
 }
