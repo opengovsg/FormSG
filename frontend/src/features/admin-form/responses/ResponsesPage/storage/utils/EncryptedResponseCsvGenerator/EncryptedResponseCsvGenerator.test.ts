@@ -408,6 +408,7 @@ describe('EncryptedResponseCsvGenerator', () => {
           mockRecord.submissionId,
           MRF_STATUS.COMPLETED,
           getPendingResponseAtString({
+            workflowStatus: mockRecord.mrfMeta.workflowStatus,
             workflowCurrentStepNumber:
               mockRecord.mrfMeta.workflowCurrentStepNumber,
             workflowNumTotalSteps: mockRecord.mrfMeta.workflowNumTotalSteps,
