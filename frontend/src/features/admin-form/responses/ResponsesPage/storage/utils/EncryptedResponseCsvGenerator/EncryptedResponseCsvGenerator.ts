@@ -144,10 +144,20 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
           ? getStatusFromWorkflowStatus(workflowStatus)
           : ''
         row.push(mrfSubmissionStatus)
-        const pendingAtString = getPendingResponseAtString({
-          workflowCurrentStepNumber: up.mrfMeta?.workflowCurrentStepNumber,
-          workflowNumTotalSteps: up.mrfMeta?.workflowNumTotalSteps,
-        })
+
+        const workflowCurrentStepNumber = up.mrfMeta?.workflowCurrentStepNumber
+        const workflowNumTotalSteps = up.mrfMeta?.workflowNumTotalSteps
+
+        const pendingAtString =
+          workflowStatus === undefined ||
+          workflowCurrentStepNumber === undefined ||
+          workflowNumTotalSteps === undefined
+            ? ''
+            : getPendingResponseAtString({
+                workflowStatus,
+                workflowCurrentStepNumber,
+                workflowNumTotalSteps,
+              })
         row.push(pendingAtString)
 
         const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt

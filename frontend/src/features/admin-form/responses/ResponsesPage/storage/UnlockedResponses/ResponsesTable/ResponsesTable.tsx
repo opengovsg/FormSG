@@ -220,11 +220,23 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
-    accessor: ({ mrf }) =>
-      getPendingResponseAtString({
-        workflowCurrentStepNumber: mrf?.workflowCurrentStepNumber,
-        workflowNumTotalSteps: mrf?.workflowNumTotalSteps,
-      }),
+    accessor: ({ mrf }) => {
+      const workflowStatus = mrf?.workflowStatus
+      const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
+      const workflowNumTotalSteps = mrf?.workflowNumTotalSteps
+      if (
+        workflowStatus === undefined ||
+        workflowCurrentStepNumber === undefined ||
+        workflowNumTotalSteps === undefined
+      ) {
+        return ''
+      }
+      return getPendingResponseAtString({
+        workflowStatus,
+        workflowCurrentStepNumber,
+        workflowNumTotalSteps,
+      })
+    },
     width: 200,
     minWidth: 180,
     maxWidth: 220,

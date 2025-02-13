@@ -166,6 +166,9 @@ export const IndividualResponsePage = (): JSX.Element => {
       )
     : ''
 
+  const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
+  const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
+
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
@@ -191,11 +194,17 @@ export const IndividualResponsePage = (): JSX.Element => {
               />
               <StackRow
                 label={MRF_PENDING_RESPONSE_AT_LABEL}
-                value={getPendingResponseAtString({
-                  workflowCurrentStepNumber:
-                    data?.mrf?.workflowCurrentStepNumber,
-                  workflowNumTotalSteps: data?.mrf?.workflowNumTotalSteps,
-                })}
+                value={
+                  workflowStatus === undefined ||
+                  workflowCurrentStepNumber === undefined ||
+                  workflowNumTotalSteps === undefined
+                    ? ''
+                    : getPendingResponseAtString({
+                        workflowStatus,
+                        workflowCurrentStepNumber,
+                        workflowNumTotalSteps,
+                      })
+                }
                 isLoading={isLoading}
                 isError={isError}
               />
