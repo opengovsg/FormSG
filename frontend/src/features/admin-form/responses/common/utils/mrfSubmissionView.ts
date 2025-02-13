@@ -7,7 +7,7 @@ export enum MRF_STATUS {
 
 interface CurrentWorkflowInfo {
   workflowStatus: WorkflowStatus
-  workflowCurrentStepNumber: number
+  workflowCurrentStepNumber: number // note that this is 1-indexed
   workflowNumTotalSteps: number
 }
 
@@ -17,7 +17,9 @@ export const getPendingResponseAtString = ({
   workflowCurrentStepNumber,
   workflowNumTotalSteps,
 }: CurrentWorkflowInfo) => {
-  const isPending = workflowStatus === WorkflowStatus.PENDING
+  const isPending =
+    workflowStatus === WorkflowStatus.PENDING &&
+    workflowCurrentStepNumber < workflowNumTotalSteps
   if (!isPending) {
     return ''
   }
