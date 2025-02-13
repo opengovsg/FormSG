@@ -1,3 +1,4 @@
+import createAddressFieldSchema from './addressField'
 import createAttachmentFieldSchema from './attachmentField'
 import { BaseFieldSchema } from './baseField'
 import createCheckboxFieldSchema from './checkboxField'
@@ -23,6 +24,7 @@ import createUenFieldSchema from './uenField'
 import createYesNoFieldSchema from './yesNoField'
 
 export {
+  createAddressFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
   createDateFieldSchema,

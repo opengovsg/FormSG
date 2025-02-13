@@ -2,9 +2,12 @@ import { useCallback } from 'react'
 import { useMutation } from 'react-query'
 import FileSaver from 'file-saver'
 
+import { BasicField } from '~shared/types'
+
 import { useToast } from '~hooks/useToast'
 
 import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
+import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   downloadAndDecryptAttachment,
   downloadAndDecryptAttachmentsAsZip,

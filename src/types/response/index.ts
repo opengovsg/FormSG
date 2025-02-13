@@ -1,4 +1,5 @@
 import {
+  AddressResponse,
   CheckboxResponse,
   ChildBirthRecordsResponse,
   TableResponse,
@@ -21,6 +22,7 @@ export type SingleAnswerFieldResponse =
       | CheckboxResponse
       | IAttachmentResponse
       | ChildBirthRecordsResponse
+      | AddressResponse
     >
   | Exclude<
       ParsedClearFormFieldResponse,
@@ -28,6 +30,7 @@ export type SingleAnswerFieldResponse =
       | CheckboxResponse
       | IAttachmentResponse
       | ChildBirthRecordsResponse
+      | AddressResponse
     >
 
 export type FieldResponse =

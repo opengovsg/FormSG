@@ -630,6 +630,15 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
         fieldType: field.fieldType,
       }
     }
+    case BasicField.Address: {
+      const sampleValue: string[] = []
+      return {
+        id: field._id,
+        question: field.title,
+        answerArray: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
     case BasicField.Section:
     case BasicField.Statement:
     case BasicField.Image:

@@ -1,4 +1,5 @@
 import {
+  AddressResponse,
   AttachmentResponse,
   BasicField,
   CheckboxResponse,
@@ -89,6 +90,8 @@ export const validateResponses = (responses: unknown): FieldResponse[] => {
         return YesNoResponse.parse(response)
       case BasicField.Children:
         return ChildBirthRecordsResponse.parse(response)
+      case BasicField.Address:
+        return AddressResponse.parse(response)
       default:
         throw new Error(
           `Invalid fieldType provided for response validation: ${response.fieldType}`,

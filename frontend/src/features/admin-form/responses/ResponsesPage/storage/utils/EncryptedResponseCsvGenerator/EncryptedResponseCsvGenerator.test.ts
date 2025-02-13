@@ -4,6 +4,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
 import { WorkflowStatus } from '~shared/types/submission'
+import { answerKey } from '~shared/utils/address'
 
 import {
   getPendingResponseAtString,
@@ -859,6 +860,64 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedHeaderRow,
           expectedSubmissionRow1,
           expectedSubmissionRow2,
+        ])
+      })
+
+      it('should handle submissions with address answerArray', () => {
+        // Arrange
+        const addressAnswerArray = [
+          '161',
+          'BUKIT BATOK STREET 11',
+          '',
+          '1',
+          '1',
+          '650161',
+        ]
+        const mockDecryptedRecord = [
+          generateRecord(1, addressAnswerArray, 'address'),
+        ]
+
+        const mockRecord = {
+          record: mockDecryptedRecord,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+
+        // const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        //Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockDecryptedRecord[0].question + `-${answerKey[0]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[1]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[2]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[3]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[4]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[5]}`,
+        ])
+
+        const expectedSubmissionRow = stringify([
+          mockRecord.submissionId,
+          getFormattedDate(mockRecord.created),
+          addressAnswerArray[0],
+          addressAnswerArray[1],
+          addressAnswerArray[2],
+          addressAnswerArray[3],
+          addressAnswerArray[4],
+          addressAnswerArray[5],
+        ])
+
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow,
         ])
       })
     })
