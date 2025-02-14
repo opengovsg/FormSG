@@ -213,6 +213,9 @@ export const createClearSubmissionWithVirusScanningFormDataV3 = (
   )
 
   const attachments = getAttachmentsMap(formFields, formInputs)
+  console.log('here i am')
+  console.log(responses)
+  console.log(attachments)
 
   // Convert content to FormData object.
   const formData = new FormData()
@@ -236,6 +239,7 @@ export const createClearSubmissionWithVirusScanningFormDataV3 = (
       }
     })
   }
+  console.log(formData)
 
   return formData
 }

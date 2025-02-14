@@ -547,7 +547,8 @@ export class MailService {
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
-
+    console.log('here i am storage')
+    console.log(attachments)
     // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
     const htmlData: SubmissionToAdminHtmlData = {
@@ -870,12 +871,14 @@ export class MailService {
     formTitle,
     responseId,
     formQuestionAnswers,
+    attachments,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
+    attachments?: Mail.Attachment[]
   }) => {
     const htmlData = {
       formTitle,
@@ -906,6 +909,7 @@ export class MailService {
         from: this.#senderFromString,
         subject: `Completed - ${formTitle} (${responseId})`,
         html: mailHtml,
+        attachments,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
         },

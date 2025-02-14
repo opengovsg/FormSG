@@ -135,6 +135,7 @@ const submitMultirespondentForm = async (
     form,
     encryptedPayload,
     logMeta,
+    attachments: req.formsg.unencryptedAttachments,
   })
 }
 
@@ -221,6 +222,7 @@ const updateMultirespondentSubmission = async (
     currentStepNumber,
     encryptedPayload,
     logMeta,
+    attachments: req.formsg.unencryptedAttachments,
   })
 }
 

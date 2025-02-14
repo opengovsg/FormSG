@@ -11,6 +11,7 @@ import {
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
   Environment,
+  IAttachmentInfo,
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
@@ -181,6 +182,7 @@ const sendMrfOutcomeEmails = ({
   submissionId,
   isApproval = false,
   isRejected = false,
+  attachments,
 }: {
   currentStepNumber: number
   form: IPopulatedMultirespondentForm
@@ -188,12 +190,15 @@ const sendMrfOutcomeEmails = ({
   submissionId: string
   isApproval?: boolean
   isRejected?: boolean
+  attachments?: IAttachmentInfo[]
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
     formId: form._id?.toString(),
     submissionId,
   }
+  // console.log('here i am')
+  // console.log(responses)
   const emailsToNotify =
     form.emails && Array.isArray(form.emails) ? form.emails : []
 
@@ -290,6 +295,7 @@ const sendMrfOutcomeEmails = ({
           formTitle: form.title,
           responseId: submissionId,
           formQuestionAnswers,
+          attachments: attachments,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',
@@ -407,11 +413,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   form,
   encryptedPayload,
   logMeta,
+  attachments,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
+  attachments?: IAttachmentInfo[]
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
@@ -451,6 +459,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         form,
         responses,
         submissionId,
+        attachments,
       })
     })
     .mapErr((error) => {
@@ -549,12 +558,14 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   currentStepNumber,
   encryptedPayload,
   logMeta,
+  attachments,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
   currentStepNumber: number
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
+  attachments?: IAttachmentInfo[]
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -604,6 +615,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       submissionId,
       isApproval: true,
       isRejected: true,
+      attachments: attachments,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -619,6 +631,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     responses,
     submissionId,
     isApproval: checkIsFormApproval(form),
+    attachments: attachments,
   })
     .mapErr((error) => {
       logger.error({
