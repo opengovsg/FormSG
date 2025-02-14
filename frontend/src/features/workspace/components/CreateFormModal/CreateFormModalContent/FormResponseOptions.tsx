@@ -63,13 +63,14 @@ export const FormResponseOptions = forwardRef<
         >
           <Tile.Title>Storage mode form</Tile.Title>
           <Tile.Subtitle>
-            View and download responses in FormSG or receive responses in your
-            inbox
+            Collect responses from individual respondents. Ideal for one-way
+            submissions.
           </Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports webhooks for responses' },
+              { text: 'Supports webhooks for integrations' },
               { text: 'Supports payments' },
+              { text: 'Supports Singpass & Myinfo' },
               { text: 'Up to Restricted and Sensitive (Normal) data' },
             ]}
           />
@@ -85,12 +86,12 @@ export const FormResponseOptions = forwardRef<
         >
           <Tile.Title>Multi-respondent form</Tile.Title>
           <Tile.Subtitle>
-            Collect responses from multiple people by adding a workflow to your
-            form and assigning fields to each person
+            Collect responses from multiple respondents in a single workflow.
+            Ideal for sequential submissions.
           </Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports approvals', badge: 'New' },
+              { text: 'Supports approval workflows', badge: 'New' },
               { text: 'Up to Restricted and Sensitive (Normal) data' },
             ]}
           />
