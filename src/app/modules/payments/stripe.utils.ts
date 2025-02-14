@@ -507,6 +507,10 @@ export const convertToProofOfPaymentFormat = (
           '<strong>Amount charged</strong>',
           `<strong>Amount charged</strong> <i>(includes GST)</i>`,
         )
+        .replace(
+          '<strong>Amount paid</strong>',
+          `<strong>Amount paid</strong> <i>(includes GST)</i>`,
+        )
     : paymentByProductsEdits
         .replace(
           /Receipt (#[0-9-]+)/,
