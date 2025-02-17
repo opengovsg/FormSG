@@ -25,11 +25,7 @@ import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 
 const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
   _id: 'reason',
-  fieldOptions: [
-    'I need to collect Sensitive High data',
-    'I need to receive attachments via email',
-    'I use the JSON in Email mode responses for automations',
-  ],
+  fieldOptions: ['I need to collect Sensitive High data'],
   othersRadioButton: true,
   ValidationOptions: { customMax: null, customMin: null },
   validateByValue: false,
@@ -85,13 +81,12 @@ export const EmailModeFeedbackAndCreateScreen = (): JSX.Element => {
             <CheckboxField schema={CHECKBOX_FIELD_SCHEMA} />
           </FormControl>
           <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
             onClick={handleCreateEmailModeForm(feedbackForm)}
           >
-            <Text lineHeight="1.5rem">Next step</Text>
+            <Text lineHeight="1.5rem">Create form</Text>
           </Button>
         </Container>
       </FormProvider>
