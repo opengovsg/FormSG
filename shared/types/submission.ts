@@ -233,7 +233,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowCurrentStepNumber: z.number(),
       workflowNumTotalSteps: z.number(),
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
-      lastSubmittedAt: z.string(),
+      lastSubmittedAt: z.string().optional(),
     }),
   })
 
@@ -260,7 +260,7 @@ export type SubmissionMrfMetadata =
       workflowCurrentStepNumber: number
       workflowNumTotalSteps: number
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
-      lastSubmittedAt: string | undefined
+      // lastSubmittedAt: string | undefined // TODO(FRM-1933): disabled as we are undecided on showing firstSubmission vs lastSubmittedAt
     }
   | undefined
 
