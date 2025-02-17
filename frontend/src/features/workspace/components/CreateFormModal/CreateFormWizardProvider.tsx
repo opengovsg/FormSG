@@ -107,11 +107,17 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleEmailModeCreation = () => {
+    setValue('responseMode', FormResponseMode.Email)
+    setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
   const handleEmailFeedbackSubmit = () => {
     // explicit set response to email as email feedback "button" interaction
     // is not handled handled in FormResponseOptions
-    setValue('responseMode', FormResponseMode.Email)
+    // setValue('responseMode', FormResponseMode.Email)
     setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
   }
 
@@ -150,6 +156,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     handleDetailsSubmit,
     handleCreateEmailModeForm,
     handleEmailFeedbackSubmit,
+    handleEmailModeCreation,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
     modalHeader: 'Set up your form',

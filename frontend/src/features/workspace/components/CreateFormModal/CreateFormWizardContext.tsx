@@ -11,6 +11,7 @@ export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
   EmailFeedback = 'emailFeedback',
+  EmailModeCreation = 'emailModeCreation',
 }
 
 export type CreateFormWizardInputProps = {
@@ -33,6 +34,7 @@ export type CreateFormWizardContextReturn = {
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
   handleEmailFeedbackSubmit: () => void
+  handleEmailModeCreation: () => void
   handleCreateEmailModeForm: (
     feedbackForm: PublicFormViewDto,
   ) => ReturnType<UseFormHandleSubmit<CreateFormWizardInputProps>>
