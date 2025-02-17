@@ -4,11 +4,7 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
-import {
-  MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
-  MRF_WORKFLOW_STATUS_LABEL,
-} from '~features/admin-form/responses/constants'
+import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
@@ -24,12 +20,7 @@ type UnprocessedRecord = Merge<
   { record: Dictionary<Response> }
 >
 
-const MRF_CSV_HEADERS = [
-  'Response ID',
-  MRF_WORKFLOW_STATUS_LABEL,
-  MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
-]
+const MRF_CSV_HEADERS = ['Response ID', MRF_RESPONSE_TIMESTAMP_LABEL]
 
 const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
 

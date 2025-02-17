@@ -194,14 +194,6 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 300,
     maxWidth: 300,
   },
-  // TODO(FRM-1933): enabled firstSubmission as we are undecided on showing firstSubmission vs lastSubmittedAt
-  {
-    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
-    accessor: 'submissionTime',
-    width: 250,
-    minWidth: 250,
-    disableResizing: true,
-  },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
     accessor: ({ mrf }) => {
@@ -248,21 +240,22 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 180,
     maxWidth: 220,
   },
-  // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
-  // {
-  //   Header: MRF_RESPONSE_TIMESTAMP_LABEL,
-  //   accessor: ({ mrf }) =>
-  //     mrf?.lastSubmittedAt
-  //       ? formatInTimeZone(
-  //           mrf.lastSubmittedAt,
-  //           'Asia/Singapore',
-  //           'do MMM yyyy, hh:mm:ss a',
-  //         )
-  //       : '',
-  //   width: 250,
-  //   minWidth: 250,
-  //   disableResizing: true,
-  // },
+  {
+    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    accessor: 'submissionTime',
+    // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
+    // accessor: ({ mrf }) =>
+    //   mrf?.lastSubmittedAt
+    //     ? formatInTimeZone(
+    //         mrf.lastSubmittedAt,
+    //         'Asia/Singapore',
+    //         'do MMM yyyy, hh:mm:ss a',
+    //       )
+    //     : '',
+    width: 250,
+    minWidth: 250,
+    disableResizing: true,
+  },
 ]
 
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
