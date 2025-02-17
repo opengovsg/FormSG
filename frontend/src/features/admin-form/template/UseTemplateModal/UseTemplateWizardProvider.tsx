@@ -85,11 +85,17 @@ export const useUseTemplateWizardContext = (
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleEmailModeCreation = () => {
+    setValue('responseMode', FormResponseMode.Email)
+    setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
   const handleEmailFeedbackSubmit = () => {
     // explicit set response to email as email feedback "button" interaction
     // is not handled handled in FormResponseOptions
-    setValue('responseMode', FormResponseMode.Email)
+    // setValue('responseMode', FormResponseMode.Email) // set in handleEmailModeCreation
     setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
   }
 
@@ -137,6 +143,7 @@ export const useUseTemplateWizardContext = (
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
+    handleEmailModeCreation,
     handleCreateEmailModeForm,
     isSingpass,
     modalHeader: 'Duplicate form',

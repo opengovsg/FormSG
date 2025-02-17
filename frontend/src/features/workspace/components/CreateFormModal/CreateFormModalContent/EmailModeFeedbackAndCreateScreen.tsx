@@ -6,6 +6,7 @@ import {
   FormErrorMessage,
   Input,
   ModalBody,
+  ModalHeader,
   Text,
 } from '@chakra-ui/react'
 
@@ -37,7 +38,53 @@ const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-export const EmailModeFeedbackAndCreateScreen = (): JSX.Element => {
+export const EmailModeFeedbackScreen = (): JSX.Element => {
+  const { formMethods, handleEmailModeCreation, isLoading, isFetching } =
+    useCreateFormWizard()
+  const {
+    formState: { errors },
+  } = formMethods
+
+  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  if (!feedbackForm) return <></>
+
+  return (
+    <>
+      <ModalHeader color="secondary.700">
+        <Container maxW="42.5rem" p={0}>
+          Before you get started
+          <Text textStyle="body-1" color="secondary.700" mt="1rem">
+            We’d love to understand why you chose to create an Email mode form.
+            This will help us ensure a smooth transition once we phase out Email
+            mode.
+          </Text>
+        </Container>
+      </ModalHeader>
+
+      <ModalBody whiteSpace="pre-wrap">
+        <FormProvider {...formMethods}>
+          <Container maxW="42.5rem" p={0}>
+            <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
+              <CheckboxField schema={CHECKBOX_FIELD_SCHEMA} />
+            </FormControl>
+            <Button
+              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+              isFullWidth
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              onClick={handleEmailModeCreation}
+            >
+              <Text lineHeight="1.5rem">Next: Set up your form</Text>
+            </Button>
+          </Container>
+        </FormProvider>
+      </ModalBody>
+    </>
+  )
+}
+
+export const EmailModeCreationScreen = (): JSX.Element => {
   const {
     formMethods,
 
@@ -54,42 +101,49 @@ export const EmailModeFeedbackAndCreateScreen = (): JSX.Element => {
   if (!feedbackForm) return <></>
 
   return (
-    <ModalBody whiteSpace="pre-wrap">
-      <FormProvider {...formMethods}>
+    <>
+      <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel useMarkdownForDescription>Form name</FormLabel>
-
-            <Input
-              autoFocus
-              {...register('title', FORM_TITLE_VALIDATION_RULES)}
-            />
-            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-          </FormControl>
-
-          <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
-            <FormLabel
-              useMarkdownForDescription
-              description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
-            >
-              Notifications for new responses
-            </FormLabel>
-            <EmailFormRecipientsInput />
-          </FormControl>
-
-          <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
-            <CheckboxField schema={CHECKBOX_FIELD_SCHEMA} />
-          </FormControl>
-          <Button
-            type="submit"
-            isLoading={isLoading}
-            isDisabled={isFetching}
-            onClick={handleCreateEmailModeForm(feedbackForm)}
-          >
-            <Text lineHeight="1.5rem">Create form</Text>
-          </Button>
+          Set up your form in Email mode
         </Container>
-      </FormProvider>
-    </ModalBody>
+      </ModalHeader>
+      <ModalBody whiteSpace="pre-wrap">
+        <FormProvider {...formMethods}>
+          <Container maxW="42.5rem" p={0}>
+            <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
+              <FormLabel useMarkdownForDescription>Form name</FormLabel>
+
+              <Input
+                autoFocus
+                {...register('title', FORM_TITLE_VALIDATION_RULES)}
+              />
+              <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
+              <FormLabel
+                useMarkdownForDescription
+                description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+              >
+                Notifications for new responses
+              </FormLabel>
+              <EmailFormRecipientsInput />
+            </FormControl>
+
+            <Button
+              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              isFullWidth
+              onClick={handleCreateEmailModeForm(feedbackForm)}
+              data-dd-action-name="dashboard.create.create_email"
+            >
+              <Text lineHeight="1.5rem">Create form</Text>
+            </Button>
+          </Container>
+        </FormProvider>
+      </ModalBody>
+    </>
   )
 }
