@@ -200,8 +200,6 @@ const sendMrfOutcomeEmails = ({
     formId: form._id?.toString(),
     submissionId,
   }
-  // console.log('here i am')
-  // console.log(responses)
   const emailsToNotify =
     form.emails && Array.isArray(form.emails) ? form.emails : []
 
