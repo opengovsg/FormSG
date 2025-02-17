@@ -10,7 +10,6 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import { formatInTimeZone } from 'date-fns-tz'
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
@@ -30,7 +29,6 @@ import {
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -158,13 +156,14 @@ export const IndividualResponsePage = (): JSX.Element => {
     ? getStatusFromWorkflowStatus(workflowStatus)
     : ''
 
-  const lastSubmittedAt = data?.mrf?.lastSubmittedAt
-    ? formatInTimeZone(
-        data.mrf.lastSubmittedAt,
-        'Asia/Singapore',
-        'eee, d MMM yyyy, hh:mm:ss a',
-      )
-    : ''
+  // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+  // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
+  //   ? formatInTimeZone(
+  //       data.mrf.lastSubmittedAt,
+  //       'Asia/Singapore',
+  //       'eee, d MMM yyyy, hh:mm:ss a',
+  //     )
+  //   : ''
 
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
@@ -181,6 +180,14 @@ export const IndividualResponsePage = (): JSX.Element => {
           <StackRow
             label="Response ID"
             value={submissionId}
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label={'Timestamp'}
+            value={
+              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+            }
             isLoading={isLoading}
             isError={isError}
           />
@@ -210,15 +217,6 @@ export const IndividualResponsePage = (): JSX.Element => {
               />
             </>
           ) : null}
-          <StackRow
-            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
-            value={
-              (isMrf ? lastSubmittedAt : data?.submissionTime) ??
-              t('features.common.loadingWithEllipsis')
-            }
-            isLoading={isLoading}
-            isError={isError}
-          />
           {attachmentDownloadUrls.size > 0 && (
             <Stack
               spacing={{ base: '0', md: '0.5rem' }}

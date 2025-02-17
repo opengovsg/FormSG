@@ -17,7 +17,6 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
-import { formatInTimeZone } from 'date-fns-tz'
 
 import {
   FormResponseMode,
@@ -32,7 +31,6 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
@@ -195,6 +193,14 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 300,
     maxWidth: 300,
   },
+  // TODO(FRM-1933): enabled firstSubmission as we are undecided on showing firstSubmission vs lastSubmittedAt
+  {
+    Header: 'Timestamp',
+    accessor: 'submissionTime',
+    width: 250,
+    minWidth: 250,
+    disableResizing: true,
+  },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
     accessor: ({ mrf }) => {
@@ -241,20 +247,21 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 180,
     maxWidth: 220,
   },
-  {
-    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
-    accessor: ({ mrf }) =>
-      mrf?.lastSubmittedAt
-        ? formatInTimeZone(
-            mrf.lastSubmittedAt,
-            'Asia/Singapore',
-            'do MMM yyyy, hh:mm:ss a',
-          )
-        : '',
-    width: 250,
-    minWidth: 250,
-    disableResizing: true,
-  },
+  // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+  // {
+  //   Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+  //   accessor: ({ mrf }) =>
+  //     mrf?.lastSubmittedAt
+  //       ? formatInTimeZone(
+  //           mrf.lastSubmittedAt,
+  //           'Asia/Singapore',
+  //           'do MMM yyyy, hh:mm:ss a',
+  //         )
+  //       : '',
+  //   width: 250,
+  //   minWidth: 250,
+  //   disableResizing: true,
+  // },
 ]
 
 const PAYMENT_RESPONSE_TABLE_COLUMNS =

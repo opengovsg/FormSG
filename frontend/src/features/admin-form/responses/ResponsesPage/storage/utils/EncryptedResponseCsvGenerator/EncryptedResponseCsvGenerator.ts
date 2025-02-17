@@ -6,7 +6,6 @@ import type { Merge } from 'type-fest'
 
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
@@ -30,9 +29,9 @@ type UnprocessedRecord = Merge<
 
 const MRF_CSV_HEADERS = [
   'Response ID',
+  'Timestamp',
   MRF_WORKFLOW_STATUS_LABEL,
   MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
 ]
 
 const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
@@ -130,13 +129,15 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.unprocessed.forEach((up) => {
       const row = [up.submissionId]
 
-      let formattedDate = isValid(parseISO(up.created))
+      const formattedDate = isValid(parseISO(up.created))
         ? formatInTimeZone(
             up.created,
             'Asia/Singapore',
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
+
+      row.push(formattedDate)
 
       if (this.isMrf) {
         const workflowStatus = up.mrfMeta?.workflowStatus
@@ -160,19 +161,18 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
               })
         row.push(pendingAtString)
 
-        const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
-        if (lastSubmittedAt) {
-          formattedDate = isValid(parseISO(lastSubmittedAt))
-            ? formatInTimeZone(
-                lastSubmittedAt,
-                'Asia/Singapore',
-                'dd MMM yyyy hh:mm:ss a',
-              )
-            : lastSubmittedAt
-        }
+        // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+        // const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
+        // if (lastSubmittedAt) {
+        //   formattedDate = isValid(parseISO(lastSubmittedAt))
+        //     ? formatInTimeZone(
+        //         lastSubmittedAt,
+        //         'Asia/Singapore',
+        //         'dd MMM yyyy hh:mm:ss a',
+        //       )
+        //     : lastSubmittedAt
+        // }
       }
-
-      row.push(formattedDate)
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
