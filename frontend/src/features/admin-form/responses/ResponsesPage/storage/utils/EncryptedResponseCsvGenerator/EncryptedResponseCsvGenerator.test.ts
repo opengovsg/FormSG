@@ -400,7 +400,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
           'Response ID',
-          'Timestamp',
+          MRF_RESPONSE_TIMESTAMP_LABEL,
           mockDecryptedRecord[0].question,
         ])
         const expectedSubmissionRow = stringify([

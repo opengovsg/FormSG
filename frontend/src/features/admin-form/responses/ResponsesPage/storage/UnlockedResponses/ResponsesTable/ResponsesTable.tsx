@@ -31,6 +31,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
@@ -195,7 +196,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   // TODO(FRM-1933): enabled firstSubmission as we are undecided on showing firstSubmission vs lastSubmittedAt
   {
-    Header: 'Timestamp',
+    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
     width: 250,
     minWidth: 250,

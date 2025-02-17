@@ -4,6 +4,12 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
@@ -17,6 +23,15 @@ type UnprocessedRecord = Merge<
   DecryptedSubmissionData,
   { record: Dictionary<Response> }
 >
+
+const MRF_CSV_HEADERS = [
+  'Response ID',
+  MRF_WORKFLOW_STATUS_LABEL,
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+]
+
+const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
@@ -95,7 +110,9 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Response ID', 'Timestamp']
+    // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
+    // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
+    const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...BASE_CSV_HEADERS]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         // TODO: (Code quality) Refactor to avoid mutating the `headers` array.

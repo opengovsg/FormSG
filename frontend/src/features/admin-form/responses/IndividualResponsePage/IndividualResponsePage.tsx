@@ -29,6 +29,7 @@ import {
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -184,7 +185,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             isError={isError}
           />
           <StackRow
-            label={'Timestamp'}
+            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
             value={
               data?.submissionTime ?? t('features.common.loadingWithEllipsis')
             }
