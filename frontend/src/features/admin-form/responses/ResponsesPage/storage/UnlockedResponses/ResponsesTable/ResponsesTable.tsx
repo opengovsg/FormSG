@@ -17,7 +17,6 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
-import { formatInTimeZone } from 'date-fns-tz'
 
 import {
   FormResponseMode,
@@ -243,14 +242,16 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
-    accessor: ({ mrf }) =>
-      mrf?.lastSubmittedAt
-        ? formatInTimeZone(
-            mrf.lastSubmittedAt,
-            'Asia/Singapore',
-            'do MMM yyyy, hh:mm:ss a',
-          )
-        : '',
+    accessor: 'submissionTime',
+    // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
+    // accessor: ({ mrf }) =>
+    //   mrf?.lastSubmittedAt
+    //     ? formatInTimeZone(
+    //         mrf.lastSubmittedAt,
+    //         'Asia/Singapore',
+    //         'do MMM yyyy, hh:mm:ss a',
+    //       )
+    //     : '',
     width: 250,
     minWidth: 250,
     disableResizing: true,
