@@ -34,10 +34,8 @@ export type CreateFormWizardContextReturn = {
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
   handleEmailFeedbackSubmit: () => void
-  handleEmailModeCreation: () => void
-  handleCreateEmailModeForm: (
-    feedbackForm: PublicFormViewDto,
-  ) => ReturnType<UseFormHandleSubmit<CreateFormWizardInputProps>>
+  handleCreateEmailModeForm: () => () => void
+  submitEmailModeFeedback: (feedbackForm: PublicFormViewDto) => () => void
   handleCreateStorageModeOrMultirespondentForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >

@@ -112,12 +112,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleEmailModeCreation = () => {
-    setValue('responseMode', FormResponseMode.Email)
-    setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
   const handleEmailFeedbackSubmit = () => {
     // explicit set response to email as email feedback "button" interaction
@@ -127,16 +121,32 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleCreateEmailModeForm = (feedbackForm: PublicFormViewDto) =>
-    handleSubmit((inputs) => {
-      if (!activeFormMeta?._id) return
+  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
+    return handleSubmit((inputs) => {
       if (!inputs.reason) {
         return new Error('Reason is required')
       }
-      emailModeFeedbackMutation.mutate({
-        body: { reason: inputs.reason },
-        feedbackForm,
-      })
+
+      emailModeFeedbackMutation.mutate(
+        {
+          body: { reason: inputs.reason },
+          feedbackForm,
+        },
+        {
+          onSuccess: () => {
+            setValue('responseMode', FormResponseMode.Email)
+            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+          },
+        },
+      )
+    })
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = () =>
+    handleSubmit((inputs) => {
+      if (!activeFormMeta?._id) return
+
       return dupeEmailModeFormMutation.mutate({
         formIdToDuplicate: activeFormMeta._id,
         emails: inputs.emails.filter(Boolean),
@@ -163,8 +173,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
-    handleEmailModeCreation,
     handleCreateEmailModeForm,
+    submitEmailModeFeedback,
     isSingpass,
     modalHeader: 'Duplicate form',
   }

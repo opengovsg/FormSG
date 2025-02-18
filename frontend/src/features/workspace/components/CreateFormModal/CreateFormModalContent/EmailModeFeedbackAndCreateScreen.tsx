@@ -39,7 +39,7 @@ const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
 export const EmailModeFeedbackScreen = (): JSX.Element => {
-  const { formMethods, handleEmailModeCreation, isLoading, isFetching } =
+  const { formMethods, submitEmailModeFeedback, isLoading, isFetching } =
     useCreateFormWizard()
   const {
     formState: { errors },
@@ -73,7 +73,7 @@ export const EmailModeFeedbackScreen = (): JSX.Element => {
               type="submit"
               isLoading={isLoading}
               isDisabled={isFetching}
-              onClick={handleEmailModeCreation}
+              onClick={submitEmailModeFeedback(feedbackForm)}
             >
               <Text lineHeight="1.5rem">Next: Set up your form</Text>
             </Button>
@@ -136,7 +136,7 @@ export const EmailModeCreationScreen = (): JSX.Element => {
               isLoading={isLoading}
               isDisabled={isFetching}
               isFullWidth
-              onClick={handleCreateEmailModeForm(feedbackForm)}
+              onClick={handleCreateEmailModeForm()}
               data-dd-action-name="dashboard.create.create_email"
             >
               <Text lineHeight="1.5rem">Create form</Text>
