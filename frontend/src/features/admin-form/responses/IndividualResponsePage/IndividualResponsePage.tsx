@@ -22,7 +22,16 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 import { useUser } from '~features/user/queries'
 
+import {
+  getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
+} from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
@@ -84,6 +93,8 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const { data: form } = useAdminForm()
 
+  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
@@ -141,6 +152,23 @@ export const IndividualResponsePage = (): JSX.Element => {
     key: data?.submissionSecretKey || '',
   })}`
 
+  const workflowStatus = data?.mrf?.workflowStatus
+  const responseMrfStatus = workflowStatus
+    ? getStatusFromWorkflowStatus(workflowStatus)
+    : ''
+
+  // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+  // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
+  //   ? formatInTimeZone(
+  //       data.mrf.lastSubmittedAt,
+  //       'Asia/Singapore',
+  //       'eee, d MMM yyyy, hh:mm:ss a',
+  //     )
+  //   : ''
+
+  const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
+  const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
+
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
@@ -157,13 +185,39 @@ export const IndividualResponsePage = (): JSX.Element => {
             isError={isError}
           />
           <StackRow
-            label="Timestamp"
+            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
             value={
               data?.submissionTime ?? t('features.common.loadingWithEllipsis')
             }
             isLoading={isLoading}
             isError={isError}
           />
+          {isMrf ? (
+            <>
+              <StackRow
+                label={MRF_WORKFLOW_STATUS_LABEL}
+                value={responseMrfStatus}
+                isLoading={isLoading}
+                isError={isError}
+              />
+              <StackRow
+                label={MRF_PENDING_RESPONSE_AT_LABEL}
+                value={
+                  workflowStatus === undefined ||
+                  workflowCurrentStepNumber === undefined ||
+                  workflowNumTotalSteps === undefined
+                    ? ''
+                    : getPendingResponseAtString({
+                        workflowStatus,
+                        workflowCurrentStepNumber,
+                        workflowNumTotalSteps,
+                      })
+                }
+                isLoading={isLoading}
+                isError={isError}
+              />
+            </>
+          ) : null}
           {attachmentDownloadUrls.size > 0 && (
             <Stack
               spacing={{ base: '0', md: '0.5rem' }}

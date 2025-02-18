@@ -80,6 +80,39 @@ export type StorageModeSubmissionBase = z.infer<
  * Multirespondent submission typings as stored in the database.
  */
 
+export enum WorkflowStatus {
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
+
+export const ApprovalStatus = z.enum([
+  WorkflowStatus.APPROVED,
+  WorkflowStatus.REJECTED,
+])
+
+const SubmittedNonApprovalStep = z.object({
+  isApproval: z.literal(false),
+  submittedAt: z.string().datetime({ precision: 3 }),
+})
+
+export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
+
+const SubmittedApprovalStep = SubmittedNonApprovalStep.extend({
+  isApproval: z.literal(true),
+  status: ApprovalStatus,
+})
+
+export type SubmittedApprovalStep = z.infer<typeof SubmittedApprovalStep>
+
+export const SubmittedStep = z.discriminatedUnion('isApproval', [
+  SubmittedApprovalStep,
+  SubmittedNonApprovalStep,
+])
+
+export type SubmittedStep = z.infer<typeof SubmittedStep>
+
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // Store the form fields and logic here, to use as reference for future
   // submitters. Don't bother to validate since this is injected by the backend.
@@ -95,6 +128,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   version: z.number(),
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
+  submittedSteps: z.array(SubmittedStep).optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -158,6 +192,8 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
   version: number
   mrfVersion: number
+
+  mrfMeta: SubmissionMrfMetadata
 }
 
 export type SubmissionDto =
@@ -193,6 +229,12 @@ export const MultirespondentSubmissionStreamDto =
     attachmentMetadata: z.record(z.string()),
     _id: SubmissionId,
     created: DateString,
+    mrfMeta: z.object({
+      workflowCurrentStepNumber: z.number(),
+      workflowNumTotalSteps: z.number(),
+      workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
+      lastSubmittedAt: z.string().optional(),
+    }),
   })
 
 export type MultirespondentSubmissionStreamDto = z.infer<
@@ -213,12 +255,22 @@ export type SubmissionPaymentMetadata = {
   email: string
 } | null
 
+export type SubmissionMrfMetadata =
+  | {
+      workflowCurrentStepNumber: number
+      workflowNumTotalSteps: number
+      workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
+      lastSubmittedAt: string | undefined
+    }
+  | undefined
+
 export type SubmissionMetadata = {
   number: number
   refNo: SubmissionId
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
   payments: SubmissionPaymentMetadata
+  mrf?: SubmissionMrfMetadata
 }
 
 export type SubmissionMetadataList = {

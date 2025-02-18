@@ -1,3 +1,4 @@
+import type { AddressCompoundFieldBase } from './addressField'
 import type { AttachmentFieldBase } from './attachmentField'
 import type { CheckboxFieldBase } from './checkboxField'
 import type { CountryRegionFieldBase } from './countryRegionField'
@@ -22,6 +23,7 @@ import type { UenFieldBase } from './uenField'
 import type { YesNoFieldBase } from './yesNoField'
 import type { SetRequired } from 'type-fest'
 
+export * from './addressField'
 export * from './attachmentField'
 export * from './base'
 export * from './checkboxField'
@@ -49,6 +51,7 @@ export * from './yesNoField'
 export * from './childrenCompoundField'
 
 export type FormField =
+  | AddressCompoundFieldBase
   | AttachmentFieldBase
   | CheckboxFieldBase
   | DateFieldBase

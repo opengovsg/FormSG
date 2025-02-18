@@ -5,6 +5,7 @@ import { FieldValidationSchema } from '../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
@@ -12,6 +13,12 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
+import {
+  constructAddressValidator,
+  constructAddressValidatorV3,
+  constructOptionalAddressValidator,
+  constructOptionalAddressValidatorV3,
+} from './validators/addressValidator'
 import {
   constructAttachmentFieldValidatorV3,
   constructAttachmentValidator,
@@ -170,6 +177,24 @@ export const constructTableFieldValidator = (
   return () => left('Unsupported field type')
 }
 
+export const constructAddressFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedAddressResponse> => {
+  if (formField.fieldType === BasicField.Address) {
+    return constructAddressValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructOptionalAddressFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedAddressResponse> => {
+  if (formField.fieldType === BasicField.Address) {
+    return constructOptionalAddressValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
 export const constructFieldResponseValidatorV3 = ({
   formId,
   formField,
@@ -224,6 +249,9 @@ export const constructFieldResponseValidatorV3 = ({
       return constructAttachmentFieldValidatorV3(formField)
     case BasicField.Children:
       return constructChildrenValidatorV3(formField)
+    case BasicField.Address:
+      if (formField.required) return constructAddressValidatorV3(formField)
+      return constructOptionalAddressValidatorV3(formField)
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>

@@ -3,6 +3,19 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
+import { WorkflowStatus } from '~shared/types/submission'
+import { answerKey } from '~shared/utils/address'
+
+import {
+  getPendingResponseAtString,
+  MRF_STATUS,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
   DisplayedResponseWithoutAnswer,
@@ -101,6 +114,7 @@ describe('EncryptedResponseCsvGenerator', () => {
     generator = new EncryptedResponseCsvGenerator(
       mockExpectedNumberOfRecords,
       mockNumOfMetaDataRows,
+      false,
     )
   })
 
@@ -358,6 +372,48 @@ describe('EncryptedResponseCsvGenerator', () => {
       // Act + Assert
       generator.process()
       expect(generator.hasBeenProcessed).toBe(true)
+    })
+
+    describe('mrf form submissions', () => {
+      it('should include header and data columns for mrf metadata', () => {
+        // Arrange
+        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0, true)
+        const mockDecryptedRecord = [generateRecord(1)]
+        const mockRecord = {
+          record: mockDecryptedRecord,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+          mrfMeta: {
+            workflowStatus: WorkflowStatus.REJECTED,
+            workflowCurrentStepNumber: 2,
+            workflowNumTotalSteps: 3,
+            lastSubmittedAt: '2024-01-01T00:00:00.000Z',
+          },
+        }
+        mrfGenerator.addRecord(mockRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          MRF_RESPONSE_TIMESTAMP_LABEL,
+          mockDecryptedRecord[0].question,
+        ])
+        const expectedSubmissionRow = stringify([
+          mockRecord.submissionId,
+          getFormattedDate(mockRecord.created),
+          mockDecryptedRecord[0].answer,
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow,
+        ])
+      })
     })
 
     describe('submissions with only answer key', () => {
@@ -796,6 +852,64 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedHeaderRow,
           expectedSubmissionRow1,
           expectedSubmissionRow2,
+        ])
+      })
+
+      it('should handle submissions with address answerArray', () => {
+        // Arrange
+        const addressAnswerArray = [
+          '161',
+          'BUKIT BATOK STREET 11',
+          '',
+          '1',
+          '1',
+          '650161',
+        ]
+        const mockDecryptedRecord = [
+          generateRecord(1, addressAnswerArray, 'address'),
+        ]
+
+        const mockRecord = {
+          record: mockDecryptedRecord,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+        }
+
+        // const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
+        generator.addRecord(mockRecord)
+
+        // Act
+        generator.process()
+
+        // Assert
+        //Should have 1 header row and 1 submission row
+        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          'Timestamp',
+          mockDecryptedRecord[0].question + `-${answerKey[0]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[1]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[2]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[3]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[4]}`,
+          mockDecryptedRecord[0].question + `-${answerKey[5]}`,
+        ])
+
+        const expectedSubmissionRow = stringify([
+          mockRecord.submissionId,
+          getFormattedDate(mockRecord.created),
+          addressAnswerArray[0],
+          addressAnswerArray[1],
+          addressAnswerArray[2],
+          addressAnswerArray[3],
+          addressAnswerArray[4],
+          addressAnswerArray[5],
+        ])
+
+        expect(generator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow,
         ])
       })
     })

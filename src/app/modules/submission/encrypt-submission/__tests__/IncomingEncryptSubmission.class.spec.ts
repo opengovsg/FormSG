@@ -114,7 +114,8 @@ describe('IncomingEncryptSubmission', () => {
         value === BasicField.Email ||
         value === BasicField.Attachment ||
         value === BasicField.Table ||
-        value === BasicField.Checkbox
+        value === BasicField.Checkbox ||
+        value === BasicField.Address
       )
         return
       const field = generateDefaultField(value)

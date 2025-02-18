@@ -3,6 +3,7 @@ import { ObjectId } from 'bson'
 import { pick } from 'lodash'
 
 import {
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedSingleAnswerResponse,
@@ -10,6 +11,7 @@ import {
 } from 'src/app/modules/submission/submission.types'
 import {
   FormFieldSchema,
+  IAddressCompoundFieldSchema,
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
@@ -32,6 +34,9 @@ import {
 } from 'src/types/api'
 
 import {
+  AddressCompoundFieldResponseV3,
+  AddressResponse,
+  AddressResponseV3,
   AllowMyInfoBase,
   AttachmentSize,
   BasicField,
@@ -212,6 +217,19 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as INumberFieldSchema
+    case BasicField.Address:
+      return {
+        ...defaultParams,
+        addressSubFields: {
+          postalCode: '650161',
+          blockNumber: '161',
+          streetName: 'BUKIT BATOK STREET 11',
+          buildingName: '',
+          levelNumber: '1',
+          unitNumber: '1',
+        },
+        ...customParams,
+      } as IAddressCompoundFieldSchema
     default:
       return {
         ...defaultParams,
@@ -233,12 +251,15 @@ export const generateProcessedSingleAnswerResponse = ({
   myInfo?: AllowMyInfoBase['myInfo']
 }): ProcessedSingleAnswerResponse => {
   if (
-    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
-      field.fieldType,
-    )
+    [
+      BasicField.Attachment,
+      BasicField.Table,
+      BasicField.Checkbox,
+      BasicField.Address,
+    ].includes(field.fieldType)
   ) {
     throw new Error(
-      'Call the custom response generator functions for attachment, table and checkbox.',
+      'Call the custom response generator functions for attachment, table, address and checkbox.',
     )
   }
   return {
@@ -258,12 +279,15 @@ export const generateSingleAnswerResponse = (
   signature?: string,
 ): SingleAnswerFieldResponse => {
   if (
-    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
-      field.fieldType,
-    )
+    [
+      BasicField.Attachment,
+      BasicField.Table,
+      BasicField.Checkbox,
+      BasicField.Address,
+    ].includes(field.fieldType)
   ) {
     throw new Error(
-      'Call the custom response generator functions for attachment, table and checkbox.',
+      'Call the custom response generator functions for attachment, table, address and checkbox.',
     )
   }
   return {
@@ -279,12 +303,15 @@ export const generateNewSingleAnswerResponse = (
   customParams?: Partial<ProcessedSingleAnswerResponse>,
 ): ProcessedSingleAnswerResponse => {
   if (
-    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
-      fieldType,
-    )
+    [
+      BasicField.Attachment,
+      BasicField.Table,
+      BasicField.Checkbox,
+      BasicField.Address,
+    ].includes(fieldType)
   ) {
     throw new Error(
-      'Call the custom response generator functions for attachment, table and checkbox.',
+      'Call the custom response generator functions for attachment, address, table and checkbox.',
     )
   }
   return {
@@ -422,6 +449,27 @@ export const generateTableDropdownColumn = (
   } as Column
 }
 
+export const generateAddressResponse = (
+  field: IAddressCompoundFieldSchema,
+  answerArray?: string[],
+): AddressResponse => ({
+  question: 'question',
+  _id: field._id,
+  answerArray: answerArray ?? [], //TODO: check
+  fieldType: BasicField.Address,
+})
+
+export const generateNewAddressResponse = (
+  customParams?: Partial<ProcessedAddressResponse>,
+): ProcessedAddressResponse => ({
+  _id: new ObjectId().toHexString(),
+  question: `Address question`,
+  answerArray: ['161', 'BUKIT BATOK STREET 11', '', '', '', '650161'],
+  fieldType: BasicField.Address,
+  isVisible: true,
+  ...customParams,
+})
+
 export const generateTableShortTextColumn = (
   customParams?: Partial<ShortTextFieldBase> & { _id?: string },
 ): Column => {
@@ -524,6 +572,15 @@ export const generateCheckboxResponseV3 = (
 ): CheckboxResponseV3 => {
   return {
     fieldType: BasicField.Checkbox,
+    answer,
+  }
+}
+
+export const generateAddressResponseV3 = (
+  answer: AddressCompoundFieldResponseV3,
+): AddressResponseV3 => {
+  return {
+    fieldType: BasicField.Address,
     answer,
   }
 }

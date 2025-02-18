@@ -4,10 +4,15 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
+
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
-import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
+import {
+  getAddressDecryptedResponseInstances,
+  getDecryptedResponseInstance,
+} from '../getDecryptedResponseInstance'
 import { processFormulaInjectionText } from '../processFormulaInjection'
 
 type UnprocessedRecord = Merge<
@@ -15,14 +20,23 @@ type UnprocessedRecord = Merge<
   { record: Dictionary<Response> }
 >
 
+const MRF_CSV_HEADERS = ['Response ID', MRF_RESPONSE_TIMESTAMP_LABEL]
+
+const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
+
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
   hasBeenSorted: boolean
   fieldIdToQuestion: Map<string, { created: string; question: string }>
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
+  isMrf: boolean
 
-  constructor(expectedNumberOfRecords: number, numOfMetaDataRows: number) {
+  constructor(
+    expectedNumberOfRecords: number,
+    numOfMetaDataRows: number,
+    isMrf: boolean,
+  ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
@@ -30,6 +44,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
+    this.isMrf = isMrf
   }
 
   /**
@@ -43,40 +58,37 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * Extracts information from input record, rearranges record and then adds an UnprocessedRecord to `this.unprocessed`
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
-  addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
+  addRecord({
+    record,
+    created,
+    ...otherSubmissionProperties
+  }: DecryptedSubmissionData): void {
+    const fieldRecords: Response[] = []
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
-    const fieldRecords = record.map((content) => {
-      const fieldRecord = getDecryptedResponseInstance(content)
-      if (!fieldRecord.isHeader) {
-        const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
-        // Only set new mapping if it does not exist or this record is a later
-        // submission.
-        // Might need to differentiate the question headers if we allow
-        // signed-but-failed-verification rows to proceed.
-        if (!currentMapping || created > currentMapping.created) {
-          this.fieldIdToQuestion.set(fieldRecord.id, {
-            created,
-            question: fieldRecord.question,
-          })
-        }
-        // Number of columns needed by this answer in the CSV
-        const contentNumCols = fieldRecord.numCols
-        // Number of columns currently allocated to the field
-        const currentNumCols = this.fieldIdToNumCols[fieldRecord.id]
-        // Update the number of columns allocated
-        this.fieldIdToNumCols[fieldRecord.id] = currentNumCols
-          ? Math.max(currentNumCols, contentNumCols)
-          : contentNumCols
+    record.forEach((content) => {
+      //split address record into individual columns
+      if (content.fieldType.toString() === 'address') {
+        const addressFieldRecords: Response[] =
+          getAddressDecryptedResponseInstances(content) // returns a list of Responses
+        addressFieldRecords.forEach((fieldRecord) => {
+          this._prepareFieldResponse(fieldRecord, created)
+          fieldRecords.push(fieldRecord)
+        })
+        return //skip to next record in fieldRecords
       }
-      return fieldRecord
+
+      const fieldRecord = getDecryptedResponseInstance(content)
+      this._prepareFieldResponse(fieldRecord, created)
+      fieldRecords.push(fieldRecord)
+      // return fieldRecord
     })
 
     // Rearrange record to be an object identified by field ID.
     this.unprocessed.push({
       created,
-      submissionId,
       record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
+      ...otherSubmissionProperties,
     })
   }
 
@@ -89,9 +101,12 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Response ID', 'Timestamp']
+    // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
+    // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
+    const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...BASE_CSV_HEADERS]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
+        // TODO: (Code quality) Refactor to avoid mutating the `headers` array.
         headers.push(value.question)
       }
     })
@@ -100,6 +115,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
     this.unprocessed.forEach((up) => {
+      const row = [up.submissionId]
+
       const formattedDate = isValid(parseISO(up.created))
         ? formatInTimeZone(
             up.created,
@@ -107,7 +124,22 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
-      const row = [up.submissionId, formattedDate]
+
+      row.push(formattedDate)
+
+      // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+      // if (this.isMrf) {
+      //   const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
+      //   if (lastSubmittedAt) {
+      //     formattedDate = isValid(parseISO(lastSubmittedAt))
+      //       ? formatInTimeZone(
+      //           lastSubmittedAt,
+      //           'Asia/Singapore',
+      //           'dd MMM yyyy hh:mm:ss a',
+      //         )
+      //       : lastSubmittedAt
+      //   }
+      // }
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
@@ -118,6 +150,32 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       this.addLine(row)
     })
     this.hasBeenProcessed = true
+  }
+  /**
+   * Prepares a fieldRecord
+   */
+  private _prepareFieldResponse(fieldRecord: Response, created: string): void {
+    if (!fieldRecord.isHeader) {
+      const currentMapping = this.fieldIdToQuestion.get(fieldRecord.id)
+      // Only set new mapping if it does not exist or this record is a later
+      // submission.
+      // Might need to differentiate the question headers if we allow
+      // signed-but-failed-verification rows to proceed.
+      if (!currentMapping || created > currentMapping.created) {
+        this.fieldIdToQuestion.set(fieldRecord.id, {
+          created,
+          question: fieldRecord.question,
+        })
+      }
+      // Number of columns needed by this answer in the CSV
+      const contentNumCols = fieldRecord.numCols
+      // Number of columns currently allocated to the field
+      const currentNumCols = this.fieldIdToNumCols[fieldRecord.id]
+      // Update the number of columns allocated
+      this.fieldIdToNumCols[fieldRecord.id] = currentNumCols
+        ? Math.max(currentNumCols, contentNumCols)
+        : contentNumCols
+    }
   }
 
   /**

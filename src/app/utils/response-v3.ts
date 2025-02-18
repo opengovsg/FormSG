@@ -28,6 +28,7 @@ export const isFieldResponseV3Equal = (
     case BasicField.Radio:
     case BasicField.Checkbox:
     case BasicField.Children:
+    case BasicField.Address:
       return _.isEqual(l.answer, r.answer)
     case BasicField.Attachment: {
       const lAnswer = l.answer as ParsedClearAttachmentResponseV3['answer']

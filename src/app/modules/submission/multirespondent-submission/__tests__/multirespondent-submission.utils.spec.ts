@@ -4,23 +4,28 @@ import moment from 'moment-timezone'
 import { ok } from 'neverthrow'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
 import {
+  AddressAttributes,
+  AddressResponseV3,
   AttachmentResponseV3,
   BasicField,
   CheckboxResponseV3,
   ChildBirthRecordsResponseV3,
   EmailResponseV3,
   FieldResponsesV3,
+  FormFieldDto,
   FormWorkflowStepDto,
   LongTextResponseV3,
   NumberResponseV3,
   ShortTextResponseV3,
   SubmissionType,
   TableResponseV3,
+  WorkflowStatus,
   WorkflowType,
 } from 'shared/types'
 
 import {
   FormFieldSchema,
+  IAddressCompoundFieldSchema,
   IAttachmentFieldSchema,
   ICheckboxFieldSchema,
   IEmailFieldSchema,
@@ -41,18 +46,39 @@ import {
 } from '../multirespondent-submission.utils'
 
 describe('multirespondent-submission.utils', () => {
+  const WORKFLOW_STEP_1: FormWorkflowStepDto = {
+    _id: 'step_1_id',
+    workflow_type: WorkflowType.Static,
+    emails: ['example@example.com'],
+    edit: [],
+  }
+
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
       // Arrange
+      const submittedSteps = [
+        {
+          isApproval: false,
+          submittedAt: '2024-01-01T00:00:00.000Z',
+        },
+      ]
       const createdDate = new Date()
       const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
         _id: new ObjectId(),
         created: createdDate,
         submissionPublicKey: 'some public key',
         encryptedSubmissionSecretKey: 'some encrypted secret key',
         encryptedContent: 'some encrypted content',
-        submissionType: SubmissionType.Multirespondent,
-      } as MultirespondentSubmissionData
+        workflow: [WORKFLOW_STEP_1],
+        workflowStep: 0,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        submittedSteps,
+      } as unknown as MultirespondentSubmissionData
       const attachmentPresignedUrls = {
         someSubmissionId: 'some presigned url',
       }
@@ -75,6 +101,19 @@ describe('multirespondent-submission.utils', () => {
           submissionData.encryptedSubmissionSecretKey,
         attachmentMetadata: attachmentPresignedUrls,
         submissionType: SubmissionType.Multirespondent,
+        workflow: submissionData.workflow,
+        form_fields: submissionData.form_fields,
+        form_logics: submissionData.form_logics,
+        version: submissionData.version,
+        workflowStep: submissionData.workflowStep,
+        mrfVersion: submissionData.mrfVersion,
+        mrfMeta: {
+          workflowCurrentStepNumber: 1,
+          workflowNumTotalSteps: 1,
+          workflowStatus: WorkflowStatus.COMPLETED,
+          lastSubmittedAt:
+            submittedSteps[submittedSteps.length - 1].submittedAt,
+        },
       })
     })
   })
@@ -108,7 +147,7 @@ describe('multirespondent-submission.utils', () => {
       const result = validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
@@ -142,7 +181,7 @@ describe('multirespondent-submission.utils', () => {
       validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
@@ -185,7 +224,7 @@ describe('multirespondent-submission.utils', () => {
       validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
@@ -352,6 +391,40 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
+      ])
+    })
+
+    it('should handle address fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Address',
+          fieldType: BasicField.Address,
+        } as IAddressCompoundFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Address,
+          answer: {
+            addressSubFields: {
+              postalCode: '650161',
+              blockNumber: '161',
+              streetName: 'BUKIT BATOK STREET 11',
+              buildingName: '',
+              levelNumber: '1',
+              unitNumber: '1',
+            } as AddressAttributes,
+          },
+        } as AddressResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        {
+          question: 'Address',
+          answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
+        },
       ])
     })
   })

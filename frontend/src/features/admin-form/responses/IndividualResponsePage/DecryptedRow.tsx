@@ -3,6 +3,7 @@ import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
+import { handleAddressResponseDisplay } from '~shared/utils/address'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -104,6 +105,18 @@ const DecryptedAttachmentRow = ({
   )
 }
 
+const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
+  const transformedAddress = handleAddressResponseDisplay(
+    row.answerArray as string[],
+  ).join(', ')
+  return (
+    <Stack>
+      <DecryptedQuestionLabel row={row} />
+      <Text textStyle="body-1">{transformedAddress}</Text>
+    </Stack>
+  )
+}
+
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
     switch (row.fieldType) {
@@ -118,6 +131,8 @@ export const DecryptedRow = memo(
         )
       case BasicField.Table:
         return <DecryptedTableRow row={row} />
+      case BasicField.Address:
+        return <DecryptedAddressRow row={row} />
       default:
         return (
           <Stack>

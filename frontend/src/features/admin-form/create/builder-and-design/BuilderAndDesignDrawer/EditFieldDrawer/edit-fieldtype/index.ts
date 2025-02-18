@@ -1,3 +1,4 @@
+export * from './EditAddress'
 export * from './EditAttachment'
 export * from './EditCheckbox'
 export * from './EditCountryRegion'

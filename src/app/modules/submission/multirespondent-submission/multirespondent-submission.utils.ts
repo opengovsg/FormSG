@@ -11,6 +11,7 @@ import {
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
+import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import {
   FormFieldSchema,
   IPopulatedForm,
@@ -25,6 +26,7 @@ import {
   ProcessingError,
   ValidateFieldErrorV3,
 } from '../submission.errors'
+import { buildMrfMetadata } from '../submission.utils'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -52,6 +54,11 @@ export const createMultirespondentSubmissionDto = (
     version: submissionData.version,
     workflowStep: submissionData.workflowStep,
     mrfVersion: submissionData.mrfVersion,
+    mrfMeta: buildMrfMetadata({
+      workflow: submissionData.workflow,
+      workflowStep: submissionData.workflowStep,
+      submittedSteps: submissionData.submittedSteps,
+    }),
   }
 }
 
@@ -211,6 +218,7 @@ export const getQuestionTitleAnswerString = ({
     if (!response || !questionTitle) continue
 
     let answer = ''
+    let answerArray: string[] = []
     switch (response.fieldType) {
       case BasicField.Attachment:
         answer = response.answer.answer
@@ -219,6 +227,31 @@ export const getQuestionTitleAnswerString = ({
           answer,
         })
         continue
+      case BasicField.Address: {
+        const {
+          postalCode,
+          blockNumber,
+          streetName,
+          buildingName,
+          levelNumber,
+          unitNumber,
+        } = response.answer.addressSubFields
+        answerArray = [
+          blockNumber,
+          streetName,
+          buildingName,
+          levelNumber,
+          unitNumber,
+          postalCode,
+        ] // move postal code to end of array
+        questionAnswerPair.push({
+          question: `${questionTitle}`,
+          answer: handleAddressResponseDisplay(Object.values(answerArray)).join(
+            ', ',
+          ),
+        })
+        continue
+      }
       case BasicField.Email:
       case BasicField.Mobile:
         answer = response.answer.value

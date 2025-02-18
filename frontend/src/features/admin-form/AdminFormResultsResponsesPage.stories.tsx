@@ -9,6 +9,7 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
   getAdminFormSubmissions,
+  getMultiRespondentSubmissionMetadataResponse,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
@@ -184,6 +185,24 @@ StorageFormLoading.parameters = {
     getAdminFormCollaborators(),
   ],
 }
+
+export const MultiRespondentFormUnlocked = Template.bind({})
+MultiRespondentFormUnlocked.parameters = {
+  msw: [
+    ...createFormBuilderMocks(
+      {
+        responseMode: FormResponseMode.Multirespondent,
+        publicKey: MOCK_KEYPAIR.publicKey,
+      },
+      0,
+    ),
+    getAdminFormSubmissions({ override: 5 }),
+    getMultiRespondentSubmissionMetadataResponse(),
+    getUser(),
+    getAdminFormCollaborators(),
+  ],
+}
+MultiRespondentFormUnlocked.play = StorageFormUnlocked.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {

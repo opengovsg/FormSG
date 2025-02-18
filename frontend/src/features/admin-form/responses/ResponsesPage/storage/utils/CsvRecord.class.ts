@@ -1,9 +1,17 @@
 import { cloneDeep } from 'lodash'
 
-import { SubmissionPaymentDto } from '~shared/types'
+import { SubmissionMrfMetadata, SubmissionPaymentDto } from '~shared/types'
 
-import { getPaymentDataView } from '~features/admin-form/responses/common/utils/getPaymentDataView'
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
 
+import { getPaymentDataView } from '../../../common/utils/getPaymentDataView'
+import {
+  getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
+} from '../../../common/utils/mrfSubmissionView'
 import {
   CsvRecordData,
   CsvRecordStatus,
@@ -34,6 +42,7 @@ export class CsvRecord {
     public form: string,
     public hostOrigin: string,
     public paymentData?: SubmissionPaymentDto,
+    public mrfData?: SubmissionMrfMetadata,
   ) {
     this.#statusMessage = status
     this.#record = []
@@ -98,6 +107,27 @@ export class CsvRecord {
     }
   }
 
+  // Function mapping mrf data keys to ids. This is necessary to maintain
+  // static mapping from keys to IDs which is important for the csv generator to
+  // put the correct values in the correct columns.
+  private mrfDataKeyToId(
+    key:
+      | typeof MRF_WORKFLOW_STATUS_LABEL
+      | typeof MRF_PENDING_RESPONSE_AT_LABEL,
+  ): string {
+    switch (key) {
+      case MRF_WORKFLOW_STATUS_LABEL:
+        return '000000000000000000010001'
+      case MRF_PENDING_RESPONSE_AT_LABEL:
+        return '000000000000000000010002'
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = key
+        throw new Error('Invalid key')
+      }
+    }
+  }
+
   /**
    * Materializes the `submissionData` field
    *
@@ -117,7 +147,6 @@ export class CsvRecord {
       answer: this.#statusMessage,
     }
     const output = cloneDeep(this.#record)
-    output.unshift(downloadStatus)
 
     // Inject the payment details into the csv
     if (this.paymentData) {
@@ -132,9 +161,48 @@ export class CsvRecord {
       )
     }
 
+    if (this.mrfData) {
+      const workflowStatus = this.mrfData.workflowStatus
+      const mrfSubmissionStatus = workflowStatus
+        ? getStatusFromWorkflowStatus(workflowStatus)
+        : ''
+      const workFlowStatusColumn: CsvRecordData = {
+        _id: this.mrfDataKeyToId(MRF_WORKFLOW_STATUS_LABEL),
+        fieldType: 'textfield',
+        question: MRF_WORKFLOW_STATUS_LABEL,
+        answer: mrfSubmissionStatus,
+      }
+
+      const workflowCurrentStepNumber = this.mrfData.workflowCurrentStepNumber
+      const workflowNumTotalSteps = this.mrfData.workflowNumTotalSteps
+
+      const pendingAtString =
+        workflowStatus === undefined ||
+        workflowCurrentStepNumber === undefined ||
+        workflowNumTotalSteps === undefined
+          ? ''
+          : getPendingResponseAtString({
+              workflowStatus,
+              workflowCurrentStepNumber,
+              workflowNumTotalSteps,
+            })
+
+      const pendingAtColumn: CsvRecordData = {
+        _id: this.mrfDataKeyToId(MRF_PENDING_RESPONSE_AT_LABEL),
+        fieldType: 'textfield',
+        question: MRF_PENDING_RESPONSE_AT_LABEL,
+        answer: pendingAtString,
+      }
+
+      output.unshift(workFlowStatusColumn, pendingAtColumn)
+    }
+
+    output.unshift(downloadStatus)
+
     this.submissionData = {
       created: this.created,
       submissionId: this.id,
+      mrfMeta: this.mrfData,
       record: output,
     }
   }

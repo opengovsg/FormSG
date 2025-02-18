@@ -183,7 +183,6 @@ const updateMultirespondentSubmission = async (
 
   const updateMultiRespondentFormSubmissionResult =
     await updateMultiRespondentFormSubmission({
-      formId,
       submissionId,
       form,
       encryptedPayload,

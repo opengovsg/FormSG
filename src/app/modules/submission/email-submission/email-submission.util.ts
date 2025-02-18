@@ -3,6 +3,10 @@ import { compact } from 'lodash'
 
 import { BasicField, FormAuthType } from '../../../../../shared/types'
 import {
+  answerKey,
+  handleAddressResponseDisplay,
+} from '../../../../../shared/utils/address'
+import {
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
@@ -28,6 +32,7 @@ import {
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
 import {
+  isProcessedAddressResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
   isProcessedTableResponse,
@@ -73,6 +78,7 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 import {
+  ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
@@ -188,6 +194,23 @@ export const getAnswerForCheckbox = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
+  }
+}
+
+/**
+ * Creates a response for address, with its answer formatted from the answerArray
+ */
+export const getAnswerForAddress = (
+  response: ProcessedAddressResponse,
+): ResponseFormattedForEmail => {
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: handleAddressResponseDisplay(response.answerArray).join(', '),
   }
 }
 
@@ -442,6 +465,9 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
     return getAnswersForChild(response).map((childField) =>
       getFormattedFunction(childField, hashedFields),
     )
+  } else if (isProcessedAddressResponse(response)) {
+    const address = getAnswerForAddress(response)
+    return [getFormattedFunction(address, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -570,13 +596,13 @@ export class SubmissionEmailObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const dataCollationFormattedData = this.parsedResponses.flatMap(
-      (response) =>
-        createFormattedDataForOneField(
-          response,
-          this.hashedFields,
-          getDataCollationFormattedResponse,
-        ),
+    const splitAddressData = splitAddressResponse(this.parsedResponses)
+    const dataCollationFormattedData = splitAddressData.flatMap((response) =>
+      createFormattedDataForOneField(
+        response,
+        this.hashedFields,
+        getDataCollationFormattedResponse,
+      ),
     )
 
     // Compact is necessary because getDataCollationFormattedResponse
@@ -617,4 +643,27 @@ export class SubmissionEmailObj {
       ),
     )
   }
+}
+
+const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
+  const responses: ProcessedFieldResponse[] = []
+  for (const i in parsedResponses) {
+    const response = parsedResponses[i]
+    if (
+      response.fieldType === BasicField.Address &&
+      isProcessedAddressResponse(response)
+    ) {
+      response.answerArray.map((answer, index) => {
+        responses.push({
+          _id: `${response._id}.${index}`,
+          fieldType: response.fieldType,
+          question: `${response.question} - ${answerKey[index]}`,
+          answer: answer,
+        })
+      })
+    } else {
+      responses.push(response)
+    }
+  }
+  return responses
 }
