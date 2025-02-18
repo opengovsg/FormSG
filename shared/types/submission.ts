@@ -233,7 +233,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowCurrentStepNumber: z.number(),
       workflowNumTotalSteps: z.number(),
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
-      lastSubmittedAt: z.string(),
+      lastSubmittedAt: z.string().optional(),
     }),
   })
 

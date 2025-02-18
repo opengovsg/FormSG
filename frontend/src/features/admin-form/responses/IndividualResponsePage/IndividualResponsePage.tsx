@@ -158,13 +158,14 @@ export const IndividualResponsePage = (): JSX.Element => {
     ? getStatusFromWorkflowStatus(workflowStatus)
     : ''
 
-  const lastSubmittedAt = data?.mrf?.lastSubmittedAt
-    ? formatInTimeZone(
-        data.mrf.lastSubmittedAt,
-        'Asia/Singapore',
-        'eee, d MMM yyyy, hh:mm:ss a',
-      )
-    : ''
+  // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+  // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
+  //   ? formatInTimeZone(
+  //       data.mrf.lastSubmittedAt,
+  //       'Asia/Singapore',
+  //       'eee, d MMM yyyy, hh:mm:ss a',
+  //     )
+  //   : ''
 
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
@@ -219,6 +220,32 @@ export const IndividualResponsePage = (): JSX.Element => {
             isLoading={isLoading}
             isError={isError}
           />
+          {isMrf ? (
+            <>
+              <StackRow
+                label={MRF_WORKFLOW_STATUS_LABEL}
+                value={responseMrfStatus}
+                isLoading={isLoading}
+                isError={isError}
+              />
+              <StackRow
+                label={MRF_PENDING_RESPONSE_AT_LABEL}
+                value={
+                  workflowStatus === undefined ||
+                  workflowCurrentStepNumber === undefined ||
+                  workflowNumTotalSteps === undefined
+                    ? ''
+                    : getPendingResponseAtString({
+                        workflowStatus,
+                        workflowCurrentStepNumber,
+                        workflowNumTotalSteps,
+                      })
+                }
+                isLoading={isLoading}
+                isError={isError}
+              />
+            </>
+          ) : null}
           {attachmentDownloadUrls.size > 0 && (
             <Stack
               spacing={{ base: '0', md: '0.5rem' }}

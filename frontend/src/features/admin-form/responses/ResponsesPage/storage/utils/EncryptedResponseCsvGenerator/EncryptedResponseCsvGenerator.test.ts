@@ -400,21 +400,12 @@ describe('EncryptedResponseCsvGenerator', () => {
         expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
         const expectedHeaderRow = stringify([
           'Response ID',
-          MRF_WORKFLOW_STATUS_LABEL,
-          MRF_PENDING_RESPONSE_AT_LABEL,
           MRF_RESPONSE_TIMESTAMP_LABEL,
           mockDecryptedRecord[0].question,
         ])
         const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
-          MRF_STATUS.REJECTED,
-          getPendingResponseAtString({
-            workflowStatus: mockRecord.mrfMeta.workflowStatus,
-            workflowCurrentStepNumber:
-              mockRecord.mrfMeta.workflowCurrentStepNumber,
-            workflowNumTotalSteps: mockRecord.mrfMeta.workflowNumTotalSteps,
-          }),
-          getFormattedDate(mockRecord.mrfMeta.lastSubmittedAt),
+          getFormattedDate(mockRecord.created),
           mockDecryptedRecord[0].answer,
         ])
         expect(mrfGenerator.records).toEqual([
