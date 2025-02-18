@@ -85,12 +85,6 @@ export const useUseTemplateWizardContext = (
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleEmailModeCreation = () => {
-    setValue('responseMode', FormResponseMode.Email)
-    setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
   const handleEmailFeedbackSubmit = () => {
     // explicit set response to email as email feedback "button" interaction
@@ -100,15 +94,30 @@ export const useUseTemplateWizardContext = (
   }
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleCreateEmailModeForm = (feedbackForm: PublicFormViewDto) =>
-    handleSubmit((inputs) => {
+  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
+    return handleSubmit((inputs) => {
       if (!inputs.reason) {
         return new Error('Reason is required')
       }
-      emailModeFeedbackMutation.mutate({
-        body: { reason: inputs.reason },
-        feedbackForm,
-      })
+
+      emailModeFeedbackMutation.mutate(
+        {
+          body: { reason: inputs.reason },
+          feedbackForm,
+        },
+        {
+          onSuccess: () => {
+            setValue('responseMode', FormResponseMode.Email)
+            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+          },
+        },
+      )
+    })
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = () =>
+    handleSubmit((inputs) => {
       return useEmailModeFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
         emails: inputs.emails.filter(Boolean),
@@ -143,8 +152,8 @@ export const useUseTemplateWizardContext = (
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
-    handleEmailModeCreation,
     handleCreateEmailModeForm,
+    submitEmailModeFeedback,
     isSingpass,
     modalHeader: 'Duplicate form',
   }

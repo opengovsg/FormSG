@@ -107,12 +107,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleEmailModeCreation = () => {
-    setValue('responseMode', FormResponseMode.Email)
-    setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
-  }
-
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
   const handleEmailFeedbackSubmit = () => {
     // explicit set response to email as email feedback "button" interaction
@@ -122,22 +116,38 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   }
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const handleCreateEmailModeForm = (feedbackForm: PublicFormViewDto) =>
-    handleSubmit((inputs) => {
+  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
+    return handleSubmit((inputs) => {
       if (!inputs.reason) {
         return new Error('Reason is required')
       }
-      emailModeFeedbackMutation.mutate({
-        body: { reason: inputs.reason },
-        feedbackForm,
-      })
-      return createEmailModeFormMutation.mutate({
+
+      emailModeFeedbackMutation.mutate(
+        {
+          body: { reason: inputs.reason },
+          feedbackForm,
+        },
+        {
+          onSuccess: () => {
+            setValue('responseMode', FormResponseMode.Email)
+            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+          },
+        },
+      )
+    })
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = () => {
+    return handleSubmit((inputs) => {
+      createEmailModeFormMutation.mutate({
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
         workspaceId,
       })
     })
+  }
 
   const handleDetailsSubmit = handleSubmit(() => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
@@ -155,8 +165,8 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateEmailModeForm,
+    submitEmailModeFeedback,
     handleEmailFeedbackSubmit,
-    handleEmailModeCreation,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
     modalHeader: 'Set up your form',
