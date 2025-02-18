@@ -2,7 +2,9 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  GetObjectTaggingCommand,
   S3Client,
+  Tag,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
 
@@ -16,7 +18,10 @@ import {
 export class S3Service {
   private readonly s3Client: S3Client
 
-  constructor(isDevelopmentEnv: boolean, private readonly logger: pino.Logger) {
+  constructor(
+    isDevelopmentEnv: boolean,
+    private readonly logger: pino.Logger,
+  ) {
     if (isDevelopmentEnv) {
       this.s3Client = new S3Client({
         region: 'ap-southeast-1',
@@ -203,6 +208,27 @@ export class S3Service {
       )
 
       throw err
+    }
+  }
+
+  async getS3FileTags({
+    bucketName,
+    objectKey,
+  }: GetS3FileStreamParams): Promise<Tag[]> {
+    try {
+      const response = await this.s3Client.send(
+        new GetObjectTaggingCommand({ Bucket: bucketName, Key: objectKey }),
+      )
+
+      if (!response.TagSet) throw new Error('Response has no tags')
+
+      this.logger.info(
+        `tags found for ${bucketName}/${objectKey}: ${response.TagSet}`,
+      )
+      return response.TagSet
+    } catch (error) {
+      this.logger.error('Error getting tags:', error)
+      throw error
     }
   }
 }
