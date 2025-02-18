@@ -211,24 +211,42 @@ export class S3Service {
     }
   }
 
-  async getS3FileTags({
-    bucketName,
-    objectKey,
-  }: GetS3FileStreamParams): Promise<Tag[]> {
-    try {
-      const response = await this.s3Client.send(
-        new GetObjectTaggingCommand({ Bucket: bucketName, Key: objectKey }),
-      )
+  async getS3FileScanTag(
+    { bucketName, objectKey }: GetS3FileStreamParams,
+    maxRetries = 10, //default set to 10 retries
+    delayMs = 3000, // default set to 3s delay
+  ): Promise<Tag> {
+    let attempts = 0
+    while (attempts < maxRetries) {
+      attempts++
 
-      if (!response.TagSet) throw new Error('Response has no tags')
+      try {
+        const response = await this.s3Client.send(
+          new GetObjectTaggingCommand({ Bucket: bucketName, Key: objectKey }),
+        )
 
-      this.logger.info(
-        `tags found for ${bucketName}/${objectKey}: ${response.TagSet}`,
-      )
-      return response.TagSet
-    } catch (error) {
-      this.logger.error('Error getting tags:', error)
-      throw error
+        if (response.TagSet) {
+          this.logger.info(
+            `Guardduty scan complete. Tags found for ${bucketName}/${objectKey}: ${JSON.stringify(response.TagSet)}`,
+          )
+
+          return response.TagSet[0]
+        }
+
+        // if no tags are found
+        this.logger.info(
+          `Attempt ${attempts}: ${bucketName}/${objectKey}, no tags found`,
+        )
+      } catch (error) {
+        this.logger.error(`Error getting tags (attempt: ${attempts}):`, error)
+        throw error
+      }
+
+      this.logger.info(`waiting ${delayMs}ms before retrying..`)
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
     }
+    throw new Error(
+      `Max retries reached: No tags found for ${bucketName}/${objectKey}`,
+    )
   }
 }

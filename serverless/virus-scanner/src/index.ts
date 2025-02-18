@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { validate } from 'uuid'
 
-import { scanFileStream } from './clamscan.service'
+// import { scanFileStream } from './clamscan.service'
 import { config } from './config'
 import { getLambdaLogger } from './logger'
 import { S3Service } from './s3.service'
@@ -82,111 +82,141 @@ export const handler = async (
   }
 
   // Scan file
+  const { versionId } = s3ReadableStream
 
-  const { body, versionId } = s3ReadableStream
-
-  let scanResult
+  // let scanResult
+  let tagResult
   try {
-    scanResult = await scanFileStream(body)
+    // scanResult = await scanFileStream(body)
+    tagResult = await s3Client.getS3FileScanTag({
+      bucketName: quarantineBucket,
+      objectKey: quarantineFileKey,
+    })
   } catch (err) {
     logger.error({
-      message: 'Failed to scan file',
+      message: 'Failed to get file tags',
       err,
       quarantineFileKey,
     })
     return {
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR, // is this still be 500 (error getting file tags)
       body: JSON.stringify({
-        message: 'Failed to scan file',
+        message: 'Failed to get file tags',
+        err,
         key: quarantineFileKey,
       }),
     }
   }
 
-  const { isMalicious } = scanResult
+  switch (tagResult.Value) {
+    case 'THREATS_FOUND':
+      {
+        // // If malicious, log and delete
+        // if (isMalicious) {
+        //   const { virusMetadata } = scanResult
 
-  // If malicious, log and delete
-  if (isMalicious) {
-    const { virusMetadata } = scanResult
+        logger.error({
+          message: 'Malicious file detected',
+          key: quarantineFileKey,
+        })
 
-    logger.error({
-      message: 'Malicious file detected',
-      virusMetadata,
-      key: quarantineFileKey,
-    })
+        // Delete from quarantine bucket
+        try {
+          await s3Client.deleteS3File({
+            bucketName: quarantineBucket,
+            objectKey: quarantineFileKey,
+            versionId,
+          })
+        } catch (err) {
+          // Log but do not halt execution as we still want to return 400 for malicious file
+          logger.error({
+            message: 'Failed to delete file from quarantine bucket',
+            err,
+            key: quarantineFileKey,
+          })
+        }
+      }
 
-    // Delete from quarantine bucket
-    try {
-      await s3Client.deleteS3File({
-        bucketName: quarantineBucket,
-        objectKey: quarantineFileKey,
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: JSON.stringify({
+          message: 'Malicious file detected',
+          key: quarantineFileKey,
+          // virusMetadata,
+        }),
+      }
+
+    case 'THREATS_NOT_FOUND': {
+      // If clean, move to clean bucket with randomised key and return
+      const cleanFileKey = crypto.randomUUID()
+
+      logger.info({
+        message: 'clean file detected',
+        key: quarantineFileKey,
         versionId,
       })
-    } catch (err) {
-      // Log but do not halt execution as we still want to return 400 for malicious file
-      logger.error({
-        message: 'Failed to delete file from quarantine bucket',
-        err,
-        key: quarantineFileKey,
-      })
-    }
 
-    return {
-      statusCode: StatusCodes.BAD_REQUEST,
-      body: JSON.stringify({
-        message: 'Malicious file detected',
-        key: quarantineFileKey,
-        virusMetadata,
-      }),
-    }
-    // If clean, move to clean bucket with randomised key and return
-  } else {
-    const cleanFileKey = crypto.randomUUID()
-    logger.info({
-      message: 'clean file detected',
-      key: quarantineFileKey,
-      versionId,
-    })
+      let destinationVersionId: string
+      try {
+        destinationVersionId = await s3Client.moveS3File({
+          sourceBucketName: quarantineBucket,
+          sourceObjectKey: quarantineFileKey,
+          sourceObjectVersionId: versionId,
+          destinationBucketName: cleanBucket,
+          destinationObjectKey: cleanFileKey,
+        })
 
-    let destinationVersionId: string
-
-    try {
-      destinationVersionId = await s3Client.moveS3File({
-        sourceBucketName: quarantineBucket,
-        sourceObjectKey: quarantineFileKey,
-        sourceObjectVersionId: versionId,
-        destinationBucketName: cleanBucket,
-        destinationObjectKey: cleanFileKey,
-      })
-    } catch (err) {
-      logger.error({
-        message: 'Failed to move file to clean bucket',
-        err,
-        bucket: quarantineBucket,
-        key: quarantineFileKey,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        body: JSON.stringify({
+        logger.info({
+          message: 'clean file moved to clean bucket',
+          cleanFileKey,
+          destinationVersionId,
+        })
+      } catch (err) {
+        logger.error({
           message: 'Failed to move file to clean bucket',
+          err,
+          bucket: quarantineBucket,
           key: quarantineFileKey,
+        })
+        return {
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          body: JSON.stringify({
+            message: 'Failed to move file to clean bucket',
+            key: quarantineFileKey,
+          }),
+        }
+      }
+      return {
+        statusCode: StatusCodes.OK,
+        body: JSON.stringify({
+          message: 'File scan completed',
+          cleanFileKey,
+          destinationVersionId,
         }),
       }
     }
-
-    logger.info({
-      message: 'clean file moved to clean bucket',
-      cleanFileKey,
-      destinationVersionId,
-    })
-
-    return {
-      statusCode: StatusCodes.OK,
-      body: JSON.stringify({
-        message: 'File scan completed',
-        cleanFileKey,
-        destinationVersionId,
-      }),
+    case 'SCAN_FAILED':
+    case 'UNSUPPORTED':
+    case 'ACCESS_DENIED': {
+      // if Guardduty scan was unsuccessful for whatever reason
+      const resultValue = tagResult.Value
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        body: JSON.stringify({
+          message: 'File scan unsuccessful',
+          result: resultValue,
+          quarantineFileKey,
+          versionId,
+        }),
+      }
     }
+    default:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        body: JSON.stringify({
+          message: 'Unknown tag result',
+          tagValue: tagResult.Value,
+        }),
+      }
   }
 }
