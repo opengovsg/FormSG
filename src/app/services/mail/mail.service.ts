@@ -547,8 +547,7 @@ export class MailService {
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
-    console.log('here i am storage')
-    console.log(attachments)
+
     // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
     const htmlData: SubmissionToAdminHtmlData = {
