@@ -127,19 +127,19 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
 
       row.push(formattedDate)
 
-      if (this.isMrf) {
-        // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
-        // const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
-        // if (lastSubmittedAt) {
-        //   formattedDate = isValid(parseISO(lastSubmittedAt))
-        //     ? formatInTimeZone(
-        //         lastSubmittedAt,
-        //         'Asia/Singapore',
-        //         'dd MMM yyyy hh:mm:ss a',
-        //       )
-        //     : lastSubmittedAt
-        // }
-      }
+      // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
+      // if (this.isMrf) {
+      //   const lastSubmittedAt = up.mrfMeta?.lastSubmittedAt
+      //   if (lastSubmittedAt) {
+      //     formattedDate = isValid(parseISO(lastSubmittedAt))
+      //       ? formatInTimeZone(
+      //           lastSubmittedAt,
+      //           'Asia/Singapore',
+      //           'dd MMM yyyy hh:mm:ss a',
+      //         )
+      //       : lastSubmittedAt
+      //   }
+      // }
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
