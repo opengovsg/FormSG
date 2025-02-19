@@ -20,6 +20,7 @@ export const FormIssueFeedbackButton = (): JSX.Element | null => {
       bottom={{ base: '1rem', md: '2.625rem' }}
       right={{ base: '1rem', md: '2.75rem' }}
       sx={noPrintCss}
+      zIndex="docked"
     >
       <Tooltip placement="left" label="Report an issue">
         <IconButton
