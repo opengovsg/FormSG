@@ -14,7 +14,7 @@ jobs:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
     with:
-      environment: 'staging'
+      environment: 'staging-alt3'
       environment-site-name: 'staging-alt3'
       shortEnv: 'prod'
       ecs-cpu: 1024
