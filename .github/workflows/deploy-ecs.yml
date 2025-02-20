@@ -169,7 +169,7 @@ jobs:
         uses: docker/build-push-action@v6
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-          DD_ENV: ${{ secrets.DD_ENV }}
+          DD_ENV: ${{ inputs.dd-env }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
@@ -186,15 +186,14 @@ jobs:
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
 
-
-            - name: Replace variables in task definition file
-            id: replace-variables
-            run: |
-              sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
-              sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
-              sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
-              sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
-              sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
+      - name: Replace variables in task definition file
+        id: replace-variables
+        run: |
+          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         # Create a new task definition file with the image to be deployed
