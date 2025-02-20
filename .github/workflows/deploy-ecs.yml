@@ -1,8 +1,8 @@
-name: Deploy to AWS ECS 
+name: Deploy to AWS ECS
 on:
   push:
     branches:
-      - staging-alt3 
+      - staging-alt3
 
 # used to configure IAM to trust Github's OIDC provider
 permissions:
@@ -11,8 +11,8 @@ permissions:
 
 jobs:
   set_environment:
-    name: Set environment for deployment 
-    description: Sets the environment for the deployment, which is the same as the branch name 
+    name: Set environment for deployment
+    # Sets the environment for the deployment, which is the same as the branch name
     outputs:
       current_env: ${{ steps.set_environment.outputs.current_env }}
     runs-on: ubuntu-latest
@@ -27,10 +27,10 @@ jobs:
     environment: ${{ needs.set_environment.outputs.current_env }}
     env:
       IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
-      CURRENT_ENV: ${{ needs.set_environment.outputs.current_env }} 
+      CURRENT_ENV: ${{ needs.set_environment.outputs.current_env }}
     steps:
-      - name: Checkout branch source code into runner environment 
-        description: Required for the frontend build env vars 
+      - name: Checkout branch source code into runner environment
+        # Required for the frontend build env vars
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -58,9 +58,9 @@ jobs:
           echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
 
       - name: Configure AWS credentials
-        description: Configures the runner environment with AWS credentials
+        # Configures the runner environment with AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
-        env: 
+        env:
           AWS_REGION: ${{ secrets.DEFAULT_AWS_REGION }}
         with:
           role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
@@ -75,12 +75,12 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
-        env: 
+        env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}-${{ env.CURRENT_ENV }}
         with:
-          context: .  
+          context: .
           file: Dockerfile.production
           push: true
           tags: |
@@ -94,9 +94,9 @@ jobs:
             "dd_api_key=${{ secrets.DD_API_KEY }}"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
-        description: Create a new task definition file with the image to be deployed
+        # Create a new task definition file with the image to be deployed
         id: task-def
-        env: 
+        env:
           ECS_TASK_DEFINITION: ecs-task-definition.json
           CONTAINER_NAME: formsg-app
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
@@ -106,12 +106,12 @@ jobs:
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           environment-variables: |
             ENV_TYPE=${{ contains(env.CURRENT_ENV, 'staging') && 'staging' || contains(env.CURRENT_ENV, 'prod') && 'prod' || contains(env.CURRENT_ENV, 'uat') && 'uat' || env.CURRENT_ENV }}
-            ENV_SITE_NAME=${{ env.CURRENT_ENV }} 
+            ENV_SITE_NAME=${{ env.CURRENT_ENV }}
 
       - name: Deploy Amazon ECS task definition
-        env:    # For ECS deployment 
-          ECS_SERVICE: ${{ sectets.ECS_SERVICE }} 
-          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }} 
+        env: # For ECS deployment
+          ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
