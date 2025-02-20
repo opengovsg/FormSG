@@ -3,6 +3,114 @@ on:
   push:
     branches:
       - staging-alt3
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      environment-site-name:
+        description: 'Deployment environment site name'
+        required: true
+        type: string # staging, staging-alt, staging-alt2, staging-alt3, prod, uat
+      shortEnv:
+        description: 'Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])'
+        required: true
+        type: string
+      ecs-cpu:
+        description: 'ECS CPU units to use'
+        required: true
+        type: number
+      ecs-memory:
+        description: 'ECS memory to use'
+        required: true
+        type: number
+      aws-account-id:
+        description: 'AWS account ID to use'
+        required: true
+        type: string
+      aws-region:
+        description: 'AWS region to use'
+        required: true
+        default: 'ap-southeast-1'
+        type: string
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
+        required: true
+        type: string
+      ecr-repository:
+        description: 'ECR repository to push image to'
+        required: true
+        type: string
+      ecs-cluster-name:
+        description: 'ECS cluster to deploy to'
+        required: true
+        type: string
+      ecs-task-definition:
+        description: 'ECS task definition to use'
+        required: true
+        type: string
+      ecs-task-definition-path:
+        description: 'ECS task definition path'
+        default: 'ecs-task-definition.json'
+        type: string
+      ecs-service-name:
+        description: 'ECS service to deploy to'
+        required: true
+        type: string
+      ecs-container-name:
+        description: 'Name of container in ECS task definition'
+        required: true
+        type: string
+      codedeploy-application:
+        description: 'CodeDeploy application to use'
+        required: true
+        type: string
+      codedeploy-appspec-path:
+        description: 'CodeDeploy appspec.json/yml file path'
+        default: 'appspec.json'
+        type: string
+      codedeploy-deployment-group:
+        description: 'CodeDeploy deployment group to use'
+        required: true
+        type: string
+      app-version:
+        description: 'Version of the app'
+        required: true
+        type: string
+      app-url:
+        description: 'app url for the frontend'
+        required: true
+        type: string
+      react-app-form-sg-sdk-mode:
+        description: 'FormSG SDK mode'
+        required: true
+        type: string
+      dd-env:
+        description: 'Datadog environment'
+        required: true
+        type: string
+      dd-sample-rate:
+        description: 'Datadog sample rate'
+        required: true
+        type: number
+      dd-rum-client-token:
+        description: 'Datadog RUM client token'
+        required: true
+        type: string
+      ga-tracking-id:
+        description: 'Google Analytics tracking ID'
+        required: true
+        type: string
+      dd-rum-app-id:
+        description: 'Datadog RUM app ID'
+        required: true
+        type: string
+
+    secrets:
+      DD_API_KEY:
+        description: 'Datadog API key'
+        required: true
 
 # used to configure IAM to trust Github's OIDC provider
 permissions:
@@ -10,24 +118,13 @@ permissions:
   contents: read
 
 jobs:
-  set_environment:
-    name: Set environment for deployment
-    # Sets the environment for the deployment, which is the same as the branch name
-    outputs:
-      current_env: ${{ steps.set_environment.outputs.current_env }}
-    runs-on: ubuntu-latest
-    steps:
-      - id: set_environment
-        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
-
   deploy:
     name: Deploy to ECS
-    needs: set_environment
     runs-on: ubuntu-latest
-    environment: ${{ needs.set_environment.outputs.current_env }}
+    environment: ${{ inputs.environment }}
     env:
-      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
-      CURRENT_ENV: ${{ needs.set_environment.outputs.current_env }}
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{  github.run_attempt  }}
+      CURRENT_ENV: ${{ inputs.environment }}
     steps:
       - name: Checkout branch source code into runner environment
         # Required for the frontend build env vars
@@ -41,16 +138,16 @@ jobs:
 
       - name: Inject frontend build env vars
         env:
-          VITE_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
-          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
-          VITE_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
-          VITE_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
-          VITE_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
-          VITE_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
-          VITE_APP_URL: ${{ secrets.APP_URL }}
+          VITE_APP_DD_RUM_APP_ID: ${{ inputs.dd-rum-app-id }}
+          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ inputs.dd-rum-client-token }}
+          VITE_APP_DD_RUM_ENV: ${{ inputs.dd-env }}
+          VITE_APP_DD_SAMPLE_RATE: ${{ inputs.dd-sample-rate }}
+          VITE_APP_GA_TRACKING_ID: ${{ inputs.ga-tracking-id }}
+          VITE_APP_FORMSG_SDK_MODE: ${{ inputs.react-app-form-sg-sdk-mode }}
+          VITE_APP_URL: ${{ inputs.app-url }}
         run: |
-          sed -i -e "s|@VITE_APP_URL|${{secrets.APP_URL}}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
-          echo VITE_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          sed -i -e "s|@VITE_APP_URL|${{  env.VITE_APP_URL  }}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
+          echo VITE_APP_VERSION=${{  inputs.app-version  }} > frontend/.env
           echo VITE_APP_URL=$VITE_APP_URL > frontend/.env
           echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> frontend/.env
           echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> frontend/.env
@@ -60,11 +157,9 @@ jobs:
       - name: Configure AWS credentials
         # Configures the runner environment with AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
-        env:
-          AWS_REGION: ${{ secrets.DEFAULT_AWS_REGION }}
         with:
-          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ inputs.cicd-role }}
+          aws-region: ${{ inputs.aws-region }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -78,7 +173,7 @@ jobs:
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}-${{ env.CURRENT_ENV }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
           context: .
@@ -88,36 +183,45 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             ${{ github.sha }}
           build-args: |
-            APP_VERSION=${{  env.APP_VERSION  }}
-            APP_URL=${{  secrets.APP_URL  }}
+            APP_VERSION=${{  inputs.app-version  }}
+            APP_URL=${{  inputs.app-url  }}
             REPO_URL=${{  github.server_url  }}/${{  github.repository  }}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
+
+
+            - name: Replace variables in task definition file
+            id: replace-variables
+            run: |
+              sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
+              sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
+              sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
+              sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
+              sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         # Create a new task definition file with the image to be deployed
         id: task-def
         env:
           ECS_TASK_DEFINITION: ecs-task-definition.json
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           CONTAINER_NAME: formsg-app
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ env.IMAGE_TAG }}
+          # TODO: check again if ENV_SITE_NAME is still required
           environment-variables: |
-            ENV_TYPE=${{ contains(env.CURRENT_ENV, 'staging') && 'staging' || contains(env.CURRENT_ENV, 'prod') && 'prod' || contains(env.CURRENT_ENV, 'uat') && 'uat' || env.CURRENT_ENV }}
-            ENV_SITE_NAME=${{ env.CURRENT_ENV }}
+            ENV_TYPE=${{ inputs.environment }}
+            ENV_SITE_NAME=${{ inputs.environment-site-name }}
 
       - name: Deploy Amazon ECS task definition
-        env: # For ECS deployment
-          ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
-          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ inputs.ecs-service-name }}
+          cluster: ${{ inputs.ecs-cluster-name }}
           wait-for-service-stability: true
           codedeploy-appspec: ${{ inputs.codedeploy-appspec-path }}
           codedeploy-application: ${{ inputs.codedeploy-application }}

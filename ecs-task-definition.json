@@ -1,17 +1,60 @@
-
-{ 
+{
   "containerDefinitions": [
     {
       "name": "formsg-app",
       "essential": true,
-      "command": "/bin/sh -c \"./generate-env-from-ecs-params.sh && npm start\"",
+      "#command": "/bin/sh -c \"./generate-env-from-ecs-params.sh && npm start\"",
       "portMappings": [
-        { "containerPort": 3000 }
-      ]
+        { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "formsg/ecs/formsg-app",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "dd-agent",
+      "image": "public.ecr.aws/datadog/agent:latest",
+      "portMappings": [
+        { "containerPort": 8126, "hostPort": 8126, "protocol": "tcp" }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "TZ", "value": "Asia/Singapore" },
+        { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
+        { "name": "ECS_FARGATE", "value": "true" },
+        { "name": "DD_APM_ENABLED", "value": "true" },
+        { "name": "DD_SITE", "value": "datadoghq.com" }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        { "name": "DD_API_KEY", "valueFrom": "/<ENV>/DD_API_KEY" },
+        { "name": "DD_SERVICE", "valueFrom": "/<ENV>/DD_SERVICE" },
+        { "name": "DD_TAGS", "valueFrom": "/<ENV>/DD_TAGS" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "formsg/ecs/app-server-dd-agent",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
-  ], 
-  "family": "formsg-app", 
-  "requiresCompatibilities": [
-    "FARGATE"
-  ] 
+  ],
+  "family": "formsg-app",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "runtimePlatform": { "operatingSystemFamily": "LINUX" },
+  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-ecs-task-exec-role",
+  "cpu": "<CPU>",
+  "memory": "<MEMORY>"
 }

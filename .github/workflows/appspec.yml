@@ -1,0 +1,10 @@
+version: 1
+Resources:
+  - TargetService:
+      Type: 'AWS::ECS::Service'
+      Properties:
+        # Placeholder text - gets replaced when pipeline runs
+        TaskDefinition: '<TASK_DEFINITION>'
+        LoadBalancerInfo:
+          ContainerName: app-server
+          ContainerPort: 8080
