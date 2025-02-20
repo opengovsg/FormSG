@@ -24,7 +24,7 @@ jobs:
       cicd-role: 'arn:aws:iam::205930608298:role/formsg-stg-alt3-github-oidc-role'
       codedeploy-application: 'formsg-stg-alt3-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
-      codedeploy-deployment-group: 'formsg-ecs-dg'
+      codedeploy-deployment-group: 'formsg-stg-alt3-ecs-dg'
       ecr-repository: 'formsg'
       ecs-cluster-name: 'formsg-stg-alt3-ecs'
       ecs-service-name: 'formsg-stg-alt3-ecs-service'
