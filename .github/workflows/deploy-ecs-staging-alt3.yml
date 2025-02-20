@@ -1,0 +1,44 @@
+name: Deploy to staging-alt3
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - staging-alt3
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy-ecs.yml
+    with:
+      environment: 'staging'
+      environment-site-name: 'staging-alt3'
+      shortEnv: 'prod'
+      ecs-cpu: 1024
+      ecs-memory: 2048
+      aws-region: 'ap-southeast-1'
+      aws-account-id: '205930608298'
+      cicd-role: 'arn:aws:iam::205930608298:role/formsg-stg-alt3-github-oidc-role'
+      codedeploy-application: 'formsg-ecs-app'
+      codedeploy-appspec-path: deploy/appspec.yml
+      codedeploy-deployment-group: 'formsg-ecs-dg'
+      ecr-repository: 'formsg'
+      ecs-cluster-name: 'formsg-ecs'
+      ecs-service-name: 'formsg-ecs-service'
+      ecs-task-definition: 'formsg'
+      ecs-task-definition-path: 'deploy/task-definition-production.json'
+      ecs-container-name: 'app-server'
+      app-version: ${{ github.sha }}
+      dd-sample-rate: 100
+      app-url: 'https://staging-alt3.form.gov.sg'
+      react-app-form-sg-sdk-mode: 'staging'
+      dd-env: 'staging-alt3'
+      dd-rum-client-token: 'pub30d7ad4705b1bbb6d6bb60b4ac23f789'
+      ga-tracking-id: 'UA-130216930-3'
+      dd-rum-app-id: '95d75367-83a9-47f0-b2ab-cd91a253fcb5'
+
+    secrets:
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
