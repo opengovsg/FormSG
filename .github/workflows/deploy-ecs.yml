@@ -1,8 +1,5 @@
 name: Deploy to AWS ECS
 on:
-  push:
-    branches:
-      - staging-alt3
   workflow_call:
     inputs:
       environment:
