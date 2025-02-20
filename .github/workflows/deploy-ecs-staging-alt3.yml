@@ -29,8 +29,8 @@ jobs:
       ecs-cluster-name: 'formsg-ecs'
       ecs-service-name: 'formsg-ecs-service'
       ecs-task-definition: 'formsg'
-      ecs-task-definition-path: 'deploy/task-definition-production.json'
-      ecs-container-name: 'app-server'
+      ecs-task-definition-path: 'deploy/ecs-task-definition.json'
+      ecs-container-name: 'formsg-app'
       app-version: ${{ github.sha }}
       dd-sample-rate: 100
       app-url: 'https://staging-alt3.form.gov.sg'

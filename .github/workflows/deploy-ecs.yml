@@ -197,9 +197,8 @@ jobs:
         # Create a new task definition file with the image to be deployed
         id: task-def
         env:
-          ECS_TASK_DEFINITION: ecs-task-definition.json
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          CONTAINER_NAME: formsg-app
+          CONTAINER_NAME: ${{ inputs.ecs-container-name }}
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
