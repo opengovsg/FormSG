@@ -26,9 +26,9 @@ jobs:
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-ecs-dg'
       ecr-repository: 'formsg'
-      ecs-cluster-name: 'formsg-ecs'
-      ecs-service-name: 'formsg-ecs-service'
-      ecs-task-definition: 'formsg'
+      ecs-cluster-name: 'formsg-stg-alt3-ecs'
+      ecs-service-name: 'formsg-stg-alt3-ecs-service'
+      ecs-task-definition: 'formsg-stg-alt3-ecs'
       ecs-task-definition-path: 'deploy/ecs-task-definition.json'
       ecs-container-name: 'formsg-app'
       app-version: ${{ github.sha }}

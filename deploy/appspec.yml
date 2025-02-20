@@ -6,5 +6,5 @@ Resources:
         # Placeholder text - gets replaced when pipeline runs
         TaskDefinition: '<TASK_DEFINITION>'
         LoadBalancerInfo:
-          ContainerName: app-server
+          ContainerName: formsg-app
           ContainerPort: 8080
