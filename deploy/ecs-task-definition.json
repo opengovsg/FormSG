@@ -52,8 +52,8 @@
   "volumes": [],
   "placementConstraints": [],
   "runtimePlatform": { "operatingSystemFamily": "LINUX" },
-  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-ecs-task-role",
-  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-ecs-task-exec-role",
+  "taskRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-stg-alt3-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/formsg-stg-alt3-ecs-task-exec-role",
   "cpu": "<CPU>",
   "memory": "<MEMORY>"
 }
