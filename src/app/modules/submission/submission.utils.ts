@@ -126,6 +126,7 @@ import {
   AttachmentUploadError,
   ConflictError,
   DownloadCleanFileFailedError,
+  ExpectedResponseNotFoundError,
   FeatureDisabledError,
   InvalidEncodingError,
   InvalidFieldIdError,
@@ -342,6 +343,7 @@ const errorMapper: MapRouteError = (
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
     case MaliciousFileDetectedError:
+    case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
