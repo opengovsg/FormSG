@@ -7,4 +7,4 @@ Resources:
         TaskDefinition: '<TASK_DEFINITION>'
         LoadBalancerInfo:
           ContainerName: formsg-app
-          ContainerPort: 8080
+          ContainerPort: 4545
