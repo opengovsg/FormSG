@@ -47,7 +47,7 @@ let Form: IFormModel
 test.describe('Storage form submission', () => {
   test.beforeAll(async () => {
     // Create models
-    db = await makeMongooseFixtures()
+    db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
   })
   test.afterAll(async () => {

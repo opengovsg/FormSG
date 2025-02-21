@@ -20,6 +20,7 @@ import {
 } from './constants'
 import { test } from './fixtures'
 import {
+  createFeedbackForm,
   createForm,
   createSubmissionTestRunnerForResponseMode,
   verifySubmissionDisabled,
@@ -44,8 +45,10 @@ let Form: IFormModel
 test.describe('Email form submission', () => {
   test.beforeAll(async () => {
     // Create models
-    db = await makeMongooseFixtures()
+    db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
+
+    await createFeedbackForm()
   })
   test.afterAll(async () => {
     // Clean up db
