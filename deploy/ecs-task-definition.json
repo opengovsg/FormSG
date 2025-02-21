@@ -4,7 +4,7 @@
       "name": "formsg-app",
       "essential": true,
       "portMappings": [
-        { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
+        { "containerPort": 4545, "hostPort": 8080, "protocol": "tcp" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
