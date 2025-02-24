@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -91,6 +92,10 @@ export const NonMobileSidebarGridArea: FCC = ({ children }) => (
 
 export const LoginPageTemplate: FCC = ({ children }) => {
   const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
+
+  const siteBannerContentGB = useFeatureValue('site-banner-content', '')
+  const isLoginBannerGB = useFeatureValue('is-login-banner', '')
+
   const { t } = useTranslation()
 
   const bannerContent = useMemo(
@@ -99,9 +104,14 @@ export const LoginPageTemplate: FCC = ({ children }) => {
     [siteBannerContent, isLoginBanner],
   )
 
+  const bannerContentGB = useMemo(
+    () => siteBannerContentGB || isLoginBannerGB,
+    [siteBannerContentGB, isLoginBannerGB],
+  )
+
   const bannerProps = useMemo(
-    () => getBannerProps(bannerContent),
-    [bannerContent],
+    () => getBannerProps(bannerContent || bannerContentGB),
+    [bannerContent, bannerContentGB],
   )
 
   const bannerColorIntensity = 600

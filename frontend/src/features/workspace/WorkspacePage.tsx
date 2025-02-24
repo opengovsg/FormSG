@@ -13,6 +13,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { PAPERLESS_FORMSG_RESEARCH_LINK } from '~shared/constants'
 import { Workspace } from '~shared/types/workspace'
@@ -38,6 +39,8 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const siteBannerContentGB = useFeatureValue('site-banner-content', '')
+  const adminBannerContentGB = useFeatureValue('admin-banner-content', '')
 
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
@@ -51,9 +54,15 @@ export const WorkspacePage = (): JSX.Element => {
     () => siteBannerContent || adminBannerContent,
     [adminBannerContent, siteBannerContent],
   )
+
+  const bannerContentGB = useMemo(
+    () => siteBannerContentGB || adminBannerContentGB,
+    [adminBannerContentGB, siteBannerContentGB],
+  )
+
   const bannerProps = useMemo(
-    () => getBannerProps(bannerContent),
-    [bannerContent],
+    () => getBannerProps(bannerContent || bannerContentGB),
+    [bannerContent, bannerContentGB],
   )
 
   const DEFAULT_WORKSPACE = useMemo(() => {
