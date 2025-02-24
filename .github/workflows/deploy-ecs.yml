@@ -192,6 +192,7 @@ jobs:
           sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<ENVIRONMENT_SITE_NAME>/${{ inputs.environment-site-name }}/g' ${{ inputs.ecs-task-definition-path }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         # Create a new task definition file with the image to be deployed
@@ -204,7 +205,7 @@ jobs:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ env.IMAGE_TAG }}
-          # TODO: check again if ENV_SITE_NAME is still required
+          # TODO: check again if ENV_TYPE and ENV_SITE_NAME is still required here
           environment-variables: |
             ENV_TYPE=${{ inputs.environment }}
             ENV_SITE_NAME=${{ inputs.environment-site-name }}
