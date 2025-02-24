@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   GetObjectTaggingCommand,
   S3Client,
+  Tag,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
 import { retry } from 'ts-retry-promise'
@@ -13,7 +14,6 @@ import {
   GetS3FileStreamParams,
   GetS3FileStreamResult,
   GUARD_DUTY_MALWARE_SCAN_TAG,
-  MalwareScanTagValue,
   MoveS3FileParams,
 } from './types'
 
@@ -216,7 +216,7 @@ export class S3Service {
   async getS3ObjectScanTag({
     bucketName,
     objectKey,
-  }: GetS3FileStreamParams): Promise<MalwareScanTagValue> {
+  }: GetS3FileStreamParams): Promise<Tag> {
     this.logger.info('Checking for Malware Scan tag...', {
       bucketName,
       objectKey,
@@ -254,7 +254,7 @@ export class S3Service {
       this.logger.info(
         `Guardduty scan complete. Tags found for ${bucketName}/${objectKey}: ${malwareScanTag.Value}`,
       )
-      return malwareScanTag.Value
+      return malwareScanTag
     } catch (e) {
       if (e instanceof Error && e.message.startsWith('Timeout')) {
         this.logger.info('GuardDuty Malware Scan polling timed out', {

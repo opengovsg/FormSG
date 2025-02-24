@@ -105,7 +105,7 @@ export const handler = async (
     }
   }
 
-  switch (tagResult) {
+  switch (tagResult.Value) {
     case MalwareScanTagValue.THREATS_FOUND:
       logger.error({
         message: 'Malicious file detected',
