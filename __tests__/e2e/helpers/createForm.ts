@@ -1,5 +1,5 @@
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { Page } from '@playwright/test'
+import { ObjectId } from 'bson'
 import cuid from 'cuid'
 import { format } from 'date-fns'
 import {
@@ -834,14 +834,17 @@ export const createFeedbackForm = async () => {
     publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
     status: FormStatus.Public,
     form_fields: [
-      generateDefaultField(BasicField.Checkbox, {
+      {
+        _id: new ObjectId().toHexString(),
+        globalId: new ObjectId().toHexString(),
+        fieldType: BasicField.Checkbox,
         fieldOptions: ['I need to collect Sensitive High data'],
         othersRadioButton: true,
         required: true,
         disabled: false,
         title: 'Checkbox',
         description: '',
-      }),
+      },
     ],
   })
 
