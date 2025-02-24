@@ -1,3 +1,4 @@
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { Page } from '@playwright/test'
 import cuid from 'cuid'
 import { format } from 'date-fns'
@@ -6,6 +7,7 @@ import {
   MYINFO_FIELD_TO_DRAWER_META,
 } from 'frontend/src/features/admin-form/create/constants'
 import { readFileSync } from 'fs'
+import mongoose from 'mongoose'
 import {
   BasicField,
   DateSelectedValidation,
@@ -18,9 +20,12 @@ import {
   NumberSelectedValidation,
 } from 'shared/types'
 
+import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import { findUserByEmail } from 'src/app/modules/user/user.service'
 import { IFormModel, IFormSchema } from 'src/types'
 
 import {
+  ADMIN_EMAIL,
   ADMIN_FORM_PAGE_CREATE,
   ADMIN_FORM_PAGE_PREFIX,
   ADMIN_FORM_PAGE_SETTINGS,
@@ -45,6 +50,10 @@ type CreateFormReturn = {
   form: IFormSchema
   formResponseMode: E2eFormResponseMode
 }
+
+// TODO: (Kill Email Mode) Remove this form after kill email mode is fully implemented.
+export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
+  '66c0966666c0966666c09666'
 
 /**
  * Navigates to the dashboard and creates a new form with all the associated form settings.
@@ -98,17 +107,18 @@ const addForm = async (
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
 
-  await page
-    .getByText(
-      `${responseMode === FormResponseMode.Email ? 'email' : 'storage'} mode`,
-    )
-    .click()
-  await page.getByRole('button', { name: 'Next step' }).click()
+  let formResponseMode: E2eFormResponseMode
 
-  let formResponseMode: E2eFormResponseMode = {
-    responseMode: FormResponseMode.Email,
-  }
-  if (responseMode === FormResponseMode.Encrypt) {
+  if (responseMode === FormResponseMode.Email) {
+    await page.getByText('use it for now').click()
+
+    formResponseMode = {
+      responseMode: FormResponseMode.Email,
+    }
+  } else {
+    await page.getByText('storage mode').click()
+    await page.getByRole('button', { name: 'Next step' }).click()
+
     // Download the secret key and save it for the test.
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Download key' }).click()
@@ -133,7 +143,6 @@ const addForm = async (
       })
       .click()
   }
-
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   const l = ADMIN_FORM_PAGE_PREFIX.length + 1
@@ -810,4 +819,31 @@ const addLogics = async (
   }
 
   await page.reload()
+}
+
+export const createFeedbackForm = async () => {
+  const EncryptFormModel = getEncryptedFormModel(mongoose)
+
+  const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
+
+  const form = await EncryptFormModel.create({
+    title: 'Email mode deprecation feedback form',
+    admin: user,
+    responseMode: FormResponseMode.Encrypt,
+    _id: TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID,
+    publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
+    status: FormStatus.Public,
+    form_fields: [
+      generateDefaultField(BasicField.Checkbox, {
+        fieldOptions: ['I need to collect Sensitive High data'],
+        othersRadioButton: true,
+        required: true,
+        disabled: false,
+        title: 'Checkbox',
+        description: '',
+      }),
+    ],
+  })
+
+  return { form, user }
 }

@@ -131,7 +131,7 @@ services:
       - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
       - DOWNLOAD_FORM_WHITELIST_RATE_LIMIT
       - UPLOAD_FORM_WHITELIST_RATE_LIMIT
-      - KILL_EMAIL_MODE_FEEDBACK_FORMID=67b2c69dfde2d4b35e8d8276
+      - KILL_EMAIL_MODE_FEEDBACK_FORMID=66c0966666c0966666c09666
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1
