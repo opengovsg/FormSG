@@ -31,11 +31,7 @@
       ],
       "mountPoints": [],
       "volumesFrom": [],
-      "secrets": [
-        { "name": "DD_API_KEY", "valueFrom": "/<ENV>/DD_API_KEY" },
-        { "name": "DD_SERVICE", "valueFrom": "/<ENV>/DD_SERVICE" },
-        { "name": "DD_TAGS", "valueFrom": "/<ENV>/DD_TAGS" }
-      ],
+      "secrets": [{ "name": "dd_api_key", "valueFrom": "/<ENV>/DD_API_KEY" }],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
