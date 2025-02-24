@@ -15,7 +15,7 @@ export const authAndInjectFeedbackFormUrl: ControllerHandler = (
   next,
 ) => {
   if (process.env.NODE_ENV === 'test') {
-    req.params = { formId: `66c0966666c0966666c09666` }
+    req.params = { formId: TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID }
     return next()
   }
   const formId = killEmailMode.feedbackFormId
