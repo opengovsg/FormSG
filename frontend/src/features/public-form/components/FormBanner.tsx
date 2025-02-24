@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormAuthType } from '~shared/types'
 
@@ -19,6 +20,11 @@ export const FormBanner = (): JSX.Element | null => {
       myInfoBannerContent,
     } = {},
   } = useEnv()
+  const siteBannerContentGB = useFeatureValue('site-banner-content', '')
+  const isGeneralMaintenanceGB = useFeatureValue('is-general-maintenance', '')
+  const isSPMaintenanceGB = useFeatureValue('is-sp-maintenance', '')
+  const isCPMaintenanceGB = useFeatureValue('is-cp-maintenance', '')
+  const myInfoBannerContentGB = useFeatureValue('myinfo-banner-content', '')
   const { form } = usePublicFormContext()
 
   const bannerContent = useMemo(
@@ -40,9 +46,28 @@ export const FormBanner = (): JSX.Element | null => {
     ],
   )
 
+  const bannerContentGB = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () =>
+      siteBannerContentGB ||
+      isGeneralMaintenanceGB ||
+      (form?.authType === FormAuthType.SP && isSPMaintenanceGB) ||
+      (form?.authType === FormAuthType.CP && isCPMaintenanceGB) ||
+      (form?.authType === FormAuthType.MyInfo && myInfoBannerContentGB) ||
+      undefined,
+    [
+      form?.authType,
+      isCPMaintenanceGB,
+      isGeneralMaintenanceGB,
+      isSPMaintenanceGB,
+      myInfoBannerContentGB,
+      siteBannerContentGB,
+    ],
+  )
+
   const bannerProps = useMemo(
-    () => getBannerProps(bannerContent),
-    [bannerContent],
+    () => getBannerProps(bannerContent || bannerContentGB),
+    [bannerContent, bannerContentGB],
   )
 
   if (!bannerProps) return null
