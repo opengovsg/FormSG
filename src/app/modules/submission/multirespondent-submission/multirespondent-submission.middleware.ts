@@ -4,6 +4,8 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { IAttachmentInfo } from 'src/types'
+
 import {
   BasicField,
   FormDto,
@@ -44,6 +46,7 @@ import {
 } from '../submission.service'
 import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
+  isAttachmentResponseV3,
   mapRouteError,
 } from '../submission.utils'
 
@@ -637,6 +640,8 @@ export const encryptSubmission = async (
     ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
   > = {}
 
+  const unencryptedAttachments: IAttachmentInfo[] = []
+
   // Populate attachment map
   for (const id of Object.keys(responses)) {
     const response = responses[id]
@@ -649,6 +654,19 @@ export const encryptSubmission = async (
       ...response,
       answer: { ...response.answer, filename: undefined, content: undefined },
     }
+
+    // collect unencrypted attachments to include in email notifications
+    if (isAttachmentResponseV3(response)) {
+      unencryptedAttachments.push({
+        filename: response.answer.filename,
+        content: response.answer.content,
+        fieldId: id,
+      })
+    }
+  }
+
+  if (req.formsg) {
+    req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
   const {

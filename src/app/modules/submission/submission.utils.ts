@@ -126,6 +126,7 @@ import {
   AttachmentUploadError,
   ConflictError,
   DownloadCleanFileFailedError,
+  ExpectedResponseNotFoundError,
   FeatureDisabledError,
   InvalidEncodingError,
   InvalidFieldIdError,
@@ -342,6 +343,7 @@ const errorMapper: MapRouteError = (
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
     case MaliciousFileDetectedError:
+    case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -563,6 +565,15 @@ export const isAttachmentResponse = (
   return (
     response.fieldType === BasicField.Attachment &&
     response.content !== undefined
+  )
+}
+
+export const isAttachmentResponseV3 = (
+  response: ParsedClearFormFieldResponseV3,
+): response is ParsedClearAttachmentResponseV3 => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.answer.content !== undefined
   )
 }
 

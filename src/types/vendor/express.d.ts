@@ -46,6 +46,7 @@ declare global {
             formDef?: IPopulatedMultirespondentForm
             featureFlags?: string[]
             encryptedPayload?: MultirespondentSubmissionDto
+            unencryptedAttachments?: IAttachmentInfo[]
           }
     }
   }
