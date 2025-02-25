@@ -133,10 +133,10 @@ export const hasNoPreviousFeedback = (
   const queryParams =
     optionalParams?.mrfStep != null // mrfStep can be 0 which is falsy, thus we have to check for nullish values instead
       ? {
-          submissionId,
-          'meta.mrfStep': optionalParams.mrfStep,
+          submissionId: { $eq: submissionId },
+          'meta.mrfStep': { $eq: optionalParams.mrfStep },
         }
-      : { submissionId }
+      : { submissionId: { $eq: submissionId } }
 
   return ResultAsync.fromPromise(
     FormFeedbackModel.exists(queryParams),
