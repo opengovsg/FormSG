@@ -1,6 +1,6 @@
 import { AuthedSessionData } from 'express-session'
-import { TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID } from 'shared/constants'
 
+import { TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID } from '../../../../../../shared/constants'
 import { killEmailMode } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { ControllerHandler } from '../../../../modules/core/core.types'
