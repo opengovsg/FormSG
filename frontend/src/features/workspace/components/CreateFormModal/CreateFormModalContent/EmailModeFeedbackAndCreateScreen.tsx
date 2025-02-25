@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { FormProvider } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
@@ -8,6 +9,7 @@ import {
   ModalBody,
   ModalHeader,
   Text,
+  useMergeRefs,
 } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
@@ -97,6 +99,14 @@ export const EmailModeCreationScreen = (): JSX.Element => {
     formState: { errors },
   } = formMethods
 
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 200)
+  }, [])
+
+  const formTitleRegister = register('title', FORM_TITLE_VALIDATION_RULES)
+  const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
+
   const { data: feedbackForm } = useAdminUseEmailModeFormView()
   if (!feedbackForm) return <></>
 
@@ -113,10 +123,7 @@ export const EmailModeCreationScreen = (): JSX.Element => {
             <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
               <FormLabel useMarkdownForDescription>Form name</FormLabel>
 
-              <Input
-                autoFocus
-                {...register('title', FORM_TITLE_VALIDATION_RULES)}
-              />
+              <Input {...formTitleRegister} ref={mergedRef} />
               <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             </FormControl>
 
