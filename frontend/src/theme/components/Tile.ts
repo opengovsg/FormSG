@@ -45,7 +45,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       maxWidth: 'inherit',
       textAlign: 'left',
       alignSelf: 'stretch',
-      justifyContent: 'stretch',
+      justifyContent: 'start',
     },
     title: {
       color: 'secondary.700',

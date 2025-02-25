@@ -1,4 +1,4 @@
-import { BiLockAlt, BiMailSend } from 'react-icons/bi'
+import { BiLockAlt } from 'react-icons/bi'
 import { forwardRef, Stack, Text, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
