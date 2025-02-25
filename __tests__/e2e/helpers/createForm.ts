@@ -8,6 +8,7 @@ import {
 } from 'frontend/src/features/admin-form/create/constants'
 import { readFileSync } from 'fs'
 import mongoose from 'mongoose'
+import { TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID } from 'shared/constants/form'
 import {
   BasicField,
   DateSelectedValidation,
@@ -50,10 +51,6 @@ type CreateFormReturn = {
   form: IFormSchema
   formResponseMode: E2eFormResponseMode
 }
-
-// TODO: (Kill Email Mode) Remove this form after kill email mode is fully implemented.
-export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
-  '66c0966666c0966666c09666'
 
 /**
  * Navigates to the dashboard and creates a new form with all the associated form settings.
