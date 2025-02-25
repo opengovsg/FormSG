@@ -84,6 +84,16 @@ export const MrfWorkflowCompletionEmail = ({
               <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
                 For more details, please contact the respondent(s) or form administrator. 
               </Text>
+            <Hr style={{ margin: '40px 0' }} />
+            <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
+              -- Start of JSON --
+            </Text>
+            <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+              {JSON.stringify(formQuestionAnswers)}
+            </Text>
+            <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
+              -- End of JSON --
+            </Text>
             </Section> 
           </Container>
       </Body>

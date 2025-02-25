@@ -269,6 +269,9 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+        // do JSON data here?
+        // const dataCollationData =
+
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
