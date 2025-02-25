@@ -870,12 +870,14 @@ export class MailService {
     formTitle,
     responseId,
     formQuestionAnswers,
+    attachments,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
+    attachments?: Mail.Attachment[]
   }) => {
     const htmlData = {
       formTitle,
@@ -906,6 +908,7 @@ export class MailService {
         from: this.#senderFromString,
         subject: `Completed - ${formTitle} (${responseId})`,
         html: mailHtml,
+        attachments,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
         },
