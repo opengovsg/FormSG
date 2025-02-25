@@ -827,36 +827,38 @@ const addLogics = async (
 export const createFeedbackForm = async () => {
   const EncryptFormModel = getEncryptedFormModel(mongoose)
 
-  // If the feedback form already exists, don't create it again
-  const prev = await EncryptFormModel.findById(
-    TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID,
-  )
-  if (prev) return
-
   const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
 
-  await EncryptFormModel.create({
-    title: 'Email mode deprecation feedback form',
-    admin: user,
-    responseMode: FormResponseMode.Encrypt,
-    _id: TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID,
-    publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
-    status: FormStatus.Public,
-    hasCaptcha: false,
-    form_fields: [
-      {
-        _id: new ObjectId().toHexString(),
-        globalId: new ObjectId().toHexString(),
-        fieldType: BasicField.Checkbox,
-        fieldOptions: ['I need to collect Sensitive High data'],
-        othersRadioButton: true,
-        required: true,
-        disabled: false,
-        title: 'Checkbox',
-        description: '',
-      },
-    ],
-  })
+  try {
+    await EncryptFormModel.create({
+      title: 'Email mode deprecation feedback form',
+      admin: user,
+      responseMode: FormResponseMode.Encrypt,
+      _id: TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID,
+      publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
+      status: FormStatus.Public,
+      hasCaptcha: false,
+      form_fields: [
+        {
+          _id: new ObjectId().toHexString(),
+          globalId: new ObjectId().toHexString(),
+          fieldType: BasicField.Checkbox,
+          fieldOptions: ['I need to collect Sensitive High data'],
+          othersRadioButton: true,
+          required: true,
+          disabled: false,
+          title: 'Checkbox',
+          description: '',
+        },
+      ],
+    })
+  } catch (error) {
+    // Check for duplicate key error (code 11000)
+    if (error instanceof Error && 'code' in error && error.code === 11000) {
+      return
+    }
+    throw error
+  }
 
   return
 }
