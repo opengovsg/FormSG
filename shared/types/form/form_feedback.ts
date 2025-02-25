@@ -19,6 +19,9 @@ export type FormFeedbackBase = {
   created?: Date
   lastModified?: Date
   submissionId: SubmissionResponseDto['submissionId']
+  meta?: {
+    mrfStep?: number
+  }
 }
 
 // Convert to serialized version.
