@@ -568,6 +568,15 @@ export const isAttachmentResponse = (
   )
 }
 
+export const isAttachmentResponseV3 = (
+  response: ParsedClearFormFieldResponseV3,
+): response is ParsedClearAttachmentResponseV3 => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.answer.content !== undefined
+  )
+}
+
 /**
  * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
  */
