@@ -1,12 +1,5 @@
 // Main tsconfig for building, prevents tests from being compiled.
 {
-  "compilerOptions": {
-    "paths": {
-      "~shared/*": [
-          "shared/*"
-      ]
-    }
-  },
   "extends": "./tsconfig.json",
   "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/__tests__/", "**/__mocks__/"]
 }
