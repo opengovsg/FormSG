@@ -1189,6 +1189,24 @@ export const getQuarantinePresignedPostData = (
       }))
     }),
   )
+
+  // const newStuff = attachmentSizes.map(({ id, size }) => {
+  //   // Check if id is a valid ObjectId
+  //   if (!mongoose.isValidObjectId(id))
+  //     return errAsync(new InvalidFieldIdError())
+
+  //   return createPresignedPostDataPromise({
+  //     bucketName: AwsConfig.virusScannerQuarantineS3BucketGuardduty,
+  //     expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+  //     size,
+  //   }).map((presignedPostData) => ({
+  //     id,
+  //     presignedPostData,
+  //   }))
+  // }),
+  // return ResultAsync.combine(
+
+  // )
 }
 
 /**
