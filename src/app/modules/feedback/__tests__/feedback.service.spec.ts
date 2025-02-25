@@ -309,5 +309,84 @@ describe('feedback.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
+
+    describe('with mrfStep', () => {
+      it('should return true if there is no existing feedback with the same submissionId but different mrfStep', async () => {
+        await FormFeedback.create({
+          comment: `test feedback`,
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+          rating: 5,
+          meta: { mrfStep: 1 },
+        })
+
+        const actualResult = await FeedbackService.hasNoPreviousFeedback(
+          MOCK_SUBMISSION_ID,
+          { mrfStep: 2 },
+        )
+
+        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult._unsafeUnwrap()).toEqual(true)
+      })
+
+      it('should return true if there is no existing feedback with the same submissionId but no mrfStep', async () => {
+        await FormFeedback.create({
+          comment: `test feedback`,
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+          rating: 5,
+        })
+
+        const actualResult = await FeedbackService.hasNoPreviousFeedback(
+          MOCK_SUBMISSION_ID,
+          { mrfStep: 1 },
+        )
+
+        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult._unsafeUnwrap()).toEqual(true)
+      })
+
+      it('should return false if there is existing feedback for given submissionId and mrfStep', async () => {
+        await FormFeedback.create({
+          comment: `test feedback`,
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+          rating: 5,
+          meta: { mrfStep: 1 },
+        })
+
+        const actualResult = await FeedbackService.hasNoPreviousFeedback(
+          MOCK_SUBMISSION_ID,
+          { mrfStep: 1 },
+        )
+
+        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          DuplicateFeedbackSubmissionError,
+        )
+      })
+
+      describe('when mrfStep is a falsy value (0)', () => {
+        it('should return false if there is existing feedback for given submissionId and mrfStep', async () => {
+          await FormFeedback.create({
+            comment: `test feedback`,
+            formId: MOCK_FORM_ID,
+            submissionId: MOCK_SUBMISSION_ID,
+            rating: 5,
+            meta: { mrfStep: 0 },
+          })
+
+          const actualResult = await FeedbackService.hasNoPreviousFeedback(
+            MOCK_SUBMISSION_ID,
+            { mrfStep: 0 },
+          )
+
+          expect(actualResult.isErr()).toEqual(true)
+          expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+            DuplicateFeedbackSubmissionError,
+          )
+        })
+      })
+    })
   })
 })

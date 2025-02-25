@@ -128,11 +128,18 @@ export const getFormFeedbacks = (
  */
 export const hasNoPreviousFeedback = (
   submissionId: string,
-): ResultAsync<true, DuplicateFeedbackSubmissionError | DatabaseError> =>
-  ResultAsync.fromPromise(
-    FormFeedbackModel.exists({
-      submissionId: submissionId,
-    }),
+  optionalParams?: { mrfStep?: number },
+): ResultAsync<true, DuplicateFeedbackSubmissionError | DatabaseError> => {
+  const queryParams =
+    optionalParams?.mrfStep != null // mrfStep can be 0 which is falsy, thus we have to check for nullish values instead
+      ? {
+          submissionId,
+          'meta.mrfStep': optionalParams.mrfStep,
+        }
+      : { submissionId }
+
+  return ResultAsync.fromPromise(
+    FormFeedbackModel.exists(queryParams),
     (error) => {
       logger.error({
         message: 'Error finding feedback documents from database',
@@ -151,3 +158,4 @@ export const hasNoPreviousFeedback = (
     }
     return okAsync(true as const)
   })
+}

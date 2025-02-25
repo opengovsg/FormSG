@@ -25,12 +25,13 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     form?.responseMode === FormResponseMode.Encrypt &&
     form.payments_field.enabled
 
+  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
   /**
    * Handles feedback submission
    * @param isPreview whether form is in preview mode
    */
   const handleSubmitFeedback = useCallback(
-    (inputs: FeedbackFormInput) => {
+    (_inputs: FeedbackFormInput) => {
       // no mutation required in preview-form mode
       if (isPreview) {
         toast({
@@ -42,21 +43,30 @@ export const FormEndPageContainer = (): JSX.Element | null => {
         setIsFeedbackSubmitted(true)
         return
       }
+
+      const inputs = isMrf
+        ? { ..._inputs, mrfStep: submissionData?.mrfStep }
+        : _inputs
+
       // mutateAsync for react-hook-form to show correct loading state.
-      else {
-        return submitFormFeedbackMutation.mutateAsync(inputs, {
-          onSuccess: () => {
-            toast({
-              description: 'Thank you for submitting your feedback!',
-              status: 'success',
-              isClosable: true,
-            })
-            setIsFeedbackSubmitted(true)
-          },
-        })
-      }
+      return submitFormFeedbackMutation.mutateAsync(inputs, {
+        onSuccess: () => {
+          toast({
+            description: 'Thank you for submitting your feedback!',
+            status: 'success',
+            isClosable: true,
+          })
+          setIsFeedbackSubmitted(true)
+        },
+      })
     },
-    [isPreview, submitFormFeedbackMutation, toast],
+    [
+      isPreview,
+      submitFormFeedbackMutation,
+      toast,
+      isMrf,
+      submissionData?.mrfStep,
+    ],
   )
 
   if (!form || !submissionData) return null
@@ -73,10 +83,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     )
   }
 
-  const isFeedbackHidden =
-    // Feedback is not supported on MRF
-    form.responseMode === FormResponseMode.Multirespondent ||
-    isFeedbackSubmitted
+  const isFeedbackHidden = isFeedbackSubmitted
 
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">

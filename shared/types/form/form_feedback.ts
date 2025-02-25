@@ -7,6 +7,7 @@ export type SubmitFormFeedbackBodyDto = {
   isPreview?: boolean
   rating: number
   comment?: string
+  mrfStep?: number
 }
 
 /**

@@ -53,7 +53,7 @@ export const insertFormFeedback = ({
       submissionId,
       rating,
       comment,
-      mrfStep,
+      meta: { mrfStep },
     }),
     (error) => {
       logger.error({
