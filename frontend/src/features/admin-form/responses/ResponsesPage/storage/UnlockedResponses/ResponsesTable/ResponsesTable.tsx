@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { BiBell } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
@@ -13,6 +14,7 @@ import {
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -26,11 +28,13 @@ import {
 import { centsToDollars } from '~shared/utils/payments'
 
 import Badge from '~components/Badge'
+import Button from '~components/Button'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
@@ -256,6 +260,28 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 250,
     disableResizing: true,
   },
+  {
+    Header: MRF_REMINDERS_LABEL,
+    Cell: ({ row }) => {
+      const isPending =
+        row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
+      return isPending ? (
+        <Button
+          loadingText="Sending"
+          m="0"
+          p="0"
+          variant="clear"
+          leftIcon={<BiBell />}
+          onClick={(e) => {
+            e.stopPropagation() // Prevent row click event
+          }}
+        >
+          <Text textStyle="subhead-2">Send reminder</Text>
+        </Button>
+      ) : null
+    },
+    minWidth: 250,
+  },
 ]
 
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
@@ -427,6 +453,8 @@ export const ResponsesTable = () => {
                     as="div"
                     {...cell.getCellProps()}
                     key={cell.getCellProps().key}
+                    display="flex"
+                    alignItems="center"
                   >
                     {cell.render('Cell')}
                   </Td>
