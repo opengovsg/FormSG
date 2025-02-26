@@ -38,6 +38,7 @@ export type WorkflowEmailData = {
   formTitle: string
   responseId: string
   formQuestionAnswers: QuestionAnswer[]
+  formQuestionAnswersJson: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
 }
 
@@ -45,6 +46,7 @@ export const MrfWorkflowCompletionEmail = ({
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41', 
   formQuestionAnswers = [], 
+  formQuestionAnswersJson = [],
   outcome
 }: WorkflowEmailData): JSX.Element => {
   const headingText =  
@@ -89,7 +91,7 @@ export const MrfWorkflowCompletionEmail = ({
               -- Start of JSON --
             </Text>
             <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-              {JSON.stringify(formQuestionAnswers)}
+              {JSON.stringify(formQuestionAnswersJson)}
             </Text>
             <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
               -- End of JSON --

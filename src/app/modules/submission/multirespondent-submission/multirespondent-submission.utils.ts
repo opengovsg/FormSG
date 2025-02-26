@@ -3,6 +3,7 @@ import { err, ok, Result } from 'neverthrow'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
+  AddressAttributes,
   BasicField,
   FieldResponsesV3,
   FormFieldDto,
@@ -11,7 +12,10 @@ import {
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
-import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
+import {
+  answerKey,
+  handleAddressResponseDisplay,
+} from '../../../../../shared/utils/address'
 import {
   FormFieldSchema,
   IPopulatedForm,
@@ -196,6 +200,7 @@ export const validateMrfFieldResponses = ({
 
 /*
  * Extracts question-answer pairs from form fields and responses.
+ * Used for MRF Confirmation email body & JSON, which can be displayed differently (e.g. local address)
  * @param formFields - The form fields schema
  * @param responses - The responses to the form fields
  * @returns An array of QuestionAnswer objects
@@ -203,9 +208,11 @@ export const validateMrfFieldResponses = ({
 export const getQuestionTitleAnswerString = ({
   formFields,
   responses,
+  jsonOutput = false,
 }: {
   formFields: FormFieldSchema[]
   responses: FieldResponsesV3
+  jsonOutput?: boolean
 }): QuestionAnswer[] => {
   const questionAnswerPair = []
   if (!formFields || !responses) {
@@ -228,28 +235,41 @@ export const getQuestionTitleAnswerString = ({
         })
         continue
       case BasicField.Address: {
-        const {
-          postalCode,
-          blockNumber,
-          streetName,
-          buildingName,
-          levelNumber,
-          unitNumber,
-        } = response.answer.addressSubFields
-        answerArray = [
-          blockNumber,
-          streetName,
-          buildingName,
-          levelNumber,
-          unitNumber,
-          postalCode,
-        ] // move postal code to end of array
-        questionAnswerPair.push({
-          question: `${questionTitle}`,
-          answer: handleAddressResponseDisplay(Object.values(answerArray)).join(
-            ', ',
-          ),
-        })
+        if (jsonOutput) {
+          // split address into separate JSON objects
+          answerKey.map((subfield) => {
+            questionAnswerPair.push({
+              question: `${questionTitle} - ${subfield}`,
+              answer:
+                response.answer.addressSubFields[
+                  subfield as keyof AddressAttributes
+                ],
+            })
+          })
+        } else {
+          const {
+            postalCode,
+            blockNumber,
+            streetName,
+            buildingName,
+            levelNumber,
+            unitNumber,
+          } = response.answer.addressSubFields
+          answerArray = [
+            blockNumber,
+            streetName,
+            buildingName,
+            levelNumber,
+            unitNumber,
+            postalCode,
+          ] // move postal code to end of array
+          questionAnswerPair.push({
+            question: `${questionTitle}`,
+            answer: handleAddressResponseDisplay(
+              Object.values(answerArray),
+            ).join(', '),
+          })
+        }
         continue
       }
       case BasicField.Email:
@@ -278,11 +298,11 @@ export const getQuestionTitleAnswerString = ({
               const colTitle = idToColTitleMap[colId]
               return `${colTitle}`
             })
-            .join('; ')
+            .join(', ')
 
           const delimitedColumnAnswers = validColumns
             .map(([, colAns]) => colAns ?? '')
-            .join('; ')
+            .join(', ')
 
           const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
           const answer = delimitedColumnAnswers
@@ -298,14 +318,17 @@ export const getQuestionTitleAnswerString = ({
           'value' in response.answer
             ? response.answer.value
             : 'othersInput' in response.answer
-              ? response.answer.othersInput
+              ? 'Others: ' + response.answer.othersInput
               : ''
         break
       case BasicField.Checkbox:
         // eslint-disable-next-line no-case-declarations
         const selectedAnswers =
           (response.answer.othersInput
-            ? [...response.answer.value, response.answer.othersInput]
+            ? [
+                ...response.answer.value,
+                'Others: ' + response.answer.othersInput,
+              ]
             : [...response.answer.value]
           ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
 

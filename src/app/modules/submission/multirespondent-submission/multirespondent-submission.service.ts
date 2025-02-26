@@ -50,6 +50,7 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
+import moment from 'moment'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -186,6 +187,7 @@ const sendMrfOutcomeEmails = ({
   isApproval = false,
   isRejected = false,
   attachments,
+  timestamp,
 }: {
   currentStepNumber: number
   form: IPopulatedMultirespondentForm
@@ -194,6 +196,7 @@ const sendMrfOutcomeEmails = ({
   isApproval?: boolean
   isRejected?: boolean
   attachments?: IAttachmentInfo[]
+  timestamp: string
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
@@ -269,8 +272,26 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
-        // do JSON data here?
-        // const dataCollationData =
+        // thankfully, getQuestionTitleAnswerString works similarly to .dataCollation with the exception of address field
+        let formQuestionAnswersJson = getQuestionTitleAnswerString({
+          formFields: form.form_fields,
+          responses,
+          jsonOutput: true,
+        })
+
+        formQuestionAnswersJson = [
+          {
+            question: 'Response ID',
+            answer: submissionId,
+          },
+          {
+            question: 'Timestamp',
+            answer: moment(timestamp)
+              .tz('Asia/Singapore')
+              .format('ddd, DD MMM YYYY hh:mm:ss A'),
+          },
+          ...formQuestionAnswersJson,
+        ]
 
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
@@ -280,6 +301,7 @@ const sendMrfOutcomeEmails = ({
             responseId: submissionId,
             isRejected,
             formQuestionAnswers,
+            formQuestionAnswersJson,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
@@ -300,6 +322,7 @@ const sendMrfOutcomeEmails = ({
           responseId: submissionId,
           formQuestionAnswers,
           attachments: attachments,
+          formQuestionAnswersJson,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',
@@ -420,12 +443,14 @@ export const createMultiRespondentFormSubmission = ({
 
 export const performMultiRespondentPostSubmissionCreateActions = ({
   submissionId,
+  timestamp,
   form,
   encryptedPayload,
   logMeta,
   attachments,
 }: {
   submissionId: string
+  timestamp: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
@@ -470,6 +495,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         responses,
         submissionId,
         attachments,
+        timestamp,
       })
     })
     .mapErr((error) => {
@@ -603,6 +629,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
+  timestamp,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
@@ -610,6 +637,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
+  timestamp: string
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -660,6 +688,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isApproval: true,
       isRejected: true,
       attachments: attachments,
+      timestamp,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -676,6 +705,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     isApproval: checkIsFormApproval(form),
     attachments: attachments,
+    timestamp,
   })
     .mapErr((error) => {
       logger.error({

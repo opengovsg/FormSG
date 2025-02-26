@@ -7,7 +7,11 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
+import {
+  FormResponseMode,
+  PaymentChannel,
+  SubmissionId,
+} from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
@@ -871,6 +875,7 @@ export class MailService {
     responseId,
     formQuestionAnswers,
     attachments,
+    formQuestionAnswersJson,
   }: {
     emails: string[]
     formId: string
@@ -878,11 +883,13 @@ export class MailService {
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
+    formQuestionAnswersJson: QuestionAnswer[]
   }) => {
     const htmlData = {
       formTitle,
       responseId: responseId.toString(),
       formQuestionAnswers,
+      formQuestionAnswersJson,
     }
 
     const generatedHtml = fromPromise(
@@ -928,6 +935,7 @@ export class MailService {
     responseId,
     isRejected,
     formQuestionAnswers,
+    formQuestionAnswersJson,
   }: {
     emails: string[]
     formId: string
@@ -935,6 +943,7 @@ export class MailService {
     responseId: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
+    formQuestionAnswersJson: QuestionAnswer[]
   }) => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
@@ -944,6 +953,7 @@ export class MailService {
       responseId: responseId.toString(),
       outcome,
       formQuestionAnswers,
+      formQuestionAnswersJson,
     }
 
     const generatedHtml = fromPromise(

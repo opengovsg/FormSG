@@ -132,6 +132,7 @@ const submitMultirespondentForm = async (
 
   await performMultiRespondentPostSubmissionCreateActions({
     submissionId: submission._id.toString(),
+    timestamp: (submission.created || new Date()).getTime().toString(),
     form,
     encryptedPayload,
     logMeta,
@@ -222,6 +223,7 @@ const updateMultirespondentSubmission = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
+    timestamp: (submission.created || new Date()).getTime().toString(),
   })
 }
 
