@@ -887,7 +887,6 @@ export class MailService {
   }) => {
     const htmlData = {
       formTitle,
-      responseId: responseId.toString(),
       formQuestionAnswers,
       formQuestionAnswersJson,
     }
@@ -950,7 +949,6 @@ export class MailService {
       : WorkflowOutcome.APPROVED
     const htmlData = {
       formTitle,
-      responseId: responseId.toString(),
       outcome,
       formQuestionAnswers,
       formQuestionAnswersJson,

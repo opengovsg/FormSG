@@ -36,7 +36,6 @@ export type QuestionAnswer = {
 
 export type WorkflowEmailData = {
   formTitle: string
-  responseId: string
   formQuestionAnswers: QuestionAnswer[]
   formQuestionAnswersJson: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
@@ -44,7 +43,6 @@ export type WorkflowEmailData = {
 
 export const MrfWorkflowCompletionEmail = ({
   formTitle = 'Test form title',
-  responseId = '64303c45828035f732088a41', 
   formQuestionAnswers = [], 
   formQuestionAnswersJson = [],
   outcome
@@ -80,8 +78,6 @@ export const MrfWorkflowCompletionEmail = ({
               <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
                 Responses for {formTitle} 
               </Heading>
-              <Text style={{...primaryTextStyle, ...questionMargin}}>Response ID</Text>
-              <Text style={{...secondaryTextStyle, ...answerMargin}}>{responseId}</Text>
               {formQuestionAnswers.map(renderQuestionAnswer)}
               <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
                 For more details, please contact the respondent(s) or form administrator. 

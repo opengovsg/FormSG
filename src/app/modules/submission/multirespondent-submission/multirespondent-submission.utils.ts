@@ -208,16 +208,33 @@ export const validateMrfFieldResponses = ({
 export const getQuestionTitleAnswerString = ({
   formFields,
   responses,
+  responseId,
+  timestamp,
   jsonOutput = false,
 }: {
   formFields: FormFieldSchema[]
   responses: FieldResponsesV3
+  responseId: string
+  timestamp: string
   jsonOutput?: boolean
 }): QuestionAnswer[] => {
   const questionAnswerPair = []
   if (!formFields || !responses) {
     return []
   }
+
+  // add responseId & timestamp at the top
+  questionAnswerPair.push({
+    question: `Response ID`,
+    answer: responseId,
+  })
+  questionAnswerPair.push({
+    question: `Response Timestamp`,
+    answer: moment(timestamp)
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A'),
+  })
+
   for (const formField of formFields) {
     const questionTitle = formField.title
     const response = responses[formField._id]

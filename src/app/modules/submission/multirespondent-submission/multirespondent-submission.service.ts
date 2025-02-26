@@ -1,4 +1,5 @@
 import { flatten, uniq } from 'lodash'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -50,7 +51,6 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
-import moment from 'moment'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -270,28 +270,18 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionTitleAnswerString({
           formFields: form.form_fields,
           responses,
+          responseId: submissionId,
+          timestamp,
         })
 
         // thankfully, getQuestionTitleAnswerString works similarly to .dataCollation with the exception of address field
-        let formQuestionAnswersJson = getQuestionTitleAnswerString({
+        const formQuestionAnswersJson = getQuestionTitleAnswerString({
           formFields: form.form_fields,
           responses,
+          responseId: submissionId,
+          timestamp,
           jsonOutput: true,
         })
-
-        formQuestionAnswersJson = [
-          {
-            question: 'Response ID',
-            answer: submissionId,
-          },
-          {
-            question: 'Timestamp',
-            answer: moment(timestamp)
-              .tz('Asia/Singapore')
-              .format('ddd, DD MMM YYYY hh:mm:ss A'),
-          },
-          ...formQuestionAnswersJson,
-        ]
 
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
