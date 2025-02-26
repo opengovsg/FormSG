@@ -15,7 +15,7 @@ export const sendReminderForPendingMrfResponse = async ({
   responseId: string
 }): Promise<void> => {
   return ApiService.post<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/responses/remind`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/remind`,
     {
       responseId,
     },

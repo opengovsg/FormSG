@@ -89,3 +89,11 @@ AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions',
   EncryptSubmissionController.handleGetAllEncryptedResponses,
 )
+
+/**
+ * Send reminder to the current pending step for the MRF submission with the given responseId
+ */
+AdminFormsSubmissionsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/remind',
+  EncryptSubmissionController.handlePendingMrfSubmissionRemind,
+)
