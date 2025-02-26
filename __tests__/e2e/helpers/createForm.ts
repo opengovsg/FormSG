@@ -425,9 +425,11 @@ const addFields = async (
   for (const field of formFields) {
     const myInfoAttr = getMyInfoAttribute(field)
 
-    myInfoAttr
-      ? await addMyInfoField(page, field, myInfoAttr)
-      : await addBasicField(page, field)
+    if (myInfoAttr) {
+      await addMyInfoField(page, field, myInfoAttr)
+    } else {
+      await addBasicField(page, field)
+    }
 
     await page.getByRole('button', { name: 'Create field' }).click()
     await expectToast(page, /the .* was created/i)
