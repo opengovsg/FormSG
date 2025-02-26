@@ -31,6 +31,7 @@ import {
 } from '../common/AdminViewFormService'
 import { downloadFormIssue } from '../responses/FeedbackPage/issue/IssueService'
 import { downloadFormReview } from '../responses/FeedbackPage/review/ReviewService'
+import { sendReminderForPendingMrfResponse } from '../responses/ResponsesPage/storage/UnlockedResponses/ResponsesTable/reminders/ReminderService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
@@ -552,4 +553,34 @@ export const useFormIssueMutations = () => {
   )
 
   return { downloadFormIssueMutation: downloadFormIssuesMutation }
+}
+
+export const useFormRemindersMutations = () => {
+  const toast = useToast({ status: 'success', isClosable: true })
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const sendReminderForResponseMutation = useMutation(
+    ({ formId, responseId }: { formId: string; responseId: string }) => {
+      return sendReminderForPendingMrfResponse({ formId, responseId })
+    },
+    {
+      onSuccess: () => {
+        toast({
+          description: 'Your reminder has been sent',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return { sendReminderForResponseMutation }
 }

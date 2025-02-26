@@ -1,15 +1,23 @@
 import { useState } from 'react'
 import { BiBell, BiCheck } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { useFormRemindersMutations } from '~features/admin-form/common/mutations'
+
 export const SendReminderButton = ({ responseId }: { responseId: string }) => {
-  const sendReminder = (responseId: string) => {
-    console.log(`Sending reminder for ${responseId}`)
-  }
+  const { formId } = useParams()
+  const { sendReminderForResponseMutation } = useFormRemindersMutations()
+
+  const sendReminderForResponse = sendReminderForResponseMutation
 
   const [isSent, setIsSent] = useState(false)
+
+  if (!formId) {
+    return null
+  }
 
   return !isSent ? (
     <Button
@@ -20,7 +28,7 @@ export const SendReminderButton = ({ responseId }: { responseId: string }) => {
       leftIcon={<BiBell />}
       onClick={(e) => {
         e.stopPropagation()
-        sendReminder(responseId)
+        sendReminderForResponse.mutate({ formId, responseId })
         setIsSent(true)
       }}
     >
