@@ -109,3 +109,7 @@ export const E2EE_SUBMISSION_VERSION = 1
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1
 // MRF RFC: https://www.notion.so/opengov/RFC-Multi-respondent-forms-8ab40a8c17674937b345450d9dd2c81d?pvs=4
 export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 3
+
+// TODO: (Kill Email Mode) Remove this form after kill email mode is fully implemented.
+export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
+  '66c0966666c0966666c09666'

@@ -1,13 +1,17 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 
-import { FormResponseMode } from '~shared/types/form/form'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types/form/form'
 
 import formsgSdk from '~utils/formSdk'
+import { CheckboxFieldValues } from '~templates/Field'
 
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
+  EmailFeedback = 'emailFeedback',
+  EmailModeCreation = 'emailModeCreation',
 }
 
 export type CreateFormWizardInputProps = {
@@ -17,6 +21,9 @@ export type CreateFormWizardInputProps = {
   emails: string[]
   // Storage form props
   storageAck?: boolean
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  reason?: CheckboxFieldValues // for kill email mode
 }
 
 export type CreateFormWizardContextReturn = {
@@ -26,6 +33,9 @@ export type CreateFormWizardContextReturn = {
   handleDetailsSubmit: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
+  handleEmailFeedbackSubmit: () => void
+  handleCreateEmailModeForm: () => () => void
+  submitEmailModeFeedback: (feedbackForm: PublicFormViewDto) => () => void
   handleCreateStorageModeOrMultirespondentForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
