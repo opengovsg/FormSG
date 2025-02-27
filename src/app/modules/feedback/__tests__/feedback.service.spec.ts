@@ -304,8 +304,9 @@ describe('feedback.service', () => {
         await FeedbackService.hasNoPreviousFeedback(MOCK_SUBMISSION_ID)
 
       expect(existSpy).toHaveBeenCalledWith({
-        submissionId: MOCK_SUBMISSION_ID,
+        submissionId: { $eq: MOCK_SUBMISSION_ID },
       })
+
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
     })
