@@ -113,6 +113,7 @@ describe('multirespondent-submission.utils', () => {
           workflowStatus: WorkflowStatus.COMPLETED,
           lastSubmittedAt:
             submittedSteps[submittedSteps.length - 1].submittedAt,
+          hasNextStepRecipientEmails: false,
         },
       })
     })

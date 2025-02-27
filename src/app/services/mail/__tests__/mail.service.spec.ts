@@ -1566,16 +1566,6 @@ describe('mail.service', () => {
     const emails = [MOCK_VALID_EMAIL]
     const responseId = 'test-response-id'
 
-    const expectedArg = {
-      to: emails,
-      from: MOCK_SENDER_STRING,
-      subject: expect.stringMatching(/^(?!\[Reminder\])/),
-      html: expect.any(String),
-      headers: {
-        'X-Formsg-Email-Type': expect.any(String),
-      },
-    }
-
     // Act
     const actualResult = await mailService.sendMRFWorkflowStepEmail({
       emails,
@@ -1588,7 +1578,17 @@ describe('mail.service', () => {
     // Assert
     expect(actualResult).toEqual(ok(true))
     expect(sendMailSpy).toHaveBeenCalledTimes(1)
-    expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    expect(sendMailSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: emails,
+        from: MOCK_SENDER_STRING,
+        subject: expect.stringMatching(/^\[Reminder\]/),
+        html: expect.any(String),
+        headers: {
+          'X-Formsg-Email-Type': expect.any(String),
+        },
+      }),
+    )
   })
 
   it('should not include reminder in email subject when isReminder is false', async () => {
@@ -1596,16 +1596,6 @@ describe('mail.service', () => {
     const responseUrl = 'responseUrl'
     const emails = [MOCK_VALID_EMAIL]
     const responseId = 'test-response-id'
-
-    const expectedArg = {
-      to: emails,
-      from: MOCK_SENDER_STRING,
-      subject: expect.not.stringMatching(/^(?!\[Reminder\])/),
-      html: expect.any(String),
-      headers: {
-        'X-Formsg-Email-Type': expect.any(String),
-      },
-    }
 
     // Act
     const actualResult = await mailService.sendMRFWorkflowStepEmail({
@@ -1619,6 +1609,16 @@ describe('mail.service', () => {
     // Assert
     expect(actualResult).toEqual(ok(true))
     expect(sendMailSpy).toHaveBeenCalledTimes(1)
-    expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    expect(sendMailSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: emails,
+        from: MOCK_SENDER_STRING,
+        subject: expect.not.stringMatching(/^\[Reminder\]/),
+        html: expect.any(String),
+        headers: {
+          'X-Formsg-Email-Type': expect.any(String),
+        },
+      }),
+    )
   })
 })
