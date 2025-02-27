@@ -54,7 +54,7 @@ describe('multirespondent-submission.utils', () => {
   }
 
   const mockResponseId = new ObjectId().toHexString()
-  const mockTimestamp = 1740607290000 // Wed, 26 Feb 2025 10:01:30 PM
+  const mockTimestamp = 1740607290000 // Thu, 27 Feb 2025 06:01:30 AM
 
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
@@ -292,7 +292,7 @@ describe('multirespondent-submission.utils', () => {
         { question: 'Response ID', answer: mockResponseId },
         {
           question: 'Response Timestamp',
-          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+          answer: 'Thu, 27 Feb 2025 06:01:30 AM',
         },
         { question: 'Short Text', answer: 'Test answer' },
         { question: 'Number', answer: '42' },
@@ -326,7 +326,7 @@ describe('multirespondent-submission.utils', () => {
         { question: 'Response ID', answer: mockResponseId },
         {
           question: 'Response Timestamp',
-          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+          answer: 'Thu, 27 Feb 2025 06:01:30 AM',
         },
         { question: '[Attachment] File Upload', answer: 'file.pdf' },
       ])
@@ -381,7 +381,7 @@ describe('multirespondent-submission.utils', () => {
         { question: 'Response ID', answer: mockResponseId },
         {
           question: 'Response Timestamp',
-          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+          answer: 'Thu, 27 Feb 2025 06:01:30 AM',
         },
         {
           question: '[Table] Table of Name and Age (Name, Age)',
@@ -431,7 +431,7 @@ describe('multirespondent-submission.utils', () => {
         { question: 'Response ID', answer: mockResponseId },
         {
           question: 'Response Timestamp',
-          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+          answer: 'Thu, 27 Feb 2025 06:01:30 AM',
         },
         {
           question: 'Checkbox',
@@ -475,7 +475,7 @@ describe('multirespondent-submission.utils', () => {
         { question: 'Response ID', answer: mockResponseId },
         {
           question: 'Response Timestamp',
-          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+          answer: 'Thu, 27 Feb 2025 06:01:30 AM',
         },
         {
           question: 'Address',
