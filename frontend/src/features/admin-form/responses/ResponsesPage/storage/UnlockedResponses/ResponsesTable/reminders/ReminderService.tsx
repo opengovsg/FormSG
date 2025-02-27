@@ -10,14 +10,16 @@ import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormSe
 export const sendReminderForPendingMrfResponse = async ({
   formId,
   responseId,
+  submissionSecretKey,
 }: {
   formId: string
   responseId: string
+  submissionSecretKey: string
 }): Promise<void> => {
   return ApiService.post<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/remind`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${responseId}/remind`,
     {
-      responseId,
+      submissionSecretKey,
     },
   ).then(() => {})
 }

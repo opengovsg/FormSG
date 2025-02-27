@@ -935,25 +935,3 @@ export const handleGetAllEncryptedResponses = [
   }),
   _getAllEncryptedResponse,
 ] as ControllerHandler[]
-
-const sendPendingMrfSubmissionReminder: ControllerHandler<
-  { formId: string },
-  unknown,
-  { responseId: string }
-> = async (req, res) => {
-  const { formId } = req.params
-  const { responseId } = req.body
-
-  console.log(`Reminder sent for ${responseId} from form ${formId}`)
-
-  res.send()
-}
-
-export const handlePendingMrfSubmissionRemind = [
-  celebrate({
-    [Segments.BODY]: Joi.object().keys({
-      responseId: Joi.string().required(),
-    }),
-  }),
-  sendPendingMrfSubmissionReminder,
-] as ControllerHandler[]

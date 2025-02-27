@@ -1,12 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import { Environment } from '../../../../types'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
@@ -16,6 +20,7 @@ import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
+import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import {
   ensureFormWithinSubmissionLimits,
@@ -38,8 +43,10 @@ import * as MultirespondentSubmissionMiddleware from './multirespondent-submissi
 import {
   checkFormIsMultirespondent,
   createMultiRespondentFormSubmission,
+  getPendingStepRecipieintEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
+  sendNextStepReminderEmail,
   updateMultiRespondentFormSubmission,
 } from './multirespondent-submission.service'
 import {
@@ -51,6 +58,11 @@ import {
 import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+
+const appUrl =
+  process.env.NODE_ENV === Environment.Dev
+    ? config.app.feAppUrl
+    : config.app.appUrl
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -329,3 +341,81 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       })
   )
 }
+
+const sendPendingMrfSubmissionReminder: ControllerHandler<
+  { formId: string; submissionId: string },
+  unknown,
+  { submissionSecretKey: string }
+> = async (req, res) => {
+  const { formId, submissionId } = req.params
+  const { submissionSecretKey } = req.body
+
+  const logMeta = {
+    action: 'sendPendingMrfSubmissionReminder',
+    formId,
+    submissionId,
+    ...createReqMeta(req),
+  }
+
+  return FormService.getFullFormById(formId)
+    .andThen((form) => {
+      if (form.responseMode !== FormResponseMode.Multirespondent) {
+        return errAsync(
+          new FormInvalidResponseModeError(
+            'Cannot send reminder emails for pending step for non-multirespondent mode forms',
+          ),
+        )
+      }
+
+      return getPendingStepRecipieintEmailsFromSubmittedStepsMeta({
+        submissionId,
+      }).map(({ recipientEmails, reminderStepNumber }) => ({
+        recipientEmails,
+        reminderStepNumber,
+        form,
+      }))
+    })
+    .andThen(({ recipientEmails, reminderStepNumber, form }) => {
+      return okAsync({
+        recipientEmails,
+        reminderStepNumber,
+        form,
+      })
+    })
+    .map(({ recipientEmails, reminderStepNumber, form }) => {
+      sendNextStepReminderEmail({
+        submissionId,
+        emails: recipientEmails,
+        responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+          form._id,
+          submissionId,
+          { key: submissionSecretKey },
+        )}`,
+        formTitle: form.title,
+        formId,
+        reminderStepNumber,
+      })
+    })
+    .map(() => {
+      logger.info({
+        message: 'Reminder sent successfully',
+        meta: logMeta,
+      })
+
+      return res.json({
+        message: `Reminder sent successfully.`,
+        submissionId: submissionId,
+      })
+    })
+    .mapErr((err) => {
+      const { errorMessage, statusCode } = mapRouteError(err)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
+}
+
+export const handlePendingMrfSubmissionRemind = [
+  MultirespondentSubmissionMiddleware.validateMultirespondentRemindBody,
+  sendPendingMrfSubmissionReminder,
+] as ControllerHandler[]

@@ -133,6 +133,8 @@ import {
   InvalidFileExtensionError,
   InvalidFileKeyError,
   MaliciousFileDetectedError,
+  MrfReminderInvalidWorkflowStepError,
+  MrfReminderRecipientEmailsEmptyError,
   ProcessingError,
   ResponseModeError,
   SubmissionFailedError,
@@ -344,6 +346,12 @@ const errorMapper: MapRouteError = (
     case InvalidFileKeyError:
     case MaliciousFileDetectedError:
     case ExpectedResponseNotFoundError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case MrfReminderInvalidWorkflowStepError:
+    case MrfReminderRecipientEmailsEmptyError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -835,7 +843,7 @@ export const getCookieNameByAuthType = (
  * @returns The workflow status of the submission based on the enum `WorkflowStatus`.
  * Otherwise, returns `undefined` if no submitted steps or total steps are found or when no workflow has been defined by the form admin.
  */
-const getMrfSubmissionWorkflowStatus = (
+export const getMrfSubmissionWorkflowStatus = (
   submittedSteps: SubmittedStep[],
   numTotalSteps: number,
 ): WorkflowStatus | undefined => {
@@ -888,10 +896,16 @@ export const buildMrfMetadata = ({
     submittedSteps && submittedSteps.length > 0
       ? submittedSteps[submittedSteps.length - 1].submittedAt.toString()
       : undefined
+  const hasNextStepRecipientEmails =
+    submittedSteps && submittedSteps.length > 0
+      ? !!submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
+      : false
+
   return {
     workflowCurrentStepNumber,
     workflowNumTotalSteps,
     workflowStatus,
     lastSubmittedAt,
+    hasNextStepRecipientEmails,
   }
 }

@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 
 export const AdminFormsSubmissionsRouter = Router()
@@ -94,6 +95,6 @@ AdminFormsSubmissionsRouter.get(
  * Send reminder to the current pending step for the MRF submission with the given responseId
  */
 AdminFormsSubmissionsRouter.post(
-  '/:formId([a-fA-F0-9]{24})/submissions/remind',
-  EncryptSubmissionController.handlePendingMrfSubmissionRemind,
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind',
+  MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
 )

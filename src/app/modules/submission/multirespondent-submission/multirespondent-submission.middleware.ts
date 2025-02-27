@@ -95,6 +95,10 @@ export const validateUpdateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
 })
 
+export const validateMultirespondentRemindBody = celebrate({
+  [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
+})
+
 /**
  * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
  */
