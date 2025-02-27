@@ -286,6 +286,9 @@ export type SubmissionResponseDto = {
 
   // payment form only fields
   paymentData?: PaymentSubmissionData
+
+  // mrf only fields
+  mrfStep?: number
 }
 
 export type SubmissionErrorDto = ErrorDto & {
@@ -347,4 +350,12 @@ export type StorageModeSubmissionContentDto = {
 
 export type PaymentSubmissionData = {
   paymentId: string
+}
+
+// TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+export type AdminUseEmailModeFeedbackDto = {
+  reason: {
+    value: string[] | false
+    othersInput?: string
+  }
 }

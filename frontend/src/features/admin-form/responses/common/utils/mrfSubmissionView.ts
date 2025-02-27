@@ -25,8 +25,13 @@ export const getPendingResponseAtString = ({
   if (!isPending) {
     return ''
   }
+
+  // The form is currently completed until step N.
+  // Thus, it should mean that it is pending the response of N+1
+  const pendingStep = workflowCurrentStepNumber + 1
+
   return getCurrentStepString({
-    workflowCurrentStepNumber,
+    workflowCurrentStepNumber: pendingStep,
     workflowNumTotalSteps,
   })
 }

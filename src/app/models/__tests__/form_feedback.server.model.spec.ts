@@ -85,6 +85,26 @@ describe('form_feedback.server.model', () => {
         mongoose.Error.ValidationError,
       )
     })
+
+    it('should allow meta.mrfSteps to be added', async () => {
+      // Arrange
+      const PARAMS_WITH_MRF_STEPS = {
+        ...DEFAULT_PARAMS,
+        meta: { mrfStep: 1 },
+      }
+
+      // Act
+      const actual = await FeedbackModel.create(PARAMS_WITH_MRF_STEPS)
+
+      // Assert
+      expect(actual).toEqual(
+        expect.objectContaining({
+          ...PARAMS_WITH_MRF_STEPS,
+          created: expect.any(Date),
+          lastModified: expect.any(Date),
+        }),
+      )
+    })
   })
 
   describe('Statics', () => {

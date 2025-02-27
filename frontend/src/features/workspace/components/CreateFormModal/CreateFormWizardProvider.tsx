@@ -1,11 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
 
-import { useCreateFormMutations } from '~features/workspace/mutations'
+import {
+  useCreateFormMutations,
+  useEmailModeFeedbackMutation,
+} from '~features/workspace/mutations'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
@@ -15,7 +19,7 @@ import {
   CreateFormWizardInputProps,
 } from './CreateFormWizardContext'
 
-export const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
+const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
   CreateFormFlowStates.Details,
   -1,
 ]
@@ -57,13 +61,15 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
       },
     })
 
-  const { handleSubmit } = formMethods
+  const { handleSubmit, setValue } = formMethods
 
   const {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
   } = useCreateFormMutations()
+
+  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
@@ -100,16 +106,50 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     },
   )
 
-  const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (inputs.responseMode === FormResponseMode.Email) {
-      return createEmailModeFormMutation.mutate({
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  // Collect email mode usage feedback before creating the form
+  const handleEmailFeedbackSubmit = () => {
+    // explicit set response to email as email feedback "button" interaction
+    // is not handled handled in FormResponseOptions
+    // setValue('responseMode', FormResponseMode.Email)
+    setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
+    return handleSubmit((inputs) => {
+      if (!inputs.reason) {
+        return new Error('Reason is required')
+      }
+
+      emailModeFeedbackMutation.mutate(
+        {
+          body: { reason: inputs.reason },
+          feedbackForm,
+        },
+        {
+          onSuccess: () => {
+            setValue('responseMode', FormResponseMode.Email)
+            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+          },
+        },
+      )
+    })
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = () => {
+    return handleSubmit((inputs) => {
+      createEmailModeFormMutation.mutate({
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
-        responseMode: inputs.responseMode,
+        responseMode: FormResponseMode.Email,
         workspaceId,
       })
-    }
-    // Display secret key for all other form modes
+    })
+  }
+
+  const handleDetailsSubmit = handleSubmit(() => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
@@ -124,6 +164,9 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     direction,
     formMethods,
     handleDetailsSubmit,
+    handleCreateEmailModeForm,
+    submitEmailModeFeedback,
+    handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
     modalHeader: 'Set up your form',

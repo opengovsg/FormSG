@@ -128,6 +128,7 @@ const submitMultirespondentForm = async (
     message: 'Form submission successful.',
     submissionId: submission._id,
     timestamp: (submission.created || new Date()).getTime(),
+    mrfStep: submission.workflowStep,
   })
 
   await performMultiRespondentPostSubmissionCreateActions({
@@ -211,6 +212,7 @@ const updateMultirespondentSubmission = async (
     message: 'Form submission successful.',
     submissionId,
     timestamp: (submission.created || new Date()).getTime(),
+    mrfStep: submission.workflowStep,
   })
 
   const currentStepNumber = submission.workflowStep

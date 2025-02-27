@@ -6,6 +6,10 @@ import {
 } from '../CreateFormWizardContext'
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
+import {
+  EmailModeCreationScreen,
+  EmailModeFeedbackScreen,
+} from './EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 /**
@@ -21,6 +25,13 @@ export const CreateFormModalContent = () => {
         <CreateFormDetailsScreen />
       )}
       {currentStep === CreateFormFlowStates.Landing && <SaveSecretKeyScreen />}
+      {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
+      {currentStep === CreateFormFlowStates.EmailFeedback && (
+        <EmailModeFeedbackScreen />
+      )}
+      {currentStep === CreateFormFlowStates.EmailModeCreation && (
+        <EmailModeCreationScreen />
+      )}
     </XMotionBox>
   )
 }
