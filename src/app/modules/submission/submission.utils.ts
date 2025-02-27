@@ -903,10 +903,13 @@ export const buildMrfMetadata = ({
     submittedSteps && submittedSteps.length > 0
       ? submittedSteps[submittedSteps.length - 1].submittedAt.toString()
       : undefined
-  const hasNextStepRecipientEmails =
+
+  const nextStepRecipientEmails =
     submittedSteps && submittedSteps.length > 0
-      ? !!submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
-      : false
+      ? submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
+      : []
+  const hasNextStepRecipientEmails =
+    !!nextStepRecipientEmails && nextStepRecipientEmails.length > 0
 
   return {
     workflowCurrentStepNumber,
