@@ -54,7 +54,7 @@ describe('multirespondent-submission.utils', () => {
   }
 
   const mockResponseId = new ObjectId().toHexString()
-  const mockTimestamp = '1708950612345' // Wed, 26 Feb 2025 10:01:30 PM
+  const mockTimestamp = 1708950612345 // Wed, 26 Feb 2025 10:01:30 PM
 
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {

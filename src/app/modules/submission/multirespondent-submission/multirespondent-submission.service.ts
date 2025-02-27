@@ -195,7 +195,7 @@ const sendMrfOutcomeEmails = ({
   isApproval?: boolean
   isRejected?: boolean
   attachments?: IAttachmentInfo[]
-  timestamp: string
+  timestamp: number
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
@@ -439,7 +439,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   attachments,
 }: {
   submissionId: string
-  timestamp: string
+  timestamp: number
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
@@ -626,7 +626,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
-  timestamp: string
+  timestamp: number
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError

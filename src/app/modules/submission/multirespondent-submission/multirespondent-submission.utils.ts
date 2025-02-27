@@ -215,7 +215,7 @@ export const getQuestionTitleAnswerString = ({
   formFields: FormFieldSchema[]
   responses: FieldResponsesV3
   responseId: string
-  timestamp: string
+  timestamp: number
   jsonOutput?: boolean
 }): QuestionAnswer[] => {
   const questionAnswerPair = []
