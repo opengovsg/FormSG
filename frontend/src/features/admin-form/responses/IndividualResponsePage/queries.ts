@@ -15,18 +15,27 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
 export const useIndividualSubmission = () => {
-  const toast = useToast({
-    status: 'danger',
-  })
-
   const { formId, submissionId } = useParams()
-  const { data: { responseMode } = {} } = useAdminForm()
 
   if (!formId || !submissionId) {
     throw new Error('No formId or submissionId provided')
   }
 
+  return useGetIndividualDecryptedSubmission({ formId, submissionId })
+}
+
+export const useGetIndividualDecryptedSubmission = ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}) => {
+  const toast = useToast({
+    status: 'danger',
+  })
   const { secretKey } = useStorageResponsesContext()
+  const { data: { responseMode } = {} } = useAdminForm()
 
   return useQuery(
     adminFormResponsesKeys.individual(formId, submissionId),

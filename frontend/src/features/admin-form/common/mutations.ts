@@ -571,16 +571,16 @@ export const useFormRemindersMutations = () => {
   const sendReminderForResponseMutation = useMutation(
     ({
       formId,
-      responseId,
+      submissionId,
       submissionSecretKey,
     }: {
       formId: string
-      responseId: string
+      submissionId: string
       submissionSecretKey: string
     }) => {
       return sendReminderForPendingMrfResponse({
         formId,
-        responseId,
+        submissionId,
         submissionSecretKey,
       })
     },

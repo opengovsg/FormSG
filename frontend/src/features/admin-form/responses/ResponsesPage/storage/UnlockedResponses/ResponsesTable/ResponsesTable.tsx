@@ -265,9 +265,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
       const hasNextStepRecipientEmails =
         row.original.mrf?.hasNextStepRecipientEmails
-      const responseId = row.original.refNo
+      const submissionId = row.original.refNo
       return isPending && hasNextStepRecipientEmails ? (
-        <SendReminderButton responseId={responseId} />
+        <SendReminderButton submissionId={submissionId} />
       ) : null
     },
     minWidth: 188,

@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import { BiBell, BiCheck } from 'react-icons/bi'
-import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
 import { useFormRemindersMutations } from '~features/admin-form/common/mutations'
-import { getDecryptedSubmissionById } from '~features/admin-form/responses/AdminSubmissionsService'
+import { useGetIndividualDecryptedSubmission } from '~features/admin-form/responses/IndividualResponsePage/queries'
 
-import { useStorageResponsesContext } from '../../StorageResponsesContext'
-
-export const SendReminderButton = ({ responseId }: { responseId: string }) => {
+export const SendReminderButton = ({
+  submissionId,
+}: {
+  submissionId: string
+}) => {
   const { formId = '' } = useParams()
-  const { secretKey } = useStorageResponsesContext()
 
   const { sendReminderForResponseMutation } = useFormRemindersMutations()
 
@@ -21,14 +21,11 @@ export const SendReminderButton = ({ responseId }: { responseId: string }) => {
 
   const [isSent, setIsSent] = useState(false)
 
-  const { data: submissionData, isLoading } = useQuery('submissionData', () =>
-    getDecryptedSubmissionById({
+  const { data: submissionData, isLoading } =
+    useGetIndividualDecryptedSubmission({
       formId,
-      submissionId: responseId,
-      secretKey,
-    }),
-  )
-
+      submissionId,
+    })
   const submissionSecretKey = submissionData?.submissionSecretKey
 
   if (!formId || (!isLoading && !submissionSecretKey)) {
@@ -50,7 +47,7 @@ export const SendReminderButton = ({ responseId }: { responseId: string }) => {
         }
         sendReminderForResponse.mutate({
           formId,
-          responseId,
+          submissionId,
           submissionSecretKey,
         })
         setIsSent(true)
