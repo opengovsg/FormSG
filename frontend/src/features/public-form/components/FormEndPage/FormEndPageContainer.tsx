@@ -83,8 +83,6 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     )
   }
 
-  const isFeedbackHidden = isFeedbackSubmitted
-
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage
@@ -92,7 +90,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
         submissionData={submissionData}
         formTitle={form.title}
         endPage={form.endPage}
-        isFeedbackSectionHidden={isFeedbackHidden}
+        isFeedbackSectionHidden={isFeedbackSubmitted}
         handleSubmitFeedback={handleSubmitFeedback}
       />
     </Box>
