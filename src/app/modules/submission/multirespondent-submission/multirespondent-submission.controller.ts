@@ -357,6 +357,12 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
     ...createReqMeta(req),
   }
 
+  if (!submissionSecretKey) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: 'Submission secret key not found',
+    })
+  }
+
   return FormService.retrieveFormById(formId)
     .andThen((form) => {
       if (form.responseMode !== FormResponseMode.Multirespondent) {
@@ -381,8 +387,8 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         form,
       })
     })
-    .map(({ recipientEmails, reminderStepNumber, form }) => {
-      sendNextStepReminderEmail({
+    .andThen(({ recipientEmails, reminderStepNumber, form }) => {
+      return sendNextStepReminderEmail({
         submissionId,
         emails: recipientEmails,
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
@@ -413,6 +419,9 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
       })
     })
 }
+
+export const sendPendingMrfSubmissionReminderForTest =
+  sendPendingMrfSubmissionReminder
 
 export const handlePendingMrfSubmissionRemind = [
   MultirespondentSubmissionMiddleware.validateMultirespondentRemindBody,
