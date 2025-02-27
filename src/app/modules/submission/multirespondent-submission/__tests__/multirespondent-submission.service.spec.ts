@@ -1,6 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { ok, okAsync } from 'neverthrow'
+import { okAsync } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
