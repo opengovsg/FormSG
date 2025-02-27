@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
 import {
@@ -9,6 +9,7 @@ import {
   CreateFormWizardContextReturn,
 } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '~features/workspace/components/CreateFormModal/CreateFormWizardProvider'
+import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
 
 import { useUseTemplateMutations } from '../mutation'
 
@@ -41,13 +42,15 @@ export const useUseTemplateWizardContext = (
     })
   }, [reset, getValues, isTemplateFormLoading, templateFormData?.form.title])
 
-  const { handleSubmit } = formMethods
+  const { handleSubmit, setValue } = formMethods
 
   const {
     useEmailModeFormTemplateMutation,
     useStorageModeFormTemplateMutation,
     useMultirespondentFormTemplateMutation,
   } = useUseTemplateMutations()
+
+  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
@@ -81,6 +84,48 @@ export const useUseTemplateWizardContext = (
     },
   )
 
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  // Collect email mode usage feedback before creating the form
+  const handleEmailFeedbackSubmit = () => {
+    // explicit set response to email as email feedback "button" interaction
+    // is not handled handled in FormResponseOptions
+    // setValue('responseMode', FormResponseMode.Email) // set in handleEmailModeCreation
+    setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const submitEmailModeFeedback = (feedbackForm: PublicFormViewDto) => {
+    return handleSubmit((inputs) => {
+      if (!inputs.reason) {
+        return new Error('Reason is required')
+      }
+
+      emailModeFeedbackMutation.mutate(
+        {
+          body: { reason: inputs.reason },
+          feedbackForm,
+        },
+        {
+          onSuccess: () => {
+            setValue('responseMode', FormResponseMode.Email)
+            setCurrentStep([CreateFormFlowStates.EmailModeCreation, 1])
+          },
+        },
+      )
+    })
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = () =>
+    handleSubmit((inputs) => {
+      return useEmailModeFormTemplateMutation.mutate({
+        formIdToDuplicate: formId,
+        emails: inputs.emails.filter(Boolean),
+        title: inputs.title,
+        responseMode: FormResponseMode.Email,
+      })
+    })
+
   const handleDetailsSubmit = handleSubmit((inputs) => {
     if (!formId) return
     if (inputs.responseMode === FormResponseMode.Email) {
@@ -106,6 +151,9 @@ export const useUseTemplateWizardContext = (
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    handleEmailFeedbackSubmit,
+    handleCreateEmailModeForm,
+    submitEmailModeFeedback,
     isSingpass,
     modalHeader: 'Duplicate form',
   }

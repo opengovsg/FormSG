@@ -1,14 +1,17 @@
-import { BiLockAlt, BiMailSend } from 'react-icons/bi'
-import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
+import { BiLockAlt } from 'react-icons/bi'
+import { forwardRef, Stack, Text, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Tile from '~components/Tile'
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
+  handleEmailButtonPress: () => void
   value: FormResponseMode
   isSingpass: boolean
 }
@@ -47,64 +50,62 @@ const OptionDescription = ({
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, isSingpass }, ref) => {
+>(({ value, onChange, isSingpass, handleEmailButtonPress }, ref) => {
   return (
-    <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
-      <Tile
-        variant="complex"
-        icon={BiLockAlt}
-        isActive={value === FormResponseMode.Encrypt}
-        onClick={() => onChange(FormResponseMode.Encrypt)}
-        flex={1}
-      >
-        <Tile.Title>Storage mode form</Tile.Title>
-        <Tile.Subtitle>
-          View and download responses in FormSG or receive responses in your
-          inbox
-        </Tile.Subtitle>
-        <OptionDescription
-          listItems={[
-            { text: 'Supports webhooks for responses' },
-            { text: 'Supports payments' },
-            { text: 'Up to Restricted and Sensitive (Normal) data' },
-          ]}
-        />
-      </Tile>
-      <Tile
-        ref={ref}
-        variant="complex"
-        icon={MultiParty}
-        isActive={value === FormResponseMode.Multirespondent}
-        onClick={() => onChange(FormResponseMode.Multirespondent)}
-        flex={1}
-        isDisabled={isSingpass}
-      >
-        <Tile.Title>Multi-respondent form</Tile.Title>
-        <Tile.Subtitle>
-          Collect responses from multiple people by adding a workflow to your
-          form and assigning fields to each person
-        </Tile.Subtitle>
-        <OptionDescription
-          listItems={[
-            { text: 'Supports approvals', badge: 'New' },
-            { text: 'Up to Restricted and Sensitive (Normal) data' },
-          ]}
-        />
-      </Tile>
-      <Tile
-        ref={ref}
-        variant="complex"
-        icon={BiMailSend}
-        isActive={value === FormResponseMode.Email}
-        onClick={() => onChange(FormResponseMode.Email)}
-        flex={1}
-      >
-        <Tile.Title>Email mode form</Tile.Title>
-        <Tile.Subtitle>Receive responses in your inbox only</Tile.Subtitle>
-        <OptionDescription
-          listItems={[{ text: 'Up to Restricted and Sensitive (High) data' }]}
-        />
-      </Tile>
-    </Stack>
+    <>
+      <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
+        <Tile
+          variant="complex"
+          icon={BiLockAlt}
+          isActive={value === FormResponseMode.Encrypt}
+          onClick={() => onChange(FormResponseMode.Encrypt)}
+          flex={1}
+        >
+          <Tile.Title>Storage mode form</Tile.Title>
+          <Tile.Subtitle>
+            Collect responses from individual respondents. Ideal for one-way
+            submissions.
+          </Tile.Subtitle>
+          <OptionDescription
+            listItems={[
+              { text: 'Supports webhooks for integrations' },
+              { text: 'Supports payments' },
+              { text: 'Supports Singpass & Myinfo' },
+              { text: 'Up to Restricted and Sensitive (Normal) data' },
+            ]}
+          />
+        </Tile>
+        <Tile
+          ref={ref}
+          variant="complex"
+          icon={MultiParty}
+          isActive={value === FormResponseMode.Multirespondent}
+          onClick={() => onChange(FormResponseMode.Multirespondent)}
+          flex={1}
+          isDisabled={isSingpass}
+        >
+          <Tile.Title>Multi-respondent form</Tile.Title>
+          <Tile.Subtitle>
+            Collect responses from multiple respondents in a single workflow.
+            Ideal for sequential submissions.
+          </Tile.Subtitle>
+          <OptionDescription
+            listItems={[
+              { text: 'Supports approval workflows', badge: 'New' },
+              { text: 'Up to Restricted and Sensitive (Normal) data' },
+            ]}
+          />
+        </Tile>
+      </Stack>
+      {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
+      <InlineMessage mt="1rem">
+        <Text>
+          We're phasing out Email mode in the coming months. Don't worry! You
+          can still{' '}
+          <Link onClick={() => handleEmailButtonPress()}>use it for now</Link>,
+          but we'd love to hear why.
+        </Text>
+      </InlineMessage>
+    </>
   )
 })

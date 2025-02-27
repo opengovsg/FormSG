@@ -51,6 +51,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const {
     formMethods,
     handleDetailsSubmit,
+    handleEmailFeedbackSubmit,
     isLoading,
     isFetching,
     modalHeader,
@@ -65,16 +66,19 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
+  const handleEmailButtonPress = () => {
+    handleEmailFeedbackSubmit()
+  }
 
   return (
     <>
       <ModalHeader color="secondary.700">
-        <Container maxW="69.5rem" p={0}>
+        <Container maxW="45rem" p={0}>
           {modalHeader}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW="69.5rem" p={0}>
+        <Container maxW="45rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
@@ -98,7 +102,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 control={control}
                 render={({ field }) => (
                   <WorkspaceRowsProvider>
-                    <FormResponseOptions {...field} isSingpass={isSingpass} />
+                    <FormResponseOptions
+                      {...field}
+                      isSingpass={isSingpass}
+                      handleEmailButtonPress={handleEmailButtonPress}
+                    />
                   </WorkspaceRowsProvider>
                 )}
                 rules={{ required: 'Please select a form response mode' }}

@@ -67,6 +67,20 @@ export const getPublicFormView = async (
 }
 
 /**
+ * TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+ * Gets the BE defined feedback form for admins to answer why they are using email mode
+ * @returns Public view of form for admin email feedback form
+ */
+export const getAdminUseEmailModeFeedbackFormView =
+  async (): Promise<PublicFormViewDto> => {
+    return ApiService.get<PublicFormViewDto>(
+      `${PUBLIC_FORMS_ENDPOINT}/admin-use-email-feedback`,
+    )
+      .then(({ data }) => data)
+      .then(transformAllIsoStringsToDate)
+  }
+
+/**
  * Gets the redirect url for public form login
  * @param formId form id of form to log in.
  * @param isPersistentLogin whether login is persistent; affects cookie lifetime.
