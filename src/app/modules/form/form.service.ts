@@ -673,25 +673,3 @@ export const createSampleSubmissionResponses = (
   })
   return sampleData
 }
-
-export const getFullFormById = (
-  formId: string,
-): ResultAsync<IPopulatedForm, DatabaseError | FormNotFoundError> => {
-  return ResultAsync.fromPromise(FormModel.getFullFormById(formId), (error) => {
-    logger.error({
-      message: 'Database error when finding full form by formId',
-      meta: {
-        action: 'getFullFormById',
-        formId,
-      },
-      error,
-    })
-
-    return new DatabaseError('Error occurred when finding form by formId')
-  }).andThen((form) => {
-    if (!form) {
-      return errAsync(new FormNotFoundError())
-    }
-    return okAsync(form)
-  })
-}

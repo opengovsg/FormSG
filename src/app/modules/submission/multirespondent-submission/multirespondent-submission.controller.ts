@@ -357,7 +357,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  return FormService.getFullFormById(formId)
+  return FormService.retrieveFormById(formId)
     .andThen((form) => {
       if (form.responseMode !== FormResponseMode.Multirespondent) {
         return errAsync(
@@ -366,7 +366,6 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
           ),
         )
       }
-
       return getPendingStepRecipieintEmailsFromSubmittedStepsMeta({
         submissionId,
       }).map(({ recipientEmails, reminderStepNumber }) => ({
