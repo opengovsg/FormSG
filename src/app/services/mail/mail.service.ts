@@ -7,11 +7,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import {
-  FormResponseMode,
-  PaymentChannel,
-  SubmissionId,
-} from '../../../../shared/types'
+import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'

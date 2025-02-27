@@ -125,6 +125,7 @@ describe('multiresponodent-submision.controller', () => {
         form: mockSubmitMrfReq.formsg.formDef,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         submissionId: mockSubmissionId,
+        timestamp: expect.any(String),
       })
       // Expect 200 ok
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
@@ -358,6 +359,7 @@ describe('multiresponodent-submision.controller', () => {
         form: mockSubmitMrfReq.formsg.formDef,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         submissionId: mockSubmissionId,
+        timestamp: expect.any(String),
       })
       // Expect 200 ok
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok

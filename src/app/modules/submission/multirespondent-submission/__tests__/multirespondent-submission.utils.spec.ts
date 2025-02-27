@@ -53,6 +53,9 @@ describe('multirespondent-submission.utils', () => {
     edit: [],
   }
 
+  const mockResponseId = new ObjectId().toHexString()
+  const mockTimestamp = '1708950612345' // Wed, 26 Feb 2025 10:01:30 PM
+
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
       // Arrange
@@ -278,9 +281,19 @@ describe('multirespondent-submission.utils', () => {
         } as EmailResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionTitleAnswerString({
+        formFields,
+        responses,
+        responseId: mockResponseId,
+        timestamp: mockTimestamp,
+      })
 
       expect(result).toEqual([
+        { question: 'Response ID', answer: mockResponseId },
+        {
+          question: 'Response Timestamp',
+          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+        },
         { question: 'Short Text', answer: 'Test answer' },
         { question: 'Number', answer: '42' },
         { question: 'Email', answer: 'test@example.com' },
@@ -302,9 +315,19 @@ describe('multirespondent-submission.utils', () => {
         } as AttachmentResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionTitleAnswerString({
+        formFields,
+        responses,
+        responseId: mockResponseId,
+        timestamp: mockTimestamp,
+      })
 
       expect(result).toEqual([
+        { question: 'Response ID', answer: mockResponseId },
+        {
+          question: 'Response Timestamp',
+          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+        },
         { question: '[Attachment] File Upload', answer: 'file.pdf' },
       ])
     })
@@ -347,9 +370,19 @@ describe('multirespondent-submission.utils', () => {
         } as TableResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionTitleAnswerString({
+        formFields,
+        responses,
+        responseId: mockResponseId,
+        timestamp: mockTimestamp,
+      })
 
       expect(result).toEqual([
+        { question: 'Response ID', answer: mockResponseId },
+        {
+          question: 'Response Timestamp',
+          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+        },
         {
           question: '[Table] Table of Name and Age (Name; Age)',
           answer: 'Alice; 30',
@@ -387,10 +420,23 @@ describe('multirespondent-submission.utils', () => {
         } as CheckboxResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionTitleAnswerString({
+        formFields,
+        responses,
+        responseId: mockResponseId,
+        timestamp: mockTimestamp,
+      })
 
       expect(result).toEqual([
-        { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
+        { question: 'Response ID', answer: mockResponseId },
+        {
+          question: 'Response Timestamp',
+          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+        },
+        {
+          question: 'Checkbox',
+          answer: 'Option 1,Option 2,Others: Custom Option',
+        },
       ])
     })
 
@@ -418,9 +464,19 @@ describe('multirespondent-submission.utils', () => {
         } as AddressResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionTitleAnswerString({
+        formFields,
+        responses,
+        responseId: mockResponseId,
+        timestamp: mockTimestamp,
+      })
 
       expect(result).toEqual([
+        { question: 'Response ID', answer: mockResponseId },
+        {
+          question: 'Response Timestamp',
+          answer: 'Wed, 26 Feb 2025 10:01:30 PM',
+        },
         {
           question: 'Address',
           answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
@@ -645,7 +701,12 @@ describe('multirespondent-submission.utils', () => {
       } as ShortTextResponseV3,
     }
 
-    const result = getQuestionTitleAnswerString({ formFields, responses })
+    const result = getQuestionTitleAnswerString({
+      formFields,
+      responses,
+      responseId: mockResponseId,
+      timestamp: mockTimestamp,
+    })
 
     expect(result).toEqual([])
   })
@@ -662,12 +723,16 @@ describe('multirespondent-submission.utils', () => {
     const undefinedResult = getQuestionTitleAnswerString({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
+      responseId: mockResponseId,
+      timestamp: mockTimestamp,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionTitleAnswerString({
       formFields,
       responses: null as unknown as FieldResponsesV3,
+      responseId: mockResponseId,
+      timestamp: mockTimestamp,
     })
     expect(nullResult).toEqual([])
   })
