@@ -883,11 +883,12 @@ export const PublicFormProvider = ({
               : submitMultirespondentFormMutation
           )
             .mutateAsync(formData, {
-              onSuccess: ({ submissionId, timestamp }) => {
+              onSuccess: ({ submissionId, timestamp, mrfStep }) => {
                 trackSubmitForm(form)
                 setSubmissionData({
                   id: submissionId,
                   timestamp,
+                  mrfStep,
                 })
               },
             })
