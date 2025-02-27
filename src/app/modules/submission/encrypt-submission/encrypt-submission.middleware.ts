@@ -208,12 +208,47 @@ const devModeSyncVirusScanning = async (
   >[] = []
   for (const response of responses) {
     if (isQuarantinedAttachmentResponse(response)) {
-      // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
-      const attachmentResponse =
-        await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+      //guardduty testing
+      const guarddutyResponsePromise =
+        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
+      const attachmentResponsePromise =
+        SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+
+      // Wait for both responses
+      const [guarddutyResponse, attachmentResponse] = await Promise.all([
+        guarddutyResponsePromise,
+        attachmentResponsePromise,
+      ])
+
+      if (guarddutyResponse.isErr()) {
+        logger.info({
+          message: 'GUARDDUTY ERROR: ${guarddutyResponse}',
+          meta: {
+            action: 'Testing guardduty error',
+          },
+        })
+      } else {
+        logger.info({
+          message: 'GUARDDUTY SUCESS: ${guarddutyResponse}',
+          meta: {
+            action: 'Testing guardduty success',
+          },
+        })
+      }
+
+      // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
+      // const attachmentResponse =
+      //   await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+      //     response,
+      //     formId,
+      //   )
+
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
     } else {

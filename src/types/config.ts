@@ -45,6 +45,12 @@ export type AwsConfig = {
   endPoint: string
   virusScannerLambda: Lambda // using aws-sdk-v3 (FRM-993)
   virusScannerLambdaFunctionName: string
+  // new virusScanningFunctions
+  guarddutyQuarantineS3BucketUrl: string
+  guarddutyQuarantineS3Bucket: string
+  guarddutyCleanS3Bucket: string
+  guarddutyLambda: Lambda
+  guarddutyLambdaFunctionName: string
 }
 
 export type MailConfig = {
@@ -177,6 +183,10 @@ export interface IOptionalVarsSchema {
     customCloudWatchGroup: string
     virusScannerLambdaFunctionName: string
     virusScannerLambdaEndpoint: string
+    guarddutyQuarantineS3Bucket: string
+    guarddutyCleanS3Bucket: string
+    guarddutyLambdaFunctionName: string
+    guarddutyLambdaEndpoint: string
   }
   mail: {
     from: string
