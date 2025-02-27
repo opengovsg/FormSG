@@ -22,11 +22,13 @@ export type FeedbackFormInput = {
 export interface FeedbackBlockProps {
   onSubmit: (input: FeedbackFormInput) => void
   colorTheme?: FormColorTheme
+  buttonVariant?: string
 }
 
 export const FeedbackBlock = ({
   onSubmit,
   colorTheme = FormColorTheme.Blue,
+  buttonVariant = 'outline',
 }: FeedbackBlockProps): JSX.Element => {
   const { t } = useTranslation()
 
@@ -92,7 +94,7 @@ export const FeedbackBlock = ({
         />
         <Button
           mt="1.5rem"
-          variant="outline"
+          variant={buttonVariant}
           type="submit"
           colorScheme={colorScheme}
           isLoading={isSubmitting}
