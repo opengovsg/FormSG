@@ -238,7 +238,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         return errAsync(new MrfReminderRecipientEmailsEmptyError())
       }
 
-      const reminderStepNumber = submittedSteps.length
+      const reminderStepNumber = submittedSteps.length + 1
 
       return okAsync({ recipientEmails, reminderStepNumber })
     },
