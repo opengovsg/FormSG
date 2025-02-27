@@ -20,6 +20,7 @@ import {
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
+import { number } from 'zod'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -125,7 +126,7 @@ describe('multiresponodent-submision.controller', () => {
         form: mockSubmitMrfReq.formsg.formDef,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         submissionId: mockSubmissionId,
-        timestamp: expect.any(String),
+        timestamp: expect.any(Number),
       })
       // Expect 200 ok
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
@@ -359,7 +360,7 @@ describe('multiresponodent-submision.controller', () => {
         form: mockSubmitMrfReq.formsg.formDef,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         submissionId: mockSubmissionId,
-        timestamp: expect.any(String),
+        timestamp: expect.any(Number),
       })
       // Expect 200 ok
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok

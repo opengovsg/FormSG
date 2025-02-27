@@ -54,7 +54,7 @@ describe('multirespondent-submission.utils', () => {
   }
 
   const mockResponseId = new ObjectId().toHexString()
-  const mockTimestamp = 1708950612345 // Wed, 26 Feb 2025 10:01:30 PM
+  const mockTimestamp = 1740607290000 // Wed, 26 Feb 2025 10:01:30 PM
 
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
@@ -384,20 +384,20 @@ describe('multirespondent-submission.utils', () => {
           answer: 'Wed, 26 Feb 2025 10:01:30 PM',
         },
         {
-          question: '[Table] Table of Name and Age (Name; Age)',
-          answer: 'Alice; 30',
+          question: '[Table] Table of Name and Age (Name, Age)',
+          answer: 'Alice, 30',
         },
         {
-          question: '[Table] Table of Name and Age (Name; Age)',
-          answer: 'Bob; 25',
+          question: '[Table] Table of Name and Age (Name, Age)',
+          answer: 'Bob, 25',
         },
         {
-          question: '[Table] Table of Hobbies (Hobby; Years)',
-          answer: 'Swimming; 5',
+          question: '[Table] Table of Hobbies (Hobby, Years)',
+          answer: 'Swimming, 5',
         },
         {
-          question: '[Table] Table of Hobbies (Hobby; Years)',
-          answer: 'Reading; 10',
+          question: '[Table] Table of Hobbies (Hobby, Years)',
+          answer: 'Reading, 10',
         },
       ])
     })
