@@ -7,6 +7,7 @@ export type SubmitFormFeedbackBodyDto = {
   isPreview?: boolean
   rating: number
   comment?: string
+  mrfStep?: number
 }
 
 /**
@@ -19,6 +20,9 @@ export type FormFeedbackBase = {
   created?: Date
   lastModified?: Date
   submissionId: SubmissionResponseDto['submissionId']
+  meta?: {
+    mrfStep?: number
+  }
 }
 
 // Convert to serialized version.

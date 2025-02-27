@@ -286,6 +286,9 @@ export type SubmissionResponseDto = {
 
   // payment form only fields
   paymentData?: PaymentSubmissionData
+
+  // mrf only fields
+  mrfStep?: number
 }
 
 export type SubmissionErrorDto = ErrorDto & {

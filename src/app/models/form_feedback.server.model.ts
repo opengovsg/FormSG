@@ -31,6 +31,12 @@ const FormFeedbackSchema = new Schema<IFormFeedbackSchema, IFormFeedbackModel>(
       required: false,
       trim: true,
     },
+    meta: {
+      mrfStep: {
+        type: Number,
+        required: false,
+      },
+    },
   },
   {
     timestamps: {

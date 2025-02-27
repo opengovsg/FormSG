@@ -51,6 +51,7 @@ export const FormEndPage = ({
             <FeedbackBlock
               colorTheme={colorTheme}
               onSubmit={handleSubmitFeedback}
+              buttonVariant={previousSubmissionId ? 'solid' : 'outline'}
             />
           )}
         </Stack>

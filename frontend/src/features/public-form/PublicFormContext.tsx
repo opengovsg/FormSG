@@ -18,6 +18,7 @@ export type SubmissionData = {
   id: string | undefined
   /** Submission time in ms from epoch  */
   timestamp: number
+  mrfStep?: number
 }
 
 export interface PublicFormContextProps

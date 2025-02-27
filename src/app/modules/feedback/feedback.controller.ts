@@ -21,6 +21,7 @@ const validateSubmitFormFeedbackParams = celebrate({
     .keys({
       rating: Joi.number().min(1).max(5).cast('string').required(),
       comment: Joi.string().allow('').required(),
+      mrfStep: Joi.number().optional(),
     })
     // Allow other keys for backwards compability as frontend might put extra keys in the body.
     .unknown(true),
@@ -40,10 +41,10 @@ const validateSubmitFormFeedbackParams = celebrate({
 const submitFormFeedback: ControllerHandler<
   { formId: string; submissionId: string },
   { message: string } | ErrorDto | PrivateFormErrorDto,
-  { rating: number; comment: string }
+  { rating: number; comment: string; mrfStep?: number }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
-  const { rating, comment } = req.body
+  const { rating, comment, mrfStep } = req.body
   const logMeta = {
     action: 'submitFormFeedback',
     ...createReqMeta(req),
@@ -52,7 +53,9 @@ const submitFormFeedback: ControllerHandler<
   }
 
   return SubmissionService.doesSubmissionIdExist(submissionId)
-    .andThen(() => FeedbackService.hasNoPreviousFeedback(submissionId))
+    .andThen(() =>
+      FeedbackService.hasNoPreviousFeedback(submissionId, { mrfStep }),
+    )
     .andThen(() => FormService.retrieveFullFormById(formId))
     .andThen((form) => FormService.isFormPublic(form).map(() => form))
     .andThen((form) => {
@@ -64,6 +67,7 @@ const submitFormFeedback: ControllerHandler<
         submissionId: submissionId,
         rating,
         comment,
+        mrfStep,
       }).map(() =>
         res
           .status(StatusCodes.OK)
