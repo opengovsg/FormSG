@@ -192,9 +192,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    width: 300,
-    minWidth: 300,
-    maxWidth: 300,
+    width: 240,
+    minWidth: 240,
+    maxWidth: 240,
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
@@ -215,9 +215,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         return <CompletedBadge />
       }
     },
-    width: 180,
-    minWidth: 180,
-    maxWidth: 220,
+    width: 160,
+    minWidth: 160,
+    maxWidth: 160,
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
@@ -240,7 +240,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     },
     width: 180,
     minWidth: 180,
-    maxWidth: 220,
+    maxWidth: 180,
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
@@ -254,9 +254,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     //         'do MMM yyyy, hh:mm:ss a',
     //       )
     //     : '',
-    width: 250,
-    minWidth: 250,
-    disableResizing: true,
+    width: 240,
+    minWidth: 240,
+    maxWidth: 240,
   },
   {
     Header: MRF_REMINDERS_LABEL,
@@ -270,8 +270,8 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         <SendReminderButton submissionId={submissionId} />
       ) : null
     },
-    minWidth: 188,
-    width: 188,
+    minWidth: 160,
+    width: 160,
   },
 ]
 
