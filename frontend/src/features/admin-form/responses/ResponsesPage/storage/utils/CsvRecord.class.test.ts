@@ -2,6 +2,7 @@ import { WorkflowStatus } from '~shared/types'
 
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_REMINDERS_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
@@ -26,6 +27,7 @@ describe('CsvRecord', () => {
             workflowCurrentStepNumber: 1,
             workflowNumTotalSteps: 2,
             lastSubmittedAt: '2025-02-17T00:00:00.000Z',
+            hasNextStepRecipientEmails: false,
           },
         )
 
@@ -38,6 +40,7 @@ describe('CsvRecord', () => {
           expect.objectContaining({ question: 'Download Status' }),
           expect.objectContaining({ question: MRF_WORKFLOW_STATUS_LABEL }),
           expect.objectContaining({ question: MRF_PENDING_RESPONSE_AT_LABEL }),
+          expect.not.objectContaining({ question: MRF_REMINDERS_LABEL }),
         ])
       })
     })
