@@ -14,8 +14,6 @@ import {
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
-import { MailSendError } from 'src/app/services/mail/mail.errors'
-
 import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from '../../../../shared/constants'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
@@ -65,6 +63,7 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../services/captcha/captcha.errors'
+import { MailSendError } from '../../services/mail/mail.errors'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
   MissingTurnstileError,
