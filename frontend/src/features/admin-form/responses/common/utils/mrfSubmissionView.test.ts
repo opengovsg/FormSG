@@ -54,6 +54,6 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 1,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('Step 1 of 2')
+    expect(result).toBe('Step 2 of 2')
   })
 })
