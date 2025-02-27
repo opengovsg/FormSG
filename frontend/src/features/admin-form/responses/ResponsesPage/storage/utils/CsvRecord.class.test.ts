@@ -40,8 +40,10 @@ describe('CsvRecord', () => {
           expect.objectContaining({ question: 'Download Status' }),
           expect.objectContaining({ question: MRF_WORKFLOW_STATUS_LABEL }),
           expect.objectContaining({ question: MRF_PENDING_RESPONSE_AT_LABEL }),
-          expect.not.objectContaining({ question: MRF_REMINDERS_LABEL }),
         ])
+        expect(recordResult).not.toContainEqual(
+          expect.objectContaining({ question: MRF_REMINDERS_LABEL }),
+        )
       })
     })
   })
