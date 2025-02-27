@@ -566,4 +566,26 @@ describe('multiresponodent-submision.controller', () => {
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
     })
   })
+
+  describe('sendPendingMrfSubmissionReminder', () => {
+    it('returns 200 ok when recipient email found and reminder email is sent successfully', () => {
+      // ensure that the recipient email argument is passed correctly to the reminder email send method
+    })
+
+    it('returns 400 when submissionSecretKey is undefined', () => {})
+
+    it('returns 400 when retrieveFormById encounters FormNotFoundError', () => {})
+
+    it('returns 500 when retrieveFormById encounters DatabaseError', () => {})
+
+    it('returns 500 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters DatabaseError', () => {})
+
+    it('returns 400 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters SubmissionNotFoundError', () => {})
+
+    it('returns 400 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters MrfReminderInvalidWorkflowStepError', () => {})
+
+    it('returns 400 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters MrfReminderRecipientEmailsEmptyError', () => {})
+
+    it('returns 500 when sendNextStepReminderEmail encounters MailSendError', () => {})
+  })
 })

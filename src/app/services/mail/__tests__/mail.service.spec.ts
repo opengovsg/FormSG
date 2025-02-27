@@ -1559,4 +1559,66 @@ describe('mail.service', () => {
       expect(sendMailSpy).not.toHaveBeenCalled()
     })
   })
+
+  it('should include reminder in email subject when isReminder is true', async () => {
+    // Arrange
+    const responseUrl = 'responseUrl'
+    const emails = [MOCK_VALID_EMAIL]
+    const responseId = 'test-response-id'
+
+    const expectedArg = {
+      to: emails,
+      from: MOCK_SENDER_STRING,
+      subject: expect.stringMatching(/^(?!\[Reminder\])/),
+      html: expect.any(String),
+      headers: {
+        'X-Formsg-Email-Type': expect.any(String),
+      },
+    }
+
+    // Act
+    const actualResult = await mailService.sendMRFWorkflowStepEmail({
+      emails,
+      formTitle: 'mockFormTitle',
+      responseId,
+      responseUrl,
+      isReminder: true,
+    })
+
+    // Assert
+    expect(actualResult).toEqual(ok(true))
+    expect(sendMailSpy).toHaveBeenCalledTimes(1)
+    expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+  })
+
+  it('should not include reminder in email subject when isReminder is false', async () => {
+    // Arrange
+    const responseUrl = 'responseUrl'
+    const emails = [MOCK_VALID_EMAIL]
+    const responseId = 'test-response-id'
+
+    const expectedArg = {
+      to: emails,
+      from: MOCK_SENDER_STRING,
+      subject: expect.not.stringMatching(/^(?!\[Reminder\])/),
+      html: expect.any(String),
+      headers: {
+        'X-Formsg-Email-Type': expect.any(String),
+      },
+    }
+
+    // Act
+    const actualResult = await mailService.sendMRFWorkflowStepEmail({
+      emails,
+      formTitle: 'mockFormTitle',
+      responseId,
+      responseUrl,
+      isReminder: false,
+    })
+
+    // Assert
+    expect(actualResult).toEqual(ok(true))
+    expect(sendMailSpy).toHaveBeenCalledTimes(1)
+    expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+  })
 })

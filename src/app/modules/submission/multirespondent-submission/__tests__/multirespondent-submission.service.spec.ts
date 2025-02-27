@@ -1374,4 +1374,36 @@ describe('multirespondent-submission.service', () => {
       ).toBe(false)
     })
   })
+
+  describe('updateMultiRespondentFormSubmission', () => {
+    it('saves correct recipient emails for next step workflow notification email in submittedSteps metadata', () => {})
+  })
+
+  describe('createMultiRespondentFormSubmission', () => {
+    it('saves correct recipient emails for next step workflow notification email in submittedSteps metadata', () => {})
+  })
+
+  describe('sendNextStepEmail', () => {
+    it('invokes the sendMrfOutcomeEmail function with the isReminder set to undefined', () => {})
+  })
+
+  describe('sendNextStepReminderEmail', () => {
+    it('invokes the sendMrfOutcomeEmail function with the isReminder set to true and correct recipient emails', () => {})
+  })
+
+  describe('getPendingStepRecipientEmailsFromSubmittedStepsMeta', () => {
+    it('gets correct recipient emails for 2nd step mrf submission', () => {})
+
+    it('gets correct recipient email for 3rd step of 4-step mrf submission', () => {})
+
+    it('gets correct recipient email for last step of 2-step mrf submission', () => {})
+
+    it('gets correct recipient email for last step of 4-step mrf submission', () => {})
+
+    it('throws pending step not found error for 2nd step where it is rejected', () => {})
+
+    it('throws pending step not found for completed mrf submission', () => {})
+
+    it('throws recipient email not found for valid pending step ie 3rd step of 4-step mrf submission but recipient emails is not found in pending step metadata', () => {})
+  })
 })

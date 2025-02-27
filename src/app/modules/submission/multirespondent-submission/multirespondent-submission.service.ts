@@ -187,7 +187,7 @@ const sendNextStepEmail = ({
   )
 }
 
-export const getPendingStepRecipieintEmailsFromSubmittedStepsMeta = ({
+export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   submissionId,
 }: {
   submissionId: string
@@ -201,7 +201,7 @@ export const getPendingStepRecipieintEmailsFromSubmittedStepsMeta = ({
   return getMultirespondentSubmission(submissionId).andThen(
     ({ workflow, submittedSteps }) => {
       const logMeta = {
-        action: 'getPendingStepRecipieintEmailsFromSubmittedStepsMeta',
+        action: 'getPendingStepRecipientEmailsFromSubmittedStepsMeta',
         submissionId,
         submittedSteps,
       }
@@ -664,9 +664,11 @@ export const updateMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
-      const nextStepNumber = 1 // since current step is 0
+      const nextStepNumber = workflowStep + 1
       const nextStep =
-        form.workflow.length >= 1 ? form.workflow[nextStepNumber] : null
+        form.workflow.length > nextStepNumber
+          ? form.workflow[nextStepNumber]
+          : null
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
             form,

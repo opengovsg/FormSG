@@ -43,7 +43,7 @@ import * as MultirespondentSubmissionMiddleware from './multirespondent-submissi
 import {
   checkFormIsMultirespondent,
   createMultiRespondentFormSubmission,
-  getPendingStepRecipieintEmailsFromSubmittedStepsMeta,
+  getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
   sendNextStepReminderEmail,
@@ -366,7 +366,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
           ),
         )
       }
-      return getPendingStepRecipieintEmailsFromSubmittedStepsMeta({
+      return getPendingStepRecipientEmailsFromSubmittedStepsMeta({
         submissionId,
       }).map(({ recipientEmails, reminderStepNumber }) => ({
         recipientEmails,
