@@ -49,6 +49,10 @@ test.describe('Email form submission', () => {
     Form = makeModel(db, 'form.server.model', 'Form')
   })
 
+  test.afterAll(async () => {
+    await db.dropCollection(Form.collection.name)
+  })
+
   test('Create and submit email mode form with all fields', async ({
     page,
   }) => {
