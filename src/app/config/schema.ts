@@ -394,7 +394,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     mrfPendingSubmissionEmailReminder: {
       doc: 'Per-minute, per-IP request limit for sending email reminders for MRF submissions',
       format: 'int',
-      default: 180,
+      default: 60,
       env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
     },
   },
