@@ -1,8 +1,7 @@
 import { Router } from 'express'
 
-import { rateLimitConfig } from 'src/app/config/config'
-import { limitRate } from 'src/app/utils/limit-rate'
-
+import { rateLimitConfig } from '../../../../../../app/config/config'
+import { limitRate } from '../../../../../../app/utils/limit-rate'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'

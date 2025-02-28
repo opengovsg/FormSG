@@ -21,7 +21,7 @@ export const SendReminderButton = ({
 
   const [isSent, setIsSent] = useState(false)
 
-  const { data: submissionData, isLoading } =
+  const { data: submissionData, isLoading: isLoadingSubmissionData } =
     useGetIndividualDecryptedSubmission({
       formId,
       submissionId,
@@ -33,14 +33,14 @@ export const SendReminderButton = ({
     ? 'storybook-test-dummy-key'
     : submissionData?.submissionSecretKey
 
-  if (!formId || (!isLoading && !submissionSecretKey)) {
+  if (!formId || (!isLoadingSubmissionData && !submissionSecretKey)) {
     return null
   }
 
   return !isSent ? (
     <Button
-      isLoading={isLoading}
-      loadingText="Sending"
+      isLoading={isLoadingSubmissionData}
+      loadingText={isLoadingSubmissionData ? 'Loading' : 'Sending'}
       m="0"
       p="0"
       variant="clear"
