@@ -1,4 +1,14 @@
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  useForm,
+  UseFormClearErrors,
+  UseFormRegister,
+  UseFormSetError,
+  UseFormSetValue,
+} from 'react-hook-form'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
@@ -15,12 +25,20 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Textarea,
 } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
+import Attachment from '~components/Field/Attachment'
+
+import { UploadImageInput } from '../../BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 
 const TEXT_PROMPT_IDEAS = [
   {
@@ -98,6 +116,94 @@ export interface TextPromptInputs {
   prompt: string
 }
 
+export interface VisionPromptInputs {
+  attachment: { file?: File; srcUrl?: string }
+}
+
+const TextPromptModalBodyContent = ({
+  register,
+  setValue,
+  errors,
+}: {
+  register: UseFormRegister<TextPromptInputs>
+  setValue: UseFormSetValue<TextPromptInputs>
+  errors: FieldErrors<TextPromptInputs>
+}) => {
+  return (
+    <>
+      <FormControl isRequired isInvalid={!!errors.prompt?.message}>
+        <FormLabel textStyle="subhead-1">
+          I want to create a form that collects...
+        </FormLabel>
+        <Textarea
+          minH="9rem"
+          borderRadius="4px"
+          placeholder={GENERATE_FORM_PLACEHOLDER}
+          {...register('prompt', {
+            required: 'Please enter a prompt',
+            maxLength: {
+              value: 500,
+              message: 'Please enter at most 500 characters',
+            },
+          })}
+        />
+        <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+      </FormControl>
+      <Box mt="1rem">
+        <PromptSelectorBar
+          promptIdeas={TEXT_PROMPT_IDEAS}
+          onClick={(prompt) => setValue('prompt', prompt)}
+        />
+      </Box>
+    </>
+  )
+}
+
+const VisionPromptModalBodyContent = ({
+  control,
+  errors,
+  clearErrors,
+  setError,
+}: {
+  control: Control<VisionPromptInputs>
+  errors: FieldErrors<VisionPromptInputs>
+  clearErrors: UseFormClearErrors<VisionPromptInputs>
+  setError: UseFormSetError<VisionPromptInputs>
+}) => {
+  console.log('errors:', errors.attachment.message)
+  return (
+    <>
+      {' '}
+      <FormControl isRequired isInvalid={!!errors.attachment.message}>
+        <FormLabel textStyle="subhead-1">
+          Create a form based on this image
+        </FormLabel>
+        <Controller
+          name="attachment"
+          control={control}
+          rules={{ required: 'Please upload an image' }}
+          render={({ field: { onChange, ...rest } }) => (
+            <UploadImageInput
+              {...rest}
+              onChange={(event) => {
+                clearErrors('attachment')
+                onChange(event)
+              }}
+              onError={(message) => setError('attachment', { message })}
+            />
+          )}
+        />
+        <FormErrorMessage>{errors.attachment?.message}</FormErrorMessage>
+      </FormControl>
+    </>
+  )
+}
+
+enum PROMPT_TYPE {
+  TEXT,
+  VISION,
+}
+
 const MagicFormBuilderCreateFormPrompt = ({
   onSubmit,
   isSubmitLoading,
@@ -114,6 +220,16 @@ const MagicFormBuilderCreateFormPrompt = ({
     formState: { errors },
   } = useForm<TextPromptInputs>()
 
+  const {
+    control: visionControl,
+    formState: { errors: visionErrors },
+    clearErrors: clearVisionErrors,
+    setError: setVisionError,
+    handleSubmit: handleVisionSubmit,
+  } = useForm<VisionPromptInputs>()
+
+  const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(PROMPT_TYPE.TEXT)
+
   return (
     <>
       <ModalHeader display="flex" alignItems="center">
@@ -128,35 +244,40 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        <FormControl isRequired isInvalid={!!errors.prompt?.message}>
-          <FormLabel textStyle="subhead-1">
-            I want to create a form that collects...
-          </FormLabel>
-          <Textarea
-            minH="9rem"
-            borderRadius="4px"
-            placeholder={GENERATE_FORM_PLACEHOLDER}
-            {...register('prompt', {
-              required: 'Please enter a prompt',
-              maxLength: {
-                value: 500,
-                message: 'Please enter at most 500 characters',
-              },
-            })}
-          />
-          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-        </FormControl>
-        <Box mt="1rem">
-          <PromptSelectorBar
-            promptIdeas={TEXT_PROMPT_IDEAS}
-            onClick={(prompt) => setValue('prompt', prompt)}
-          />
-        </Box>
+        <Tabs isFitted onChange={setSelectedTab}>
+          <TabList mb="1em">
+            <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
+            <Tab value={PROMPT_TYPE.VISION}>Image</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <TextPromptModalBodyContent
+                register={register}
+                setValue={setValue}
+                errors={errors}
+              />
+            </TabPanel>
+            <TabPanel>
+              <VisionPromptModalBodyContent
+                control={visionControl}
+                errors={visionErrors}
+                clearErrors={clearVisionErrors}
+                setError={setVisionError}
+              />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
           nextButtonIcon={<BiSolidMagicWand fontSize="1.5rem" />}
-          handleNext={handleSubmit(({ prompt }) => onSubmit(prompt))}
+          handleNext={
+            selectedTab === PROMPT_TYPE.TEXT
+              ? handleSubmit(({ prompt }) => onSubmit(prompt))
+              : handleVisionSubmit(({ attachment }) =>
+                  console.log('submitting vision prompt'),
+                )
+          }
           isNextLoading={isSubmitLoading}
           handleBack={onCancel}
           nextButtonLabel="Create fields"
