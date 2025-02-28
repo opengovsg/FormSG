@@ -26,7 +26,12 @@ export const SendReminderButton = ({
       formId,
       submissionId,
     })
-  const submissionSecretKey = submissionData?.submissionSecretKey
+
+  // Used to define a test key for Storybook UI Testing
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+  const submissionSecretKey = isTest
+    ? 'storybook-test-dummy-key'
+    : submissionData?.submissionSecretKey
 
   if (!formId || (!isLoading && !submissionSecretKey)) {
     return null
