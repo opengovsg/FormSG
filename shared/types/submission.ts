@@ -358,4 +358,5 @@ export type AdminUseEmailModeFeedbackDto = {
     value: string[] | false
     othersInput?: string
   }
+  adminEmail?: string
 }

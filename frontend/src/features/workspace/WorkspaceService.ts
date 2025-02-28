@@ -123,6 +123,7 @@ export const createMultirespondentModeForm = async (
   )
 }
 
+// TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
 const createFeedbackResponses = (
   formInputs: AdminUseEmailModeFeedbackDto,
   feedbackForm: PublicFormViewDto,
@@ -156,7 +157,18 @@ const createFeedbackResponses = (
       answerArray,
       fieldType,
     },
+    ...(formInputs.adminEmail && feedbackForm.form.form_fields.length > 1
+      ? [
+          {
+            _id: feedbackForm.form.form_fields[1]._id,
+            question: feedbackForm.form.form_fields[1].title,
+            answer: formInputs.adminEmail,
+            fieldType: feedbackForm.form.form_fields[1].fieldType,
+          },
+        ]
+      : []),
   ]
+
   return responses
 }
 
@@ -166,6 +178,7 @@ const createAdminEmailModeUseFeedback = (
 ) => {
   const responses = createFeedbackResponses(formInputs, feedbackForm)
   // convert content to FormData object
+  // TODO(tejas): do we need the responseMetadata?
   const formData = new FormData()
   formData.append('body', JSON.stringify({ responses, version: 2.1 }))
 
