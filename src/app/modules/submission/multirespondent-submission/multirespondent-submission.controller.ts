@@ -19,6 +19,7 @@ import { createReqMeta } from '../../../utils/request'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import { updateFormMetadata } from '../../form/admin-form/admin-form.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
@@ -388,7 +389,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
       })
     })
     .andThen(({ recipientEmails, reminderStepNumber, form }) => {
-      return sendNextStepReminderEmail({
+      sendNextStepReminderEmail({
         submissionId,
         emails: recipientEmails,
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
@@ -400,17 +401,25 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         formId,
         reminderStepNumber,
       })
+
+      return okAsync({ form })
     })
-    .map(() => {
+    .map(({ form }) => {
       logger.info({
         message: 'Reminder sent successfully',
         meta: logMeta,
       })
-
-      return res.json({
+      res.json({
         message: `Reminder sent successfully.`,
         submissionId: submissionId,
       })
+
+      updateFormMetadata(form, {
+        ...form.metadata,
+        num_mrf_reminder_emails_sent:
+          (form.metadata?.num_mrf_reminder_emails_sent ?? 0) + 1,
+      })
+      return
     })
     .mapErr((err) => {
       const { errorMessage, statusCode } = mapRouteError(err)
