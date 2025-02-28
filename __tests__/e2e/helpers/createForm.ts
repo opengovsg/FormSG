@@ -857,10 +857,8 @@ export const createFeedbackForm = async () => {
   } catch (error) {
     // Check for duplicate key error (code 11000)
     if (error instanceof Error && 'code' in error && error.code === 11000) {
-      console.log('Duplicate key error, form already exists')
       return
     }
-    console.log('unknown error while creating form', error)
     throw error
   }
 
