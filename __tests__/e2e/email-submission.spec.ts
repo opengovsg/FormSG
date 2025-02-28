@@ -48,9 +48,9 @@ test.describe('Email form submission', () => {
     db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
   })
-  test.beforeEach(async () => {
-    await createFeedbackForm()
-  })
+  // test.beforeEach(async () => {
+  //   await createFeedbackForm()
+  // })
   test.afterAll(async () => {
     // Clean up db
     await db.dropCollection(Form.collection.name)
@@ -61,6 +61,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -78,6 +80,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
       createBlankVersion(createOptionalVersion(ff)),
@@ -96,6 +100,8 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with identical attachment names', async ({
     page,
   }) => {
+    await createFeedbackForm()
+
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
     const formFields = new Array(3).fill('').map(
@@ -121,6 +127,8 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with optional and required attachments', async ({
     page,
   }) => {
+    await createFeedbackForm()
+
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
     const formFields = [
@@ -156,6 +164,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -175,6 +185,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -194,6 +206,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -212,6 +226,8 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with MyInfo fields', async ({
     page,
   }) => {
+    await createFeedbackForm()
+
     // Define
     const formFields = [
       // Short answer
@@ -242,6 +258,8 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
+    await createFeedbackForm()
+
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
     const formSettings = getEmailSettings()
@@ -257,6 +275,8 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with a field hidden by logic', async ({
     page,
   }) => {
+    await createFeedbackForm()
+
     // Define
     const { formFields, formLogics } = TEST_FIELD_HIDDEN_BY_LOGIC
     const formSettings = getEmailSettings()
@@ -272,6 +292,8 @@ test.describe('Email form submission', () => {
   test('Create email mode form with submission disabled by chained logic', async ({
     page,
   }) => {
+    await createFeedbackForm()
+
     // Define
     const { formFields, formLogics, preventSubmitMessage } =
       TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC
