@@ -1,5 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from 'src/app/config/config'
+import { limitRate } from 'src/app/utils/limit-rate'
+
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
@@ -96,5 +99,6 @@ AdminFormsSubmissionsRouter.get(
  */
 AdminFormsSubmissionsRouter.post(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind',
+  limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
 )
