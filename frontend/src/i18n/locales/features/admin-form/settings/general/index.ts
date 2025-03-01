@@ -24,7 +24,7 @@ export interface General extends HasTitle {
     limitLessThanCurrent: string
   }
   customisation: {
-    label: string
+    closedFormMessage: string
   }
   captcha: {
     label: string
