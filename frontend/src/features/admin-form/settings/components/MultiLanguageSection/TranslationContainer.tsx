@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Flex, FormControl, Text } from '@chakra-ui/react'
 
 import Textarea from '~components/Textarea'
@@ -18,6 +19,7 @@ export const TranslationContainer = ({
   editingTranslation,
   previousTranslation,
 }: TranslationContainerProps) => {
+  const { t } = useTranslation()
   const { register } = useFormContext<TranslationInput>()
 
   return (
@@ -29,7 +31,7 @@ export const TranslationContainer = ({
           mr="7.5rem"
           width="6.25rem"
         >
-          Default
+          {t('features.common.default')}
         </Text>
         <Textarea
           placeholder={defaultString}
