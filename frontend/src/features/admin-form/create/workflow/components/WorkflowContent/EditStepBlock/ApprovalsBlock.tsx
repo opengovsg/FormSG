@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -26,6 +26,7 @@ export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     control,
     setValue,
@@ -91,9 +92,13 @@ export const ApprovalsBlock = ({
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
         labelStyles={textStyles.h4}
-        label="This respondent is an approver"
-        description="If they select Yes, the form continues to the next step. If they select No, it stops here."
-        tooltipText="Use this for steps that involve any type of decision, such as reviews or endorsements"
+        label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
+        description={t(
+          'features.adminForm.sidebar.workflow.approvals.toggle.description',
+        )}
+        tooltipText={t(
+          'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
+        )}
         tooltipVariant="info"
         tooltipPlacement="top"
       />
@@ -105,20 +110,28 @@ export const ApprovalsBlock = ({
             rules={{
               validate: (value) => {
                 if (!value && isApprovalToggleChecked) {
-                  return 'Please select a Yes/No field'
+                  return t(
+                    'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                  )
                 }
                 if (value && approvalFieldsFromOtherSteps.includes(value)) {
-                  return 'The selected field has been assigned to another step. Please choose a different field'
+                  return t(
+                    'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
+                  )
                 }
                 if (value && !selectedEditFields.includes(value)) {
-                  return 'The selected Yes/No field has not been assigned to this respondent'
+                  return t(
+                    'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                  )
                 }
               },
             }}
             render={({ field: { value = '', ...rest } }) => (
               <>
                 <SingleSelect
-                  placeholder="Select a Yes/No field from your form"
+                  placeholder={t(
+                    'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
+                  )}
                   items={yesNoFieldItems}
                   value={getValueIfNotDeleted(value)}
                   isClearable

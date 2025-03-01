@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
@@ -15,6 +16,7 @@ import { useWorkflowMutations } from '../../../mutations'
 import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
+  const { t } = useTranslation()
   const { formWorkflow } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
   const { isCreatingState, setToInactive, setToCreating } =
@@ -39,11 +41,13 @@ export const NewStepBlock = () => {
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
       defaultValues={{ edit: [] }}
-      submitButtonLabel="Add step"
+      submitButtonLabel={t(
+        'features.adminForm.sidebar.workflow.approvals.addStep',
+      )}
     />
   ) : (
     <Button onClick={setToCreating} variant="outline" leftIcon={<BiPlus />}>
-      Add step
+      {t('features.adminForm.sidebar.workflow.approvals.addStep')}
     </Button>
   )
 }

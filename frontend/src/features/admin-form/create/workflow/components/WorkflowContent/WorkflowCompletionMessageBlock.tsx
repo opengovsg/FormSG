@@ -1,18 +1,23 @@
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Link, Text } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
 
 export const WorkflowCompletionMessageBlock = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { prefix, link, suffix } = t(
+    'features.adminForm.sidebar.workflow.approvals.complete',
+    { returnObjects: true },
+  )
   return (
     <InlineMessage variant="info">
       <Text>
-        When the workflow is complete, email notifications can be sent to
-        respondents and other parties. Set up{' '}
+        {prefix + ' '}
         <Link as={ReactLink} to={'settings/email-notifications'}>
-          email notifications
-        </Link>{' '}
-        in Settings.
+          {link}
+        </Link>
+        {' ' + suffix}
       </Text>
     </InlineMessage>
   )

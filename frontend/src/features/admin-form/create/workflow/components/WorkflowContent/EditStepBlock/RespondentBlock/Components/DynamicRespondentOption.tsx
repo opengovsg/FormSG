@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 
 import { WorkflowType } from '~shared/types'
@@ -20,6 +21,7 @@ export const DynamicRespondentOption = ({
   formMethods,
   emailFieldItems,
 }: DynamicRespondentOptionProps) => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -41,7 +43,9 @@ export const DynamicRespondentOption = ({
           },
         }}
       >
-        <Text>An email field from the form</Text>
+        <Text>
+          {t('features.adminForm.sidebar.workflow.dynamicRespondent.title')}
+        </Text>
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
@@ -54,7 +58,9 @@ export const DynamicRespondentOption = ({
               control={control}
               name="field"
               rules={{
-                required: 'Please select a field.',
+                required: t(
+                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                ),
                 validate: (selectedValue) => {
                   return (
                     isLoading ||
@@ -62,7 +68,9 @@ export const DynamicRespondentOption = ({
                     emailFieldItems.some(
                       ({ value: fieldValue }) => fieldValue === selectedValue,
                     ) ||
-                    'Field is not an email field'
+                    t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
+                    )
                   )
                 },
               }}
@@ -70,7 +78,9 @@ export const DynamicRespondentOption = ({
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
-                  placeholder="Select a field"
+                  placeholder={t(
+                    'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                  )}
                   items={emailFieldItems}
                   value={value}
                   {...rest}

@@ -8,5 +8,6 @@ export {
   type HeaderAndInstructions,
   type Logic,
   type ThankYou,
+  type Workflow,
 } from './sidebar'
 export { type Toasts } from './toasts'

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Flex, Stack, Text } from '@chakra-ui/react'
 
 type StepLabelProps = {
@@ -5,6 +6,7 @@ type StepLabelProps = {
 }
 
 export const StepLabel = ({ stepNumber }: StepLabelProps) => {
+  const { t } = useTranslation()
   return (
     <Stack
       direction="row"
@@ -22,7 +24,9 @@ export const StepLabel = ({ stepNumber }: StepLabelProps) => {
         {stepNumber + 1}
       </Text>
       <Flex direction="row">
-        <Text>Step {stepNumber + 1}</Text>
+        <Text>
+          {t('features.common.entities.step')} {stepNumber + 1}
+        </Text>
       </Flex>
     </Stack>
   )

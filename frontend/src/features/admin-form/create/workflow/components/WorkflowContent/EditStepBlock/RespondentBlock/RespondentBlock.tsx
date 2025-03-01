@@ -1,4 +1,5 @@
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { UserDto } from '~shared/types'
@@ -32,6 +33,7 @@ export const RespondentBlock = ({
   isLoading,
   formMethods,
 }: RespondentBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     formState: { errors },
     watch,
@@ -60,8 +62,14 @@ export const RespondentBlock = ({
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
-          <Text style={textStyles.h4}>Respondent in this step</Text>
-          <Text>Anyone who has access to your form</Text>
+          <Text style={textStyles.h4}>
+            {t(
+              'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+            )}
+          </Text>
+          <Text>
+            {t('features.adminForm.sidebar.workflow.respondentBlock.anyone')}
+          </Text>
         </Stack>
       ) : (
         <FormControl
@@ -69,7 +77,9 @@ export const RespondentBlock = ({
           isRequired
           isInvalid={!!errors.workflow_type}
         >
-          <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
+          <FormLabel style={textStyles.h4}>
+            {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
+          </FormLabel>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>
               <DynamicRespondentOption
