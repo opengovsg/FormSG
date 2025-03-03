@@ -57,7 +57,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -76,7 +76,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields optional', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -97,7 +97,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with identical attachment names', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -125,6 +125,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with optional and required attachments', async ({
     page,
   }) => {
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -161,7 +162,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with Singpass authentication', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -182,7 +183,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with Corppass authentication', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -203,7 +204,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with SGID authentication', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -224,7 +225,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with MyInfo fields', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -256,7 +257,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields shown by logic', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -274,7 +275,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with a field hidden by logic', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
@@ -292,7 +293,7 @@ test.describe('Email form submission', () => {
   test('Create email mode form with submission disabled by chained logic', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
+    test.setTimeout(40 * 1000)
     await createFeedbackForm()
 
     // Define
