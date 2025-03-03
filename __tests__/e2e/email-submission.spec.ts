@@ -51,6 +51,7 @@ test.describe('Email form submission', () => {
 
   test.afterAll(async () => {
     await db.dropCollection(Form.collection.name)
+    await db.close()
   })
 
   test('Create and submit email mode form with all fields', async ({
