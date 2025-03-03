@@ -163,7 +163,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             )}
           >
             <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.create.details.next')}
+              {t('features.workspace.modals.create.details.create')}
             </Text>
           </Button>
         </Container>

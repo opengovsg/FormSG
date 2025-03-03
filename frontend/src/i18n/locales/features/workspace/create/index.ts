@@ -32,7 +32,7 @@ export interface CreateModal {
       label: string
       description: string
     }
-    next: string
+    create: string
   }
   secretKey: {
     title: string

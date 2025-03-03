@@ -38,7 +38,7 @@ export const enSG: CreateModal = {
       description:
         'All email addresses below will be notified. Learn more on [how to guard against email bounces]({GUIDE_PREVENT_EMAIL_BOUNCE}).',
     },
-    next: 'Next step',
+    create: 'Create form',
   },
   secretKey: {
     title: 'Download Secret Key to proceed',
