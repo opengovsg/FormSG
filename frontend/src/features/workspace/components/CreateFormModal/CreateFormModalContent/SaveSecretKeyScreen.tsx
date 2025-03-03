@@ -1,4 +1,10 @@
-import { SyntheticEvent, useCallback, useMemo, useState } from 'react'
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
@@ -84,6 +90,19 @@ const useSaveSecretKeyDefault = () => {
     },
     [onCopy],
   )
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasDownloaded) {
+        e.preventDefault() // if event doesn't get explicitly handled, default action WILL not be taken
+        // returnValue is deprecated, but we return it regardless to support legacy cases (e.g. Chrome/Edge < 119)
+        e.returnValue = 'You have not downloaded your Secret Key yet'
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasDownloaded])
 
   return {
     isLoading,
