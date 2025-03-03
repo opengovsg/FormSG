@@ -115,19 +115,19 @@ const mapSuggestedFormFieldToFieldCreateDto = (
 const BASIC_FIELD_NAMES = Object.keys(omit(BasicField, ['Children', 'Image']))
   .map((fieldType) => `"${fieldType}"`)
   .toString()
-const FORM_DETAILS_SYSTEM_PROMPT = {
-  role: Role.System,
+const FORM_DETAILS_PROMPT = {
+  role: Role.User,
   content:
     // Provide context to model on when to use each field type
     'Generate form fields for a form which follow a set of rules:' +
-    'Rule 1: the form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json.' +
-    'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
+    'Rule 1: The form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json.' +
+    'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string. Note that "description" must always be provided when "Statement" field type is used and "title" property is not used for "Statement" field type.' +
     'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
     `Rule 4: The field type must be a string only composed of the following ${BASIC_FIELD_NAMES}.` +
     // Organising fields
     'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
     'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
-    'Rule 5: If "Statement" is used, the "description" property is compulsory.' +
+    'Rule 5: When "Statement" field is used, the "description" and "required" properties are compulsory and must be provided and the title must be the same as the description. For example, {"fieldType": "Statement", "title": "Input descrtiption text here. Must be included and be non-empty string.", "required": true, "description": "Input descrtiption text here. Must be included and be non-empty string."}. This "description" property is where you provide the paragraph of text to provide necessary context about following fields.' +
     'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
     // Choices fields
     'Rule 6: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
@@ -148,11 +148,11 @@ const FORM_DETAILS_SYSTEM_PROMPT = {
 
 const generateFormCreationPrompt = (userPrompt: string) => {
   const messages = [
-    FORM_DETAILS_SYSTEM_PROMPT,
+    FORM_DETAILS_PROMPT,
     {
       // Provide general topic + example fields that user wants to collect.
       role: Role.User,
-      content: `Create a form that collects ${userPrompt}. The array of json objects that follows all rules, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
+      content: `Create a form that collects ${userPrompt}. The array of json objects that follows all rules ensuring the JSON schema is valid, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
     },
   ]
 
@@ -218,6 +218,7 @@ const suggestedTableFieldSchema = suggestedBaseFieldSchema
 const suggestedStatementFieldSchema = suggestedBaseFieldSchema.merge(
   z.object({
     fieldType: z.literal('Statement'),
+    title: z.string().optional(),
     description: z.string().trim().min(1),
   }),
 )
@@ -349,6 +350,38 @@ export const createFormFieldsUsingTextPrompt = ({
     })
 }
 
+const FORM_DETAILS_SYSTEM_VISION_PROMPT = {
+  role: Role.User,
+  content:
+    // Provide context to model on when to use each field type
+    'You will be given a set of images depicting a paper form. Recreate the paper form exactly by generating form fields which follow this set of rules:' +
+    'Rule 1: The form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json. This ordering should closely follow the field ordering provided in the image.' +
+    'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string. Note that "description" must always be provided when "Statement" field type is used and "title" property is not used for "Statement" field type. If you see * after a field in the image, for example, name*, this means tha the name is required and hence should be set to true.' +
+    'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
+    `Rule 4: The field type must be a string only composed of the following ${BASIC_FIELD_NAMES}.` +
+    // Organising fields
+    'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections. Use this "Section" field type to recreate the section headers you may see in the images (an example of a section is a number eg, 1. followed by a description and a set of fields after before another number eg, 2. and another set of fields follow). You should also include a section field for the form title if you see a form title in the images.' +
+    'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement. Whenever you see a paragraph of text which is used for providing information to the form respondent, use the "Statement" field to include this paragraph of text.' +
+    'Rule 5: When "Statement" field is used, the "description" and "required" properties are compulsory and must be provided and the title must be the same as the description. For example, {"fieldType": "Statement", "title": "Input descrtiption text here. Must be included and be non-empty string.", "required": true, "description": "Input descrtiption text here. Must be included and be non-empty string."}. This "description" property is where you provide the paragraph of text.' +
+    'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
+    // Choices fields
+    'Rule 6: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from. You should choose the most appropriate field type when you see a field that requires the respondent to select options in the image.' +
+    'Info 4: "Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
+    // Rating field
+    'Info 5: "Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
+    // Id fields
+    'Info 6: "Nric" is used to collect the unique identity number issued to each respondent, it can be used to uniquely identify the respondent.' +
+    'Info 7: "Uen" is a unique identifier for businesses, it can be used to uniquely identify a business.' +
+    // Mobile and home number fields
+    'Info 8: "Mobile" is used to collect a mobile phone number. "HomeNo" is used to collect a home phone number.' +
+    // Attachment field
+    'Info 9: "Attachment is used for the respondent to upload files.' +
+    // Table field
+    'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response. When you see a table in the image, you must use the table field as much as possible.' +
+    'Rule 7: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.' +
+    'Rule 8: Follow the form depicted in the image as exactly as possible. This means you should include as much text and do not leave any text out as possible and avoid rephrasing or adding additional words not found in the form as much as possible. Avoid duplicating text that is already included in another field if it does not show up multiple times in the image.',
+}
+
 const generateFormCreationVisionPrompt = ({
   imageDataUrls,
 }: {
@@ -367,12 +400,12 @@ const generateFormCreationVisionPrompt = ({
     content: [
       {
         type: 'text',
-        text: `You are provided images of a form. Recreate the given form based by closely referencing the images of the form. The array of json objects that follows all rules, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
+        text: `The array of json objects that exactly recreates the form depicted in the image, follows all rules ensuring the JSON schema is valid, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
       },
       ...imageUrlContents,
     ],
   }
-  return [FORM_DETAILS_SYSTEM_PROMPT, userPrompt] as Message[]
+  return [FORM_DETAILS_SYSTEM_VISION_PROMPT, userPrompt] as Message[]
 }
 
 const generateAndSendVisionPromptToModel = ({

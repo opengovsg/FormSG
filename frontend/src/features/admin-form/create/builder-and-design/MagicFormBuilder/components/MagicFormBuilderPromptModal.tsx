@@ -180,7 +180,7 @@ const VisionPromptModalBodyContent = ({
     <>
       <FormControl isRequired isInvalid={!!errors.attachment?.message}>
         <FormLabel textStyle="subhead-1">
-          Create a form based on this image
+          Create a form based on this pdf
         </FormLabel>
         <Controller
           name="attachment"
