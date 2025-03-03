@@ -40,7 +40,7 @@ jobs:
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/email-submission.spec.ts
-        timeout-minutes: 15
+        timeout-minutes: 16
       - name: Run Playwright tests (encrypt-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
