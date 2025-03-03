@@ -235,4 +235,5 @@ export interface IBucketUrlSchema {
   virusScannerQuarantineS3BucketUrl: string
   paymentProofS3BucketUrl: string
   endPoint: string
+  guarddutyQuarantineS3BucketUrl: string
 }
