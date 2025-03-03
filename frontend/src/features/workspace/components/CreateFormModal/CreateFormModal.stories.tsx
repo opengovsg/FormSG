@@ -128,8 +128,8 @@ export const StorageModeAckScreen = () => {
     >
       <Modal isOpen onClose={() => console.log('close modal')} size="full">
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <ModalCloseButton />
           <CreateFormWizardProvider>
+            <ModalCloseButton />
             <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
           </CreateFormWizardProvider>
         </ModalContent>
