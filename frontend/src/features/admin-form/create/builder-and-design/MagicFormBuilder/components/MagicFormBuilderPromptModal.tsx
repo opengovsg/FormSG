@@ -33,12 +33,18 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+// TODO: To abstract to util file
+import * as pdfjs from 'pdfjs-dist/'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
 
-import { UploadImageInput } from '../../BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
+// TODO: To abstract to util file
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString()
 
 const TEXT_PROMPT_IDEAS = [
   {
@@ -116,10 +122,6 @@ export interface TextPromptInputs {
   prompt: string
 }
 
-export interface VisionPromptInputs {
-  attachment: { file?: File; srcUrl?: string }
-}
-
 const TextPromptModalBodyContent = ({
   register,
   setValue,
@@ -159,6 +161,10 @@ const TextPromptModalBodyContent = ({
   )
 }
 
+export interface VisionPromptInputs {
+  attachment: File
+}
+
 const VisionPromptModalBodyContent = ({
   control,
   errors,
@@ -170,11 +176,9 @@ const VisionPromptModalBodyContent = ({
   clearErrors: UseFormClearErrors<VisionPromptInputs>
   setError: UseFormSetError<VisionPromptInputs>
 }) => {
-  console.log('errors:', errors.attachment.message)
   return (
     <>
-      {' '}
-      <FormControl isRequired isInvalid={!!errors.attachment.message}>
+      <FormControl isRequired isInvalid={!!errors.attachment?.message}>
         <FormLabel textStyle="subhead-1">
           Create a form based on this image
         </FormLabel>
@@ -183,12 +187,15 @@ const VisionPromptModalBodyContent = ({
           control={control}
           rules={{ required: 'Please upload an image' }}
           render={({ field: { onChange, ...rest } }) => (
-            <UploadImageInput
+            <Attachment
               {...rest}
               onChange={(event) => {
                 clearErrors('attachment')
                 onChange(event)
               }}
+              accept=".pdf"
+              showFileSize
+              showRemove
               onError={(message) => setError('attachment', { message })}
             />
           )}
@@ -205,12 +212,16 @@ enum PROMPT_TYPE {
 }
 
 const MagicFormBuilderCreateFormPrompt = ({
-  onSubmit,
-  isSubmitLoading,
+  onTextPromptSubmit,
+  isTextPromptSubmitLoading,
+  onVisionPromptSubmit,
+  isVisionPromptSubmitLoading,
   onCancel,
 }: {
-  onSubmit: (textPromptInputs: string) => void
-  isSubmitLoading: boolean
+  onTextPromptSubmit: MagicFormBuilderPromptModalProps['onTextPromptSubmit']
+  isTextPromptSubmitLoading: MagicFormBuilderPromptModalProps['isTextPromptSubmitLoading']
+  onVisionPromptSubmit: MagicFormBuilderPromptModalProps['onVisionPromptSubmit']
+  isVisionPromptSubmitLoading: MagicFormBuilderPromptModalProps['isVisionPromptSubmitLoading']
   onCancel: () => void
 }) => {
   const {
@@ -273,12 +284,58 @@ const MagicFormBuilderCreateFormPrompt = ({
           nextButtonIcon={<BiSolidMagicWand fontSize="1.5rem" />}
           handleNext={
             selectedTab === PROMPT_TYPE.TEXT
-              ? handleSubmit(({ prompt }) => onSubmit(prompt))
-              : handleVisionSubmit(({ attachment }) =>
-                  console.log('submitting vision prompt'),
-                )
+              ? handleSubmit(({ prompt }) => {
+                  console.log('Submitting text prompt')
+                  onTextPromptSubmit(prompt)
+                })
+              : handleVisionSubmit(async ({ attachment }) => {
+                  // TODO: To abstract to util file
+                  try {
+                    const pdfData = await attachment.arrayBuffer()
+                    console.log('pdfData:', pdfData)
+                    const pdfDoc = await pdfjs.getDocument({ data: pdfData })
+                      .promise
+                    const numPages = pdfDoc.numPages
+                    console.log('PDF num pages:', numPages)
+                    const images = []
+
+                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                      const page = await pdfDoc.getPage(pageNum)
+                      const viewport = page.getViewport({ scale: 1.5 })
+
+                      const canvas = document.createElement('canvas')
+                      const context = canvas.getContext('2d')
+                      canvas.height = viewport.height
+                      canvas.width = viewport.width
+
+                      if (!context) {
+                        console.log('Failed to fetch canvas 2D context.')
+                        return
+                      }
+                      await page.render({
+                        canvasContext: context,
+                        viewport: viewport,
+                      }).promise
+
+                      const jpgImage = canvas.toDataURL('image/jpeg', 0.8)
+                      images.push({
+                        pageNum,
+                        dataUrl: jpgImage,
+                      })
+                    }
+
+                    console.log('Converted PDF pages:', images.length)
+                    const imageDataUrls = images.map((image) => image.dataUrl)
+                    console.log('image data urls:', imageDataUrls)
+                    onVisionPromptSubmit(imageDataUrls)
+                  } catch (error) {
+                    console.error('Error converting PDF file to images:', error)
+                  }
+                })
           }
-          isNextLoading={isSubmitLoading}
+          isNextLoading={
+            isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+          }
           handleBack={onCancel}
           nextButtonLabel="Create fields"
           backButtonLabel="Cancel"
@@ -290,15 +347,19 @@ const MagicFormBuilderCreateFormPrompt = ({
 
 interface MagicFormBuilderPromptModalProps {
   isOpen: boolean
-  onSubmit: (textPrompt: string) => void
-  isSubmitLoading: boolean
+  onTextPromptSubmit: (textPrompt: string) => void
+  isTextPromptSubmitLoading: boolean
+  onVisionPromptSubmit: (imageDataUrls: string[]) => void
+  isVisionPromptSubmitLoading: boolean
   onClose: () => void
 }
 
 const MagicFormBuilderPromptModal = ({
   isOpen,
-  onSubmit,
-  isSubmitLoading,
+  onTextPromptSubmit,
+  isTextPromptSubmitLoading,
+  onVisionPromptSubmit,
+  isVisionPromptSubmitLoading,
   onClose,
 }: MagicFormBuilderPromptModalProps): JSX.Element => {
   return (
@@ -307,8 +368,10 @@ const MagicFormBuilderPromptModal = ({
       <ModalContent>
         <ModalCloseButton />
         <MagicFormBuilderCreateFormPrompt
-          onSubmit={onSubmit}
-          isSubmitLoading={isSubmitLoading}
+          onTextPromptSubmit={onTextPromptSubmit}
+          isTextPromptSubmitLoading={isTextPromptSubmitLoading}
+          onVisionPromptSubmit={onVisionPromptSubmit}
+          isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
           onCancel={onClose}
         />
       </ModalContent>
