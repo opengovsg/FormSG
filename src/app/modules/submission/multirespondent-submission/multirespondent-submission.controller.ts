@@ -389,7 +389,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
       })
     })
     .andThen(({ recipientEmails, reminderStepNumber, form }) => {
-      sendNextStepReminderEmail({
+      return sendNextStepReminderEmail({
         submissionId,
         emails: recipientEmails,
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
@@ -400,9 +400,10 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         formTitle: form.title,
         formId,
         reminderStepNumber,
-      })
-
-      return okAsync({ form })
+      }).map((sendNextStepReminderEmailResult) => ({
+        sendNextStepReminderEmailResult,
+        form,
+      }))
     })
     .map(({ form }) => {
       logger.info({

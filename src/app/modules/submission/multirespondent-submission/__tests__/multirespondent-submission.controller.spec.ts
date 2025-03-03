@@ -3,9 +3,10 @@ import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
 import { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { FormAuthType, FormResponseMode } from 'shared/types'
+import { FormAuthType, FormMetadata, FormResponseMode } from 'shared/types'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.service'
 import { FormNotFoundError } from 'src/app/modules/form/form.errors'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
@@ -30,6 +31,12 @@ jest.mock('src/app/modules/datadog/datadog.utils')
 
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
+
+jest.mock('src/app/modules/form/admin-form/admin-form.service', () => ({
+  ...jest.requireActual('src/app/modules/form/admin-form/admin-form.service'),
+  updateFormMetadata: jest.fn(),
+}))
+
 jest.mock(
   'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service',
 )
@@ -47,7 +54,7 @@ const mockMrfSubmission = {
   _id: mockSubmissionId,
 } as IMultirespondentSubmissionSchema & { _id: Types.ObjectId }
 
-describe('multiresponodent-submision.controller', () => {
+describe('multirespondent-submision.controller', () => {
   beforeEach(() => {
     MockFormService.isFormPublic = jest.fn().mockReturnValue(ok(true))
     MockFormService.checkFormSubmissionLimitAndDeactivateForm = jest
@@ -573,6 +580,12 @@ describe('multiresponodent-submision.controller', () => {
   })
 
   describe('sendPendingMrfSubmissionReminderForTest', () => {
+    beforeEach(() => {
+      const mockedUpdateformMetadata =
+        AdminFormService.updateFormMetadata as jest.Mock
+      mockedUpdateformMetadata.mockReturnValue(okAsync({} as FormMetadata))
+    })
+
     it('returns 200 ok when recipient email found and reminder email is sent successfully', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
