@@ -24,8 +24,10 @@ const Template: StoryFn = (args) => {
   return (
     <MagicFormBuilderPromptModal
       isOpen={isOpen}
-      onSubmit={() => {}}
-      isSubmitLoading={isSubmitLoading}
+      onTextPromptSubmit={() => {}}
+      isTextPromptSubmitLoading={isSubmitLoading}
+      onVisionPromptSubmit={() => {}}
+      isVisionPromptSubmitLoading={isSubmitLoading}
       onClose={() => {}}
     />
   )
