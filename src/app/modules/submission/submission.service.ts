@@ -1198,7 +1198,7 @@ export const getQuarantinePresignedPostData = (
         return errAsync(new InvalidFieldIdError())
 
       return createPresignedPostDataPromise({
-        bucketName: AwsConfig.virusScannerQuarantineS3Bucket, //change this to new bucket
+        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
       }).map((presignedPostData) => ({
