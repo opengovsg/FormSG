@@ -90,24 +90,38 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
       switch (responseMode) {
         case FormResponseMode.Encrypt:
-          return dupeStorageModeFormMutation.mutate({
-            formIdToDuplicate: activeFormMeta._id,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-            emails: emails.filter(Boolean),
-          })
+          return dupeStorageModeFormMutation.mutate(
+            {
+              formIdToDuplicate: activeFormMeta._id,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+              emails: emails.filter(Boolean),
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
-          return dupeMultirespondentModeFormMutation.mutate({
-            formIdToDuplicate: activeFormMeta._id,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-          })
+          return dupeMultirespondentModeFormMutation.mutate(
+            {
+              formIdToDuplicate: activeFormMeta._id,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         default: {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = responseMode
@@ -162,10 +176,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
       })
     })
 
-  const handleDetailsSubmit = handleSubmit(() => {
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
@@ -176,7 +186,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

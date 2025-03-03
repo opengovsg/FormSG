@@ -156,7 +156,10 @@ export const useCreateFormMutations = () => {
 }
 
 export const useDuplicateFormMutations = () => {
-  const { handleSuccess, handleError } = useCommonHooks()
+  const { handleSuccess, handleSuccessWithoutRedirect, handleError } =
+    useCommonHooks()
+
+  const queryClient = useQueryClient()
 
   const dupeEmailModeFormMutation = useMutation<
     FormDto,
@@ -171,7 +174,6 @@ export const useDuplicateFormMutations = () => {
     },
   )
 
-  // TODO (tejas): remember to change this!
   const dupeStorageModeFormMutation = useMutation<
     FormDto,
     ApiError,
@@ -180,7 +182,10 @@ export const useDuplicateFormMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       dupeStorageModeForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )
@@ -193,7 +198,10 @@ export const useDuplicateFormMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       dupeMultirespondentModeForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )
