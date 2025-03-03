@@ -34,7 +34,6 @@ export const DuplicateFormModal = ({
       */}
       <RemoveScroll>
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <ModalCloseButton />
           <DupeFormWizardProvider>
             <CreateFormModalContent />
           </DupeFormWizardProvider>
