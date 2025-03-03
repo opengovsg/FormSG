@@ -52,8 +52,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const { t } = useTranslation()
   const {
     formMethods,
-    handleDetailsSubmit,
     handleEmailFeedbackSubmit,
+    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     isFetching,
     modalHeader,
@@ -156,7 +156,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
-            onClick={handleDetailsSubmit}
+            onClick={handleCreateStorageModeOrMultirespondentForm}
             isFullWidth
             data-dd-action-name={getTrackingSubmissionActionName(
               responseModeValue,

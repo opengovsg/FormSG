@@ -8,6 +8,8 @@ import {
 import { useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import { useQueryClient } from 'react-query'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -24,12 +26,14 @@ import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
 import { BxsError } from '~assets/icons'
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
 import { trackClickSecretKeyMailTo } from '~features/analytics/AnalyticsService'
+import { workspaceKeys } from '~features/workspace/queries'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
@@ -42,10 +46,21 @@ const useSaveSecretKeyDefault = () => {
       register,
       formState: { isValid },
     },
-    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     keypair: { secretKey },
   } = useCreateFormWizard()
+
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+
+  const handleDownloadAndNavigate = useCallback(() => {
+    // Retrieve stored form ID and navigate
+    const formId = queryClient.getQueryData(workspaceKeys.lastCreatedForm)
+    if (formId) {
+      queryClient.invalidateQueries(workspaceKeys.lastCreatedForm)
+      navigate(`${ADMINFORM_ROUTE}/${formId}`)
+    }
+  }, [queryClient, navigate])
 
   const [hasDownloaded, setHasDownloaded] = useState(false)
 
@@ -112,7 +127,7 @@ const useSaveSecretKeyDefault = () => {
     handleCopyKey,
     handleDownloadKey,
     mailToHref,
-    handleCreateStorageModeOrMultirespondentForm,
+    handleDownloadAndNavigate,
     secretKey,
     register,
   }
@@ -129,7 +144,7 @@ export const SaveSecretKeyScreen = ({
   const {
     isLoading,
     handleCopyKey,
-    handleCreateStorageModeOrMultirespondentForm,
+    handleDownloadAndNavigate,
     handleDownloadKey,
     mailToHref,
     hasDownloaded,
@@ -250,7 +265,7 @@ export const SaveSecretKeyScreen = ({
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
-            onClick={handleCreateStorageModeOrMultirespondentForm}
+            onClick={handleDownloadAndNavigate}
             isFullWidth
           >
             <Text lineHeight="1.5rem">

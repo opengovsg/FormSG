@@ -57,6 +57,15 @@ const useCommonHooks = () => {
     [navigate, queryClient],
   )
 
+  const handleSuccessWithoutRedirect = useCallback(
+    (data: FormDto) => {
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
+      queryClient.invalidateQueries(workspaceKeys.workspaces)
+      return data
+    },
+    [queryClient],
+  )
+
   const handleError = useCallback(
     (error: ApiError) => {
       toast({
@@ -69,11 +78,58 @@ const useCommonHooks = () => {
 
   return {
     handleSuccess,
+    handleSuccessWithoutRedirect,
     handleError,
   }
 }
 
 export const useCreateFormMutations = () => {
+  const { handleSuccess, handleError, handleSuccessWithoutRedirect } =
+    useCommonHooks()
+
+  const queryClient = useQueryClient()
+
+  const createEmailModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateEmailFormBodyDto
+  >((params) => createEmailModeForm(params), {
+    onSuccess: handleSuccess, // we want to redirect on this, as we have no secret key to download
+    onError: handleError,
+  })
+
+  const createStorageModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateStorageFormBodyDto
+  >((params) => createStorageModeForm(params), {
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
+    onError: handleError,
+  })
+
+  const createMultirespondentModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateMultirespondentFormBodyDto
+  >((params) => createMultirespondentModeForm(params), {
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
+    onError: handleError,
+  })
+
+  return {
+    createEmailModeFormMutation,
+    createStorageModeFormMutation,
+    createMultirespondentModeFormMutation,
+  }
+}
+
+export const useCreateFormMutationsWithoutRedirect = () => {
   const { handleSuccess, handleError } = useCommonHooks()
 
   const createEmailModeFormMutation = useMutation<
@@ -126,6 +182,7 @@ export const useDuplicateFormMutations = () => {
     },
   )
 
+  // TODO (tejas): remember to change this!
   const dupeStorageModeFormMutation = useMutation<
     FormDto,
     ApiError,

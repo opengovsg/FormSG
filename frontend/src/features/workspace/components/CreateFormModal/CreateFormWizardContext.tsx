@@ -31,9 +31,6 @@ export type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   direction: number
   formMethods: UseFormReturn<CreateFormWizardInputProps>
-  handleDetailsSubmit: ReturnType<
-    UseFormHandleSubmit<CreateFormWizardInputProps>
-  >
   handleEmailFeedbackSubmit: () => void
   handleCreateEmailModeForm: () => () => void
   submitEmailModeFeedback: (feedbackForm: PublicFormViewDto) => () => void

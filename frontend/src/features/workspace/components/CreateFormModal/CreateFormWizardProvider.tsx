@@ -87,22 +87,36 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     ({ title, responseMode, emails }) => {
       switch (responseMode) {
         case FormResponseMode.Encrypt:
-          return createStorageModeFormMutation.mutate({
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-            emails: emails.filter(Boolean),
-          })
+          return createStorageModeFormMutation.mutate(
+            {
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+              emails: emails.filter(Boolean),
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
-          return createMultirespondentModeFormMutation.mutate({
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-          })
+          return createMultirespondentModeFormMutation.mutate(
+            {
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         default: {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = responseMode
@@ -157,10 +171,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     })
   }
 
-  const handleDetailsSubmit = handleSubmit(() => {
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: false,
     isLoading:
@@ -171,7 +181,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     handleEmailFeedbackSubmit,
