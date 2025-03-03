@@ -6,8 +6,6 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { ModalCloseButton } from '~components/Modal'
-
 import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
 
 import { DupeFormWizardProvider } from './DupeFormWizardProvider'
