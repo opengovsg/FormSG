@@ -83,20 +83,10 @@ const useCommonHooks = () => {
   }
 }
 
-export const useCreateFormMutations = () => {
-  const { handleSuccess, handleError, handleSuccessWithoutRedirect } =
-    useCommonHooks()
+export const useCreateFormMutationsWithoutRedirect = () => {
+  const { handleError, handleSuccessWithoutRedirect } = useCommonHooks()
 
   const queryClient = useQueryClient()
-
-  const createEmailModeFormMutation = useMutation<
-    FormDto,
-    ApiError,
-    CreateEmailFormBodyDto
-  >((params) => createEmailModeForm(params), {
-    onSuccess: handleSuccess, // we want to redirect on this, as we have no secret key to download
-    onError: handleError,
-  })
 
   const createStorageModeFormMutation = useMutation<
     FormDto,
@@ -123,13 +113,12 @@ export const useCreateFormMutations = () => {
   })
 
   return {
-    createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
   }
 }
 
-export const useCreateFormMutationsWithoutRedirect = () => {
+export const useCreateFormMutations = () => {
   const { handleSuccess, handleError } = useCommonHooks()
 
   const createEmailModeFormMutation = useMutation<
