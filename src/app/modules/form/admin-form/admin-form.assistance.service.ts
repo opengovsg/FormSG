@@ -377,7 +377,7 @@ const FORM_DETAILS_SYSTEM_VISION_PROMPT = {
     // Attachment field
     'Info 9: "Attachment is used for the respondent to upload files.' +
     // Table field
-    'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response. When you see a table in the image, you must use the table field as much as possible.' +
+    'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response. When you spot tabular fields in the image, such as a grid with columns, rows with empty cells to fill in, you must use the "Table" field.' +
     'Rule 7: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.' +
     'Rule 8: Follow the form depicted in the image as exactly as possible. This means you should include as much text and do not leave any text out as possible and avoid rephrasing or adding additional words not found in the form as much as possible. Avoid duplicating text that is already included in another field if it does not show up multiple times in the image.',
 }

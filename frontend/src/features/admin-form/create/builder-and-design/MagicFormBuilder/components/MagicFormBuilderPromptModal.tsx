@@ -322,7 +322,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                         viewport: viewport,
                       }).promise
 
-                      const jpgImage = canvas.toDataURL('image/jpeg', 0.2)
+                      const jpgImage = canvas.toDataURL('image/jpeg', 0.65)
                       images.push({
                         pageNum,
                         dataUrl: jpgImage,
