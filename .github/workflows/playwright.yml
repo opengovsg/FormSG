@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-late
     strategy:
       matrix:
-        shared: [1,2,3]
+        shard: [1,2,3]
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
