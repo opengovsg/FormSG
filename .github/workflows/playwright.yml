@@ -37,17 +37,17 @@ jobs:
       - name: Run Playwright tests (login)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} __tests__/e2e/login.spec.ts 
+        run: npx playwright test --shard=${{ matrix.shard }}/3 __tests__/e2e/login.spec.ts 
         timeout-minutes: 5
       - name: Run Playwright tests (email-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} __tests__/e2e/email-submission.spec.ts
+        run: npx playwright test --shard=${{ matrix.shard }}/3 __tests__/e2e/email-submission.spec.ts
         timeout-minutes: 16
       - name: Run Playwright tests (encrypt-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }} __tests__/e2e/encrypt-submission.spec.ts
+        run: npx playwright test --shard=${{ matrix.shard }}/3 __tests__/e2e/encrypt-submission.spec.ts
         timeout-minutes: 15
       - uses: actions/upload-artifact@v4
         if: always()
