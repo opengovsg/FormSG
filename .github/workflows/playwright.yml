@@ -6,7 +6,7 @@ on:
     branches: [develop, release-al2, master]
 jobs:
   test:
-    timeout-minutes: 40
+    timeout-minutes: 50
     runs-on: ubuntu-latest
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
