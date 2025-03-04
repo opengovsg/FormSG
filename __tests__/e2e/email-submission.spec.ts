@@ -97,8 +97,6 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with identical attachment names', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
-
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
     const formFields = new Array(3).fill('').map(
@@ -124,8 +122,6 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with optional and required attachments', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
-
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
     const formFields = [
@@ -220,8 +216,6 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with MyInfo fields', async ({
     page,
   }) => {
-    test.setTimeout(60 * 1000)
-
     // Define
     const formFields = [
       // Short answer

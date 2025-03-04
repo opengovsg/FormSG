@@ -100,9 +100,7 @@ const addForm = async (
   await page.keyboard.press('Escape')
   await page.keyboard.press('Escape')
 
-  await page
-    .getByRole('button', { name: 'Create form' })
-    .click({ timeout: 5000 })
+  await page.getByRole('button', { name: 'Create form' }).click()
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
 
