@@ -6,7 +6,7 @@ on:
     branches: [develop, release-al2, master]
 jobs:
   test:
-    timeout-minutes: 50
+    timeout-minutes: 40
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test --shard=${{ matrix.shard }}/3 __tests__/e2e/email-submission.spec.ts
-        timeout-minutes: 16
+        timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
