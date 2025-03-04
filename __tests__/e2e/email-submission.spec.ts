@@ -43,13 +43,13 @@ let db: mongoose.Connection
 let Form: IFormModel
 
 test.describe('Email form submission', () => {
-  test.beforeAll(async () => {
+  test.beforeEach(async () => {
     // Create models
     db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
   })
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await db.dropCollection(Form.collection.name)
     await db.close()
   })
