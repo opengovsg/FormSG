@@ -181,7 +181,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = ALL_FIELDS
@@ -202,7 +201,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = ALL_FIELDS
@@ -223,7 +221,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = [
@@ -255,7 +252,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
@@ -273,7 +269,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const { formFields, formLogics } = TEST_FIELD_HIDDEN_BY_LOGIC
@@ -291,7 +286,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const { formFields, formLogics, preventSubmitMessage } =
