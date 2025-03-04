@@ -27,9 +27,9 @@ import { useEditFormField } from '~features/admin-form/create/builder-and-design
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
-import { WORKFLOW_TYPE_VALIDATION } from './common'
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
+import { useWorkflowTypeValidation } from './hooks'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
@@ -350,6 +350,8 @@ export const ConditionalRoutingOption = ({
     )
   }
 
+  const workflowTypeValidation = useWorkflowTypeValidation()
+
   return (
     <>
       <ConditionalRoutingMappingDeleteModal
@@ -382,7 +384,7 @@ export const ConditionalRoutingOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Conditional}
-        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        {...register('workflow_type', workflowTypeValidation)}
         px="0.5rem"
         __css={{
           _focusWithin: {

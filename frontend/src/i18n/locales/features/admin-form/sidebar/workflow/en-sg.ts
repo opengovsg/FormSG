@@ -85,6 +85,10 @@ export const enSG: Workflow = {
       },
     },
     errors: {
+      respondentType: {
+        required: 'Please select a respondent type',
+        invalid: 'The selected respondent type is invalid',
+      },
       csv: {
         required: 'Please upload a CSV file',
         addEmailsBeforeSave:

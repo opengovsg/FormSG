@@ -69,6 +69,10 @@ export interface Workflow {
       }
     }
     errors: {
+      respondentType: {
+        required: string
+        invalid: string
+      }
       csv: {
         required: string
         addEmailsBeforeSave: string

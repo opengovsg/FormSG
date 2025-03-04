@@ -8,7 +8,7 @@ import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
-import { WORKFLOW_TYPE_VALIDATION } from './common'
+import { useWorkflowTypeValidation } from './hooks'
 import { FieldItem, RespondentOptionProps } from './types'
 
 interface DynamicRespondentOptionProps extends RespondentOptionProps {
@@ -28,6 +28,7 @@ export const DynamicRespondentOption = ({
     control,
   } = formMethods
 
+  const workflowTypeValidation = useWorkflowTypeValidation()
   return (
     <>
       <Radio
@@ -35,7 +36,7 @@ export const DynamicRespondentOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
-        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        {...register('workflow_type', workflowTypeValidation)}
         px="0.5rem"
         __css={{
           _focusWithin: {
