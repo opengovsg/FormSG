@@ -180,7 +180,12 @@ const asyncVirusScanning = (
         formId,
       )
     }
-
+    logger.info({
+      message: `Current file being scanned: ${response}`,
+      meta: {
+        action: 'Test log for attachment scanning',
+      },
+    })
     // If field is not an attachment, return original response.
     return okAsync(response)
   })
