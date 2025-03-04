@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     timeout-minutes: 50
-    runs-on: ubuntu-late
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         shard: [1,2,3]
