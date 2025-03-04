@@ -43,13 +43,15 @@ let db: mongoose.Connection
 let Form: IFormModel
 
 test.describe('Email form submission', () => {
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     // Create models
     db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
+
+    await createFeedbackForm()
   })
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await db.dropCollection(Form.collection.name)
     await db.close()
   })
@@ -58,7 +60,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = ALL_FIELDS
@@ -77,7 +78,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
@@ -98,7 +98,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
@@ -126,7 +125,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const baseField = SAMPLE_FIELD[BasicField.Attachment]
@@ -163,7 +161,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-    await createFeedbackForm()
 
     // Define
     const formFields = ALL_FIELDS
