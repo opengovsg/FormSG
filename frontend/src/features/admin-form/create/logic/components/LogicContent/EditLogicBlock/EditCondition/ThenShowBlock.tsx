@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 import get from 'lodash/get'
-import simplur from 'simplur'
 
 import { FormFieldDto } from '~shared/types/field'
 import { LogicType } from '~shared/types/form'
@@ -35,6 +35,7 @@ export const ThenShowBlock = ({
   formFields,
   idToFieldMap,
 }: ThenShowBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     watch,
     formState: { errors },
@@ -46,20 +47,20 @@ export const ThenShowBlock = ({
   } = formMethods
 
   const logicTypeValue = watch('logicType')
-  const logicTypeItems = useMemo(() => {
-    return [
-      {
-        label: 'Show field(s)',
-        value: LogicType.ShowFields,
-        icon: BiShow,
-      },
-      {
-        label: 'Disable submission',
-        value: LogicType.PreventSubmit,
-        icon: BiX,
-      },
-    ]
-  }, [])
+  const logicTypeItems = [
+    {
+      label: t('features.adminForm.sidebar.logic.thenBlock.labels.showFields'),
+      value: LogicType.ShowFields,
+      icon: BiShow,
+    },
+    {
+      label: t(
+        'features.adminForm.sidebar.logic.thenBlock.labels.preventSubmit',
+      ),
+      value: LogicType.PreventSubmit,
+      icon: BiX,
+    },
+  ]
 
   /**
    * Effect to reset the logic values if the logic type is changed.
@@ -107,7 +108,9 @@ export const ThenShowBlock = ({
     if (filteredShowFields.length === 0)
       setError('show', {
         type: 'manual',
-        message: 'All fields were deleted, please select at least one field',
+        message: t(
+          'features.adminForm.sidebar.logic.thenBlock.errors.atLeastOneFieldRequired',
+        ),
       })
     else setDeletedFieldsCount(deletedFieldsCount)
   }, [
@@ -118,6 +121,7 @@ export const ThenShowBlock = ({
     setValue,
     showValueWatch.value,
     trigger,
+    t,
   ])
 
   return (
@@ -130,9 +134,16 @@ export const ThenShowBlock = ({
       {deletedFieldsCount ? (
         <InlineMessage variant="info" p={0}>
           <Text>
-            <strong>{simplur`${deletedFieldsCount} Show field[|s]`}</strong>{' '}
-            {simplur`${[deletedFieldsCount]}[was|were] deleted, and [has|have]`}{' '}
-            been removed from your logic
+            <strong>
+              {t(
+                'features.adminForm.sidebar.logic.thenBlock.deletedFieldsWarning.showFields',
+                { deletedFieldsCount },
+              )}
+            </strong>{' '}
+            {t(
+              'features.adminForm.sidebar.logic.thenBlock.deletedFieldsWarning.fieldsRemoved',
+              { deletedFieldsCount },
+            )}
           </Text>
         </InlineMessage>
       ) : null}
@@ -142,7 +153,7 @@ export const ThenShowBlock = ({
         spacing={{ base: 0, md: '0.5rem' }}
       >
         <BlockLabelText id="logicType-label" htmlFor="logicType">
-          Then
+          {t('features.adminForm.sidebar.logic.thenBlock.labels.then')}
         </BlockLabelText>
         <FormControl
           isReadOnly={isLoading}
@@ -154,13 +165,17 @@ export const ThenShowBlock = ({
             name="logicType"
             control={control}
             rules={{
-              required: 'Please select logic type.',
+              required: t(
+                'features.adminForm.sidebar.logic.thenBlock.errors.logicTypeRequired',
+              ),
             }}
             render={({ field }) => (
               <SingleSelect
                 isDisabled={isLoading}
                 isClearable={false}
-                placeholder="Select a type of result"
+                placeholder={t(
+                  'features.adminForm.sidebar.logic.thenBlock.placeholders.selectResultType',
+                )}
                 items={logicTypeItems}
                 {...field}
               />
@@ -178,7 +193,7 @@ export const ThenShowBlock = ({
           id={`${currentShowLabel}-label`}
           htmlFor={currentShowLabel}
         >
-          Show
+          {t('features.adminForm.sidebar.logic.thenBlock.labels.show')}
         </BlockLabelText>
         <ThenLogicInput
           formFields={formFields}
@@ -197,6 +212,7 @@ const ThenLogicInput = ({
   formFields,
   idToFieldMap,
 }: ThenShowBlockProps) => {
+  const { t } = useTranslation()
   const {
     watch,
     control,
@@ -240,11 +256,14 @@ const ThenLogicInput = ({
           {...register('preventSubmitMessage', {
             required: {
               value: !!getValues('logicType'),
-              message:
-                'Please enter a message to display when submission is prevented',
+              message: t(
+                'features.adminForm.sidebar.logic.thenBlock.errors.preventSubmitMessageRequired',
+              ),
             },
           })}
-          placeholder="Custom message to be displayed when submission is prevented"
+          placeholder={t(
+            'features.adminForm.sidebar.logic.thenBlock.placeholders.inputCustomMessage',
+          )}
         />
         <FormErrorMessage>
           {errors.preventSubmitMessage?.message}
@@ -267,7 +286,9 @@ const ThenLogicInput = ({
         rules={{
           required: {
             value: !!getValues('logicType'),
-            message: 'Please select fields to show if logic criteria is met.',
+            message: t(
+              'features.adminForm.sidebar.logic.thenBlock.errors.fieldsToShowRequired',
+            ),
           },
         }}
         render={({ field: { value, ...rest } }) => (

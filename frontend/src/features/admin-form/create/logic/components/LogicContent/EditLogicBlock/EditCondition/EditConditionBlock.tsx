@@ -308,7 +308,9 @@ export const EditConditionBlock = ({
               colorScheme="danger"
               icon={<BiTrash />}
               onClick={() => handleRemoveCondition(index)}
-              aria-label="Remove logic condition block"
+              aria-label={t(
+                'features.adminForm.sidebar.logic.aria.removeBlock',
+              )}
             />
           ) : null}
           <FormControl
@@ -322,11 +324,13 @@ export const EditConditionBlock = ({
               control={control}
               name={`${name}.field`}
               rules={{
-                required: 'Please select a field.',
+                required: t(
+                  'features.adminForm.sidebar.logic.errors.fieldRequired',
+                ),
                 validate: (value) =>
                   !logicableFields ||
                   Object.keys(logicableFields).includes(value) ||
-                  'Field is invalid or unable to accept logic.',
+                  t('features.adminForm.sidebar.logic.errors.fieldInvalid'),
               }}
               render={({ field }) => (
                 <SingleSelect
@@ -353,7 +357,9 @@ export const EditConditionBlock = ({
             {t('features.adminForm.sidebar.logic.logicClause.is').toUpperCase()}
           </BlockLabelText>
           <Flex flexDir="column" flex={1} as="fieldset" minW={0}>
-            <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
+            <VisuallyHidden as="legend">
+              {t('features.adminForm.sidebar.logic.aria.criteria')}
+            </VisuallyHidden>
             <Stack
               direction={{ base: 'column', md: 'row' }}
               align="flex-start"
@@ -370,7 +376,9 @@ export const EditConditionBlock = ({
                   control={control}
                   name={`${name}.state`}
                   rules={{
-                    required: 'Please select a condition',
+                    required: t(
+                      'features.adminForm.sidebar.logic.errors.conditionRequired',
+                    ),
                   }}
                   render={({ field }) => (
                     <SingleSelect
@@ -395,7 +403,7 @@ export const EditConditionBlock = ({
                   id={`${name}.value-label`}
                   htmlFor={`${name}.value`}
                 >
-                  Logic condition
+                  {t('features.adminForm.sidebar.logic.aria.condition')}
                 </VisuallyHidden>
                 <Controller
                   control={control}
