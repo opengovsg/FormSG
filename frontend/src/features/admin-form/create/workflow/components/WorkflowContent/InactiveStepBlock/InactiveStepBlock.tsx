@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
@@ -98,6 +99,7 @@ export const InactiveStepBlock = ({
   stepNumber,
   step,
 }: InactiveStepBlockProps): JSX.Element | null => {
+  const { t } = useTranslation()
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
@@ -172,9 +174,17 @@ export const InactiveStepBlock = ({
           <StepLabel stepNumber={stepNumber} />
 
           <Stack>
-            <Text textStyle="subhead-3">Respondent in this step</Text>
+            <Text textStyle="subhead-3">
+              {t(
+                'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+              )}
+            </Text>
             {isFirstStep ? (
-              <Text>Anyone who has access to your form</Text>
+              <Text>
+                {t(
+                  'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+                )}
+              </Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}
@@ -191,7 +201,11 @@ export const InactiveStepBlock = ({
           </Stack>
 
           <Stack>
-            <Text textStyle="subhead-3">Fields to fill</Text>
+            <Text textStyle="subhead-3">
+              {t(
+                'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
+              )}
+            </Text>
             <Stack direction="column" spacing="0.25rem">
               {questionBadges}
             </Stack>
@@ -206,7 +220,9 @@ export const InactiveStepBlock = ({
           top={{ base: '0.5rem', md: '2rem' }}
           right={{ base: '0.5rem', md: '2rem' }}
           pos="absolute"
-          aria-label="Click to edit"
+          aria-label={t(
+            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
+          )}
           variant="clear"
           onClick={handleClick}
           icon={<BiPencil fontSize="1.5rem" />}

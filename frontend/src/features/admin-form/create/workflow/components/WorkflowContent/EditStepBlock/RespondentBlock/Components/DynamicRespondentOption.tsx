@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 
 import { WorkflowType } from '~shared/types'
@@ -7,7 +8,7 @@ import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
-import { WORKFLOW_TYPE_VALIDATION } from './common'
+import { useWorkflowTypeValidation } from './hooks'
 import { FieldItem, RespondentOptionProps } from './types'
 
 interface DynamicRespondentOptionProps extends RespondentOptionProps {
@@ -20,12 +21,14 @@ export const DynamicRespondentOption = ({
   formMethods,
   emailFieldItems,
 }: DynamicRespondentOptionProps) => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
     control,
   } = formMethods
 
+  const workflowTypeValidation = useWorkflowTypeValidation()
   return (
     <>
       <Radio
@@ -33,7 +36,7 @@ export const DynamicRespondentOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
-        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        {...register('workflow_type', workflowTypeValidation)}
         px="0.5rem"
         __css={{
           _focusWithin: {
@@ -41,7 +44,9 @@ export const DynamicRespondentOption = ({
           },
         }}
       >
-        <Text>An email field from the form</Text>
+        <Text>
+          {t('features.adminForm.sidebar.workflow.dynamicRespondent.title')}
+        </Text>
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
@@ -54,7 +59,9 @@ export const DynamicRespondentOption = ({
               control={control}
               name="field"
               rules={{
-                required: 'Please select a field.',
+                required: t(
+                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                ),
                 validate: (selectedValue) => {
                   return (
                     isLoading ||
@@ -62,7 +69,9 @@ export const DynamicRespondentOption = ({
                     emailFieldItems.some(
                       ({ value: fieldValue }) => fieldValue === selectedValue,
                     ) ||
-                    'Field is not an email field'
+                    t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
+                    )
                   )
                 },
               }}
@@ -70,7 +79,9 @@ export const DynamicRespondentOption = ({
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
-                  placeholder="Select a field"
+                  placeholder={t(
+                    'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                  )}
                   items={emailFieldItems}
                   value={value}
                   {...rest}

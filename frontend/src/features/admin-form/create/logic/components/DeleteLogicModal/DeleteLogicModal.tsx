@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -33,6 +34,7 @@ export const DeleteLogicModal = ({
   isOpen,
   logicId,
 }: DeleteLogicModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const { deleteLogicMutation } = useLogicMutations()
   const modalSize = useBreakpointValue({
@@ -48,6 +50,10 @@ export const DeleteLogicModal = ({
     return deleteLogicMutation.mutate(logicId)
   }, [deleteLogicMutation, logicId, setToInactive])
 
+  const { title, description, confirm, cancel } = t(
+    'features.adminForm.sidebar.logic.modals.delete',
+    { returnObjects: true },
+  )
   return (
     <Modal
       isOpen={isOpen}
@@ -58,11 +64,10 @@ export const DeleteLogicModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton isDisabled={deleteLogicMutation.isLoading} />
-        <ModalHeader color="secondary.700">Delete logic</ModalHeader>
+        <ModalHeader color="secondary.700">{title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
-            Are you sure you want to delete this logic? This action cannot be
-            undone.
+            {description}
           </Text>
         </ModalBody>
         <ModalFooter>
@@ -77,14 +82,14 @@ export const DeleteLogicModal = ({
               colorScheme="secondary"
               onClick={onClose}
             >
-              No, don't delete
+              {cancel}
             </Button>
             <Button
               colorScheme="danger"
               onClick={handleDelete}
               isLoading={deleteLogicMutation.isLoading}
             >
-              Yes, delete logic
+              {confirm}
             </Button>
           </Stack>
         </ModalFooter>

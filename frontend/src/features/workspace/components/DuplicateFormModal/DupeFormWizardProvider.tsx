@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
+import { useUser } from '~features/user/queries'
 import {
   useDuplicateFormMutations,
   useEmailModeFeedbackMutation,
@@ -68,6 +69,9 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     dupeMultirespondentModeFormMutation,
   } = useDuplicateFormMutations()
 
+  const { user } = useUser()
+  const adminEmail = user?.email
+
   const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
@@ -129,7 +133,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
       emailModeFeedbackMutation.mutate(
         {
-          body: { reason: inputs.reason },
+          body: { reason: inputs.reason, adminEmail },
           feedbackForm,
         },
         {

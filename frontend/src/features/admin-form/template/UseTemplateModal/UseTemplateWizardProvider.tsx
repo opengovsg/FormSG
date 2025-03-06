@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
+import { useUser } from '~features/user/queries'
 import {
   CreateFormFlowStates,
   CreateFormWizardContext,
@@ -49,6 +50,9 @@ export const useUseTemplateWizardContext = (
     useStorageModeFormTemplateMutation,
     useMultirespondentFormTemplateMutation,
   } = useUseTemplateMutations()
+
+  const { user } = useUser()
+  const adminEmail = user?.email
 
   const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
@@ -102,7 +106,7 @@ export const useUseTemplateWizardContext = (
 
       emailModeFeedbackMutation.mutate(
         {
-          body: { reason: inputs.reason },
+          body: { reason: inputs.reason, adminEmail },
           feedbackForm,
         },
         {
