@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiFileBlank } from 'react-icons/bi'
 import {
   Container,
@@ -35,6 +36,7 @@ export const DeleteFormModal = ({
   onClose,
   formToDelete,
 }: DeleteFormModalProps): JSX.Element | null => {
+  const { t } = useTranslation()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -53,6 +55,10 @@ export const DeleteFormModal = ({
 
   if (!formToDelete) return null
 
+  const { title, description, confirm } = t(
+    'features.workspace.modals.delete',
+    { returnObjects: true },
+  )
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
@@ -60,14 +66,11 @@ export const DeleteFormModal = ({
         <ModalCloseButton />
         <ModalHeader color="secondary.700">
           <Container maxW="42.5rem" p={0}>
-            Delete form
+            {title}
           </Container>
         </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text color="secondary.500">
-            You will lose all responses and feedback for the following form
-            permanently. Are you sure you want to delete the form?
-          </Text>
+          <Text color="secondary.500">{description}</Text>
           <UnorderedList
             spacing="0.5rem"
             listStyleType="none"
@@ -99,7 +102,7 @@ export const DeleteFormModal = ({
               isLoading={deleteFormMutation.isLoading}
               onClick={handleDeleteForm}
             >
-              Yes, delete form
+              {confirm}
             </Button>
             <Button
               isFullWidth={isMobile}
@@ -108,7 +111,7 @@ export const DeleteFormModal = ({
               onClick={onClose}
               isDisabled={deleteFormMutation.isLoading}
             >
-              Cancel
+              {t('features.common.cancel')}
             </Button>
           </Stack>
         </ModalFooter>

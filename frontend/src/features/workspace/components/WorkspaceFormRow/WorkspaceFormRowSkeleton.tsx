@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
 import {
   Box,
@@ -15,30 +16,40 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
 const RowDropdownButtonSkeleton = () => {
+  const { t } = useTranslation()
   return (
     <ButtonGroup isAttached variant="outline" colorScheme="secondary">
       <Button px="1.5rem" mr="-1px" isDisabled>
-        Edit
+        {t('features.common.edit')}
       </Button>
-      <IconButton isDisabled aria-label="Loading" icon={<BxsChevronDown />} />
+      <IconButton
+        isDisabled
+        aria-label={t('features.common.loading')}
+        icon={<BxsChevronDown />}
+      />
     </ButtonGroup>
   )
 }
 
 const RowDrawerButtonSkeleton = () => {
+  const { t } = useTranslation()
   return (
     <IconButton
       variant="clear"
       isDisabled
-      aria-label="Loading"
+      aria-label={t('features.common.loading')}
       icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
     />
   )
 }
 
 export const WorkspaceFormRowSkeleton = (): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
+  const { title, metadata } = t('features.workspace.skeleton', {
+    returnObjects: true,
+  })
   return (
     <Grid
       py="1.5rem"
@@ -64,12 +75,12 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
         >
           <Skeleton>
             <Text textStyle="subhead-1" color="secondary.700">
-              Loading title... Loading title...
+              {title}
             </Text>
           </Skeleton>
           <Skeleton mt="0.5rem">
             <Text textStyle="body-2" color="secondary.400">
-              Also loading metadata...
+              {metadata}
             </Text>
           </Skeleton>
         </Box>
@@ -78,7 +89,7 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
         <Flex align="center">
           <SkeletonCircle size="0.5rem" mr="0.5rem" />
           <Skeleton>
-            <Text textStyle="body-2">Loading</Text>
+            <Text textStyle="body-2">{t('features.common.loading')}</Text>
           </Skeleton>
         </Flex>
       </Box>

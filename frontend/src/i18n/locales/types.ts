@@ -14,6 +14,7 @@ import {
   ThankYou,
   Toasts,
   Workflow,
+  Workspace,
 } from './features'
 
 interface Translation {
@@ -36,6 +37,7 @@ interface Translation {
       common?: Common
       publicForm?: PublicForm
       login?: Login
+      workspace?: Workspace
     }
   }
 }

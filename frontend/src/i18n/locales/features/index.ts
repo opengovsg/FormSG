@@ -13,3 +13,4 @@ export {
 export { type Common } from './common'
 export { type Login } from './login'
 export { type PublicForm } from './public-form'
+export { type Workspace } from './workspace'

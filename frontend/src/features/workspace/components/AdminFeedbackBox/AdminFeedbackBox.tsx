@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import { Flex, Link, Stack, Text } from '@chakra-ui/react'
 
@@ -79,23 +80,28 @@ const AdminFeedbackRatingContent = ({
 }: {
   onRatingClick: (rating: AdminFeedbackRating) => void
 }) => {
+  const { t } = useTranslation()
+  const {
+    prompt,
+    aria: { up, down },
+  } = t('features.workspace.feedback.rating', { returnObjects: true })
   return (
     <Stack direction="row" alignItems="center" gap="0.75rem">
       <Text textStyle="h6" mr="0.75rem">
-        How was your form building experience?
+        {prompt}
       </Text>
       <IconButton
         variant="clear"
         icon={<GoThumbsup />}
         colorScheme="theme-blue"
-        aria-label="Good"
+        aria-label={up}
         onClick={() => onRatingClick(AdminFeedbackRating.up)}
       />
       <IconButton
         variant="clear"
         icon={<GoThumbsdown />}
         colorScheme="theme-red"
-        aria-label="Bad"
+        aria-label={down}
         onClick={() => onRatingClick(AdminFeedbackRating.down)}
       />
     </Stack>
@@ -109,20 +115,17 @@ const AdminFeedbackCallForCommentContent = ({
   onLinkClick: () => void
   ratingValue: AdminFeedbackRating
 }) => {
-  // Thumbs down
-  if (ratingValue === AdminFeedbackRating.down)
-    return (
-      <Text textStyle="h6">
-        Thank you for your feedback.{' '}
-        <Link onClick={onLinkClick}>Tell us more so we can improve!</Link>
-      </Text>
-    )
-
-  // Thumbs Up
+  const { t } = useTranslation()
+  const { title, link } = t(
+    ratingValue === AdminFeedbackRating.up
+      ? 'features.workspace.feedback.callForComment.up'
+      : 'features.workspace.feedback.callForComment.down',
+    { returnObjects: true },
+  )
   return (
     <Text textStyle="h6">
-      Thank you, you're the best!{' '}
-      <Link onClick={onLinkClick}>Want to tell us more?</Link>
+      {`${title} `}
+      <Link onClick={onLinkClick}>{link}</Link>
     </Text>
   )
 }
@@ -136,37 +139,43 @@ const AdminFeedbackCommentContent = ({
   onClose: () => void
   ratingValue: AdminFeedbackRating
 }) => {
+  const { t } = useTranslation()
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
   const isMobile = useIsMobile()
 
-  const inputPlaceholder =
-    ratingValue === AdminFeedbackRating.up
-      ? 'Form is awesome'
-      : 'How can we improve your experience?'
+  const ratingName = AdminFeedbackRating[
+    ratingValue
+  ] as keyof typeof AdminFeedbackRating
+  const {
+    title,
+    description,
+    placeholder,
+    aria: { close },
+  } = t('features.workspace.feedback.comment', {
+    returnObjects: true,
+  })
 
   return (
     <Stack w={isMobile ? undefined : '28.5rem'}>
       <Flex justifyContent="space-between" alignItems="center" mb="1rem">
-        <Text textStyle="h2">Great!</Text>
+        <Text textStyle="h2">{title}</Text>
         <IconButton
-          aria-label="close feedback box"
+          aria-label={close}
           icon={<BxX />}
           variant="clear"
           color="black"
           onClick={onClose}
         />
       </Flex>
-      <Text textStyle="body-2">
-        Tell us about your form building experience in more detail!
-      </Text>
+      <Text textStyle="body-2">{description}</Text>
       <Textarea
         mt="1rem"
         {...register('comment')}
-        placeholder={inputPlaceholder}
+        placeholder={placeholder[ratingName]}
       />
       <Flex alignItems="flex-end" flexDirection="column">
         <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
-          Submit
+          {t('features.common.submit')}
         </Button>
       </Flex>
     </Stack>
