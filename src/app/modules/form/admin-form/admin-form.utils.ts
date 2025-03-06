@@ -204,7 +204,7 @@ export const mapRouteError = (
     case ModelResponseInvalidSchemaFormatError:
     case ModelResponseInvalidSyntaxError:
       return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Something went wrong when generating your form. Please change your prompt and try again.',
       }
