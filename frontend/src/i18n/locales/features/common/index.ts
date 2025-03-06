@@ -28,7 +28,10 @@ export interface Common {
   minimum: string
   exact: string
   delete: string
+  next: string
   back: string
+  done: string
+  submit: string
   edit: string
   loading: string
   loadingWithEllipsis: string

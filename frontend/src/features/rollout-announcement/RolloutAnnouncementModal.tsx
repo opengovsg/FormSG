@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import { useSwipeable } from 'react-swipeable'
 import {
@@ -30,6 +31,7 @@ export const RolloutAnnouncementModal = ({
   isOpen,
   onClose,
 }: RolloutAnnouncementModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const [currActiveIdx, setCurrActiveIdx] = useState<number>(0)
   const isLastAnnouncement = useMemo(
@@ -78,13 +80,13 @@ export const RolloutAnnouncementModal = ({
                   variant="clear"
                   colorScheme="secondary"
                 >
-                  Cancel
+                  {t('features.common.cancel')}
                 </Button>
               )}
 
               {isLastAnnouncement ? (
                 <Button onClick={handleNextClick} isFullWidth={isMobile}>
-                  Done
+                  {t('features.common.done')}
                 </Button>
               ) : (
                 <Button
@@ -92,7 +94,7 @@ export const RolloutAnnouncementModal = ({
                   onClick={handleNextClick}
                   isFullWidth={isMobile}
                 >
-                  Next
+                  {t('features.common.next')}
                 </Button>
               )}
             </Flex>
