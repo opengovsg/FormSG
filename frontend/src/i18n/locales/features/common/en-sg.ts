@@ -21,6 +21,7 @@ export const enSG: Common = {
   share: 'Share',
   cancel: 'Cancel',
   title: 'Title',
+  question: 'Question',
   option: 'Option',
   optional: 'optional',
   maximum: 'Maximum',

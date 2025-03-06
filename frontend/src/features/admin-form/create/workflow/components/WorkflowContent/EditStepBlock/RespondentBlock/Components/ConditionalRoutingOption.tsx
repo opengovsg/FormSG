@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { useParams } from 'react-router'
 import {
@@ -12,13 +13,6 @@ import {
 import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-} from '~shared/constants/errors'
 import { DropdownFieldBase, FormFieldDto, WorkflowType } from '~shared/types'
 import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
@@ -33,9 +27,9 @@ import { useEditFormField } from '~features/admin-form/create/builder-and-design
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
-import { WORKFLOW_TYPE_VALIDATION } from './common'
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
+import { useWorkflowTypeValidation } from './hooks'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
@@ -79,6 +73,7 @@ export const ConditionalRoutingOption = ({
   selectedWorkflowType,
   conditionalFormFields,
 }: ConditionalRoutingOptionProps) => {
+  const { t } = useTranslation()
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
     useState(false)
   const {
@@ -283,7 +278,9 @@ export const ConditionalRoutingOption = ({
         selectedConditionalFieldOptions,
       )
     ) {
-      return CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE
+      return t(
+        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.mismatchedOptions',
+      )
     }
   }
 
@@ -295,13 +292,18 @@ export const ConditionalRoutingOption = ({
 
   const noEmailToOptionsMappingErrorMessage =
     !selectedConditionalFieldOptionsToRecipientsMap
-      ? 'You must add emails to options before saving this step.'
+      ? t(
+          'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.addEmailsBeforeSave',
+        )
       : null
 
   const validateCsvFile = async (
     file: File | null,
   ): Promise<string | undefined> => {
-    if (!file) return 'Please upload a CSV file'
+    if (!file)
+      return t(
+        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.required',
+      )
 
     let conditionalRoutingCsvRows
     try {
@@ -310,7 +312,9 @@ export const ConditionalRoutingOption = ({
       if (error instanceof Error) {
         return error.message
       }
-      return CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE
+      return t(
+        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.parse',
+      )
     }
 
     const optionsSet = new Set<string>()
@@ -319,10 +323,14 @@ export const ConditionalRoutingOption = ({
       const [option, recipients] = csvRow
       const recipientsArray = recipients.split(',')
       if (recipientsArray.length <= 0 || !recipientsArray[0] || !option) {
-        return CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
+        return t(
+          'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.missingData',
+        )
       }
       if (recipientsArray.some((recipient) => !isEmail(recipient.trim()))) {
-        return CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE
+        return t(
+          'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.invalidFormat',
+        )
       }
       optionsSet.add(option)
     }
@@ -331,7 +339,9 @@ export const ConditionalRoutingOption = ({
       selectedConditionalField?.fieldOptions
 
     if (optionsSet.size < conditionalRoutingCsvRows.length) {
-      return CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE
+      return t(
+        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.duplicateOptions',
+      )
     }
 
     return validateCsvOptionsWithFieldOptions(
@@ -339,6 +349,8 @@ export const ConditionalRoutingOption = ({
       selectedConditionalFieldOptions || [],
     )
   }
+
+  const workflowTypeValidation = useWorkflowTypeValidation()
 
   return (
     <>
@@ -372,7 +384,7 @@ export const ConditionalRoutingOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Conditional}
-        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        {...register('workflow_type', workflowTypeValidation)}
         px="0.5rem"
         __css={{
           _focusWithin: {
@@ -380,7 +392,9 @@ export const ConditionalRoutingOption = ({
           },
         }}
       >
-        <Text mb="0.5rem">Emails assigned to options in a dropdown field</Text>
+        <Text mb="0.5rem">
+          {t('features.adminForm.sidebar.workflow.conditionalRouting.title')}
+        </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
             id="conditional_field"
@@ -395,7 +409,9 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: 'Please select a field.',
+                  required: t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                  ),
                   validate: (selectedValue) => {
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage
@@ -409,7 +425,9 @@ export const ConditionalRoutingOption = ({
                       conditionalFieldItems.some(
                         ({ value: fieldValue }) => fieldValue === selectedValue,
                       ) ||
-                      'Field is not an dropdown field'
+                      t(
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
+                      )
                     )
                   },
                 }}
@@ -417,7 +435,9 @@ export const ConditionalRoutingOption = ({
                   <SingleSelect
                     isDisabled={isLoading}
                     isClearable={false}
-                    placeholder="Select a field"
+                    placeholder={t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                    )}
                     items={conditionalFieldItems}
                     value={value}
                     {...rest}
@@ -446,7 +466,9 @@ export const ConditionalRoutingOption = ({
                     onClick={onOpen}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
-                    Add emails to options
+                    {t(
+                      'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
+                    )}
                   </Button>
                 )
               ) : null}

@@ -146,7 +146,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           <>
             <Divider />
             <DrawerTabIcon
-              label="Add workflow"
+              label={t('features.adminForm.sidebar.workflow.title')}
               trackingLabel="create_builder.drawer_tab.add_workflow"
               icon={<MultiParty fontSize="1.5rem" />}
               onClick={handleDrawerWorkflowClick}

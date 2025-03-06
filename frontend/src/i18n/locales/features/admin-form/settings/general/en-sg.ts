@@ -25,7 +25,7 @@ export const enSG = {
       'Submission limit must be greater than current submission count ({currentResponseCount})',
   },
   customisation: {
-    label: 'Set message for closed form',
+    closedFormMessage: 'Set message for closed form',
   },
   captcha: {
     label: 'Enable reCAPTCHA',

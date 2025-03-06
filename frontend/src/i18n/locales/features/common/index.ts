@@ -21,6 +21,7 @@ export interface Common {
   share: string
   cancel: string
   title: string
+  question: string
   option: string
   optional: string
   maximum: string

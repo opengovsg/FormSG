@@ -13,6 +13,7 @@ import {
   Settings,
   ThankYou,
   Toasts,
+  Workflow,
 } from './features'
 
 interface Translation {
@@ -24,6 +25,7 @@ interface Translation {
           headerAndInstructions?: HeaderAndInstructions
           logic?: Logic
           thankYou?: ThankYou
+          workflow?: Workflow
         }
         navbar?: Navbar
         meta?: Meta

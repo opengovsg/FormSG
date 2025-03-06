@@ -24,6 +24,9 @@ export const FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_ME
 
 export const FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE = `Your CSV contains empty row(s).`
 
+// Keep in sync with i18n.
+// TODO: Migrate to i18n
+
 export const CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE =
   'The options in your CSV file and selected field do not match.'
 

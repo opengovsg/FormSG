@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
@@ -15,13 +16,15 @@ const ApprovalStepBadge = ({
   approvalFormField,
   isDeleted = false,
 }: ApprovalStepBadgeProps): JSX.Element | null => {
+  const { t } = useTranslation()
   if (isDeleted) {
     return (
       <FieldLogicBadge
         defaults={{
           variant: 'error',
-          message:
-            'This Yes/No field was deleted, please select another Yes/No field',
+          message: t(
+            'features.adminForm.sidebar.workflow.approvals.yesNoDeleted',
+          ),
         }}
       />
     )
@@ -31,7 +34,9 @@ const ApprovalStepBadge = ({
       <FieldLogicBadge
         defaults={{
           variant: 'info',
-          message: 'Approval not required in this step',
+          message: t(
+            'features.adminForm.sidebar.workflow.approvals.notRequired',
+          ),
         }}
       />
     )
@@ -48,13 +53,16 @@ export const InactiveApprovalsBlock = ({
   step,
   idToFieldMap,
 }: InactiveApprovalsBlockProps) => {
+  const { t } = useTranslation()
   const approvalFormField = step.approval_field
     ? idToFieldMap[step.approval_field]
     : undefined
 
   return (
     <Stack>
-      <Text textStyle="subhead-3">Approvals</Text>
+      <Text textStyle="subhead-3">
+        {t('features.adminForm.sidebar.workflow.approvals.title')}
+      </Text>
       <Stack direction="column" spacing="0.25rem">
         <ApprovalStepBadge
           isDeleted={Boolean(step.approval_field && !approvalFormField)}
