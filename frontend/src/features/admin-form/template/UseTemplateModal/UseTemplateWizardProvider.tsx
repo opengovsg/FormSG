@@ -132,19 +132,6 @@ export const useUseTemplateWizardContext = (
       })
     })
 
-  const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (!formId) return
-    if (inputs.responseMode === FormResponseMode.Email) {
-      return useEmailModeFormTemplateMutation.mutate({
-        formIdToDuplicate: formId,
-        emails: inputs.emails.filter(Boolean),
-        title: inputs.title,
-        responseMode: inputs.responseMode,
-      })
-    }
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
@@ -155,7 +142,6 @@ export const useUseTemplateWizardContext = (
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

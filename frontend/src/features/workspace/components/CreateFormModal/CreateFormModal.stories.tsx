@@ -107,6 +107,7 @@ export const StorageModeAckScreen = () => {
       handleDownloadKey: () => console.log('download key'),
       handleEmailKey: () => console.log('email key'),
       mailToHref: 'mailto:?subject=&body=',
+      handleDownloadAndNavigate: () => console.log('download and navigate'),
       handleCreateStorageModeForm: () =>
         Promise.resolve(console.log('create storage mode form')),
       secretKey,
