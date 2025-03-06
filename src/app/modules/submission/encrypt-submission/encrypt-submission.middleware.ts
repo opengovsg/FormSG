@@ -175,17 +175,17 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
+      // trigger guardduty scan
+      SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        response,
+        formId,
+      )
+
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
         formId,
       )
     }
-    logger.info({
-      message: `Current file being scanned: ${response}`,
-      meta: {
-        action: 'Test log for attachment scanning',
-      },
-    })
     // If field is not an attachment, return original response.
     return okAsync(response)
   })

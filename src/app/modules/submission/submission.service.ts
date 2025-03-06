@@ -1173,48 +1173,36 @@ export const getQuarantinePresignedPostData = (
     return errAsync(new AttachmentSizeLimitExceededError())
 
   // Step 2: Create presigned post data for each attachment
-  const currentQuarantineBucketPost = ResultAsync.combine(
+  return ResultAsync.combine(
     attachmentSizes.map(({ id, size }) => {
       // Check if id is a valid ObjectId
       if (!mongoose.isValidObjectId(id))
         return errAsync(new InvalidFieldIdError())
+
+      const fileKey = crypto.randomUUID()
+
+      // send to quarantine bucket, file will have the same key
+      createPresignedPostDataPromise({
+        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+        key: fileKey,
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
 
       return createPresignedPostDataPromise({
         bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
+        key: fileKey,
       }).map((presignedPostData) => ({
         id,
         presignedPostData,
       }))
     }),
   )
-
-  // Step 2a: Create presigned post data for each attachment for new guardduty buket
-  const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
-    attachmentSizes.map(({ id, size }) => {
-      // Check if id is a valid ObjectId
-      if (!mongoose.isValidObjectId(id))
-        return errAsync(new InvalidFieldIdError())
-
-      return createPresignedPostDataPromise({
-        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
-        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-        size,
-      }).map((presignedPostData) => ({
-        id,
-        presignedPostData,
-      }))
-    }),
-  )
-
-  return ResultAsync.combine([
-    currentQuarantineBucketPost,
-    newGuarddutyQuarantineBucketPost,
-  ]).map(([currentQuarantineData, newGuarddutyData]) => [
-    ...currentQuarantineData,
-    ...newGuarddutyData,
-  ])
 }
 
 /**
