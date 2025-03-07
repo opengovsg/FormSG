@@ -82,7 +82,7 @@ describe('mail.service', () => {
     const expectedArg = expect.objectContaining({
       to: MOCK_VALID_EMAIL,
       from: MOCK_SENDER_STRING,
-      subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+      subject: `Your One-Time Password (OTP) for submitting a form on ${MOCK_APP_NAME}`,
       html: expect.stringMatching(MOCK_OTP),
     })
 

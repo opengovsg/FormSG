@@ -368,7 +368,7 @@ export class MailService {
       const mail: MailOptions = {
         to: recipient,
         from: this.#senderFromString,
-        subject: `Your OTP for submitting a form on ${this.#appName}`,
+        subject: `Your One-Time Password (OTP) for submitting a form on ${this.#appName}`,
         html: mailHtml,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,
