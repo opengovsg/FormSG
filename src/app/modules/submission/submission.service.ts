@@ -1193,7 +1193,7 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  // Step 2a: Create presigned post data for each attachment for new guardduty buket
+  // Step 2a: Create presigned post data for each attachment for new guardduty bucket
   const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
     attachmentSizes.map(({ id, size }, index) => {
       // Check if id is a valid ObjectId
@@ -1201,7 +1201,7 @@ export const getQuarantinePresignedPostData = (
         return errAsync(new InvalidFieldIdError())
 
       return createPresignedPostDataPromise({
-        bucketName: AwsConfig.guarddutyQuarantineS3Bucket, //change this to new bucket
+        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
         key: fileKeys[index],

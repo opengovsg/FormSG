@@ -175,10 +175,23 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
+      logger.info({
+        message: `Trying to guardduty scan first ${response}`,
+        meta: {
+          action: 'Testing guardduty',
+        },
+      })
       // trigger guardduty scan
       SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
         response,
         formId,
+      ).mapErr((err) =>
+        logger.info({
+          message: `GuardDuty Scan unsuccessful:, ${err}`,
+          meta: {
+            action: 'Testing guardduty error',
+          },
+        }),
       )
 
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
