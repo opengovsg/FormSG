@@ -5,12 +5,9 @@ on:
   pull_request:
     branches: [develop, release-al2, master]
 jobs:
-  test:
-    timeout-minutes: 40
+  setup:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        shard: [1,2,3,4,5]
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
@@ -34,20 +31,64 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           VITE_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
+      - name: Cache build artifacts
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            shared/node_modules
+            dist
+            frontend/dist
+            shared/dist
+            serverless/virus-scanner/build
+            .next
+            frontend/.next
+            shared/.next
+          key: ${{ runner.os }}-build-${{ github.sha }}
+  test:
+    needs: setup
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+    env:
+      AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
+      DD_TAGS: layer:e2e
+      SHARD_COUNT: 4
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # Restore the cached build artifacts
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            node_modules
+            dist
+            .next
+            # Add any other build output directories
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          fail-on-cache-miss: true
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
       - name: Run Playwright tests (login)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/5 __tests__/e2e/login.spec.ts 
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }} __tests__/e2e/login.spec.ts 
         timeout-minutes: 5
       - name: Run Playwright tests (email-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/5 __tests__/e2e/email-submission.spec.ts
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }} __tests__/e2e/email-submission.spec.ts
         timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
-        run: npx playwright test --shard=${{ matrix.shard }}/5 __tests__/e2e/encrypt-submission.spec.ts
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }} __tests__/e2e/encrypt-submission.spec.ts
         timeout-minutes: 15
       - uses: actions/upload-artifact@v4
         if: always()
