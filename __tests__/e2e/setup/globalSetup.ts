@@ -26,8 +26,6 @@ async function globalSetup(): Promise<void> {
     process.env.MONGO_URI = `mongodb://${setupConfig.IP}:${setupConfig.Port}`
   }
 
-  mongoose.set('strictQuery', true)
-
   // The following is to make sure the database is clean before an test starts
   await mongoose.connect(process.env.MONGO_URI, {
     promiseLibrary: global.Promise,
