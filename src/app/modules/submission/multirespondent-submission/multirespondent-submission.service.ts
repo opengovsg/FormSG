@@ -246,6 +246,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
 }
 
 interface SendNextStepReminderEmailProps {
+  senderEmail: string
   submissionId: string
   emails: string[]
   formTitle: string
@@ -255,6 +256,7 @@ interface SendNextStepReminderEmailProps {
 }
 
 export const sendNextStepReminderEmail = ({
+  senderEmail,
   submissionId,
   emails,
   responseUrl,
@@ -268,6 +270,7 @@ export const sendNextStepReminderEmail = ({
     submissionId,
     recipientEmails: emails,
     reminderStepNumber,
+    senderEmail,
   }
 
   logger.info({

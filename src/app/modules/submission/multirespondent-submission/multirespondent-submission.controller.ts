@@ -1,3 +1,4 @@
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -16,13 +17,16 @@ import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
+import * as AuthService from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { updateFormMetadata } from '../../form/admin-form/admin-form.service'
+import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
+import * as UserService from '../../user/user.service'
 import {
   ensureFormWithinSubmissionLimits,
   ensurePublicForm,
@@ -350,6 +354,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
 > = async (req, res) => {
   const { formId, submissionId } = req.params
   const { submissionSecretKey } = req.body
+  const authedUserId = (req.session as AuthedSessionData)?.user?._id
 
   const logMeta = {
     action: 'sendPendingMrfSubmissionReminder',
@@ -358,14 +363,27 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
     ...createReqMeta(req),
   }
 
+  if (!authedUserId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: 'Session user id not found',
+    })
+  }
+
   if (!submissionSecretKey) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       message: 'Submission secret key not found',
     })
   }
 
-  return FormService.retrieveFormById(formId)
-    .andThen((form) => {
+  return UserService.findUserById(authedUserId)
+    .andThen((user) => {
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }).map((form) => ({ form, user }))
+    })
+    .andThen(({ form, user }) => {
       if (form.responseMode !== FormResponseMode.Multirespondent) {
         return errAsync(
           new FormInvalidResponseModeError(
@@ -379,17 +397,20 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         recipientEmails,
         reminderStepNumber,
         form,
+        user,
       }))
     })
-    .andThen(({ recipientEmails, reminderStepNumber, form }) => {
+    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
       return okAsync({
         recipientEmails,
         reminderStepNumber,
         form,
+        user,
       })
     })
-    .andThen(({ recipientEmails, reminderStepNumber, form }) => {
+    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
       return sendNextStepReminderEmail({
+        senderEmail: user.email,
         submissionId,
         emails: recipientEmails,
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(

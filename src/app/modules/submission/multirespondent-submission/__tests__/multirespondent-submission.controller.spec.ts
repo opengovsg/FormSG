@@ -5,10 +5,16 @@ import { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import { FormAuthType, FormMetadata, FormResponseMode } from 'shared/types'
 
+import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.service'
-import { FormNotFoundError } from 'src/app/modules/form/form.errors'
+import {
+  ForbiddenFormError,
+  FormNotFoundError,
+} from 'src/app/modules/form/form.errors'
 import * as FormService from 'src/app/modules/form/form.service'
+import { MissingUserError } from 'src/app/modules/user/user.errors'
+import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { IMultirespondentSubmissionSchema } from 'src/types'
 
@@ -35,6 +41,16 @@ const MockFormService = jest.mocked(FormService)
 jest.mock('src/app/modules/form/admin-form/admin-form.service', () => ({
   ...jest.requireActual('src/app/modules/form/admin-form/admin-form.service'),
   updateFormMetadata: jest.fn(),
+}))
+
+jest.mock('src/app/modules/auth/auth.service', () => ({
+  ...jest.requireActual('src/app/modules/auth/auth.service'),
+  getFormAfterPermissionChecks: jest.fn(),
+}))
+
+jest.mock('src/app/modules/user/user.service', () => ({
+  ...jest.requireActual('src/app/modules/user/user.service'),
+  findUserById: jest.fn(),
 }))
 
 jest.mock(
@@ -580,10 +596,125 @@ describe('multirespondent-submision.controller', () => {
   })
 
   describe('sendPendingMrfSubmissionReminderForTest', () => {
+    const MOCK_USER = {
+      _id: 'mockUserId',
+      email: 'test@example.com',
+    }
+
     beforeEach(() => {
       const mockedUpdateformMetadata =
         AdminFormService.updateFormMetadata as jest.Mock
       mockedUpdateformMetadata.mockReturnValue(okAsync({} as FormMetadata))
+
+      const mockedFindUserById = UserService.findUserById as jest.Mock
+      mockedFindUserById.mockReturnValue(
+        okAsync({
+          _id: MOCK_USER._id,
+          email: MOCK_USER.email,
+        }),
+      )
+
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+    })
+
+    it('returns 401 when user id is not provided in session', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {}, // No user in session
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(401)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Session user id not found',
+      })
+    })
+
+    it('returns 401 when findUserById returns MissingUserError', async () => {
+      // Arrange
+      const mockedFindUserById = UserService.findUserById as jest.Mock
+      mockedFindUserById.mockReturnValue(errAsync(new MissingUserError()))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not found',
+      })
+    })
+
+    it('returns 401 when getFormAfterPermissionChecks returns ForbiddenFormError', async () => {
+      // Arrange
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(new ForbiddenFormError('User not authorized to access form')),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not authorized to access form',
+      })
     })
 
     it('returns 200 ok when recipient email found and reminder email is sent successfully', async () => {
@@ -596,17 +727,14 @@ describe('multirespondent-submision.controller', () => {
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
         },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
-
-      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
-        okAsync({
-          _id: mockFormId,
-          responseMode: FormResponseMode.Multirespondent,
-          title: 'Mock Form',
-        }),
-      )
 
       const MOCK_RECIPIENT_EMAILS = ['test@example.com', 'test2@example.com']
 
@@ -645,6 +773,7 @@ describe('multirespondent-submision.controller', () => {
         formTitle: 'Mock Form',
         formId: mockFormId,
         reminderStepNumber: 1,
+        senderEmail: MOCK_USER.email,
       })
     })
 
@@ -656,6 +785,11 @@ describe('multirespondent-submision.controller', () => {
           submissionId: mockSubmissionId,
         },
         body: {} as { submissionSecretKey: string },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
@@ -673,9 +807,11 @@ describe('multirespondent-submision.controller', () => {
     it('returns 404 when retrieveFormById encounters FormNotFoundError', async () => {
       // Arrange
       const formNotFoundError = new FormNotFoundError('Form not found')
-      MockFormService.retrieveFormById = jest
-        .fn()
-        .mockReturnValue(errAsync(formNotFoundError))
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(formNotFoundError),
+      )
 
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -684,6 +820,11 @@ describe('multirespondent-submision.controller', () => {
         },
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -702,9 +843,11 @@ describe('multirespondent-submision.controller', () => {
     it('returns 500 when retrieveFormById encounters DatabaseError', async () => {
       // Arrange
       const databaseError = new DatabaseError('Database error')
-      MockFormService.retrieveFormById = jest
-        .fn()
-        .mockReturnValue(errAsync(databaseError))
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(databaseError),
+      )
 
       const mockReq = expressHandler.mockRequest({
         params: {
@@ -713,6 +856,11 @@ describe('multirespondent-submision.controller', () => {
         },
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -749,6 +897,11 @@ describe('multirespondent-submision.controller', () => {
         },
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -788,6 +941,11 @@ describe('multirespondent-submision.controller', () => {
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
         },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
@@ -824,6 +982,11 @@ describe('multirespondent-submision.controller', () => {
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
         },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
       })
       const mockRes = expressHandler.mockResponse()
       const mockNext = jest.fn()
@@ -859,6 +1022,11 @@ describe('multirespondent-submision.controller', () => {
         },
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -904,6 +1072,11 @@ describe('multirespondent-submision.controller', () => {
         },
         body: {
           submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
         },
       })
       const mockRes = expressHandler.mockResponse()
