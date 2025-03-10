@@ -244,7 +244,7 @@ export class ExpectedResponseNotFoundError extends ApplicationError {
 
 export class MrfReminderInvalidWorkflowStepError extends ApplicationError {
   constructor(
-    message = 'Unable to send reminder as no valid pending workflow step is found.',
+    message = 'Unable to send reminder as workflow step is invalid.',
   ) {
     super(
       message,
