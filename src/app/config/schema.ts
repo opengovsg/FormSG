@@ -306,13 +306,13 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     guarddutyQuarantineS3Bucket: {
       doc: 'New guardduty S3 Bucket to quarantine files for virus scanning',
       format: String,
-      default: 'staging-virus-scanner-guardduty-quarantine', //default to staging to test for now; TODO: to add to iam role
+      default: '',
       env: 'GUARDDUTY_QUARANTINE_S3_BUCKET',
     },
     guarddutyCleanS3Bucket: {
       doc: 'New S3 Bucket to store files that have been scanned and are clean from guardduty quarantine bucket',
       format: String,
-      default: 'staging-virus-scanner-guardduty-clean', //default to staging to test for now TODO: to add to iam role
+      default: '', 
       env: 'GUARDDUTY_CLEAN_S3_BUCKET',
     },
     guarddutyLambdaEndpoint: {
@@ -324,8 +324,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     guarddutyLambdaFunctionName: {
       doc: 'Virus scanner lambda function name',
       format: String,
-      default:
-        'virus-scanner-guardduty-staging-virus-scanner-guardduty:provisioned', //default to staging to test for now TODO: to add to iam role
+      default: '', 
       env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',
     },
   },
