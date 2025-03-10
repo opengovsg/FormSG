@@ -60,7 +60,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -78,7 +77,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
       createBlankVersion(createOptionalVersion(ff)),
@@ -157,7 +155,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -177,7 +174,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -197,7 +193,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -246,7 +241,6 @@ test.describe('Email form submission', () => {
     page,
   }) => {
     test.setTimeout(60 * 1000)
-
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
     const formSettings = getEmailSettings()
