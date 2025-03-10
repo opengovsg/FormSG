@@ -73,11 +73,16 @@ jobs:
         with:
           path: |
             node_modules
+            frontend/node_modules
+            shared/node_modules
             dist
+            frontend/dist
+            shared/dist
+            serverless/virus-scanner/build
             .next
-            # Add any other build output directories
+            frontend/.next
+            shared/.next
           key: ${{ runner.os }}-build-${{ github.sha }}
-          fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
