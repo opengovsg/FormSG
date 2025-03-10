@@ -218,7 +218,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "jest-extended": "^4.0.2",
     "lint-staged": "^15.2.10",
-    "maildev": "^2.1.0",
+    "maildev": "^2.2.1",
     "mockdate": "^3.0.5",
     "prettier": "^3.3.3",
     "rimraf": "^5.0.5",
