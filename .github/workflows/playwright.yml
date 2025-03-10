@@ -20,7 +20,12 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
