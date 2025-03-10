@@ -1351,8 +1351,8 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
   response: T,
   formId: string,
 ): ResultAsync<
-  // T,
-  void,
+  T,
+  // void,
   | VirusScanFailedError
   | DownloadCleanFileFailedError
   | MaliciousFileDetectedError
@@ -1363,37 +1363,40 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
     quarantineFileKey: response.answer,
   }
   // Step 3: Trigger lambda to scan attachments.
-  return triggerGuarddutyScanning(response.answer)
-    .mapErr((error) => {
-      if (error instanceof MaliciousFileDetectedError) {
-        logger.error({
-          message: 'GUARDDUTY Malicious file detected during lambda virus scan',
-          meta: logMeta,
-          error,
-        })
-        return new MaliciousFileDetectedError(response.filename)
-      }
-      return error
-    })
-    .map((lambdaOutput) => {
-      logger.info({
-        message:
-          'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
-        meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+  return (
+    triggerGuarddutyScanning(response.answer)
+      .mapErr((error) => {
+        if (error instanceof MaliciousFileDetectedError) {
+          logger.error({
+            message:
+              'GUARDDUTY Malicious file detected during lambda virus scan',
+            meta: logMeta,
+            error,
+          })
+          return new MaliciousFileDetectedError(response.filename)
+        }
+        return error
       })
-      // return lambdaOutput.body
-    })
-  // Step 4: Retrieve attachments from the clean bucket.
-  // .andThen((cleanAttachment) =>
-  //   // Retrieve attachment from clean bucket.
-  //   downloadCleanFile(
-  //     cleanAttachment.cleanFileKey,
-  //     cleanAttachment.destinationVersionId,
-  //   ).map((attachmentBuffer) => ({
-  //     ...response,
-  //     // Replace content with attachmentBuffer and answer with filename.
-  //     content: attachmentBuffer,
-  //     answer: response.filename,
-  //   })),
-  // )
+      .map((lambdaOutput) => {
+        logger.info({
+          message:
+            'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
+          meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+        })
+        return lambdaOutput.body
+      })
+      // Step 4: Retrieve attachments from the clean bucket.
+      .andThen((cleanAttachment) =>
+        // Retrieve attachment from clean bucket.
+        downloadCleanFile(
+          cleanAttachment.cleanFileKey,
+          cleanAttachment.destinationVersionId,
+        ).map((attachmentBuffer) => ({
+          ...response,
+          // Replace content with attachmentBuffer and answer with filename.
+          content: attachmentBuffer,
+          answer: response.filename,
+        })),
+      )
+  )
 }
