@@ -20,12 +20,7 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@v1.0.5
-        with:
-          languages: js
-          service-name: ${{ secrets.DD_SERVICE }}
-          api-key: ${{ secrets.DD_API_KEY }}
+      
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -68,7 +63,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      # Restore the cached build artifacts
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
         with:
@@ -79,6 +73,12 @@ jobs:
             # Add any other build output directories
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests (login)
