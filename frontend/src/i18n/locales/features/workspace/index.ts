@@ -1,3 +1,5 @@
+import { CreateModal } from './create'
+
 export * from './en-sg'
 
 interface Modal {
@@ -40,6 +42,7 @@ export interface Workspace {
     move: string
   }
   modals: {
+    create: CreateModal
     delete: Modal
   }
   skeleton: {

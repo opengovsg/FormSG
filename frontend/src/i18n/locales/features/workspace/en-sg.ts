@@ -1,3 +1,4 @@
+import { enSG as create } from './create'
 import { Workspace } from '.'
 
 export const enSG: Workspace = {
@@ -34,6 +35,7 @@ export const enSG: Workspace = {
     move: 'Move to Folder',
   },
   modals: {
+    create,
     delete: {
       title: 'Delete form',
       description:

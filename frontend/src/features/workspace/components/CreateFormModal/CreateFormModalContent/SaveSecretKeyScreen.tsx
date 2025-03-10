@@ -1,5 +1,6 @@
 import { SyntheticEvent, useCallback, useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import {
   Box,
@@ -28,6 +29,7 @@ import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 /** Default hook to be used in SaveSecretKeyScreen */
 const useSaveSecretKeyDefault = () => {
+  const { t } = useTranslation()
   const {
     formMethods: {
       control,
@@ -47,33 +49,32 @@ const useSaveSecretKeyDefault = () => {
 
   trackClickSecretKeyMailTo(titleInputValue)
   const mailToHref = useMemo(() => {
-    const subject = `Shared Secret Key for ${titleInputValue}`
-    const body = dedent`
-        Dear collaborator,
-
-        I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
-
-        Form title: ${titleInputValue}
-
-        Secret key: ${secretKey}
-
-        All you need to do is keep this email as a record, and please do not share this key with anyone else.
-
-        Thank you for helping to safekeep my form!`
+    const subject = t(
+      'features.workspace.modals.create.secretKey.email.subject',
+      { titleInputValue },
+    )
+    const body = dedent(
+      t('features.workspace.modals.create.secretKey.email.body', {
+        titleInputValue,
+        secretKey,
+      }),
+    )
 
     const href = `mailto:?subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`
     return href
-  }, [secretKey, titleInputValue])
+  }, [secretKey, titleInputValue, t])
 
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
-      `Form Secret Key - ${titleInputValue}.txt`,
+      t('features.workspace.modals.create.secretKey.email.filename', {
+        titleInputValue,
+      }),
     )
     setHasDownloaded(true)
-  }, [secretKey, titleInputValue])
+  }, [secretKey, titleInputValue, t])
 
   const handleCopyKey = useCallback(
     (e?: SyntheticEvent) => {
@@ -105,6 +106,7 @@ interface SaveSecretKeyScreenProps {
 export const SaveSecretKeyScreen = ({
   useSaveSecretKey = useSaveSecretKeyDefault,
 }: SaveSecretKeyScreenProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     isLoading,
     handleCopyKey,
@@ -139,23 +141,39 @@ export const SaveSecretKeyScreen = ({
                 color="danger.500"
               />
               <Text as="header" textStyle="h2" color="secondary.700">
-                Download Secret Key to proceed
+                {t('features.workspace.modals.create.secretKey.title')}
               </Text>
             </Stack>
             <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
-              You'll need it every time you access your responses to this form.
-              If you lose it,{' '}
+              {t(
+                'features.workspace.modals.create.secretKey.message.preamble',
+              ) + ' '}
               <Text color="danger.500" textStyle="subhead-1" as="span">
-                all responses will be permanently lost
+                {t(
+                  'features.workspace.modals.create.secretKey.message.warning',
+                )}
               </Text>
-              . You can also{' '}
+              .{' '}
+              {t(
+                'features.workspace.modals.create.secretKey.message.email.prefix',
+              ) + ' '}
               <Link variant="inline" href={mailToHref}>
-                email it
-              </Link>{' '}
-              for safekeeping.
+                {t(
+                  'features.workspace.modals.create.secretKey.message.email.link',
+                )}
+              </Link>
+              {' ' +
+                t(
+                  'features.workspace.modals.create.secretKey.message.email.suffix',
+                )}
             </Text>
             <Stack direction={{ base: 'column', md: 'row' }}>
-              <Tooltip mt={0} label={hasCopiedKey ? 'Copied!' : 'Copy key'}>
+              <Tooltip
+                mt={0}
+                label={t(
+                  `features.workspace.modals.create.secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
+                )}
+              >
                 <Code
                   // To allow for focus styling on code element.
                   data-group
@@ -185,7 +203,9 @@ export const SaveSecretKeyScreen = ({
                 </Code>
               </Tooltip>
               <ButtonGroup>
-                <Button onClick={handleDownloadKey}>Download key</Button>
+                <Button onClick={handleDownloadKey}>
+                  {t('features.workspace.modals.create.secretKey.download')}
+                </Button>
                 <IconButton
                   as="a"
                   icon={<BiMailSend />}
@@ -204,8 +224,7 @@ export const SaveSecretKeyScreen = ({
                   required: true,
                 })}
               >
-                If I lose my Secret Key, I cannot activate my form or access any
-                responses to it
+                {t('features.workspace.modals.create.secretKey.declaration')}
               </Checkbox>
             </Box>
           )}
@@ -218,7 +237,9 @@ export const SaveSecretKeyScreen = ({
             onClick={handleCreateStorageModeOrMultirespondentForm}
             isFullWidth
           >
-            <Text lineHeight="1.5rem">I have saved my Secret Key safely</Text>
+            <Text lineHeight="1.5rem">
+              {t('features.workspace.modals.create.secretKey.confirm')}
+            </Text>
           </Button>
         </Container>
       </ModalBody>
