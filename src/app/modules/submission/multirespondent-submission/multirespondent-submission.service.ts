@@ -270,6 +270,11 @@ export const sendNextStepReminderEmail = ({
     reminderStepNumber,
   }
 
+  logger.info({
+    message: 'Sending reminder emails to pending step for MRF submission',
+    meta: logMeta,
+  })
+
   return MailService.sendMRFWorkflowStepEmail({
     emails,
     formTitle,
