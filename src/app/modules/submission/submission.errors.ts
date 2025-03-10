@@ -256,7 +256,7 @@ export class MrfReminderInvalidWorkflowStepError extends ApplicationError {
 
 export class MrfReminderRecipientEmailsEmptyError extends ApplicationError {
   constructor(
-    message = 'Unable to send reminder as no recipient emails found for the pending step.',
+    message = 'Unable to send reminder as no recipient emails found.',
   ) {
     super(
       message,
