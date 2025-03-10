@@ -182,27 +182,22 @@ const asyncVirusScanning = (
         },
       })
       // trigger guardduty scan
-      // SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
-      //   response,
-      //   formId,
-      // ).mapErr((err) =>
-      //   logger.info({
-      //     message: `GuardDuty Scan unsuccessful:, ${err}`,
-      //     meta: {
-      //       action: 'Testing guardduty error',
-      //     },
-      //   }),
-      // )
+      SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        response,
+        formId,
+      ).mapErr((err) =>
+        logger.info({
+          message: `GuardDuty Scan unsuccessful:, ${err}`,
+          meta: {
+            action: 'Testing guardduty error',
+          },
+        }),
+      )
 
-      return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
         formId,
       )
-
-      // return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-      //   response,
-      //   formId,
-      // )
     }
     // If field is not an attachment, return original response.
     return okAsync(response)

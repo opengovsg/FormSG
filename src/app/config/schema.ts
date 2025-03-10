@@ -324,7 +324,8 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     guarddutyLambdaFunctionName: {
       doc: 'Virus scanner lambda function name',
       format: String,
-      default: 'virus-scanner-guardduty-staging-virus-scanner-guardduty', //default to staging to test for now TODO: to add to iam role
+      default:
+        'virus-scanner-guardduty-staging-virus-scanner-guardduty:provisioned', //default to staging to test for now TODO: to add to iam role
       env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',
     },
   },
