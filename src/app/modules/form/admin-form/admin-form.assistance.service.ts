@@ -115,7 +115,7 @@ const mapSuggestedFormFieldToFieldCreateDto = (
 const BASIC_FIELD_NAMES = Object.keys(omit(BasicField, ['Children', 'Image']))
   .map((fieldType) => `"${fieldType}"`)
   .toString()
-const FORM_DETAILS_PROMPT = {
+const FORM_DETAILS_TEXT_PROMPT = {
   role: Role.User,
   content:
     // Provide context to model on when to use each field type
@@ -148,7 +148,7 @@ const FORM_DETAILS_PROMPT = {
 
 const generateFormCreationPrompt = (userPrompt: string) => {
   const messages = [
-    FORM_DETAILS_PROMPT,
+    FORM_DETAILS_TEXT_PROMPT,
     {
       // Provide general topic + example fields that user wants to collect.
       role: Role.User,

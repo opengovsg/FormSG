@@ -40,6 +40,8 @@ import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
 
+import { useUser } from '~features/user/queries'
+
 // TODO: To abstract to util file
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -241,6 +243,8 @@ const MagicFormBuilderCreateFormPrompt = ({
 
   const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(PROMPT_TYPE.TEXT)
 
+  const { user, isLoading: isUserLoading } = useUser()
+
   return (
     <>
       <ModalHeader display="flex" alignItems="center">
@@ -255,29 +259,37 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        <Tabs isFitted onChange={setSelectedTab}>
-          <TabList mb="1em">
-            <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
-            <Tab value={PROMPT_TYPE.VISION}>Pdf</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel>
-              <TextPromptModalBodyContent
-                register={register}
-                setValue={setValue}
-                errors={errors}
-              />
-            </TabPanel>
-            <TabPanel>
-              <VisionPromptModalBodyContent
-                control={visionControl}
-                errors={visionErrors}
-                clearErrors={clearVisionErrors}
-                setError={setVisionError}
-              />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        {!isUserLoading && user?.betaFlags?.mfbVision ? (
+          <Tabs isFitted onChange={setSelectedTab}>
+            <TabList mb="1em">
+              <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
+              <Tab value={PROMPT_TYPE.VISION}>Pdf</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <TextPromptModalBodyContent
+                  register={register}
+                  setValue={setValue}
+                  errors={errors}
+                />
+              </TabPanel>
+              <TabPanel>
+                <VisionPromptModalBodyContent
+                  control={visionControl}
+                  errors={visionErrors}
+                  clearErrors={clearVisionErrors}
+                  setError={setVisionError}
+                />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        ) : (
+          <TextPromptModalBodyContent
+            register={register}
+            setValue={setValue}
+            errors={errors}
+          />
+        )}
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
