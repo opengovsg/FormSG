@@ -238,6 +238,7 @@ const MagicFormBuilderCreateFormPrompt = ({
   const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(PROMPT_TYPE.TEXT)
 
   const { user, isLoading: isUserLoading } = useUser()
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   return (
     <>
@@ -253,7 +254,7 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        {!isUserLoading && user?.betaFlags?.mfbVision ? (
+        {isTest || (!isUserLoading && user?.betaFlags?.mfbVision) ? (
           <Tabs isFitted onChange={setSelectedTab}>
             <TabList mb="1em">
               <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
