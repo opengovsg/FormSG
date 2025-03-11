@@ -1,20 +1,32 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { okAsync } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
   FormWorkflowStepDto,
+  WorkflowStatus,
   WorkflowType,
 } from 'shared/types'
 
 import MailService from 'src/app/services/mail/mail.service'
-import { IPopulatedMultirespondentForm } from 'src/types'
+import {
+  IMultirespondentSubmissionSchema,
+  IPopulatedMultirespondentForm,
+} from 'src/types'
 import { MultirespondentSubmissionDto } from 'src/types/api'
 
 import {
+  MrfReminderInvalidWorkflowStepError,
+  MrfReminderRecipientEmailsEmptyError,
+} from '../../submission.errors'
+import {
+  getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
+  sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
+import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -117,7 +129,7 @@ describe('multirespondent-submission.service', () => {
         form: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
-          emails: [expectedEmails[1]],
+          emails: [expectedEmails[0]],
           stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentStepNumber,
@@ -1372,6 +1384,225 @@ describe('multirespondent-submission.service', () => {
           notExpectedStepOneEmail,
         ),
       ).toBe(false)
+    })
+  })
+
+  describe('sendNextStepReminderEmail', () => {
+    it('invokes the sendMRFWorkflowStepEmail function with isReminder set to true and correct recipient emails', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com', 'test2@example.com']
+      const sendMRFWorkflowStepEmailSpy = jest
+        .spyOn(MailService, 'sendMRFWorkflowStepEmail')
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      await sendNextStepReminderEmail({
+        submissionId: 'submissionId',
+        emails: mockEmails,
+        formTitle: 'Test Form',
+        responseUrl: 'http://test.com',
+        formId: 'formId',
+        reminderStepNumber: 1,
+      })
+
+      // Assert
+      expect(sendMRFWorkflowStepEmailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          emails: mockEmails,
+          isReminder: true,
+        }),
+      )
+    })
+  })
+
+  describe('getPendingStepRecipientEmailsFromSubmittedStepsMeta', () => {
+    it('gets correct recipient emails for 2nd step of 5-step mrf submission', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com']
+      const mockSubmission = {
+        workflow: [{}, {}, {}, {}, {}],
+        submittedSteps: [
+          {
+            nextStepRecipientEmails: mockEmails,
+          },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap().recipientEmails).toEqual(mockEmails)
+      expect(result._unsafeUnwrap().reminderStepNumber).toBe(2)
+    })
+
+    it('gets correct recipient email for 3rd step of 4-step mrf submission', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com', 'test2@example.com']
+      const mockSubmission = {
+        workflow: [{}, {}, {}, {}],
+        submittedSteps: [
+          { nextStepRecipientEmails: ['old@example.com'] },
+          {
+            nextStepRecipientEmails: mockEmails,
+            isApproval: true,
+            status: WorkflowStatus.APPROVED,
+          },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap().recipientEmails).toEqual(mockEmails)
+      expect(result._unsafeUnwrap().reminderStepNumber).toBe(3)
+    })
+
+    it('gets correct recipient email for last step of 2-step mrf submission', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com']
+      const mockSubmission = {
+        workflow: [{}, {}],
+        submittedSteps: [
+          {
+            nextStepRecipientEmails: mockEmails,
+          },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap().recipientEmails).toEqual(mockEmails)
+      expect(result._unsafeUnwrap().reminderStepNumber).toBe(2)
+    })
+
+    it('gets correct recipient email for last step of 4-step mrf submission', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com']
+      const mockSubmission = {
+        workflow: [{}, {}, {}, {}],
+        submittedSteps: [
+          { nextStepRecipientEmails: ['old1@example.com'] },
+          { nextStepRecipientEmails: ['old2@example.com'] },
+          { nextStepRecipientEmails: mockEmails },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap().recipientEmails).toEqual(mockEmails)
+      expect(result._unsafeUnwrap().reminderStepNumber).toBe(4)
+    })
+
+    it('throws pending step not found error for 2nd step where it is rejected ie, completed workflow', async () => {
+      // Arrange
+      const mockSubmission = {
+        workflow: [{}, {}, {}],
+        submittedSteps: [
+          { nextStepRecipientEmails: ['old1@example.com'] },
+          {
+            status: WorkflowStatus.REJECTED,
+            isApproval: true,
+          },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfReminderInvalidWorkflowStepError,
+      )
+    })
+
+    it('throws pending step not found for all steps submitted ie, commpleted workflow', async () => {
+      // Arrange
+      const mockSubmission = {
+        workflow: [{}, {}],
+        submittedSteps: [
+          { nextStepRecipientEmails: ['old1@example.com'] },
+          { nextStepRecipientEmails: ['old2@example.com'] },
+        ],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfReminderInvalidWorkflowStepError,
+      )
+    })
+
+    it('throws recipient email not found for valid pending step ie 3rd step of 4-step mrf submission but recipient emails is not found in pending step metadata', async () => {
+      // Arrange
+      const mockSubmission = {
+        workflow: [{}, {}, {}, {}],
+        submittedSteps: [{ nextStepRecipientEmails: ['old@example.com'] }, {}],
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+        .mockReturnValue(okAsync(mockSubmission))
+
+      // Act
+      const result = await getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId: 'submissionId',
+      })
+
+      // Assert
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MrfReminderRecipientEmailsEmptyError,
+      )
     })
   })
 })

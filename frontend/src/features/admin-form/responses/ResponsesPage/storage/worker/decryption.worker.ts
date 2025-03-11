@@ -97,6 +97,8 @@ async function decryptIntoCsv(
               submission.mrfMeta.workflowCurrentStepNumber,
             workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
             lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
+            hasNextStepRecipientEmails:
+              submission.mrfMeta.hasNextStepRecipientEmails,
           }
         : undefined,
     )

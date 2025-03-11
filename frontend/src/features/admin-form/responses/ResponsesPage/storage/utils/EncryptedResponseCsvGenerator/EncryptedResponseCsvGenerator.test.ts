@@ -6,15 +6,7 @@ import { SetOptional } from 'type-fest'
 import { WorkflowStatus } from '~shared/types/submission'
 import { answerKey } from '~shared/utils/address'
 
-import {
-  getPendingResponseAtString,
-  MRF_STATUS,
-} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
-import {
-  MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
-  MRF_WORKFLOW_STATUS_LABEL,
-} from '~features/admin-form/responses/constants'
+import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
@@ -388,6 +380,7 @@ describe('EncryptedResponseCsvGenerator', () => {
             workflowCurrentStepNumber: 2,
             workflowNumTotalSteps: 3,
             lastSubmittedAt: '2024-01-01T00:00:00.000Z',
+            hasNextStepRecipientEmails: false,
           },
         }
         mrfGenerator.addRecord(mockRecord)

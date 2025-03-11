@@ -3,19 +3,31 @@ import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
 import { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { FormAuthType } from 'shared/types'
+import { FormAuthType, FormMetadata, FormResponseMode } from 'shared/types'
 
+import * as AuthService from 'src/app/modules/auth/auth.service'
+import { DatabaseError } from 'src/app/modules/core/core.errors'
+import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.service'
+import {
+  ForbiddenFormError,
+  FormNotFoundError,
+} from 'src/app/modules/form/form.errors'
 import * as FormService from 'src/app/modules/form/form.service'
+import { MissingUserError } from 'src/app/modules/user/user.errors'
+import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { IMultirespondentSubmissionSchema } from 'src/types'
 
 import {
   AttachmentUploadError,
   InvalidWorkflowTypeError,
+  MrfReminderInvalidWorkflowStepError,
+  MrfReminderRecipientEmailsEmptyError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import {
+  sendPendingMrfSubmissionReminderForTest,
   submitMultirespondentFormForTest,
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
@@ -25,6 +37,22 @@ jest.mock('src/app/modules/datadog/datadog.utils')
 
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
+
+jest.mock('src/app/modules/form/admin-form/admin-form.service', () => ({
+  ...jest.requireActual('src/app/modules/form/admin-form/admin-form.service'),
+  updateFormMetadata: jest.fn(),
+}))
+
+jest.mock('src/app/modules/auth/auth.service', () => ({
+  ...jest.requireActual('src/app/modules/auth/auth.service'),
+  getFormAfterPermissionChecks: jest.fn(),
+}))
+
+jest.mock('src/app/modules/user/user.service', () => ({
+  ...jest.requireActual('src/app/modules/user/user.service'),
+  findUserById: jest.fn(),
+}))
+
 jest.mock(
   'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service',
 )
@@ -42,7 +70,7 @@ const mockMrfSubmission = {
   _id: mockSubmissionId,
 } as IMultirespondentSubmissionSchema & { _id: Types.ObjectId }
 
-describe('multiresponodent-submision.controller', () => {
+describe('multirespondent-submision.controller', () => {
   beforeEach(() => {
     MockFormService.isFormPublic = jest.fn().mockReturnValue(ok(true))
     MockFormService.checkFormSubmissionLimitAndDeactivateForm = jest
@@ -564,6 +592,452 @@ describe('multiresponodent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).not.toHaveBeenCalled() // default is 200 ok
+    })
+  })
+
+  describe('sendPendingMrfSubmissionReminderForTest', () => {
+    const MOCK_USER = {
+      _id: 'mockUserId',
+      email: 'test@example.com',
+    }
+
+    beforeEach(() => {
+      const mockedUpdateformMetadata =
+        AdminFormService.updateFormMetadata as jest.Mock
+      mockedUpdateformMetadata.mockReturnValue(okAsync({} as FormMetadata))
+
+      const mockedFindUserById = UserService.findUserById as jest.Mock
+      mockedFindUserById.mockReturnValue(
+        okAsync({
+          _id: MOCK_USER._id,
+          email: MOCK_USER.email,
+        }),
+      )
+
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+    })
+
+    it('returns 401 when findUserById returns MissingUserError', async () => {
+      // Arrange
+      const mockedFindUserById = UserService.findUserById as jest.Mock
+      mockedFindUserById.mockReturnValue(errAsync(new MissingUserError()))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not found',
+      })
+    })
+
+    it('returns 401 when getFormAfterPermissionChecks returns ForbiddenFormError', async () => {
+      // Arrange
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(new ForbiddenFormError('User not authorized to access form')),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not authorized to access form',
+      })
+    })
+
+    it('returns 200 ok when recipient email found and reminder email is sent successfully', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      const MOCK_RECIPIENT_EMAILS = ['test@example.com', 'test2@example.com']
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(
+          okAsync({
+            recipientEmails: MOCK_RECIPIENT_EMAILS,
+            reminderStepNumber: 1,
+          }),
+        )
+
+      MockMultiRespondentSubmissionService.sendNextStepReminderEmail = jest
+        .fn()
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Reminder sent successfully.',
+        submissionId: mockSubmissionId,
+      })
+      expect(
+        MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta,
+      ).toHaveBeenCalledWith({
+        submissionId: mockSubmissionId,
+      })
+
+      expect(
+        MockMultiRespondentSubmissionService.sendNextStepReminderEmail,
+      ).toHaveBeenCalledWith({
+        submissionId: mockSubmissionId,
+        emails: MOCK_RECIPIENT_EMAILS,
+        responseUrl: expect.any(String),
+        formTitle: 'Mock Form',
+        formId: mockFormId,
+        reminderStepNumber: 1,
+        senderEmail: MOCK_USER.email,
+      })
+    })
+
+    it('returns 404 when retrieveFormById encounters FormNotFoundError', async () => {
+      // Arrange
+      const formNotFoundError = new FormNotFoundError('Form not found')
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(formNotFoundError),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: formNotFoundError.message,
+      })
+    })
+
+    it('returns 500 when retrieveFormById encounters DatabaseError', async () => {
+      // Arrange
+      const databaseError = new DatabaseError('Database error')
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(databaseError),
+      )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: databaseError.message,
+      })
+    })
+
+    it('returns 500 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters DatabaseError', async () => {
+      // Arrange
+      const databaseError = new DatabaseError('Database error')
+      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(errAsync(databaseError))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: databaseError.message,
+      })
+    })
+
+    it('returns 404 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters SubmissionNotFoundError', async () => {
+      // Arrange
+      const submissionNotFoundError = new SubmissionNotFoundError(
+        'Submission not found',
+      )
+      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(errAsync(submissionNotFoundError))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(404)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: submissionNotFoundError.message,
+      })
+    })
+
+    it('returns 400 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters MrfReminderInvalidWorkflowStepError', async () => {
+      // Arrange
+      const invalidWorkflowStepError = new MrfReminderInvalidWorkflowStepError()
+      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(errAsync(invalidWorkflowStepError))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: invalidWorkflowStepError.message,
+      })
+    })
+
+    it('returns 400 when getPendingStepRecipientEmailsFromSubmittedStepsMeta encounters MrfReminderRecipientEmailsEmptyError', async () => {
+      // Arrange
+      const emptyRecipientsError = new MrfReminderRecipientEmailsEmptyError()
+      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(errAsync(emptyRecipientsError))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: emptyRecipientsError.message,
+      })
+    })
+
+    it('returns 500 when sendNextStepReminderEmail encounters MailSendError', async () => {
+      // Arrange
+      const mailSendError = new MailSendError('Failed to send email')
+      MockFormService.retrieveFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(
+          okAsync({
+            recipientEmails: ['test@example.com'],
+            reminderStepNumber: 1,
+          }),
+        )
+
+      MockMultiRespondentSubmissionService.sendNextStepReminderEmail = jest
+        .fn()
+        .mockReturnValue(errAsync(mailSendError))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: mailSendError.message,
+      })
     })
   })
 })
