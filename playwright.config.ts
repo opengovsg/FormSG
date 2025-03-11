@@ -43,52 +43,47 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
+      name: 'chromium-login',
+      testMatch: /login\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
-      name: 'firefox',
+      name: 'chromium-email-submission',
+      testMatch: /email-submission\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'chromium-encrypt-submission',
+      testMatch: /encrypt-submission\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'firefox-login',
+      testMatch: /login\.spec\.ts$/,
       use: {
         ...devices['Desktop Firefox'],
       },
     },
-
-    // {
-    //   name: 'webkit',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //   },
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: {
-    //     channel: 'msedge',
-    //   },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: {
-    //     channel: 'chrome',
-    //   },
-    // },
+    {
+      name: 'firefox-email-submission',
+      testMatch: /email-submission\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+    {
+      name: 'firefox-encrypt-submission',
+      testMatch: /encrypt-submission\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
