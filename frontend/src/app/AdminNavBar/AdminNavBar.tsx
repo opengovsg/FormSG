@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCommentDetail } from 'react-icons/bi'
 import { GoDotFill } from 'react-icons/go'
 import { Link as ReactLink } from 'react-router-dom'
@@ -51,21 +52,6 @@ type AdminNavBarLinkProps = {
   MobileIcon: As
 }
 
-const NAV_LINKS: AdminNavBarLinkProps[] = [
-  {
-    label: 'Feature request',
-    href: FEATURE_REQUEST,
-    MobileIcon: BiCommentDetail,
-  },
-  {
-    label: 'Help',
-    href: FORM_GUIDE,
-    MobileIcon: BxsHelpCircle,
-  },
-]
-
-const WHATS_NEW_LABEL = "What's new"
-
 const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
 
@@ -105,6 +91,10 @@ const WhatsNewNavBarTab = ({
   shouldShowNotiifcation,
 }: WhatsNewNavBarTabProps) => {
   const isMobile = useIsMobile()
+
+  const { t } = useTranslation()
+
+  const WHATS_NEW_LABEL = t('features.app.adminNavBar.whatsNew')
 
   if (isMobile) {
     return (
@@ -240,17 +230,35 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     }
   }, [emergencyContactKey, removeQuery])
 
+  const { t } = useTranslation()
+
+  const navLinks: AdminNavBarLinkProps[] = [
+    {
+      label: t('features.app.adminNavBar.linkLabel.featureRequest'),
+      href: FEATURE_REQUEST,
+      MobileIcon: BiCommentDetail,
+    },
+    {
+      label: t('features.app.adminNavBar.linkLabel.formGuide'),
+      href: FORM_GUIDE,
+      MobileIcon: BxsHelpCircle,
+    },
+  ]
+
   return (
     <>
       <AdminNavBar.Container>
-        <ReactLink title="Form Logo" to={DASHBOARD_ROUTE}>
+        <ReactLink
+          title={t('features.app.adminNavBar.logoTitle')}
+          to={DASHBOARD_ROUTE}
+        >
           {<BrandSmallLogo w="2rem" />}
         </ReactLink>
         <HStack
           textStyle="subhead-1"
           spacing={{ base: '0.75rem', md: '1.5rem' }}
         >
-          {NAV_LINKS.map((link, index) => (
+          {navLinks.map((link, index) => (
             <AdminNavBarLink key={index} {...link} />
           ))}
           <WhatsNewNavBarTab
@@ -264,16 +272,18 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             menuListProps={{ maxWidth: '19rem' }}
           >
             <Menu.Item as={ReactLink} to="/billing">
-              Billing
+              {t('features.app.adminNavBar.avatarMenuItem.billing')}
             </Menu.Item>
             <Menu.Item onClick={onContactModalOpen}>
-              Emergency contact
+              {t('features.app.adminNavBar.avatarMenuItem.emergencyContact')}
             </Menu.Item>
             <Menu.Item onClick={onTransferOwnershipModalOpen}>
-              Transfer all forms
+              {t('features.app.adminNavBar.avatarMenuItem.transferAllForms')}
             </Menu.Item>
             <AvatarMenuDivider />
-            <Menu.Item onClick={handleLogout}>Log out</Menu.Item>
+            <Menu.Item onClick={handleLogout}>
+              {t('features.app.adminNavBar.avatarMenuItem.logout')}
+            </Menu.Item>
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
