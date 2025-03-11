@@ -1,6 +1,5 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: ['<rootDir>', '<rootDir>/serverless/virus-scanner/'],
   moduleDirectories: [
@@ -25,12 +24,8 @@ module.exports = {
   coverageReporters: ['lcov', 'text'],
   testTimeout: 300000, // Set timeout to be 300s to reduce test flakiness
   maxWorkers: '4',
-  globals: {
-    // Revert when memory leak in ts-jest is fixed.
-    // See https://github.com/kulshekhar/ts-jest/issues/1967.
-    'ts-jest': {
-      isolatedModules: true,
-    },
+  transform: {
+    '^.+\\.(t|j)sx?$': ['@swc/jest'],
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest-setupAfterEnv.js'],
 }
