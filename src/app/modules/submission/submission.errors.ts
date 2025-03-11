@@ -241,3 +241,27 @@ export class ExpectedResponseNotFoundError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_EXPECTED_RESPONSE_NOT_FOUND)
   }
 }
+
+export class MrfReminderInvalidWorkflowStepError extends ApplicationError {
+  constructor(
+    message = 'Unable to send reminder as workflow step is invalid.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_REMINDER_INVALID_PENDING_STEP,
+    )
+  }
+}
+
+export class MrfReminderRecipientEmailsEmptyError extends ApplicationError {
+  constructor(
+    message = 'Unable to send reminder as no recipient emails found.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_REMINDER_RECIPIENT_EMAILS_EMPTY,
+    )
+  }
+}

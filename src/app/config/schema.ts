@@ -391,6 +391,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 5,
       env: 'MAKE_TEXT_PROMPT_RATE_LIMIT',
     },
+    mrfPendingSubmissionEmailReminder: {
+      doc: 'Per-minute, per-IP request, per submission id limit for sending email reminders for MRF submissions',
+      format: 'int',
+      default: 60,
+      env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
+    },
   },
   reactMigration: {
     useFetchForSubmissions: {

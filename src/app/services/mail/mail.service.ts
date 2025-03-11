@@ -815,6 +815,7 @@ export class MailService {
    * @param emails the recipient email addresses
    * @param formTitle the form title of the MRF form
    * @param responseUrl the response url which includes the secret key
+   * @param isReminder whether this email is a repeat email sent as a reminder to the pending step
    * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendMRFWorkflowStepEmail = ({
@@ -822,11 +823,13 @@ export class MailService {
     formTitle,
     responseId,
     responseUrl,
+    isReminder = false,
   }: {
     emails: string[]
     formTitle: string
     responseId: string
     responseUrl: string
+    isReminder?: boolean
   }): ResultAsync<true, MailSendError> => {
     const htmlData: WorkflowEmailData = {
       formTitle,
@@ -849,11 +852,15 @@ export class MailService {
       },
     )
 
+    const emailSubject =
+      (isReminder ? '[Reminder] ' : '') +
+      `Action required - ${formTitle} (${responseId})`
+
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
         to: emails,
         from: this.#senderFromString,
-        subject: `Action required - ${formTitle} (${responseId})`,
+        subject: emailSubject,
         html: mailHtml,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,

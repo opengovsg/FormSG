@@ -9,6 +9,7 @@ import {
   FormWorkflowStepDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
+  SubmittedStep,
   WorkflowStatus,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
@@ -36,12 +37,15 @@ import {
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
+  MrfReminderInvalidWorkflowStepError,
+  MrfReminderRecipientEmailsEmptyError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { AttachmentMetadata } from '../submission.types'
+import { getMrfSubmissionWorkflowStatus } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
@@ -112,6 +116,16 @@ const checkIsStepRejected = ({
   return ok(approvalFieldResponse.answer === 'No')
 }
 
+interface sendNextStepEmailProps {
+  nextStepNumber: number
+  form: IPopulatedMultirespondentForm
+  formTitle: string
+  responseUrl: string
+  formId: string
+  submissionId: string
+  responses: FieldResponsesV3
+}
+
 const sendNextStepEmail = ({
   nextStepNumber,
   form,
@@ -120,15 +134,10 @@ const sendNextStepEmail = ({
   formId,
   submissionId,
   responses,
-}: {
-  nextStepNumber: number
-  form: IPopulatedMultirespondentForm
-  formTitle: string
-  responseUrl: string
-  formId: string
-  submissionId: string
-  responses: FieldResponsesV3
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+}: sendNextStepEmailProps): ResultAsync<
+  true,
+  InvalidWorkflowTypeError | MailSendError
+> => {
   const logMeta = {
     action: 'sendNextStepEmail',
     formId: formId.toString(),
@@ -176,6 +185,113 @@ const sendNextStepEmail = ({
         })
       })
   )
+}
+
+export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
+  submissionId,
+}: {
+  submissionId: string
+}): ResultAsync<
+  { recipientEmails: string[]; reminderStepNumber: number },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfReminderInvalidWorkflowStepError
+  | MrfReminderRecipientEmailsEmptyError
+> => {
+  return getMultirespondentSubmission(submissionId).andThen(
+    ({ workflow, submittedSteps }) => {
+      const logMeta = {
+        action: 'getPendingStepRecipientEmailsFromSubmittedStepsMeta',
+        submissionId,
+        submittedSteps,
+      }
+
+      const isPending =
+        submittedSteps &&
+        submittedSteps.length > 0 &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps as SubmittedStep[],
+          workflow.length,
+        ) === WorkflowStatus.PENDING
+
+      const pendingStep = isPending
+        ? submittedSteps[submittedSteps.length - 1]
+        : null
+
+      if (!pendingStep || !submittedSteps) {
+        logger.error({
+          message:
+            'Failed to find details for pending step to send mrf next step submission reminder email',
+          meta: { ...logMeta, isPending },
+        })
+        return errAsync(new MrfReminderInvalidWorkflowStepError())
+      }
+
+      const recipientEmails = pendingStep.nextStepRecipientEmails
+
+      if (!recipientEmails) {
+        logger.error({
+          message:
+            'No recipient emails found to send mrf next step submission reminder email',
+          meta: logMeta,
+        })
+        return errAsync(new MrfReminderRecipientEmailsEmptyError())
+      }
+
+      const reminderStepNumber = submittedSteps.length + 1
+
+      return okAsync({ recipientEmails, reminderStepNumber })
+    },
+  )
+}
+
+interface SendNextStepReminderEmailProps {
+  senderEmail: string
+  submissionId: string
+  emails: string[]
+  formTitle: string
+  responseUrl: string
+  formId: string
+  reminderStepNumber: number
+}
+
+export const sendNextStepReminderEmail = ({
+  senderEmail,
+  submissionId,
+  emails,
+  responseUrl,
+  formId,
+  formTitle,
+  reminderStepNumber,
+}: SendNextStepReminderEmailProps) => {
+  const logMeta = {
+    action: 'sendNextStepReminderEmail',
+    formId: formId.toString(),
+    submissionId,
+    recipientEmails: emails,
+    reminderStepNumber,
+    senderEmail,
+  }
+
+  logger.info({
+    message: 'Sending reminder emails to pending step for MRF submission',
+    meta: logMeta,
+  })
+
+  return MailService.sendMRFWorkflowStepEmail({
+    emails,
+    formTitle,
+    responseId: submissionId,
+    responseUrl,
+    isReminder: true,
+  }).orElse((error) => {
+    logger.error({
+      message: 'Failed to send reminder workflow email',
+      meta: { ...logMeta, emails },
+      error,
+    })
+    return errAsync(error)
+  })
 }
 
 const sendMrfOutcomeEmails = ({
@@ -357,9 +473,38 @@ export const createMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
+      const nextStepNumber = 1 // since current step is 0
+      const nextStep =
+        form.workflow.length >= 1 ? form.workflow[nextStepNumber] : null
+
+      const nextStepRecipientEmailsResult = nextStep
+        ? retrieveWorkflowStepEmailAddresses(
+            form,
+            nextStep,
+            encryptedPayload.responses,
+          )
+        : undefined
+
+      if (
+        nextStepRecipientEmailsResult &&
+        nextStepRecipientEmailsResult.isErr()
+      ) {
+        logger.error({
+          message: 'Error occurred when retrieiving next step recipient emails',
+          meta: logMeta,
+          error: nextStepRecipientEmailsResult.error,
+        })
+      }
+
+      const nextStepRecipientEmails =
+        nextStep && nextStepRecipientEmailsResult
+          ? nextStepRecipientEmailsResult.unwrapOr(undefined)
+          : undefined
+
       const submittedStepMeta: SubmittedNonApprovalStep = {
         isApproval: false, // first step cannot be approval step
         submittedAt: new Date().toISOString(),
+        nextStepRecipientEmails,
       }
 
       const submissionContent: MultirespondentSubmissionContent = {
@@ -527,6 +672,33 @@ export const updateMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
+      const nextStepNumber = workflowStep + 1
+      const nextStep =
+        form.workflow.length > nextStepNumber
+          ? form.workflow[nextStepNumber]
+          : null
+      const nextStepRecipientEmailsResult = nextStep
+        ? retrieveWorkflowStepEmailAddresses(
+            form,
+            nextStep,
+            encryptedPayload.responses,
+          )
+        : undefined
+
+      if (
+        nextStepRecipientEmailsResult &&
+        nextStepRecipientEmailsResult.isErr()
+      ) {
+        logger.error({
+          message: 'Error occurred when retrieiving next step recipient emails',
+          meta: logMeta,
+          error: nextStepRecipientEmailsResult.error,
+        })
+      }
+      const nextStepRecipientEmails = nextStepRecipientEmailsResult
+        ? nextStepRecipientEmailsResult.unwrapOr(undefined)
+        : undefined
+
       const isApprovalForm = checkIsFormApproval(form)
       const isStepRejectedResult = checkIsStepRejected({
         zeroIndexedStepNumber: workflowStep,
@@ -543,19 +715,23 @@ export const updateMultiRespondentFormSubmission = ({
       }
 
       const isStepRejected = isStepRejectedResult.value
+
+      const submittedStepMetaCommons = {
+        stepNumber: workflowStep,
+        submittedAt: new Date().toISOString(),
+        nextStepRecipientEmails,
+      }
       const submittedStepMeta = isApprovalForm
         ? ({
+            ...submittedStepMetaCommons,
             status: isStepRejected
               ? WorkflowStatus.REJECTED
               : WorkflowStatus.APPROVED,
-            stepNumber: workflowStep,
             isApproval: true,
-            submittedAt: new Date().toISOString(),
           } as SubmittedApprovalStep)
         : ({
+            ...submittedStepMetaCommons,
             isApproval: false,
-            stepNumber: workflowStep,
-            submittedAt: new Date().toISOString(),
           } as SubmittedNonApprovalStep)
 
       submission.submittedSteps = [
