@@ -21,3 +21,11 @@ jobs:
       provisionedConcurrency: 10
       checkoutBranch: 'release-al2'
     secrets: inherit
+  deploy-scanner-guardduty:
+    name: Deploy Scanner Guardduty
+    uses: ./.github/workflows/aws-deploy-scanner-guardduty.yml
+    with:
+      environment: 'production'
+      provisionedConcurrency: 1
+      checkoutBranch: 'release-al2'
+    secrets: inherit
