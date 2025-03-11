@@ -354,25 +354,13 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
 > = async (req, res) => {
   const { formId, submissionId } = req.params
   const { submissionSecretKey } = req.body
-  const authedUserId = (req.session as AuthedSessionData)?.user?._id
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
     action: 'sendPendingMrfSubmissionReminder',
     formId,
     submissionId,
     ...createReqMeta(req),
-  }
-
-  if (!authedUserId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({
-      message: 'Session user id not found',
-    })
-  }
-
-  if (!submissionSecretKey) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: 'Submission secret key not found',
-    })
   }
 
   return UserService.findUserById(authedUserId)
@@ -454,6 +442,18 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
 export const sendPendingMrfSubmissionReminderForTest =
   sendPendingMrfSubmissionReminder
 
+/**
+ * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind
+ * @security session
+ *
+ * @returns 200 with feedback response
+ * @returns 400 when multirespondent submission workflow step is invalid
+ * @returns 403 when user does not have permissions to read form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when encountering database error
+ */
 export const handlePendingMrfSubmissionRemind = [
   MultirespondentSubmissionMiddleware.validateMultirespondentRemindBody,
   sendPendingMrfSubmissionReminder,

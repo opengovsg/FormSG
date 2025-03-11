@@ -625,31 +625,6 @@ describe('multirespondent-submision.controller', () => {
       )
     })
 
-    it('returns 401 when user id is not provided in session', async () => {
-      // Arrange
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: mockFormId,
-          submissionId: mockSubmissionId,
-        },
-        body: {
-          submissionSecretKey: 'mockSubmissionSecretKey',
-        },
-        session: {}, // No user in session
-      })
-      const mockRes = expressHandler.mockResponse()
-      const mockNext = jest.fn()
-
-      // Act
-      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(401)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Session user id not found',
-      })
-    })
-
     it('returns 401 when findUserById returns MissingUserError', async () => {
       // Arrange
       const mockedFindUserById = UserService.findUserById as jest.Mock
@@ -774,33 +749,6 @@ describe('multirespondent-submision.controller', () => {
         formId: mockFormId,
         reminderStepNumber: 1,
         senderEmail: MOCK_USER.email,
-      })
-    })
-
-    it('returns 400 when submissionSecretKey is undefined', async () => {
-      // Arrange
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: mockFormId,
-          submissionId: mockSubmissionId,
-        },
-        body: {} as { submissionSecretKey: string },
-        session: {
-          user: {
-            _id: MOCK_USER._id,
-          },
-        },
-      })
-      const mockRes = expressHandler.mockResponse()
-      const mockNext = jest.fn()
-
-      // Act
-      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Submission secret key not found',
       })
     })
 
