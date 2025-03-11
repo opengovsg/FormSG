@@ -232,12 +232,17 @@ export const ConditionalRoutingOption = ({
         }, {})
       }
 
+      const getOptionsFromCsv = (csvRows: string[][]): string[] => {
+        return csvRows.map(([option]) => option)
+      }
+
       editOptionToRecipientsMutation.mutate(
         {
           fieldId: conditionalFieldId,
           optionsToRecipientsMap: csvToOptionsToRecipientsMap(
             conditionalRoutingCsvRows,
           ),
+          fieldOptions: getOptionsFromCsv(conditionalRoutingCsvRows),
         },
         {
           onSuccess: () => {
@@ -272,16 +277,16 @@ export const ConditionalRoutingOption = ({
     if (optionsToRecipientsMapOptions.length <= 0) {
       return
     }
-    if (
-      checkIsOptionsMismatched(
-        optionsToRecipientsMapOptions,
-        selectedConditionalFieldOptions,
-      )
-    ) {
-      return t(
-        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.mismatchedOptions',
-      )
-    }
+    // if (
+    //   checkIsOptionsMismatched(
+    //     optionsToRecipientsMapOptions,
+    //     selectedConditionalFieldOptions,
+    //   )
+    // ) {
+    //   return t(
+    //     'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.mismatchedOptions',
+    //   )
+    // }
   }
 
   const validateOptionsToRecipientsMapErrorMessage =

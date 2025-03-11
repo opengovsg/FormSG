@@ -782,18 +782,19 @@ const validateOptionsToRecipientsMap = (
     }
   }
 
-  if (
-    checkIsOptionsMismatched(
-      Object.keys(optionsToRecipientsMap),
-      selectedConditionalFieldOptions,
-    )
-  ) {
-    return err(
-      new MalformedParametersError(
-        CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-      ),
-    )
-  }
+  // removing to allow dynamic update of options
+  // if (
+  //   checkIsOptionsMismatched(
+  //     Object.keys(optionsToRecipientsMap),
+  //     selectedConditionalFieldOptions,
+  //   )
+  // ) {
+  //   return err(
+  //     new MalformedParametersError(
+  //       CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+  //     ),
+  //   )
+  // }
 
   return ok(undefined)
 }
@@ -802,6 +803,7 @@ export const updateOptionsToRecipientsMap = (
   form: IPopulatedForm,
   fieldId: string,
   optionsToRecipientsMap: Record<string, string[]>,
+  fieldOptions: string[],
 ): ResultAsync<
   FormFieldSchema,
   PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
@@ -841,6 +843,7 @@ export const updateOptionsToRecipientsMap = (
   const updatedFormField = {
     ...formFieldToUpdate.toObject(),
     optionsToRecipientsMap,
+    fieldOptions,
   }
 
   return ResultAsync.fromPromise(
