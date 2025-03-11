@@ -149,9 +149,7 @@ describe('handler', () => {
 
     MockS3Service.prototype.getS3ObjectScanTag = jest
       .fn()
-      .mockRejectedValueOnce(
-        new Error('Retry for retrieving malware scan tag failed'),
-      )
+      .mockRejectedValueOnce(new Error('Failed to scan file'))
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
