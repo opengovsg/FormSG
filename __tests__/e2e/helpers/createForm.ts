@@ -106,17 +106,14 @@ const addForm = async (
       responseMode: FormResponseMode.Email,
       title: `e2e-test-${cuid()}`,
       emails: [user.email],
-      publicKey: '', // You can pass an empty string (or any placeholder) for now
+      publicKey: '',
       status: FormStatus.Private,
     })
 
-    // Mimic storing a "secret key" the same way we do for Encrypt forms
     const formResponseMode: E2eFormResponseMode = {
       responseMode: FormResponseMode.Email,
     }
 
-    // After programmatically creating, navigate to the new form page
-    // (replace with real navigation as needed).
     await page.goto(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
 
     await page.getByRole('button', { name: 'Next' }).press('Escape')
@@ -145,7 +142,6 @@ const addForm = async (
       responseMode: FormResponseMode.Email,
     }
 
-    // Need to select "I need to collect Sensitive High data" checkbox, and press "Next: Set up your form" button.
     await page.getByText('I need to collect Sensitive High data').click()
     await page.getByRole('button', { name: 'Next: Set up your form' }).click()
 
