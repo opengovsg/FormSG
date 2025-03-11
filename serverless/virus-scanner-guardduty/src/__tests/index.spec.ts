@@ -5,16 +5,12 @@ import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { validate } from 'uuid'
 
-import * as ClamScanService from '../clamscan.service'
 import { handler } from '../index'
 import * as LoggerService from '../logger'
 import { S3Service } from '../s3.service'
 
 // mocked S3Service
 const MockS3Service = jest.mocked(S3Service)
-
-// mocked scanFileStream
-const MockClamScanService = jest.mocked(ClamScanService)
 
 // mocked logger
 const MockLoggerService = jest.mocked(LoggerService)
@@ -103,7 +99,7 @@ describe('handler', () => {
     )
   })
 
-  it('should delete file and log and return 400 status with virus metadata if file is malicious', async () => {
+  it('should log and return 400 status with virus metadata if file is malicious', async () => {
     // Arrange
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
@@ -114,10 +110,12 @@ describe('handler', () => {
 
     MockS3Service.prototype.deleteS3File = jest.fn().mockResolvedValueOnce('ok')
 
-    MockClamScanService.scanFileStream = jest.fn().mockResolvedValueOnce({
-      isMalicious: true,
-      virusMetadata: ['Eicar-Test-Signature'],
-    })
+    MockS3Service.prototype.getS3ObjectScanTag = jest
+      .fn()
+      .mockResolvedValueOnce({
+        Key: 'GuardDutyMalwareScanStatus',
+        Value: 'THREATS_FOUND',
+      })
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -128,25 +126,19 @@ describe('handler', () => {
       JSON.stringify({
         message: 'Malicious file detected',
         key: mockUUID,
-        virusMetadata: ['Eicar-Test-Signature'],
       }),
     )
-    expect(MockS3Service.prototype.deleteS3File).toHaveBeenCalledWith({
-      bucketName: 'local-virus-scanner-quarantine-bucket',
-      objectKey: mockUUID,
-      versionId: 'mockVersionId',
-    })
+
     expect(mockLoggerError).toHaveBeenCalledTimes(1)
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Malicious file detected',
-        virusMetadata: ['Eicar-Test-Signature'],
         key: mockUUID,
       }),
     )
   })
 
-  it('should return 500 error and log if virus scanning fails to complete and not delete the quarantine file', async () => {
+  it('should return 500 error and log if guardduty scan timesout and not delete the quarantine file', async () => {
     // Arrange
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
@@ -155,9 +147,11 @@ describe('handler', () => {
       .fn()
       .mockResolvedValueOnce({ body: 'mockBody', versionId: 'mockVersionId' })
 
-    MockClamScanService.scanFileStream = jest
+    MockS3Service.prototype.getS3ObjectScanTag = jest
       .fn()
-      .mockRejectedValueOnce(new Error('Failed to scan file'))
+      .mockRejectedValueOnce(
+        new Error('Retry for retrieving malware scan tag failed'),
+      )
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -192,9 +186,12 @@ describe('handler', () => {
 
     MockS3Service.prototype.moveS3File = jest.fn().mockResolvedValueOnce('ok')
 
-    MockClamScanService.scanFileStream = jest.fn().mockResolvedValueOnce({
-      isMalicious: false,
-    })
+    MockS3Service.prototype.getS3ObjectScanTag = jest
+      .fn()
+      .mockResolvedValueOnce({
+        Key: 'GuardDutyMalwareScanStatus',
+        Value: 'NO_THREATS_FOUND',
+      })
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -229,9 +226,12 @@ describe('handler', () => {
       .fn()
       .mockRejectedValueOnce(new Error('Failed to move file'))
 
-    MockClamScanService.scanFileStream = jest.fn().mockResolvedValueOnce({
-      isMalicious: false,
-    })
+    MockS3Service.prototype.getS3ObjectScanTag = jest
+      .fn()
+      .mockResolvedValueOnce({
+        Key: 'GuardDutyMalwareScanStatus',
+        Value: 'NO_THREATS_FOUND',
+      })
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
