@@ -33,8 +33,6 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-// TODO: To abstract to util file
-import * as pdfjs from 'pdfjs-dist/'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
@@ -42,11 +40,7 @@ import Attachment from '~components/Field/Attachment'
 
 import { useUser } from '~features/user/queries'
 
-// TODO: To abstract to util file
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString()
+import { pdfBinaryToImageDataUrls } from '../utils'
 
 const TEXT_PROMPT_IDEAS = [
   {
@@ -300,13 +294,12 @@ const MagicFormBuilderCreateFormPrompt = ({
                   onTextPromptSubmit(prompt)
                 })
               : handleVisionSubmit(async ({ attachment }) => {
-                  // TODO: To abstract to util file
                   try {
                     const pdfData = await attachment.arrayBuffer()
-                    const pdfDoc = await pdfjs.getDocument({ data: pdfData })
-                      .promise
-                    const numPages = pdfDoc.numPages
-                    if (numPages > 10) {
+                    const imageDataUrls =
+                      await pdfBinaryToImageDataUrls(pdfData)
+
+                    if (imageDataUrls.length > 10) {
                       setVisionError('attachment', {
                         type: 'manual',
                         message:
@@ -314,37 +307,13 @@ const MagicFormBuilderCreateFormPrompt = ({
                       })
                       return
                     }
-                    const images = []
-
-                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                      const page = await pdfDoc.getPage(pageNum)
-                      const viewport = page.getViewport({ scale: 1.5 })
-
-                      const canvas = document.createElement('canvas')
-                      const context = canvas.getContext('2d')
-                      canvas.height = viewport.height
-                      canvas.width = viewport.width
-
-                      if (!context) {
-                        console.log('Failed to fetch canvas 2D context.')
-                        return
-                      }
-                      await page.render({
-                        canvasContext: context,
-                        viewport: viewport,
-                      }).promise
-
-                      const jpgImage = canvas.toDataURL('image/jpeg', 0.65)
-                      images.push({
-                        pageNum,
-                        dataUrl: jpgImage,
-                      })
-                    }
-
-                    const imageDataUrls = images.map((image) => image.dataUrl)
                     onVisionPromptSubmit(imageDataUrls)
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   } catch (error) {
-                    console.error('Error converting PDF file to images:', error)
+                    setVisionError('attachment', {
+                      type: 'manual',
+                      message: 'Failed to convert PDF file to images.',
+                    })
                   }
                 })
           }
