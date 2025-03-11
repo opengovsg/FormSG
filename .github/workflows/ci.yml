@@ -164,6 +164,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci --prefix serverless/virus-scanner
+      - run: npm ci --prefix serverless/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
