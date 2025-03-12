@@ -33,6 +33,9 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
@@ -243,6 +246,9 @@ const MagicFormBuilderCreateFormPrompt = ({
   const { user, isLoading: isUserLoading } = useUser()
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
+  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
+  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
+
   return (
     <>
       <ModalHeader display="flex" alignItems="center">
@@ -257,7 +263,11 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        {isTest || (!isUserLoading && user?.betaFlags?.mfbVision) ? (
+        {isTest ||
+        (isMfbTextEnabled &&
+          isMfbVisionEnabled &&
+          !isUserLoading &&
+          user?.betaFlags?.mfbVision) ? (
           <Tabs isFitted onChange={setSelectedTab}>
             <TabList mb="1em">
               <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
@@ -282,13 +292,21 @@ const MagicFormBuilderCreateFormPrompt = ({
               </TabPanel>
             </TabPanels>
           </Tabs>
-        ) : (
+        ) : isMfbTextEnabled ? (
           <TextPromptModalBodyContent
             register={register}
             setValue={setValue}
             errors={errors}
           />
-        )}
+        ) : isMfbVisionEnabled && user?.betaFlags?.mfbVision ? (
+          <VisionPromptModalBodyContent
+            control={visionControl}
+            errors={visionErrors}
+            clearErrors={clearVisionErrors}
+            setError={setVisionError}
+            isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+          />
+        ) : null}
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup

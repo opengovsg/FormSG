@@ -1,6 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
+import { featureFlags } from 'shared/constants'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
@@ -40,6 +41,14 @@ const _handleTextPrompt: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -123,6 +132,13 @@ const _handleVisionPrompt: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { imageDataUrls } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfbVision)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return (
