@@ -393,6 +393,7 @@ const sendMrfOutcomeEmails = ({
             responseId: submissionId,
             isRejected,
             formQuestionAnswers,
+            attachments: attachments,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
