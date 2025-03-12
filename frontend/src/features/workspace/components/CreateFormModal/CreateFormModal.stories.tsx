@@ -138,6 +138,60 @@ export const StorageModeAckScreen = () => {
   )
 }
 
+export const EmailModeFeedback = () => {
+  const formMethods = useForm<CreateFormWizardInputProps>()
+
+  const mockHook = useCallback(
+    () =>
+      ({
+        currentStep: CreateFormFlowStates.EmailFeedback,
+        direction: 1,
+        formMethods,
+        handleDetailsSubmit: () => console.log('handle details submit'),
+        handleEmailFeedbackSubmit: () => console.log('handle email feedback'),
+        handleCreateEmailModeForm: () => () => console.log('create email form'),
+        submitEmailModeFeedback: () => () => console.log('submit feedback'),
+        handleCreateStorageModeOrMultirespondentForm: () =>
+          Promise.resolve(console.log('create storage/multi form')),
+        keypair: {
+          publicKey: 'mock-public-key',
+          privateKey: 'mock-private-key',
+        },
+        isFetching: false,
+        isLoading: false,
+        modalHeader: 'Email Mode Creation',
+        isSingpass: false,
+      }) as unknown as CreateFormWizardContextReturn,
+    [formMethods],
+  )
+
+  return (
+    <WorkspaceProvider
+      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
+      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
+      setCurrentWorkspace={() => {
+        return
+      }}
+    >
+      <Modal isOpen onClose={() => console.log('close modal')} size="full">
+        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+          <ModalCloseButton />
+          <CreateFormWizardProvider>
+            <EmailModeFeedbackScreen
+              useCreateFormWizardParam={mockHook}
+              useAdminUseEmailModeFormViewParam={() => {
+                return {
+                  data: {},
+                } as unknown as UseQueryResult<PublicFormViewDto, ApiError>
+              }}
+            />
+          </CreateFormWizardProvider>
+        </ModalContent>
+      </Modal>
+    </WorkspaceProvider>
+  )
+}
+
 export const EmailModeCreation = () => {
   const formMethods = useForm<CreateFormWizardInputProps>()
 
@@ -164,8 +218,6 @@ export const EmailModeCreation = () => {
       }) as unknown as CreateFormWizardContextReturn,
     [formMethods],
   )
-
-  console.log(`${mockHook}`)
 
   return (
     <WorkspaceProvider
