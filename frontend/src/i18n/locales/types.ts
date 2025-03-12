@@ -5,6 +5,7 @@ import {
   Common,
   Fields,
   HeaderAndInstructions,
+  LandingPage,
   Logic,
   Login,
   Meta,
@@ -36,6 +37,7 @@ interface Translation {
       }
       app?: App
       common?: Common
+      landingPage?: LandingPage
       publicForm?: PublicForm
       login?: Login
     }
