@@ -312,7 +312,7 @@ describe('admin-form.assistance.service', () => {
         })
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          ModelResponseInvalidSyntaxError,
+          ModelResponseInvalidSchemaFormatError,
         )
       })
 
@@ -840,7 +840,7 @@ describe('admin-form.assistance.service', () => {
         })
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          ModelResponseInvalidSyntaxError,
+          ModelResponseInvalidSchemaFormatError,
         )
       })
 
