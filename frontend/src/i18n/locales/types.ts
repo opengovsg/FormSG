@@ -1,6 +1,7 @@
 import { RequiredDeep } from 'type-fest'
 
 import {
+  App,
   Common,
   Fields,
   HeaderAndInstructions,
@@ -33,6 +34,7 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
       }
+      app?: App
       common?: Common
       publicForm?: PublicForm
       login?: Login
