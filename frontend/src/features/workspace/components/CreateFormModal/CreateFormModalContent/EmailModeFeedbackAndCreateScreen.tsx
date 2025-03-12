@@ -86,14 +86,20 @@ export const EmailModeFeedbackScreen = (): JSX.Element => {
   )
 }
 
-export const EmailModeCreationScreen = (): JSX.Element => {
+export const EmailModeCreationScreen = ({
+  useCreateFormWizardParam = useCreateFormWizard,
+  useAdminUseEmailModeFormViewParam = useAdminUseEmailModeFormView,
+}: {
+  useCreateFormWizardParam?: typeof useCreateFormWizard
+  useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
+}): JSX.Element => {
   const {
     formMethods,
 
     handleCreateEmailModeForm,
     isLoading,
     isFetching,
-  } = useCreateFormWizard()
+  } = useCreateFormWizardParam()
   const {
     register,
     formState: { errors },
@@ -107,7 +113,10 @@ export const EmailModeCreationScreen = (): JSX.Element => {
   const formTitleRegister = register('title', FORM_TITLE_VALIDATION_RULES)
   const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
 
-  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
+  // print type  of data
+  console.log(`${typeof feedbackForm}`)
+  console.log(`${JSON.stringify(feedbackForm)}`)
   if (!feedbackForm) return <></>
 
   return (
