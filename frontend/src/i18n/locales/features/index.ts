@@ -1,4 +1,5 @@
 export {
+  type FeedbackPage,
   type Fields,
   type HeaderAndInstructions,
   type Logic,

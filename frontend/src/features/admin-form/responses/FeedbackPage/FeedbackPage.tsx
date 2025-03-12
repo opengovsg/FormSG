@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { Column } from 'react-table'
 import {
   Box,
   ButtonGroup,
@@ -10,7 +12,6 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
 
@@ -28,11 +29,10 @@ import {
   useFormIssueMutations,
 } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { DateCell } from '~features/admin-form/responses/FeedbackPage/DateCell'
 
 import { useFormFeedback, useFormIssues } from '../queries'
 
-import { ISSUE_TABLE_COLUMNS } from './issue/IssueTable'
-import { REVIEW_TABLE_COLUMNS } from './review/ReviewTable'
 import { EmptyFeedback } from './EmptyFeedback'
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
@@ -118,6 +118,87 @@ export const FeedbackPage = (): JSX.Element => {
     form?.title,
   ])
 
+  const { t } = useTranslation()
+
+  const issueTableColumns: Column[] = [
+    {
+      Header: '#',
+      accessor: (_row, i) => i + 1,
+      sortType: 'number',
+      minWidth: 50, // minWidth is only used as a limit for resizing
+      width: 50, // width is used for both the flex-basis and flex-grow
+      maxWidth: 100, // maxWidth is only used as a limit for resizing
+    },
+    {
+      Header: t('features.common.date'),
+      accessor: 'timestamp',
+      sortType: 'number',
+      Cell: DateCell,
+      minWidth: 80, // minWidth is only used as a limit for resizing
+      width: 80, // width is used for both the flex-basis and flex-grow
+      maxWidth: 120, // maxWidth is only used as a limit for resizing
+    },
+    {
+      Header: t(
+        'features.adminForm.responses.feedbackPage.issue.tableColumns.issueHeader',
+      ),
+      accessor: 'issue',
+      sortType: 'basic',
+      minWidth: 200,
+      width: 300,
+      maxWidth: 600,
+    },
+    {
+      Header: t(
+        'features.adminForm.responses.feedbackPage.issue.tableColumns.contactHeader',
+      ),
+      accessor: 'email',
+      sortType: 'basic',
+      minWidth: 120,
+      width: 120,
+      maxWidth: 300,
+    },
+  ]
+  const reviewTableColumns: Column[] = [
+    {
+      Header: '#',
+      accessor: (_row, i) => i + 1,
+      sortType: 'number',
+      minWidth: 50, // minWidth is only used as a limit for resizing
+      width: 50, // width is used for both the flex-basis and flex-grow
+      maxWidth: 100, // maxWidth is only used as a limit for resizing
+    },
+    {
+      Header: t('features.common.date'),
+      accessor: 'timestamp',
+      sortType: 'number',
+      Cell: DateCell,
+      minWidth: 80, // minWidth is only used as a limit for resizing
+      width: 80, // width is used for both the flex-basis and flex-grow
+      maxWidth: 120, // maxWidth is only used as a limit for resizing
+    },
+    {
+      Header: t(
+        'features.adminForm.responses.feedbackPage.review.tableColumns.feedbackHeader',
+      ),
+      accessor: 'comment',
+      sortType: 'basic',
+      minWidth: 200,
+      width: 300,
+      maxWidth: 600,
+    },
+    {
+      Header: t(
+        'features.adminForm.responses.feedbackPage.review.tableColumns.ratingHeader',
+      ),
+      accessor: 'rating',
+      sortType: 'number',
+      minWidth: 90,
+      width: 90,
+      disableResizing: true,
+    },
+  ]
+
   // Handle page loading state
   if (isPageLoading(currentFeedbackType, issueProps, reviewProps)) {
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
@@ -150,10 +231,13 @@ export const FeedbackPage = (): JSX.Element => {
         }}
       >
         <Box gridArea="information" pl="0rem">
-          {getInformationGridComponent(
-            currentFeedbackType,
-            issueProps,
-            reviewProps,
+          {currentFeedbackType === FeedbackType.Issues ? (
+            <GetIssueInformationComponent count={issueProps.count} />
+          ) : (
+            <GetReviewInformationComponent
+              average={reviewProps.average}
+              count={reviewProps.count}
+            />
           )}
         </Box>
         <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
@@ -165,7 +249,7 @@ export const FeedbackPage = (): JSX.Element => {
             sx={{ borderRightWidth: '0px' }}
             onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
           >
-            Issues
+            {t('features.adminForm.responses.feedbackPage.issuesButtonLabel')}
           </Button>
           <Button
             {...getFeedbackTypeButtonProps(
@@ -174,7 +258,7 @@ export const FeedbackPage = (): JSX.Element => {
             )}
             onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
           >
-            Reviews
+            {t('features.adminForm.responses.feedbackPage.reviewsButtonLabel')}
           </Button>
         </ButtonGroup>
         <Box gridArea="export" justifySelf="flex-end">
@@ -198,8 +282,8 @@ export const FeedbackPage = (): JSX.Element => {
           }
           feedbackColumns={
             currentFeedbackType === FeedbackType.Issues
-              ? ISSUE_TABLE_COLUMNS
-              : REVIEW_TABLE_COLUMNS
+              ? issueTableColumns
+              : reviewTableColumns
           }
           currentPage={currentPage - 1}
         />
@@ -226,10 +310,12 @@ export const FeedbackPage = (): JSX.Element => {
   )
 }
 
-const getReviewInformationComponent = (
-  average: string | undefined,
-  count: number | undefined,
-): JSX.Element => {
+function GetReviewInformationComponent(props: {
+  average?: string
+  count?: number
+}): JSX.Element {
+  const { t } = useTranslation()
+
   return (
     <Grid
       gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
@@ -241,34 +327,34 @@ const getReviewInformationComponent = (
     >
       <Flex gridArea="score" flexDir="column">
         <Text textStyle="caption-2" color="secondary.400">
-          Average Score
+          {t('features.adminForm.responses.feedbackPage.review.averageScore')}
         </Text>
         <Text textStyle="display-2">
-          {average ? Number(average).toPrecision(2) : '-.--'}
+          {props.average ? Number(props.average).toPrecision(2) : '-.--'}
         </Text>
       </Flex>
       <Box gridArea="submissions" alignSelf="end">
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
-            {count}
+            {props.count}
           </Text>
-          {simplur` ${[count || 0]}review[|s] to date`}
+          {t('features.adminForm.responses.feedbackPage.review.reviewsToDate')}
         </Text>
       </Box>
     </Grid>
   )
 }
 
-const getIssueInformationComponent = (
-  count: number | undefined,
-): JSX.Element => {
+function GetIssueInformationComponent(props: { count?: number }): JSX.Element {
+  const { t } = useTranslation()
+
   return (
     <Box display="flex" alignItems="center" mb="0.5rem">
       <Text textStyle="h4">
         <Text as="span" color="primary.500">
-          {count}
+          {props.count}
         </Text>
-        {simplur` ${[count || 0]}issue[|s] to date`}
+        {t('features.adminForm.responses.feedbackPage.issue.issuesToDate')}
       </Text>
       <Tooltip
         label={`Feedback displayed here relates to form submission issues`}
@@ -279,17 +365,6 @@ const getIssueInformationComponent = (
       </Tooltip>
     </Box>
   )
-}
-
-const getInformationGridComponent = (
-  currentFeedbackType: FeedbackType,
-  issueProps: Issue,
-  reviewProps: Review,
-): JSX.Element => {
-  if (currentFeedbackType === FeedbackType.Issues) {
-    return getIssueInformationComponent(issueProps.count)
-  }
-  return getReviewInformationComponent(reviewProps.average, reviewProps.count)
 }
 
 const getFeedbackTypeButtonProps = (

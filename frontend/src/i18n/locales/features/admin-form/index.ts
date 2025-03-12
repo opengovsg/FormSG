@@ -1,4 +1,5 @@
 export * from './en-sg'
+export { type FeedbackPage } from './feedback-page'
 export { type Meta } from './meta'
 export { type Modals } from './modals'
 export { type Navbar } from './navbar'

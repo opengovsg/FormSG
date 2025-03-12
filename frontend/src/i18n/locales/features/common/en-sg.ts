@@ -59,6 +59,7 @@ export const enSG: Common = {
     duplicateField: 'Duplicate field',
     editField: 'Edit field',
   },
+  date: 'Date',
   days: {
     Mondays: 'Monday',
     Tuesdays: 'Tuesday',

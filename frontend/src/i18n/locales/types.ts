@@ -3,6 +3,7 @@ import { RequiredDeep } from 'type-fest'
 import {
   App,
   Common,
+  FeedbackPage,
   Fields,
   HeaderAndInstructions,
   LandingPage,
@@ -34,6 +35,9 @@ interface Translation {
         modals?: Modals
         toasts?: Toasts
         settings?: Settings
+        responses?: {
+          feedbackPage?: FeedbackPage
+        }
       }
       app?: App
       common?: Common
