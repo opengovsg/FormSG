@@ -260,6 +260,7 @@ export const ConditionalRoutingOption = ({
       {
         fieldId: selectedConditionalField._id,
         optionsToRecipientsMap: {},
+        fieldOptions: selectedConditionalField.fieldOptions,
       },
       {
         onSuccess: () => {
@@ -277,16 +278,16 @@ export const ConditionalRoutingOption = ({
     if (optionsToRecipientsMapOptions.length <= 0) {
       return
     }
-    // if (
-    //   checkIsOptionsMismatched(
-    //     optionsToRecipientsMapOptions,
-    //     selectedConditionalFieldOptions,
-    //   )
-    // ) {
-    //   return t(
-    //     'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.mismatchedOptions',
-    //   )
-    // }
+    if (
+      checkIsOptionsMismatched(
+        optionsToRecipientsMapOptions,
+        selectedConditionalFieldOptions,
+      )
+    ) {
+      return t(
+        'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.mismatchedOptions',
+      )
+    }
   }
 
   const validateOptionsToRecipientsMapErrorMessage =
@@ -348,11 +349,12 @@ export const ConditionalRoutingOption = ({
         'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.duplicateOptions',
       )
     }
-
-    return validateCsvOptionsWithFieldOptions(
-      [...optionsSet],
-      selectedConditionalFieldOptions || [],
-    )
+    return
+    // TODO: remove - removing mismatch check here. `validateCsvFile` is called inside condroutingoptionmodal, which we don't want to run mismatch error to allow dynamic updating
+    // return validateCsvOptionsWithFieldOptions(
+    //   [...optionsSet],
+    //   selectedConditionalFieldOptions || [],
+    // )
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
