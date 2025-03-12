@@ -49,8 +49,22 @@ const _handleTextPrompt: ControllerHandler<
         user,
         formId,
         level: PermissionLevel.Write,
-      }),
-    ) // Step 3: Create form fields using text prompt.
+      }).map((form) => ({ user, form })),
+    )
+    .map(({ user, form }) => {
+      logger.info({
+        message: 'Generating form fields using text prompt',
+        meta: {
+          action: '_handleTextPrompt',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          userEmail: user.email,
+          formId,
+          promptLength: req.body.prompt.length,
+        },
+      })
+      return form
+    }) // Step 3: Create form fields using text prompt.
     .andThen((form) =>
       createFormFieldsUsingTextPrompt({
         form,
@@ -111,42 +125,59 @@ const _handleVisionPrompt: ControllerHandler<
   const { imageDataUrls } = req.body
 
   // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with write permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
-    ) // Step 3: Create form fields using text prompt.
-    .andThen((form) =>
-      createFormFieldsUsingVisionPrompt({
-        form,
-        imageDataUrls,
-      }),
-    )
-    .map((createdFieldIds) =>
-      res.status(StatusCodes.OK).json({
-        message: 'Created form fields using vision prompt successfully.',
-        createdFieldIds: createdFieldIds.map((field) => field._id.toString()),
-      }),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred creating form fields using vision prompt.',
-        meta: {
-          action: '_handleTextPrompt',
-          ...createReqMeta(req),
-          userId: sessionUserId,
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
           formId,
-          numImagesInPrompt: req.body.imageDataUrls.length,
-        },
-        error,
+          level: PermissionLevel.Write,
+        }).map((form) => ({ user, form })),
+      )
+      .map(({ user, form }) => {
+        logger.info({
+          message: 'Generating form fields using vision prompt',
+          meta: {
+            action: '_handleVisionPrompt',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            userEmail: user.email,
+            formId,
+            numImagesInPrompt: imageDataUrls.length,
+          },
+        })
+        return { form }
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+      // Step 3: Create form fields using text prompt.
+      .andThen(({ form }) =>
+        createFormFieldsUsingVisionPrompt({
+          form,
+          imageDataUrls,
+        }),
+      )
+      .map((createdFieldIds) =>
+        res.status(StatusCodes.OK).json({
+          message: 'Created form fields using vision prompt successfully.',
+          createdFieldIds: createdFieldIds.map((field) => field._id.toString()),
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred creating form fields using vision prompt.',
+          meta: {
+            action: '_handleVisionPrompt',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            numImagesInPrompt: req.body.imageDataUrls.length,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
 }
 
 export const handleVisionPrompt = [
