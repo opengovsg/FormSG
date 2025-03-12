@@ -1,8 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
-import { featureFlags } from 'shared/constants'
 
+import { featureFlags } from '../../../../../shared/constants'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
