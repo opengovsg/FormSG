@@ -93,8 +93,7 @@ const handleVisionPromptValidator = celebrate({
       .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
-    // TODO: to perform more precise validation
-    imageDataUrls: Joi.array().items(Joi.string()),
+    imageDataUrls: Joi.array().items(Joi.string()).required().min(1).max(10),
   },
 })
 

@@ -3,7 +3,10 @@ import { BasicField, FormMetadata } from 'shared/types'
 
 import { FormFieldSchema, IPopulatedForm } from 'src/types'
 
-import { createFormFieldsUsingTextPrompt } from '../admin-form.assistance.service'
+import {
+  createFormFieldsUsingTextPrompt,
+  createFormFieldsUsingVisionPrompt,
+} from '../admin-form.assistance.service'
 import {
   ModelGetClientFailureError,
   ModelResponseFailureError,
@@ -492,6 +495,469 @@ describe('admin-form.assistance.service', () => {
         const result = await createFormFieldsUsingTextPrompt({
           form: mockForm,
           userPrompt: mockUserPrompt,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+    })
+  })
+
+  describe('createFormFieldsUsingVisionPrompt', () => {
+    const mockForm = {
+      id: 'mock-form-id',
+      title: 'Mock Form',
+      admin: {
+        _id: 'mock-admin-id',
+      },
+      fields: [],
+      form_fields: [],
+    } as unknown as IPopulatedForm
+    const mockImageDataUrls = ['mock-image-data-url']
+
+    describe('valid model response', () => {
+      beforeEach(() => {
+        const mockedCreateFormFields =
+          AdminFormService.createFormFields as jest.Mock
+        mockedCreateFormFields.mockReturnValue(okAsync([] as FormFieldSchema[]))
+      })
+
+      it('should successfully invoke createNewFields with correct # of fields when model response is valid', async () => {
+        // Arrange
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_ALL_FIELDS_INCLUDED_RESPONSE))
+
+        // Act
+        await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
+          form: mockForm,
+          newFields: expect.arrayContaining([expect.any(Object)]),
+          to: 0,
+        })
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
+        expect(calledNewFields).toHaveLength(20)
+      })
+
+      it('should have fieldOptions for radio field type when generated', async () => {
+        // Arrange
+        const VALID_RADIO_ONLY_RESPONSE =
+          '[{"title":"Cat Name","fieldType":"Radio","required":true,"fieldOptions":["Whiskers","Bella","Luna","Oliver","Simba"]}]'
+
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_RADIO_ONLY_RESPONSE))
+
+        // Act
+        await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
+          form: mockForm,
+          newFields: expect.arrayContaining([expect.any(Object)]),
+          to: 0,
+        })
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
+        expect(calledNewFields).toHaveLength(1)
+        expect(calledNewFields[0].fieldType).toEqual(BasicField.Radio)
+        expect(calledNewFields[0]).toContainKey('fieldOptions')
+      })
+
+      it('should have fieldOptions for checkbox field type when generated', async () => {
+        // Arrange
+        const VALID_CHECKBOX_ONLY_RESPONSE =
+          '[{"title":"Favorite Fruits","fieldType":"Checkbox","required":true,"fieldOptions":["Apple","Banana","Orange","Strawberry","Mango"]}]'
+
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_CHECKBOX_ONLY_RESPONSE))
+
+        // Act
+        await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
+          form: mockForm,
+          newFields: expect.arrayContaining([expect.any(Object)]),
+          to: 0,
+        })
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
+        expect(calledNewFields).toHaveLength(1)
+        expect(calledNewFields[0].fieldType).toEqual(BasicField.Checkbox)
+        expect(calledNewFields[0]).toContainKey('fieldOptions')
+      })
+
+      it('should have fieldOptions for dropdown field type when generated', async () => {
+        // Arrange
+        const VALID_DROPDOWN_ONLY_RESPONSE =
+          '[{"title":"Favorite Color","fieldType":"Dropdown","required":true,"fieldOptions":["Red","Blue","Green","Yellow","Purple"]}]'
+
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_DROPDOWN_ONLY_RESPONSE))
+
+        // Act
+        await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
+          form: mockForm,
+          newFields: expect.arrayContaining([expect.any(Object)]),
+          to: 0,
+        })
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
+        expect(calledNewFields).toHaveLength(1)
+        expect(calledNewFields[0].fieldType).toEqual(BasicField.Dropdown)
+        expect(calledNewFields[0]).toContainKey('fieldOptions')
+      })
+
+      it('should have non empty description for statement field type when generated', async () => {
+        // Arrange
+        const VALID_STATEMENT_RESPONSE =
+          '[{"title":"Important Notice","fieldType":"Statement","description":"Please read the following information carefully before proceeding.","required":true}]'
+
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_STATEMENT_RESPONSE))
+
+        // Act
+        await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
+          form: mockForm,
+          newFields: expect.arrayContaining([expect.any(Object)]),
+          to: 0,
+        })
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
+        expect(calledNewFields).toHaveLength(1)
+        expect(calledNewFields[0].fieldType).toEqual(BasicField.Statement)
+        expect(calledNewFields[0].description).toBeTruthy()
+        expect(calledNewFields[0].description.trim()).not.toBe('')
+      })
+
+      it('should return created field ids provided by return value of AdminFormService.createFormFields', async () => {
+        // Arrange
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(VALID_ALL_FIELDS_INCLUDED_RESPONSE))
+
+        const CREATED_FIELD_SCHEMAS = [
+          { _id: '507f1f77bcf86cd799439011' },
+          { _id: '507f1f77bcf86cd799439012' },
+          { _id: '507f1f77bcf86cd799439013' },
+          { _id: '507f1f77bcf86cd799439014' },
+          { _id: '507f1f77bcf86cd799439015' },
+          { _id: '507f1f77bcf86cd799439016' },
+          { _id: '507f1f77bcf86cd799439017' },
+          { _id: '507f1f77bcf86cd799439018' },
+          { _id: '507f1f77bcf86cd799439019' },
+          { _id: '507f1f77bcf86cd799439020' },
+          { _id: '507f1f77bcf86cd799439021' },
+          { _id: '507f1f77bcf86cd799439022' },
+          { _id: '507f1f77bcf86cd799439023' },
+          { _id: '507f1f77bcf86cd799439024' },
+          { _id: '507f1f77bcf86cd799439025' },
+          { _id: '507f1f77bcf86cd799439026' },
+          { _id: '507f1f77bcf86cd799439027' },
+          { _id: '507f1f77bcf86cd799439028' },
+          { _id: '507f1f77bcf86cd799439029' },
+          { _id: '507f1f77bcf86cd799439030' },
+        ]
+
+        const mockedCreateFormFields =
+          AdminFormService.createFormFields as jest.Mock
+        mockedCreateFormFields.mockReturnValueOnce(
+          okAsync(CREATED_FIELD_SCHEMAS as FormFieldSchema[]),
+        )
+
+        // Act
+        const createdFieldIds = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        // Assert
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(createdFieldIds.isOk()).toBe(true)
+        expect(createdFieldIds._unsafeUnwrap()).toEqual(
+          CREATED_FIELD_SCHEMAS.map((field) => field._id),
+        )
+      })
+    })
+
+    describe('model errors', () => {
+      it('should return error when model returns error', async () => {
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(errAsync(new ModelGetClientFailureError()))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelGetClientFailureError,
+        )
+      })
+
+      it('should return error when model returns failure', async () => {
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(errAsync(new ModelResponseFailureError()))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseFailureError,
+        )
+      })
+    })
+
+    describe('invalid model response', () => {
+      it('should return error when model returns null response', async () => {
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(null))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseFailureError,
+        )
+      })
+
+      it('should return error when model returns invalid json', async () => {
+        const INVALID_JSON_RESPONSE = 'invalid json'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_JSON_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSyntaxError,
+        )
+      })
+
+      it('should return error when model returns invalid format', async () => {
+        const INVALID_FORMAT_RESPONSE =
+          '[{"title":"Cat Name","fieldType":"Radio","required":true,"fieldOptions":["Whiskers","Bella","Luna","Oliver","Simba"]]' // missing a closing brace
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_FORMAT_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSyntaxError,
+        )
+      })
+
+      it('should return error when title is empty', async () => {
+        const INVALID_TITLE_RESPONSE =
+          '[{"title":"","fieldType":"ShortText","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_TITLE_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when title is whitespace', async () => {
+        const INVALID_TITLE_RESPONSE =
+          '[{"title":"   ","fieldType":"ShortText","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_TITLE_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when field type is missing', async () => {
+        const INVALID_FIELD_TYPE_RESPONSE =
+          '[{"title":"Missing Field Type","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_FIELD_TYPE_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when field type is invalid', async () => {
+        const INVALID_FIELD_TYPE_RESPONSE =
+          '[{"title":"Invalid Field","fieldType":"InvalidType","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_FIELD_TYPE_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when required field is missing', async () => {
+        const INVALID_REQUIRED_RESPONSE =
+          '[{"title":"Missing Required","fieldType":"ShortText"}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_REQUIRED_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when checkbox missing fieldOptions', async () => {
+        const INVALID_CHECKBOX_RESPONSE =
+          '[{"title":"Invalid Checkbox","fieldType":"Checkbox","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_CHECKBOX_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when radio missing fieldOptions', async () => {
+        const INVALID_RADIO_RESPONSE =
+          '[{"title":"Invalid Radio","fieldType":"Radio","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_RADIO_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when dropdown missing fieldOptions', async () => {
+        const INVALID_DROPDOWN_RESPONSE =
+          '[{"title":"Invalid Dropdown","fieldType":"Dropdown","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_DROPDOWN_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when statement missing description', async () => {
+        const INVALID_STATEMENT_RESPONSE =
+          '[{"title":"Invalid Statement","fieldType":"Statement","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_STATEMENT_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          ModelResponseInvalidSchemaFormatError,
+        )
+      })
+
+      it('should return error when field type is not allowed', async () => {
+        const INVALID_CHILDREN_FIELD_TYPE_RESPONSE =
+          '[{"title":"Invalid Children Field","fieldType":"Children","required":true}]'
+        MockedAiModel.sendPromptToModel = jest
+          .fn()
+          .mockReturnValue(okAsync(INVALID_CHILDREN_FIELD_TYPE_RESPONSE))
+
+        const result = await createFormFieldsUsingVisionPrompt({
+          form: mockForm,
+          imageDataUrls: mockImageDataUrls,
         })
 
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(

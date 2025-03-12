@@ -125,7 +125,7 @@ const FORM_DETAILS_TEXT_PROMPT = {
     'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
     `Rule 4: The field type must be a string only composed of the following ${BASIC_FIELD_NAMES}.` +
     // Organising fields
-    'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
+    'Info 1: "Section" and "Statement" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
     'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
     'Rule 5: When "Statement" field is used, the "description" and "required" properties are compulsory and must be provided and the title must be the same as the description. For example, {"fieldType": "Statement", "title": "Input descrtiption text here. Must be included and be non-empty string.", "required": true, "description": "Input descrtiption text here. Must be included and be non-empty string."}. This "description" property is where you provide the paragraph of text to provide necessary context about following fields.' +
     'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
@@ -361,7 +361,7 @@ const FORM_DETAILS_VISION_PROMPT = {
     'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
     `Rule 4: The field type must be a string only composed of the following ${BASIC_FIELD_NAMES}.` +
     // Organising fields
-    'Info 2: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
+    'Info 2: "Section" and "Statement" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
     'Info 3: When you see section headers in the form (an example of a section header is a number eg, 1. followed by a description and a set of fields after before another number eg, 2. and another set of fields follow), you should include a "Section" field with the section header as the "title".' +
     'Info 4: When you see the form title in the form, you should also include a "Section" field for the form title.' +
     'Info 5: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement.' +
