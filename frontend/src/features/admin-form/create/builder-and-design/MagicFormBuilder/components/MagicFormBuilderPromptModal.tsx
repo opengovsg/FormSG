@@ -166,11 +166,13 @@ const VisionPromptModalBodyContent = ({
   errors,
   clearErrors,
   setError,
+  isVisionPromptSubmitLoading,
 }: {
   control: Control<VisionPromptInputs>
   errors: FieldErrors<VisionPromptInputs>
   clearErrors: UseFormClearErrors<VisionPromptInputs>
   setError: UseFormSetError<VisionPromptInputs>
+  isVisionPromptSubmitLoading: boolean
 }) => {
   return (
     <>
@@ -192,6 +194,7 @@ const VisionPromptModalBodyContent = ({
               accept=".pdf"
               showFileSize
               showRemove
+              isRemoveDisabled={isVisionPromptSubmitLoading}
               onError={(message) => setError('attachment', { message })}
             />
           )}
@@ -274,6 +277,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                   errors={visionErrors}
                   clearErrors={clearVisionErrors}
                   setError={setVisionError}
+                  isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
                 />
               </TabPanel>
             </TabPanels>
