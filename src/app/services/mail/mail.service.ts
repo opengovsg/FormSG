@@ -935,6 +935,7 @@ export class MailService {
     responseId,
     isRejected,
     formQuestionAnswers,
+    attachments,
   }: {
     emails: string[]
     formId: string
@@ -942,6 +943,7 @@ export class MailService {
     responseId: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
+    attachments?: Mail.Attachment[]
   }) => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
@@ -976,6 +978,7 @@ export class MailService {
         from: this.#senderFromString,
         subject: `${outcome} - ${formTitle} (${responseId})`,
         html: mailHtml,
+        attachments,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
         },
