@@ -73,6 +73,7 @@ export type RateLimitConfig = {
   publicApi: number
   platformApi: number
   makeTextPrompt: number
+  makeVisionPrompt: number
   mrfPendingSubmissionEmailReminder: number
 }
 
@@ -211,6 +212,7 @@ export interface IOptionalVarsSchema {
     publicApi: number
     platformApi: number
     makeTextPrompt: number
+    makeVisionPrompt: number
     mrfPendingSubmissionEmailReminder: number
   }
   reactMigration: {

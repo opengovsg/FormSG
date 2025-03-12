@@ -1,7 +1,10 @@
 import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 import { AzureOpenAI } from 'openai'
 import { OpenAIError } from 'openai/error'
-import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index'
+import type {
+  ChatCompletionCreateParamsNonStreaming,
+  ChatCompletionMessageParam,
+} from 'openai/resources/index'
 
 import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -42,19 +45,16 @@ export enum Role {
   System = 'system',
 }
 
-export interface Message {
-  role: Role
-  content: string
-}
+export type Message = ChatCompletionMessageParam
 
 /**
- * Sends a text prompt to the AI LLM and returns the response.
+ * Sends prompt to the AI LLM and returns the response.
  * @param {Message[]} params.messages - An array of message objects to send to the AI.
  * @param {Object} [params.options] - Optional parameters for the chat completion.
  * @param {string} params.formId - The ID of the form associated with this request. Used for logging.
  * @returns {ResultAsync<string | null, ModelGetClientFailureError>} A Result containing the AI's response or null if no response, or an error if the request fails.
  */
-export const sendUserTextPrompt = ({
+export const sendPromptToModel = ({
   messages,
   options,
   formId,

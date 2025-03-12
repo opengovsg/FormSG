@@ -415,6 +415,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 5,
       env: 'MAKE_TEXT_PROMPT_RATE_LIMIT',
     },
+    makeVisionPrompt: {
+      doc: 'Per-minute, per-IP request limit for making vision prompts',
+      format: 'int',
+      default: 3,
+      env: 'MAKE_VISION_PROMPT_RATE_LIMIT',
+    },
     mrfPendingSubmissionEmailReminder: {
       doc: 'Per-minute, per-IP request, per submission id limit for sending email reminders for MRF submissions',
       format: 'int',

@@ -106,6 +106,7 @@ export enum FormResponseMode {
 export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
+  mfb_vision_prompt_count?: number
 }
 
 export type FormPaymentsChannel = {

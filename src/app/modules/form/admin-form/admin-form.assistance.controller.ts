@@ -8,7 +8,10 @@ import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 
-import { createFormFieldsUsingTextPrompt } from './admin-form.assistance.service'
+import {
+  createFormFieldsUsingTextPrompt,
+  createFormFieldsUsingVisionPrompt,
+} from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -81,3 +84,73 @@ export const handleTextPrompt = [
   handleTextPromptValidator,
   _handleTextPrompt,
 ] as ControllerHandler[]
+
+const handleVisionPromptValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+  [Segments.BODY]: {
+    // TODO: to perform more precise validation
+    imageDataUrls: Joi.array().items(Joi.string()),
+  },
+})
+
+interface IVisionPrompt {
+  imageDataUrls: string[]
+}
+
+const _handleVisionPrompt: ControllerHandler<
+  { formId: string },
+  { message: string; createdFieldIds?: string[] },
+  IVisionPrompt
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { imageDataUrls } = req.body
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    ) // Step 3: Create form fields using text prompt.
+    .andThen((form) =>
+      createFormFieldsUsingVisionPrompt({
+        form,
+        imageDataUrls,
+      }),
+    )
+    .map((createdFieldIds) =>
+      res.status(StatusCodes.OK).json({
+        message: 'Created form fields using vision prompt successfully.',
+        createdFieldIds: createdFieldIds.map((field) => field._id.toString()),
+      }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred creating form fields using vision prompt.',
+        meta: {
+          action: '_handleTextPrompt',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          numImagesInPrompt: req.body.imageDataUrls.length,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleVisionPrompt = [
+  handleVisionPromptValidator,
+  _handleVisionPrompt,
+]

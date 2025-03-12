@@ -25,7 +25,7 @@ import {
   ModelResponseInvalidSyntaxError,
 } from './admin-form.errors'
 import { createFormFields, updateFormMetadata } from './admin-form.service'
-import { Role, sendUserTextPrompt } from './ai-model'
+import { Message, Role, sendPromptToModel } from './ai-model'
 
 const logger = createLoggerWithLabel(module)
 
@@ -112,42 +112,43 @@ const mapSuggestedFormFieldToFieldCreateDto = (
   })
 }
 
-const generateFormCreationPrompt = (userPrompt: string) => {
-  const basicFieldNames = Object.keys(omit(BasicField, ['Children', 'Image']))
-    .map((fieldType) => `"${fieldType}"`)
-    .toString()
+const BASIC_FIELD_NAMES = Object.keys(omit(BasicField, ['Children', 'Image']))
+  .map((fieldType) => `"${fieldType}"`)
+  .toString()
+const FORM_DETAILS_SYSTEM_PROMPT = {
+  role: Role.System,
+  content:
+    // Provide context to model on when to use each field type
+    'Generate form fields for a form which follow a set of rules:' +
+    'Rule 1: the form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json.' +
+    'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
+    'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
+    `Rule 4: The field type must be a string only composed of the following ${BASIC_FIELD_NAMES}.` +
+    // Organising fields
+    'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
+    'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
+    'Rule 5: If "Statement" is used, the "description" property is compulsory.' +
+    'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
+    // Choices fields
+    'Rule 6: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
+    'Info 4: "Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
+    // Rating field
+    'Info 5: "Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
+    // Id fields
+    'Info 6: "Nric" is used to collect the unique identity number issued to each respondent, it can be used to uniquely identify the respondent.' +
+    'Info 7: "Uen" is a unique identifier for businesses, it can be used to uniquely identify a business.' +
+    // Mobile and home number fields
+    'Info 8: "Mobile" is used to collect a mobile phone number. "HomeNo" is used to collect a home phone number.' +
+    // Attachment field
+    'Info 9: "Attachment is used for the respondent to upload files.' +
+    // Table field
+    'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response.' +
+    'Rule 7: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
+}
 
+const generateFormCreationPrompt = (userPrompt: string) => {
   const messages = [
-    {
-      role: Role.System,
-      content:
-        // Provide context to model on when to use each field type
-        'Generate form fields for a form which follow a set of rules:' +
-        'Rule 1: the form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json.' +
-        'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
-        'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
-        `Rule 4: The field type must be a string only composed of the following ${basicFieldNames}.` +
-        // Organising fields
-        'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
-        'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
-        'Rule 5: If "Statement" is used, the "description" property is compulsory.' +
-        'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
-        // Choices fields
-        'Rule 6: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
-        'Info 4: "Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
-        // Rating field
-        'Info 5: "Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
-        // Id fields
-        'Info 6: "Nric" is used to collect the unique identity number issued to each respondent, it can be used to uniquely identify the respondent.' +
-        'Info 7: "Uen" is a unique identifier for businesses, it can be used to uniquely identify a business.' +
-        // Mobile and home number fields
-        'Info 8: "Mobile" is used to collect a mobile phone number. "HomeNo" is used to collect a home phone number.' +
-        // Attachment field
-        'Info 9: "Attachment is used for the respondent to upload files.' +
-        // Table field
-        'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response.' +
-        'Rule 7: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
-    },
+    FORM_DETAILS_SYSTEM_PROMPT,
     {
       // Provide general topic + example fields that user wants to collect.
       role: Role.User,
@@ -244,15 +245,18 @@ const suggestedFormFieldsSchema = z
   )
   .nonempty()
 
-const sendPromptToModel = (
-  prompt: string,
-  formId: string,
-): ResultAsync<
+const generateAndsendTextPromptToModel = ({
+  formId,
+  userPrompt,
+}: {
+  userPrompt: string
+  formId: string
+}): ResultAsync<
   string | null,
   ModelResponseFailureError | ModelGetClientFailureError
 > => {
-  const messages = generateFormCreationPrompt(prompt)
-  return sendUserTextPrompt({ messages, formId }).mapErr((error) => {
+  const messages = generateFormCreationPrompt(userPrompt)
+  return sendPromptToModel({ messages, formId }).mapErr((error) => {
     logger.error({
       message: 'Error when generating response from model',
       meta: { action: 'sendPromptToModel' },
@@ -282,7 +286,10 @@ export const createFormFieldsUsingTextPrompt = ({
   | FormNotFoundError
   | FieldNotFoundError
 > => {
-  return sendPromptToModel(userPrompt, form.id)
+  return generateAndsendTextPromptToModel({
+    userPrompt,
+    formId: form.id,
+  })
     .andThen((modelResponse) => {
       if (!modelResponse) {
         const modelResponseFailureError = new ModelResponseFailureError()
@@ -337,6 +344,138 @@ export const createFormFieldsUsingTextPrompt = ({
       updateFormMetadata(form, {
         ...form.metadata,
         mfb_text_prompt_count: (form.metadata?.mfb_text_prompt_count ?? 0) + 1,
+      })
+      return updatedFields.map((field) => field._id)
+    })
+}
+
+const generateFormCreationVisionPrompt = ({
+  imageDataUrls,
+}: {
+  imageDataUrls: string[]
+}) => {
+  const imageUrlContents = imageDataUrls.map((dataUrl) => {
+    return {
+      type: 'image_url',
+      image_url: {
+        url: dataUrl,
+      },
+    }
+  })
+  const userPrompt = {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: `You are provided images of a form. Recreate the given form based by closely referencing the images of the form. The array of json objects that follows all rules, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
+      },
+      ...imageUrlContents,
+    ],
+  }
+  return [FORM_DETAILS_SYSTEM_PROMPT, userPrompt] as Message[]
+}
+
+const generateAndSendVisionPromptToModel = ({
+  formId,
+  imageDataUrls,
+}: {
+  formId: string
+  imageDataUrls: string[]
+}) => {
+  const messages = generateFormCreationVisionPrompt({ imageDataUrls })
+  return sendPromptToModel({ messages, formId }).mapErr((error) => {
+    logger.error({
+      message: 'Error when generating response from model',
+      meta: { action: 'sendPromptToModel' },
+      error,
+    })
+    return error
+  })
+}
+
+/**
+ * Creates form fields using vision prompts from image data URLs
+ * @param form The form to create fields for
+ * @param imageDataUrls Array of image data URLs to analyze
+ * @returns ok(array of created field IDs) if successful
+ * @returns err(ModelResponseFailureError) if model fails to generate response
+ * @returns err(ModelResponseInvalidSyntaxError) if model response is not valid JSON
+ * @returns err(ModelResponseInvalidSchemaFormatError) if model response does not match expected schema
+ */
+export const createFormFieldsUsingVisionPrompt = ({
+  form,
+  imageDataUrls,
+}: {
+  form: IPopulatedForm
+  imageDataUrls: string[]
+}): ResultAsync<
+  FormFieldSchema['_id'][],
+  | ModelResponseFailureError
+  | ModelResponseInvalidSchemaFormatError
+  | ModelResponseInvalidSyntaxError
+  | PossibleDatabaseError
+  | FormNotFoundError
+  | FieldNotFoundError
+> => {
+  return generateAndSendVisionPromptToModel({
+    formId: form.id,
+    imageDataUrls,
+  })
+    .andThen((modelResponse) => {
+      if (!modelResponse) {
+        const modelResponseFailureError = new ModelResponseFailureError()
+        logger.error({
+          message: 'Error generating response from model',
+          meta: {
+            action: 'createFormFieldsUsingVisionPrompt',
+            modelResponse,
+            error: modelResponseFailureError,
+          },
+        })
+        return errAsync(modelResponseFailureError)
+      }
+
+      let suggestedFormFields
+      try {
+        suggestedFormFields = JSON.parse(modelResponse)
+      } catch (error) {
+        logger.error({
+          message: 'Error parsing model response as json',
+          meta: {
+            action: 'createFormFieldsUsingVisionPrompt',
+            modelResponse,
+            error,
+          },
+        })
+        return errAsync(new ModelResponseInvalidSyntaxError())
+      }
+
+      const parseSuggestedFormFieldsResult =
+        suggestedFormFieldsSchema.safeParse(suggestedFormFields)
+
+      if (!parseSuggestedFormFieldsResult.success) {
+        logger.error({
+          message: 'Error parsing suggested form fields by model',
+          meta: {
+            action: 'createFormFieldsUsingVisionPrompt',
+            suggestedFormFields,
+            error: parseSuggestedFormFieldsResult.error,
+          },
+        })
+        return errAsync(new ModelResponseInvalidSchemaFormatError())
+      }
+
+      const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
+      const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
+        parsedSuggestedFormFields,
+      )
+      return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
+    })
+    .map((updatedFields) => {
+      updateFormMetadata(form, {
+        ...form.metadata,
+        mfb_vision_prompt_count:
+          (form.metadata?.mfb_vision_prompt_count ?? 0) + 1,
       })
       return updatedFields.map((field) => field._id)
     })

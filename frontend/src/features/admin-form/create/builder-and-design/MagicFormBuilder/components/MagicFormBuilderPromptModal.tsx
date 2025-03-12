@@ -185,7 +185,7 @@ const VisionPromptModalBodyContent = ({
         <Controller
           name="attachment"
           control={control}
-          rules={{ required: 'Please upload an image' }}
+          rules={{ required: 'Please upload a pdf file' }}
           render={({ field: { onChange, ...rest } }) => (
             <Attachment
               {...rest}
@@ -258,7 +258,7 @@ const MagicFormBuilderCreateFormPrompt = ({
         <Tabs isFitted onChange={setSelectedTab}>
           <TabList mb="1em">
             <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
-            <Tab value={PROMPT_TYPE.VISION}>Image</Tab>
+            <Tab value={PROMPT_TYPE.VISION}>Pdf</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -285,18 +285,23 @@ const MagicFormBuilderCreateFormPrompt = ({
           handleNext={
             selectedTab === PROMPT_TYPE.TEXT
               ? handleSubmit(({ prompt }) => {
-                  console.log('Submitting text prompt')
                   onTextPromptSubmit(prompt)
                 })
               : handleVisionSubmit(async ({ attachment }) => {
                   // TODO: To abstract to util file
                   try {
                     const pdfData = await attachment.arrayBuffer()
-                    console.log('pdfData:', pdfData)
                     const pdfDoc = await pdfjs.getDocument({ data: pdfData })
                       .promise
                     const numPages = pdfDoc.numPages
-                    console.log('PDF num pages:', numPages)
+                    if (numPages > 10) {
+                      setVisionError('attachment', {
+                        type: 'manual',
+                        message:
+                          'Your pdf file must have less than or equal 10 pages.',
+                      })
+                      return
+                    }
                     const images = []
 
                     for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -317,16 +322,14 @@ const MagicFormBuilderCreateFormPrompt = ({
                         viewport: viewport,
                       }).promise
 
-                      const jpgImage = canvas.toDataURL('image/jpeg', 0.8)
+                      const jpgImage = canvas.toDataURL('image/jpeg', 0.2)
                       images.push({
                         pageNum,
                         dataUrl: jpgImage,
                       })
                     }
 
-                    console.log('Converted PDF pages:', images.length)
                     const imageDataUrls = images.map((image) => image.dataUrl)
-                    console.log('image data urls:', imageDataUrls)
                     onVisionPromptSubmit(imageDataUrls)
                   } catch (error) {
                     console.error('Error converting PDF file to images:', error)
