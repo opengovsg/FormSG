@@ -1,11 +1,11 @@
 name: Playwright Tests
+
 on:
   push:
     branches-ignore: 
-      - release-al2 # dont need to run playwright once merged into release-al2 
-      - staging** 
+      - staging**
   pull_request:
-    branches-ignore: 
+    branches-ignore:
       - staging**
 
 jobs:
