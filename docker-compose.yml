@@ -28,6 +28,8 @@ services:
       - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
       - VIRUS_SCANNER_QUARANTINE_S3_BUCKET=local-virus-scanner-quarantine-bucket
       - VIRUS_SCANNER_CLEAN_S3_BUCKET=local-virus-scanner-clean-bucket
+      - GUARDDUTY_QUARANTINE_S3_BUCKET=local-guardduty-quarantine-bucket
+      - GUARDDUTY_CLEAN_S3_BUCKET=local-guardduty-clean-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
@@ -120,6 +122,7 @@ services:
       - GROWTHBOOK_CLIENT_KEY=growthbook_client_key
       # env vars for virus scanner
       - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
+      - GUARDDUTY_LAMBDA_FUNCTION_NAME=function
       - WOGAA_SECRET_KEY
       - WOGAA_START_ENDPOINT
       - WOGAA_SUBMIT_ENDPOINT

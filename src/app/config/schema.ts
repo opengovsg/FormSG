@@ -312,7 +312,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     guarddutyCleanS3Bucket: {
       doc: 'New S3 Bucket to store files that have been scanned and are clean from guardduty quarantine bucket',
       format: String,
-      default: '', 
+      default: '',
       env: 'GUARDDUTY_CLEAN_S3_BUCKET',
     },
     guarddutyLambdaEndpoint: {
@@ -324,7 +324,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     guarddutyLambdaFunctionName: {
       doc: 'Virus scanner lambda function name',
       format: String,
-      default: '', 
+      default: '',
       env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',
     },
   },
