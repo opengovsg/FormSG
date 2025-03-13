@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/deploy-ecs.yml
     with:
       environment: 'staging-alt3'
-      environment-site-name: 'formsg-stg-alt3'
+      environment-site-name: 'stg-alt3'
       shortEnv: 'prod'
       ecs-cpu: 1024
       ecs-memory: 2048
