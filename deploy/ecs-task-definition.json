@@ -6,33 +6,7 @@
       "portMappings": [
         { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
       ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "formsg-<ENVIRONMENT_SITE_NAME>/ecs/formsg-app",
-          "awslogs-region": "ap-southeast-1",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    },
-    {
-      "name": "dd-agent",
-      "image": "public.ecr.aws/datadog/agent:latest",
-      "portMappings": [
-        { "containerPort": 8126, "hostPort": 8126, "protocol": "tcp" }
-      ],
-      "essential": true,
-      "environment": [
-        { "name": "TZ", "value": "Asia/Singapore" },
-        { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
-        { "name": "ECS_FARGATE", "value": "true" },
-        { "name": "DD_APM_ENABLED", "value": "true" },
-        { "name": "DD_SITE", "value": "datadoghq.com" }
-      ],
-      "mountPoints": [],
-      "volumesFrom": [],
       "secrets": [
-        { "name": "DD_API_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DD_API_KEY" },
         { "name": "WOGAA_SECRET_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAA_SECRET_KEY" },
         { "name": "SIGNING_SECRET_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SIGNING_SECRET_KEY" },
         { "name": "WEBHOOK_SQS_URL", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WEBHOOK_SQS_URL" },
@@ -149,6 +123,34 @@
         { "name": "DOWNLOAD_FORM_WHITELIST_RATE_LIMIT", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DOWNLOAD_FORM_WHITELIST_RATE_LIMIT" },
         { "name": "UPLOAD_FORM_WHITELIST_RATE_LIMIT", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UPLOAD_FORM_WHITELIST_RATE_LIMIT" },
         { "name": "KILL_EMAIL_MODE_FEEDBACK_FORMID", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/KILL_EMAIL_MODE_FEEDBACK_FORMID" }
+      ], 
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "formsg-<ENVIRONMENT_SITE_NAME>/ecs/formsg-app",
+          "awslogs-region": "ap-southeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "dd-agent",
+      "image": "public.ecr.aws/datadog/agent:latest",
+      "portMappings": [
+        { "containerPort": 8126, "hostPort": 8126, "protocol": "tcp" }
+      ],
+      "essential": true,
+      "environment": [
+        { "name": "TZ", "value": "Asia/Singapore" },
+        { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
+        { "name": "ECS_FARGATE", "value": "true" },
+        { "name": "DD_APM_ENABLED", "value": "true" },
+        { "name": "DD_SITE", "value": "datadoghq.com" }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        { "name": "DD_API_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DD_API_KEY" },
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
