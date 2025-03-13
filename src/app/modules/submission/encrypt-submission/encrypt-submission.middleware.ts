@@ -2,6 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { featureFlags } from 'shared/constants'
 
 import {
   BasicField,
@@ -22,6 +23,7 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
@@ -59,8 +61,6 @@ import {
 } from './encrypt-submission.types'
 import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
-import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
-import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
