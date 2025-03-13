@@ -66,14 +66,14 @@ export const AddressCompoundField = ({
 
   useEffect(() => {
     if (unitNumber && levelNumber) {
-      formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
-      formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+      trigger(`${schema._id}.addressSubFields.levelNumber`)
+      trigger(`${schema._id}.addressSubFields.unitNumber`)
     }
     if (!unitNumber && !levelNumber) {
-      formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
-      formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+      trigger(`${schema._id}.addressSubFields.levelNumber`)
+      trigger(`${schema._id}.addressSubFields.unitNumber`)
     }
-  }, [unitNumber, levelNumber, formContext, trigger, schema])
+  }, [unitNumber, levelNumber, trigger, schema])
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(schema.disabled)
 
