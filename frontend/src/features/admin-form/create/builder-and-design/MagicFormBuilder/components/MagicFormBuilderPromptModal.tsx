@@ -269,7 +269,7 @@ const MagicFormBuilderCreateFormPrompt = ({
           !isUserLoading &&
           user?.betaFlags?.mfbVision) ? (
           <Tabs isFitted onChange={setSelectedTab}>
-            <TabList mb="1em">
+            <TabList px="2px" mb="1rem">
               <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
               <Tab value={PROMPT_TYPE.VISION}>Pdf</Tab>
             </TabList>
