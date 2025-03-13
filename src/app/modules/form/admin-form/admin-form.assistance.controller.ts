@@ -14,7 +14,7 @@ import {
   createFormFieldsUsingVisionPrompt,
 } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError } from './admin-form.utils'
+import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -143,6 +143,9 @@ const _handleVisionPrompt: ControllerHandler<
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) => {
+        return verifyUserBetaflag(user, 'mfbVision')
+      })
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({
