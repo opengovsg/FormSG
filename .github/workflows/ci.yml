@@ -2,8 +2,12 @@ name: CI
 
 on:
   push:
+    branches-ignore: 
+      - staging-alt3
   pull_request:
     types: [opened, reopened]
+    branches-ignore:
+      - staging-alt3
 
 jobs:
   # JOB to run change detection
