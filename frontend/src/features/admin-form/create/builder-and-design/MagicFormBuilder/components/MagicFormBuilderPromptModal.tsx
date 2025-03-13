@@ -343,6 +343,9 @@ const MagicFormBuilderCreateFormPrompt = ({
           isNextLoading={
             isTextPromptSubmitLoading || isVisionPromptSubmitLoading
           }
+          isBackDisabled={
+            isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+          }
           handleBack={onCancel}
           nextButtonLabel="Create fields"
           backButtonLabel="Cancel"
@@ -369,11 +372,18 @@ const MagicFormBuilderPromptModal = ({
   isVisionPromptSubmitLoading,
   onClose,
 }: MagicFormBuilderPromptModalProps): JSX.Element => {
+  const isLoading = isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={!isLoading}
+      closeOnEsc={!isLoading}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalCloseButton />
+        <ModalCloseButton isDisabled={isLoading} />
         <MagicFormBuilderCreateFormPrompt
           onTextPromptSubmit={onTextPromptSubmit}
           isTextPromptSubmitLoading={isTextPromptSubmitLoading}
