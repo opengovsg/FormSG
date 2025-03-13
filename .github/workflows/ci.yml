@@ -3,11 +3,17 @@ name: CI
 on:
   push:
     branches-ignore: 
+      - staging
+      - staing-alt2
       - staging-alt3
+      - uat
   pull_request:
     types: [opened, reopened]
-    branches-ignore:
-      - staging-alt3
+      branches-ignore:
+        - staging
+        - staing-alt2
+        - staging-alt3
+        - uat
 
 jobs:
   # JOB to run change detection
