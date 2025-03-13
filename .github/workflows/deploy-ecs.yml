@@ -9,7 +9,7 @@ on:
       environment-site-name:
         description: 'Deployment environment site name'
         required: true
-        type: string # staging, staging-alt, staging-alt2, staging-alt3, prod, uat
+        type: string # staging, staging-alt, staging-alt2, stg-alt3, prod, uat
       shortEnv:
         description: 'Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])'
         required: true

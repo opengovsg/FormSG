@@ -9,7 +9,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "<ENVIRONMENT_SITE_NAME>/ecs/formsg-app",
+          "awslogs-group": "formsg-<ENVIRONMENT_SITE_NAME>/ecs/formsg-app",
           "awslogs-region": "ap-southeast-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -35,7 +35,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "<ENVIRONMENT_SITE_NAME>/ecs/app-server-dd-agent",
+          "awslogs-group": "formsg-<ENVIRONMENT_SITE_NAME>/ecs/app-server-dd-agent",
           "awslogs-region": "ap-southeast-1",
           "awslogs-stream-prefix": "ecs"
         }
