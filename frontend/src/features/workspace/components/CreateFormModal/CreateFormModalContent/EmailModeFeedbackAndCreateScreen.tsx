@@ -120,9 +120,6 @@ export const EmailModeCreationScreen = ({
   const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
 
   const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
-  // print type  of data
-  console.log(`${typeof feedbackForm}`)
-  console.log(`${JSON.stringify(feedbackForm)}`)
   if (!feedbackForm) return <></>
 
   return (
