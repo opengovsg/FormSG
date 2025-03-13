@@ -11,6 +11,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -56,6 +57,7 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from '../core/core.errors'
+import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import * as PaymentsService from '../payments/payments.service'
@@ -1193,32 +1195,41 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  // Step 2a: Create presigned post data for each attachment for new guardduty bucket
-  const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
-    attachmentSizes.map(({ id, size }, index) => {
-      // Check if id is a valid ObjectId
-      if (!mongoose.isValidObjectId(id))
-        return errAsync(new InvalidFieldIdError())
+  return getFeatureFlag(featureFlags.guardduty, {
+    fallbackValue: false,
+  }).andThen((isGuarddutyEnabled) => {
+    // if feature flag is on, add guardduty s3 presigned url
+    if (isGuarddutyEnabled) {
+      // Step 2a: Create presigned post data for each attachment for new guardduty bucket
+      const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
+        attachmentSizes.map(({ id, size }, index) => {
+          // Check if id is a valid ObjectId
+          if (!mongoose.isValidObjectId(id))
+            return errAsync(new InvalidFieldIdError())
 
-      return createPresignedPostDataPromise({
-        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
-        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-        size,
-        key: fileKeys[index],
-      }).map((presignedPostData) => ({
-        id,
-        presignedPostData,
-      }))
-    }),
-  )
+          return createPresignedPostDataPromise({
+            bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
+            expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+            size,
+            key: fileKeys[index],
+          }).map((presignedPostData) => ({
+            id,
+            presignedPostData,
+          }))
+        }),
+      )
 
-  return ResultAsync.combine([
-    currentQuarantineBucketPost,
-    newGuarddutyQuarantineBucketPost,
-  ]).map(([currentQuarantineData, newGuarddutyData]) => [
-    ...currentQuarantineData,
-    ...newGuarddutyData,
-  ])
+      return ResultAsync.combine([
+        currentQuarantineBucketPost,
+        newGuarddutyQuarantineBucketPost,
+      ]).map(([currentQuarantineData, newGuarddutyData]) => [
+        ...currentQuarantineData,
+        ...newGuarddutyData,
+      ])
+    }
+
+    return currentQuarantineBucketPost
+  })
 }
 
 /**

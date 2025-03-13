@@ -59,6 +59,8 @@ import {
 } from './encrypt-submission.types'
 import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
+import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -175,24 +177,35 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      logger.info({
-        message: `Trying to guardduty scan first ${response}`,
-        meta: {
-          action: 'Testing guardduty',
+      getFeatureFlag(featureFlags.guardduty, {
+        fallbackValue: false,
+        logMeta: {
+          action: 'asyncVirusScanning',
+          formId,
         },
+      }).map((isGuarddutyEnabled) => {
+        if (isGuarddutyEnabled) {
+          logger.info({
+            message: `Trying to guardduty scan first ${response}`,
+            meta: {
+              action: 'Testing guardduty',
+            },
+          })
+
+          // trigger guardduty scan
+          SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+            response,
+            formId,
+          ).mapErr((err) =>
+            logger.info({
+              message: `GuardDuty Scan unsuccessful:, ${err}`,
+              meta: {
+                action: 'Testing guardduty error',
+              },
+            }),
+          )
+        }
       })
-      // trigger guardduty scan
-      SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
-        response,
-        formId,
-      ).mapErr((err) =>
-        logger.info({
-          message: `GuardDuty Scan unsuccessful:, ${err}`,
-          meta: {
-            action: 'Testing guardduty error',
-          },
-        }),
-      )
 
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
