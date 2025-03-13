@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -31,6 +32,7 @@ export const DeleteStepModal = ({
   isOpen,
   stepNumber,
 }: DeleteStepModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
   const modalSize = useBreakpointValue({
@@ -48,6 +50,10 @@ export const DeleteStepModal = ({
     })
   }, [setToInactive, deleteStepMutation, stepNumber, onClose])
 
+  const { title, description, confirm, cancel } = t(
+    'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep',
+    { returnObjects: true },
+  )
   return (
     <Modal
       isOpen={isOpen}
@@ -58,11 +64,10 @@ export const DeleteStepModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton isDisabled={deleteStepMutation.isLoading} />
-        <ModalHeader color="secondary.700">Delete step</ModalHeader>
+        <ModalHeader color="secondary.700">{title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
-            Are you sure you want to delete this step? This action cannot be
-            undone.
+            {description}
           </Text>
         </ModalBody>
         <ModalFooter>
@@ -77,14 +82,14 @@ export const DeleteStepModal = ({
               colorScheme="secondary"
               onClick={onClose}
             >
-              No, don't delete
+              {cancel}
             </Button>
             <Button
               colorScheme="danger"
               onClick={handleDelete}
               isLoading={deleteStepMutation.isLoading}
             >
-              Yes, delete step
+              {confirm}
             </Button>
           </Stack>
         </ModalFooter>

@@ -46,14 +46,6 @@ export const enSG: Workflow = {
         cancel: "No, don't delete",
       },
       addMapping: {
-        step0: {
-          title: 'Replace CSV file',
-          description: {
-            info: 'Replacing the file will delete the exsting CSV and update your dropdown options(s) and email routing.',
-            warning: 'This action cannot be undone',
-          },
-          button: 'Yes, replace the CSV file',
-        },
         step1: {
           title: 'Add emails to options',
           download: {

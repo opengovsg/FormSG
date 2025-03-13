@@ -42,14 +42,6 @@ export interface Workflow {
         cancel: string
       }
       addMapping: {
-        step0: {
-          title: string
-          description: {
-            info: string
-            warning: string
-          }
-          button: string
-        }
         step1: {
           title: string
           nextButton: string

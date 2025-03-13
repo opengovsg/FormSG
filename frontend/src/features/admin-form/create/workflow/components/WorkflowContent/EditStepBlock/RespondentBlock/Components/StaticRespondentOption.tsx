@@ -9,7 +9,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
-import { WORKFLOW_TYPE_VALIDATION } from './common'
+import { useWorkflowTypeValidation } from './hooks'
 import { RespondentOptionProps } from './types'
 
 export const StaticRespondentOption = ({
@@ -24,6 +24,7 @@ export const StaticRespondentOption = ({
   } = formMethods
   const staticTagInputErrorMessage = get(errors, 'emails.message')
 
+  const workflowTypeValidation = useWorkflowTypeValidation()
   return (
     <>
       <Radio
@@ -31,7 +32,7 @@ export const StaticRespondentOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Static}
-        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        {...register('workflow_type', workflowTypeValidation)}
         px="0.5rem"
         __css={{
           _focusWithin: {

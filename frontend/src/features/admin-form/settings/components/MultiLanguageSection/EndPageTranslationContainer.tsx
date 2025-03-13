@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Divider, Flex, Text } from '@chakra-ui/react'
 import _ from 'lodash'
 
@@ -16,6 +17,7 @@ export const EndPageTranslationsContainer = ({
   capitalisedLanguage,
   unicodeLocale,
 }: EndPageTranslationsContainerProps) => {
+  const { t } = useTranslation()
   if (!endPage) return null
 
   const hasParagraph = !_.isEmpty(endPage.paragraph?.trim())
@@ -42,7 +44,7 @@ export const EndPageTranslationsContainer = ({
           fontWeight="600"
           mb="1rem"
         >
-          Question
+          {t('features.common.question')}
         </Text>
         <TranslationContainer
           language={capitalisedLanguage}
@@ -61,7 +63,9 @@ export const EndPageTranslationsContainer = ({
               fontWeight="600"
               mb="1rem"
             >
-              Follow-up instructions
+              {t(
+                'features.adminForm.sidebar.thankYou.thankYouPage.followUpInstruction',
+              )}
             </Text>
             <TranslationContainer
               language={capitalisedLanguage}

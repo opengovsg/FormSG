@@ -106,6 +106,62 @@ describe('submission.utils', () => {
       approval_field: YES_NO_FIELD._id,
     }
 
+    it('should return hasNextStepRecipientEmails false if latest step has no recipient emails defined', () => {
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2, WORKFLOW_APPROVAL_STEP],
+        workflowStep: 2,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            nextStepRecipientEmails: ['test@example.com'],
+          },
+          { isApproval: false, submittedAt: '2024-01-01T00:00:00.000Z' },
+        ],
+      })
+      expect(metadata!.hasNextStepRecipientEmails).toBe(false)
+    })
+
+    it('should return hasNextStepRecipientEmails false if latest step has empty recipient emails', () => {
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2, WORKFLOW_APPROVAL_STEP],
+        workflowStep: 2,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            nextStepRecipientEmails: ['test@example.com'],
+          },
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            nextStepRecipientEmails: [],
+          },
+        ],
+      })
+      expect(metadata!.hasNextStepRecipientEmails).toBe(false)
+    })
+
+    it('should return hasNextStepRecipientEmails true if latest step has non-empty recipient emails defined', () => {
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2, WORKFLOW_APPROVAL_STEP],
+        workflowStep: 2,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            nextStepRecipientEmails: ['test@example.com'],
+          },
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            nextStepRecipientEmails: ['test2@example.com'],
+          },
+        ],
+      })
+      expect(metadata!.hasNextStepRecipientEmails).toBe(true)
+    })
+
     it('should return undefined for lastSubmittedAt when submittedSteps is empty', () => {
       const metadata = buildMrfMetadata({
         workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
@@ -159,6 +215,7 @@ describe('submission.utils', () => {
         workflowNumTotalSteps: 2,
         workflowStatus: WorkflowStatus.PENDING,
         lastSubmittedAt: submittedAt,
+        hasNextStepRecipientEmails: false,
       })
     })
 
@@ -186,6 +243,7 @@ describe('submission.utils', () => {
         workflowNumTotalSteps: 2,
         workflowStatus: WorkflowStatus.COMPLETED,
         lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
+        hasNextStepRecipientEmails: false,
       })
     })
 
@@ -211,6 +269,7 @@ describe('submission.utils', () => {
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.PENDING,
         lastSubmittedAt: '2024-01-02T00:00:00.000Z',
+        hasNextStepRecipientEmails: false,
       })
     })
 
@@ -243,6 +302,7 @@ describe('submission.utils', () => {
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.APPROVED,
         lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
+        hasNextStepRecipientEmails: false,
       })
     })
 
@@ -268,6 +328,7 @@ describe('submission.utils', () => {
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.REJECTED,
         lastSubmittedAt: '2024-01-02T00:00:00.000Z',
+        hasNextStepRecipientEmails: false,
       })
     })
   })

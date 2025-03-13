@@ -40,14 +40,20 @@ const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-export const EmailModeFeedbackScreen = (): JSX.Element => {
+export const EmailModeFeedbackScreen = ({
+  useCreateFormWizardParam = useCreateFormWizard,
+  useAdminUseEmailModeFormViewParam = useAdminUseEmailModeFormView,
+}: {
+  useCreateFormWizardParam?: typeof useCreateFormWizard
+  useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
+}): JSX.Element => {
   const { formMethods, submitEmailModeFeedback, isLoading, isFetching } =
-    useCreateFormWizard()
+    useCreateFormWizardParam()
   const {
     formState: { errors },
   } = formMethods
 
-  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
   if (!feedbackForm) return <></>
 
   return (
@@ -86,14 +92,20 @@ export const EmailModeFeedbackScreen = (): JSX.Element => {
   )
 }
 
-export const EmailModeCreationScreen = (): JSX.Element => {
+export const EmailModeCreationScreen = ({
+  useCreateFormWizardParam = useCreateFormWizard,
+  useAdminUseEmailModeFormViewParam = useAdminUseEmailModeFormView,
+}: {
+  useCreateFormWizardParam?: typeof useCreateFormWizard
+  useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
+}): JSX.Element => {
   const {
     formMethods,
 
     handleCreateEmailModeForm,
     isLoading,
     isFetching,
-  } = useCreateFormWizard()
+  } = useCreateFormWizardParam()
   const {
     register,
     formState: { errors },
@@ -107,7 +119,7 @@ export const EmailModeCreationScreen = (): JSX.Element => {
   const formTitleRegister = register('title', FORM_TITLE_VALIDATION_RULES)
   const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
 
-  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
   if (!feedbackForm) return <></>
 
   return (

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-/usr/sbin/clamd
-
 if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then
   # We know the image is being run off of Lambda, so we need to use the RIE
   # to start the function.

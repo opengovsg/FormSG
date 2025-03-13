@@ -1,6 +1,7 @@
 import { RequiredDeep } from 'type-fest'
 
 import {
+  App,
   Common,
   Fields,
   HeaderAndInstructions,
@@ -13,6 +14,7 @@ import {
   Settings,
   ThankYou,
   Toasts,
+  Workflow,
 } from './features'
 
 interface Translation {
@@ -24,6 +26,7 @@ interface Translation {
           headerAndInstructions?: HeaderAndInstructions
           logic?: Logic
           thankYou?: ThankYou
+          workflow?: Workflow
         }
         navbar?: Navbar
         meta?: Meta
@@ -31,6 +34,7 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
       }
+      app?: App
       common?: Common
       publicForm?: PublicForm
       login?: Login

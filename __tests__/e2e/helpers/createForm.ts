@@ -21,7 +21,10 @@ import {
   NumberSelectedValidation,
 } from 'shared/types'
 
-import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import { findUserByEmail } from 'src/app/modules/user/user.service'
 import { IFormModel, IFormSchema } from 'src/types'
 
@@ -91,6 +94,32 @@ const addForm = async (
   page: Page,
   responseMode: FormResponseMode,
 ): Promise<AddFormReturn> => {
+  if (responseMode === FormResponseMode.Email) {
+    const EmailFormModel = getEmailFormModel(mongoose)
+    const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
+
+    const formId = new ObjectId().toHexString()
+
+    await EmailFormModel.create({
+      _id: formId,
+      admin: user,
+      responseMode: FormResponseMode.Email,
+      title: `e2e-test-${cuid()}`,
+      emails: [user.email],
+      publicKey: '',
+      status: FormStatus.Private,
+    })
+
+    const formResponseMode: E2eFormResponseMode = {
+      responseMode: FormResponseMode.Email,
+    }
+
+    await page.goto(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
+
+    await page.getByRole('button', { name: 'Next' }).press('Escape')
+
+    return { formId, formResponseMode }
+  }
   await page.goto(DASHBOARD_PAGE)
 
   // Press escape 5 times to get rid of any banners
@@ -113,7 +142,6 @@ const addForm = async (
       responseMode: FormResponseMode.Email,
     }
 
-    // Need to select "I need to collect Sensitive High data" checkbox, and press "Next: Set up your form" button.
     await page.getByText('I need to collect Sensitive High data').click()
     await page.getByRole('button', { name: 'Next: Set up your form' }).click()
 

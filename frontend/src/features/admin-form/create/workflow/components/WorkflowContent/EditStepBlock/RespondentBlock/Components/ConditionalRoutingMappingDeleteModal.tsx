@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -21,20 +22,30 @@ export const ConditionalRoutingMappingDeleteModal = ({
   onClose,
   handleDelete,
 }: ConditionalRoutingMappingDeleteModalProps) => {
+  const { t } = useTranslation()
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete CSV file</ModalHeader>
+        <ModalHeader>
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.title',
+          )}
+        </ModalHeader>
         <ModalBody>
-          Are you sure you want to delete this CSV file? This action cannot be
-          undone.
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.description',
+          )}
         </ModalBody>
         <ModalFooter>
           <NextAndBackButtonGroup
-            nextButtonLabel="Yes, delete CSV file"
-            backButtonLabel="No, don't delete"
+            nextButtonLabel={t(
+              'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.confirm',
+            )}
+            backButtonLabel={t(
+              'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.cancel',
+            )}
             handleBack={onClose}
             handleNext={handleDelete}
             nextButtonColorScheme="danger"

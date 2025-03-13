@@ -1,7 +1,10 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../../../app/config/config'
+import { limitRate } from '../../../../../../app/utils/limit-rate'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 
 export const AdminFormsSubmissionsRouter = Router()
@@ -88,4 +91,13 @@ AdminFormsSubmissionsRouter.get(
 AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions',
   EncryptSubmissionController.handleGetAllEncryptedResponses,
+)
+
+/**
+ * Send reminder to the current pending step for the MRF submission with the given responseId
+ */
+AdminFormsSubmissionsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind',
+  limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
+  MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
 )

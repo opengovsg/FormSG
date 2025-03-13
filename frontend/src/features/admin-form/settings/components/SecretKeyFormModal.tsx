@@ -112,6 +112,7 @@ export const SecretKeyFormModal = ({
                         value: SECRET_KEY_REGEX,
                         message: 'The secret key provided is invalid',
                       },
+                      setValueAs: (v) => v.trim(),
                     })}
                     placeholder={
                       dragging

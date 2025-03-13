@@ -53,7 +53,7 @@ export const handler = async (
 
   const quarantineFileKey = event.key
 
-  const cleanBucket = config.virusScannerCleanS3Bucket //TODO change this to correct bucket
+  const cleanBucket = config.virusScannerCleanS3Bucket
   const quarantineBucket = config.virusScannerQuarantineS3Bucket
 
   // Retrieve from S3

@@ -1,4 +1,5 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
 import { textStyles } from '~theme/textStyles'
@@ -25,6 +26,7 @@ export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
@@ -55,9 +57,11 @@ export const QuestionsBlock = ({
           style={textStyles.h4}
           tooltipVariant="info"
           tooltipPlacement="top"
-          tooltipText="Respondent will only be able to fill the fields you have selected"
+          tooltipText={t(
+            'features.adminForm.sidebar.workflow.questions.tooltip',
+          )}
         >
-          Select field(s) for this respondent to fill
+          {t('features.adminForm.sidebar.workflow.questions.label')}
         </FormLabel>
         <Controller
           control={control}
@@ -65,7 +69,9 @@ export const QuestionsBlock = ({
           render={({ field: { value = [], ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}
-              placeholder="Select field(s) from your form"
+              placeholder={t(
+                'features.adminForm.sidebar.workflow.questions.placeholder',
+              )}
               items={items}
               isSelectedItemFullWidth
               values={value}

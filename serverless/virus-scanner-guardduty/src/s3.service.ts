@@ -243,7 +243,7 @@ export class S3Service {
           return malwareScanningTag
         },
         {
-          timeout: 9 * 1000, // 9 seconds. FE becomes unresponsive if set to 10s or above
+          timeout: 18 * 1000, // 9 seconds. FE becomes unresponsive if set to 10s or above
           delay: 200, // first delay - 0.2 seconds
           backoff: 'LINEAR',
           maxBackOff: 2 * 1000, // max increment in delay - 2 seconds

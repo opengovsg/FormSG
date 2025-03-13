@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 
 import FormLabel from '~components/FormControl/FormLabel'
@@ -14,13 +15,18 @@ import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 export const FormCustomisationSection = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <FormControl mt="2rem">
-        <FormLabel isRequired>Set message for closed form</FormLabel>
+        <FormLabel isRequired>
+          {t(
+            'features.adminForm.settings.general.customisation.closedFormMessage',
+          )}
+        </FormLabel>
         {settings && (
           <PrivateFormMessageInput initialMessage={settings.inactiveMessage} />
         )}

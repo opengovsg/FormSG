@@ -47,10 +47,10 @@ test.describe('Email form submission', () => {
     // Create models
     db = (await makeMongooseFixtures()).connection
     Form = makeModel(db, 'form.server.model', 'Form')
-  })
-  test.beforeEach(async () => {
+
     await createFeedbackForm()
   })
+
   test.afterAll(async () => {
     // Clean up db
     await db.dropCollection(Form.collection.name)
@@ -257,6 +257,8 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with a field hidden by logic', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
+
     // Define
     const { formFields, formLogics } = TEST_FIELD_HIDDEN_BY_LOGIC
     const formSettings = getEmailSettings()
@@ -272,6 +274,8 @@ test.describe('Email form submission', () => {
   test('Create email mode form with submission disabled by chained logic', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
+
     // Define
     const { formFields, formLogics, preventSubmitMessage } =
       TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC

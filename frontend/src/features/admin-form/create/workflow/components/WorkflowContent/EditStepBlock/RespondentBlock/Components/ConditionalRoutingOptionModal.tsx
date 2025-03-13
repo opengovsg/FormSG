@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Controller, FieldErrors, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import {
   Box,
@@ -48,11 +49,16 @@ const StepOneModalContent = ({
   isCsvTemplateDownloaded,
   onClose,
 }: StepOneModalContentProps) => {
+  const { t } = useTranslation()
   return (
     <ModalContent minW="fit-content">
       <ModalCloseButton />
       <ModalHeader>
-        <Text mb="0.25rem">Add emails to options</Text>
+        <Text mb="0.25rem">
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.title',
+          )}
+        </Text>
         <ProgressIndicator
           numIndicators={NUM_STEPS}
           currActiveIdx={stepNumber}
@@ -73,11 +79,13 @@ const StepOneModalContent = ({
           <Box w={isMobile ? '100%' : '25rem'}>
             <Stack spacing="0.5rem" mb="2.5rem">
               <Text textStyle="body-2">
-                We have created a CSV template with the options from the field
-                you selected.{' '}
+                {t(
+                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.templateCreated',
+                ) + ' '}
                 <Text as="span" fontWeight="semibold">
-                  Please download the CSV template and add the emails for each
-                  option.
+                  {t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.pleaseDownload',
+                  )}
                 </Text>
               </Text>
               <Button
@@ -85,32 +93,48 @@ const StepOneModalContent = ({
                 leftIcon={<BiDownload fontSize="1.5rem" />}
                 onClick={onDownloadCsvClick}
               >
-                Download and edit CSV template
+                {t(
+                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.button',
+                )}
               </Button>
             </Stack>
             <Stack spacing="1.5rem">
               <Text textStyle="h4" color="secondary.500">
-                How to use the CSV template:
+                {t(
+                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.title',
+                )}
               </Text>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Option
+                  {t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.title',
+                  )}
                 </Text>
                 <Text textStyle="body-2">
-                  This contains all the options from your field.{' '}
+                  {t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.explanation',
+                  ) + ' '}
                   <Text as="span" fontWeight="semibold">
-                    Do not edit, reorder or delete anything in this column.
+                    {t(
+                      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.notice',
+                    )}
                   </Text>
                 </Text>
               </Box>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
-                  Email(s)
+                  {t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.title',
+                  )}
                 </Text>
                 <Text textStyle="body-2">
-                  Add the emails to send the form to for each option.{' '}
+                  {t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.explanation',
+                  ) + ' '}
                   <Text as="span" fontWeight="semibold">
-                    Separate multiple email(s) with a comma.
+                    {t(
+                      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.notice',
+                    )}
                   </Text>
                 </Text>
               </Box>
@@ -119,14 +143,18 @@ const StepOneModalContent = ({
           <Stack spacing="1rem" alignItems="center">
             <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_GIF} />
             <Text color="secondary.400" textStyle="caption-2">
-              How to set up your CSV
+              {t(
+                'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.imageCaption',
+              )}
             </Text>
           </Stack>
         </Stack>
       </ModalBody>
       <ModalFooter>
         <NextAndBackButtonGroup
-          nextButtonLabel="Next: Upload CSV file"
+          nextButtonLabel={t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.nextButton',
+          )}
           handleBack={onClose}
           handleNext={() => setStepNumber(1)}
           isNextDisabled={!isCsvTemplateDownloaded}
@@ -154,60 +182,77 @@ const StepTwoModalContent = ({
   onSubmit,
   isSubmitDisabled,
   validateCsvFile,
-}: StepTwoModalContentProps) => (
-  <ModalContent>
-    <ModalCloseButton />
-    <ModalHeader>
-      <Text mb="0.25rem">Upload your completed CSV file</Text>
-      <ProgressIndicator
-        numIndicators={NUM_STEPS}
-        currActiveIdx={stepNumber}
-        onClick={setStepNumber}
-      />
-    </ModalHeader>
-    <ModalBody>
-      <Text mb="2.5rem">
-        Please ensure that your file is saved in{' '}
-        <Text as="span" fontWeight="semibold">
-          comma-separated values (.csv)
-        </Text>{' '}
-        format.
-      </Text>
-      <FormControl isInvalid={!!errors.csvFile}>
-        <Controller
-          name="csvFile"
-          control={control}
-          rules={{
-            required: 'Please upload a CSV file',
-            validate: validateCsvFile,
-          }}
-          render={({ field: { onChange, name, value } }) => (
-            <Attachment
-              onChange={onChange}
-              value={value}
-              name={name}
-              isRequired
-              showFileSize
-              showDownload
-              showRemove
-              maxSize={MAX_UPLOAD_FILE_SIZE}
-              accept={['.csv']}
-            />
+}: StepTwoModalContentProps) => {
+  const { t } = useTranslation()
+  return (
+    <ModalContent>
+      <ModalCloseButton />
+      <ModalHeader>
+        <Text mb="0.25rem">
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.title',
           )}
+        </Text>
+        <ProgressIndicator
+          numIndicators={NUM_STEPS}
+          currActiveIdx={stepNumber}
+          onClick={setStepNumber}
         />
-        <FormErrorMessage>{errors.csvFile?.message}</FormErrorMessage>
-      </FormControl>
-    </ModalBody>
-    <ModalFooter>
-      <NextAndBackButtonGroup
-        nextButtonLabel="Save CSV file"
-        handleBack={() => setStepNumber(0)}
-        handleNext={onSubmit}
-        isNextDisabled={isSubmitDisabled}
-      />
-    </ModalFooter>
-  </ModalContent>
-)
+      </ModalHeader>
+      <ModalBody>
+        <Text mb="2.5rem">
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.prefix',
+          ) + ' '}
+          <Text as="span" fontWeight="semibold">
+            {t(
+              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.csv',
+            )}
+          </Text>{' '}
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.suffix',
+          )}
+        </Text>
+        <FormControl isInvalid={!!errors.csvFile}>
+          <Controller
+            name="csvFile"
+            control={control}
+            rules={{
+              required: t(
+                'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.required',
+              ),
+              validate: validateCsvFile,
+            }}
+            render={({ field: { onChange, name, value } }) => (
+              <Attachment
+                onChange={onChange}
+                value={value}
+                name={name}
+                isRequired
+                showFileSize
+                showDownload
+                showRemove
+                maxSize={MAX_UPLOAD_FILE_SIZE}
+                accept={['.csv']}
+              />
+            )}
+          />
+          <FormErrorMessage>{errors.csvFile?.message}</FormErrorMessage>
+        </FormControl>
+      </ModalBody>
+      <ModalFooter>
+        <NextAndBackButtonGroup
+          nextButtonLabel={t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.confirm',
+          )}
+          handleBack={() => setStepNumber(0)}
+          handleNext={onSubmit}
+          isNextDisabled={isSubmitDisabled}
+        />
+      </ModalFooter>
+    </ModalContent>
+  )
+}
 
 export interface ConditionalRoutingOptionModalProps {
   isOpen: boolean
