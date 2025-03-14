@@ -21,14 +21,14 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     default: null,
     env: 'SGID_CLIENT_SECRET',
   },
-  privateKeyPath: {
-    doc: 'The path to the private key to decrypt payloads from sgID.',
+  privateKey: {
+    doc: 'The private key to decrypt payloads from sgID.',
     format: String,
     default: null,
     env: 'SGID_PRIVATE_KEY',
   },
-  publicKeyPath: {
-    doc: 'The path to the public key given to sgID.',
+  publicKey: {
+    doc: 'The public key given to sgID.',
     format: String,
     default: null,
     env: 'SGID_PUBLIC_KEY',

@@ -1,5 +1,4 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
-import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -46,15 +45,15 @@ export class SgidServiceClass {
     cookieDomain,
     cookieMaxAge,
     cookieMaxAgePreserved,
-    privateKeyPath,
-    publicKeyPath,
+    privateKey,
+    publicKey,
     hostname,
     formLoginRedirectUri: redirectUri,
     clientId,
     clientSecret,
     jwtSecret,
   }: ISgidVarsSchema) {
-    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
+    this.privateKey = Buffer.from(privateKey, 'base64').toString('utf8')
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
@@ -63,7 +62,7 @@ export class SgidServiceClass {
       redirectUri,
       privateKey: this.privateKey,
     })
-    this.publicKey = fs.readFileSync(publicKeyPath)
+    this.publicKey = Buffer.from(publicKey, 'base64').toString('utf8')
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
