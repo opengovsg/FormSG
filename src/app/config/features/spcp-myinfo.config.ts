@@ -154,7 +154,7 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'SP_OIDC_RP_REDIRECT_URL',
   },
   spOidcRpJwksPublic: {
-    doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI",
+    doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
     format: String,
     default: null,
     env: 'SP_OIDC_RP_JWKS_PUBLIC',
@@ -190,7 +190,7 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'CP_OIDC_RP_REDIRECT_URL',
   },
   cpOidcRpJwksPublic: {
-    doc: "The Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI",
+    doc: "The Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json",
     format: String,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC',
