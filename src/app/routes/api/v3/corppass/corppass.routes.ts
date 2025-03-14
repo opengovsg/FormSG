@@ -14,10 +14,11 @@ export const CorppassOidcRouter = Router()
  * @route GET api/v3/corppass/.well-known/jwks.json
  * @returns 200
  */
-CorppassOidcRouter.use(
-  '/.well-known/jwks.json',
-  express.static(spcpMyInfoConfig.cpOidcRpJwksPublicPath),
-)
+CorppassOidcRouter.get('/.well-known/jwks.json', (req, res) => {
+  const jwksContent = spcpMyInfoConfig.cpOidcRpJwksPublic
+  res.setHeader('Content-Type', 'application/json')
+  res.send(jwksContent)
+})
 
 /**
  * Handles form login after user has completed authentication on cp oidc

@@ -23,13 +23,13 @@ export class AuthSgidServiceClass {
   private privateKey: string
 
   constructor({
-    privateKeyPath,
+    privateKey,
     hostname,
     adminLoginRedirectUri: redirectUri,
     clientId,
     clientSecret,
   }: ISgidVarsSchema) {
-    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
+    this.privateKey = Buffer.from(privateKey, 'base64').toString('utf8')
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
