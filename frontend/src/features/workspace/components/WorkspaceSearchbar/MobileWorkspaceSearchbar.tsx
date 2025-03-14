@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
 import {
   Box,
@@ -77,6 +78,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
     { isExpanded, onToggleExpansion, placeholder, ...props },
     ref,
   ): JSX.Element => {
+    const { t } = useTranslation()
     const {
       internalFilter,
       internalValue,
@@ -112,7 +114,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
             />
             <InputRightElement right="1px">
               <IconButton
-                aria-label="Close and reset search bar"
+                aria-label={t('features.workspace.search.aria.reset')}
                 icon={<BiX />}
                 onClick={handleToggle}
                 fontSize="1.25rem"
@@ -126,7 +128,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
         ) : (
           <Box gridArea="searchIcon">
             <IconButton
-              aria-label="Expand search bar"
+              aria-label={t('features.workspace.search.aria.expand')}
               colorScheme="secondary"
               variant="clear"
               onClick={handleToggle}
@@ -143,7 +145,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
               as={IconButton}
               colorScheme="secondary"
               variant="clear"
-              aria-label="Filter forms"
+              aria-label={t('features.workspace.search.aria.filter')}
               icon={<SelectedFilterAffordance show={hasFilter} />}
               backgroundColor={hasFilter ? 'neutral.200' : undefined}
               onClick={onOpen}

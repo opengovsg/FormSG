@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -19,14 +20,18 @@ const WorkspaceFormRowsSkeleton = () => {
 }
 
 const WorkspaceFormRowsFilterNone = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { title, subText } = t('features.workspace.search.noneFound', {
+    returnObjects: true,
+  })
   return (
     <Box mt="2rem">
       <Stack w="100%" spacing="1rem">
         <Text textStyle="h2" align="center" color="primary.500">
-          No forms found
+          {title}
         </Text>
         <Flex justify="center" align="center">
-          <Text align="center">Try another search or remove filters</Text>
+          <Text align="center">{subText}</Text>
         </Flex>
         <Flex justifyContent="center">
           <WorkspaceFormRowsFilterNoneSvg />

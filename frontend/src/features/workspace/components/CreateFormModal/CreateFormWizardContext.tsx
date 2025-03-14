@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types/form/form'
 
@@ -52,10 +53,11 @@ export const CreateFormWizardContext = createContext<
 >(undefined)
 
 export const useCreateFormWizard = (): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const context = useContext(CreateFormWizardContext)
   if (!context) {
     throw new Error(
-      `useCreateFormWizard must be used within a CreateFormWizardProvider component`,
+      t('features.workspace.modals.create.errors.useWizardWithinContext'),
     )
   }
   return context

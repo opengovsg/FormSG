@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
@@ -21,6 +22,7 @@ import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizard
 import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
 export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const { data: dashboardForms, isLoading: isWorkspaceLoading } = useDashboard()
   const { activeFormMeta } = useWorkspaceRowsContext()
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
@@ -180,7 +182,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
-    modalHeader: 'Duplicate form',
+    modalHeader: t('features.workspace.modals.create.title.duplicate'),
   }
 }
 
