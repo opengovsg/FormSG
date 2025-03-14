@@ -211,10 +211,17 @@ export const FeedbackPage = (): JSX.Element => {
         }}
       >
         <Box gridArea="information" pl="0rem">
-          {getInformationGridComponent(
-            currentFeedbackType,
-            issueProps,
-            reviewProps,
+          {currentFeedbackType === FeedbackType.Issues ? (
+            <GetIssueInformationComponent
+              count={issueProps.count}
+              translations={translations.issueInformation}
+            />
+          ) : (
+            <GetReviewInformationComponent
+              average={reviewProps.average}
+              count={reviewProps.count}
+              translations={translations.reviewInformation}
+            />
           )}
         </Box>
         <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
@@ -287,11 +294,15 @@ export const FeedbackPage = (): JSX.Element => {
   )
 }
 
-const getReviewInformationComponent = (
-  average: string | undefined,
-  count: number | undefined,
-  translations: ReviewInformationTranslations,
-): JSX.Element => {
+function GetReviewInformationComponent({
+  average,
+  count,
+  translations,
+}: {
+  average?: string
+  count?: number
+  translations: ReviewInformationTranslations
+}): JSX.Element {
   return (
     <Grid
       gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
@@ -321,10 +332,13 @@ const getReviewInformationComponent = (
   )
 }
 
-const getIssueInformationComponent = (
-  count: number | undefined,
-  translations: IssueInformationTranslations,
-): JSX.Element => {
+function GetIssueInformationComponent({
+  count,
+  translations,
+}: {
+  count?: number
+  translations: IssueInformationTranslations
+}): JSX.Element {
   return (
     <Box display="flex" alignItems="center" mb="0.5rem">
       <Text textStyle="h4">
@@ -337,24 +351,6 @@ const getIssueInformationComponent = (
         <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
       </Tooltip>
     </Box>
-  )
-}
-
-const getInformationGridComponent = (
-  currentFeedbackType: FeedbackType,
-  issueProps: Issue,
-  reviewProps: Review,
-): JSX.Element => {
-  if (currentFeedbackType === FeedbackType.Issues) {
-    return getIssueInformationComponent(
-      issueProps.count,
-      issueProps.translations,
-    )
-  }
-  return getReviewInformationComponent(
-    reviewProps.average,
-    reviewProps.count,
-    reviewProps.translations,
   )
 }
 

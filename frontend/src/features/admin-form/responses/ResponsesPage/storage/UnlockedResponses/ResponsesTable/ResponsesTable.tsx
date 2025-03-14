@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
@@ -63,38 +64,51 @@ const StatusBadge = ({
   </Badge>
 )
 
-const PendingBadge = () => (
-  <StatusBadge
-    textColor="warning.700"
-    backgroundColor="warning.100"
-    statusText="Pending"
-  />
-)
+function PendingBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="warning.700"
+      backgroundColor="warning.100"
+      statusText={t('features.common.pending')}
+    />
+  )
+}
 
-const CompletedBadge = () => (
-  <StatusBadge
-    textColor="success.700"
-    backgroundColor="success.100"
-    statusText="Completed"
-  />
-)
+function CompletedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="success.700"
+      backgroundColor="success.100"
+      statusText={t('features.common.completed')}
+    />
+  )
+}
 
-const ApprovedBadge = () => (
-  <StatusBadge
-    textColor="success.700"
-    backgroundColor="success.100"
-    statusText="Approved"
-  />
-)
+function ApprovedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="success.700"
+      backgroundColor="success.100"
+      statusText={t('features.common.approved')}
+    />
+  )
+}
 
-const NotApprovedBadge = () => (
-  <StatusBadge
-    textColor="danger.700"
-    backgroundColor="danger.100"
-    statusText="Not approved"
-  />
-)
+function NotApprovedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="danger.700"
+      backgroundColor="danger.100"
+      statusText={t('features.common.notApproved')}
+    />
+  )
+}
 
+// TODO(#8204) Extract out text after moving into component to use the hook
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
@@ -119,6 +133,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
+// TODO(#8204) Extract out text after moving into component to use the hook
 const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Email',
@@ -181,6 +196,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
+// TODO(#8204) Extract out text after moving into component to use the hook
 const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',

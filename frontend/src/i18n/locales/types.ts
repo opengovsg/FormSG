@@ -15,6 +15,11 @@ import {
   Modals,
   Navbar,
   PublicForm,
+  ResponsesCharts,
+  ResponsesComponents,
+  ResponsesFeedbackPage,
+  ResponsesIndividualResponse,
+  ResponsesResponsesPage,
   Settings,
   ThankYou,
   Toasts,
@@ -42,6 +47,13 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
         feedback?: Feedback
+        responses?: {
+          charts?: ResponsesCharts
+          components?: ResponsesComponents
+          feedbackPage?: ResponsesFeedbackPage
+          individualResponse?: ResponsesIndividualResponse
+          responsesPage?: ResponsesResponsesPage
+        }
       }
       app?: App
       common?: Common

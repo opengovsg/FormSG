@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
@@ -20,6 +21,7 @@ import { EmptyChartsContainer } from './UnlockedCharts/components/EmptyChartsCon
 import UnlockedCharts from './UnlockedCharts'
 
 export const ChartsPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const { pathname } = useLocation()
@@ -33,8 +35,7 @@ export const ChartsPage = (): JSX.Element => {
 
   if (!form) {
     toast({
-      description:
-        'There was an error retrieving your form. Please try again later.',
+      description: t('features.adminForm.toasts.form.retrival.error'),
     })
     return <ResponsesPageSkeleton />
   }
@@ -63,8 +64,12 @@ export const ChartsPage = (): JSX.Element => {
   if (responseCount === 0) {
     return (
       <EmptyChartsContainer
-        title="No charts generated yet."
-        subtitle="Charts will be generated when you receive responses on your form."
+        title={t(
+          'features.adminForm.responses.charts.emptyChartContainer.noResponses.title',
+        )}
+        subtitle={t(
+          'features.adminForm.responses.charts.emptyChartContainer.noResponses.subtitle',
+        )}
       />
     )
   }
@@ -72,8 +77,12 @@ export const ChartsPage = (): JSX.Element => {
   if (responseCount > chartsMaxResponseCount) {
     return (
       <EmptyChartsContainer
-        title="No charts generated"
-        subtitle="The number of form submissions has exceeded the capacity allowed by Charts beta."
+        title={t(
+          'features.adminForm.responses.charts.emptyChartContainer.tooManyResponses.title',
+        )}
+        subtitle={t(
+          'features.adminForm.responses.charts.emptyChartContainer.tooManyResponses.subtitle',
+        )}
       />
     )
   }
@@ -85,8 +94,12 @@ export const ChartsPage = (): JSX.Element => {
       <SecretKeyVerification
         hideResponseCount
         heroSvg={<ChartsSvgr />}
-        ctaText="View charts"
-        label="Enter or upload Secret Key to view charts"
+        ctaText={t(
+          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
+        )}
+        label={t(
+          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
+        )}
       />
       <Container p={0} maxW="42.5rem">
         <Box mt="2rem" mb="0.5rem">

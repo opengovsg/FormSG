@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Searchbar, { useSearchbar } from '~components/Searchbar'
 
@@ -20,6 +21,8 @@ export const SubmissionSearchbar = ({
 
   const { inputRef } = useSearchbar()
 
+  const { t } = useTranslation()
+
   return (
     <Searchbar
       isDisabled={isAnyFetching}
@@ -29,7 +32,9 @@ export const SubmissionSearchbar = ({
       onChange={setInputValue}
       onCollapseIconClick={() => setSubmissionId(null)}
       onSearch={setSubmissionId}
-      placeholder="Search by response ID"
+      placeholder={t(
+        'features.adminForm.responses.responsesPage.storage.unlockedResponses.submissionSearchbarPlaceholder',
+      )}
     />
   )
 }

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import {
   Link as ReactLink,
@@ -99,6 +100,8 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     return `..?${searchParams}`
   }, [lastNavPage, lastNavSubmissionId])
 
+  const { t } = useTranslation()
+
   return (
     <Grid
       sx={noPrintCss}
@@ -122,13 +125,13 @@ export const IndividualResponseNavbar = (): JSX.Element => {
           to={backLink}
         >
           <Icon as={BiLeftArrowAlt} fontSize="1.5rem" mr="0.5rem" />
-          Back to list
+          {t('features.adminForm.responses.individualResponse.backToList')}
         </Link>
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
           <Text textStyle="h2" as="h2">
-            Response
+            {t('features.common.response')}
             {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
           </Text>
         </Skeleton>
@@ -138,13 +141,13 @@ export const IndividualResponseNavbar = (): JSX.Element => {
           isDisabled={!prevSubmissionId || isAnyFetching}
           onClick={handleNavigatePrev}
           icon={<BiChevronLeft />}
-          aria-label="Previous submission"
+          aria-label={`${t('features.common.previous')} ${t('features.common.submission')}`}
         />
         <IconButton
           isDisabled={!nextSubmissionId || isAnyFetching}
           onClick={handleNavigateNext}
           icon={<BiChevronRight />}
-          aria-label="Next submission"
+          aria-label={`${t('features.common.next')} ${t('features.common.submission')}`}
         />
       </ButtonGroup>
     </Grid>

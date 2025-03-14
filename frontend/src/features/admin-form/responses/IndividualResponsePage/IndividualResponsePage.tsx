@@ -141,8 +141,12 @@ export const IndividualResponsePage = (): JSX.Element => {
     return (
       <SecretKeyVerification
         heroSvg={<FormActivationSvg />}
-        ctaText="Unlock responses"
-        label="Enter or upload Secret Key"
+        ctaText={t(
+          'features.adminForm.responses.individualResponse.secretKeyVerification.ctaText',
+        )}
+        label={t(
+          'features.adminForm.responses.individualResponse.secretKeyVerification.label',
+        )}
       />
     )
 
@@ -228,7 +232,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                 textStyle="subhead-1"
                 py={{ base: '0', md: '0.25rem' }}
               >
-                Attachments:
+                {t('features.common.attachments')}:
               </Text>
               <Skeleton isLoaded={!isLoading && !isError}>
                 <Button
@@ -243,7 +247,10 @@ export const IndividualResponsePage = (): JSX.Element => {
                     )
                   }
                 >
-                  {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
+                  {t(
+                    'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
+                    { attachmentSize: attachmentDownloadUrls.size },
+                  )}
                 </Button>
               </Skeleton>
             </Stack>
@@ -251,7 +258,9 @@ export const IndividualResponsePage = (): JSX.Element => {
           {form?.responseMode === FormResponseMode.Multirespondent &&
             user?.betaFlags?.mrfAdminSubmissionKey && (
               <StackRow
-                label="Response link"
+                label={t(
+                  'features.adminForm.responses.individualResponse.responseLinkLabel',
+                )}
                 value={responseLinkWithKey}
                 isLoading={isLoading}
                 isError={isError}

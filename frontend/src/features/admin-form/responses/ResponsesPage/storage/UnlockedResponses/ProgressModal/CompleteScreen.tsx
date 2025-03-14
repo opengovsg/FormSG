@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Badge,
   Icon,
@@ -31,9 +32,11 @@ export const CompleteScreen = ({
   onClose,
   downloadMetadata,
 }: CompleteScreenProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const mdComponents = useMdComponents()
 
+  // TODO(#8204) Extract out text after removing simplur and maybe with ICU format
   const completionMessage = useMemo(() => {
     if (!downloadMetadata) return ''
     const { successCount, expectedCount } = downloadMetadata
@@ -56,6 +59,7 @@ export const CompleteScreen = ({
     ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
   }, [downloadMetadata, isWithAttachments])
 
+  // TODO(#8204) Extract out text after removing simplur and maybe with ICU format
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
 
@@ -72,9 +76,13 @@ export const CompleteScreen = ({
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>Download complete</Text>
+          <Text>
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
+            )}
+          </Text>
           <Badge w="fit-content" colorScheme="success">
-            beta
+            {t('features.common.betaBadgeLabel')}
           </Badge>
         </Wrap>
       </ModalHeader>
@@ -110,7 +118,9 @@ export const CompleteScreen = ({
       </ModalBody>
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
-          Back to responses
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.backToResponses',
+          )}
         </Button>
       </ModalFooter>
     </>

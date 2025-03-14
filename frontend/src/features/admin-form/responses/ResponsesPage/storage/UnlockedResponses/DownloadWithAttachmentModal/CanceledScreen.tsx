@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Badge,
   ModalBody,
@@ -19,24 +20,33 @@ export const CanceledScreen = ({
   onClose,
 }: CanceledScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
 
   return (
     <>
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>Download stopped</Text>
+          <Text>
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.downloadStopped',
+            )}
+          </Text>
           <Badge w="fit-content" colorScheme="success">
-            beta
+            {t('features.common.betaBadgeLabel')}
           </Badge>
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
-        Your responses and attachments have not been downloaded successfully.
+        {t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.title',
+        )}
       </ModalBody>
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
-          Back to responses
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.backToResponses',
+          )}
         </Button>
       </ModalFooter>
     </>

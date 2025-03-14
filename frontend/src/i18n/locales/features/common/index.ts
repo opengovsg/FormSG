@@ -17,25 +17,30 @@ export interface Common {
   save: string
   saveField: string
   create: string
+  charts: string
   removeReenter: string
   share: string
   cancel: string
   title: string
   question: string
   option: string
+  options: string
   optional: string
   maximum: string
   minimum: string
   exact: string
+  export: string
   delete: string
   next: string
   back: string
   done: string
   submit: string
   edit: string
+  sending: string
   loading: string
   loadingWithEllipsis: string
   saving: string
+  response: string
   responses: string
   feedback: string
   verify: string
@@ -62,6 +67,7 @@ export interface Common {
     duplicateField: string
     editField: string
   }
+  date: string
   days: {
     Mondays: string
     Tuesdays: string
@@ -88,4 +94,18 @@ export interface Common {
     ariaLabel: string
   }
   moreOptions: string
+  beta: string
+  betaBadgeLabel: string
+  average: string
+  notApplicable: string
+  file: string
+  filename: string
+  previous: string
+  submission: string
+  attachments: string
+  success: string
+  pending: string
+  completed: string
+  approved: string
+  notApproved: string
 }

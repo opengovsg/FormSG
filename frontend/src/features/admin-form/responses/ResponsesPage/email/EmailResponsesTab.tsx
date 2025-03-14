@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next'
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { useFormResponsesCount } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
@@ -9,6 +9,8 @@ import { EmailResponsesSvgr } from './EmailResponsesSvgr'
 export const EmailResponsesTab = (): JSX.Element => {
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
+
+  const { t } = useTranslation()
 
   if (responsesCount === 0) {
     return <EmptyResponses />
@@ -23,11 +25,15 @@ export const EmailResponsesTab = (): JSX.Element => {
             <Text color="primary.500" as="span">
               {responsesCount?.toLocaleString() ?? '-'}
             </Text>
-            {simplur` ${[responsesCount ?? 0]}response[|s] to date`}
+            {t(
+              'features.adminForm.responses.responsesPage.emailResponsesTab.responsesToDate',
+            )}
           </Text>
         </Skeleton>
         <Text textStyle="body-1">
-          FormSG does not store responses in Email mode.
+          {t(
+            'features.adminForm.responses.responsesPage.emailResponsesTab.responsesNotStoredInEmailMode',
+          )}
         </Text>
       </Stack>
     </Container>

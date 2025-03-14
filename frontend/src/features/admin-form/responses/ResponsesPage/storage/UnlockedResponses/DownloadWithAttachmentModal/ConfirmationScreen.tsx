@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import {
   Badge,
@@ -45,52 +46,80 @@ export const ConfirmationScreen = ({
   responsesCount,
 }: ConfirmationScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
 
   return (
     <>
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>Download responses and attachments</Text>
+          <Text>
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.title',
+            )}
+          </Text>
           <Badge w="fit-content" colorScheme="success">
-            beta
+            {t('features.common.betaBadgeLabel')}
           </Badge>
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
           <Text>
+            {/* TODO(#8204) Maintain bold when extracting */}
             Separate zip files will be downloaded, <b>one for each response</b>.
             You can adjust the date range before proceeding.
             <br />
             <br />
-            <b>Number of responses and attachments:</b>{' '}
+            <b>
+              {t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.numberOfResponsesAndAttachments',
+              )}
+              :
+            </b>{' '}
             {responsesCount.toLocaleString()}
             <br />
-            <b>Estimated time:</b> 30-50 mins per 1,000 responses
+            <b>
+              {t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTime',
+              )}
+              :
+            </b>{' '}
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTimeReference',
+            )}
           </Text>
           <InlineMessage>
             <Stack>
               <Text textStyle="subhead-1">
-                Downloading many attachments can be an intensive operation.
+                {t(
+                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.title',
+                )}
               </Text>
               <List>
                 <InlineTextListItem>
-                  Do not use Internet Explorer
+                  {t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.doNotUseIE',
+                  )}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  Ensure network connectivity is strong
+                  {t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureStrongNetworkConnectivity',
+                  )}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  Ensure device has sufficient disk space for the download
+                  {t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureEnoughDiskSpace',
+                  )}
                 </InlineTextListItem>
               </List>
             </Stack>
           </InlineMessage>
           {responsesCount === 0 && (
             <InlineMessage variant="warning">
-              The date range you selected does not contain any responses. Please
-              select a date range containing responses and try again.
+              {t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.noResponsesInSelectedDateRange',
+              )}
             </InlineMessage>
           )}
         </Stack>
@@ -107,7 +136,9 @@ export const ConfirmationScreen = ({
             isLoading={isDownloading}
             isDisabled={responsesCount === 0}
           >
-            Start download
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.startDownload',
+            )}
           </Button>
           <Button
             isFullWidth={isMobile}
@@ -116,7 +147,7 @@ export const ConfirmationScreen = ({
             onClick={onCancel}
             isDisabled={isDownloading}
           >
-            Cancel
+            {t('features.common.cancel')}
           </Button>
         </Stack>
       </ModalFooter>

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
-import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
 import { BasicField, FormFieldDto } from '~shared/types'
@@ -83,6 +83,7 @@ const aggregateWordCloud = (
 }
 
 export const UnlockedChartsContainer = () => {
+  const { t } = useTranslation()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
   const { data: decryptedContent } = useAllSubmissionData(dateRange)
@@ -91,12 +92,6 @@ export const UnlockedChartsContainer = () => {
     if (!decryptedContent) return []
     return decryptedContent
   }, [decryptedContent])
-
-  const prettifiedResponsesCount = useMemo(
-    () =>
-      simplur` ${[filteredDecryptedData.length ?? 0]}response[|s] retrieved`,
-    [filteredDecryptedData],
-  )
 
   if (!form) return null
 
@@ -156,7 +151,9 @@ export const UnlockedChartsContainer = () => {
             <Text as="span" color="primary.500">
               {filteredDecryptedData.length}
             </Text>
-            {prettifiedResponsesCount}
+            {t(
+              'features.adminForm.responses.charts.unlockedChartsContainer.responsesRetrieved',
+            )}
           </Text>
         </Flex>
         <DateRangePicker
@@ -181,7 +178,9 @@ export const UnlockedChartsContainer = () => {
               textStyle="h2"
               whiteSpace="pre-wrap"
             >
-              No charts generated for this date range
+              {t(
+                'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.title',
+              )}
             </Text>
             <Text
               textStyle="body-1"
@@ -189,16 +188,20 @@ export const UnlockedChartsContainer = () => {
               mb="0.5rem"
               align="center"
             >
-              There were no responses collected within this date range.
-              <br />
-              Try selecting a different date range.
+              {t(
+                'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.subtitle',
+              )}
             </Text>
           </Stack>
         </Container>
       ) : (
         <EmptyChartsContainer
-          title="No charts generated yet."
-          subtitle="You need at least one supported field in your form to generate charts."
+          title={t(
+            'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.title',
+          )}
+          subtitle={t(
+            'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.subtitle',
+          )}
         />
       )}
     </>
