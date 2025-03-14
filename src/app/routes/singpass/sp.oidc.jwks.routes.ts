@@ -10,12 +10,7 @@ export const SpOidcJwksRouter = Router()
  * @route GET /sp/.well-known/jwks.json
  * @returns 200
  */
-SpOidcJwksRouter.get(
-  '/',
-  (req, res, next) => {
-    // Set appropriate content type for JWKS
-    res.type('application/json')
-    next()
-  },
-  express.static(spcpMyInfoConfig.spOidcRpJwksPublic),
-)
+SpOidcJwksRouter.get('/', (req, res) => {
+  const spOidcRpJwksPublicContent = spcpMyInfoConfig.spOidcRpJwksPublic
+  res.json(spOidcRpJwksPublicContent)
+})

@@ -1,4 +1,4 @@
-import express, { Router } from 'express'
+import { Router } from 'express'
 
 import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
@@ -16,8 +16,7 @@ export const CorppassOidcRouter = Router()
  */
 CorppassOidcRouter.get('/.well-known/jwks.json', (req, res) => {
   const jwksContent = spcpMyInfoConfig.cpOidcRpJwksPublic
-  res.setHeader('Content-Type', 'application/json')
-  res.send(jwksContent)
+  res.json(jwksContent)
 })
 
 /**
