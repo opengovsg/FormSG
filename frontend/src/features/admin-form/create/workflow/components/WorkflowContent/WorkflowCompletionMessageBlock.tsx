@@ -13,7 +13,7 @@ export const WorkflowCompletionMessageBlock = (): JSX.Element => {
   return (
     <InlineMessage variant="info">
       <Text>
-        {prefix + ' '}
+        {prefix}{' '}
         <Link as={ReactLink} to={'settings/email-notifications'}>
           {link}
         </Link>

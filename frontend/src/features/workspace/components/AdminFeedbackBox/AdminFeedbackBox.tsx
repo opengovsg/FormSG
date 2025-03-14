@@ -124,8 +124,7 @@ const AdminFeedbackCallForCommentContent = ({
   )
   return (
     <Text textStyle="h6">
-      {`${title} `}
-      <Link onClick={onLinkClick}>{link}</Link>
+      {title} <Link onClick={onLinkClick}>{link}</Link>
     </Text>
   )
 }
