@@ -122,7 +122,6 @@ export class MyInfoServiceClass {
 
     this.#myInfoGovClient = new MyInfoGovClient({
       singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
-      // clientPrivateKey: fs.readFileSync(spcpMyInfoConfig.myInfoKeyPath),
       clientPrivateKey: Buffer.from(
         spcpMyInfoConfig.myInfoKey,
         'base64',
