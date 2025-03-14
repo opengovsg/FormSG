@@ -22,15 +22,12 @@ class IntranetServiceClass {
     // e.g. intranet-only forms, then this try-catch should be removed so that
     // an error is thrown if the intranet IP list file does not exist.
     // For now, the functionality is not crucial, so we can default to an empty array.
-    if (!intranetConfig.intranetIpListPath) {
+    if (!intranetConfig.intranetIpList) {
       this.intranetIps = []
       return
     }
     try {
-      this.intranetIps = fs
-        .readFileSync(intranetConfig.intranetIpListPath)
-        .toString()
-        .split('\n')
+      this.intranetIps = intranetConfig.intranetIpList.split('\n')
     } catch {
       logger.warn({
         message: 'Could not read file containing intranet IPs',
