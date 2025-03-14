@@ -196,7 +196,7 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'CP_OIDC_RP_JWKS_PUBLIC',
   },
   cpOidcRpJwksSecret: {
-    doc: "The Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
+    doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
     format: String,
     default: null,
     env: 'CP_OIDC_RP_JWKS_SECRET',
