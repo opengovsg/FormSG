@@ -4,7 +4,6 @@ import {
   MyInfoScope,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
-import fs from 'fs'
 import jwt from 'jsonwebtoken'
 import { cloneDeep } from 'lodash'
 import mongoose, { LeanDocument } from 'mongoose'
@@ -123,8 +122,15 @@ export class MyInfoServiceClass {
 
     this.#myInfoGovClient = new MyInfoGovClient({
       singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
-      clientPrivateKey: fs.readFileSync(spcpMyInfoConfig.myInfoKeyPath),
-      myInfoPublicKey: fs.readFileSync(spcpMyInfoConfig.myInfoCertPath),
+      // clientPrivateKey: fs.readFileSync(spcpMyInfoConfig.myInfoKeyPath),
+      clientPrivateKey: Buffer.from(
+        spcpMyInfoConfig.myInfoKey,
+        'base64',
+      ).toString('utf8'),
+      myInfoPublicKey: Buffer.from(
+        spcpMyInfoConfig.myInfoCert,
+        'base64',
+      ).toString('utf8'),
       clientId: spcpMyInfoConfig.myInfoClientId,
       clientSecret: spcpMyInfoConfig.myInfoClientSecret,
       redirectEndpoint: `${appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_REDIRECT_PATH}`,
