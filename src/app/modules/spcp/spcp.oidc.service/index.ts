@@ -1,5 +1,3 @@
-import fs from 'fs'
-
 import { FormAuthType } from '../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
@@ -13,12 +11,8 @@ const spOidcClient = new SpOidcClient({
   rpRedirectUrl: spcpMyInfoConfig.spOidcRpRedirectUrl,
   ndiDiscoveryEndpoint: spcpMyInfoConfig.spOidcNdiDiscoveryEndpoint,
   ndiJwksEndpoint: spcpMyInfoConfig.spOidcNdiJwksEndpoint,
-  rpPublicJwks: JSON.parse(
-    fs.readFileSync(spcpMyInfoConfig.spOidcRpJwksPublicPath).toString(),
-  ),
-  rpSecretJwks: JSON.parse(
-    fs.readFileSync(spcpMyInfoConfig.spOidcRpJwksSecretPath).toString(),
-  ),
+  rpPublicJwks: JSON.parse(spcpMyInfoConfig.spOidcRpJwksPublic),
+  rpSecretJwks: JSON.parse(spcpMyInfoConfig.spOidcRpJwksSecret),
 })
 
 const spOidcProps = {
@@ -32,12 +26,8 @@ const cpOidcClient = new CpOidcClient({
   rpRedirectUrl: spcpMyInfoConfig.cpOidcRpRedirectUrl,
   ndiDiscoveryEndpoint: spcpMyInfoConfig.cpOidcNdiDiscoveryEndpoint,
   ndiJwksEndpoint: spcpMyInfoConfig.cpOidcNdiJwksEndpoint,
-  rpPublicJwks: JSON.parse(
-    fs.readFileSync(spcpMyInfoConfig.cpOidcRpJwksPublicPath).toString(),
-  ),
-  rpSecretJwks: JSON.parse(
-    fs.readFileSync(spcpMyInfoConfig.cpOidcRpJwksSecretPath).toString(),
-  ),
+  rpPublicJwks: JSON.parse(spcpMyInfoConfig.cpOidcRpJwksPublic),
+  rpSecretJwks: JSON.parse(spcpMyInfoConfig.cpOidcRpJwksSecret),
 })
 
 const cpOidcProps = {

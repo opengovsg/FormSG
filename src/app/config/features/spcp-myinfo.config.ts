@@ -17,21 +17,21 @@ type ISpcpConfig = {
   spOidcNdiJwksEndpoint: string
   spOidcRpClientId: string
   spOidcRpRedirectUrl: string
-  spOidcRpJwksPublicPath: string
-  spOidcRpJwksSecretPath: string
+  spOidcRpJwksPublic: string
+  spOidcRpJwksSecret: string
   cpOidcNdiDiscoveryEndpoint: string
   cpOidcNdiJwksEndpoint: string
   cpOidcRpClientId: string
   cpOidcRpRedirectUrl: string
-  cpOidcRpJwksPublicPath: string
-  cpOidcRpJwksSecretPath: string
+  cpOidcRpJwksPublic: string
+  cpOidcRpJwksSecret: string
 }
 
 type IMyInfoConfig = {
   spEsrvcId: string // Needed for MyInfo
   myInfoClientMode: MyInfoMode
-  myInfoKeyPath: string
-  myInfoCertPath: string
+  myInfoKey: string
+  myInfoCert: string
   myInfoClientId: string
   myInfoClientSecret: string
   myInfoJwtSecret: string
@@ -99,17 +99,17 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: MyInfoMode.Production,
     env: 'MYINFO_CLIENT_CONFIG',
   },
-  myInfoKeyPath: {
-    doc: 'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
+  myInfoKey: {
+    doc: 'MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
     format: String,
     default: null,
-    env: 'MYINFO_FORMSG_KEY_PATH',
+    env: 'MYINFO_FORMSG_KEY',
   },
-  myInfoCertPath: {
-    doc: "Path to MyInfo's public certificate, which is used to verify their signature.",
+  myInfoCert: {
+    doc: "MyInfo's public certificate, which is used to verify their signature.",
     format: String,
     default: null,
-    env: 'MYINFO_CERT_PATH',
+    env: 'MYINFO_CERT',
   },
   myInfoClientId: {
     doc: 'OAuth2 client ID registered with MyInfo.',
@@ -153,17 +153,17 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'SP_OIDC_RP_REDIRECT_URL',
   },
-  spOidcRpJwksPublicPath: {
-    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI.  This will be hosted at /sp/.well-known/jwks.json endpoint.",
+  spOidcRpJwksPublic: {
+    doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI",
     format: String,
     default: null,
-    env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
+    env: 'SP_OIDC_RP_JWKS_PUBLIC',
   },
-  spOidcRpJwksSecretPath: {
-    doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
+  spOidcRpJwksSecret: {
+    doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
     format: String,
     default: null,
-    env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
+    env: 'SP_OIDC_RP_JWKS_SECRET',
   },
   cpOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Corppass OIDC Discovery Endpoint",
@@ -189,17 +189,17 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'CP_OIDC_RP_REDIRECT_URL',
   },
-  cpOidcRpJwksPublicPath: {
-    doc: "Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI.  This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.",
+  cpOidcRpJwksPublic: {
+    doc: "The Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI",
     format: String,
     default: null,
-    env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
+    env: 'CP_OIDC_RP_JWKS_PUBLIC',
   },
-  cpOidcRpJwksSecretPath: {
-    doc: "Path to the Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
+  cpOidcRpJwksSecret: {
+    doc: "The Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
     format: String,
     default: null,
-    env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
+    env: 'CP_OIDC_RP_JWKS_SECRET',
   },
 }
 

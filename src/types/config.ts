@@ -147,8 +147,8 @@ export interface ICompulsoryVarsSchema {
 export interface ISgidVarsSchema {
   clientId: string
   clientSecret: string
-  privateKeyPath: string
-  publicKeyPath: string
+  privateKey: string
+  publicKey: string
   formLoginRedirectUri: string
   adminLoginRedirectUri: string
   cookieMaxAge: number
