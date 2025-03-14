@@ -1,15 +1,15 @@
 import convict, { Schema } from 'convict'
 
 export interface IIntranet {
-  intranetIpListPath: string
+  intranetIpList: string
 }
 
 const intranetSchema: Schema<IIntranet> = {
-  intranetIpListPath: {
+  intranetIpList: {
     doc: 'Path to file containing list of intranet IP addresses, separated by newlines',
     format: String,
     default: '',
-    env: 'INTRANET_IP_LIST_PATH',
+    env: 'INTRANET_IP_LIST',
   },
 }
 
