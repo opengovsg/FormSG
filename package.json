@@ -179,7 +179,7 @@
     "@types/json-stringify-safe": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/jwk-to-pem": "^2.0.3",
-    "@types/lodash": "^4.17.6",
+    "@types/lodash": "^4.17.16",
     "@types/mongodb-uri": "^0.9.4",
     "@types/multer": "^1.4.11",
     "@types/node": "^14.18.23",
