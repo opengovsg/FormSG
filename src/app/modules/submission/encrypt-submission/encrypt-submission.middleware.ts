@@ -2,8 +2,8 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { featureFlags } from 'shared/constants'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -239,47 +239,18 @@ const devModeSyncVirusScanning = async (
   >[] = []
   for (const response of responses) {
     if (isQuarantinedAttachmentResponse(response)) {
-      //guardduty testing
-      const guarddutyResponsePromise =
-        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-      const attachmentResponsePromise =
-        SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-
-      // Wait for both responses
-      const [guarddutyResponse, attachmentResponse] = await Promise.all([
-        guarddutyResponsePromise,
-        attachmentResponsePromise,
-      ])
-
-      if (guarddutyResponse.isErr()) {
-        logger.info({
-          message: 'GUARDDUTY ERROR: ${guarddutyResponse}',
-          meta: {
-            action: 'Testing guardduty error',
-          },
-        })
-      } else {
-        logger.info({
-          message: 'GUARDDUTY SUCESS: ${guarddutyResponse}',
-          meta: {
-            action: 'Testing guardduty success',
-          },
-        })
-      }
-
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
-      // const attachmentResponse =
-      //   await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+      const attachmentResponse =
+        await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+      //guardduty testing TODO: replace when removing virus-scanner
+      // const guarddutyResponsePromise =
+      //   SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
       //     response,
       //     formId,
       //   )
-
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
     } else {

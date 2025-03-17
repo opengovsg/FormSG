@@ -12,5 +12,5 @@ export const featureFlags = {
   addingTwilioDisabled: 'adding-twilio-disabled' as const,
   postmanSms: 'postmanSms' as const,
   mfb: 'magic-form-builder' as const,
-  guardduty: 'guardDuty' as const,
+  guardduty: 'guardduty' as const,
 }
