@@ -1,4 +1,4 @@
-import express, { Router } from 'express'
+import { Router } from 'express'
 
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -10,7 +10,6 @@ export const SpOidcJwksRouter = Router()
  * @route GET /sp/.well-known/jwks.json
  * @returns 200
  */
-SpOidcJwksRouter.get('/', (req, res) => {
-  const spOidcRpJwksPublicContent = spcpMyInfoConfig.spOidcRpJwksPublic
-  res.json(spOidcRpJwksPublicContent)
+SpOidcJwksRouter.get('/', (_req, res) => {
+  res.json(spcpMyInfoConfig.spOidcRpJwksPublic)
 })

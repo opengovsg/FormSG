@@ -14,9 +14,8 @@ export const CorppassOidcRouter = Router()
  * @route GET api/v3/corppass/.well-known/jwks.json
  * @returns 200
  */
-CorppassOidcRouter.get('/.well-known/jwks.json', (req, res) => {
-  const jwksContent = spcpMyInfoConfig.cpOidcRpJwksPublic
-  res.json(jwksContent)
+CorppassOidcRouter.get('/.well-known/jwks.json', (_req, res) => {
+  res.json(spcpMyInfoConfig.cpOidcRpJwksPublic)
 })
 
 /**
