@@ -46,6 +46,7 @@ import {
   fileSizeLimitBytes,
   mapRouteError,
 } from './submission.utils'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -442,7 +443,12 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
-  return getQuarantinePresignedPostData(req.body)
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
+  logger.info({
+    message: `guardduty growthbook tag is: ${gbGuardduty}`,
+    meta: logMeta,
+  })
+  return getQuarantinePresignedPostData(req.body, gbGuardduty)
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',

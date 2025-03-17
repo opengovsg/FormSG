@@ -1159,6 +1159,7 @@ export const validateAttachments = (
 
 export const getQuarantinePresignedPostData = (
   attachmentSizes: AttachmentSizeMapType[],
+  growthbook: boolean | undefined,
 ): ResultAsync<
   AttachmentPresignedPostDataMapType[],
   CreatePresignedPostError
@@ -1195,67 +1196,55 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  return (
-    getFeatureFlag(featureFlags.guardduty, {
-      fallbackValue: false,
+  // return (
+  //   getFeatureFlag(featureFlags.guardduty, {
+  //     fallbackValue: false,
+  //   })
+  // .orElse(() => {
+  //   return okAsync(true) // Ensure feature flag failure doesn't break execution
+  // })
+  if (growthbook) {
+    logger.info({
+      message: 'Yes! Guardduty is enabled!',
+      meta: {
+        action: 'meta data action',
+      },
     })
-      // .orElse(() => {
-      //   return okAsync(true) // Ensure feature flag failure doesn't break execution
-      // })
-      .andThen((isGuarddutyEnabled) => {
-        const logMeta1 = {
-          action: 'GUARDDUTY s3 sending',
-        }
-        logger.info({
-          message: `featureFlag is ${isGuarddutyEnabled}`,
-          meta: logMeta1,
-        })
-        // if feature flag is on, add guardduty s3 presigned url
-        if (isGuarddutyEnabled) {
-          const logMeta = {
-            action: 'GUARDDUTY s3 sending',
-          }
-          logger.info({
-            message: 'Yes! Guardduty is enabled!',
-            meta: logMeta,
-          })
-          // Step 2a: Create presigned post data for each attachment for new guardduty bucket
-          const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
-            attachmentSizes.map(({ id, size }, index) => {
-              // Check if id is a valid ObjectId
-              if (!mongoose.isValidObjectId(id))
-                return errAsync(new InvalidFieldIdError())
+    // Step 2a: Create presigned post data for each attachment for new guardduty bucket
+    const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
+      attachmentSizes.map(({ id, size }, index) => {
+        // Check if id is a valid ObjectId
+        if (!mongoose.isValidObjectId(id))
+          return errAsync(new InvalidFieldIdError())
 
-              return createPresignedPostDataPromise({
-                bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
-                expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-                size,
-                key: fileKeys[index],
-              }).map((presignedPostData) => ({
-                id,
-                presignedPostData,
-              }))
-            }),
-          )
+        return createPresignedPostDataPromise({
+          bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
+          expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+          size,
+          key: fileKeys[index],
+        }).map((presignedPostData) => ({
+          id,
+          presignedPostData,
+        }))
+      }),
+    )
 
-          return ResultAsync.combine([
-            currentQuarantineBucketPost,
-            newGuarddutyQuarantineBucketPost,
-          ]).map(([currentQuarantineData, newGuarddutyData]) => [
-            ...currentQuarantineData,
-            ...newGuarddutyData,
-          ])
-        }
-        const logMeta = {
-          action: 'GUARDDUTY s3 sending',
-        }
-        logger.info({
-          message: 'No Guardduty is not enabled!',
-          meta: logMeta,
-        })
-        return currentQuarantineBucketPost
-      })
-  )
+    return ResultAsync.combine([
+      currentQuarantineBucketPost,
+      newGuarddutyQuarantineBucketPost,
+    ]).map(([currentQuarantineData, newGuarddutyData]) => [
+      ...currentQuarantineData,
+      ...newGuarddutyData,
+    ])
+  }
+  const logMeta = {
+    action: 'GUARDDUTY s3 sending',
+  }
+  logger.info({
+    message: 'No Guardduty is not enabled!',
+    meta: logMeta,
+  })
+  return currentQuarantineBucketPost
 }
 
 /**

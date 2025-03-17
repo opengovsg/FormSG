@@ -169,6 +169,7 @@ export const validateStorageSubmissionParams = celebrate({
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
   formId: string,
+  growthbook: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
   | VirusScanFailedError
@@ -177,35 +178,34 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      getFeatureFlag(featureFlags.guardduty, {
-        fallbackValue: false,
-        logMeta: {
-          action: 'asyncVirusScanning',
+      // getFeatureFlag(featureFlags.guardduty, {
+      //   fallbackValue: false,
+      //   logMeta: {
+      //     action: 'asyncVirusScanning',
+      //     formId,
+      //   },
+      // }).map((isGuarddutyEnabled) => {
+      //   if (isGuarddutyEnabled) {
+      //     logger.info({
+      //       message: `Trying to guardduty scan first ${response}`,
+      //       meta: {
+      //         action: 'Testing guardduty',
+      //       },
+      //     })
+      if (growthbook) {
+        // trigger guardduty scan
+        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+          response,
           formId,
-        },
-      }).map((isGuarddutyEnabled) => {
-        if (isGuarddutyEnabled) {
+        ).mapErr((err) =>
           logger.info({
-            message: `Trying to guardduty scan first ${response}`,
+            message: `GuardDuty Scan unsuccessful:, ${err}`,
             meta: {
-              action: 'Testing guardduty',
+              action: 'Testing guardduty error',
             },
-          })
-
-          // trigger guardduty scan
-          SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
-            response,
-            formId,
-          ).mapErr((err) =>
-            logger.info({
-              message: `GuardDuty Scan unsuccessful:, ${err}`,
-              meta: {
-                action: 'Testing guardduty error',
-              },
-            }),
-          )
-        }
-      })
+          }),
+        )
+      }
 
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
@@ -273,7 +273,7 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
   // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
@@ -297,6 +297,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             req.body.responses,
             req.formsg.formDef._id.toString(),
+            gbGuardduty,
           ),
         )
 
