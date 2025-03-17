@@ -1,0 +1,8 @@
+**/node_modules
+**/test_data
+.gitignore
+**/build
+serverless.yml
+**/.git
+
+docker-compose.dev.yml

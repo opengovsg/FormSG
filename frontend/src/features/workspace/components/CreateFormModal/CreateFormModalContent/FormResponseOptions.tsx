@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiLockAlt } from 'react-icons/bi'
 import { forwardRef, Stack, Text, UnorderedList } from '@chakra-ui/react'
 
@@ -51,6 +52,10 @@ export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
 >(({ value, onChange, isSingpass, handleEmailButtonPress }, ref) => {
+  const { t } = useTranslation()
+  const { storage, mrf } = t('features.workspace.modals.create.details.type', {
+    returnObjects: true,
+  })
   return (
     <>
       <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
@@ -61,11 +66,8 @@ export const FormResponseOptions = forwardRef<
           onClick={() => onChange(FormResponseMode.Encrypt)}
           flex={1}
         >
-          <Tile.Title>Storage mode form</Tile.Title>
-          <Tile.Subtitle>
-            Collect responses from individual respondents. Ideal for one-way
-            submissions.
-          </Tile.Subtitle>
+          <Tile.Title>{storage.title}</Tile.Title>
+          <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
               { text: 'Supports webhooks for integrations' },
@@ -84,11 +86,8 @@ export const FormResponseOptions = forwardRef<
           flex={1}
           isDisabled={isSingpass}
         >
-          <Tile.Title>Multi-respondent form</Tile.Title>
-          <Tile.Subtitle>
-            Collect responses from multiple respondents in a single workflow.
-            Ideal for sequential submissions.
-          </Tile.Subtitle>
+          <Tile.Title>{mrf.title}</Tile.Title>
+          <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
               { text: 'Supports approval workflows', badge: 'New' },

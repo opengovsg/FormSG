@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -41,6 +42,7 @@ const MoveWorkspaceDropdown = ({
   setIsMoveWorkspace: Dispatch<SetStateAction<boolean>>
   formMeta: AdminDashboardFormMetaDto
 }) => {
+  const { t } = useTranslation()
   const { handleMoveForm, handleRemoveFormFromWorkspaces } =
     useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
@@ -70,7 +72,7 @@ const MoveWorkspaceDropdown = ({
         onClick={() => setIsMoveWorkspace(false)}
         icon={<BiChevronLeft fontSize="1.25rem" />}
       >
-        Back
+        {t('features.common.back')}
       </Menu.Item>
       <Menu.Divider aria-hidden borderColor="neutral.300"></Menu.Divider>
       {workspaces.map((workspace) => (
@@ -100,6 +102,7 @@ export const RowActionsDropdown = ({
   isDisabled,
   formMeta,
 }: RowActionsProps): JSX.Element => {
+  const { t } = useTranslation()
   const [isMoveWorkspace, setIsMoveWorkspace] = useState(false)
   const {
     adminFormLink,
@@ -137,7 +140,7 @@ export const RowActionsDropdown = ({
               mr="-1px"
               borderEndRadius={0}
             >
-              Edit
+              {t('features.common.edit')}
             </Button>
             <MenuButton
               as={IconButton}
@@ -162,32 +165,32 @@ export const RowActionsDropdown = ({
                 target="_blank"
                 icon={<BiShow fontSize="1.25rem" />}
               >
-                Preview
+                {t('features.workspace.actions.preview')}
               </Menu.Item>
               <Menu.Item
                 onClick={handleDuplicateForm}
                 icon={<BiDuplicate fontSize="1.25rem" />}
               >
-                Duplicate
+                {t('features.workspace.actions.duplicate')}
               </Menu.Item>
               <Menu.Item
                 onClick={handleShareForm}
                 icon={<BiShareAlt fontSize="1.25rem" />}
               >
-                Share form
+                {t('features.workspace.actions.share')}
               </Menu.Item>
               <Menu.Item
                 onClick={handleCollaborators}
                 icon={<BiUserPlus fontSize="1.25rem" />}
               >
-                Manage form admins
+                {t('features.workspace.actions.admins')}
               </Menu.Item>
               <Menu.Item
                 closeOnSelect={false}
                 onClick={handleMoveWorkspace}
                 icon={<BiFolder fontSize="1.25rem" />}
               >
-                Move to Folder
+                {t('features.workspace.actions.move')}
                 <Icon
                   ml="2.5rem"
                   as={BiChevronRight}
@@ -203,7 +206,7 @@ export const RowActionsDropdown = ({
                     color="danger.500"
                     icon={<BiTrash fontSize="1.25rem" />}
                   >
-                    Delete
+                    {t('features.common.delete')}
                   </Menu.Item>
                 </>
               )}

@@ -41,6 +41,8 @@ export const SendReminderButton = ({
       variant="clear"
       leftIcon={<BiBell />}
       _focus={{}}
+      _hover={{}}
+      _active={{}}
       onClick={(e) => {
         e.stopPropagation()
         if (!submissionSecretKey) {

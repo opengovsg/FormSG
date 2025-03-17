@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiFilter, BiSearch } from 'react-icons/bi'
 import {
   Divider,
@@ -89,6 +90,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
     },
     ref,
   ): JSX.Element => {
+    const { t } = useTranslation()
     const {
       filterButtonLabel,
       internalFilter,
@@ -143,7 +145,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
               size="sm"
               variant="clear"
               colorScheme="secondary"
-              aria-label="Filter forms"
+              aria-label={t('features.workspace.search.aria.filter')}
               leftIcon={<BiFilter fontSize="1.25rem" />}
               px="0.5rem"
               mx="0.25rem"

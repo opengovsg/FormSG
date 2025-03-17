@@ -81,7 +81,7 @@ const StepOneModalContent = ({
               <Text textStyle="body-2">
                 {t(
                   'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.templateCreated',
-                ) + ' '}
+                )}{' '}
                 <Text as="span" fontWeight="semibold">
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.pleaseDownload',
@@ -113,7 +113,7 @@ const StepOneModalContent = ({
                 <Text textStyle="body-2">
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.explanation',
-                  ) + ' '}
+                  )}{' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
                       'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.notice',
@@ -130,7 +130,7 @@ const StepOneModalContent = ({
                 <Text textStyle="body-2">
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.explanation',
-                  ) + ' '}
+                  )}{' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
                       'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.notice',
@@ -203,7 +203,7 @@ const StepTwoModalContent = ({
         <Text mb="2.5rem">
           {t(
             'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.prefix',
-          ) + ' '}
+          )}{' '}
           <Text as="span" fontWeight="semibold">
             {t(
               'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.csv',

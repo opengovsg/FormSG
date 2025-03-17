@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.185.1",
+  "version": "6.186.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -55,7 +55,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.536.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@babel/runtime": "^7.24.7",
     "@faker-js/faker": "^8.4.1",
@@ -111,7 +111,7 @@
     "JSONStream": "^1.3.5",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
-    "jwk-to-pem": "^2.0.6",
+    "jwk-to-pem": "^2.0.7",
     "libphonenumber-js": "^1.10.59",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.41",
@@ -196,7 +196,7 @@
     "@types/uid-generator": "^2.0.6",
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.0",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.19.1",
     "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.22.0",
@@ -220,7 +220,7 @@
     "lint-staged": "^15.2.10",
     "maildev": "^2.2.1",
     "mockdate": "^3.0.5",
-    "prettier": "^3.3.3",
+    "prettier": "^3.5.3",
     "rimraf": "^5.0.5",
     "stripe-event-types": "^3.1.0",
     "supertest": "^6.3.3",

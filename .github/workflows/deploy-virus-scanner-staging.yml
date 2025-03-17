@@ -25,3 +25,11 @@ jobs:
       provisionedConcurrency: 1
       checkoutBranch: 'staging'
     secrets: inherit
+  deploy-scanner-guardduty:
+    name: Deploy Scanner Guardduty
+    uses: ./.github/workflows/aws-deploy-scanner-guardduty.yml
+    with:
+      environment: 'staging'
+      provisionedConcurrency: 1
+      checkoutBranch: 'staging'
+    secrets: inherit

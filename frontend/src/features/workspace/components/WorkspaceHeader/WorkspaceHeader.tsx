@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import {
   Box,
@@ -30,6 +31,7 @@ export interface WorkspaceHeaderProps {
 export const WorkspaceHeader = ({
   handleOpenCreateFormModal,
 }: WorkspaceHeaderProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
 
@@ -61,6 +63,7 @@ export const WorkspaceHeader = ({
     ],
   )
 
+  const placeholder = t('features.workspace.search.placeholder')
   return (
     <Grid
       gridTemplateAreas={{
@@ -111,7 +114,7 @@ export const WorkspaceHeader = ({
         <Box gridArea="searchFilter">
           {totalFormsCount ? (
             <WorkspaceSearchbar
-              placeholder="Search by title"
+              placeholder={placeholder}
               value={activeSearch}
               onChange={setActiveSearch}
               filterValue={activeFilter}
@@ -123,7 +126,7 @@ export const WorkspaceHeader = ({
         <MobileWorkspaceSearchbar
           isExpanded={isSearchExpanded}
           onToggleExpansion={onToggleSearchExpansion}
-          placeholder="Search by title"
+          placeholder={placeholder}
           value={activeSearch}
           onChange={setActiveSearch}
           filterValue={activeFilter}
@@ -139,7 +142,7 @@ export const WorkspaceHeader = ({
         leftIcon={<BiPlus fontSize="1.5rem" />}
         minW="9.625rem"
       >
-        Create form
+        {t('features.workspace.common.createForm')}
       </Button>
     </Grid>
   )
