@@ -47,16 +47,6 @@ export interface LandingPage {
     publicOfficersOnboard: string
     governmentAgencies: string
     exampleUserTitle: string
-    imageAlt: {
-      ica: string
-      moe: string
-      mom: string
-      npb: string
-      moh: string
-      pa: string
-      mfa: string
-      msfd: string
-    }
   }
   useCaseSection: {
     title: string

@@ -271,35 +271,17 @@ export const LandingPage = (): JSX.Element => {
           spacing={{ base: '2.5rem', md: '4.5rem' }}
         >
           <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.ica')}
+            alt="Immigration and Checkpoints Authority"
             src={restrictedIcaLogo}
           />
+          <Image alt="Ministry of Education" src={restrictedMoeLogo} />
+          <Image alt="Ministry ot Manpower" src={restrictedMomLogo} />
+          <Image alt="National Parks Board" src={restrictedNparksLogo} />
+          <Image alt="Ministry of Health" src={restrictedMohLogo} />
+          <Image alt="People's Association" src={restrictedPaLogo} />
+          <Image alt="Ministry ot Foreign Affairs" src={restrictedMfaLogo} />
           <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.moe')}
-            src={restrictedMoeLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.mom')}
-            src={restrictedMomLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.npb')}
-            src={restrictedNparksLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.moh')}
-            src={restrictedMohLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.pa')}
-            src={restrictedPaLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.mfa')}
-            src={restrictedMfaLogo}
-          />
-          <Image
-            alt={t('features.landingPage.usedByAgenciesSection.imageAlt.msfd')}
+            alt="Ministry ot Social and Family Development"
             src={restrictedMsfLogo}
           />
         </Wrap>

@@ -55,16 +55,6 @@ export const enSG: LandingPage = {
     publicOfficersOnboard: 'public officers onboard',
     governmentAgencies: 'government agencies',
     exampleUserTitle: 'Examples of users of FormSG',
-    imageAlt: {
-      ica: 'Immigration and Checkpoints Authority',
-      moe: 'Ministry of Education',
-      mom: 'Ministry of Manpower',
-      npb: 'National Parks Board',
-      moh: 'Ministry of Health',
-      pa: "People's Association",
-      mfa: 'Ministry of Foreign Affairs',
-      msfd: 'Ministry of Social and Family Development',
-    },
   },
   useCaseSection: {
     title: 'Supporting national and emergent use cases',
@@ -113,9 +103,9 @@ export const enSG: LandingPage = {
 
           3. If you have created multiple forms with similar titles in the past, it is possible that you have confused the different forms' secret keys with each other, as form titles are in the secret keys' filenames. Try all secret keys with similar filenames on your form.
 
-          4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title. 
+          4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title.
 
-          5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form]({CONTACT_US}). 
+          5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form]({CONTACT_US}).
 
           Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
         `,
@@ -125,7 +115,7 @@ export const enSG: LandingPage = {
         answer: `
           The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
 
-          7 MB for email mode forms is a hard limit because the email service we use has a fixed 10 MB outgoing size, and we buffer 3 MB for email fields and metadata. 
+          7 MB for email mode forms is a hard limit because the email service we use has a fixed 10 MB outgoing size, and we buffer 3 MB for email fields and metadata.
 
           Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
         `,
@@ -133,15 +123,15 @@ export const enSG: LandingPage = {
       howDoesE2eWork: {
         question: 'How does end-to-end encryption work?',
         answer: `
-          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format. 
+          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format.
 
-          The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.  
+          The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.
         `,
       },
       howToTransferOwnership: {
         question: 'How do I transfer ownership of my forms?',
         answer: `
-          You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button. 
+          You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button.
 
           Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
         `,
