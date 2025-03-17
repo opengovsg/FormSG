@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { PAPERLESS_FORMSG_RESEARCH_LINK } from '~shared/constants'
+import { KILL_EMAIL_MODE_LINK } from '~shared/constants'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -166,13 +166,18 @@ export const WorkspacePage = (): JSX.Element => {
           >
             <InlineMessage>
               <Text>
-                Do you still have paper forms in your agency?{' '}
+                Email mode forms will be retired on{' '}
+                <>
+                  <strong>30 June 2025</strong>
+                </>
+                . Email functionalities will continue to be available in Storage
+                mode.{' '}
                 <Link
                   display="inline"
-                  href={PAPERLESS_FORMSG_RESEARCH_LINK}
+                  href={KILL_EMAIL_MODE_LINK}
                   target="_blank"
                 >
-                  Tell us more so that we can help you digitalise them.
+                  Learn what this means for you.
                 </Link>
               </Text>
             </InlineMessage>
