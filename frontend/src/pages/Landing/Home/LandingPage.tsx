@@ -275,13 +275,13 @@ export const LandingPage = (): JSX.Element => {
             src={restrictedIcaLogo}
           />
           <Image alt="Ministry of Education" src={restrictedMoeLogo} />
-          <Image alt="Ministry ot Manpower" src={restrictedMomLogo} />
+          <Image alt="Ministry of Manpower" src={restrictedMomLogo} />
           <Image alt="National Parks Board" src={restrictedNparksLogo} />
           <Image alt="Ministry of Health" src={restrictedMohLogo} />
           <Image alt="People's Association" src={restrictedPaLogo} />
-          <Image alt="Ministry ot Foreign Affairs" src={restrictedMfaLogo} />
+          <Image alt="Ministry of Foreign Affairs" src={restrictedMfaLogo} />
           <Image
-            alt="Ministry ot Social and Family Development"
+            alt="Ministry of Social and Family Development"
             src={restrictedMsfLogo}
           />
         </Wrap>
