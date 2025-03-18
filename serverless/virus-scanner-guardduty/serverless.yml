@@ -56,7 +56,7 @@ provider:
           # AllowManagedRuleToSendS3EventsToGuardDuty
           - 'events:PutRule'
           Resource:
-            - 'arn:aws:events:ap-southeast-1:652261905145:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*'
+            - 'arn:aws:events:ap-southeast-1:*:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*'
 
   ecr:
     images:
