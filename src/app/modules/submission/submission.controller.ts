@@ -4,6 +4,7 @@ import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { featureFlags } from 'shared/constants'
 
 import {
   AttachmentPresignedPostDataMapType,
@@ -46,7 +47,6 @@ import {
   fileSizeLimitBytes,
   mapRouteError,
 } from './submission.utils'
-import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 

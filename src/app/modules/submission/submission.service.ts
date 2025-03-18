@@ -11,7 +11,6 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
-import { featureFlags } from '../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -57,7 +56,6 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from '../core/core.errors'
-import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import * as PaymentsService from '../payments/payments.service'
@@ -1237,6 +1235,7 @@ export const getQuarantinePresignedPostData = (
       ...newGuarddutyData,
     ])
   }
+  //TODO: remove, logs fro testing
   const logMeta = {
     action: 'GUARDDUTY s3 sending',
   }
