@@ -10,7 +10,6 @@ import formsgSdk from '~utils/formSdk'
 import { useUser } from '~features/user/queries'
 import {
   useCreateFormMutations,
-  useCreateFormMutationsWithoutRedirect,
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -67,12 +66,11 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { handleSubmit, setValue } = formMethods
 
-  const { createEmailModeFormMutation } = useCreateFormMutations()
-
   const {
+    createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
-  } = useCreateFormMutationsWithoutRedirect()
+  } = useCreateFormMutations()
 
   const { user } = useUser()
   const adminEmail = user?.email

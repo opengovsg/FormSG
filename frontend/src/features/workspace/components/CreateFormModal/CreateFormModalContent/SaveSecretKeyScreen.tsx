@@ -52,15 +52,14 @@ const useSaveSecretKeyDefault = () => {
 
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const formId = queryClient.getQueryData(workspaceKeys.lastCreatedForm)
 
   const handleDownloadAndNavigate = useCallback(() => {
-    // Retrieve stored form ID and navigate
-    const formId = queryClient.getQueryData(workspaceKeys.lastCreatedForm)
     if (formId) {
       queryClient.invalidateQueries(workspaceKeys.lastCreatedForm)
       navigate(`${ADMINFORM_ROUTE}/${formId}`)
     }
-  }, [queryClient, navigate])
+  }, [queryClient, navigate, formId])
 
   const [hasDownloaded, setHasDownloaded] = useState(false)
 
@@ -92,10 +91,11 @@ const useSaveSecretKeyDefault = () => {
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
       t('features.workspace.modals.create.secretKey.email.filename', {
         titleInputValue,
+        formId,
       }),
     )
     setHasDownloaded(true)
-  }, [secretKey, titleInputValue, t])
+  }, [t, secretKey, titleInputValue, formId])
 
   const handleCopyKey = useCallback(
     (e?: SyntheticEvent) => {

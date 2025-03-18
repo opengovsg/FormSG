@@ -83,43 +83,11 @@ const useCommonHooks = () => {
   }
 }
 
-export const useCreateFormMutationsWithoutRedirect = () => {
-  const { handleError, handleSuccessWithoutRedirect } = useCommonHooks()
+export const useCreateFormMutations = () => {
+  const { handleError, handleSuccess, handleSuccessWithoutRedirect } =
+    useCommonHooks()
 
   const queryClient = useQueryClient()
-
-  const createStorageModeFormMutation = useMutation<
-    FormDto,
-    ApiError,
-    CreateStorageFormBodyDto
-  >((params) => createStorageModeForm(params), {
-    onSuccess: (data) => {
-      handleSuccessWithoutRedirect(data)
-      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
-    },
-    onError: handleError,
-  })
-
-  const createMultirespondentModeFormMutation = useMutation<
-    FormDto,
-    ApiError,
-    CreateMultirespondentFormBodyDto
-  >((params) => createMultirespondentModeForm(params), {
-    onSuccess: (data) => {
-      handleSuccessWithoutRedirect(data)
-      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
-    },
-    onError: handleError,
-  })
-
-  return {
-    createStorageModeFormMutation,
-    createMultirespondentModeFormMutation,
-  }
-}
-
-export const useCreateFormMutations = () => {
-  const { handleSuccess, handleError } = useCommonHooks()
 
   const createEmailModeFormMutation = useMutation<
     FormDto,
@@ -135,7 +103,11 @@ export const useCreateFormMutations = () => {
     ApiError,
     CreateStorageFormBodyDto
   >((params) => createStorageModeForm(params), {
-    onSuccess: handleSuccess,
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      console.log(`create form worfklow: set query data done on ${data._id}`)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
     onError: handleError,
   })
 
@@ -144,7 +116,11 @@ export const useCreateFormMutations = () => {
     ApiError,
     CreateMultirespondentFormBodyDto
   >((params) => createMultirespondentModeForm(params), {
-    onSuccess: handleSuccess,
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      console.log(`create form worfklow: set query data done on ${data._id}`)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
     onError: handleError,
   })
 
@@ -184,6 +160,7 @@ export const useDuplicateFormMutations = () => {
     {
       onSuccess: (data) => {
         handleSuccessWithoutRedirect(data)
+        console.log(`dupe form worfklow: set query data done on ${data._id}`)
         queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
       },
       onError: handleError,
@@ -200,6 +177,7 @@ export const useDuplicateFormMutations = () => {
     {
       onSuccess: (data) => {
         handleSuccessWithoutRedirect(data)
+        console.log(`dupe form worfklow: set query data done on ${data._id}`)
         queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
       },
       onError: handleError,
