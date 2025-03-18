@@ -1194,16 +1194,9 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  // return (
-  //   getFeatureFlag(featureFlags.guardduty, {
-  //     fallbackValue: false,
-  //   })
-  // .orElse(() => {
-  //   return okAsync(true) // Ensure feature flag failure doesn't break execution
-  // })
   if (growthbook) {
     logger.info({
-      message: 'Yes! Guardduty is enabled!',
+      message: 'Yes guardduty is enabled!',
       meta: {
         action: 'meta data action',
       },
@@ -1235,14 +1228,6 @@ export const getQuarantinePresignedPostData = (
       ...newGuarddutyData,
     ])
   }
-  //TODO: remove, logs fro testing
-  const logMeta = {
-    action: 'GUARDDUTY s3 sending',
-  }
-  logger.info({
-    message: 'No Guardduty is not enabled!',
-    meta: logMeta,
-  })
   return currentQuarantineBucketPost
 }
 

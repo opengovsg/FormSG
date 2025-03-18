@@ -177,20 +177,6 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      // getFeatureFlag(featureFlags.guardduty, {
-      //   fallbackValue: false,
-      //   logMeta: {
-      //     action: 'asyncVirusScanning',
-      //     formId,
-      //   },
-      // }).map((isGuarddutyEnabled) => {
-      //   if (isGuarddutyEnabled) {
-      //     logger.info({
-      //       message: `Trying to guardduty scan first ${response}`,
-      //       meta: {
-      //         action: 'Testing guardduty',
-      //       },
-      //     })
       if (growthbook) {
         // trigger guardduty scan
         SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
@@ -244,7 +230,7 @@ const devModeSyncVirusScanning = async (
           response,
           formId,
         )
-      //guardduty testing TODO: replace when removing virus-scanner
+      //TODO: replace when removing original virus-scanner
       // const guarddutyResponsePromise =
       //   SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
       //     response,
