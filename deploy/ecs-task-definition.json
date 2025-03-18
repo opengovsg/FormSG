@@ -27,7 +27,6 @@
         { "name": "GOVLOGIN_CLIENT_SECRET", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/GOVLOGIN_CLIENT_SECRET" },
         { "name": "SESSION_SECRET", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SESSION_SECRET" },
         { "name": "SES_USER", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_USER" },
-        { "name": "SES_PASS_RAW", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_PASS_RAW" },
         { "name": "SES_PASS", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_PASS" },
         { "name": "SES_CONFIG_SET", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SES_CONFIG_SET" },
         { "name": "DB_HOST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DB_HOST" },
