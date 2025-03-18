@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
@@ -17,6 +18,7 @@ import { useUseTemplateMutations } from '../mutation'
 export const useUseTemplateWizardContext = (
   formId: string,
 ): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const { data: templateFormData, isLoading: isTemplateFormLoading } =
     useFormTemplate(
       formId,
@@ -159,7 +161,7 @@ export const useUseTemplateWizardContext = (
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
-    modalHeader: 'Duplicate form',
+    modalHeader: t('features.workspace.modals.create.title.duplicate'),
   }
 }
 
