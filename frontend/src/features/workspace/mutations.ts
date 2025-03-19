@@ -105,7 +105,6 @@ export const useCreateFormMutations = () => {
   >((params) => createStorageModeForm(params), {
     onSuccess: (data) => {
       handleSuccessWithoutRedirect(data)
-      console.log(`create form worfklow: set query data done on ${data._id}`)
       queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
     },
     onError: handleError,
@@ -118,7 +117,6 @@ export const useCreateFormMutations = () => {
   >((params) => createMultirespondentModeForm(params), {
     onSuccess: (data) => {
       handleSuccessWithoutRedirect(data)
-      console.log(`create form worfklow: set query data done on ${data._id}`)
       queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
     },
     onError: handleError,
