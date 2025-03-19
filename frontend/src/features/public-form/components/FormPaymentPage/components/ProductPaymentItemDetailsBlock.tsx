@@ -100,7 +100,9 @@ export const ProductPaymentItemDetailsBlock = ({
             />
           ))}
         </Stack>
-        <FormErrorMessage>{String(errors?.payment_products?.message)}</FormErrorMessage>
+        <FormErrorMessage>
+          {String(errors?.payment_products?.message)}
+        </FormErrorMessage>
       </FormControl>
       <Divider />
       <Flex justifyContent="end" alignItems="baseline">
