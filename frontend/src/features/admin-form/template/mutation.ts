@@ -37,6 +37,14 @@ const useCommonHooks = () => {
     [navigate, queryClient],
   )
 
+  const handleSuccessWithoutRedirect = useCallback(
+    (data: FormDto) => {
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
+      queryClient.invalidateQueries(workspaceKeys.workspaces)
+      return data
+    },
+    [queryClient],
+  )
   const handleError = useCallback(
     (error: ApiError) => {
       toast({
@@ -49,6 +57,7 @@ const useCommonHooks = () => {
 
   return {
     handleSuccess,
+    handleSuccessWithoutRedirect,
     handleError,
   }
 }
@@ -58,7 +67,10 @@ const useCommonHooks = () => {
  * "UseTemplate" is a FormSG functionality referring to the FormSG feature of utilising another form as a starting template.
  */
 export const useUseTemplateMutations = () => {
-  const { handleSuccess, handleError } = useCommonHooks()
+  const { handleSuccess, handleSuccessWithoutRedirect, handleError } =
+    useCommonHooks()
+
+  const queryClient = useQueryClient()
 
   const useEmailModeFormTemplateMutation = useMutation<
     FormDto,
@@ -83,7 +95,10 @@ export const useUseTemplateMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       createStorageModeTemplateForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )
@@ -98,7 +113,10 @@ export const useUseTemplateMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       createMultirespondentTemplateForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )

@@ -63,21 +63,35 @@ export const useUseTemplateWizardContext = (
       if (!formId) return
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
-          return useStorageModeFormTemplateMutation.mutate({
-            formIdToDuplicate: formId,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            emails: [],
-          })
+          return useStorageModeFormTemplateMutation.mutate(
+            {
+              formIdToDuplicate: formId,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              emails: [],
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         }
         case FormResponseMode.Multirespondent: {
-          return useMultirespondentFormTemplateMutation.mutate({
-            formIdToDuplicate: formId,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-          })
+          return useMultirespondentFormTemplateMutation.mutate(
+            {
+              formIdToDuplicate: formId,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         }
         case FormResponseMode.Email: {
           return
