@@ -1,5 +1,5 @@
 import { KeyboardEventHandler, useCallback } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
@@ -70,15 +70,17 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
     <FormControl isInvalid={!isEmpty(errors)}>
       <FormLabel isRequired>Form name</FormLabel>
 
-      <Controller
+      <Controller<{ title: string }>
         control={control}
         name="title"
-        rules={FORM_TITLE_VALIDATION_RULES}
+        rules={
+          FORM_TITLE_VALIDATION_RULES as RegisterOptions<{ title: string }>
+        }
         render={({ field }) => (
           <Input {...field} onBlur={handleBlur} onKeyDown={handleKeyDown} />
         )}
       />
-      <FormErrorMessage>{get(errors, 'title.message')}</FormErrorMessage>
+      <FormErrorMessage>{String(errors.title?.message)}</FormErrorMessage>
     </FormControl>
   )
 }

@@ -3,6 +3,8 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
+import { LogicConditionState } from '~shared/types'
+
 import {
   setToInactiveSelector,
   useAdminLogicStore,
@@ -65,6 +67,8 @@ export const useEditLogicBlock = ({
         // Cannot be undefined or the default value will be used.
         // This may cause old values to be shown when appending.
         field: '',
+        state: LogicConditionState.Equal,
+        value: '',
       }),
     [append],
   )

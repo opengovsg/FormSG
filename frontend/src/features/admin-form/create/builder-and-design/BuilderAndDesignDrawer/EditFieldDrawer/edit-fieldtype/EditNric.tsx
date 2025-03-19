@@ -43,7 +43,10 @@ export const EditNric = ({ field }: EditNricProps): JSX.Element => {
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditNricInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { RegisterOptions, useForm } from 'react-hook-form'
 import {
   FormControl,
   Modal,
@@ -84,7 +84,13 @@ export const RenameWorkspaceModal = ({
             <Input
               mt="0.75rem"
               autoFocus
-              {...register('title', WORKSPACE_TITLE_VALIDATION_RULES)}
+              {...register(
+                'title',
+                WORKSPACE_TITLE_VALIDATION_RULES as RegisterOptions<
+                  RenameWorkspaceInputProps,
+                  'title'
+                >,
+              )}
             />
             <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
           </FormControl>

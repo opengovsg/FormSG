@@ -43,7 +43,7 @@ export const EditUen = ({ field }: EditUenProps): JSX.Element => {
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () => createBaseValidationRules<EditUenInputs, 'title'>({ required: true }),
     [],
   )
 

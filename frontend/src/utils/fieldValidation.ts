@@ -2,7 +2,12 @@
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
-import { RegisterOptions, UseFormGetValues } from 'react-hook-form'
+import {
+  FieldValues,
+  Path,
+  RegisterOptions,
+  UseFormGetValues,
+} from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
 import { identity } from 'lodash'
 import simplur from 'simplur'
@@ -147,10 +152,13 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   }
 }
 
-export const createBaseValidationRules = (
+export const createBaseValidationRules = <
+  TFieldValues extends FieldValues = FieldValues,
+  TFieldName extends Path<TFieldValues> = never,
+>(
   schema: Pick<FieldBase, 'required'>,
   disableRequiredValidation?: boolean,
-): RegisterOptions => {
+): RegisterOptions<TFieldValues, TFieldName> => {
   return {
     validate: requiredSingleAnswerValidationFn(
       schema,

@@ -136,7 +136,7 @@ export const Playground: StoryFn = ({
           />
         </Checkbox.OthersWrapper>
         <FormErrorMessage>
-          {errors[name]?.message ?? errors[othersInputName]?.message}
+          {String(errors[name]?.message ?? errors[othersInputName]?.message)}
         </FormErrorMessage>
       </FormControl>
       <Button type="submit">Submit</Button>

@@ -48,7 +48,10 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditMobileInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

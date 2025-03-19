@@ -91,7 +91,10 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditLongTextInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

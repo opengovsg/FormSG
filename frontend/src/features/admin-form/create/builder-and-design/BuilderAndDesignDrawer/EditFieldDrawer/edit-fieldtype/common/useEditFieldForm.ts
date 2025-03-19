@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
+  DefaultValues,
   FieldValues,
   Mode,
   UnpackNestedValue,
@@ -110,7 +111,7 @@ export const useEditFieldForm = <
   )
 
   const defaultValues = useMemo(
-    () => transform.input(field),
+    () => transform.input(field) as DefaultValues<FormShape>,
     [field, transform],
   )
   const editForm = useForm<FormShape>({
@@ -130,7 +131,7 @@ export const useEditFieldForm = <
 
   const watchedInputs = useWatch({
     control: editForm.control,
-  }) as UnpackNestedValue<FormShape>
+  }) as FormShape
 
   // Cloning is required so any nested references are not pointing to the same object,
   // which would prevent rerenders.
@@ -141,16 +142,24 @@ export const useEditFieldForm = <
 
   const onSaveSuccess = useCallback(
     (newField: FormField) => {
-      editForm.reset(transform.input(newField as FieldShape))
+      editForm.reset(
+        transform.input(newField as FieldShape) as DefaultValues<FormShape>,
+      )
       setToInactive()
     },
     [editForm, transform, setToInactive],
   )
 
   const handleUpdateField = editForm.handleSubmit(async (inputs) => {
-    let updatedFormField = transform.output(inputs, field)
+    let updatedFormField = transform.output(
+      inputs as UnpackNestedValue<FormShape>,
+      field,
+    )
     if (transform.preSubmit) {
-      updatedFormField = await transform.preSubmit(inputs, updatedFormField)
+      updatedFormField = await transform.preSubmit(
+        inputs as UnpackNestedValue<FormShape>,
+        updatedFormField,
+      )
     }
 
     // if field to be updated is MyInfo, enable admin feedback
@@ -187,7 +196,13 @@ export const useEditFieldForm = <
   }, [setToInactive])
 
   useDebounce(
-    () => handleChange(transform.output(clonedWatchedInputs, field)),
+    () =>
+      handleChange(
+        transform.output(
+          clonedWatchedInputs as UnpackNestedValue<FormShape>,
+          field,
+        ),
+      ),
     300,
     Object.values(clonedWatchedInputs),
   )

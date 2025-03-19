@@ -74,7 +74,10 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
   const watchValidateByValue = watch('validateByValue')
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditDecimalInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

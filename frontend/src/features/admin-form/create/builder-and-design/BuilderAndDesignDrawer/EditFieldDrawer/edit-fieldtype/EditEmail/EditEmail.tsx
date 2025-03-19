@@ -88,7 +88,10 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditEmailInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

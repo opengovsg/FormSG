@@ -58,7 +58,10 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditRatingInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

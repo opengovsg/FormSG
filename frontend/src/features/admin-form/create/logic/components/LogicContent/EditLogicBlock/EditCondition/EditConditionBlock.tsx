@@ -194,7 +194,8 @@ export const EditConditionBlock = ({
   }, [ifValueTypeValue])
 
   const validateValueInputComponent: Validate<
-    string | number | string[] | number[]
+    string | number | string[] | number[],
+    EditLogicInputs
   > = useCallback(
     (val) => {
       switch (ifValueTypeValue) {

@@ -84,7 +84,9 @@ export const TableField = ({
     // would not need to be shown in the table field itself.
     if (isMobile) return
     // Get first available error amongst all column cell errors.
-    return head(uniq(tableErrors?.flatMap((err = {}) => Object.values(err))))
+    return head(
+      uniq([tableErrors].flat().flatMap((err = {}) => Object.values(err))),
+    )
   }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray<TableFieldInputs>({
@@ -267,7 +269,7 @@ export const TableField = ({
       </Box>
       {uniqTableError ? (
         <FormErrorMessage my="0.75rem">
-          {uniqTableError.message}
+          {String(uniqTableError)}
         </FormErrorMessage>
       ) : null}
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
