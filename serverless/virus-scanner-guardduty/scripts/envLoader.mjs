@@ -50,7 +50,7 @@ async function saveAllParameters() {
     exit(0)
   }
   const client = new SSMClient({ region: 'ap-southeast-1' })
-  const parameterNamePrefix = `${SHORT_ENV_MAP[process.env.ENV]}/virus-scanner-guardduty/`
+  const parameterNamePrefix = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}/`
 
   const requests = SSM_PARAMETER_STORE_KEYS.map((key) =>
     client.send(
