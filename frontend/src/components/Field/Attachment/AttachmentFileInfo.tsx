@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiDownload, BiTrash } from 'react-icons/bi'
+import { BiDownload, BiEditAlt, BiTrash } from 'react-icons/bi'
 import { Flex, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
@@ -11,18 +11,22 @@ export interface AttachmentFileInfoProps {
   file: File
   showDownload?: boolean
   showRemove?: boolean
+  showReplace?: boolean
   isDownloadDisabled?: boolean
   isRemoveDisabled?: boolean
   handleRemoveFile: () => void
   handleDownloadFile: () => void
+  handleReplaceFile: () => void
 }
 
 export const AttachmentFileInfo = ({
   file,
   handleRemoveFile,
   handleDownloadFile,
+  handleReplaceFile,
   showDownload = false,
   showRemove = true,
+  showReplace = false,
   isDownloadDisabled = false,
   isRemoveDisabled = false,
 }: AttachmentFileInfoProps) => {
@@ -31,7 +35,6 @@ export const AttachmentFileInfo = ({
     () => (file.size ? getReadableFileSize(file.size) : null),
     [file.size],
   )
-
   const showDownloadButton = showDownload && file
 
   return (
@@ -71,6 +74,14 @@ export const AttachmentFileInfo = ({
             icon={<BiDownload />}
             onClick={handleDownloadFile}
             isDisabled={isDownloadDisabled}
+          />
+        ) : null}
+        {showReplace ? (
+          <IconButton
+            variant="clear"
+            aria-label="Click to download file"
+            icon={<BiEditAlt />}
+            onClick={handleReplaceFile}
           />
         ) : null}
       </Flex>

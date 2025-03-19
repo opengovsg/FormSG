@@ -96,6 +96,7 @@ export const ConditionalRoutingOption = ({
   )
 
   const [csvFile, setCsvFile] = useState<File | null>(null)
+  console.log(csvFile)
 
   const {
     control: conditionalRoutingConfigControl,
@@ -341,20 +342,12 @@ export const ConditionalRoutingOption = ({
       optionsSet.add(option)
     }
 
-    const selectedConditionalFieldOptions =
-      selectedConditionalField?.fieldOptions
-
     if (optionsSet.size < conditionalRoutingCsvRows.length) {
       return t(
         'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.duplicateOptions',
       )
     }
     return
-    // TODO: remove - removing mismatch check here. `validateCsvFile` is called inside condroutingoptionmodal, which we don't want to run mismatch error to allow dynamic updating
-    // return validateCsvOptionsWithFieldOptions(
-    //   [...optionsSet],
-    //   selectedConditionalFieldOptions || [],
-    // )
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
@@ -384,6 +377,7 @@ export const ConditionalRoutingOption = ({
           )
         }
         validateCsvFile={validateCsvFile}
+        existingCsv={csvFile}
       />
 
       <Radio
@@ -459,10 +453,12 @@ export const ConditionalRoutingOption = ({
                     value={csvFile}
                     showDownload
                     showRemove
+                    showReplace
                     handleDownloadFileOverride={handleCsvDownload}
                     handleRemoveFileOverride={() =>
                       setIsDeleteConfirmModalOpen(true)
                     }
+                    handleReplaceFileOverride={onOpen}
                     accept={['.csv']}
                   />
                 ) : (

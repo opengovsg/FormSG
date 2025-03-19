@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, FieldErrors, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
@@ -254,6 +254,95 @@ const StepTwoModalContent = ({
   )
 }
 
+interface StepReplaceModalContentProps {
+  stepNumber: number
+  setStepNumber: (step: number) => void
+  control: ConditionalRoutingOptionModalProps['control']
+  errors: ConditionalRoutingOptionModalProps['errors']
+  onSubmit: ConditionalRoutingOptionModalProps['onSubmit']
+  isSubmitDisabled: ConditionalRoutingOptionModalProps['isSubmitDisabled']
+  validateCsvFile: ConditionalRoutingOptionModalProps['validateCsvFile']
+  onClose: ConditionalRoutingOptionModalProps['onClose']
+}
+
+const StepReplaceModalContent = ({
+  stepNumber,
+  setStepNumber,
+  control,
+  errors,
+  onSubmit,
+  isSubmitDisabled,
+  validateCsvFile,
+  onClose,
+}: StepReplaceModalContentProps) => {
+  const { t } = useTranslation()
+  return (
+    <ModalContent>
+      <ModalCloseButton />
+      <ModalHeader>
+        <Text mb="0.25rem">
+          {/* {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.title',
+          )} */}
+          THIS IS THE REPLACEMENT MODAL
+        </Text>
+      </ModalHeader>
+      <ModalBody>
+        <Text mb="2.5rem">
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.prefix',
+          ) + ' '}
+          <Text as="span" fontWeight="semibold">
+            {t(
+              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.csv',
+            )}
+          </Text>{' '}
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.suffix',
+          )}
+        </Text>
+        <FormControl isInvalid={!!errors.csvFile}>
+          <Controller
+            name="csvFile"
+            control={control}
+            rules={{
+              required: t(
+                'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.required',
+              ),
+              validate: validateCsvFile,
+            }}
+            render={({ field: { onChange, name, value } }) => (
+              <Attachment
+                onChange={onChange}
+                defaultValue={undefined}
+                value={value}
+                name={name}
+                isRequired
+                showFileSize
+                showDownload
+                showRemove
+                maxSize={MAX_UPLOAD_FILE_SIZE}
+                accept={['.csv']}
+              />
+            )}
+          />
+          <FormErrorMessage>{errors.csvFile?.message}</FormErrorMessage>
+        </FormControl>
+      </ModalBody>
+      <ModalFooter>
+        <NextAndBackButtonGroup
+          nextButtonLabel={t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.confirm',
+          )}
+          handleBack={onClose}
+          handleNext={onSubmit}
+          isNextDisabled={isSubmitDisabled}
+        />
+      </ModalFooter>
+    </ModalContent>
+  )
+}
+
 export interface ConditionalRoutingOptionModalProps {
   isOpen: boolean
   onClose: () => void
@@ -265,6 +354,7 @@ export interface ConditionalRoutingOptionModalProps {
   onSubmit: () => void
   isSubmitDisabled: boolean
   validateCsvFile: (value: File | null) => Promise<string | undefined>
+  existingCsv: File | null
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -276,6 +366,7 @@ export const ConditionalRoutingOptionModal = ({
   onSubmit,
   isSubmitDisabled,
   validateCsvFile,
+  existingCsv,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -286,6 +377,13 @@ export const ConditionalRoutingOptionModal = ({
     setStepNumber(0)
     onClose()
   }
+
+  const modalStartNumber = existingCsv ? 2 : 0
+  useEffect(() => {
+    if (!isOpen) {
+      setStepNumber(modalStartNumber)
+    }
+  }, [isOpen, modalStartNumber])
 
   return (
     <Modal
@@ -316,6 +414,18 @@ export const ConditionalRoutingOptionModal = ({
           onSubmit={onSubmit}
           isSubmitDisabled={isSubmitDisabled}
           validateCsvFile={validateCsvFile}
+        />
+      )}
+      {stepNumber === 2 && (
+        <StepReplaceModalContent
+          control={control}
+          errors={errors}
+          stepNumber={stepNumber}
+          setStepNumber={setStepNumber}
+          onSubmit={onSubmit}
+          isSubmitDisabled={isSubmitDisabled}
+          validateCsvFile={validateCsvFile}
+          onClose={onClose}
         />
       )}
     </Modal>

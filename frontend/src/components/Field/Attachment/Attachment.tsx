@@ -91,6 +91,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   showRemove?: boolean
 
   /**
+   * Show replace button
+   */
+  showReplace?: boolean
+
+  /**
    * Override callback function that is invoked when download button is clicked.
    */
   handleDownloadFileOverride?: () => void
@@ -99,6 +104,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Override callback function that is invoked when remove button is clicked.
    */
   handleRemoveFileOverride?: () => void
+
+  /**
+   * Callback function that is invoked when replace button is clicked. 'Show Replace' must be present for function to work.
+   */
+  handleReplaceFileOverride?: () => void
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -115,10 +125,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       title,
       showDownload,
       showRemove,
+      showReplace,
       isDownloadDisabled,
       isRemoveDisabled,
       handleDownloadFileOverride,
       handleRemoveFileOverride,
+      handleReplaceFileOverride,
       ...props
     },
     ref,
@@ -275,6 +287,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const handleDownloadFile = handleDownloadFileOverride ?? _handleDownloadFile
 
+    const _handleReplaceFile = useCallback(() => {
+      onChange(null)
+      rootRef.current?.focus()
+    }, [onChange, rootRef])
+
+    const handleReplaceFile = handleReplaceFileOverride ?? _handleReplaceFile
+    // const handleReplaceFile = null
+
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
       return getRootProps({
@@ -313,8 +333,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 file={value}
                 handleRemoveFile={handleRemoveFile}
                 handleDownloadFile={handleDownloadFile}
+                handleReplaceFile={handleReplaceFile}
                 showDownload={showDownload}
                 showRemove={showRemove}
+                showReplace={showReplace}
                 isDownloadDisabled={isDownloadDisabled}
                 isRemoveDisabled={isRemoveDisabled}
               />
