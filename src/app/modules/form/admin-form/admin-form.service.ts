@@ -807,7 +807,6 @@ export const updateOptionsToRecipientsMap = (
 
   const validationResult = validateOptionsToRecipientsMap(
     optionsToRecipientsMap,
-    formFieldToUpdate.fieldOptions,
   )
 
   if (validationResult.isErr()) {
