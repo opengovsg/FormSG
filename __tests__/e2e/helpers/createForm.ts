@@ -133,47 +133,33 @@ const addForm = async (
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
 
-  let formResponseMode: E2eFormResponseMode
+  await page.getByText('Storage mode form').click()
+  await page.getByRole('button', { name: 'Create form' }).click()
 
-  if (responseMode === FormResponseMode.Email) {
-    await page.getByText('use it for now').click()
-
-    formResponseMode = {
-      responseMode: FormResponseMode.Email,
-    }
-
-    await page.getByText('I need to collect Sensitive High data').click()
-    await page.getByRole('button', { name: 'Next: Set up your form' }).click()
-
-    await page.getByRole('button', { name: 'Create form' }).click()
-  } else {
-    await page.getByText('Storage mode form').click()
-    await page.getByRole('button', { name: 'Next step' }).click()
-
-    // Download the secret key and save it for the test.
-    const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Download key' }).click()
-    const download = await downloadPromise
-    const path = await download.path()
-    if (!path) throw new Error('Secret key download failed')
-    formResponseMode = {
-      responseMode: FormResponseMode.Encrypt,
-      secretKey: readFileSync(path).toString(),
-    }
-
-    // Double check that the secret key exists on the screen.
-    await expect(
-      page.getByText(formResponseMode.secretKey, { exact: true }),
-    ).toBeVisible()
-
-    // Click acknowledgement buttons
-    await page.getByText(/If I lose my Secret Key/).click()
-    await page
-      .getByRole('button', {
-        name: 'I have saved my Secret Key safely',
-      })
-      .click()
+  // Download the secret key and save it for the test.
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download key' }).click()
+  const download = await downloadPromise
+  const path = await download.path()
+  if (!path) throw new Error('Secret key download failed')
+  const formResponseMode: E2eFormResponseMode = {
+    responseMode: FormResponseMode.Encrypt,
+    secretKey: readFileSync(path).toString(),
   }
+
+  // Double check that the secret key exists on the screen.
+  await expect(
+    page.getByText(formResponseMode.secretKey, { exact: true }),
+  ).toBeVisible()
+
+  // Click acknowledgement buttons
+  await page.getByText(/If I lose my Secret Key/).click()
+  await page
+    .getByRole('button', {
+      name: 'I have saved my Secret Key safely',
+    })
+    .click()
+
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   const l = ADMIN_FORM_PAGE_PREFIX.length + 1
