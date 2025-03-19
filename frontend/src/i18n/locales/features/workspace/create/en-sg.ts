@@ -41,15 +41,18 @@ export const enSG: CreateModal = {
     create: 'Create form',
   },
   secretKey: {
-    title: 'Download Secret Key to proceed',
+    title: 'Your form has been created! Download your Secret Key to proceed.',
     message: {
-      preamble:
-        "You'll need it every time you access your responses to this form. If you lose it,",
-      warning: 'all responses will be permanently lost',
-      email: {
-        prefix: 'You can also',
+      preamble1:
+        "You'll need your secret key every time you access your responses to this form.",
+      preamble2: {
+        prefix: 'If you lose it, ',
+        warning: 'all responses will be permanently lost',
+      },
+      preamble3: {
+        prefix: 'You can also ',
         link: 'email it',
-        suffix: 'for safekeeping.',
+        suffix: ' for safekeeping.',
       },
     },
     tooltip: {

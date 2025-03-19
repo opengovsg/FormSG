@@ -17,15 +17,17 @@ import {
   Container,
   Icon,
   Link,
+  ListItem,
   ModalBody,
   Stack,
   Text,
+  UnorderedList,
   useClipboard,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
-import { BxsError } from '~assets/icons'
+import { BxsCheckCircle } from '~assets/icons'
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -169,16 +171,38 @@ export const SaveSecretKeyScreen = ({
           >
             <Stack direction="column" spacing="1rem" mb="1rem">
               <Icon
-                as={BxsError}
+                as={BxsCheckCircle}
                 fontSize="3rem"
                 aria-hidden
-                color="danger.500"
+                color="primary.500"
               />
               <Text as="header" textStyle="h2" color="secondary.700">
                 {t('features.workspace.modals.create.secretKey.title')}
               </Text>
             </Stack>
             <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
+            <UnorderedList>
+              <ListItem>
+                {t('features.workspace.modals.create.secretKey.message.preamble1')}
+              </ListItem>
+              <ListItem>
+                <Text textStyle="body-1" color="secondary.500">
+                  {t('features.workspace.modals.create.secretKey.message.preamble2.prefix')}
+                  <Text color="danger.500" textStyle="subhead-1" as="span">
+                    {t('features.workspace.modals.create.secretKey.message.preamble2.warning')}
+                  </Text>
+                </Text>
+              </ListItem>
+              <ListItem>
+                {t('features.workspace.modals.create.secretKey.message.preamble3.prefix')}
+                <Link variant="inline" href={mailToHref}>
+                  {t('features.workspace.modals.create.secretKey.message.preamble3.link')}
+                </Link>
+                {t('features.workspace.modals.create.secretKey.message.preamble3.suffix')}
+              </ListItem>
+            </UnorderedList>
+            </Text>
+            {/* <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
               {t('features.workspace.modals.create.secretKey.message.preamble')}{' '}
               <Text color="danger.500" textStyle="subhead-1" as="span">
                 {t(
@@ -197,7 +221,7 @@ export const SaveSecretKeyScreen = ({
               {t(
                 'features.workspace.modals.create.secretKey.message.email.suffix',
               )}
-            </Text>
+            </Text> */}
             <Stack direction={{ base: 'column', md: 'row' }}>
               <Tooltip
                 mt={0}

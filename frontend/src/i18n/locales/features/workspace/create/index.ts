@@ -37,9 +37,12 @@ export interface CreateModal {
   secretKey: {
     title: string
     message: {
-      preamble: string
-      warning: string
-      email: {
+      preamble1: string
+      preamble2: {
+        prefix: string
+        warning: string
+      }
+      preamble3: {
         prefix: string
         link: string
         suffix: string
