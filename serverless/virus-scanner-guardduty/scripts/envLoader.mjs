@@ -23,8 +23,8 @@ const SHORT_ENV_MAP = {
 }
 
 const SSM_PARAMETER_STORE_KEYS = [
-  'VIRUS_SCANNER_CLEAN_S3_BUCKET',
-  'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
+  'GUARDDUTY_CLEAN_S3_BUCKET',
+  'GUARDDUTY_QUARANTINE_S3_BUCKET',
 ]
 
 // This is a helper for local file runs or jest, as specified in package.json
