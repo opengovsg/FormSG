@@ -197,7 +197,7 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
-  // await addAdminEmails(page, formSettings)
+  await addAdminEmails(page, formSettings)
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
@@ -398,9 +398,6 @@ const addAdminEmails = async (
   if (formSettings.emails) {
     const emailInput = page.getByLabel('Notifications for new responses')
     await emailInput.focus()
-
-    // Clear the current admin email
-    await page.keyboard.press('Backspace')
 
     await emailInput.fill(formSettings.emails.join(', '))
 
