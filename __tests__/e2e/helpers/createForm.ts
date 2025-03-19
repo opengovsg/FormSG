@@ -136,9 +136,13 @@ const addForm = async (
   await page.getByText('Storage mode form').click()
   await page.getByRole('button', { name: 'Create form' }).click()
 
-  // Download the secret key and save it for the test.
+  await page.waitForTimeout(1000)
+  const downloadButton = page.getByRole('button', { name: 'Download key' })
+  await expect(downloadButton).toBeEnabled({ timeout: 15000 })
   const downloadPromise = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Download key' }).click()
+  await downloadButton.click()
+
+  // Download the secret key and save it for the test.
   const download = await downloadPromise
   const path = await download.path()
   if (!path) throw new Error('Secret key download failed')
