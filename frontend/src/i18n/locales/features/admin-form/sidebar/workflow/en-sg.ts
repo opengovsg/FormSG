@@ -72,6 +72,14 @@ export const enSG: Workflow = {
             },
           },
           nextButton: 'Next: Upload CSV file',
+          carousel: {
+            caption1: 'Download and edit the CSV template FormSG has created',
+            caption2:
+              'The CSV template includes options from your selected field',
+            caption3: 'Enter emails for each option',
+            caption4: 'Upload your updated CSV file',
+            caption5: 'Save CSV file to update routing',
+          },
         },
         step2: {
           title: 'Upload your completed CSV file',
@@ -80,6 +88,15 @@ export const enSG: Workflow = {
             prefix: 'Please ensure that your file is saved in',
             csv: 'comma-separated values (.csv)',
             suffix: 'format.',
+          },
+        },
+        stepReplace: {
+          title: 'Replace your CSV file',
+          confirm: 'Save CSV file',
+          description: {
+            info: 'Replacing the file will delete the existing CSV and update your dropdown options(s) and email routing.',
+            warning: 'This action cannot be undone. ',
+            downloadTemplate: 'Download a new CSV template',
           },
         },
       },

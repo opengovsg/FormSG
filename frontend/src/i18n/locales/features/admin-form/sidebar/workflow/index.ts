@@ -56,6 +56,13 @@ export interface Workflow {
               imageCaption: string
             }
           }
+          carousel: {
+            caption1: string
+            caption2: string
+            caption3: string
+            caption4: string
+            caption5: string
+          }
         }
         step2: {
           title: string
@@ -64,6 +71,15 @@ export interface Workflow {
             prefix: string
             csv: string
             suffix: string
+          }
+        }
+        stepReplace: {
+          title: string
+          confirm: string
+          description: {
+            info: string
+            warning: string
+            downloadTemplate: string
           }
         }
       }

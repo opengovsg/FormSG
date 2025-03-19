@@ -96,7 +96,6 @@ export const ConditionalRoutingOption = ({
   )
 
   const [csvFile, setCsvFile] = useState<File | null>(null)
-  console.log(csvFile)
 
   const {
     control: conditionalRoutingConfigControl,
@@ -452,7 +451,7 @@ export const ConditionalRoutingOption = ({
                     onChange={() => {}}
                     value={csvFile}
                     showDownload
-                    showRemove
+                    showRemove={false}
                     showReplace
                     handleDownloadFileOverride={handleCsvDownload}
                     handleRemoveFileOverride={() =>
