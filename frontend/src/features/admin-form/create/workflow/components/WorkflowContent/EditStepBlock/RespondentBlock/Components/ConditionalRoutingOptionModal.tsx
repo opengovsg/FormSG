@@ -279,8 +279,8 @@ const StepTwoModalContent = ({
 }
 
 interface StepReplaceModalContentProps {
-  stepNumber: number
-  setStepNumber: (step: number) => void
+  // stepNumber: number
+  // setStepNumber: (step: number) => void
   control: ConditionalRoutingOptionModalProps['control']
   errors: ConditionalRoutingOptionModalProps['errors']
   onSubmit: ConditionalRoutingOptionModalProps['onSubmit']
@@ -291,8 +291,8 @@ interface StepReplaceModalContentProps {
 }
 
 const StepReplaceModalContent = ({
-  stepNumber,
-  setStepNumber,
+  // stepNumber,
+  // setStepNumber,
   control,
   errors,
   onSubmit,
@@ -454,8 +454,8 @@ export const ConditionalRoutingOptionModal = ({
         <StepReplaceModalContent
           control={control}
           errors={errors}
-          stepNumber={stepNumber}
-          setStepNumber={setStepNumber}
+          // stepNumber={stepNumber}
+          // setStepNumber={setStepNumber}
           onSubmit={onSubmit}
           isSubmitDisabled={isSubmitDisabled}
           validateCsvFile={validateCsvFile}
