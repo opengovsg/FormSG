@@ -251,9 +251,6 @@ export const ConditionalRoutingOption = ({
             // setCsvFile(placeholderOptionToEmailMappingCsvFile)
             clearErrors('conditional_field')
             onClose()
-
-            //re-renders modal to update variables
-            setModalKey((prevKey) => prevKey + 1)
           },
         },
       )

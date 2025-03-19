@@ -18,6 +18,7 @@ const ModalContainer = ({
   isSubmitDisabled,
   validateCsvFile,
   csvFile,
+  existingCsv,
 }: Omit<ConditionalRoutingOptionModalProps, 'control'> & {
   csvFile?: File | null
 }) => {
@@ -39,6 +40,7 @@ const ModalContainer = ({
       validateCsvFile={validateCsvFile}
       conditionalFieldItems={[]}
       isLoading={false}
+      existingCsv={existingCsv}
     />
   )
 }

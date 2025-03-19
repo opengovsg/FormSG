@@ -13,7 +13,6 @@ import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -50,7 +49,6 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from '../../../../../shared/utils/nric-validation'
-import { checkIsOptionsMismatched } from '../../../../../shared/utils/options-recipients-map-validation'
 import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
@@ -741,7 +739,6 @@ export const duplicateForm = (
 
 const validateOptionsToRecipientsMap = (
   optionsToRecipientsMap: Record<string, string[]>,
-  selectedConditionalFieldOptions: string[],
 ): Result<undefined, MalformedParametersError> => {
   // Mapping is being removed
   if (
@@ -781,20 +778,6 @@ const validateOptionsToRecipientsMap = (
       )
     }
   }
-
-  // removing to allow dynamic update of options
-  // if (
-  //   checkIsOptionsMismatched(
-  //     Object.keys(optionsToRecipientsMap),
-  //     selectedConditionalFieldOptions,
-  //   )
-  // ) {
-  //   return err(
-  //     new MalformedParametersError(
-  //       CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-  //     ),
-  //   )
-  // }
 
   return ok(undefined)
 }
