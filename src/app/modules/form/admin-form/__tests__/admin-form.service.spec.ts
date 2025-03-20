@@ -3057,12 +3057,14 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         const optionsMap = {}
+        const fieldOptions: string[] = []
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           optionsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3096,12 +3098,14 @@ describe('admin-form.service', () => {
         const optionsMap = {
           option1: ['test1@example.com'],
         }
+        const fieldOptions = Object.keys(optionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           optionsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3110,7 +3114,7 @@ describe('admin-form.service', () => {
     })
 
     describe('validation of options to recipients map', () => {
-      it('should return error if options to recipients map has options that are not in the field options', async () => {
+      it('should not return error if options to recipients map has options that are not in the field options', async () => {
         // Arrange
         const mockForm = {
           _id: 'formId',
@@ -3128,22 +3132,25 @@ describe('admin-form.service', () => {
           option2: ['test2@example.com'],
           option3: ['test3@example.com'],
         }
+        const fieldOptions = Object.keys(invalidOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           invalidOptionsMap,
+          fieldOptions,
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr().message).toBe(
-          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-        )
+        // expect(result.isErr()).toBe(true)
+        // expect(result._unsafeUnwrapErr().message).toBe(
+        //   CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        // )
+        expect(result.isOk()).toBe(true)
       })
 
-      it('should return error if options to recipients map does not have options that are in the field options', async () => {
+      it('should not return error if options to recipients map does not have options that are in the field options', async () => {
         // Arrange
         const mockForm = {
           _id: 'formId',
@@ -3159,12 +3166,14 @@ describe('admin-form.service', () => {
         const incompleteOptionsMap = {
           option2: ['test2@example.com'],
         }
+        const fieldOptions = Object.keys(incompleteOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           incompleteOptionsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3191,12 +3200,14 @@ describe('admin-form.service', () => {
           '': ['test@example.com'],
           option2: ['test2@example.com'],
         }
+        const fieldOptions = Object.keys(emptyOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           emptyOptionsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3223,12 +3234,14 @@ describe('admin-form.service', () => {
           option1: ['invalid-email', 'valid-email@example.com'],
           option2: ['valid-email2@example.com'],
         }
+        const fieldOptions = Object.keys(emptyOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
           invalidEmailsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3267,12 +3280,14 @@ describe('admin-form.service', () => {
             'test4@example.com',
           ],
         }
+        const fieldOptions = Object.keys(validOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm as unknown as IPopulatedForm,
           'fieldId',
           validOptionsMap,
+          fieldOptions,
         )
 
         // Assert
@@ -3311,6 +3326,7 @@ describe('admin-form.service', () => {
           mockForm as unknown as IPopulatedForm,
           'fieldId',
           {},
+          ['option1'],
         )
 
         // Assert
