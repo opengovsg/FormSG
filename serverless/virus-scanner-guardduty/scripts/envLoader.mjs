@@ -72,7 +72,7 @@ async function saveAllParameters() {
   ].join('\n')
 
   await fs.promises.writeFile(
-    `.env.${process.env.ENV}`,
+    `.env.${SHORT_ENV_MAP[process.env.ENV]}`,
     parameterStringWithNodeEnv,
   )
 }
