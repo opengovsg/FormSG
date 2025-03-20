@@ -20,7 +20,7 @@ provider:
             - 's3:GetObject'
             - 's3:GetObjectVersion'
           Resource:
-            - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/*'
+            - 'arn:aws:s3:::${env:GUARDDUTY_QUARANTINE_S3_BUCKET}/*'
         - Effect: Allow
           Action:
             # AllowCheckBucketOwnership
@@ -29,13 +29,13 @@ provider:
             - 's3:PutBucketNotification'
             - 's3:GetBucketNotification'
           Resource:
-            - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}'
+            - 'arn:aws:s3:::${env:GUARDDUTY_QUARANTINE_S3_BUCKET}'
         - Effect: Allow
           Action:
             # AllowPutValidationObject
             - 's3:PutObject'
           Resource:
-            - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/malware-protection-resource-validation-object'
+            - 'arn:aws:s3:::${env:GUARDDUTY_QUARANTINE_S3_BUCKET}/malware-protection-resource-validation-object'
         - Effect: Allow
           Action:
             # Both PutObject* required for copy
@@ -43,7 +43,7 @@ provider:
             - 's3:PutObjectTagging'
             - 's3:PutObjectVersionTagging'
           Resource:
-            - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
+            - 'arn:aws:s3:::${env:GUARDDUTY_CLEAN_S3_BUCKET}/*'
         - Effect: Allow
           Action:
           # AllowGuardDutyToMonitorEventBridgeManagedRule
