@@ -55,12 +55,11 @@ async function saveAllParameters() {
   const requests = SSM_PARAMETER_STORE_KEYS.map((key) => {
     console.log('fetching', `${parameterNamePrefix}${key}`)
 
-    return {
-      key,
-      res: client.send(
-        new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }),
-      ),
-    }
+    return client
+      .send(new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }))
+      .then((res) => {
+        return { key, res }
+      })
   })
 
   const resolvedResponses = await Promise.all(requests)
