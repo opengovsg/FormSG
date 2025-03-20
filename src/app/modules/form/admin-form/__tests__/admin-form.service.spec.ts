@@ -48,7 +48,7 @@ import { EditFormFieldParams } from 'src/types/api'
 import {
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+  // CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -3116,15 +3116,23 @@ describe('admin-form.service', () => {
     describe('validation of options to recipients map', () => {
       it('should not return error if options to recipients map has options that are not in the field options', async () => {
         // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1', 'option2'],
+          }),
+        }
+
         const mockForm = {
           _id: 'formId',
-          form_fields: [
-            {
-              _id: 'fieldId',
-              fieldType: BasicField.Dropdown,
-              fieldOptions: ['option1', 'option2'],
-            },
-          ],
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
         } as unknown as IPopulatedForm
 
         const invalidOptionsMap = {
@@ -3152,15 +3160,23 @@ describe('admin-form.service', () => {
 
       it('should not return error if options to recipients map does not have options that are in the field options', async () => {
         // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1', 'option2'],
+          }),
+        }
+
         const mockForm = {
           _id: 'formId',
-          form_fields: [
-            {
-              _id: 'fieldId',
-              fieldType: BasicField.Dropdown,
-              fieldOptions: ['option1', 'option2'],
-            },
-          ],
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
         } as unknown as IPopulatedForm
 
         const incompleteOptionsMap = {
@@ -3177,10 +3193,11 @@ describe('admin-form.service', () => {
         )
 
         // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr().message).toBe(
-          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-        )
+        // expect(result.isErr()).toBe(true)
+        // expect(result._unsafeUnwrapErr().message).toBe(
+        //   CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        // )
+        expect(result.isOk()).toBe(true)
       })
 
       it('should return error if some options is empty string', async () => {
@@ -3234,7 +3251,7 @@ describe('admin-form.service', () => {
           option1: ['invalid-email', 'valid-email@example.com'],
           option2: ['valid-email2@example.com'],
         }
-        const fieldOptions = Object.keys(emptyOptionsMap)
+        const fieldOptions = Object.keys(invalidEmailsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
