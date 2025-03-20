@@ -63,7 +63,9 @@ async function saveAllParameters() {
     (res) => `${res.Parameter.Name}=${res.Parameter.Value}`,
   )
 
+  
   const parameterString = parameters.join('\n')
+  console.log(parameterString)
 
   // Add on NODE_ENV
   const parameterStringWithNodeEnv = [
@@ -76,5 +78,5 @@ async function saveAllParameters() {
     parameterStringWithNodeEnv,
   )
 }
-
+`.env.staging`
 await saveAllParameters()
