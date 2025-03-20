@@ -53,18 +53,18 @@ async function saveAllParameters() {
   const parameterNamePrefix = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}/`
 
   const requests = SSM_PARAMETER_STORE_KEYS.map((key) =>
-    client.send(
+  ({
+      key,
+      res: client.send(
       new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }),
-    ),
+    )}),
   )
 
   const resolvedResponses = await Promise.all(requests)
-  const parameters = resolvedResponses.map(
-    (res) => `${res.Parameter.Name}=${res.Parameter.Value}`,
+  const parameterString = resolvedResponses.map(
+    ({key, res}) => `${key}=${res.Parameter.Value}`,
   )
 
-  
-  const parameterString = parameters.join('\n')
   console.log(parameterString)
 
   // Add on NODE_ENV
@@ -74,7 +74,7 @@ async function saveAllParameters() {
   ].join('\n')
 
   await fs.promises.writeFile(
-    `.env.${SHORT_ENV_MAP[process.env.ENV]}`,
+    `.env.${process.env.ENV}`,
     parameterStringWithNodeEnv,
   )
 }
