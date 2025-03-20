@@ -118,7 +118,7 @@ const guarddutyLambda = new Lambda({
     ? {
         endpoint:
           basicVars.awsConfig.guarddutyLambdaEndpoint ||
-          'http://host.docker.internal:9999',
+          'http://host.docker.internal:9998',
       }
     : undefined),
 })

@@ -322,7 +322,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'GUARDDUTY_LAMBDA_ENDPOINT',
     },
     guarddutyLambdaFunctionName: {
-      doc: 'Virus scanner lambda function name',
+      doc: 'Endpoint address for guardduty virus scanner lambda function. Specify this if the lambda is hosted neither on AWS nor your local dev environment.',
       format: String,
       default: '',
       env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',

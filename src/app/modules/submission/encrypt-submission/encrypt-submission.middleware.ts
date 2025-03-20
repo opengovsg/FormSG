@@ -168,7 +168,7 @@ export const validateStorageSubmissionParams = celebrate({
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
   formId: string,
-  growthbook: boolean | undefined,
+  enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
   | VirusScanFailedError
@@ -177,7 +177,7 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      if (growthbook) {
+      if (enableGuarddutyLambdaInvoke) {
         // trigger guardduty scan
         SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
@@ -186,7 +186,7 @@ const asyncVirusScanning = (
           logger.info({
             message: `GuardDuty Scan unsuccessful:, ${err}`,
             meta: {
-              action: 'Testing guardduty error',
+              action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
             },
           }),
         )

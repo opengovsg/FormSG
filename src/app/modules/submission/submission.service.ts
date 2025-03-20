@@ -1157,7 +1157,7 @@ export const validateAttachments = (
 
 export const getQuarantinePresignedPostData = (
   attachmentSizes: AttachmentSizeMapType[],
-  growthbook: boolean | undefined,
+  enableGuarddutyBucketPost?: boolean | undefined,
 ): ResultAsync<
   AttachmentPresignedPostDataMapType[],
   CreatePresignedPostError
@@ -1194,11 +1194,11 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  if (growthbook) {
+  if (enableGuarddutyBucketPost) {
     logger.info({
       message: 'Yes guardduty is enabled!',
       meta: {
-        action: 'meta data action',
+        action: 'getQuarantinePresignedPostData',
       },
     })
     // Step 2a: Create presigned post data for each attachment for new guardduty bucket
@@ -1275,8 +1275,8 @@ export const transformAttachmentMetasToSignedUrls = (
   )
 }
 
-// Guardduty scanning
 /**
+ * Guardduty scanning
  * Invokes guadduty lambda to scan the file in the quarantine bucket for check for tags.
  * @param quarantineFileKey object key of the file in the quarantine bucket
  * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
