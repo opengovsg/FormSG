@@ -247,7 +247,7 @@ describe('handler', () => {
       expect.objectContaining({
         message: 'Failed to move file to clean bucket',
         err: new Error('Failed to move file'),
-        bucket: 'local-virus-scanner-quarantine-bucket',
+        bucket: 'local-guardduty-quarantine-bucket',
         key: mockUUID,
       }),
     )
