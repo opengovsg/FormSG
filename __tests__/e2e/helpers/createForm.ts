@@ -147,7 +147,7 @@ const addForm = async (
 
     await page.getByRole('button', { name: 'Create form' }).click()
   } else {
-    await page.getByText('storage mode').click()
+    await page.getByText('Storage mode form').click()
     await page.getByRole('button', { name: 'Next step' }).click()
 
     // Download the secret key and save it for the test.
