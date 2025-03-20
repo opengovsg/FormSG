@@ -167,9 +167,9 @@ export const WorkspacePage = (): JSX.Element => {
             <InlineMessage>
               <Text>
                 Email mode forms will be retired on{' '}
-                <>
-                  <strong>30 June 2025</strong>
-                </>
+                <Text as="span" fontWeight="bold">
+                  30 June 2025
+                </Text>
                 . Email functionalities will continue to be available in Storage
                 mode.{' '}
                 <Link
