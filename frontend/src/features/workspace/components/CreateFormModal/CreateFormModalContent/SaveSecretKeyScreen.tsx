@@ -121,6 +121,19 @@ const useSaveSecretKeyDefault = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [hasDownloaded])
 
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !hasDownloaded) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, [hasDownloaded]);
+
   return {
     isLoading,
     hasDownloaded,
