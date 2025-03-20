@@ -58,11 +58,12 @@ async function saveAllParameters() {
     ),
   )
 
-  const resolvedParameters = Promise.all(requests).map(
+  const resolvedResponses = await Promise.all(requests)
+  const parameters = resolvedResponses.map(
     (res) => `${res.Parameter.Name}=${res.Parameter.Value}`,
   )
 
-  const parameterString = resolvedParameters.join('\n')
+  const parameterString = parameters.join('\n')
 
   // Add on NODE_ENV
   const parameterStringWithNodeEnv = [
