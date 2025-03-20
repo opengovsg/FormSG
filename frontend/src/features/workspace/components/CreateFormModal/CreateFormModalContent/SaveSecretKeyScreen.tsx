@@ -117,10 +117,27 @@ const useSaveSecretKeyDefault = () => {
       }
     }
 
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [hasDownloaded])
+    const handlePopState = (e: PopStateEvent) => {
+      if (!hasDownloaded) {
+        e.preventDefault();
+        window.history.pushState(null, '', window.location.href);
+        const confirmMessage = 'You have not downloaded your Secret Key yet. You won\'t be able to access your form responses without it. Are you sure you want to leave?';
+        if (!window.confirm(confirmMessage)) {
+          return;
+        }
+      }
+    }
 
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+    
+    window.history.pushState(null, '', window.location.href);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    }
+  }, [hasDownloaded]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
