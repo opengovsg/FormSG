@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -442,7 +443,12 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
-  return getQuarantinePresignedPostData(req.body)
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
+  logger.info({
+    message: `guardduty growthbook tag is: ${gbGuardduty}`,
+    meta: logMeta,
+  })
+  return getQuarantinePresignedPostData(req.body, gbGuardduty)
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',

@@ -42,6 +42,7 @@ jobs:
             frontend/dist
             shared/dist
             serverless/virus-scanner/build
+            serverless/virus-scanner-guardduty/build
             .next
             frontend/.next
             shared/.next
@@ -52,14 +53,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [
-          'chromium-login',
-          'chromium-email-submission',
-          'chromium-encrypt-submission',
-          'firefox-login',
-          'firefox-email-submission',
-          'firefox-encrypt-submission'
-        ]
+        project:
+          [
+            'chromium-login',
+            'chromium-email-submission',
+            'chromium-encrypt-submission',
+            'firefox-login',
+            'firefox-email-submission',
+            'firefox-encrypt-submission',
+          ]
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
@@ -80,6 +82,7 @@ jobs:
             frontend/dist
             shared/dist
             serverless/virus-scanner/build
+            serverless/virus-scanner-guardduty/build
             .next
             frontend/.next
             shared/.next
