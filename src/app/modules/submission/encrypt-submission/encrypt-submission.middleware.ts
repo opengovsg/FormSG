@@ -3,6 +3,7 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -167,6 +168,7 @@ export const validateStorageSubmissionParams = celebrate({
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
   formId: string,
+  enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
   | VirusScanFailedError
@@ -175,12 +177,26 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
+      if (enableGuarddutyLambdaInvoke) {
+        // trigger guardduty scan
+        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        ).mapErr((err) =>
+          logger.info({
+            message: `GuardDuty Scan unsuccessful:, ${err}`,
+            meta: {
+              action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
+            },
+          }),
+        )
+      }
+
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
         formId,
       )
     }
-
     // If field is not an attachment, return original response.
     return okAsync(response)
   })
@@ -214,6 +230,12 @@ const devModeSyncVirusScanning = async (
           response,
           formId,
         )
+      //TODO: replace when removing original virus-scanner
+      // const guarddutyResponsePromise =
+      //   SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+      //     response,
+      //     formId,
+      //   )
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
     } else {
@@ -236,7 +258,7 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
   // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
@@ -260,6 +282,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             req.body.responses,
             req.formsg.formDef._id.toString(),
+            gbGuardduty,
           ),
         )
 

@@ -8,22 +8,34 @@ const SHORT_ENV_MAP = {
   development: 'dev',
   prod: 'prod',
   production: 'prod',
-  stg: 'staging',
-  staging: 'staging',
+  stg: 'stg',
+  staging: 'stg',
+  'stg-alt': 'stg-alt',
+  'staging-alt': 'stg-alt',
+  'stg-alt2': 'stg-alt2',
+  'staging-alt2': 'stg-alt2',
+  'stg-alt3': 'stg-alt3',
+  'staging-alt3': 'stg-alt3',
   test: 'test',
   testing: 'test',
   uat: 'uat',
   vapt: 'vapt',
 }
 
+const SSM_PARAMETER_STORE_KEYS = [
+  'GUARDDUTY_CLEAN_S3_BUCKET',
+  'GUARDDUTY_QUARANTINE_S3_BUCKET',
+]
+
 // This is a helper for local file runs or jest, as specified in package.json
 // It emulates the loading of SSM which Lambda will do.
 // This file is not meant to be used in a deployment and is .mjs so we can use top-level await
 async function saveAllParameters() {
-
   // If process.env.ENV is not a key in SHORT_ENV_MAP, then it is not a valid environment
   if (!Object.keys(SHORT_ENV_MAP).includes(process.env.ENV)) {
-    console.log(`Invalid ENV=${process.env.ENV}. Must be a valid env in SHORT_ENV_MAP`)
+    console.log(
+      `Invalid ENV=${process.env.ENV}. Must be a valid env in SHORT_ENV_MAP`,
+    )
     exit(1)
   }
 
@@ -38,20 +50,31 @@ async function saveAllParameters() {
     exit(0)
   }
   const client = new SSMClient({ region: 'ap-southeast-1' })
-  const parameterName = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}`
+  const parameterNamePrefix = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}/`
 
-  const res = await client.send(
-    new GetParameterCommand({
-      Name: parameterName,
-    }),
+  const requests = SSM_PARAMETER_STORE_KEYS.map((key) => {
+    return client
+      .send(new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }))
+      .then((res) => {
+        return { key, res }
+      })
+  })
+
+  const resolvedResponses = await Promise.all(requests)
+  const parameterString = resolvedResponses.map(
+    ({ key, res }) => `${key}=${res.Parameter.Value}`,
   )
 
-  const parameterString = (res.Parameter?.Value ?? '')
-
   // Add on NODE_ENV
-  const parameterStringWithNodeEnv = parameterString.concat(`\nNODE_ENV=${process.env.ENV}`)
+  const parameterStringWithNodeEnv = [
+    ...parameterString,
+    `NODE_ENV=${process.env.ENV}`,
+  ].join('\n')
 
-  await fs.promises.writeFile(`.env.${process.env.ENV}`, parameterStringWithNodeEnv)
+  await fs.promises.writeFile(
+    `.env.${process.env.ENV}`,
+    parameterStringWithNodeEnv,
+  )
 }
 
 await saveAllParameters()

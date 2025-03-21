@@ -9,5 +9,5 @@ services:
     expose:
       - '8080'
     ports:
-      - '9999:8080'
+      - '9998:8080'
     env_file: ./.env.development
