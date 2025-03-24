@@ -44,7 +44,7 @@ export const enSG: CreateModal = {
     title: 'Your form has been created! Download your Secret Key to proceed.',
     message: {
       preamble1:
-        "You'll need your secret key every time you access your responses to this form.",
+        "You will need this secret key to access this form's responses.",
       preamble2: {
         prefix: 'If you lose it, ',
         warning: 'all responses will be permanently lost',
