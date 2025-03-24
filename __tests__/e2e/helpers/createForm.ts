@@ -136,7 +136,10 @@ const addForm = async (
   await page.getByText('Storage mode form').click()
   await page.getByRole('button', { name: 'Create form' }).click()
 
-  await page.waitForTimeout(1000)
+  await page.getByRole('button', { name: 'Cancel' }).click()
+
+  await page.getByRole('button', { name: 'Close' }).click()
+
   const downloadButton = page.getByRole('button', { name: 'Download key' })
   await expect(downloadButton).toBeEnabled({ timeout: 15000 })
   const downloadPromise = page.waitForEvent('download')
