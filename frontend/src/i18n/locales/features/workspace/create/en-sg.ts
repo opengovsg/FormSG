@@ -49,11 +49,6 @@ export const enSG: CreateModal = {
         prefix: 'If you lose it, ',
         warning: 'all responses will be permanently lost',
       },
-      preamble3: {
-        prefix: 'You can also ',
-        link: 'email it',
-        suffix: ' for safekeeping.',
-      },
     },
     tooltip: {
       copyKey: 'Copy key',

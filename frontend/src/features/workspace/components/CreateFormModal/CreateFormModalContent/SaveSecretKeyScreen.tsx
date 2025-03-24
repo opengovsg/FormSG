@@ -119,37 +119,38 @@ const useSaveSecretKeyDefault = () => {
 
     const handlePopState = (e: PopStateEvent) => {
       if (!hasDownloaded) {
-        e.preventDefault();
-        window.history.pushState(null, '', window.location.href);
-        const confirmMessage = 'You have not downloaded your Secret Key yet. You won\'t be able to access your form responses without it. Are you sure you want to leave?';
+        e.preventDefault()
+        window.history.pushState(null, '', window.location.href)
+        const confirmMessage =
+          "You have not downloaded your Secret Key yet. You won't be able to access your form responses without it. Are you sure you want to leave?"
         if (!window.confirm(confirmMessage)) {
-          return;
+          return
         }
       }
     }
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
-    
-    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('popstate', handlePopState)
+
+    window.history.pushState(null, '', window.location.href)
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('popstate', handlePopState)
     }
-  }, [hasDownloaded]);
+  }, [hasDownloaded])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !hasDownloaded) {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault()
+        e.stopPropagation()
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown, true);
-    return () => document.removeEventListener('keydown', handleKeyDown, true);
-  }, [hasDownloaded]);
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [hasDownloaded])
 
   return {
     isLoading,
@@ -228,19 +229,6 @@ export const SaveSecretKeyScreen = ({
                       )}
                     </Text>
                   </Text>
-                </ListItem>
-                <ListItem>
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble3.prefix',
-                  )}
-                  <Link variant="inline" href={mailToHref}>
-                    {t(
-                      'features.workspace.modals.create.secretKey.message.preamble3.link',
-                    )}
-                  </Link>
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble3.suffix',
-                  )}
                 </ListItem>
               </UnorderedList>
             </Text>
