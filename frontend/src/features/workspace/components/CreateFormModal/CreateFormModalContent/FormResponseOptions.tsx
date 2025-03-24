@@ -70,9 +70,8 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports webhooks for integrations' },
-              { text: 'Supports payments' },
               { text: 'Supports Singpass & Myinfo' },
+              { text: 'Supports webhooks for integrations' },
               { text: 'Up to Restricted and Sensitive (Normal) data' },
             ]}
           />
@@ -99,8 +98,8 @@ export const FormResponseOptions = forwardRef<
       {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
       <InlineMessage mt="1rem">
         <Text>
-          We're phasing out Email mode in the coming months. Don't worry! You
-          can still{' '}
+          We're phasing out Email mode in the coming months. Don't worry!
+          Storage Mode already supports email functionalities. You can still{' '}
           <Link onClick={() => handleEmailButtonPress()}>use it for now</Link>,
           but we'd love to hear why.
         </Text>

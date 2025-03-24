@@ -287,6 +287,7 @@ describe('admin-form.utils', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'some title',
+        emails: ['some@example.com', 'another@example.com'],
       }
 
       // Act
@@ -298,7 +299,7 @@ describe('admin-form.utils', () => {
         title: params.title,
         admin: newAdminId,
         publicKey: params.publicKey,
-        emails: [],
+        emails: params.emails,
         submissionLimit: null,
       }
       expect(actual).toEqual(expected)
