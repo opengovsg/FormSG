@@ -1,4 +1,3 @@
-
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
 import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
