@@ -6,6 +6,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { IAttachmentInfo } from 'src/types'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormDto,
@@ -42,6 +43,7 @@ import {
 } from '../submission.errors'
 import {
   getEncryptedSubmissionData,
+  triggerGuarddutyScanThenDownloadCleanFileChain,
   triggerVirusScanThenDownloadCleanFileChain,
 } from '../submission.service'
 import {
@@ -192,17 +194,34 @@ type IdTaggedParsedClearAttachmentResponseV3 =
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
   formId: string,
+  enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
   | VirusScanFailedError
   | DownloadCleanFileFailedError
   | MaliciousFileDetectedError
->[] =>
-  responses.map((response) =>
-    triggerVirusScanThenDownloadCleanFileChain(response.answer, formId).map(
-      (attachmentResponse) => ({ ...response, answer: attachmentResponse }),
-    ),
-  )
+>[] => {
+  return responses.map((response) => {
+    if (enableGuarddutyLambdaInvoke) {
+      triggerGuarddutyScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      ).mapErr((err) =>
+        logger.info({
+          message: `GuardDuty Scan unsuccessful:, ${err}`,
+          meta: {
+            action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
+          },
+        }),
+      )
+    }
+
+    return triggerVirusScanThenDownloadCleanFileChain(
+      response.answer,
+      formId,
+    ).map((attachmentResponse) => ({ ...response, answer: attachmentResponse }))
+  })
+}
 
 /**
  * Synchronous virus scanning for storage submissions v2.1+. This is used for dev environment.
@@ -248,6 +267,7 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
   const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
@@ -286,6 +306,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             attachmentResponsesToRetrieve,
             req.formsg.formDef._id.toString(),
+            gbGuardduty,
           ),
         )
 
