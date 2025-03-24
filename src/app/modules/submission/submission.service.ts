@@ -351,7 +351,11 @@ export const triggerVirusScanning = (
  * @returns okAsync(buffer) if file has been successfully downloaded from the clean bucket
  * @returns errAsync(DownloadCleanFileFailedError) if file download failed
  */
-export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
+export const downloadCleanFile = (
+  cleanFileKey: string,
+  versionId: string,
+  bucketName: string,
+) => {
   const logMeta = {
     action: 'downloadCleanFile',
     cleanFileKey,
@@ -378,7 +382,7 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
 
   const readStream = AwsConfig.s3
     .getObject({
-      Bucket: AwsConfig.virusScannerCleanS3Bucket,
+      Bucket: bucketName,
       Key: cleanFileKey,
       VersionId: versionId,
     })
@@ -475,6 +479,7 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
         downloadCleanFile(
           cleanAttachment.cleanFileKey,
           cleanAttachment.destinationVersionId,
+          AwsConfig.virusScannerCleanS3Bucket,
         ).map((attachmentBuffer) => ({
           ...response,
           // Replace content with attachmentBuffer and answer with filename.
@@ -1401,6 +1406,7 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
         downloadCleanFile(
           cleanAttachment.cleanFileKey,
           cleanAttachment.destinationVersionId,
+          AwsConfig.guarddutyQuarantineS3Bucket,
         ).map((attachmentBuffer) => ({
           ...response,
           // Replace content with attachmentBuffer and answer with filename.
