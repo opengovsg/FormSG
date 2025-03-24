@@ -40,7 +40,10 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
           minWidth="20px"
           minHeight="20px"
           display="flex"
-          background="#DADCE3"
+          backgroundColor="secondary.200"
+          borderColor="secondary.200"
+          _hover={{ bg: 'secondary.300' }}
+          _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
           onClick={prevItem}
           isDisabled={currentIndex <= 0}
         >
@@ -59,7 +62,10 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
           minWidth="20px"
           minHeight="20px"
           display="flex"
-          background="#DADCE3"
+          backgroundColor="secondary.200"
+          borderColor="secondary.200"
+          _hover={{ bg: 'secondary.300' }}
+          _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
           onClick={nextItem}
           isDisabled={currentIndex >= NUM_STEPS - 1}
         >
