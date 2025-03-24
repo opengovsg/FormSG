@@ -42,11 +42,6 @@ export interface CreateModal {
         prefix: string
         warning: string
       }
-      preamble3: {
-        prefix: string
-        link: string
-        suffix: string
-      }
     }
     tooltip: {
       copyKey: string
