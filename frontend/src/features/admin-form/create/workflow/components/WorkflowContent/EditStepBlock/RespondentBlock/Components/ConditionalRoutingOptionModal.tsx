@@ -385,7 +385,6 @@ export interface ConditionalRoutingOptionModalProps {
   isSubmitDisabled: boolean
   validateCsvFile: (value: File | null) => Promise<string | undefined>
   existingCsv: File | null
-  setValue: UseFormReturn<ConditionalRoutingConfig>['setValue']
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -398,7 +397,6 @@ export const ConditionalRoutingOptionModal = ({
   isSubmitDisabled,
   validateCsvFile,
   existingCsv,
-  setValue,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
