@@ -183,11 +183,12 @@ const asyncVirusScanning = (
           response,
           formId,
         ).mapErr((err) =>
-          logger.info({
-            message: `GuardDuty Scan unsuccessful:, ${err}`,
+          logger.error({
+            message: `GuardDuty Scan unsuccessful`,
             meta: {
               action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
             },
+            error: err,
           }),
         )
       }
