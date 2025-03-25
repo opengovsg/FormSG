@@ -412,6 +412,7 @@ export const ConditionalRoutingOptionModal = ({
     onClose()
   }
 
+  // if there is an existing csv file, skip instructions to replace modal
   const modalStartNumber = existingCsv ? 2 : 0
   useEffect(() => {
     if (!isOpen) {
@@ -454,8 +455,6 @@ export const ConditionalRoutingOptionModal = ({
         <StepReplaceModalContent
           control={control}
           errors={errors}
-          // stepNumber={stepNumber}
-          // setStepNumber={setStepNumber}
           onSubmit={onSubmit}
           isSubmitDisabled={isSubmitDisabled}
           validateCsvFile={validateCsvFile}

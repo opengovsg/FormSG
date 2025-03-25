@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import { Button, Image, Stack, Text } from '@chakra-ui/react'
 
@@ -11,7 +10,6 @@ interface ImageCarouselProps {
 }
 
 export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
-  const { t } = useTranslation()
   const NUM_STEPS = images.length
   const [currentIndex, setCurrentIndex] = useState<number>(0)
 
