@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Controller, FieldErrors, UseFormReturn } from 'react-hook-form'
+import { Controller, FieldErrors, UseFormReturn, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import {
@@ -279,8 +279,6 @@ const StepTwoModalContent = ({
 }
 
 interface StepReplaceModalContentProps {
-  // stepNumber: number
-  // setStepNumber: (step: number) => void
   control: ConditionalRoutingOptionModalProps['control']
   errors: ConditionalRoutingOptionModalProps['errors']
   onSubmit: ConditionalRoutingOptionModalProps['onSubmit']
@@ -291,8 +289,6 @@ interface StepReplaceModalContentProps {
 }
 
 const StepReplaceModalContent = ({
-  // stepNumber,
-  // setStepNumber,
   control,
   errors,
   onSubmit,
@@ -389,6 +385,7 @@ export interface ConditionalRoutingOptionModalProps {
   isSubmitDisabled: boolean
   validateCsvFile: (value: File | null) => Promise<string | undefined>
   existingCsv: File | null
+  setValue: UseFormReturn<ConditionalRoutingConfig>['setValue']
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -401,6 +398,7 @@ export const ConditionalRoutingOptionModal = ({
   isSubmitDisabled,
   validateCsvFile,
   existingCsv,
+  setValue,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 

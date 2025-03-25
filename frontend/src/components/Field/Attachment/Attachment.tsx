@@ -293,7 +293,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     }, [onChange, rootRef])
 
     const handleReplaceFile = handleReplaceFileOverride ?? _handleReplaceFile
-    // const handleReplaceFile = null
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
