@@ -59,7 +59,7 @@ export const enSG: CreateModal = {
       'If I lose my Secret Key, I cannot activate my form or access any responses to it',
     confirm: 'I have saved my Secret Key safely',
     email: {
-      filename: 'Form Secret Key - {titleInputValue} - FormID(${formId}).txt',
+      filename: 'Form Secret Key - {titleInputValue} - FormID({formId}).txt',
       subject: 'Shared Secret Key for {titleInputValue}',
       body: `
         Dear collaborator,
