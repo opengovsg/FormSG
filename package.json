@@ -145,7 +145,7 @@
     "tweetnacl": "^1.0.1",
     "tweetnacl-util": "^0.15.1",
     "uid-generator": "^2.0.0",
-    "ulid": "^2.3.0",
+    "ulid": "^3.0.0",
     "uuid": "^11.1.0",
     "uuid-by-string": "^4.0.0",
     "validator": "^13.12.0",
