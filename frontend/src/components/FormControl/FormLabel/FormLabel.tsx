@@ -52,6 +52,11 @@ export interface FormLabelProps extends ChakraFormLabelProps {
    * Whether markdown is enabled for description text.
    */
   useMarkdownForDescription?: boolean
+
+  /**
+   * Whether there's prefilled MRF state.
+   */
+  isMRFPrefilled?: boolean
 }
 
 /**
@@ -71,6 +76,7 @@ export const FormLabel = ({
   questionNumber,
   description,
   useMarkdownForDescription = false,
+  isMRFPrefilled = true,
   children,
   ...labelProps
 }: FormLabelProps): JSX.Element => {
@@ -81,6 +87,14 @@ export const FormLabel = ({
       flexDir="column"
       overflowWrap="break-word"
       {...labelProps}
+      sx={{
+        ...(isMRFPrefilled && {
+          _disabled: {
+            color: 'primary.800',
+            opacity: 1,
+          },
+        }),
+      }}
     >
       <Box overflowWrap="anywhere">
         {questionNumber && (

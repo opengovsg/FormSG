@@ -37,6 +37,10 @@ export interface InputProps extends ChakraInputProps {
    * Whether there's an input right element. Used to provide additional padding
    */
   hasInputRightElement?: boolean
+  /**
+   * Whether it's a prefilled MRF input. Only applies to MRF inputs, not the same as isPrefilled.
+   */
+  isMRFPrefilled?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -48,6 +52,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isSuccess',
     'isPrefilled',
     'isPrefillLocked',
+    'isMRFPrefilled',
     'preventDefaultOnEnter',
     'hasInputRightElement',
   ])
@@ -77,7 +82,9 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            {...(props.isPrefillLocked ? { isDisabled: true } : {})}
+            {...(props.isPrefillLocked || props.isMRFPrefilled
+              ? { isDisabled: true }
+              : {})}
             sx={props.sx ?? inputStyles.field}
           />
           {props.isPrefillLocked ? (
@@ -88,32 +95,37 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
         </InputGroup>
       )
     } else {
-      return props.isPrefillLocked ? (
-        <InputGroup>
+      if (props.isPrefillLocked) {
+        return (
+          <InputGroup>
+            <ChakraInput
+              ref={ref}
+              {...preventDefault}
+              {...inputProps}
+              isDisabled={true}
+              // Padding to allow for lock icon overflow.
+              sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
+            />
+            <InputRightElement>
+              <BxLockAlt />
+            </InputRightElement>
+          </InputGroup>
+        )
+      } else {
+        return (
           <ChakraInput
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            isDisabled={true}
-            // Padding to allow for lock icon overflow.
-            sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
+            isMRFPrefilled={true} /* TODO: should be conditionally applied*/
+            sx={merge(
+              props.hasInputRightElement ? { pr: '2.75rem' } : {},
+              inputStyles.field,
+              props.sx,
+            )}
           />
-          <InputRightElement>
-            <BxLockAlt />
-          </InputRightElement>
-        </InputGroup>
-      ) : (
-        <ChakraInput
-          ref={ref}
-          {...preventDefault}
-          {...inputProps}
-          sx={merge(
-            props.hasInputRightElement ? { pr: '2.75rem' } : {},
-            inputStyles.field,
-            props.sx,
-          )}
-        />
-      )
+        )
+      }
     }
   }
 

@@ -99,7 +99,7 @@ const sizes: Record<string, PartsStyleObject<typeof parts>> = {
 }
 
 const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
-  const { isClearable, colorScheme: c } = props
+  const { isClearable, colorScheme: c, isMRFPrefilled } = props
   const inputVariantOutline = Input.variants.outline(props)
 
   return {
@@ -109,6 +109,14 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
       borderRightRadius: isClearable ? 0 : undefined,
       bg: 'white',
       gridArea: '1 / 1 / 2 / 3',
+      ...(isMRFPrefilled && {
+        _disabled: {
+          bg: 'neutral.200',
+          borderColor: 'neutral.400',
+          color: 'neutral.800',
+          opacity: 1,
+        },
+      }),
     }),
     clearbutton: {
       ml: '-1px',
