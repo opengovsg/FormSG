@@ -48,7 +48,6 @@ import { EditFormFieldParams } from 'src/types/api'
 import {
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  // CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -3179,25 +3178,27 @@ describe('admin-form.service', () => {
           }),
         } as unknown as IPopulatedForm
 
-        const incompleteOptionsMap = {
+        const lessOptionsMap = {
           option2: ['test2@example.com'],
         }
-        const fieldOptions = Object.keys(incompleteOptionsMap)
+        const fieldOptions = Object.keys(lessOptionsMap)
 
         // Act
         const result = await AdminFormService.updateOptionsToRecipientsMap(
           mockForm,
           'fieldId',
-          incompleteOptionsMap,
+          lessOptionsMap,
           fieldOptions,
         )
 
         // Assert
-        // expect(result.isErr()).toBe(true)
-        // expect(result._unsafeUnwrapErr().message).toBe(
-        //   CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-        // )
         expect(result.isOk()).toBe(true)
+        expect(mockForm.updateFormFieldById).toHaveBeenCalledWith('fieldId', {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: fieldOptions,
+          optionsToRecipientsMap: lessOptionsMap,
+        })
       })
 
       it('should return error if some options is empty string', async () => {

@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   FormControl,
-  // Image,
   Modal,
   ModalBody,
   ModalContent,
@@ -31,7 +30,6 @@ import carouselImage2 from './carouselImages/image-carousel-2.png'
 import carouselImage3 from './carouselImages/image-carousel-3.png'
 import carouselImage4 from './carouselImages/image-carousel-4.png'
 import carouselImage5 from './carouselImages/image-carousel-5.png'
-// import CSV_TEMPLATE_EXAMPLE_GIF from './conditional-routing-example.gif'
 import { ImageCarousel } from './ConditionalRoutingImageCarousel'
 import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import { FieldItem } from './types'

@@ -734,7 +734,6 @@ export const duplicateForm = (
  * - All options have at least one recipient email
  * - Options cannot be empty strings
  * - All recipient emails are valid email addresses
- * - All options in mapping exist in the field's options and vice versa
  */
 
 const validateOptionsToRecipientsMap = (

@@ -132,13 +132,11 @@ export const ConditionalRoutingOption = ({
   useEffect(() => {
     if (selectedConditionalFieldOptionsToRecipientsMap) {
       setCsvFile(placeholderOptionToEmailMappingCsvFile)
-      // setCsvFile(csvFile)
     } else {
       setCsvFile(null)
     }
   }, [
     setCsvFile,
-    // csvFile,
     placeholderOptionToEmailMappingCsvFile,
     selectedConditionalFieldOptionsToRecipientsMap,
   ])
@@ -248,7 +246,7 @@ export const ConditionalRoutingOption = ({
         },
         {
           onSuccess: () => {
-            // setCsvFile(placeholderOptionToEmailMappingCsvFile)
+            setCsvFile(placeholderOptionToEmailMappingCsvFile)
             clearErrors('conditional_field')
             onClose()
           },
