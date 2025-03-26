@@ -203,18 +203,13 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (enableGuarddutyLambdaInvoke) {
-      triggerGuarddutyScanThenDownloadCleanFileChain(
+      return triggerGuarddutyScanThenDownloadCleanFileChain(
         response.answer,
         formId,
-      ).mapErr((err) =>
-        logger.error({
-          message: `GuardDuty Scan unsuccessful`,
-          meta: {
-            action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
-          },
-          error: err,
-        }),
-      )
+      ).map((attachmentResponse) => ({
+        ...response,
+        answer: attachmentResponse,
+      }))
     }
 
     return triggerVirusScanThenDownloadCleanFileChain(

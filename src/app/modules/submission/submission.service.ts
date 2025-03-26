@@ -1181,24 +1181,7 @@ export const getQuarantinePresignedPostData = (
   const fileKeys: string[] = attachmentSizes.map(() => crypto.randomUUID()) //set fileKeys to be same for both flows
 
   // Step 2: Create presigned post data for each attachment
-  const currentQuarantineBucketPost = ResultAsync.combine(
-    attachmentSizes.map(({ id, size }, index) => {
-      // Check if id is a valid ObjectId
-      if (!mongoose.isValidObjectId(id))
-        return errAsync(new InvalidFieldIdError())
-
-      return createPresignedPostDataPromise({
-        bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
-        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-        size,
-        key: fileKeys[index],
-      }).map((presignedPostData) => ({
-        id,
-        presignedPostData,
-      }))
-    }),
-  )
-
+  // checks for guardduty enabled flag to determine which virus-scanning flow to use
   if (enableGuarddutyBucketPost) {
     logger.info({
       message: 'Yes guardduty is enabled!',
@@ -1207,7 +1190,7 @@ export const getQuarantinePresignedPostData = (
       },
     })
     // Step 2a: Create presigned post data for each attachment for new guardduty bucket
-    const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
+    const guarddutyQuarantineBucketPost = ResultAsync.combine(
       attachmentSizes.map(({ id, size }, index) => {
         // Check if id is a valid ObjectId
         if (!mongoose.isValidObjectId(id))
@@ -1225,14 +1208,27 @@ export const getQuarantinePresignedPostData = (
       }),
     )
 
-    return ResultAsync.combine([
-      currentQuarantineBucketPost,
-      newGuarddutyQuarantineBucketPost,
-    ]).map(([currentQuarantineData, newGuarddutyData]) => [
-      ...currentQuarantineData,
-      ...newGuarddutyData,
-    ])
+    return guarddutyQuarantineBucketPost
   }
+
+  // else, send to original s3 quarantine bucket
+  const currentQuarantineBucketPost = ResultAsync.combine(
+    attachmentSizes.map(({ id, size }, index) => {
+      // Check if id is a valid ObjectId
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
+
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+        key: fileKeys[index],
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
+    }),
+  )
   return currentQuarantineBucketPost
 }
 
