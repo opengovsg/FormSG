@@ -178,25 +178,28 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
+      // we'll invoke both lambdas and one of them will be in-shadow in order
+      // for us to compare the reliability of the services
       if (enableGuarddutyLambdaInvoke) {
-        //trigger virus-scanner
+        // trigger virus-scanner, ignore results because running in-shadow
         SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
           response,
           formId,
         )
-        // return guardduty scan
+
+        // use guardduty scan results
         return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
       } else {
-        //trigger guardduty
+        // trigger guardduty, ignore results because running in-shadow
         SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
 
-        //return virus-scanner
+        // use virus-scanner scan results
         return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
           response,
           formId,
