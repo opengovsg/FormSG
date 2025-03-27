@@ -1180,7 +1180,6 @@ export const getQuarantinePresignedPostData = (
 
   const fileKeys: string[] = attachmentSizes.map(() => crypto.randomUUID()) //set fileKeys to be same for both flows
 
-  // Step 2: Create presigned post data for each attachment
   const currentQuarantineBucketPost = ResultAsync.combine(
     attachmentSizes.map(({ id, size }, index) => {
       // Check if id is a valid ObjectId
@@ -1199,6 +1198,8 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
+  // Step 2: Create presigned post data for each attachment
+  // checks for guardduty enabled flag to determine which virus-scanning flow to use
   if (enableGuarddutyBucketPost) {
     logger.info({
       message: 'Yes guardduty is enabled!',
@@ -1207,7 +1208,7 @@ export const getQuarantinePresignedPostData = (
       },
     })
     // Step 2a: Create presigned post data for each attachment for new guardduty bucket
-    const newGuarddutyQuarantineBucketPost = ResultAsync.combine(
+    const guarddutyQuarantineBucketPost = ResultAsync.combine(
       attachmentSizes.map(({ id, size }, index) => {
         // Check if id is a valid ObjectId
         if (!mongoose.isValidObjectId(id))
@@ -1227,12 +1228,14 @@ export const getQuarantinePresignedPostData = (
 
     return ResultAsync.combine([
       currentQuarantineBucketPost,
-      newGuarddutyQuarantineBucketPost,
+      guarddutyQuarantineBucketPost,
     ]).map(([currentQuarantineData, newGuarddutyData]) => [
       ...currentQuarantineData,
       ...newGuarddutyData,
     ])
   }
+
+  // else, send to original s3 quarantine bucket
   return currentQuarantineBucketPost
 }
 
@@ -1406,7 +1409,7 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
         downloadCleanFile(
           cleanAttachment.cleanFileKey,
           cleanAttachment.destinationVersionId,
-          AwsConfig.guarddutyQuarantineS3Bucket,
+          AwsConfig.guarddutyCleanS3Bucket,
         ).map((attachmentBuffer) => ({
           ...response,
           // Replace content with attachmentBuffer and answer with filename.

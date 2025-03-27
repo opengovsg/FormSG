@@ -1,3 +1,4 @@
+// import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
@@ -177,26 +178,33 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
+      // we'll invoke both lambdas and one of them will be in-shadow in order
+      // for us to compare the reliability of the services
       if (enableGuarddutyLambdaInvoke) {
-        // trigger guardduty scan
+        // trigger virus-scanner, ignore results because running in-shadow
+        SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+
+        // use guardduty scan results
+        return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+      } else {
+        // trigger guardduty, ignore results because running in-shadow
         SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
           formId,
-        ).mapErr((err) =>
-          logger.error({
-            message: `GuardDuty Scan unsuccessful`,
-            meta: {
-              action: 'TriggerGuarddutyScanThenDownloadCleanFileChain',
-            },
-            error: err,
-          }),
+        )
+
+        // use virus-scanner scan results
+        return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
         )
       }
-
-      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-        response,
-        formId,
-      )
     }
     // If field is not an attachment, return original response.
     return okAsync(response)
@@ -231,12 +239,6 @@ const devModeSyncVirusScanning = async (
           response,
           formId,
         )
-      //TODO: replace when removing original virus-scanner
-      // const guarddutyResponsePromise =
-      //   SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
-      //     response,
-      //     formId,
-      //   )
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
     } else {
