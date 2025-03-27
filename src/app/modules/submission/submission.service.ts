@@ -1402,7 +1402,7 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
         downloadCleanFile(
           cleanAttachment.cleanFileKey,
           cleanAttachment.destinationVersionId,
-          AwsConfig.guarddutyQuarantineS3Bucket,
+          AwsConfig.guarddutyCleanS3Bucket,
         ).map((attachmentBuffer) => ({
           ...response,
           // Replace content with attachmentBuffer and answer with filename.

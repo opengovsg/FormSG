@@ -1,3 +1,4 @@
+import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
@@ -223,14 +224,43 @@ const devModeSyncVirusScanning = async (
           response,
           formId,
         )
+      results.push(attachmentResponse)
+      if (attachmentResponse.isErr()) break
+
       //TODO: replace when removing original virus-scanner
+      // manually tag files as NO_THREATS locally since local s3 has no GuardDuty
+      // const s3Client = new S3Client({
+      //   region: 'ap-southeast-1',
+      //   endpoint: `http://host.docker.internal:4566`,
+      //   forcePathStyle: true,
+      //   credentials: {
+      //     accessKeyId: '',
+      //     secretAccessKey: '',
+      //   },
+      // })
+
+      // await s3Client.send(
+      //   new PutObjectTaggingCommand({
+      //     Bucket: process.env.GUARDDUTY_QUARANTINE_S3_BUCKET,
+      //     Key: response.answer,
+      //     Tagging: {
+      //       TagSet: [
+      //         {
+      //           Key: 'GuardDutyMalwareScanStatus',
+      //           Value: 'NO_THREATS_FOUND',
+      //         },
+      //       ],
+      //     },
+      //   }),
+      // )
+
       // const guarddutyResponsePromise =
-      //   SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+      //   await SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
       //     response,
       //     formId,
       //   )
-      results.push(attachmentResponse)
-      if (attachmentResponse.isErr()) break
+      // results.push(guarddutyResponsePromise)
+      // if (guarddutyResponsePromise.isErr()) break
     } else {
       // If field is not an attachment, return original response.
       results.push(ok(response))
