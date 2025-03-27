@@ -73,7 +73,7 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={currentIndex}
-        onClick={() => {}}
+        onClick={setCurrentIndex}
       />
       <Text color="secondary.400" textStyle="caption-2">
         {captions[currentIndex]}
