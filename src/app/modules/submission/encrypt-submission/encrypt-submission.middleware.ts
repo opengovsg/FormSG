@@ -179,17 +179,29 @@ const asyncVirusScanning = (
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
       if (enableGuarddutyLambdaInvoke) {
-        // trigger guardduty scan
+        //trigger virus-scanner
+        SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+        // return guardduty scan
         return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
-      }
+      } else {
+        //trigger guardduty
+        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
 
-      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-        response,
-        formId,
-      )
+        //return virus-scanner
+        return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+          formId,
+        )
+      }
     }
     // If field is not an attachment, return original response.
     return okAsync(response)

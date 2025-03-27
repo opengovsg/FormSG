@@ -203,6 +203,8 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (enableGuarddutyLambdaInvoke) {
+      triggerVirusScanThenDownloadCleanFileChain(response.answer, formId)
+
       return triggerGuarddutyScanThenDownloadCleanFileChain(
         response.answer,
         formId,
@@ -210,12 +212,17 @@ const asyncVirusScanning = (
         ...response,
         answer: attachmentResponse,
       }))
-    }
+    } else {
+      triggerGuarddutyScanThenDownloadCleanFileChain(response.answer, formId)
 
-    return triggerVirusScanThenDownloadCleanFileChain(
-      response.answer,
-      formId,
-    ).map((attachmentResponse) => ({ ...response, answer: attachmentResponse }))
+      return triggerVirusScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      ).map((attachmentResponse) => ({
+        ...response,
+        answer: attachmentResponse,
+      }))
+    }
   })
 }
 
