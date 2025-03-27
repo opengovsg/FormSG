@@ -1,4 +1,4 @@
-import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
+// import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
