@@ -1198,45 +1198,32 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 
-  // Step 2: Create presigned post data for each attachment
-  // checks for guardduty enabled flag to determine which virus-scanning flow to use
-  if (enableGuarddutyBucketPost) {
-    logger.info({
-      message: 'Yes guardduty is enabled!',
-      meta: {
-        action: 'getQuarantinePresignedPostData',
-      },
-    })
-    // Step 2a: Create presigned post data for each attachment for new guardduty bucket
-    const guarddutyQuarantineBucketPost = ResultAsync.combine(
-      attachmentSizes.map(({ id, size }, index) => {
-        // Check if id is a valid ObjectId
-        if (!mongoose.isValidObjectId(id))
-          return errAsync(new InvalidFieldIdError())
+  // Step 2a: Create presigned post data for each attachment for new guardduty bucket
+  const guarddutyQuarantineBucketPost = ResultAsync.combine(
+    attachmentSizes.map(({ id, size }, index) => {
+      // Check if id is a valid ObjectId
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
 
-        return createPresignedPostDataPromise({
-          bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
-          expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-          size,
-          key: fileKeys[index],
-        }).map((presignedPostData) => ({
-          id,
-          presignedPostData,
-        }))
-      }),
-    )
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+        key: fileKeys[index],
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
+    }),
+  )
 
-    return ResultAsync.combine([
-      currentQuarantineBucketPost,
-      guarddutyQuarantineBucketPost,
-    ]).map(([currentQuarantineData, newGuarddutyData]) => [
-      ...currentQuarantineData,
-      ...newGuarddutyData,
-    ])
-  }
-
-  // else, send to original s3 quarantine bucket
-  return currentQuarantineBucketPost
+  return ResultAsync.combine([
+    currentQuarantineBucketPost,
+    guarddutyQuarantineBucketPost,
+  ]).map(([currentQuarantineData, newGuarddutyData]) => [
+    ...currentQuarantineData,
+    ...newGuarddutyData,
+  ])
 }
 
 /**
