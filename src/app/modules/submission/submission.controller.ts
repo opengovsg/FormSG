@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,

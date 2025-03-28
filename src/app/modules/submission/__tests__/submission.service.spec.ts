@@ -2188,6 +2188,8 @@ describe('submission.service', () => {
 
     const REGEX_UUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const uuid1 = expect.stringMatching(REGEX_UUID)
+    const uuid2 = expect.stringMatching(REGEX_UUID)
 
     it('should return presigned post data', async () => {
       // Arrange
@@ -2227,6 +2229,7 @@ describe('submission.service', () => {
         [
           {
             ...expectedCalledWithSubset,
+            Fields: { key: uuid1 },
             Conditions: [['content-length-range', 0, 1]],
           },
           expect.any(Function), // anonymous error handling function
@@ -2234,6 +2237,8 @@ describe('submission.service', () => {
         [
           {
             ...expectedCalledWithSubset,
+            Bucket: aws.guarddutyQuarantineS3Bucket,
+            Fields: { key: uuid2 },
             Conditions: [['content-length-range', 0, 2]],
           },
           expect.any(Function), // anonymous error handling function
@@ -2241,6 +2246,8 @@ describe('submission.service', () => {
         [
           {
             ...expectedCalledWithSubset,
+            Bucket: aws.guarddutyQuarantineS3Bucket,
+            Fields: { key: uuid1 },
             Conditions: [['content-length-range', 0, 1]],
           },
           expect.any(Function), // anonymous error handling function
@@ -2248,6 +2255,8 @@ describe('submission.service', () => {
         [
           {
             ...expectedCalledWithSubset,
+            Bucket: aws.guarddutyQuarantineS3Bucket,
+            Fields: { key: uuid2 },
             Conditions: [['content-length-range', 0, 2]],
           },
           expect.any(Function), // anonymous error handling function
