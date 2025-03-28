@@ -17,6 +17,7 @@ export const enSG: Fields = {
     dragAndDrop: ' or drag and drop here',
     dragActive: 'Drop the file here',
     maxFileSize: 'Maximum file size: {readableMaxSize}',
+    fileConstraintsText: 'Files should not be more than 10 pages long.',
     ariaLabelRemove: 'Click to remove file',
     error: {
       fileEmpty:

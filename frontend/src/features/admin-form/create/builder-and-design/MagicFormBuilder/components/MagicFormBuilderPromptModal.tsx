@@ -25,6 +25,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Tab,
   TabList,
   TabPanel,
@@ -132,7 +133,7 @@ const TextPromptModalBodyContent = ({
 }) => {
   return (
     <>
-      <FormControl isRequired isInvalid={!!errors.prompt?.message}>
+      <FormControl isInvalid={!!errors.prompt?.message}>
         <FormLabel textStyle="subhead-1">
           I want to create a form that collects...
         </FormLabel>
@@ -179,7 +180,7 @@ const VisionPromptModalBodyContent = ({
 }) => {
   return (
     <>
-      <FormControl isRequired isInvalid={!!errors.attachment?.message}>
+      <FormControl isInvalid={!!errors.attachment?.message}>
         <FormLabel textStyle="subhead-1">
           Create a form based on this pdf
         </FormLabel>
@@ -196,6 +197,7 @@ const VisionPromptModalBodyContent = ({
               }}
               accept=".pdf"
               showFileSize
+              fileConstraintsText="Files should not be more than 10 pages long."
               showRemove
               isRemoveDisabled={isVisionPromptSubmitLoading}
               onError={(message) => setError('attachment', { message })}
@@ -241,9 +243,13 @@ const MagicFormBuilderCreateFormPrompt = ({
     handleSubmit: handleVisionSubmit,
   } = useForm<VisionPromptInputs>()
 
-  const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(PROMPT_TYPE.TEXT)
+  const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(
+    isVisionPromptSubmitLoading ? PROMPT_TYPE.VISION : PROMPT_TYPE.TEXT,
+  )
 
   const { user, isLoading: isUserLoading } = useUser()
+  const isComponentLoading = isUserLoading
+
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
@@ -263,50 +269,62 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        {isTest ||
-        (isMfbTextEnabled &&
-          isMfbVisionEnabled &&
-          !isUserLoading &&
-          user?.betaFlags?.mfbVision) ? (
-          <Tabs isFitted onChange={setSelectedTab}>
-            <TabList px="2px" mb="1rem">
-              <Tab value={PROMPT_TYPE.TEXT}>Text</Tab>
-              <Tab value={PROMPT_TYPE.VISION}>Pdf</Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel>
-                <TextPromptModalBodyContent
-                  register={register}
-                  setValue={setValue}
-                  errors={errors}
-                />
-              </TabPanel>
-              <TabPanel>
-                <VisionPromptModalBodyContent
-                  control={visionControl}
-                  errors={visionErrors}
-                  clearErrors={clearVisionErrors}
-                  setError={setVisionError}
-                  isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
-                />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        ) : isMfbTextEnabled ? (
-          <TextPromptModalBodyContent
-            register={register}
-            setValue={setValue}
-            errors={errors}
-          />
-        ) : isMfbVisionEnabled && user?.betaFlags?.mfbVision ? (
-          <VisionPromptModalBodyContent
-            control={visionControl}
-            errors={visionErrors}
-            clearErrors={clearVisionErrors}
-            setError={setVisionError}
-            isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
-          />
-        ) : null}
+        <Skeleton isLoaded={!isComponentLoading}>
+          {isTest ||
+          (isMfbTextEnabled &&
+            isMfbVisionEnabled &&
+            !isUserLoading &&
+            user?.betaFlags?.mfbVision) ? (
+            <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
+              <TabList px="2px" mb="1rem">
+                <Tab
+                  isDisabled={isVisionPromptSubmitLoading}
+                  value={PROMPT_TYPE.TEXT}
+                >
+                  Text
+                </Tab>
+                <Tab
+                  isDisabled={isTextPromptSubmitLoading}
+                  value={PROMPT_TYPE.VISION}
+                >
+                  Pdf
+                </Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  <TextPromptModalBodyContent
+                    register={register}
+                    setValue={setValue}
+                    errors={errors}
+                  />
+                </TabPanel>
+                <TabPanel>
+                  <VisionPromptModalBodyContent
+                    control={visionControl}
+                    errors={visionErrors}
+                    clearErrors={clearVisionErrors}
+                    setError={setVisionError}
+                    isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+                  />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          ) : isMfbTextEnabled ? (
+            <TextPromptModalBodyContent
+              register={register}
+              setValue={setValue}
+              errors={errors}
+            />
+          ) : isMfbVisionEnabled && user?.betaFlags?.mfbVision ? (
+            <VisionPromptModalBodyContent
+              control={visionControl}
+              errors={visionErrors}
+              clearErrors={clearVisionErrors}
+              setError={setVisionError}
+              isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+            />
+          ) : null}
+        </Skeleton>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
@@ -340,6 +358,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                   }
                 })
           }
+          isNextDisabled={isComponentLoading}
           isNextLoading={
             isTextPromptSubmitLoading || isVisionPromptSubmitLoading
           }
@@ -383,7 +402,7 @@ const MagicFormBuilderPromptModal = ({
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalCloseButton isDisabled={isLoading} />
+        <>{!isLoading ? <ModalCloseButton /> : null}</>
         <MagicFormBuilderCreateFormPrompt
           onTextPromptSubmit={onTextPromptSubmit}
           isTextPromptSubmitLoading={isTextPromptSubmitLoading}
