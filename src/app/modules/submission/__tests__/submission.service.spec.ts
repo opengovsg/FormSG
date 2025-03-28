@@ -2238,6 +2238,20 @@ describe('submission.service', () => {
           },
           expect.any(Function), // anonymous error handling function
         ],
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 1]],
+          },
+          expect.any(Function), // anonymous error handling function
+        ],
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 2]],
+          },
+          expect.any(Function), // anonymous error handling function
+        ],
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
       expect(actualResultValue).toEqual(
