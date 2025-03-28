@@ -443,12 +443,8 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
-  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
-  logger.info({
-    message: `guardduty growthbook tag is: ${gbGuardduty}`,
-    meta: logMeta,
-  })
-  return getQuarantinePresignedPostData(req.body, gbGuardduty)
+
+  return getQuarantinePresignedPostData(req.body)
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',
