@@ -2206,6 +2206,15 @@ describe('submission.service', () => {
         }),
       })
 
+      const expectedPresignedPostDataGuardDuty = expect.objectContaining({
+        url: `${aws.endPoint}/${aws.guarddutyQuarantineS3Bucket}`,
+        fields: expect.objectContaining({
+          key: expect.stringMatching(REGEX_UUID),
+          bucket: aws.guarddutyQuarantineS3Bucket,
+          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+        }),
+      })
+
       // Act
       const actualResult = await getQuarantinePresignedPostData(
         MOCK_ATTACHMENT_SIZES,
@@ -2213,7 +2222,7 @@ describe('submission.service', () => {
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
-      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(awsSpy).toHaveBeenCalledTimes(4)
       expect(awsSpy.mock.calls).toEqual([
         [
           {
@@ -2235,6 +2244,14 @@ describe('submission.service', () => {
         expect.objectContaining([
           { id: fieldId1, presignedPostData: expectedPresignedPostData },
           { id: fieldId2, presignedPostData: expectedPresignedPostData },
+          {
+            id: fieldId1,
+            presignedPostData: expectedPresignedPostDataGuardDuty,
+          },
+          {
+            id: fieldId2,
+            presignedPostData: expectedPresignedPostDataGuardDuty,
+          },
         ]),
       )
     })
