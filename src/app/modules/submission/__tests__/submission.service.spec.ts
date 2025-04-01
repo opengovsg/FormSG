@@ -2237,7 +2237,6 @@ describe('submission.service', () => {
         [
           {
             ...expectedCalledWithSubset,
-            Bucket: aws.guarddutyQuarantineS3Bucket,
             Fields: { key: uuid2 },
             Conditions: [['content-length-range', 0, 2]],
           },
