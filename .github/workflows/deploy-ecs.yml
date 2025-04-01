@@ -151,8 +151,7 @@ jobs:
           echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
           echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
 
-      - name: Configure AWS credentials
-        # Configures the runner environment with AWS credentials
+      - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ inputs.cicd-role }}
