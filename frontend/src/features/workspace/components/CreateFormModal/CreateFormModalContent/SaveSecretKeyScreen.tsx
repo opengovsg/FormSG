@@ -50,6 +50,7 @@ const useSaveSecretKeyDefault = () => {
     },
     isLoading,
     keypair: { secretKey },
+    onClose,
   } = useCreateFormWizard()
 
   const queryClient = useQueryClient()
@@ -119,12 +120,11 @@ const useSaveSecretKeyDefault = () => {
 
     const handlePopState = (e: PopStateEvent) => {
       if (!hasDownloaded) {
-        e.preventDefault()
         window.history.pushState(null, '', window.location.href)
         const confirmMessage =
           "You have not downloaded your Secret Key yet. You won't be able to access your form responses without it. Are you sure you want to leave?"
-        if (!window.confirm(confirmMessage)) {
-          return
+        if (window.confirm(confirmMessage)) {
+          onClose()
         }
       }
     }
@@ -138,7 +138,7 @@ const useSaveSecretKeyDefault = () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       window.removeEventListener('popstate', handlePopState)
     }
-  }, [hasDownloaded])
+  }, [hasDownloaded, onClose])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -211,27 +211,27 @@ export const SaveSecretKeyScreen = ({
                 {t('features.workspace.modals.create.secretKey.title')}
               </Text>
             </Stack>
-            <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
-              <UnorderedList>
-                <ListItem>
+            <UnorderedList mb="2.5rem" styleType="disc" spacing={2}>
+              <ListItem>
+                <Text textStyle="body-1" color="secondary.500">
                   {t(
                     'features.workspace.modals.create.secretKey.message.preamble1',
                   )}
-                </ListItem>
-                <ListItem>
-                  <Text textStyle="body-1" color="secondary.500">
+                </Text>
+              </ListItem>
+              <ListItem>
+                <Text textStyle="body-1" color="secondary.500">
+                  {t(
+                    'features.workspace.modals.create.secretKey.message.preamble2.prefix',
+                  )}
+                  <Text color="danger.500" textStyle="subhead-1" as="span">
                     {t(
-                      'features.workspace.modals.create.secretKey.message.preamble2.prefix',
+                      'features.workspace.modals.create.secretKey.message.preamble2.warning',
                     )}
-                    <Text color="danger.500" textStyle="subhead-1" as="span">
-                      {t(
-                        'features.workspace.modals.create.secretKey.message.preamble2.warning',
-                      )}
-                    </Text>
                   </Text>
-                </ListItem>
-              </UnorderedList>
-            </Text>
+                </Text>
+              </ListItem>
+            </UnorderedList>
             <Stack direction={{ base: 'column', md: 'row' }}>
               <Tooltip
                 mt={0}
