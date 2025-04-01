@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.190.2",
+  "version": "6.191.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -59,7 +59,6 @@
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",
-    "@babel/runtime": "^7.24.7",
     "@faker-js/faker": "^8.4.1",
     "@growthbook/growthbook": "^1.1.0",
     "@joi/date": "^2.1.1",
@@ -152,13 +151,10 @@
     "uuid-by-string": "^4.0.0",
     "validator": "^13.12.0",
     "winston": "^3.13.0",
-    "winston-cloudwatch": "^6.2.0",
+    "winston-cloudwatch": "^6.3.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.3",
-    "@babel/plugin-transform-runtime": "^7.24.7",
-    "@babel/preset-env": "^7.25.4",
     "@opengovsg/mockpass": "^4.3.4",
     "@playwright/test": "^1.49.0",
     "@types/bcrypt": "^5.0.0",
