@@ -102,7 +102,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
               ref={ref}
               {...preventDefault}
               {...inputProps}
-              isDisabled={true}
+              isDisabled
               // Padding to allow for lock icon overflow.
               sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
             />
