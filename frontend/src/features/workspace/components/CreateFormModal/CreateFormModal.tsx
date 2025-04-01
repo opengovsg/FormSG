@@ -28,7 +28,7 @@ export const CreateFormModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         {isOpen && (
-          <CreateFormWizardProvider>
+          <CreateFormWizardProvider onClose={onClose}>
             <CreateFormModalContent />
           </CreateFormWizardProvider>
         )}

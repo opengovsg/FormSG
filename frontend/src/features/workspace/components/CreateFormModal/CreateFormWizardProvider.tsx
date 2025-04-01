@@ -55,7 +55,9 @@ export const useCommonFormWizardProvider = ({
   }
 }
 
-const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
+const useCreateFormWizardContext = (
+  onClose: () => void,
+): CreateFormWizardContextReturn => {
   const { t } = useTranslation()
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider({
@@ -187,15 +189,18 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
     modalHeader: t('features.workspace.modals.create.title.setup'),
+    onClose,
   }
 }
 
 export const CreateFormWizardProvider = ({
   children,
+  onClose,
 }: {
   children: React.ReactNode
+  onClose: () => void
 }): JSX.Element => {
-  const values = useCreateFormWizardContext()
+  const values = useCreateFormWizardContext(onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

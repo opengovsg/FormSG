@@ -43,6 +43,7 @@ export type CreateFormWizardContextReturn = {
   isLoading: boolean
   modalHeader: string
   isSingpass: boolean
+  onClose: () => void
 }
 
 export const CreateFormWizardContext = createContext<
