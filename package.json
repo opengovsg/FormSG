@@ -89,7 +89,7 @@
     "date-fns": "^3.6.0",
     "dd-trace": "^5.22.0",
     "dedent-js": "~1.0.1",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
