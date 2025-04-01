@@ -1162,7 +1162,6 @@ export const validateAttachments = (
 
 export const getQuarantinePresignedPostData = (
   attachmentSizes: AttachmentSizeMapType[],
-  enableGuarddutyBucketPost?: boolean | undefined,
 ): ResultAsync<
   AttachmentPresignedPostDataMapType[],
   CreatePresignedPostError

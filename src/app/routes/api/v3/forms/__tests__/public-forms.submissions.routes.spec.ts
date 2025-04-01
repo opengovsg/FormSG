@@ -1150,6 +1150,14 @@ describe('public-form.submissions.routes', () => {
           id: VALID_PAYLOAD[1].id,
           presignedPostData: expectedPresignedPostData,
         }),
+        expect.objectContaining({
+          id: VALID_PAYLOAD[0].id,
+          presignedPostData: expectedPresignedPostData,
+        }),
+        expect.objectContaining({
+          id: VALID_PAYLOAD[1].id,
+          presignedPostData: expectedPresignedPostData,
+        }),
       ])
     })
   })
