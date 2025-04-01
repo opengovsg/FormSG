@@ -54,9 +54,9 @@ export interface FormLabelProps extends ChakraFormLabelProps {
   useMarkdownForDescription?: boolean
 
   /**
-   * Whether there's prefilled MRF state.
+   * Whether the field is in a high contrast state.
    */
-  isMrfPrefilled?: boolean
+  isHighContrast?: boolean
 }
 
 /**
@@ -76,7 +76,7 @@ export const FormLabel = ({
   questionNumber,
   description,
   useMarkdownForDescription = false,
-  isMrfPrefilled = true,
+  isHighContrast = true,
   children,
   ...labelProps
 }: FormLabelProps): JSX.Element => {
@@ -88,7 +88,7 @@ export const FormLabel = ({
       overflowWrap="break-word"
       {...labelProps}
       sx={{
-        ...(isMrfPrefilled && {
+        ...(isHighContrast && {
           _disabled: {
             color: 'primary.800',
             opacity: 1,
