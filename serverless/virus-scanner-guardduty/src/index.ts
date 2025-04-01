@@ -118,8 +118,10 @@ export const handler = async (
           key: quarantineFileKey,
         }),
       }
-    case MalwareScanTagValue.NO_THREATS_FOUND: {
-      // If clean, move to clean bucket with randomised key and return
+    case MalwareScanTagValue.NO_THREATS_FOUND:
+    case MalwareScanTagValue.UNSUPPORTED: {
+      // If clean, move to clean bucket with randomised key and return;
+      // deeming UNSUPPORTED files as OK as well; this includes password-protected PDFs
       const cleanFileKey = crypto.randomUUID()
 
       logger.info({
@@ -168,8 +170,7 @@ export const handler = async (
       }
     }
     case MalwareScanTagValue.ACCESS_DENIED:
-    case MalwareScanTagValue.FAILED:
-    case MalwareScanTagValue.UNSUPPORTED: {
+    case MalwareScanTagValue.FAILED: {
       // if Guardduty scan was unsuccessful for whatever reason
       const resultValue = tagResult
       return {
