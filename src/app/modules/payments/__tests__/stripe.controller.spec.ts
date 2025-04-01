@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import Stripe from 'stripe'
-import { MarkRequired } from 'ts-essentials'
+import { SetRequired } from 'type-fest'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
@@ -121,7 +121,7 @@ describe('stripe.controller', () => {
       const mockStripeToken = {
         stripe_user_id: 'user_id',
         stripe_publishable_key: 'publishable_key',
-      } as MarkRequired<
+      } as SetRequired<
         Stripe.OAuthToken,
         'stripe_user_id' | 'stripe_publishable_key'
       >

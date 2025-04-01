@@ -5,8 +5,7 @@ import {
   Model,
   ToObjectOptions,
 } from 'mongoose'
-import { DeepRequired } from 'ts-essentials'
-import type { Merge, SetOptional } from 'type-fest'
+import type { Merge, RequiredDeep, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
@@ -238,7 +237,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   }: {
     accountId: FormPaymentsChannel['target_account_id']
     publishableKey: FormPaymentsChannel['publishable_key']
-  }): Promise<T & DeepRequired<Pick<IEncryptedFormSchema, 'payments_channel'>>>
+  }): Promise<T & RequiredDeep<Pick<IEncryptedFormSchema, 'payments_channel'>>>
 
   /**
    * Remove payment account ID from the form.
