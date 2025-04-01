@@ -21,6 +21,36 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
     setCurrentIndex((prevIndex) => prevIndex - 1)
   }
 
+  const CarouselButton = ({
+    onClick,
+    isDisabled,
+    icon,
+  }: {
+    onClick: () => void
+    isDisabled: boolean
+    icon: React.ReactNode
+  }) => (
+    <Button
+      borderRadius="full"
+      padding="3px"
+      width="20px"
+      height="20px"
+      minWidth="20px"
+      minHeight="20px"
+      display="flex"
+      backgroundColor="secondary.200"
+      borderColor="secondary.200"
+      _hover={{ bg: 'secondary.300' }}
+      _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
+      onClick={onClick}
+      isDisabled={isDisabled}
+      opacity={isDisabled ? 0 : 1}
+      pointerEvents={isDisabled ? 'none' : 'auto'}
+    >
+      {icon}
+    </Button>
+  )
+
   return (
     <Stack
       spacing="1rem"
@@ -30,45 +60,21 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
       maxWidth="466px"
     >
       <Stack direction="row" w="100%" align="center">
-        <Button
-          borderRadius="full"
-          padding="3px"
-          width="20px"
-          height="20px"
-          minWidth="20px"
-          minHeight="20px"
-          display="flex"
-          backgroundColor="secondary.200"
-          borderColor="secondary.200"
-          _hover={{ bg: 'secondary.300' }}
-          _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
+        <CarouselButton
           onClick={prevItem}
           isDisabled={currentIndex <= 0}
-        >
-          <FaChevronLeft fontSize="0.7rem" color="#445072" />
-        </Button>
+          icon={<FaChevronLeft fontSize="0.7rem" color="#445072" />}
+        />
         <Image
           src={images[currentIndex]}
           alt={`Image ${currentIndex + 1}`}
           width="90%"
         />
-        <Button
-          borderRadius="full"
-          padding="3px"
-          width="20px"
-          height="20px"
-          minWidth="20px"
-          minHeight="20px"
-          display="flex"
-          backgroundColor="secondary.200"
-          borderColor="secondary.200"
-          _hover={{ bg: 'secondary.300' }}
-          _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
+        <CarouselButton
           onClick={nextItem}
           isDisabled={currentIndex >= NUM_STEPS - 1}
-        >
-          <FaChevronRight fontSize="0.7rem" color="#445072" />
-        </Button>
+          icon={<FaChevronRight fontSize="0.7rem" color="#445072" />}
+        />
       </Stack>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
