@@ -96,7 +96,7 @@ export const enSG: Workflow = {
           description: {
             info: 'Replacing the file will delete the existing CSV and update your dropdown options(s) and email routing.',
             warning: 'This action cannot be undone. ',
-            downloadTemplate: 'Download a new CSV template',
+            downloadTemplate: 'Download a new CSV template.',
           },
         },
       },
