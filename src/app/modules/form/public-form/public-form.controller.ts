@@ -2,7 +2,6 @@ import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { UnreachableCaseError } from 'ts-essentials'
 
 import {
   ErrorCode,
@@ -324,8 +323,18 @@ export const handleGetPublicForm: ControllerHandler<
       break
     }
     default: {
-      return new UnreachableCaseError(authType)
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = authType
     }
+  }
+
+  if (!spcpSession) {
+    logger.error({
+      message: 'spcpSession is undefined',
+      meta: logMeta,
+    })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
   }
 
   // for consistency with whitelist lookup which also uppercases all submitterIds when saving
@@ -521,8 +530,11 @@ export const handleGetPublicForm: ControllerHandler<
           isIntranetUser,
         })
     }
-    default:
-      return new UnreachableCaseError(authType)
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = authType
+    }
   }
 }
 
