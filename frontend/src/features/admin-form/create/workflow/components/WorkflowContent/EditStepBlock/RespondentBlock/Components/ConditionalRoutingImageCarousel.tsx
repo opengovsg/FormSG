@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
-import { Button, Image, Stack, Text } from '@chakra-ui/react'
+import { Button, Flex, Image, Stack, Text } from '@chakra-ui/react'
 
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
@@ -47,7 +47,9 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
       opacity={isDisabled ? 0 : 1}
       pointerEvents={isDisabled ? 'none' : 'auto'}
     >
-      {icon}
+      <Flex align="center" justify="center" width="100%" height="100%">
+        {icon}
+      </Flex>
     </Button>
   )
 
