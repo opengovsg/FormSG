@@ -2,7 +2,10 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags } from '../../../../../shared/constants'
+import {
+  featureFlags,
+  MFB_VISION_MAX_IMAGES_COUNT,
+} from '../../../../../shared/constants'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
@@ -116,7 +119,11 @@ const handleVisionPromptValidator = celebrate({
       .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
-    imageDataUrls: Joi.array().items(Joi.string()).required().min(1).max(10),
+    imageDataUrls: Joi.array()
+      .items(Joi.string())
+      .required()
+      .min(1)
+      .max(MFB_VISION_MAX_IMAGES_COUNT),
   },
 })
 

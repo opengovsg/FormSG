@@ -36,7 +36,7 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
@@ -197,7 +197,7 @@ const VisionPromptModalBodyContent = ({
               }}
               accept=".pdf"
               showFileSize
-              fileConstraintsText="Files should not be more than 10 pages long."
+              fileConstraintsText={`Files should not be more than ${MFB_VISION_MAX_IMAGES_COUNT} pages long.`}
               showRemove
               isRemoveDisabled={isVisionPromptSubmitLoading}
               onError={(message) => setError('attachment', { message })}
@@ -340,11 +340,10 @@ const MagicFormBuilderCreateFormPrompt = ({
                     const imageDataUrls =
                       await pdfBinaryToImageDataUrls(pdfData)
 
-                    if (imageDataUrls.length > 10) {
+                    if (imageDataUrls.length > MFB_VISION_MAX_IMAGES_COUNT) {
                       setVisionError('attachment', {
                         type: 'manual',
-                        message:
-                          'Your pdf file must have less than or equal 10 pages.',
+                        message: `Your pdf file must have less than or equal ${MFB_VISION_MAX_IMAGES_COUNT} pages.`,
                       })
                       return
                     }
