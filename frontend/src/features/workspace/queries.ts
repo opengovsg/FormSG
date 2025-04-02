@@ -10,6 +10,7 @@ import { getDashboardView, getWorkspacesView } from './WorkspaceService'
 export const workspaceKeys = {
   dashboard: ['dashboard'] as const,
   workspaces: ['workspaces'] as const,
+  lastCreatedForm: ['lastCreatedForm'] as const,
 }
 
 export const useDashboard = (): UseQueryResult<

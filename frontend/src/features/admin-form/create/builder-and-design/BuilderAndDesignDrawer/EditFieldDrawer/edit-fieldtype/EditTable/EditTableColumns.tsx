@@ -63,7 +63,21 @@ export const EditTableColumns = ({
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditTableInputs, `columns.${number}.title`>({
+        required: true,
+      }),
+    [],
+  )
+
+  const columnTypeValidationRule = useMemo(
+    () =>
+      createBaseValidationRules<
+        EditTableInputs,
+        `columns.${number}.columnType`
+      >({
+        required: true,
+      }),
     [],
   )
 
@@ -120,7 +134,7 @@ export const EditTableColumns = ({
             <Controller
               name={`columns.${index}.columnType`}
               control={control}
-              rules={requiredValidationRule}
+              rules={columnTypeValidationRule}
               render={({ field }) => (
                 <SingleSelect
                   isClearable={false}

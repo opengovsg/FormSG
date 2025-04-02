@@ -38,18 +38,16 @@ export const enSG: CreateModal = {
       description:
         'All email addresses below will be notified. Learn more on [how to guard against email bounces]({GUIDE_PREVENT_EMAIL_BOUNCE}).',
     },
-    next: 'Next step',
+    create: 'Create form',
   },
   secretKey: {
-    title: 'Download Secret Key to proceed',
+    title: 'Your form has been created! Download your Secret Key to proceed.',
     message: {
-      preamble:
-        "You'll need it every time you access your responses to this form. If you lose it,",
-      warning: 'all responses will be permanently lost',
-      email: {
-        prefix: 'You can also',
-        link: 'email it',
-        suffix: 'for safekeeping.',
+      preamble1:
+        "You will need this secret key to access this form's responses.",
+      preamble2: {
+        prefix: 'If you lose it, ',
+        warning: 'all responses will be permanently lost',
       },
     },
     tooltip: {
@@ -61,7 +59,7 @@ export const enSG: CreateModal = {
       'If I lose my Secret Key, I cannot activate my form or access any responses to it',
     confirm: 'I have saved my Secret Key safely',
     email: {
-      filename: 'Form Secret Key - {titleInputValue}.txt',
+      filename: 'Form Secret Key - {titleInputValue} - FormID({formId}).txt',
       subject: 'Shared Secret Key for {titleInputValue}',
       body: `
         Dear collaborator,

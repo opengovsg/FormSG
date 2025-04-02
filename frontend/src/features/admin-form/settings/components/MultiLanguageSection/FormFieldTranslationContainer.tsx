@@ -100,7 +100,11 @@ export const FormFieldTranslationContainer = ({
             unicodeLocale={unicodeLocale}
             language={capitalisedLanguage}
             columns={formFieldData.columns}
-            errors={formState.errors.tableColumnDropdownTranslations}
+            errors={
+              Array.isArray(formState.errors.tableColumnDropdownTranslations)
+                ? formState.errors.tableColumnDropdownTranslations
+                : undefined
+            }
           />
         </>
       )}

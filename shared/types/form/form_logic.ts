@@ -1,6 +1,7 @@
 import { BasicField, FormFieldDto, TranslationMapping } from '../field'
 
 export enum LogicConditionState {
+  Empty = '',
   Equal = 'is equals to',
   Lte = 'is less than or equal to',
   Gte = 'is more than or equal to',

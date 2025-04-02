@@ -1,6 +1,5 @@
 import { FormAuthType, FormResponseMode, FormStatus } from 'shared/types'
 
-import { ADMIN_EMAIL } from '../constants'
 import { E2eSettingsOptions } from '../constants/settings'
 
 export const getEncryptSettings = (
@@ -47,8 +46,9 @@ const _getSettings = (
     ...custom,
   }
 
+  // Admin email is added by default for both encrypt and email forms, this is just to test the email page
   if (responseMode === FormResponseMode.Encrypt) {
-    settings.emails = [ADMIN_EMAIL]
+    settings.emails = ['test2@open.gov.sg']
   }
 
   return settings

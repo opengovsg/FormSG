@@ -75,7 +75,10 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditRadioInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

@@ -238,9 +238,7 @@ export const Playground: StoryFn = ({
           isDisabled={isDisabled}
           {...field}
         />
-        <FormErrorMessage>
-          {errors[name] && errors[name].message}
-        </FormErrorMessage>
+        <FormErrorMessage>{String(errors[name]?.message)}</FormErrorMessage>
       </FormControl>
       <Button type="submit" colorScheme={args.colorScheme}>
         Submit

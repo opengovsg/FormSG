@@ -207,7 +207,10 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditDateInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

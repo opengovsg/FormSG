@@ -6,8 +6,6 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { ModalCloseButton } from '~components/Modal'
-
 import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
 
 import { DupeFormWizardProvider } from './DupeFormWizardProvider'
@@ -34,8 +32,7 @@ export const DuplicateFormModal = ({
       */}
       <RemoveScroll>
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <ModalCloseButton />
-          <DupeFormWizardProvider>
+          <DupeFormWizardProvider onClose={onClose}>
             <CreateFormModalContent />
           </DupeFormWizardProvider>
         </ModalContent>

@@ -87,7 +87,10 @@ const PlaygroundTemplate: StoryFn = ({
     register,
     getValues,
   } = useForm()
-  const othersInputError: FieldError | undefined = get(errors, othersInputName)
+  const othersInputError: FieldError | undefined = get(
+    errors,
+    othersInputName,
+  ) as FieldError | undefined
 
   const othersInputValue = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
@@ -148,7 +151,7 @@ const PlaygroundTemplate: StoryFn = ({
           )}
         </Radio.RadioGroup>
         <FormErrorMessage>
-          {errors[name]?.message ?? errors[othersInputName]?.message}
+          {String(errors[name]?.message ?? errors[othersInputName]?.message)}
         </FormErrorMessage>
       </FormControl>
       <Button type="submit">Submit</Button>

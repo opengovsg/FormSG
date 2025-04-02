@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -236,14 +236,17 @@ const MrfEmailNotificationsForm = ({
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
             )}
           </FormLabel>
-          <Controller
+          <Controller<FormData>
             name={OTHER_PARTIES_EMAIL_INPUT_NAME}
             control={control}
-            rules={OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES}
+            rules={
+              OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<FormData>
+            }
             render={({ field }) => (
               <TagInput
                 placeholder={otherPartiesEmailInputPlaceholder}
                 {...field}
+                value={field.value as string[]}
                 isDisabled={isDisabled}
                 onBlur={handleOtherPartiesEmailInputBlur}
                 tagValidation={isEmail}

@@ -139,12 +139,11 @@ export const ProductModal = ({
     onClose()
   })
 
-  const minQtyValidation: RegisterOptions = {
-    validate: (valStr: string) => {
+  const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
+    validate: (val: number) => {
       if (!getValues(MULTI_QTY_KEY)) return true
 
-      const valNumber = parseIntElseNull(valStr)
-      if (!valNumber || valNumber <= 0) {
+      if (!val || val <= 0) {
         return 'Enter a value greater than 0'
       }
 
@@ -152,24 +151,23 @@ export const ProductModal = ({
         parseIntElseNull(getValues(MAX_QTY_KEY) as unknown as string) ||
         Number.MAX_SAFE_INTEGER
 
-      if (valNumber > maxNumber) {
+      if (val > maxNumber) {
         return 'Enter a value smaller than the maximum quantity'
       }
       return true
     },
   }
-  const maxQtyValidation: RegisterOptions = {
-    validate: (valStr: string) => {
+  const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
+    validate: (val: number) => {
       if (!getValues(MULTI_QTY_KEY)) return true
 
-      const valNumber = parseIntElseNull(valStr)
-      if (!valNumber || valNumber <= 0) {
+      if (!val || val <= 0) {
         return 'Enter a value greater than 0'
       }
 
       const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
-      if (valNumber * amount > maxPaymentAmountCents) {
+      if (val * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
         if (maxQty <= 0) {
           return `Quantity limit could not be set because amount is above S${formatCurrency(
@@ -182,7 +180,7 @@ export const ProductModal = ({
         parseIntElseNull(getValues(MIN_QTY_KEY) as unknown as string) ||
         Number.MIN_SAFE_INTEGER
 
-      if (valNumber < minNumber) {
+      if (val < minNumber) {
         return 'Enter a value greater than the minimum quantity'
       }
       return true

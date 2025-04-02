@@ -1,4 +1,4 @@
-import { Controller } from 'react-hook-form'
+import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
@@ -22,7 +22,10 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
-import { useCreateFormWizard } from '../CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  useCreateFormWizard,
+} from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { FormResponseOptions } from './FormResponseOptions'
@@ -52,8 +55,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const { t } = useTranslation()
   const {
     formMethods,
-    handleDetailsSubmit,
     handleEmailFeedbackSubmit,
+    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     isFetching,
     modalHeader,
@@ -88,7 +91,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <Skeleton isLoaded={!isFetching}>
               <Input
                 autoFocus
-                {...register('title', FORM_TITLE_VALIDATION_RULES)}
+                {...register(
+                  'title',
+                  FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+                    CreateFormWizardInputProps,
+                    'title'
+                  >,
+                )}
               />
             </Skeleton>
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
@@ -156,14 +165,14 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
-            onClick={handleDetailsSubmit}
+            onClick={handleCreateStorageModeOrMultirespondentForm}
             isFullWidth
             data-dd-action-name={getTrackingSubmissionActionName(
               responseModeValue,
             )}
           >
             <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.create.details.next')}
+              {t('features.workspace.modals.create.details.create')}
             </Text>
           </Button>
         </Container>

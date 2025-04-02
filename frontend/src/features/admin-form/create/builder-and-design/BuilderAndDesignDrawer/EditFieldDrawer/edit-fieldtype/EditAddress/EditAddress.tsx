@@ -48,7 +48,8 @@ export const EditAddress = ({ field }: EditAddressProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditAddressInputs, 'title'>({ required: true }),
     [],
   )
   return (
