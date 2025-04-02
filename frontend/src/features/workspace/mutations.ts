@@ -158,7 +158,6 @@ export const useDuplicateFormMutations = () => {
     {
       onSuccess: (data) => {
         handleSuccessWithoutRedirect(data)
-        console.log(`dupe form worfklow: set query data done on ${data._id}`)
         queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
       },
       onError: handleError,
@@ -175,7 +174,6 @@ export const useDuplicateFormMutations = () => {
     {
       onSuccess: (data) => {
         handleSuccessWithoutRedirect(data)
-        console.log(`dupe form worfklow: set query data done on ${data._id}`)
         queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
       },
       onError: handleError,
