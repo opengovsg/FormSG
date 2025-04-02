@@ -28,14 +28,15 @@ provider:
             - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
   ecr:
     images:
-      virus-scanner:
+      legacy-virus-scanner:
         path: ./
         platform: linux/amd64
 
 functions:
   virus-scanner:
+    name: legacy-virus-scanner-${opt:stage}
     image:
-      name: virus-scanner
+      name: legacy-virus-scanner
     # max timeout per invocation
     timeout: 300
     # allocate more memory as the default 1028 MB size will cause lambda to crash
