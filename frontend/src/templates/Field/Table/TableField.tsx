@@ -79,6 +79,9 @@ export const TableField = ({
   })
 
   const tableErrors = get(errors, schema._id)
+  // TODO: Can be improved for better type safety and readability. After upgrading react-hook-form,
+  // we have to handle single error message and array of error messages separately, since the errors
+  // can be potentially nested (2D).
   const uniqTableError = useMemo(() => {
     // On mobile, errors are shown directly in the individual table cells and
     // would not need to be shown in the table field itself.
