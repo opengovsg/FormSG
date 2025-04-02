@@ -25,6 +25,11 @@ const isIacMigratedSsmKeys = (env) => {
   return env === SHORT_ENV_MAP['stg-alt3']
 }
 
+const PARAM_KEYS = [
+  'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
+  'VIRUS_SCANNER_CLEAN_S3_BUCKET'
+]
+
 /**
  * Fetches the parameter string for the given environment from SSM. 
  */
@@ -32,28 +37,22 @@ const getParamString = async (env) => {
   const client = new SSMClient({ region: 'ap-southeast-1' })
 
   if (isIacMigratedSsmKeys(env)) {
-    const VIRUS_SCANNER_QUARANTINE_S3_BUCKET_KEY = 'VIRUS_SCANNER_QUARANTINE_S3_BUCKET'
-    const VIRUS_SCANNER_CLEAN_S3_BUCKET_KEY = 'VIRUS_SCANNER_CLEAN_S3_BUCKET'
+    const PARAM_KEY_PREFIX = `/virus-scanner/${SHORT_ENV_MAP[env]}/`
+    
+    const keyValuePromises = PARAM_KEYS.map(async key => {
+      console.log(`Fetching ${PARAM_KEY_PREFIX}${key} from SSM...`)
+      const res = await client.send(
+        new GetParameterCommand({
+          Name: `${PARAM_KEY_PREFIX}${key}`,
+        }),
+      )
+      console.log(`Successfully fetched ${PARAM_KEY_PREFIX}${key} from SSM`)
+      return `${key}=${res.Parameter.Value}`
+    })
 
-    const virusScannerQuarantineBucketParam = `/virus-scanner/${SHORT_ENV_MAP[env]}/${VIRUS_SCANNER_QUARANTINE_S3_BUCKET_KEY}`
-    const virusScannerCleanBucketParam = `/virus-scanner/${SHORT_ENV_MAP[env]}/${VIRUS_SCANNER_CLEAN_S3_BUCKET_KEY}`
-
-    const virusScannerQuarantineBucketParamRes = await client.send(
-      new GetParameterCommand({
-        Name: virusScannerQuarantineBucketParam,
-      }),
-    )
-    const virusScannerCleanBucketParamRes = await client.send(
-      new GetParameterCommand({
-        Name: virusScannerCleanBucketParam,
-      }),
-    )
-
-    const paramString = ''
-
-    const quarantineBucketParam = `${VIRUS_SCANNER_QUARANTINE_S3_BUCKET_KEY}=${virusScannerQuarantineBucketParamRes.Parameter.Value}`;
-    const cleanBucketParam = `${VIRUS_SCANNER_CLEAN_S3_BUCKET_KEY}=${virusScannerCleanBucketParamRes.Parameter.Value}`;
-    return paramString.concat(quarantineBucketParam, '\n', cleanBucketParam);
+    // Wait for all promises to resolve
+    const keyValuePairs = await Promise.all(keyValuePromises)
+    return keyValuePairs.join('\n')
   }
 
   const parameterName = `/virus-scanner/${SHORT_ENV_MAP[env]}`
@@ -95,6 +94,7 @@ async function saveAllParameters() {
   // Add on NODE_ENV
   const parameterStringWithNodeEnv = parameterString.concat(`\nNODE_ENV=${process.env.ENV}`)
 
+  console.log(`Writing env variables to .env.${process.env.ENV}`)
   await fs.promises.writeFile(`.env.${process.env.ENV}`, parameterStringWithNodeEnv)
 }
 
