@@ -31,9 +31,6 @@ export type CreateFormWizardContextReturn = {
   currentStep: CreateFormFlowStates
   direction: number
   formMethods: UseFormReturn<CreateFormWizardInputProps>
-  handleDetailsSubmit: ReturnType<
-    UseFormHandleSubmit<CreateFormWizardInputProps>
-  >
   handleEmailFeedbackSubmit: () => void
   handleCreateEmailModeForm: () => () => void
   submitEmailModeFeedback: (feedbackForm: PublicFormViewDto) => () => void
@@ -46,6 +43,7 @@ export type CreateFormWizardContextReturn = {
   isLoading: boolean
   modalHeader: string
   isSingpass: boolean
+  onClose: () => void
 }
 
 export const CreateFormWizardContext = createContext<

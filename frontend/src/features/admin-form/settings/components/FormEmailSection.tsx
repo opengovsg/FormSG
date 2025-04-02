@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   FormProvider,
+  RegisterOptions,
   useForm,
   useFormContext,
 } from 'react-hook-form'
@@ -62,18 +63,22 @@ const AdminEmailRecipientsInput = ({
     getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
 
   return (
-    <Controller
+    <Controller<{ emails: string[]; isRequired: boolean }>
       control={control}
       name={EMAILS_FIELD_NAME}
       rules={
-        settings?.responseMode === FormResponseMode.Email
+        (settings?.responseMode === FormResponseMode.Email
           ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
-          : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES
+          : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES) as RegisterOptions<{
+          emails: string[]
+          isRequired: boolean
+        }>
       }
       render={({ field }) => (
         <TagInput
           placeholder={emailsFieldPlaceholder}
           {...field}
+          value={field.value as string[]}
           tagValidation={isEmail}
           onBlur={handleBlur}
         />

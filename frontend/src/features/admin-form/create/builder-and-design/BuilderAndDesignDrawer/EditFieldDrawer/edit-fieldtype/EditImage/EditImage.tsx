@@ -141,7 +141,10 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditImageInputs, 'description'>({
+        required: true,
+      }),
     [],
   )
 

@@ -163,7 +163,10 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditNumberInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

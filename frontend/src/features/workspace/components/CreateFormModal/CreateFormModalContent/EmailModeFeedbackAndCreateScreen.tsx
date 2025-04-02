@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FormProvider } from 'react-hook-form'
+import { FormProvider, RegisterOptions } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
@@ -22,7 +22,10 @@ import { CheckboxField, CheckboxFieldSchema } from '~templates/Field'
 
 import { useAdminUseEmailModeFormView } from '~features/public-form/queries'
 
-import { useCreateFormWizard } from '../CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  useCreateFormWizard,
+} from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 
@@ -116,7 +119,13 @@ export const EmailModeCreationScreen = ({
     setTimeout(() => inputRef.current?.focus(), 200)
   }, [])
 
-  const formTitleRegister = register('title', FORM_TITLE_VALIDATION_RULES)
+  const formTitleRegister = register(
+    'title',
+    FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+      CreateFormWizardInputProps,
+      'title'
+    >,
+  )
   const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
 
   const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()

@@ -42,7 +42,10 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditParagraphInputs, 'description'>({
+        required: true,
+      }),
     [],
   )
 

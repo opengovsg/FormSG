@@ -32,17 +32,15 @@ export interface CreateModal {
       label: string
       description: string
     }
-    next: string
+    create: string
   }
   secretKey: {
     title: string
     message: {
-      preamble: string
-      warning: string
-      email: {
+      preamble1: string
+      preamble2: {
         prefix: string
-        link: string
-        suffix: string
+        warning: string
       }
     }
     tooltip: {

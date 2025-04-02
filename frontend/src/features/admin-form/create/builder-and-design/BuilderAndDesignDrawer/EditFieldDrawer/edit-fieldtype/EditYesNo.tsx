@@ -46,7 +46,10 @@ export const EditYesNo = ({ field }: EditYesNoProps): JSX.Element => {
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditYesNoInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

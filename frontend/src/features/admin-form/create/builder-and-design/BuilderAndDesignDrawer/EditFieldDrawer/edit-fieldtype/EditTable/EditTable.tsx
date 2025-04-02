@@ -115,7 +115,10 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   const { errors } = useFormState({ control })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditTableInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

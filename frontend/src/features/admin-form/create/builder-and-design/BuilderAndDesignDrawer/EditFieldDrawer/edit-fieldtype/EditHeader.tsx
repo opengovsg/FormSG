@@ -40,7 +40,10 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditHeaderInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

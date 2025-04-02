@@ -72,7 +72,10 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditDropdownInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

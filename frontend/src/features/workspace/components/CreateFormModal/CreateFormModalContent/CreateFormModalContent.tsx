@@ -1,3 +1,5 @@
+import { ModalCloseButton } from '@chakra-ui/react'
+
 import { XMotionBox } from '~templates/MotionBox'
 
 import {
@@ -20,18 +22,23 @@ export const CreateFormModalContent = () => {
   const { direction, currentStep } = useCreateFormWizard()
 
   return (
-    <XMotionBox keyProp={currentStep} custom={direction}>
-      {currentStep === CreateFormFlowStates.Details && (
-        <CreateFormDetailsScreen />
-      )}
-      {currentStep === CreateFormFlowStates.Landing && <SaveSecretKeyScreen />}
-      {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
-      {currentStep === CreateFormFlowStates.EmailFeedback && (
-        <EmailModeFeedbackScreen />
-      )}
-      {currentStep === CreateFormFlowStates.EmailModeCreation && (
-        <EmailModeCreationScreen />
-      )}
-    </XMotionBox>
+    <>
+      {currentStep !== CreateFormFlowStates.Landing && <ModalCloseButton />}
+      <XMotionBox keyProp={currentStep} custom={direction}>
+        {currentStep === CreateFormFlowStates.Details && (
+          <CreateFormDetailsScreen />
+        )}
+        {currentStep === CreateFormFlowStates.Landing && (
+          <SaveSecretKeyScreen />
+        )}
+        {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
+        {currentStep === CreateFormFlowStates.EmailFeedback && (
+          <EmailModeFeedbackScreen />
+        )}
+        {currentStep === CreateFormFlowStates.EmailModeCreation && (
+          <EmailModeCreationScreen />
+        )}
+      </XMotionBox>
+    </>
   )
 }

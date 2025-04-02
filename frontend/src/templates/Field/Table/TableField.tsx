@@ -79,12 +79,35 @@ export const TableField = ({
   })
 
   const tableErrors = get(errors, schema._id)
+  // TODO: Can be improved for better type safety and readability. After upgrading react-hook-form,
+  // we have to handle single error message and array of error messages separately, since the errors
+  // can be potentially nested (2D).
   const uniqTableError = useMemo(() => {
     // On mobile, errors are shown directly in the individual table cells and
     // would not need to be shown in the table field itself.
     if (isMobile) return
-    // Get first available error amongst all column cell errors.
-    return head(uniq(tableErrors?.flatMap((err = {}) => Object.values(err))))
+    if (!tableErrors) return null
+
+    if (typeof tableErrors === 'object' && tableErrors?.message) {
+      return tableErrors.message
+    }
+
+    // If tableErrors is an array, find the first error message
+    if (Array.isArray(tableErrors)) {
+      // Look for the first object with a message property
+      for (const err of tableErrors) {
+        if (err?.message) return err.message
+
+        // Check if any property of the error object has a message
+        for (const val of Object.values(err || {})) {
+          if (typeof val === 'object' && val !== null && 'message' in val) {
+            return val.message
+          }
+        }
+      }
+    }
+
+    return String(tableErrors)
   }, [isMobile, tableErrors])
 
   const { fields, append, remove } = useFieldArray<TableFieldInputs>({
@@ -267,7 +290,7 @@ export const TableField = ({
       </Box>
       {uniqTableError ? (
         <FormErrorMessage my="0.75rem">
-          {uniqTableError.message}
+          {String(uniqTableError)}
         </FormErrorMessage>
       ) : null}
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
