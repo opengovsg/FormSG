@@ -32,7 +32,7 @@ export const UseTemplateModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-        <UseTemplateWizardProvider formId={formId}>
+        <UseTemplateWizardProvider formId={formId} onClose={onClose}>
           <CreateFormModalContent />
         </UseTemplateWizardProvider>
       </ModalContent>

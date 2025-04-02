@@ -17,6 +17,7 @@ import { useUseTemplateMutations } from '../mutation'
 
 export const useUseTemplateWizardContext = (
   formId: string,
+  onClose: () => void,
 ): CreateFormWizardContextReturn => {
   const { t } = useTranslation()
   const { data: templateFormData, isLoading: isTemplateFormLoading } =
@@ -162,12 +163,14 @@ export const useUseTemplateWizardContext = (
     submitEmailModeFeedback,
     isSingpass,
     modalHeader: t('features.workspace.modals.create.title.duplicate'),
+    onClose,
   }
 }
 
 interface UseTemplateWizardProviderProps {
   formId: string
   children: React.ReactNode
+  onClose: () => void
 }
 
 /**
@@ -177,8 +180,9 @@ interface UseTemplateWizardProviderProps {
 export const UseTemplateWizardProvider = ({
   formId,
   children,
+  onClose,
 }: UseTemplateWizardProviderProps): JSX.Element => {
-  const values = useUseTemplateWizardContext(formId)
+  const values = useUseTemplateWizardContext(formId, onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

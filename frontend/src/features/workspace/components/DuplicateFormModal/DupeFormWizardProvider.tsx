@@ -21,7 +21,9 @@ import {
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
 import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
-export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
+export const useDupeFormWizardContext = (
+  onClose: () => void,
+): CreateFormWizardContextReturn => {
   const { t } = useTranslation()
   const { data: dashboardForms, isLoading: isWorkspaceLoading } = useDashboard()
   const { activeFormMeta } = useWorkspaceRowsContext()
@@ -192,15 +194,18 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     submitEmailModeFeedback,
     isSingpass,
     modalHeader: t('features.workspace.modals.create.title.duplicate'),
+    onClose,
   }
 }
 
 export const DupeFormWizardProvider = ({
   children,
+  onClose,
 }: {
   children: React.ReactNode
+  onClose: () => void
 }): JSX.Element => {
-  const values = useDupeFormWizardContext()
+  const values = useDupeFormWizardContext(onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

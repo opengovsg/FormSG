@@ -129,7 +129,7 @@ export const StorageModeAckScreen = () => {
     >
       <Modal isOpen onClose={() => console.log('close modal')} size="full">
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <CreateFormWizardProvider>
+          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <ModalCloseButton />
             <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
           </CreateFormWizardProvider>
@@ -177,7 +177,7 @@ export const EmailModeFeedback = () => {
       <Modal isOpen onClose={() => console.log('close modal')} size="full">
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
           <ModalCloseButton />
-          <CreateFormWizardProvider>
+          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <EmailModeFeedbackScreen
               useCreateFormWizardParam={mockHook}
               useAdminUseEmailModeFormViewParam={() => {
@@ -231,7 +231,7 @@ export const EmailModeCreation = () => {
       <Modal isOpen onClose={console.log} size="full">
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
           <ModalCloseButton />
-          <CreateFormWizardProvider>
+          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <EmailModeCreationScreen
               useCreateFormWizardParam={mockHook}
               useAdminUseEmailModeFormViewParam={() => {

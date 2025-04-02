@@ -32,7 +32,7 @@ export const DuplicateFormModal = ({
       */}
       <RemoveScroll>
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-          <DupeFormWizardProvider>
+          <DupeFormWizardProvider onClose={onClose}>
             <CreateFormModalContent />
           </DupeFormWizardProvider>
         </ModalContent>
