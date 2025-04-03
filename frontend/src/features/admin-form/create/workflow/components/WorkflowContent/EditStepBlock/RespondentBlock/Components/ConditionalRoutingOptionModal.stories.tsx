@@ -45,19 +45,23 @@ const ModalContainer = ({
   )
 }
 
+const defaultArgs = {
+  isOpen: true,
+  onClose: () => {},
+  errors: {},
+  onDownloadCsvClick: () => {},
+  onSubmit: () => {},
+  isSubmitDisabled: false,
+  validateCsvFile: async () => undefined,
+}
+
+const testFile = new File(['content'], 'test.csv', { type: 'text/csv' })
+
 export default {
   component: ModalContainer,
   title:
     'Features/AdminForm/create/workflow/components/WorkflowContent/EditStepBlock/ConditionalRoutingOptionModal',
-  args: {
-    isOpen: true,
-    onClose: () => {},
-    errors: {},
-    onDownloadCsvClick: () => {},
-    onSubmit: () => {},
-    isSubmitDisabled: false,
-    validateCsvFile: async () => undefined,
-  },
+  args: defaultArgs,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
 }
 
@@ -160,5 +164,63 @@ export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
         message: 'Dummy error message',
       },
     },
+  },
+}
+
+export const ReplaceCSVFileStepEmpty = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(
+          screen.getByText('Replace your completed CSV file'),
+        ).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ReplaceCSVFileStep = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+    csvFile: testFile,
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(
+          screen.getByText('Replace your completed CSV file'),
+        ).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ReplaceCSVFileStepErrorMessage = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+    csvFile: testFile,
+    errors: {
+      csvFile: {
+        message: 'Dummy error message',
+      },
+    },
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(
+          screen.getByText('Replace your completed CSV file'),
+        ).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
   },
 }

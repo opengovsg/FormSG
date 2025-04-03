@@ -140,7 +140,7 @@ const StepOneModalContent = ({
                 <Text textStyle="body-2">
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.explanation',
-                  )}{' '}
+                  ) + ' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
                       'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.notice',
@@ -157,7 +157,7 @@ const StepOneModalContent = ({
                 <Text textStyle="body-2">
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.explanation',
-                  )}{' '}
+                  ) + ' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
                       'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.notice',
@@ -225,7 +225,7 @@ const StepTwoModalContent = ({
         <Text mb="2.5rem">
           {t(
             'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.prefix',
-          )}{' '}
+          ) + ' '}
           <Text as="span" fontWeight="semibold">
             {t(
               'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.csv',
@@ -394,16 +394,16 @@ export const ConditionalRoutingOptionModal = ({
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
-  const [stepNumber, setStepNumber] = useState<number>(0)
+  const modalStartNumber = existingCsv ? 2 : 0
+  const [stepNumber, setStepNumber] = useState<number>(modalStartNumber)
   const [isCsvTemplateDownloaded, setIsCsvTemplateDownloaded] = useState(false)
 
   const onModalClose = () => {
-    setStepNumber(0)
+    setStepNumber(modalStartNumber)
     onClose()
   }
 
   // if there is an existing csv file, skip instructions to replace modal
-  const modalStartNumber = existingCsv ? 2 : 0
   useEffect(() => {
     if (!isOpen) {
       setStepNumber(modalStartNumber)
