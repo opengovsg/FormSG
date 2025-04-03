@@ -42,7 +42,6 @@ export const ShortTextField = ({
         isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true
         isPrefillLocked={isPrefillLocked}
-        isMRFPrefilled={true} /* TODO: should be conditionally applied*/
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

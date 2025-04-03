@@ -37,10 +37,6 @@ export interface InputProps extends ChakraInputProps {
    * Whether there's an input right element. Used to provide additional padding
    */
   hasInputRightElement?: boolean
-  /**
-   * Whether it's a prefilled MRF input. Only applies to MRF inputs, not the same as isPrefilled.
-   */
-  isMRFPrefilled?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -52,7 +48,6 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isSuccess',
     'isPrefilled',
     'isPrefillLocked',
-    'isMRFPrefilled',
     'preventDefaultOnEnter',
     'hasInputRightElement',
   ])
@@ -82,9 +77,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            {...(props.isPrefillLocked || props.isMRFPrefilled
-              ? { isDisabled: true }
-              : {})}
+            {...(props.isPrefillLocked ? { isDisabled: true } : {})}
             sx={props.sx ?? inputStyles.field}
           />
           {props.isPrefillLocked ? (
