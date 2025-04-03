@@ -283,7 +283,6 @@ interface StepReplaceModalContentProps {
   isSubmitDisabled: ConditionalRoutingOptionModalProps['isSubmitDisabled']
   validateCsvFile: ConditionalRoutingOptionModalProps['validateCsvFile']
   onClose: ConditionalRoutingOptionModalProps['onClose']
-  onDownloadCsvClick: ConditionalRoutingOptionModalProps['onDownloadCsvClick']
 }
 
 const StepReplaceModalContent = ({
@@ -293,7 +292,6 @@ const StepReplaceModalContent = ({
   isSubmitDisabled,
   validateCsvFile,
   onClose,
-  onDownloadCsvClick,
 }: StepReplaceModalContentProps) => {
   const { t } = useTranslation()
   return (
@@ -316,16 +314,14 @@ const StepReplaceModalContent = ({
               'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.warning',
             )}
           </Text>{' '}
-          <Text
-            mb="2.5rem"
-            as="span"
-            color="blue.500"
-            cursor="pointer"
-            textDecoration="underline"
-            onClick={onDownloadCsvClick} // Call function on click
-          >
+        </Text>
+        <Text mb="2.5rem">
+          {t(
+            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.info1',
+          ) + ' '}
+          <Text mb="2.5rem" as="span" fontWeight="semibold">
             {t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.downloadTemplate',
+              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.info2',
             )}
           </Text>
         </Text>
@@ -453,9 +449,6 @@ export const ConditionalRoutingOptionModal = ({
           isSubmitDisabled={isSubmitDisabled}
           validateCsvFile={validateCsvFile}
           onClose={onClose}
-          onDownloadCsvClick={() => {
-            onDownloadCsvClick()
-          }}
         />
       )}
     </Modal>

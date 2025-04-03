@@ -79,7 +79,8 @@ export interface Workflow {
           description: {
             info: string
             warning: string
-            downloadTemplate: string
+            info1: string
+            info2: string
           }
         }
       }
