@@ -117,10 +117,9 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            isMRFPrefilled={true} /* TODO: should be conditionally applied*/
+            variant="highContrast"
             sx={merge(
               props.hasInputRightElement ? { pr: '2.75rem' } : {},
-              inputStyles.field,
               props.sx,
             )}
           />
