@@ -325,52 +325,6 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
   },
 }
 
-export const Step2ConditionalRoutingDeleteWarningModal = {
-  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
-    const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        const deleteButton = await canvas.getByLabelText('Click to remove file')
-        await userEvent.click(deleteButton)
-      },
-      { timeout: 5000 },
-    )
-    // Assert the modal appears
-    await waitFor(
-      async () => {
-        expect(await screen.getByText('Delete CSV file')).toBeInTheDocument()
-      },
-      { timeout: 5000 },
-    )
-  },
-  args: {
-    stepNumber: 1,
-    defaultValues: {
-      workflow_type: WorkflowType.Conditional,
-      conditional_field: dropdown_field_valid_mapping._id,
-    },
-  },
-}
-
 export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
   // due to the double registration of 'workflow_type' there would be a weird interaction
   // where the default value will be reset
@@ -490,6 +444,47 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
     defaultValues: {
       workflow_type: WorkflowType.Conditional,
       conditional_field: dropdown_field_no_mapping._id,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingReplace = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        const replaceButton = await canvas.getByLabelText(
+          'Click to update file',
+        )
+        await userEvent.click(replaceButton)
+      },
+      { timeout: 5000 },
+    )
+  },
+  args: {
+    stepNumber: 3,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_valid_mapping._id,
     },
   },
 }

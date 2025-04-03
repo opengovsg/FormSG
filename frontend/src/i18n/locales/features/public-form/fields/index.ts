@@ -21,6 +21,7 @@ export interface Fields {
     dragActive: string
     maxFileSize: string
     ariaLabelRemove: string
+    ariaLabelReplace: string
     error: {
       fileEmpty: string
       fileTooLarge: string

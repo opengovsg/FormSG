@@ -18,6 +18,7 @@ export const enSG: Fields = {
     dragActive: 'Drop the file here',
     maxFileSize: 'Maximum file size: {readableMaxSize}',
     ariaLabelRemove: 'Click to remove file',
+    ariaLabelReplace: 'Click to replace file',
     error: {
       fileEmpty:
         'You have uploaded an empty file, please upload a valid attachment',

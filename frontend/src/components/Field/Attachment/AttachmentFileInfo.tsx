@@ -79,7 +79,9 @@ export const AttachmentFileInfo = ({
         {showReplace ? (
           <IconButton
             variant="clear"
-            aria-label="Click to download file"
+            aria-label={t(
+              'features.publicForm.components.fields.attachment.ariaLabelReplace',
+            )}
             icon={<BiEditAlt />}
             onClick={handleReplaceFile}
           />
