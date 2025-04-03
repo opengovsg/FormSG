@@ -205,8 +205,7 @@ export const mapRouteError = (
     case ModelResponseInvalidSyntaxError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'Something went wrong when generating your form. Please change your prompt and try again.',
+        errorMessage: 'Something went wrong. Please try creating fields again.',
       }
     default:
       logger.error({

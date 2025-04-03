@@ -79,6 +79,7 @@ const compileUserModel = (db: Mongoose) => {
         mrfAdminSubmissionKey: Boolean,
         mrfConditionalRouting: Boolean,
         mfb: Boolean, // Previously used for MFB private beta, not currently used
+        mfbVision: Boolean,
         multiLangTranslation: Boolean,
       },
       flags: {

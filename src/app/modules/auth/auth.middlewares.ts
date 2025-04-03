@@ -50,6 +50,17 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
   const query = req.query
   const { formId } = req.params
 
+  let loggedBody = body
+
+  // RATIONALE: To avoid sensitive/long request body fields.
+  if (
+    loggedBody &&
+    typeof loggedBody === 'object' &&
+    'imageDataUrls' in loggedBody
+  ) {
+    loggedBody = { ...loggedBody, imageDataUrls: undefined }
+  }
+
   if (req.method.toLowerCase() !== 'get') {
     logger.info({
       message: 'Admin attempting to make changes',
@@ -60,7 +71,7 @@ export const logAdminAction: ControllerHandler<{ formId: string }> = async (
         sessionUserId,
         formId,
         query,
-        body,
+        body: loggedBody,
       },
     })
   }
