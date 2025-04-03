@@ -473,7 +473,7 @@ export const Step2ConditionalRoutingReplace = {
     await waitFor(
       async () => {
         const replaceButton = await canvas.getByLabelText(
-          'Click to update file',
+          'Click to replace file',
         )
         await userEvent.click(replaceButton)
       },
