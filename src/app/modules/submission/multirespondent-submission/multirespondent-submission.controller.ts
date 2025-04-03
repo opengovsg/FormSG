@@ -1,22 +1,32 @@
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import { Environment } from '../../../../types'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
+import * as AuthService from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import { updateFormMetadata } from '../../form/admin-form/admin-form.service'
+import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
+import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
+import * as UserService from '../../user/user.service'
 import {
   ensureFormWithinSubmissionLimits,
   ensurePublicForm,
@@ -38,8 +48,10 @@ import * as MultirespondentSubmissionMiddleware from './multirespondent-submissi
 import {
   checkFormIsMultirespondent,
   createMultiRespondentFormSubmission,
+  getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
+  sendNextStepReminderEmail,
   updateMultiRespondentFormSubmission,
 } from './multirespondent-submission.service'
 import {
@@ -51,6 +63,11 @@ import {
 import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+
+const appUrl =
+  process.env.NODE_ENV === Environment.Dev
+    ? config.app.feAppUrl
+    : config.app.appUrl
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -329,3 +346,115 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       })
   )
 }
+
+const sendPendingMrfSubmissionReminder: ControllerHandler<
+  { formId: string; submissionId: string },
+  unknown,
+  { submissionSecretKey: string }
+> = async (req, res) => {
+  const { formId, submissionId } = req.params
+  const { submissionSecretKey } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: 'sendPendingMrfSubmissionReminder',
+    formId,
+    submissionId,
+    ...createReqMeta(req),
+  }
+
+  return UserService.findUserById(authedUserId)
+    .andThen((user) => {
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }).map((form) => ({ form, user }))
+    })
+    .andThen(({ form, user }) => {
+      if (form.responseMode !== FormResponseMode.Multirespondent) {
+        return errAsync(
+          new FormInvalidResponseModeError(
+            'Cannot send reminder emails for pending step for non-multirespondent mode forms',
+          ),
+        )
+      }
+      return getPendingStepRecipientEmailsFromSubmittedStepsMeta({
+        submissionId,
+      }).map(({ recipientEmails, reminderStepNumber }) => ({
+        recipientEmails,
+        reminderStepNumber,
+        form,
+        user,
+      }))
+    })
+    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
+      return okAsync({
+        recipientEmails,
+        reminderStepNumber,
+        form,
+        user,
+      })
+    })
+    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
+      return sendNextStepReminderEmail({
+        senderEmail: user.email,
+        submissionId,
+        emails: recipientEmails,
+        responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+          form._id,
+          submissionId,
+          { key: submissionSecretKey },
+        )}`,
+        formTitle: form.title,
+        formId,
+        reminderStepNumber,
+      }).map((sendNextStepReminderEmailResult) => ({
+        sendNextStepReminderEmailResult,
+        form,
+      }))
+    })
+    .map(({ form }) => {
+      logger.info({
+        message: 'Reminder sent successfully',
+        meta: logMeta,
+      })
+      res.json({
+        message: `Reminder sent successfully.`,
+        submissionId: submissionId,
+      })
+
+      updateFormMetadata(form, {
+        ...form.metadata,
+        num_mrf_reminder_emails_sent:
+          (form.metadata?.num_mrf_reminder_emails_sent ?? 0) + 1,
+      })
+      return
+    })
+    .mapErr((err) => {
+      const { errorMessage, statusCode } = mapRouteError(err)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
+}
+
+export const sendPendingMrfSubmissionReminderForTest =
+  sendPendingMrfSubmissionReminder
+
+/**
+ * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind
+ * @security session
+ *
+ * @returns 200 with feedback response
+ * @returns 400 when multirespondent submission workflow step is invalid
+ * @returns 403 when user does not have permissions to read form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when encountering database error
+ */
+export const handlePendingMrfSubmissionRemind = [
+  MultirespondentSubmissionMiddleware.validateMultirespondentRemindBody,
+  sendPendingMrfSubmissionReminder,
+] as ControllerHandler[]

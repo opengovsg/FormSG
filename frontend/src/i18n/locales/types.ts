@@ -1,9 +1,11 @@
 import { RequiredDeep } from 'type-fest'
 
 import {
+  App,
   Common,
   Fields,
   HeaderAndInstructions,
+  LandingPage,
   Logic,
   Login,
   Meta,
@@ -14,6 +16,7 @@ import {
   ThankYou,
   Toasts,
   Workflow,
+  Workspace,
 } from './features'
 
 interface Translation {
@@ -33,9 +36,12 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
       }
+      app?: App
       common?: Common
+      landingPage?: LandingPage
       publicForm?: PublicForm
       login?: Login
+      workspace?: Workspace
     }
   }
 }

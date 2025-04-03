@@ -4,7 +4,7 @@ import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
-import { MarkRequired } from 'ts-essentials'
+import { SetRequired } from 'type-fest'
 import isURL from 'validator/lib/isURL'
 
 import { featureFlags } from '../../../../shared/constants'
@@ -633,7 +633,7 @@ export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
 export const exchangeCodeForAccessToken = (
   code: string,
 ): ResultAsync<
-  MarkRequired<Stripe.OAuthToken, 'stripe_user_id' | 'stripe_publishable_key'>,
+  SetRequired<Stripe.OAuthToken, 'stripe_user_id' | 'stripe_publishable_key'>,
   StripeAccountError | StripeFetchError
 > => {
   return ResultAsync.fromPromise(
@@ -656,7 +656,7 @@ export const exchangeCodeForAccessToken = (
       return errAsync(new StripeAccountError('Stripe account ID is missing'))
     }
     return okAsync(
-      token as MarkRequired<
+      token as SetRequired<
         Stripe.OAuthToken,
         'stripe_user_id' | 'stripe_publishable_key'
       >,

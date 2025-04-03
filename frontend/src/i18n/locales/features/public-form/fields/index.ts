@@ -20,6 +20,7 @@ export interface Fields {
     dragAndDrop: string
     dragActive: string
     maxFileSize: string
+    fileConstraintsText: string
     ariaLabelRemove: string
     ariaLabelReplace: string
     error: {

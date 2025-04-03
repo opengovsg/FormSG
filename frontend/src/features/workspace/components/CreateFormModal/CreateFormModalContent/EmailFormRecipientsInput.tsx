@@ -1,4 +1,4 @@
-import { Controller } from 'react-hook-form'
+import { Control, Controller, RegisterOptions } from 'react-hook-form'
 import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -15,7 +15,10 @@ import { TagInput } from '~components/TagInput'
 
 import { useUser } from '~features/user/queries'
 
-import { useCreateFormWizard } from '../CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  useCreateFormWizard,
+} from '../CreateFormWizardContext'
 
 export const EmailFormRecipientsInput = (): JSX.Element => {
   const { user, isLoading } = useUser()
@@ -40,19 +43,20 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
 
   return (
     <>
-      <Controller
+      <Controller<CreateFormWizardInputProps>
         control={control}
         defaultValue={[user.email]}
         name="emails"
         rules={
-          responseModeValue === FormResponseMode.Email
+          (responseModeValue === FormResponseMode.Email
             ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
-            : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES
+            : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES) as RegisterOptions<CreateFormWizardInputProps>
         }
         render={({ field }) => (
           <TagInput
             placeholder="Separate emails with a comma"
             {...field}
+            value={field.value as string[]}
             tagValidation={isEmail}
           />
         )}

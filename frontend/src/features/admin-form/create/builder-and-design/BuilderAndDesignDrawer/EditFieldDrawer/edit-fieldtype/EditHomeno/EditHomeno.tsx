@@ -47,7 +47,10 @@ export const EditHomeno = ({ field }: EditHomenoProps): JSX.Element => {
   })
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditHomenoInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

@@ -106,7 +106,10 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditShortTextInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

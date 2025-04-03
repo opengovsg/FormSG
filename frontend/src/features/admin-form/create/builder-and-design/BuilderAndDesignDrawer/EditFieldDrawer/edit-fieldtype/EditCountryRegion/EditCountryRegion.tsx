@@ -65,7 +65,10 @@ export const EditCountryRegion = ({
   const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+    () =>
+      createBaseValidationRules<EditCountryRegionInputs, 'title'>({
+        required: true,
+      }),
     [],
   )
 

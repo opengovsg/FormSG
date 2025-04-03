@@ -5,8 +5,6 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { ModalCloseButton } from '~components/Modal'
-
 // Explicit import to avoid circular dependency warnings by rollup
 import { CreateFormModalContent } from '~features/workspace/components/CreateFormModal/CreateFormModalContent/CreateFormModalContent'
 
@@ -34,8 +32,7 @@ export const UseTemplateModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-        <ModalCloseButton />
-        <UseTemplateWizardProvider formId={formId}>
+        <UseTemplateWizardProvider formId={formId} onClose={onClose}>
           <CreateFormModalContent />
         </UseTemplateWizardProvider>
       </ModalContent>

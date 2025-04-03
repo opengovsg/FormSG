@@ -1917,7 +1917,7 @@ export const updateFormSettings = (
  * @returns err(DatabaseError) if any database errors occur during the update
  */
 export const updateFormMetadata = (
-  form: IPopulatedForm,
+  form: Pick<IPopulatedForm, '_id' | 'metadata' | 'responseMode'>,
   metadata: FormMetadata,
 ): ResultAsync<FormMetadata | undefined, DatabaseError | FormNotFoundError> => {
   const ModelToUse = getFormModelByResponseMode(form.responseMode)

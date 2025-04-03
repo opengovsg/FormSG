@@ -303,6 +303,30 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'VIRUS_SCANNER_LAMBDA_ENDPOINT',
     },
+    guarddutyQuarantineS3Bucket: {
+      doc: 'New guardduty S3 Bucket to quarantine files for virus scanning',
+      format: String,
+      default: '',
+      env: 'GUARDDUTY_QUARANTINE_S3_BUCKET',
+    },
+    guarddutyCleanS3Bucket: {
+      doc: 'New S3 Bucket to store files that have been scanned and are clean from guardduty quarantine bucket',
+      format: String,
+      default: '',
+      env: 'GUARDDUTY_CLEAN_S3_BUCKET',
+    },
+    guarddutyLambdaEndpoint: {
+      doc: 'Endpoint address for virus scanner lambda function. Specify this if the lambda is hosted neither on AWS nor your local dev environment.',
+      format: String,
+      default: '',
+      env: 'GUARDDUTY_LAMBDA_ENDPOINT',
+    },
+    guarddutyLambdaFunctionName: {
+      doc: 'Endpoint address for guardduty virus scanner lambda function. Specify this if the lambda is hosted neither on AWS nor your local dev environment.',
+      format: String,
+      default: '',
+      env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',
+    },
   },
   core: {
     port: {
@@ -390,6 +414,18 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'int',
       default: 5,
       env: 'MAKE_TEXT_PROMPT_RATE_LIMIT',
+    },
+    makeVisionPrompt: {
+      doc: 'Per-minute, per-IP request limit for making vision prompts',
+      format: 'int',
+      default: 3,
+      env: 'MAKE_VISION_PROMPT_RATE_LIMIT',
+    },
+    mrfPendingSubmissionEmailReminder: {
+      doc: 'Per-minute, per-IP request, per submission id limit for sending email reminders for MRF submissions',
+      format: 'int',
+      default: 60,
+      env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
     },
   },
   reactMigration: {
@@ -541,6 +577,12 @@ export const loadS3BucketUrlSchema = ({
     },
     virusScannerQuarantineS3BucketUrl: {
       doc: 'Url of virus scanner quarantine S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    guarddutyQuarantineS3BucketUrl: {
+      doc: 'Url of guardduty quarantine S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

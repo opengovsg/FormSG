@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
@@ -20,7 +21,10 @@ import {
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
 import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
-export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
+export const useDupeFormWizardContext = (
+  onClose: () => void,
+): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const { data: dashboardForms, isLoading: isWorkspaceLoading } = useDashboard()
   const { activeFormMeta } = useWorkspaceRowsContext()
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
@@ -88,24 +92,38 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
       switch (responseMode) {
         case FormResponseMode.Encrypt:
-          return dupeStorageModeFormMutation.mutate({
-            formIdToDuplicate: activeFormMeta._id,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-            emails: emails.filter(Boolean),
-          })
+          return dupeStorageModeFormMutation.mutate(
+            {
+              formIdToDuplicate: activeFormMeta._id,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+              emails: emails.filter(Boolean),
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
-          return dupeMultirespondentModeFormMutation.mutate({
-            formIdToDuplicate: activeFormMeta._id,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-          })
+          return dupeMultirespondentModeFormMutation.mutate(
+            {
+              formIdToDuplicate: activeFormMeta._id,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         default: {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = responseMode
@@ -160,10 +178,6 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
       })
     })
 
-  const handleDetailsSubmit = handleSubmit(() => {
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
@@ -174,22 +188,24 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
-    modalHeader: 'Duplicate form',
+    modalHeader: t('features.workspace.modals.create.title.duplicate'),
+    onClose,
   }
 }
 
 export const DupeFormWizardProvider = ({
   children,
+  onClose,
 }: {
   children: React.ReactNode
+  onClose: () => void
 }): JSX.Element => {
-  const values = useDupeFormWizardContext()
+  const values = useDupeFormWizardContext(onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

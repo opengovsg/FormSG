@@ -95,6 +95,7 @@ export const ApprovalStatus = z.enum([
 const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
+  nextStepRecipientEmails: z.array(z.string()).optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
@@ -234,6 +235,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowNumTotalSteps: z.number(),
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
       lastSubmittedAt: z.string().optional(),
+      hasNextStepRecipientEmails: z.boolean(),
     }),
   })
 
@@ -261,6 +263,7 @@ export type SubmissionMrfMetadata =
       workflowNumTotalSteps: number
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
       lastSubmittedAt: string | undefined
+      hasNextStepRecipientEmails: boolean
     }
   | undefined
 

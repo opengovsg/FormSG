@@ -54,8 +54,10 @@ export const BuilderAndDesignTab = (): JSX.Element => {
     onAccept,
     onDeny,
     onMfbTextPromptSubmit,
+    isMfbTextPromptSubmitLoading,
+    onMfbVisionPromptSubmit,
+    isMfbVisionPromptSubmitLoading,
     onModalClose,
-    isSubmissionLoading,
   } = useMagicFormBuilder()
 
   const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
@@ -178,8 +180,10 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       >
         <MagicFormBuilderPromptModal
           isOpen={isModalOpen}
-          onSubmit={onMfbTextPromptSubmit}
-          isSubmitLoading={isSubmissionLoading}
+          onTextPromptSubmit={onMfbTextPromptSubmit}
+          isTextPromptSubmitLoading={isMfbTextPromptSubmitLoading}
+          onVisionPromptSubmit={onMfbVisionPromptSubmit}
+          isVisionPromptSubmitLoading={isMfbVisionPromptSubmitLoading}
           onClose={onModalClose}
         />
         <MagicFormBuilderAcceptDeny

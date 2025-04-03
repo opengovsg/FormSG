@@ -63,6 +63,7 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../services/captcha/captcha.errors'
+import { MailSendError } from '../../services/mail/mail.errors'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
   MissingTurnstileError,
@@ -133,6 +134,8 @@ import {
   InvalidFileExtensionError,
   InvalidFileKeyError,
   MaliciousFileDetectedError,
+  MrfReminderInvalidWorkflowStepError,
+  MrfReminderRecipientEmailsEmptyError,
   ProcessingError,
   ResponseModeError,
   SubmissionFailedError,
@@ -346,6 +349,17 @@ const errorMapper: MapRouteError = (
     case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case MrfReminderInvalidWorkflowStepError:
+    case MrfReminderRecipientEmailsEmptyError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case MailSendError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
       }
     default:
@@ -835,7 +849,7 @@ export const getCookieNameByAuthType = (
  * @returns The workflow status of the submission based on the enum `WorkflowStatus`.
  * Otherwise, returns `undefined` if no submitted steps or total steps are found or when no workflow has been defined by the form admin.
  */
-const getMrfSubmissionWorkflowStatus = (
+export const getMrfSubmissionWorkflowStatus = (
   submittedSteps: SubmittedStep[],
   numTotalSteps: number,
 ): WorkflowStatus | undefined => {
@@ -888,10 +902,19 @@ export const buildMrfMetadata = ({
     submittedSteps && submittedSteps.length > 0
       ? submittedSteps[submittedSteps.length - 1].submittedAt.toString()
       : undefined
+
+  const nextStepRecipientEmails =
+    submittedSteps && submittedSteps.length > 0
+      ? submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails
+      : []
+  const hasNextStepRecipientEmails =
+    !!nextStepRecipientEmails && nextStepRecipientEmails.length > 0
+
   return {
     workflowCurrentStepNumber,
     workflowNumTotalSteps,
     workflowStatus,
     lastSubmittedAt,
+    hasNextStepRecipientEmails,
   }
 }

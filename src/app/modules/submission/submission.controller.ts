@@ -442,6 +442,7 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
+
   return getQuarantinePresignedPostData(req.body)
     .map((presignedUrls) => {
       logger.info({

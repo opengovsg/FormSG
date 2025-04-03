@@ -20,7 +20,9 @@ export interface MagicFormBuilderProviderProps {
   onAccept: () => void
   onDeny: () => void
   onMfbTextPromptSubmit: (textPrompt: string) => void
-  isSubmissionLoading: boolean
+  isMfbTextPromptSubmitLoading: boolean
+  onMfbVisionPromptSubmit: (imageDataUrls: string[]) => void
+  isMfbVisionPromptSubmitLoading: boolean
 }
 
 const magicFormBuilderProviderDefaults: MagicFormBuilderProviderProps = {
@@ -31,7 +33,9 @@ const magicFormBuilderProviderDefaults: MagicFormBuilderProviderProps = {
   onModalClose: () => {},
   toggleIsModalOpen: () => {},
   onMfbTextPromptSubmit: () => {},
-  isSubmissionLoading: false,
+  isMfbTextPromptSubmitLoading: false,
+  onMfbVisionPromptSubmit: () => {},
+  isMfbVisionPromptSubmitLoading: false,
 }
 
 export const MagicFormBuilderContext =
@@ -49,7 +53,8 @@ const MagicFormBuilderProvider: FCC = ({ children }) => {
   )
 
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
-  const { useMakeTextPromptMutation } = useAssistanceMutations()
+  const { useMakeTextPromptMutation, useMakeVisionPromptMutation } =
+    useAssistanceMutations()
 
   const onModalClose = () => {
     setIsModalOpen(false)
@@ -75,11 +80,17 @@ const MagicFormBuilderProvider: FCC = ({ children }) => {
     }
   }
 
+  const closeModal = () => setIsModalOpen(false)
+
   const onMfbTextPromptSubmit = (textPrompt: string) => {
     useMakeTextPromptMutation.mutate(textPrompt, {
-      onSuccess: () => {
-        setIsModalOpen(false)
-      },
+      onSuccess: closeModal,
+    })
+  }
+
+  const onMfbVisionPromptSubmit = (imageDataUrls: string[]) => {
+    useMakeVisionPromptMutation.mutate(imageDataUrls, {
+      onSuccess: closeModal,
     })
   }
 
@@ -96,7 +107,9 @@ const MagicFormBuilderProvider: FCC = ({ children }) => {
         onAccept: closeMfbModalAndClearRecentlyCreated,
         onDeny,
         onMfbTextPromptSubmit,
-        isSubmissionLoading: useMakeTextPromptMutation.isLoading,
+        isMfbTextPromptSubmitLoading: useMakeTextPromptMutation.isLoading,
+        onMfbVisionPromptSubmit,
+        isMfbVisionPromptSubmitLoading: useMakeVisionPromptMutation.isLoading,
       }}
     >
       {children}

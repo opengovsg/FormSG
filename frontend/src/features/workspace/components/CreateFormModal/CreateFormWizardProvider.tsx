@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
@@ -54,7 +55,10 @@ export const useCommonFormWizardProvider = ({
   }
 }
 
-const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
+const useCreateFormWizardContext = (
+  onClose: () => void,
+): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider({
       defaultValues: {
@@ -85,26 +89,42 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     ({ title, responseMode, emails }) => {
       switch (responseMode) {
         case FormResponseMode.Encrypt:
-          return createStorageModeFormMutation.mutate({
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-            emails: emails.filter(Boolean),
-          })
+          return createStorageModeFormMutation.mutate(
+            {
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+              emails: emails.filter(Boolean),
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
-          return createMultirespondentModeFormMutation.mutate({
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            workspaceId,
-          })
+          return createMultirespondentModeFormMutation.mutate(
+            {
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              workspaceId,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         default: {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = responseMode
-          throw new Error('Invalid response mode')
+          throw new Error(
+            t('features.workspace.modals.create.errors.responseMode.invalid'),
+          )
         }
       }
     },
@@ -153,10 +173,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     })
   }
 
-  const handleDetailsSubmit = handleSubmit(() => {
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: false,
     isLoading:
@@ -167,22 +183,24 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
-    modalHeader: 'Set up your form',
+    modalHeader: t('features.workspace.modals.create.title.setup'),
+    onClose,
   }
 }
 
 export const CreateFormWizardProvider = ({
   children,
+  onClose,
 }: {
   children: React.ReactNode
+  onClose: () => void
 }): JSX.Element => {
-  const values = useCreateFormWizardContext()
+  const values = useCreateFormWizardContext(onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

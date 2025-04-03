@@ -86,9 +86,7 @@ export const Playground: StoryFn = ({
           }}
           render={({ field }) => <NumberInput {...field} {...args} />}
         />
-        <FormErrorMessage>
-          {errors[name] && errors[name].message}
-        </FormErrorMessage>
+        <FormErrorMessage>{String(errors[name]?.message)}</FormErrorMessage>
       </FormControl>
       <Button variant="solid" type="submit">
         Submit

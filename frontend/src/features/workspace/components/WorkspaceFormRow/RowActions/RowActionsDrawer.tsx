@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BiChevronRight,
   BiDotsHorizontalRounded,
@@ -45,6 +46,7 @@ export const RowActionsDrawer = ({
   isDisabled,
   formMeta,
 }: RowActionsProps): JSX.Element => {
+  const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [isMoveWorkspace, setIsMoveWorkspace] = useState(false)
 
@@ -111,7 +113,7 @@ export const RowActionsDrawer = ({
                     {...buttonProps}
                     leftIcon={<BiEditAlt fontSize="1.25rem" />}
                   >
-                    Edit
+                    {t('features.common.edit')}
                   </Button>
                   <Button
                     as={ReactLink}
@@ -120,28 +122,28 @@ export const RowActionsDrawer = ({
                     {...buttonProps}
                     leftIcon={<BiShow fontSize="1.25rem" />}
                   >
-                    Preview
+                    {t('features.workspace.actions.preview')}
                   </Button>
                   <Button
                     {...buttonProps}
                     onClick={handleDuplicateForm}
                     leftIcon={<BiDuplicate fontSize="1.25rem" />}
                   >
-                    Duplicate
+                    {t('features.workspace.actions.duplicate')}
                   </Button>
                   <Button
                     {...buttonProps}
                     onClick={handleShareForm}
                     leftIcon={<BiShareAlt fontSize="1.25rem" />}
                   >
-                    Share form
+                    {t('features.workspace.actions.share')}
                   </Button>
                   <Button
                     {...buttonProps}
                     onClick={handleCollaborators}
                     leftIcon={<BiUserPlus fontSize="1.25rem" />}
                   >
-                    Manage form admins
+                    {t('features.workspace.actions.admins')}
                   </Button>
                   <Button
                     {...buttonProps}
@@ -153,7 +155,7 @@ export const RowActionsDrawer = ({
                       alignItems="center"
                       w="100%"
                     >
-                      <Text>Move to Folder</Text>
+                      <Text>{t('features.workspace.actions.move')}</Text>
                       <BiChevronRight fontSize="1.25rem" />
                     </Flex>
                   </Button>
@@ -166,7 +168,7 @@ export const RowActionsDrawer = ({
                         color="danger.500"
                         leftIcon={<BiTrash fontSize="1.25rem" />}
                       >
-                        Delete
+                        {t('features.common.delete')}
                       </Button>
                     </>
                   )}
@@ -189,6 +191,7 @@ const MoveWorkspaceDrawer = ({
   formMeta: AdminDashboardFormMetaDto
   buttonProps: Partial<ButtonProps>
 }) => {
+  const { t } = useTranslation()
   const { handleRemoveFormFromWorkspaces, handleMoveForm } =
     useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
@@ -219,7 +222,7 @@ const MoveWorkspaceDrawer = ({
         onClick={() => setIsMoveWorkspace(false)}
         leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
       >
-        Back
+        {t('features.common.back')}
       </Button>
       <Divider />
       {workspaces.map((workspace) => (

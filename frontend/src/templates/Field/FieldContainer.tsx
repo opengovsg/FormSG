@@ -70,7 +70,9 @@ export const FieldContainer = ({
   const { i18n } = useTranslation()
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
-  const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+  const error: FieldError | undefined = get(errors, errorKey ?? schema._id) as
+    | FieldError
+    | undefined
   const selectedLanguage = i18n.language as Language
 
   const title = getValueInSelectedLanguage({

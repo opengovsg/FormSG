@@ -21,7 +21,10 @@ import {
   NumberSelectedValidation,
 } from 'shared/types'
 
-import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
 import { findUserByEmail } from 'src/app/modules/user/user.service'
 import { IFormModel, IFormSchema } from 'src/types'
 
@@ -91,6 +94,32 @@ const addForm = async (
   page: Page,
   responseMode: FormResponseMode,
 ): Promise<AddFormReturn> => {
+  if (responseMode === FormResponseMode.Email) {
+    const EmailFormModel = getEmailFormModel(mongoose)
+    const user = (await findUserByEmail(ADMIN_EMAIL))._unsafeUnwrap()
+
+    const formId = new ObjectId().toHexString()
+
+    await EmailFormModel.create({
+      _id: formId,
+      admin: user,
+      responseMode: FormResponseMode.Email,
+      title: `e2e-test-${cuid()}`,
+      emails: [user.email],
+      publicKey: '',
+      status: FormStatus.Private,
+    })
+
+    const formResponseMode: E2eFormResponseMode = {
+      responseMode: FormResponseMode.Email,
+    }
+
+    await page.goto(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
+
+    await page.getByRole('button', { name: 'Next' }).press('Escape')
+
+    return { formId, formResponseMode }
+  }
   await page.goto(DASHBOARD_PAGE)
 
   // Press escape 5 times to get rid of any banners
@@ -104,48 +133,40 @@ const addForm = async (
 
   await page.getByLabel('Form name').fill(`e2e-test-${cuid()}`)
 
-  let formResponseMode: E2eFormResponseMode
+  await page.getByText('Storage mode form').click()
+  await page.getByRole('button', { name: 'Create form' }).click()
 
-  if (responseMode === FormResponseMode.Email) {
-    await page.getByText('use it for now').click()
+  await page.getByRole('button', { name: 'Cancel' }).click()
 
-    formResponseMode = {
-      responseMode: FormResponseMode.Email,
-    }
+  await page.getByRole('button', { name: 'Close' }).click()
 
-    // Need to select "I need to collect Sensitive High data" checkbox, and press "Next: Set up your form" button.
-    await page.getByText('I need to collect Sensitive High data').click()
-    await page.getByRole('button', { name: 'Next: Set up your form' }).click()
+  const downloadButton = page.getByRole('button', { name: 'Download key' })
+  await expect(downloadButton).toBeEnabled({ timeout: 15000 })
+  const downloadPromise = page.waitForEvent('download')
+  await downloadButton.click()
 
-    await page.getByRole('button', { name: 'Create form' }).click()
-  } else {
-    await page.getByText('storage mode').click()
-    await page.getByRole('button', { name: 'Next step' }).click()
-
-    // Download the secret key and save it for the test.
-    const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Download key' }).click()
-    const download = await downloadPromise
-    const path = await download.path()
-    if (!path) throw new Error('Secret key download failed')
-    formResponseMode = {
-      responseMode: FormResponseMode.Encrypt,
-      secretKey: readFileSync(path).toString(),
-    }
-
-    // Double check that the secret key exists on the screen.
-    await expect(
-      page.getByText(formResponseMode.secretKey, { exact: true }),
-    ).toBeVisible()
-
-    // Click acknowledgement buttons
-    await page.getByText(/If I lose my Secret Key/).click()
-    await page
-      .getByRole('button', {
-        name: 'I have saved my Secret Key safely',
-      })
-      .click()
+  // Download the secret key and save it for the test.
+  const download = await downloadPromise
+  const path = await download.path()
+  if (!path) throw new Error('Secret key download failed')
+  const formResponseMode: E2eFormResponseMode = {
+    responseMode: FormResponseMode.Encrypt,
+    secretKey: readFileSync(path).toString(),
   }
+
+  // Double check that the secret key exists on the screen.
+  await expect(
+    page.getByText(formResponseMode.secretKey, { exact: true }),
+  ).toBeVisible()
+
+  // Click acknowledgement buttons
+  await page.getByText(/If I lose my Secret Key/).click()
+  await page
+    .getByRole('button', {
+      name: 'I have saved my Secret Key safely',
+    })
+    .click()
+
   await expect(page).toHaveURL(new RegExp(`${ADMIN_FORM_PAGE_PREFIX}/.*`, 'i'))
 
   const l = ADMIN_FORM_PAGE_PREFIX.length + 1
@@ -183,7 +204,7 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
-  // await addAdminEmails(page, formSettings)
+  await addAdminEmails(page, formSettings)
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
@@ -384,9 +405,6 @@ const addAdminEmails = async (
   if (formSettings.emails) {
     const emailInput = page.getByLabel('Notifications for new responses')
     await emailInput.focus()
-
-    // Clear the current admin email
-    await page.keyboard.press('Backspace')
 
     await emailInput.fill(formSettings.emails.join(', '))
 

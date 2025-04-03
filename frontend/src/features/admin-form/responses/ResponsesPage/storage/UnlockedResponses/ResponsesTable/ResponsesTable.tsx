@@ -31,12 +31,14 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
+import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
@@ -190,9 +192,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    width: 300,
-    minWidth: 300,
-    maxWidth: 300,
+    width: 240,
+    minWidth: 240,
+    maxWidth: 240,
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
@@ -213,9 +215,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         return <CompletedBadge />
       }
     },
-    width: 200,
-    minWidth: 180,
-    maxWidth: 220,
+    width: 160,
+    minWidth: 160,
+    maxWidth: 160,
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
@@ -236,9 +238,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         workflowNumTotalSteps,
       })
     },
-    width: 200,
+    width: 180,
     minWidth: 180,
-    maxWidth: 220,
+    maxWidth: 180,
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
@@ -252,9 +254,24 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     //         'do MMM yyyy, hh:mm:ss a',
     //       )
     //     : '',
-    width: 250,
-    minWidth: 250,
-    disableResizing: true,
+    width: 240,
+    minWidth: 240,
+    maxWidth: 240,
+  },
+  {
+    Header: MRF_REMINDERS_LABEL,
+    Cell: ({ row }) => {
+      const isPending =
+        row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
+      const hasNextStepRecipientEmails =
+        row.original.mrf?.hasNextStepRecipientEmails
+      const submissionId = row.original.refNo
+      return isPending && hasNextStepRecipientEmails ? (
+        <SendReminderButton submissionId={submissionId} />
+      ) : null
+    },
+    minWidth: 160,
+    width: 160,
   },
 ]
 
@@ -427,6 +444,8 @@ export const ResponsesTable = () => {
                     as="div"
                     {...cell.getCellProps()}
                     key={cell.getCellProps().key}
+                    display="flex"
+                    alignItems="center"
                   >
                     {cell.render('Cell')}
                   </Td>

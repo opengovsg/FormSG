@@ -1,4 +1,5 @@
-import { Controller } from 'react-hook-form'
+import { Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
@@ -21,7 +22,10 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
-import { useCreateFormWizard } from '../CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  useCreateFormWizard,
+} from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { FormResponseOptions } from './FormResponseOptions'
@@ -48,10 +52,11 @@ const getTrackingSubmissionActionName = (
 }
 
 export const CreateFormDetailsScreen = (): JSX.Element => {
+  const { t } = useTranslation()
   const {
     formMethods,
-    handleDetailsSubmit,
     handleEmailFeedbackSubmit,
+    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     isFetching,
     modalHeader,
@@ -80,22 +85,32 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="45rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel useMarkdownForDescription>Form name</FormLabel>
+            <FormLabel useMarkdownForDescription>
+              {t('features.workspace.modals.create.details.name.label')}
+            </FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Input
                 autoFocus
-                {...register('title', FORM_TITLE_VALIDATION_RULES)}
+                {...register(
+                  'title',
+                  FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+                    CreateFormWizardInputProps,
+                    'title'
+                  >,
+                )}
               />
             </Skeleton>
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
               <FormFieldMessage>
-                It is advised to use a shorter, more succinct form name.
+                {t('features.workspace.modals.create.details.name.message')}
               </FormFieldMessage>
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel>What type of form do you need?</FormLabel>
+            <FormLabel>
+              {t('features.workspace.modals.create.details.type.label')}
+            </FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Controller
                 name="responseMode"
@@ -109,14 +124,17 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                     />
                   </WorkspaceRowsProvider>
                 )}
-                rules={{ required: 'Please select a form response mode' }}
+                rules={{
+                  required: t(
+                    'features.workspace.modals.create.errors.responseMode.required',
+                  ),
+                }}
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
             {isSingpass && (
               <InlineMessage mt="2rem">
-                The form you are trying to duplicate has Singpass authentication
-                which is not supported for Multi-respondent forms.
+                {t('features.workspace.modals.create.errors.noSingpassInMrf')}
               </InlineMessage>
             )}
           </FormControl>
@@ -130,9 +148,14 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               <FormLabel
                 isRequired={responseModeValue === FormResponseMode.Email}
                 useMarkdownForDescription
-                description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+                description={t(
+                  'features.workspace.modals.create.details.notifications.description',
+                  { GUIDE_PREVENT_EMAIL_BOUNCE },
+                )}
               >
-                Notifications for new responses
+                {t(
+                  'features.workspace.modals.create.details.notifications.label',
+                )}
               </FormLabel>
               <EmailFormRecipientsInput />
             </FormControl>
@@ -142,13 +165,15 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
-            onClick={handleDetailsSubmit}
+            onClick={handleCreateStorageModeOrMultirespondentForm}
             isFullWidth
             data-dd-action-name={getTrackingSubmissionActionName(
               responseModeValue,
             )}
           >
-            <Text lineHeight="1.5rem">Next step</Text>
+            <Text lineHeight="1.5rem">
+              {t('features.workspace.modals.create.details.create')}
+            </Text>
           </Button>
         </Container>
       </ModalBody>

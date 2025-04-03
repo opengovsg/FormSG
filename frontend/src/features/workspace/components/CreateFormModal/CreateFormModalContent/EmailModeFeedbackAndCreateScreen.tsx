@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FormProvider } from 'react-hook-form'
+import { FormProvider, RegisterOptions } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
@@ -22,7 +22,10 @@ import { CheckboxField, CheckboxFieldSchema } from '~templates/Field'
 
 import { useAdminUseEmailModeFormView } from '~features/public-form/queries'
 
-import { useCreateFormWizard } from '../CreateFormWizardContext'
+import {
+  CreateFormWizardInputProps,
+  useCreateFormWizard,
+} from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 
@@ -40,14 +43,20 @@ const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-export const EmailModeFeedbackScreen = (): JSX.Element => {
+export const EmailModeFeedbackScreen = ({
+  useCreateFormWizardParam = useCreateFormWizard,
+  useAdminUseEmailModeFormViewParam = useAdminUseEmailModeFormView,
+}: {
+  useCreateFormWizardParam?: typeof useCreateFormWizard
+  useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
+}): JSX.Element => {
   const { formMethods, submitEmailModeFeedback, isLoading, isFetching } =
-    useCreateFormWizard()
+    useCreateFormWizardParam()
   const {
     formState: { errors },
   } = formMethods
 
-  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
   if (!feedbackForm) return <></>
 
   return (
@@ -86,14 +95,20 @@ export const EmailModeFeedbackScreen = (): JSX.Element => {
   )
 }
 
-export const EmailModeCreationScreen = (): JSX.Element => {
+export const EmailModeCreationScreen = ({
+  useCreateFormWizardParam = useCreateFormWizard,
+  useAdminUseEmailModeFormViewParam = useAdminUseEmailModeFormView,
+}: {
+  useCreateFormWizardParam?: typeof useCreateFormWizard
+  useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
+}): JSX.Element => {
   const {
     formMethods,
 
     handleCreateEmailModeForm,
     isLoading,
     isFetching,
-  } = useCreateFormWizard()
+  } = useCreateFormWizardParam()
   const {
     register,
     formState: { errors },
@@ -104,10 +119,16 @@ export const EmailModeCreationScreen = (): JSX.Element => {
     setTimeout(() => inputRef.current?.focus(), 200)
   }, [])
 
-  const formTitleRegister = register('title', FORM_TITLE_VALIDATION_RULES)
+  const formTitleRegister = register(
+    'title',
+    FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+      CreateFormWizardInputProps,
+      'title'
+    >,
+  )
   const mergedRef = useMergeRefs(formTitleRegister.ref, inputRef)
 
-  const { data: feedbackForm } = useAdminUseEmailModeFormView()
+  const { data: feedbackForm } = useAdminUseEmailModeFormViewParam()
   if (!feedbackForm) return <></>
 
   return (

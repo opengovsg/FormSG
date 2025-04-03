@@ -11,3 +11,6 @@ export const MAX_UPLOAD_FILE_SIZE = 2 * MB // 2 Million/Mega Bytes, or 2 MB
 
 /** Decimal byte units sorted in ascending order */
 export const DECIMAL_BYTE_UNITS = ['B', 'kB', 'MB', 'GB', 'TB']
+
+/** Maximum number of images / pages in a single PDF that can be uploaded for MFB Vision. */
+export const MFB_VISION_MAX_IMAGES_COUNT = 10

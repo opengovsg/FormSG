@@ -54,7 +54,11 @@ const ShortTextColumnCell = ({
   colorTheme,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
   const rules = useMemo(
-    () => createBaseValidationRules(schema, disableRequiredValidation),
+    () =>
+      createBaseValidationRules<
+        TableFieldInputs,
+        `${string}.${number}.${string}`
+      >(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
 

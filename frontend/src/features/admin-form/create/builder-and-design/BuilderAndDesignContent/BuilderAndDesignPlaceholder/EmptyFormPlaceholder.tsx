@@ -63,6 +63,9 @@ export const EmptyFormPlaceholder = forwardRef<
       : 'Drag a field from the Builder on the left to start'
   }, [isDraggingOver, isMobile])
 
+  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
+  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
+
   return (
     <Box position="relative" h="13.75rem" m={{ base: 0, lg: '1.625rem' }}>
       <chakra.button
@@ -97,7 +100,7 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
-          {useFeatureIsOn(featureFlags.mfb) ? (
+          {isMfbTextEnabled || isMfbVisionEnabled ? (
             <>
               <OrDivider isMobile={isMobile} />
               <Box h="2.75rem"></Box>
@@ -105,7 +108,7 @@ export const EmptyFormPlaceholder = forwardRef<
           ) : null}
         </Center>
       </chakra.button>
-      {useFeatureIsOn(featureFlags.mfb) ? (
+      {isMfbTextEnabled || isMfbVisionEnabled ? (
         <Box
           bottom="2.375rem"
           w="100%"

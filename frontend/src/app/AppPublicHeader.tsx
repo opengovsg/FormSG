@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -6,19 +7,21 @@ import { LOGIN_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { PublicHeader } from '~templates/PublicHeader'
 
-const PUBLIC_HEADER_LINKS = [
-  {
-    label: 'Help',
-    href: FORM_GUIDE,
-    showOnMobile: true,
-    MobileIcon: BxsHelpCircle,
-  },
-]
-
 export const AppPublicHeader = ({ bg }: { bg?: string }): JSX.Element => {
+  const { t } = useTranslation()
+
+  const publicHeaderLinks = [
+    {
+      label: t('features.app.publicHeaderLinkLabel.formGuide'),
+      href: FORM_GUIDE,
+      showOnMobile: true,
+      MobileIcon: BxsHelpCircle,
+    },
+  ]
+
   return (
     <PublicHeader
-      publicHeaderLinks={PUBLIC_HEADER_LINKS}
+      publicHeaderLinks={publicHeaderLinks}
       ctaElement={
         <Button
           variant={bg ? 'inverseOutline' : 'solid'}
@@ -27,7 +30,7 @@ export const AppPublicHeader = ({ bg }: { bg?: string }): JSX.Element => {
           as={Link}
           to={LOGIN_ROUTE}
         >
-          Log in
+          {t('features.app.ctaButton.login')}
         </Button>
       }
       bg={bg}

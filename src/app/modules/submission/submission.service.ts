@@ -351,7 +351,11 @@ export const triggerVirusScanning = (
  * @returns okAsync(buffer) if file has been successfully downloaded from the clean bucket
  * @returns errAsync(DownloadCleanFileFailedError) if file download failed
  */
-export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
+export const downloadCleanFile = (
+  cleanFileKey: string,
+  versionId: string,
+  bucketName: string,
+) => {
   const logMeta = {
     action: 'downloadCleanFile',
     cleanFileKey,
@@ -378,7 +382,7 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
 
   const readStream = AwsConfig.s3
     .getObject({
-      Bucket: AwsConfig.virusScannerCleanS3Bucket,
+      Bucket: bucketName,
       Key: cleanFileKey,
       VersionId: versionId,
     })
@@ -475,6 +479,7 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
         downloadCleanFile(
           cleanAttachment.cleanFileKey,
           cleanAttachment.destinationVersionId,
+          AwsConfig.virusScannerCleanS3Bucket,
         ).map((attachmentBuffer) => ({
           ...response,
           // Replace content with attachmentBuffer and answer with filename.
@@ -1172,9 +1177,10 @@ export const getQuarantinePresignedPostData = (
   if (totalAttachmentSize > totalAttachmentSizeLimit)
     return errAsync(new AttachmentSizeLimitExceededError())
 
-  // Step 2: Create presigned post data for each attachment
-  return ResultAsync.combine(
-    attachmentSizes.map(({ id, size }) => {
+  const fileKeys: string[] = attachmentSizes.map(() => crypto.randomUUID()) //set fileKeys to be same for both flows
+
+  const currentQuarantineBucketPost = ResultAsync.combine(
+    attachmentSizes.map(({ id, size }, index) => {
       // Check if id is a valid ObjectId
       if (!mongoose.isValidObjectId(id))
         return errAsync(new InvalidFieldIdError())
@@ -1183,12 +1189,40 @@ export const getQuarantinePresignedPostData = (
         bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
+        key: fileKeys[index],
       }).map((presignedPostData) => ({
         id,
         presignedPostData,
       }))
     }),
   )
+
+  // Step 2a: Create presigned post data for each attachment for new guardduty bucket
+  const guarddutyQuarantineBucketPost = ResultAsync.combine(
+    attachmentSizes.map(({ id, size }, index) => {
+      // Check if id is a valid ObjectId
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
+
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+        key: fileKeys[index],
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
+    }),
+  )
+
+  return ResultAsync.combine([
+    currentQuarantineBucketPost,
+    guarddutyQuarantineBucketPost,
+  ]).map(([currentQuarantineData, newGuarddutyData]) => [
+    ...currentQuarantineData,
+    ...newGuarddutyData,
+  ])
 }
 
 /**
@@ -1232,5 +1266,142 @@ export const transformAttachmentMetasToSignedUrls = (
 
       return new CreatePresignedPostError('Failed to create attachment URL')
     },
+  )
+}
+
+/**
+ * Guardduty scanning
+ * Invokes guadduty lambda to scan the file in the quarantine bucket for check for tags.
+ * @param quarantineFileKey object key of the file in the quarantine bucket
+ * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
+ * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
+ */
+export const triggerGuarddutyScanning = (
+  quarantineFileKey: string,
+): ResultAsync<
+  ParseVirusScannerLambdaPayloadOkType,
+  VirusScanFailedError | MaliciousFileDetectedError
+> => {
+  const logMeta = {
+    action: 'triggerGuarddutyScanning',
+    quarantineFileKey,
+  }
+
+  if (!validate(quarantineFileKey)) {
+    logger.error({
+      message: 'GUARDDUTY Invalid quarantine file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidFileKeyError())
+  }
+
+  return ResultAsync.fromPromise(
+    AwsConfig.guarddutyLambda.invoke({
+      FunctionName: AwsConfig.guarddutyLambdaFunctionName,
+      Payload: JSON.stringify({ key: quarantineFileKey }),
+    }),
+    (error) => {
+      logger.error({
+        message:
+          'GUARDDUTY Error encountered when invoking virus scanning lambda',
+        meta: logMeta,
+        error,
+      })
+
+      return new VirusScanFailedError()
+    },
+  ).andThen((data: InvokeCommandOutput) => {
+    if (data && data.Payload)
+      return parseVirusScannerLambdaPayload(data.Payload).mapErr((error) => {
+        logger.error({
+          message:
+            'GUARDDUTY Error returned from virus scanning lambda or parsing lambda output',
+          meta: logMeta,
+          error: error,
+        })
+
+        if (error instanceof ParseVirusScannerLambdaPayloadError) return error
+        else if (error.statusCode === StatusCodes.NOT_FOUND)
+          return new InvalidFileKeyError(
+            'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
+          )
+        else if (error.statusCode !== StatusCodes.BAD_REQUEST)
+          return new VirusScanFailedError()
+
+        return new MaliciousFileDetectedError()
+      })
+
+    // if data or data.Payload is undefined
+    logger.error({
+      message: 'data or data.Payload from virus scanner lambda is undefined',
+      meta: logMeta,
+    })
+
+    return errAsync(new ParseVirusScannerLambdaPayloadError())
+  })
+}
+
+/**
+ * Helper function to trigger guardduty scanning and download clean file.
+ * @param response quarantined attachment response from storage submissions v2.1+.
+ * @returns modified response with content replaced with clean file buffer and answer replaced with filename.
+ */
+export const triggerGuarddutyScanThenDownloadCleanFileChain = <
+  T extends
+    | ParsedClearAttachmentResponse
+    | ParsedClearAttachmentFieldResponseV3,
+>(
+  response: T,
+  formId: string,
+): ResultAsync<
+  T,
+  // void,
+  | VirusScanFailedError
+  | DownloadCleanFileFailedError
+  | MaliciousFileDetectedError
+> => {
+  const logMeta = {
+    action: 'triggerGuarddutyScanThenDownloadCleanFileChain',
+    formId,
+    quarantineFileKey: response.answer,
+  }
+  // Step 3: Trigger lambda to scan attachments.
+  return (
+    triggerGuarddutyScanning(response.answer)
+      .mapErr((error) => {
+        if (error instanceof MaliciousFileDetectedError) {
+          logger.error({
+            message:
+              'GUARDDUTY Malicious file detected during lambda virus scan',
+            meta: logMeta,
+            error,
+          })
+          return new MaliciousFileDetectedError(response.filename)
+        }
+        return error
+      })
+      .map((lambdaOutput) => {
+        logger.info({
+          message:
+            'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
+          meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+        })
+        return lambdaOutput.body
+      })
+      // Step 4: Retrieve attachments from the clean bucket.
+      .andThen((cleanAttachment) =>
+        // Retrieve attachment from clean bucket.
+        downloadCleanFile(
+          cleanAttachment.cleanFileKey,
+          cleanAttachment.destinationVersionId,
+          AwsConfig.guarddutyCleanS3Bucket,
+        ).map((attachmentBuffer) => ({
+          ...response,
+          // Replace content with attachmentBuffer and answer with filename.
+          content: attachmentBuffer,
+          answer: response.filename,
+        })),
+      )
   )
 }

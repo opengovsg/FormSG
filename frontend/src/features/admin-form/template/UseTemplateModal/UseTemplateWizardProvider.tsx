@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
@@ -16,7 +17,9 @@ import { useUseTemplateMutations } from '../mutation'
 
 export const useUseTemplateWizardContext = (
   formId: string,
+  onClose: () => void,
 ): CreateFormWizardContextReturn => {
+  const { t } = useTranslation()
   const { data: templateFormData, isLoading: isTemplateFormLoading } =
     useFormTemplate(
       formId,
@@ -61,21 +64,35 @@ export const useUseTemplateWizardContext = (
       if (!formId) return
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
-          return useStorageModeFormTemplateMutation.mutate({
-            formIdToDuplicate: formId,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-            emails: [],
-          })
+          return useStorageModeFormTemplateMutation.mutate(
+            {
+              formIdToDuplicate: formId,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+              emails: [],
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         }
         case FormResponseMode.Multirespondent: {
-          return useMultirespondentFormTemplateMutation.mutate({
-            formIdToDuplicate: formId,
-            title,
-            responseMode,
-            publicKey: keypair.publicKey,
-          })
+          return useMultirespondentFormTemplateMutation.mutate(
+            {
+              formIdToDuplicate: formId,
+              title,
+              responseMode,
+              publicKey: keypair.publicKey,
+            },
+            {
+              onSuccess: () => {
+                setCurrentStep([CreateFormFlowStates.Landing, 1])
+              },
+            },
+          )
         }
         case FormResponseMode.Email: {
           return
@@ -130,19 +147,6 @@ export const useUseTemplateWizardContext = (
       })
     })
 
-  const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (!formId) return
-    if (inputs.responseMode === FormResponseMode.Email) {
-      return useEmailModeFormTemplateMutation.mutate({
-        formIdToDuplicate: formId,
-        emails: inputs.emails.filter(Boolean),
-        title: inputs.title,
-        responseMode: inputs.responseMode,
-      })
-    }
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
-  })
-
   return {
     isFetching: isTemplateFormLoading,
     isLoading:
@@ -153,19 +157,20 @@ export const useUseTemplateWizardContext = (
     currentStep,
     direction,
     formMethods,
-    handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
-    modalHeader: 'Duplicate form',
+    modalHeader: t('features.workspace.modals.create.title.duplicate'),
+    onClose,
   }
 }
 
 interface UseTemplateWizardProviderProps {
   formId: string
   children: React.ReactNode
+  onClose: () => void
 }
 
 /**
@@ -175,8 +180,9 @@ interface UseTemplateWizardProviderProps {
 export const UseTemplateWizardProvider = ({
   formId,
   children,
+  onClose,
 }: UseTemplateWizardProviderProps): JSX.Element => {
-  const values = useUseTemplateWizardContext(formId)
+  const values = useUseTemplateWizardContext(formId, onClose)
   return (
     <CreateFormWizardContext.Provider value={values}>
       {children}

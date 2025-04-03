@@ -6,6 +6,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { IAttachmentInfo } from 'src/types'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormDto,
@@ -40,10 +41,7 @@ import {
   ProcessingError,
   VirusScanFailedError,
 } from '../submission.errors'
-import {
-  getEncryptedSubmissionData,
-  triggerVirusScanThenDownloadCleanFileChain,
-} from '../submission.service'
+import * as SubmissionService from '../submission.service'
 import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
   isAttachmentResponseV3,
@@ -93,6 +91,10 @@ const updateMultirespondentSubmissionBodySchema =
 
 export const validateUpdateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
+})
+
+export const validateMultirespondentRemindBody = celebrate({
+  [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
 })
 
 /**
@@ -188,17 +190,49 @@ type IdTaggedParsedClearAttachmentResponseV3 =
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
   formId: string,
+  enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
   | VirusScanFailedError
   | DownloadCleanFileFailedError
   | MaliciousFileDetectedError
->[] =>
-  responses.map((response) =>
-    triggerVirusScanThenDownloadCleanFileChain(response.answer, formId).map(
-      (attachmentResponse) => ({ ...response, answer: attachmentResponse }),
-    ),
-  )
+>[] => {
+  return responses.map((response) => {
+    // we'll invoke both lambdas and one of them will be in-shadow in order
+    // for us to compare the reliability of the services
+    if (enableGuarddutyLambdaInvoke) {
+      // trigger virus-scanner, ignore results because running in-shadow
+      SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      )
+
+      // use guardduty scan results
+      return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      ).map((attachmentResponse) => ({
+        ...response,
+        answer: attachmentResponse,
+      }))
+    } else {
+      // trigger guardduty, ignore results because running in-shadow
+      SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      )
+
+      // use virus-scanner scan results
+      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      ).map((attachmentResponse) => ({
+        ...response,
+        answer: attachmentResponse,
+      }))
+    }
+  })
+}
 
 /**
  * Synchronous virus scanning for storage submissions v2.1+. This is used for dev environment.
@@ -219,10 +253,11 @@ const devModeSyncVirusScanning = async (
   const results = []
   for (const response of responses) {
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
-    const attachmentResponse = await triggerVirusScanThenDownloadCleanFileChain(
-      response.answer,
-      formId,
-    )
+    const attachmentResponse =
+      await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        response.answer,
+        formId,
+      )
     if (attachmentResponse.isErr()) {
       results.push(err(attachmentResponse.error))
       break
@@ -244,6 +279,7 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
+  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
   const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
@@ -282,6 +318,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             attachmentResponsesToRetrieve,
             req.formsg.formDef._id.toString(),
+            gbGuardduty,
           ),
         )
 
@@ -595,7 +632,11 @@ export const setCurrentWorkflowStep = async (
       .andThen(checkFormIsMultirespondent)
       // Step 4: Is multirespondent mode form, retrieve submission data.
       .andThen((form) =>
-        getEncryptedSubmissionData(form.responseMode, formId, submissionId),
+        SubmissionService.getEncryptedSubmissionData(
+          form.responseMode,
+          formId,
+          submissionId,
+        ),
       )
       // Step 6: Retrieve presigned URLs for attachments.
       .map((submissionData) => {

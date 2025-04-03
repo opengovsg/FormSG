@@ -601,6 +601,7 @@ const DEFAULT_MULTIRESPONDENT_METADATA = [
         workflowCurrentStepNumber: 1,
         workflowNumTotalSteps: 5,
         workflowStatus: WorkflowStatus.PENDING,
+        hasNextStepRecipientEmails: true,
       },
     },
     {
@@ -611,6 +612,7 @@ const DEFAULT_MULTIRESPONDENT_METADATA = [
         workflowCurrentStepNumber: 3,
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.APPROVED,
+        hasNextStepRecipientEmails: true,
       },
     },
     {
@@ -621,6 +623,7 @@ const DEFAULT_MULTIRESPONDENT_METADATA = [
         workflowCurrentStepNumber: 2,
         workflowNumTotalSteps: 3,
         workflowStatus: WorkflowStatus.REJECTED,
+        hasNextStepRecipientEmails: true,
       },
     },
     {
@@ -631,6 +634,7 @@ const DEFAULT_MULTIRESPONDENT_METADATA = [
         workflowCurrentStepNumber: 4,
         workflowNumTotalSteps: 4,
         workflowStatus: WorkflowStatus.COMPLETED,
+        hasNextStepRecipientEmails: true,
       },
     },
     // simulates a submission prior to https://github.com/opengovsg/FormSG/pull/7965
@@ -643,6 +647,7 @@ const DEFAULT_MULTIRESPONDENT_METADATA = [
         workflowCurrentStepNumber: 1,
         workflowNumTotalSteps: 4,
         workflowStatus: undefined,
+        hasNextStepRecipientEmails: true,
       },
     },
   ],

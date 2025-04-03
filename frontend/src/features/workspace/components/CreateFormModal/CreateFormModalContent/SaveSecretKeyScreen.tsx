@@ -1,6 +1,15 @@
-import { SyntheticEvent, useCallback, useMemo, useState } from 'react'
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import { useQueryClient } from 'react-query'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   ButtonGroup,
@@ -8,36 +17,52 @@ import {
   Container,
   Icon,
   Link,
+  ListItem,
   ModalBody,
   Stack,
   Text,
+  UnorderedList,
   useClipboard,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
-import { BxsError } from '~assets/icons'
+import { BxsCheckCircle } from '~assets/icons'
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
 import { trackClickSecretKeyMailTo } from '~features/analytics/AnalyticsService'
+import { workspaceKeys } from '~features/workspace/queries'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 /** Default hook to be used in SaveSecretKeyScreen */
 const useSaveSecretKeyDefault = () => {
+  const { t } = useTranslation()
   const {
     formMethods: {
       control,
       register,
       formState: { isValid },
     },
-    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     keypair: { secretKey },
+    onClose,
   } = useCreateFormWizard()
+
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const formId = queryClient.getQueryData(workspaceKeys.lastCreatedForm)
+
+  const handleDownloadAndNavigate = useCallback(() => {
+    if (formId) {
+      queryClient.invalidateQueries(workspaceKeys.lastCreatedForm)
+      navigate(`${ADMINFORM_ROUTE}/${formId}`)
+    }
+  }, [queryClient, navigate, formId])
 
   const [hasDownloaded, setHasDownloaded] = useState(false)
 
@@ -47,33 +72,33 @@ const useSaveSecretKeyDefault = () => {
 
   trackClickSecretKeyMailTo(titleInputValue)
   const mailToHref = useMemo(() => {
-    const subject = `Shared Secret Key for ${titleInputValue}`
-    const body = dedent`
-        Dear collaborator,
-
-        I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
-
-        Form title: ${titleInputValue}
-
-        Secret key: ${secretKey}
-
-        All you need to do is keep this email as a record, and please do not share this key with anyone else.
-
-        Thank you for helping to safekeep my form!`
+    const subject = t(
+      'features.workspace.modals.create.secretKey.email.subject',
+      { titleInputValue },
+    )
+    const body = dedent(
+      t('features.workspace.modals.create.secretKey.email.body', {
+        titleInputValue,
+        secretKey,
+      }),
+    )
 
     const href = `mailto:?subject=${encodeURIComponent(
       subject,
     )}&body=${encodeURIComponent(body)}`
     return href
-  }, [secretKey, titleInputValue])
+  }, [secretKey, titleInputValue, t])
 
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
-      `Form Secret Key - ${titleInputValue}.txt`,
+      t('features.workspace.modals.create.secretKey.email.filename', {
+        titleInputValue,
+        formId,
+      }),
     )
     setHasDownloaded(true)
-  }, [secretKey, titleInputValue])
+  }, [t, secretKey, titleInputValue, formId])
 
   const handleCopyKey = useCallback(
     (e?: SyntheticEvent) => {
@@ -84,6 +109,49 @@ const useSaveSecretKeyDefault = () => {
     [onCopy],
   )
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!hasDownloaded) {
+        e.preventDefault() // if event doesn't get explicitly handled, default action WILL not be taken
+        // returnValue is deprecated, but we return it regardless to support legacy cases (e.g. Chrome/Edge < 119)
+        e.returnValue = 'You have not downloaded your Secret Key yet'
+      }
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (!hasDownloaded) {
+        window.history.pushState(null, '', window.location.href)
+        const confirmMessage =
+          "You have not downloaded your Secret Key yet. You won't be able to access your form responses without it. Are you sure you want to leave?"
+        if (window.confirm(confirmMessage)) {
+          onClose()
+        }
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('popstate', handlePopState)
+
+    window.history.pushState(null, '', window.location.href)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [hasDownloaded, onClose])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !hasDownloaded) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [hasDownloaded])
+
   return {
     isLoading,
     hasDownloaded,
@@ -92,7 +160,7 @@ const useSaveSecretKeyDefault = () => {
     handleCopyKey,
     handleDownloadKey,
     mailToHref,
-    handleCreateStorageModeOrMultirespondentForm,
+    handleDownloadAndNavigate,
     secretKey,
     register,
   }
@@ -105,10 +173,11 @@ interface SaveSecretKeyScreenProps {
 export const SaveSecretKeyScreen = ({
   useSaveSecretKey = useSaveSecretKeyDefault,
 }: SaveSecretKeyScreenProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     isLoading,
     handleCopyKey,
-    handleCreateStorageModeOrMultirespondentForm,
+    handleDownloadAndNavigate,
     handleDownloadKey,
     mailToHref,
     hasDownloaded,
@@ -133,29 +202,43 @@ export const SaveSecretKeyScreen = ({
           >
             <Stack direction="column" spacing="1rem" mb="1rem">
               <Icon
-                as={BxsError}
+                as={BxsCheckCircle}
                 fontSize="3rem"
                 aria-hidden
-                color="danger.500"
+                color="primary.500"
               />
               <Text as="header" textStyle="h2" color="secondary.700">
-                Download Secret Key to proceed
+                {t('features.workspace.modals.create.secretKey.title')}
               </Text>
             </Stack>
-            <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
-              You'll need it every time you access your responses to this form.
-              If you lose it,{' '}
-              <Text color="danger.500" textStyle="subhead-1" as="span">
-                all responses will be permanently lost
-              </Text>
-              . You can also{' '}
-              <Link variant="inline" href={mailToHref}>
-                email it
-              </Link>{' '}
-              for safekeeping.
-            </Text>
+            <UnorderedList mb="2.5rem" styleType="disc" spacing={2}>
+              <ListItem>
+                <Text textStyle="body-1" color="secondary.500">
+                  {t(
+                    'features.workspace.modals.create.secretKey.message.preamble1',
+                  )}
+                </Text>
+              </ListItem>
+              <ListItem>
+                <Text textStyle="body-1" color="secondary.500">
+                  {t(
+                    'features.workspace.modals.create.secretKey.message.preamble2.prefix',
+                  )}
+                  <Text color="danger.500" textStyle="subhead-1" as="span">
+                    {t(
+                      'features.workspace.modals.create.secretKey.message.preamble2.warning',
+                    )}
+                  </Text>
+                </Text>
+              </ListItem>
+            </UnorderedList>
             <Stack direction={{ base: 'column', md: 'row' }}>
-              <Tooltip mt={0} label={hasCopiedKey ? 'Copied!' : 'Copy key'}>
+              <Tooltip
+                mt={0}
+                label={t(
+                  `features.workspace.modals.create.secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
+                )}
+              >
                 <Code
                   // To allow for focus styling on code element.
                   data-group
@@ -185,7 +268,9 @@ export const SaveSecretKeyScreen = ({
                 </Code>
               </Tooltip>
               <ButtonGroup>
-                <Button onClick={handleDownloadKey}>Download key</Button>
+                <Button onClick={handleDownloadKey}>
+                  {t('features.workspace.modals.create.secretKey.download')}
+                </Button>
                 <IconButton
                   as="a"
                   icon={<BiMailSend />}
@@ -204,8 +289,7 @@ export const SaveSecretKeyScreen = ({
                   required: true,
                 })}
               >
-                If I lose my Secret Key, I cannot activate my form or access any
-                responses to it
+                {t('features.workspace.modals.create.secretKey.declaration')}
               </Checkbox>
             </Box>
           )}
@@ -215,10 +299,12 @@ export const SaveSecretKeyScreen = ({
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
-            onClick={handleCreateStorageModeOrMultirespondentForm}
+            onClick={handleDownloadAndNavigate}
             isFullWidth
           >
-            <Text lineHeight="1.5rem">I have saved my Secret Key safely</Text>
+            <Text lineHeight="1.5rem">
+              {t('features.workspace.modals.create.secretKey.confirm')}
+            </Text>
           </Button>
         </Container>
       </ModalBody>

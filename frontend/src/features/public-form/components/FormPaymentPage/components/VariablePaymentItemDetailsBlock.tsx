@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller, RegisterOptions, useFormContext } from 'react-hook-form'
 import { Box, FormControl, Text } from '@chakra-ui/react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
@@ -25,7 +25,7 @@ export const VariablePaymentItemDetailsBlock = ({
   const {
     control,
     formState: { errors },
-  } = useFormContext()
+  } = useFormContext<{ payment_variable_input_amount_field_id: string }>()
 
   const {
     data: {
@@ -63,7 +63,11 @@ export const VariablePaymentItemDetailsBlock = ({
         <Controller
           name={PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID}
           control={control}
-          rules={amountValidation}
+          rules={
+            amountValidation as RegisterOptions<{
+              payment_variable_input_amount_field_id: string
+            }>
+          }
           render={({ field }) => (
             <MoneyInput
               flex={1}

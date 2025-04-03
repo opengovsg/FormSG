@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiLockAlt, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -90,6 +91,7 @@ export const LandingPage = (): JSX.Element => {
       listItem: { marginBottom: '1rem' },
     },
   })
+  const { t } = useTranslation()
 
   return (
     <>
@@ -116,11 +118,10 @@ export const LandingPage = (): JSX.Element => {
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
               color="secondary.700"
             >
-              Build secure government forms in minutes.
+              {t('features.landingPage.hero.title')}
             </Text>
             <SectionBodyText mt="1rem">
-              Instant, customisable forms with zero code or cost, to safely
-              collect classified and sensitive data.
+              {t('features.landingPage.hero.subtitle')}
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button
@@ -129,7 +130,7 @@ export const LandingPage = (): JSX.Element => {
                 to={LOGIN_ROUTE}
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               >
-                Start building your form now
+                {t('features.landingPage.hero.ctaButtonLabel')}
               </Button>
             </Box>
           </Flex>
@@ -140,7 +141,7 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection>
         <SectionTitleText maxW="37.5rem">
-          Our form building and data collection features
+          {t('features.landingPage.featureSection.title')}
         </SectionTitleText>
         <SimpleGrid
           columns={{ base: 1, md: 2, lg: 3 }}
@@ -150,33 +151,57 @@ export const LandingPage = (): JSX.Element => {
         >
           <FeatureGridItem
             image={featureDndImg}
-            title="Drag and drop builder"
-            description="Launch forms in minutes with the drag-and-drop builder, and over 20 types of fields to choose from"
+            title={t(
+              'features.landingPage.featureSection.features.dragDropBuilder.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.dragDropBuilder.description',
+            )}
           />
           <FeatureGridItem
             image={featureIntegrationsImg}
-            title="Singpass and Myinfo"
-            description="Authenticate individuals or businesses with Singpass, and speed up form filling with pre-filled data from Myinfo"
+            title={t(
+              'features.landingPage.featureSection.features.singpassAndMyinfo.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.singpassAndMyinfo.description',
+            )}
           />
           <FeatureGridItem
             image={featureLogicImg}
-            title="Conditional logic"
-            description="Create dynamic forms that show or hide specific fields based on previous responses"
+            title={t(
+              'features.landingPage.featureSection.features.conditionalLogic.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.conditionalLogic.description',
+            )}
           />
           <FeatureGridItem
             image={featureEmailImg}
-            title="Email confirmation"
-            description="Send confirmation emails to your respondents along with a copy of their responses"
+            title={t(
+              'features.landingPage.featureSection.features.emailConfirmation.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.emailConfirmation.description',
+            )}
           />
           <FeatureGridItem
             image={featurePrefillImg}
-            title="Prefill"
-            description="Make form filling faster for respondents by pre-filling fields for them"
+            title={t(
+              'features.landingPage.featureSection.features.prefill.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.prefill.description',
+            )}
           />
           <FeatureGridItem
             image={featureWebhooksImg}
-            title="Webhooks"
-            description="Send form responses to external applications in real time"
+            title={t(
+              'features.landingPage.featureSection.features.webhooks.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.webhooks.description',
+            )}
           />
         </SimpleGrid>
       </LandingSection>
@@ -188,16 +213,14 @@ export const LandingPage = (): JSX.Element => {
         >
           <Flex flexDir="column" flex={1}>
             <SectionTitleText>
-              No onboarding, no fees, no code.
+              {t('features.landingPage.getStartedSection.title')}
             </SectionTitleText>
             <SectionBodyText mt="1rem">
-              Sign in with your government email address, and start building
-              forms immediately. It’s free, and requires no onboarding or
-              approvals.
+              {t('features.landingPage.getStartedSection.subtitle')}
             </SectionBodyText>
             <Box mt="2.5rem">
               <Button as={ReactLink} to={LOGIN_ROUTE}>
-                Get started
+                {t('features.landingPage.getStartedSection.ctaButtonLabel')}
               </Button>
             </Box>
           </Flex>
@@ -210,23 +233,38 @@ export const LandingPage = (): JSX.Element => {
         </Stack>
       </LandingSection>
       <LandingSection>
-        <SectionTitleText>Used by most government agencies</SectionTitleText>
+        <SectionTitleText>
+          {t('features.landingPage.usedByAgenciesSection.title')}
+        </SectionTitleText>
         <Wrap shouldWrapChildren spacingX="3rem" mt="2.5rem" spacingY="2.5rem">
-          <StatsItem stat={data?.formCount} description="forms launched" />
+          <StatsItem
+            stat={data?.formCount}
+            description={t(
+              'features.landingPage.usedByAgenciesSection.formsLaunched',
+            )}
+          />
           <StatsItem
             stat={data?.submissionCount}
-            description="submissions received"
+            description={t(
+              'features.landingPage.usedByAgenciesSection.submissionsReceived',
+            )}
           />
           <StatsItem
             stat={data?.userCount}
-            description="public officers onboard"
+            description={t(
+              'features.landingPage.usedByAgenciesSection.publicOfficersOnboard',
+            )}
           />
           <StatsItem
             stat={data?.agencyCount}
-            description="government agencies"
+            description={t(
+              'features.landingPage.usedByAgenciesSection.governmentAgencies',
+            )}
           />
         </Wrap>
-        <VisuallyHidden>Examples of users of FormSG</VisuallyHidden>
+        <VisuallyHidden>
+          {t('features.landingPage.usedByAgenciesSection.exampleUserTitle')}
+        </VisuallyHidden>
         <Wrap
           shouldWrapChildren
           mt="4rem"
@@ -250,11 +288,10 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <LandingSection bg="primary.100" align="center">
         <SectionTitleText>
-          Supporting national and emergent use cases
+          {t('features.landingPage.useCaseSection.title')}
         </SectionTitleText>
         <SectionBodyText textAlign={{ lg: 'center' }} mt="1rem">
-          Form is a critical enabler of many agency workflows. Notable forms
-          launched include:
+          {t('features.landingPage.useCaseSection.subtitle')}
         </SectionBodyText>
         <SimpleGrid
           w="full"
@@ -271,14 +308,11 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <FeatureSection
         direction={{ base: 'column', lg: 'row' }}
-        title="Secure collection of responses"
+        title={t('features.landingPage.storageModeSection.title')}
         imgSrc={storageModeImg}
       >
         <SectionBodyText mt="1rem">
-          All form responses are either encrypted end-to-end (Storage mode) or
-          sent directly to your email inbox (Email mode). This means third
-          parties, including FormSG, will not be able to access or view your
-          form data.
+          {t('features.landingPage.storageModeSection.subtitle')}
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -290,14 +324,26 @@ export const LandingPage = (): JSX.Element => {
         >
           <Flex align="center">
             <Icon as={BiLockAlt} fontSize="1.5rem" mr="0.5rem" />
-            <Text textStyle="subhead-3">Storage mode</Text>
+            <Text textStyle="subhead-3">
+              {t('features.landingPage.storageModeSection.modes.storage.title')}
+            </Text>
           </Flex>
-          <SectionBodyText mt={0}>Sensitive (Normal)</SectionBodyText>
+          <SectionBodyText mt={0}>
+            {t(
+              'features.landingPage.storageModeSection.modes.storage.sensitivityLevel',
+            )}
+          </SectionBodyText>
           <Flex align="center">
             <Icon as={BiMailSend} fontSize="1.5rem" mr="0.5rem" />
-            <Text textStyle="subhead-3">Email mode</Text>
+            <Text textStyle="subhead-3">
+              {t('features.landingPage.storageModeSection.modes.email.title')}
+            </Text>
           </Flex>
-          <SectionBodyText mt={0}>Sensitive (High)</SectionBodyText>
+          <SectionBodyText mt={0}>
+            {t(
+              'features.landingPage.storageModeSection.modes.email.sensitivityLevel',
+            )}
+          </SectionBodyText>
         </SimpleGrid>
         <FeatureLink
           href={GUIDE_STORAGE_MODE}
@@ -305,34 +351,32 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          Read more about Storage Mode
+          {t('features.landingPage.storageModeSection.guideCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        title="Open sourced"
+        title={t('features.landingPage.opensourceSection.title')}
         imgSrc={openSourceImg}
         direction={{ base: 'column', lg: 'row-reverse' }}
       >
         <SectionBodyText mt="1rem">
-          Our code is open source, meaning anyone can help improve it and build
-          on it, including governments of other countries.
+          {t('features.landingPage.opensourceSection.subtitle')}
         </SectionBodyText>
         <FeatureLink
           href={OGP_FORMSG_REPO}
           externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
         >
-          Fork it on Github
+          {t('features.landingPage.opensourceSection.forkItCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        title="Help Center"
+        title={t('features.landingPage.helpCenterSection.title')}
         imgSrc={helpCenterImg}
         direction={{ base: 'column', lg: 'row' }}
       >
         <Box>
           <SectionBodyText mt="1rem">
-            Have a question? Most answers can be found in our self-service Help
-            Center. Common questions include:
+            {t('features.landingPage.helpCenterSection.subtitle')}
           </SectionBodyText>
           <Accordion
             variant="medium"
@@ -341,64 +385,79 @@ export const LandingPage = (): JSX.Element => {
             allowToggle
             whiteSpace="pre-wrap"
           >
-            <HelpAccordionItem title="What happens if I lose my Secret Key?">
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.question',
+              )}
+            >
               <MarkdownText components={mdComponents}>
-                {dedent`
-                  If you have lost your secret key, take these steps immediately:
-
-                  1. If your form is live, duplicate your form, save the new secret key securely and replace the original form's link with the new form's link to continue collecting responses. Deactivate the original form as soon as possible to avoid losing further responses.
-
-                  2. On the computer you used to create the original form, search for 'Form Secret Key'. Secret keys typically downloaded into your Downloads folder as .txt files with 'Form Secret Key' in the filename.
-
-                  3. If you have created multiple forms with similar titles in the past, it is possible that you have confused the different forms' secret keys with each other, as form titles are in the secret keys' filenames. Try all secret keys with similar filenames on your form.
-
-                  4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title. 
-
-                  5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form](${CONTACT_US}). 
-
-                  Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
-                `}
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.answer',
+                    {
+                      CONTACT_US,
+                    },
+                  ),
+                )}
               </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_SECRET_KEY_LOSS}>
-                Source
+                {t(
+                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+                )}
               </FeatureLink>
             </HelpAccordionItem>
-            <HelpAccordionItem title="How do I increase attachment size limit?">
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.question',
+              )}
+            >
               <MarkdownText components={mdComponents}>
-                {dedent`
-                  The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
-
-                  7 MB for email mode forms is a hard limit because the email service we use has a fixed 10 MB outgoing size, and we buffer 3 MB for email fields and metadata. 
-
-                  Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
-                `}
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.answer',
+                  ),
+                )}
               </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_ATTACHMENT_SIZE_LIMIT}>
-                Source
+                {t(
+                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+                )}
               </FeatureLink>
             </HelpAccordionItem>
-            <HelpAccordionItem title="How does end-to-end encryption work?">
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.howDoesE2eWork.question',
+              )}
+            >
               <MarkdownText components={mdComponents}>
-                {dedent`
-                When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format. 
-
-                The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.  
-              `}
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.howDoesE2eWork.answer',
+                  ),
+                )}
               </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_E2EE}>
-                Source
+                {t(
+                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+                )}
               </FeatureLink>
             </HelpAccordionItem>
-            <HelpAccordionItem title="How do I transfer ownership of my forms?">
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.question',
+              )}
+            >
               <MarkdownText components={mdComponents}>
-                {dedent`
-                  You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button. 
-
-                  Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
-                `}
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.answer',
+                  ),
+                )}
               </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_TRANSFER_OWNERSHIP}>
-                Source
+                {t(
+                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+                )}
               </FeatureLink>
             </HelpAccordionItem>
           </Accordion>
@@ -409,28 +468,32 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BxsHelpCircle} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          Visit our Help Center
+          {t('features.landingPage.helpCenterSection.visitHelpCenterCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
         align="start"
         direction={{ base: 'column', lg: 'row' }}
         bg="primary.100"
-        title="How it works"
+        title={t('features.landingPage.howItWorksSection.title')}
         animationSrc={howFormsWorksAnimation}
       >
         <Tabs mt="2.5rem">
           <TabList>
-            <Tab>Storage mode</Tab>
-            <Tab>Email mode</Tab>
+            <Tab>
+              {t('features.landingPage.howItWorksSection.modes.storage.tab')}
+            </Tab>
+            <Tab>
+              {t('features.landingPage.howItWorksSection.modes.email.tab')}
+            </Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                View your responses within FormSG. All data is end-to-end
-                encrypted, which means third parties, including FormSG, will not
-                be able to access or view your form data.
+                {t(
+                  'features.landingPage.howItWorksSection.modes.storage.description',
+                )}
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -441,32 +504,41 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Log in to FormSG via Internet or Intranet
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.one',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
-                  Create a new Storage mode form and store Secret Key safely
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.two',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and share form link with respondents
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.three',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
-                  Upload Secret Key and view your responses
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.four',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={5} />
-                  Download your responses as a CSV and collect responses at your
-                  email address
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.five',
+                  )}
                 </ListItem>
               </OrderedList>
             </TabPanel>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                Receive your responses at your email address. Form sends
-                responses directly to your email and does not store any response
-                data.
+                {t(
+                  'features.landingPage.howItWorksSection.modes.email.description',
+                )}
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -477,19 +549,27 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Log in to FormSG via Internet or Intranet
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.email.steps.one',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
-                  Create a new form and choose Email mode
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.email.steps.two',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and publish your form
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.email.steps.three',
+                  )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
-                  Collect responses at your email address
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.email.steps.four',
+                  )}
                 </ListItem>
               </OrderedList>
             </TabPanel>
@@ -497,14 +577,12 @@ export const LandingPage = (): JSX.Element => {
         </Tabs>
       </FeatureSection>
       <FeatureSection
-        title="All the government tools you need to manage your workflow"
+        title={t('features.landingPage.ogpProductSuiteSection.title')}
         imgSrc={ogpSuiteImg}
         direction={{ base: 'column', lg: 'row' }}
       >
         <SectionBodyText mt="1rem">
-          FormSG is part of the **Open Government Products Suite**, and as a
-          public officer you can mix and match from our set of productivity and
-          collaboration tools.
+          {t('features.landingPage.ogpProductSuiteSection.subtitle')}
         </SectionBodyText>
         <FeatureLink
           href={OGP_ALL_PRODUCTS}
@@ -512,7 +590,7 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          Full list of OGP products
+          {t('features.landingPage.ogpProductSuiteSection.ctaLinkLabel')}
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
@@ -523,11 +601,11 @@ export const LandingPage = (): JSX.Element => {
           color="white"
           mt="2rem"
         >
-          Start building your form now.
+          {t('features.landingPage.ctaSection.title')}
         </Text>
         <Box mt="2rem">
           <Button as={ReactLink} to={LOGIN_ROUTE}>
-            Get started
+            {t('features.landingPage.ctaSection.ctaButtonLabel')}
           </Button>
         </Box>
       </LandingSection>

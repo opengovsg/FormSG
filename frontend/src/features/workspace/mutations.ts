@@ -57,6 +57,15 @@ const useCommonHooks = () => {
     [navigate, queryClient],
   )
 
+  const handleSuccessWithoutRedirect = useCallback(
+    (data: FormDto) => {
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
+      queryClient.invalidateQueries(workspaceKeys.workspaces)
+      return data
+    },
+    [queryClient],
+  )
+
   const handleError = useCallback(
     (error: ApiError) => {
       toast({
@@ -69,12 +78,16 @@ const useCommonHooks = () => {
 
   return {
     handleSuccess,
+    handleSuccessWithoutRedirect,
     handleError,
   }
 }
 
 export const useCreateFormMutations = () => {
-  const { handleSuccess, handleError } = useCommonHooks()
+  const { handleError, handleSuccess, handleSuccessWithoutRedirect } =
+    useCommonHooks()
+
+  const queryClient = useQueryClient()
 
   const createEmailModeFormMutation = useMutation<
     FormDto,
@@ -90,7 +103,10 @@ export const useCreateFormMutations = () => {
     ApiError,
     CreateStorageFormBodyDto
   >((params) => createStorageModeForm(params), {
-    onSuccess: handleSuccess,
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
     onError: handleError,
   })
 
@@ -99,7 +115,10 @@ export const useCreateFormMutations = () => {
     ApiError,
     CreateMultirespondentFormBodyDto
   >((params) => createMultirespondentModeForm(params), {
-    onSuccess: handleSuccess,
+    onSuccess: (data) => {
+      handleSuccessWithoutRedirect(data)
+      queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+    },
     onError: handleError,
   })
 
@@ -111,7 +130,10 @@ export const useCreateFormMutations = () => {
 }
 
 export const useDuplicateFormMutations = () => {
-  const { handleSuccess, handleError } = useCommonHooks()
+  const { handleSuccess, handleSuccessWithoutRedirect, handleError } =
+    useCommonHooks()
+
+  const queryClient = useQueryClient()
 
   const dupeEmailModeFormMutation = useMutation<
     FormDto,
@@ -134,7 +156,10 @@ export const useDuplicateFormMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       dupeStorageModeForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )
@@ -147,7 +172,10 @@ export const useDuplicateFormMutations = () => {
     ({ formIdToDuplicate, ...params }) =>
       dupeMultirespondentModeForm(formIdToDuplicate, params),
     {
-      onSuccess: handleSuccess,
+      onSuccess: (data) => {
+        handleSuccessWithoutRedirect(data)
+        queryClient.setQueryData(workspaceKeys.lastCreatedForm, data._id)
+      },
       onError: handleError,
     },
   )

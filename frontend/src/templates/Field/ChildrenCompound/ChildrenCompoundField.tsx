@@ -81,7 +81,9 @@ export const ChildrenCompoundField = ({
   const { isSubmitting, errors } = useFormState<ChildrenCompoundFieldInputs>({
     name: schema._id,
   })
-  const error: FieldError[][] | undefined = get(errors, schema._id)?.child
+  const error: FieldError[][] | undefined = get(errors, schema._id)?.child as
+    | FieldError[][]
+    | undefined
   const childError: FieldError[] | undefined = error ? error[0] : undefined
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(

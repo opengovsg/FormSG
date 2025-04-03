@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Flex, Text } from '@chakra-ui/react'
 
@@ -23,6 +24,7 @@ export const EmptyWorkspace = ({
   title,
   subText,
 }: EmptyWorkspaceProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   return (
@@ -55,7 +57,7 @@ export const EmptyWorkspace = ({
           leftIcon={<BiPlus fontSize="1.5rem" />}
           mt={{ base: '2.5rem', md: '2rem' }}
         >
-          Create form
+          {t('features.workspace.common.createForm')}
         </Button>
       )}
       <EmptyWorkspaceSvgr

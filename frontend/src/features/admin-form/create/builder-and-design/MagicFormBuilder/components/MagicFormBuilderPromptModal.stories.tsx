@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react/*'
+import { userEvent, within } from '@storybook/test'
 
 import MagicFormBuilderPromptModal from './MagicFormBuilderPromptModal'
 
@@ -24,17 +25,30 @@ const Template: StoryFn = (args) => {
   return (
     <MagicFormBuilderPromptModal
       isOpen={isOpen}
-      onSubmit={() => {}}
-      isSubmitLoading={isSubmitLoading}
+      onTextPromptSubmit={() => {}}
+      isTextPromptSubmitLoading={isSubmitLoading}
+      onVisionPromptSubmit={() => {}}
+      isVisionPromptSubmitLoading={isSubmitLoading}
       onClose={() => {}}
     />
   )
 }
 
-export const Default = Template.bind({})
-Default.args = {
+export const Text = Template.bind({})
+Text.args = {
   isOpen: true,
   isSubmitLoading: false,
+}
+
+export const Pdf = Template.bind({})
+Pdf.args = {
+  isOpen: true,
+  isSubmitLoading: false,
+}
+Pdf.play = async () => {
+  const canvas = within(document.body)
+  const pdfTab = await canvas.findByRole('tab', { name: /pdf/i })
+  await userEvent.click(pdfTab)
 }
 
 export const Loading = Template.bind({})
