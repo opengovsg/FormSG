@@ -175,9 +175,7 @@ export const ReplaceCSVFileStepEmpty = {
   play: async () => {
     await waitFor(
       async () => {
-        expect(
-          screen.getByText('Replace your completed CSV file'),
-        ).toBeInTheDocument()
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
       },
       { timeout: 5000 },
     )
@@ -193,9 +191,7 @@ export const ReplaceCSVFileStep = {
   play: async () => {
     await waitFor(
       async () => {
-        expect(
-          screen.getByText('Replace your completed CSV file'),
-        ).toBeInTheDocument()
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
       },
       { timeout: 5000 },
     )
@@ -216,9 +212,7 @@ export const ReplaceCSVFileStepErrorMessage = {
   play: async () => {
     await waitFor(
       async () => {
-        expect(
-          screen.getByText('Replace your completed CSV file'),
-        ).toBeInTheDocument()
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
       },
       { timeout: 5000 },
     )
