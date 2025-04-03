@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.192.0",
+  "version": "6.193.0",
   "homepage": ".",
   "type": "module",
   "private": true,
@@ -48,6 +48,7 @@
     "node-stdlib-browser": "^1.2.0",
     "p-queue": "^7.2.0",
     "papaparse": "^5.4.1",
+    "pdfjs-dist": "^4.8.69",
     "polyfill-object.fromentries": "^1.0.1",
     "react": "^18.3.0",
     "react-csv": "^2.2.2",

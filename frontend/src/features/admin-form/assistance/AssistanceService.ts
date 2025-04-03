@@ -14,3 +14,16 @@ export const makeTextPrompt = ({
     { prompt },
   ).then(({ data }) => data)
 }
+
+export const makeVisionPrompt = ({
+  formId,
+  imageDataUrls,
+}: {
+  formId: string
+  imageDataUrls: string[]
+}) => {
+  return ApiService.post<{ message: string; createdFieldIds?: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/vision-prompt`,
+    { imageDataUrls },
+  ).then(({ data }) => data)
+}

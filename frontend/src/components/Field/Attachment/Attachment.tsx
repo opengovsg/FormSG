@@ -55,6 +55,10 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    */
   accept?: DropzoneProps['accept']
   /**
+   * Text to state miscellaneous uploaded file constraints.
+   */
+  fileConstraintsText?: string
+  /**
    * If exists, files cannot be attached if they are above the maximum size
    * (in bytes).
    */
@@ -107,6 +111,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       onChange,
       onError,
       maxSize,
+      fileConstraintsText,
       showFileSize,
       accept,
       value,
@@ -327,22 +332,41 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               />
             )}
           </Box>
-          {showMaxSize ? (
-            <Text
-              id={maxSizeTextId}
-              color="secondary.400"
-              mt="0.5rem"
-              textStyle="body-2"
-              aria-hidden
-            >
-              {t(
-                'features.publicForm.components.fields.attachment.maxFileSize',
-                {
-                  readableMaxSize,
-                },
-              )}
-            </Text>
-          ) : null}
+          <Box
+            mt={fileConstraintsText || showMaxSize ? '0.5rem' : 0}
+            gap="0.25rem"
+          >
+            {fileConstraintsText ? (
+              <Text
+                id={maxSizeTextId}
+                color="secondary.400"
+                textStyle="body-2"
+                aria-hidden
+              >
+                {t(
+                  'features.publicForm.components.fields.attachment.fileConstraintsText',
+                  {
+                    fileConstraintsText,
+                  },
+                )}
+              </Text>
+            ) : null}
+            {showMaxSize ? (
+              <Text
+                id={maxSizeTextId}
+                color="secondary.400"
+                textStyle="body-2"
+                aria-hidden
+              >
+                {t(
+                  'features.publicForm.components.fields.attachment.maxFileSize',
+                  {
+                    readableMaxSize,
+                  },
+                )}
+              </Text>
+            ) : null}
+          </Box>
         </Box>
       </AttachmentStylesProvider>
     )

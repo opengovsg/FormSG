@@ -1,4 +1,14 @@
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  useForm,
+  UseFormClearErrors,
+  UseFormRegister,
+  UseFormSetError,
+  UseFormSetValue,
+} from 'react-hook-form'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
@@ -15,12 +25,26 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
 
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
+import Attachment from '~components/Field/Attachment'
+
+import { useUser } from '~features/user/queries'
+
+import { pdfBinaryToImageDataUrls } from '../utils'
 
 const TEXT_PROMPT_IDEAS = [
   {
@@ -98,13 +122,110 @@ export interface TextPromptInputs {
   prompt: string
 }
 
+const TextPromptModalBodyContent = ({
+  register,
+  setValue,
+  errors,
+}: {
+  register: UseFormRegister<TextPromptInputs>
+  setValue: UseFormSetValue<TextPromptInputs>
+  errors: FieldErrors<TextPromptInputs>
+}) => {
+  return (
+    <>
+      <FormControl isInvalid={!!errors.prompt?.message}>
+        <FormLabel textStyle="subhead-1">
+          I want to create a form that collects...
+        </FormLabel>
+        <Textarea
+          minH="9rem"
+          borderRadius="4px"
+          placeholder={GENERATE_FORM_PLACEHOLDER}
+          {...register('prompt', {
+            required: 'Please enter a prompt',
+            maxLength: {
+              value: 500,
+              message: 'Please enter at most 500 characters',
+            },
+          })}
+        />
+        <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+      </FormControl>
+      <Box mt="1rem">
+        <PromptSelectorBar
+          promptIdeas={TEXT_PROMPT_IDEAS}
+          onClick={(prompt) => setValue('prompt', prompt)}
+        />
+      </Box>
+    </>
+  )
+}
+
+export interface VisionPromptInputs {
+  attachment: File
+}
+
+const VisionPromptModalBodyContent = ({
+  control,
+  errors,
+  clearErrors,
+  setError,
+  isVisionPromptSubmitLoading,
+}: {
+  control: Control<VisionPromptInputs>
+  errors: FieldErrors<VisionPromptInputs>
+  clearErrors: UseFormClearErrors<VisionPromptInputs>
+  setError: UseFormSetError<VisionPromptInputs>
+  isVisionPromptSubmitLoading: boolean
+}) => {
+  return (
+    <>
+      <FormControl isInvalid={!!errors.attachment?.message}>
+        <FormLabel textStyle="subhead-1">
+          Create a form based on this pdf
+        </FormLabel>
+        <Controller
+          name="attachment"
+          control={control}
+          rules={{ required: 'Please upload a pdf file' }}
+          render={({ field: { onChange, ...rest } }) => (
+            <Attachment
+              {...rest}
+              onChange={(event) => {
+                clearErrors('attachment')
+                onChange(event)
+              }}
+              accept=".pdf"
+              showFileSize
+              fileConstraintsText={`Files should not be more than ${MFB_VISION_MAX_IMAGES_COUNT} pages long.`}
+              showRemove
+              isRemoveDisabled={isVisionPromptSubmitLoading}
+              onError={(message) => setError('attachment', { message })}
+            />
+          )}
+        />
+        <FormErrorMessage>{errors.attachment?.message}</FormErrorMessage>
+      </FormControl>
+    </>
+  )
+}
+
+enum PROMPT_TYPE {
+  TEXT,
+  VISION,
+}
+
 const MagicFormBuilderCreateFormPrompt = ({
-  onSubmit,
-  isSubmitLoading,
+  onTextPromptSubmit,
+  isTextPromptSubmitLoading,
+  onVisionPromptSubmit,
+  isVisionPromptSubmitLoading,
   onCancel,
 }: {
-  onSubmit: (textPromptInputs: string) => void
-  isSubmitLoading: boolean
+  onTextPromptSubmit: MagicFormBuilderPromptModalProps['onTextPromptSubmit']
+  isTextPromptSubmitLoading: MagicFormBuilderPromptModalProps['isTextPromptSubmitLoading']
+  onVisionPromptSubmit: MagicFormBuilderPromptModalProps['onVisionPromptSubmit']
+  isVisionPromptSubmitLoading: MagicFormBuilderPromptModalProps['isVisionPromptSubmitLoading']
   onCancel: () => void
 }) => {
   const {
@@ -113,6 +234,26 @@ const MagicFormBuilderCreateFormPrompt = ({
     setValue,
     formState: { errors },
   } = useForm<TextPromptInputs>()
+
+  const {
+    control: visionControl,
+    formState: { errors: visionErrors },
+    clearErrors: clearVisionErrors,
+    setError: setVisionError,
+    handleSubmit: handleVisionSubmit,
+  } = useForm<VisionPromptInputs>()
+
+  const [selectedTab, setSelectedTab] = useState<PROMPT_TYPE>(
+    isVisionPromptSubmitLoading ? PROMPT_TYPE.VISION : PROMPT_TYPE.TEXT,
+  )
+
+  const { user, isLoading: isUserLoading } = useUser()
+  const isComponentLoading = isUserLoading
+
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
+  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
+  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
 
   return (
     <>
@@ -128,36 +269,101 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        <FormControl isRequired isInvalid={!!errors.prompt?.message}>
-          <FormLabel textStyle="subhead-1">
-            I want to create a form that collects...
-          </FormLabel>
-          <Textarea
-            minH="9rem"
-            borderRadius="4px"
-            placeholder={GENERATE_FORM_PLACEHOLDER}
-            {...register('prompt', {
-              required: 'Please enter a prompt',
-              maxLength: {
-                value: 500,
-                message: 'Please enter at most 500 characters',
-              },
-            })}
-          />
-          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-        </FormControl>
-        <Box mt="1rem">
-          <PromptSelectorBar
-            promptIdeas={TEXT_PROMPT_IDEAS}
-            onClick={(prompt) => setValue('prompt', prompt)}
-          />
-        </Box>
+        <Skeleton isLoaded={!isComponentLoading}>
+          {isTest ||
+          (isMfbTextEnabled &&
+            isMfbVisionEnabled &&
+            !isUserLoading &&
+            user?.betaFlags?.mfbVision) ? (
+            <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
+              <TabList px="2px" mb="1rem">
+                <Tab
+                  isDisabled={isVisionPromptSubmitLoading}
+                  value={PROMPT_TYPE.TEXT}
+                >
+                  Text
+                </Tab>
+                <Tab
+                  isDisabled={isTextPromptSubmitLoading}
+                  value={PROMPT_TYPE.VISION}
+                >
+                  Pdf
+                </Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  <TextPromptModalBodyContent
+                    register={register}
+                    setValue={setValue}
+                    errors={errors}
+                  />
+                </TabPanel>
+                <TabPanel>
+                  <VisionPromptModalBodyContent
+                    control={visionControl}
+                    errors={visionErrors}
+                    clearErrors={clearVisionErrors}
+                    setError={setVisionError}
+                    isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+                  />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          ) : isMfbTextEnabled ? (
+            <TextPromptModalBodyContent
+              register={register}
+              setValue={setValue}
+              errors={errors}
+            />
+          ) : isMfbVisionEnabled && user?.betaFlags?.mfbVision ? (
+            <VisionPromptModalBodyContent
+              control={visionControl}
+              errors={visionErrors}
+              clearErrors={clearVisionErrors}
+              setError={setVisionError}
+              isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+            />
+          ) : null}
+        </Skeleton>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
           nextButtonIcon={<BiSolidMagicWand fontSize="1.5rem" />}
-          handleNext={handleSubmit(({ prompt }) => onSubmit(prompt))}
-          isNextLoading={isSubmitLoading}
+          handleNext={
+            selectedTab === PROMPT_TYPE.TEXT
+              ? handleSubmit(({ prompt }) => {
+                  onTextPromptSubmit(prompt)
+                })
+              : handleVisionSubmit(async ({ attachment }) => {
+                  try {
+                    const pdfData = await attachment.arrayBuffer()
+                    const imageDataUrls =
+                      await pdfBinaryToImageDataUrls(pdfData)
+
+                    if (imageDataUrls.length > MFB_VISION_MAX_IMAGES_COUNT) {
+                      setVisionError('attachment', {
+                        type: 'manual',
+                        message: `Your pdf file must have less than or equal ${MFB_VISION_MAX_IMAGES_COUNT} pages.`,
+                      })
+                      return
+                    }
+                    onVisionPromptSubmit(imageDataUrls)
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  } catch (error) {
+                    setVisionError('attachment', {
+                      type: 'manual',
+                      message: 'Failed to convert PDF file to images.',
+                    })
+                  }
+                })
+          }
+          isNextDisabled={isComponentLoading}
+          isNextLoading={
+            isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+          }
+          isBackDisabled={
+            isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+          }
           handleBack={onCancel}
           nextButtonLabel="Create fields"
           backButtonLabel="Cancel"
@@ -169,25 +375,38 @@ const MagicFormBuilderCreateFormPrompt = ({
 
 interface MagicFormBuilderPromptModalProps {
   isOpen: boolean
-  onSubmit: (textPrompt: string) => void
-  isSubmitLoading: boolean
+  onTextPromptSubmit: (textPrompt: string) => void
+  isTextPromptSubmitLoading: boolean
+  onVisionPromptSubmit: (imageDataUrls: string[]) => void
+  isVisionPromptSubmitLoading: boolean
   onClose: () => void
 }
 
 const MagicFormBuilderPromptModal = ({
   isOpen,
-  onSubmit,
-  isSubmitLoading,
+  onTextPromptSubmit,
+  isTextPromptSubmitLoading,
+  onVisionPromptSubmit,
+  isVisionPromptSubmitLoading,
   onClose,
 }: MagicFormBuilderPromptModalProps): JSX.Element => {
+  const isLoading = isTextPromptSubmitLoading || isVisionPromptSubmitLoading
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={!isLoading}
+      closeOnEsc={!isLoading}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalCloseButton />
+        <>{!isLoading ? <ModalCloseButton /> : null}</>
         <MagicFormBuilderCreateFormPrompt
-          onSubmit={onSubmit}
-          isSubmitLoading={isSubmitLoading}
+          onTextPromptSubmit={onTextPromptSubmit}
+          isTextPromptSubmitLoading={isTextPromptSubmitLoading}
+          onVisionPromptSubmit={onVisionPromptSubmit}
+          isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
           onCancel={onClose}
         />
       </ModalContent>
