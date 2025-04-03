@@ -66,6 +66,9 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             direction="row"
             spacing="1rem"
             gridArea="1 / 1 / 2 / 3"
+            {...(!isDisabled && {
+              pointerEvents: 'none',
+            })}
             pl="calc(1rem + 1px)"
             pr="calc(2.75rem + 1px)"
             align="center"
@@ -83,23 +86,27 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             ) : null}
             <Text
               textStyle="body-1"
-              whiteSpace="nowrap"
-              overflowX="auto"
-              scrollBehavior="smooth"
-              pointerEvents="auto"
-              flex="1"
-              minWidth="0"
-              sx={{
-                // hide scrollbar for Chrome, Safari and Opera
-                '&::-webkit-scrollbar': {
-                  display: 'none',
-                },
-                // hide scrollbar for Firefox
-                scrollbarWidth: 'none',
-                // hide scrollbar for IE and Edge
-                msOverflowStyle: 'none',
-              }}
-              color={isDisabled ? 'neutral.800' : undefined}
+              {...(isDisabled
+                ? {
+                    whiteSpace: 'nowrap',
+                    overflowX: 'auto',
+                    scrollBehavior: 'smooth',
+                    pointerEvents: 'auto',
+                    flex: '1',
+                    minWidth: '0',
+                    color: 'neutral.800',
+                    sx: {
+                      // hide scrollbar for Chrome, Safari and Opera
+                      '&::-webkit-scrollbar': {
+                        display: 'none',
+                      },
+                      // hide scrollbar for Firefox
+                      scrollbarWidth: 'none',
+                      // hide scrollbar for IE and Edge
+                      msOverflowStyle: 'none',
+                    },
+                  }
+                : {})}
             >
               {selectedItemMeta.label}
             </Text>
