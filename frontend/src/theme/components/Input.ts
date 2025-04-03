@@ -42,7 +42,6 @@ const outlineVariant = (props: StyleFunctionProps) => {
     errorBorderColor: ec,
     isSuccess,
     isPrefilled,
-    isMRFPrefilled,
   } = props
 
   return {
@@ -94,16 +93,6 @@ const outlineVariant = (props: StyleFunctionProps) => {
         borderColor: getColor(theme, fc),
         boxShadow: `0 0 0 1px ${getColor(theme, fc)}`,
       },
-      ...(isMRFPrefilled
-        ? {
-            _disabled: {
-              bg: 'neutral.200',
-              borderColor: 'neutral.400',
-              color: 'neutral.800',
-              opacity: 1,
-            },
-          }
-        : {}),
       ...(isPrefilled
         ? {
             bg: 'warning.100',
@@ -127,9 +116,37 @@ const outlineVariant = (props: StyleFunctionProps) => {
   }
 }
 
+const highContrastVariant = (props: StyleFunctionProps) => {
+  const baseStyles = outlineVariant(props)
+
+  return {
+    ...baseStyles,
+    field: {
+      ...baseStyles.field,
+      _disabled: {
+        bg: 'neutral.200',
+        borderColor: 'neutral.400',
+        color: 'neutral.800',
+        opacity: 1,
+        _hover: {
+          bg: 'neutral.200',
+          color: 'neutral.800',
+          opacity: 1,
+        },
+        _active: {
+          bg: 'neutral.200',
+          color: 'neutral.800',
+          opacity: 1,
+        },
+      },
+    },
+  }
+}
+
 export const Input = {
   variants: {
     outline: outlineVariant,
+    highContrast: highContrastVariant,
   },
   sizes,
   defaultProps: {
