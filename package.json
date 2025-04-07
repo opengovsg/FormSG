@@ -59,7 +59,7 @@
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",
-    "@faker-js/faker": "^8.4.1",
+    "@faker-js/faker": "^9.6.0",
     "@growthbook/growthbook": "^1.1.0",
     "@joi/date": "^2.1.1",
     "@opengovsg/formsg-sdk": "^0.13.0",
