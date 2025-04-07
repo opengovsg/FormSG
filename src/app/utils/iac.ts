@@ -1,6 +1,7 @@
 /**
  * Contains utility functions for IaC migration to support both old (pre-IaC) and new (IaC) environments.
  */
+// TODO: (IaC Migration) Delete and remove all usage of thie file after IaC migration is fully completed
 import fs from 'fs'
 
 import config from '../config/config'
