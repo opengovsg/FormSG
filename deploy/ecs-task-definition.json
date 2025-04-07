@@ -7,6 +7,7 @@
         { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
       ],
       "secrets": [
+        { "name": "IS_IAC_MIGRATED", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/IS_IAC_MIGRATED" },
         { "name": "WOGAA_SECRET_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAA_SECRET_KEY" },
         { "name": "SIGNING_SECRET_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SIGNING_SECRET_KEY" },
         { "name": "WEBHOOK_SQS_URL", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WEBHOOK_SQS_URL" },

@@ -5,9 +5,7 @@ import fs from 'fs'
 
 import config from '../config/config'
 
-const iacMigratedEnvironments = ['stg-alt3']
-
-const isIacMigrated = iacMigratedEnvironments.includes(config.nodeEnv)
+const isIacMigrated = config.iacMigration.isMigrated
 
 /**
  * Retrieves the content of a file.
