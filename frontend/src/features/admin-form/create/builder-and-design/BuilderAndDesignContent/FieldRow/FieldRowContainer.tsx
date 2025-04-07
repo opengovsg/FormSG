@@ -237,7 +237,6 @@ const FieldRowContainer = ({
     )
   }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
 
-  console.log({ ref2: ref })
   return (
     <Draggable
       index={index}
