@@ -4,6 +4,7 @@ import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
 import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
+import { retrieveJsonContent } from '../../../../utils/iac'
 
 // Handles CorpPass OIDC requests
 
@@ -15,7 +16,12 @@ export const CorppassOidcRouter = Router()
  * @returns 200
  */
 CorppassOidcRouter.get('/.well-known/jwks.json', (_req, res) => {
-  res.json(spcpMyInfoConfig.cpOidcRpJwksPublic)
+  res.json(
+    retrieveJsonContent({
+      preIacFilePath: spcpMyInfoConfig.cpOidcRpJwksPublicPath,
+      postIacJsonString: spcpMyInfoConfig.cpOidcRpJwksPublic,
+    }),
+  )
 })
 
 /**
