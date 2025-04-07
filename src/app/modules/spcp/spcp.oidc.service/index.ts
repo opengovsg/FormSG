@@ -1,7 +1,6 @@
-import { retrieveJsonContent } from 'src/app/utils/iac'
-
 import { FormAuthType } from '../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
+import { retrieveJsonContent } from '../../../utils/iac'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
 
 import { CpOidcServiceClass } from './spcp.oidc.service.cp'

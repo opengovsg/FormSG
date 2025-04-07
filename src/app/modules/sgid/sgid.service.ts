@@ -2,12 +2,11 @@ import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { retrieveFileContent } from 'src/app/utils/iac'
-
 import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { retrieveFileContent } from '../../utils/iac'
 import { ApplicationError } from '../core/core.errors'
 
 import { internalAttrListToScopes } from './sgid.adapter'
