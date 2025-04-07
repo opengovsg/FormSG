@@ -3,7 +3,11 @@
  */
 import fs from 'fs'
 
-const isIacMigrated = process.env.NODE_ENV === 'stg-alt3'
+import config from '../config/config'
+
+const iacMigratedEnvironments = ['stg-alt3']
+
+const isIacMigrated = iacMigratedEnvironments.includes(config.nodeEnv)
 
 /**
  * Retrieves the content of a file.
