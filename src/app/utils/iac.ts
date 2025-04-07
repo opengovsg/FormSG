@@ -3,7 +3,7 @@
  */
 import fs from 'fs'
 
-export const isIacMigrated = process.env.NODE_ENV === 'stg-alt3'
+const isIacMigrated = process.env.NODE_ENV === 'stg-alt3'
 
 /**
  * Retrieves the content of a file.
@@ -49,4 +49,16 @@ export const retrieveJsonContent = ({
     return JSON.parse(postIacJsonString)
   }
   return JSON.parse(fs.readFileSync(preIacFilePath).toString())
+}
+
+export const validateIacStringParam = (val: string) => {
+  if (isIacMigrated && typeof val !== 'string') {
+    return new Error('Value must be a String')
+  }
+}
+
+export const validateNonIacStringParam = (val: string) => {
+  if (!isIacMigrated && typeof val !== 'string') {
+    return new Error('Value must be a String')
+  }
 }

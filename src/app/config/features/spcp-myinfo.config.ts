@@ -2,7 +2,10 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
-import { isIacMigrated } from '../../../app/utils/iac'
+import {
+  validateIacStringParam,
+  validateNonIacStringParam,
+} from '../../../app/utils/iac'
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
@@ -109,31 +112,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
   myInfoKey: {
     doc: 'MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'MYINFO_FORMSG_KEY',
-    nullable: !isIacMigrated,
-  },
-  myInfoKeyPath: {
-    doc: 'Path to MyInfo private key',
-    format: String,
-    default: null,
-    env: 'MYINFO_FORMSG_KEY_PATH',
-    nullable: isIacMigrated,
   },
   myInfoCert: {
     doc: "MyInfo's public certificate, which is used to verify their signature.",
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'MYINFO_CERT',
-    nullable: !isIacMigrated,
+  },
+  myInfoKeyPath: {
+    doc: 'Path to MyInfo private key',
+    format: validateNonIacStringParam,
+    default: null,
+    env: 'MYINFO_FORMSG_KEY_PATH',
   },
   myInfoCertPath: {
     doc: 'Path to MyInfo public certificate',
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'MYINFO_CERT_PATH',
-    nullable: isIacMigrated,
   },
   myInfoClientId: {
     doc: 'OAuth2 client ID registered with MyInfo.',
@@ -179,31 +178,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
   spOidcRpJwksPublic: {
     doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_PUBLIC',
-    nullable: !isIacMigrated,
   },
   spOidcRpJwksSecret: {
     doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET',
-    nullable: !isIacMigrated,
   },
   spOidcRpJwksPublicPath: {
     doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
-    nullable: isIacMigrated,
   },
   spOidcRpJwksSecretPath: {
     doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
-    nullable: isIacMigrated,
   },
   cpOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Corppass OIDC Discovery Endpoint",
@@ -231,30 +226,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
   cpOidcRpJwksPublic: {
     doc: "The Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json",
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC',
-    nullable: !isIacMigrated,
   },
   cpOidcRpJwksSecret: {
     doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_SECRET',
-    nullable: !isIacMigrated,
   },
   cpOidcRpJwksPublicPath: {
     doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
-    nullable: isIacMigrated,
   },
   cpOidcRpJwksSecretPath: {
     doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
-    nullable: isIacMigrated,
+    env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
   },
 }
 

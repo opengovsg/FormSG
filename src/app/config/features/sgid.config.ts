@@ -2,7 +2,10 @@ import convict, { Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
 import { ISgidVarsSchema } from '../../../types'
-import { isIacMigrated } from '../../utils/iac'
+import {
+  validateIacStringParam,
+  validateNonIacStringParam,
+} from '../../utils/iac'
 
 convict.addFormat(url)
 
@@ -24,31 +27,27 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
   },
   privateKey: {
     doc: 'The private key to decrypt payloads from sgID.',
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'SGID_PRIVATE_KEY',
-    nullable: !isIacMigrated,
   },
   publicKey: {
     doc: 'The public key given to sgID.',
-    format: String,
+    format: validateIacStringParam,
     default: null,
     env: 'SGID_PUBLIC_KEY',
-    nullable: !isIacMigrated,
   },
   privateKeyPath: {
     doc: 'The path to the private key to decrypt payloads from sgID.',
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'SGID_PRIVATE_KEY_PATH',
-    nullable: isIacMigrated,
   },
   publicKeyPath: {
     doc: 'The path to the public key to verify payloads from sgID.',
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'SGID_PUBLIC_KEY_PATH',
-    nullable: isIacMigrated,
   },
   formLoginRedirectUri: {
     doc: 'The callback uri that sgID will pass the authorization code and state to for form logins',
