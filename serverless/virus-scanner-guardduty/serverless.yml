@@ -68,6 +68,7 @@ provider:
 
 functions:
   virus-scanner-guardduty:
+    name: virus-scanner-guardduty-${opt:stage}
     image:
       name: virus-scanner-guardduty
     # max timeout per invocation
