@@ -54,14 +54,16 @@ export const retrieveJsonContent = ({
   return JSON.parse(fs.readFileSync(preIacFilePath).toString())
 }
 
-export const validateIacStringParam = (val: string) => {
+export const validateIacStringParam = (val: unknown) => {
   if (isIacMigrated && typeof val !== 'string') {
-    return new Error('Value must be a String')
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw new Error('Value must be a String')
   }
 }
 
-export const validateNonIacStringParam = (val: string) => {
+export const validateNonIacStringParam = (val: unknown) => {
   if (!isIacMigrated && typeof val !== 'string') {
-    return new Error('Value must be a String')
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw new Error('Value must be a String')
   }
 }
