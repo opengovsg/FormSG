@@ -14,6 +14,7 @@ import {
   MyInfoAttribute as InternalAttr,
   MyInfoChildData,
 } from '../../../../shared/types'
+import { retrieveFileContent } from '../../../app/utils/iac'
 import {
   Environment,
   IFieldSchema,
@@ -122,14 +123,14 @@ export class MyInfoServiceClass {
 
     this.#myInfoGovClient = new MyInfoGovClient({
       singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
-      clientPrivateKey: Buffer.from(
-        spcpMyInfoConfig.myInfoKey,
-        'base64',
-      ).toString('utf8'),
-      myInfoPublicKey: Buffer.from(
-        spcpMyInfoConfig.myInfoCert,
-        'base64',
-      ).toString('utf8'),
+      clientPrivateKey: retrieveFileContent({
+        preIacFilePath: spcpMyInfoConfig.myInfoKeyPath,
+        postIacBase64EncodedString: spcpMyInfoConfig.myInfoKey,
+      }),
+      myInfoPublicKey: retrieveFileContent({
+        preIacFilePath: spcpMyInfoConfig.myInfoCertPath,
+        postIacBase64EncodedString: spcpMyInfoConfig.myInfoCert,
+      }),
       clientId: spcpMyInfoConfig.myInfoClientId,
       clientSecret: spcpMyInfoConfig.myInfoClientSecret,
       redirectEndpoint: `${appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_REDIRECT_PATH}`,

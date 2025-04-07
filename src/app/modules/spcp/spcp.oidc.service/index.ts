@@ -1,3 +1,5 @@
+import { retrieveJsonContent } from 'src/app/utils/iac'
+
 import { FormAuthType } from '../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
@@ -11,8 +13,14 @@ const spOidcClient = new SpOidcClient({
   rpRedirectUrl: spcpMyInfoConfig.spOidcRpRedirectUrl,
   ndiDiscoveryEndpoint: spcpMyInfoConfig.spOidcNdiDiscoveryEndpoint,
   ndiJwksEndpoint: spcpMyInfoConfig.spOidcNdiJwksEndpoint,
-  rpPublicJwks: JSON.parse(spcpMyInfoConfig.spOidcRpJwksPublic),
-  rpSecretJwks: JSON.parse(spcpMyInfoConfig.spOidcRpJwksSecret),
+  rpPublicJwks: retrieveJsonContent({
+    preIacFilePath: spcpMyInfoConfig.spOidcRpJwksPublicPath,
+    postIacJsonString: spcpMyInfoConfig.spOidcRpJwksPublic,
+  }),
+  rpSecretJwks: retrieveJsonContent({
+    preIacFilePath: spcpMyInfoConfig.spOidcRpJwksSecretPath,
+    postIacJsonString: spcpMyInfoConfig.spOidcRpJwksSecret,
+  }),
 })
 
 const spOidcProps = {
@@ -26,8 +34,14 @@ const cpOidcClient = new CpOidcClient({
   rpRedirectUrl: spcpMyInfoConfig.cpOidcRpRedirectUrl,
   ndiDiscoveryEndpoint: spcpMyInfoConfig.cpOidcNdiDiscoveryEndpoint,
   ndiJwksEndpoint: spcpMyInfoConfig.cpOidcNdiJwksEndpoint,
-  rpPublicJwks: JSON.parse(spcpMyInfoConfig.cpOidcRpJwksPublic),
-  rpSecretJwks: JSON.parse(spcpMyInfoConfig.cpOidcRpJwksSecret),
+  rpPublicJwks: retrieveJsonContent({
+    preIacFilePath: spcpMyInfoConfig.cpOidcRpJwksPublicPath,
+    postIacJsonString: spcpMyInfoConfig.cpOidcRpJwksPublic,
+  }),
+  rpSecretJwks: retrieveJsonContent({
+    preIacFilePath: spcpMyInfoConfig.cpOidcRpJwksSecretPath,
+    postIacJsonString: spcpMyInfoConfig.cpOidcRpJwksSecret,
+  }),
 })
 
 const cpOidcProps = {

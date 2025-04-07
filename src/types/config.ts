@@ -156,6 +156,8 @@ export interface ISgidVarsSchema {
   clientSecret: string
   privateKey: string
   publicKey: string
+  privateKeyPath: string
+  publicKeyPath: string
   formLoginRedirectUri: string
   adminLoginRedirectUri: string
   cookieMaxAge: number

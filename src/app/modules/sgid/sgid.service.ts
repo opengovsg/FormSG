@@ -2,6 +2,8 @@ import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
+import { retrieveFileContent } from 'src/app/utils/iac'
+
 import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
@@ -47,13 +49,18 @@ export class SgidServiceClass {
     cookieMaxAgePreserved,
     privateKey,
     publicKey,
+    privateKeyPath,
+    publicKeyPath,
     hostname,
     formLoginRedirectUri: redirectUri,
     clientId,
     clientSecret,
     jwtSecret,
   }: ISgidVarsSchema) {
-    this.privateKey = Buffer.from(privateKey, 'base64').toString('utf8')
+    this.privateKey = retrieveFileContent({
+      preIacFilePath: privateKeyPath,
+      postIacBase64EncodedString: privateKey,
+    })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
@@ -62,7 +69,10 @@ export class SgidServiceClass {
       redirectUri,
       privateKey: this.privateKey,
     })
-    this.publicKey = Buffer.from(publicKey, 'base64').toString('utf8')
+    this.publicKey = retrieveFileContent({
+      preIacFilePath: publicKeyPath,
+      postIacBase64EncodedString: publicKey,
+    })
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
