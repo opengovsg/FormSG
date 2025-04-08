@@ -27,6 +27,7 @@ export const EmailField = ({
         schema={schema}
         disableRequiredValidation={disableRequiredValidation}
         inputProps={inputProps}
+        highContrast
       />
     </FieldContainer>
   )

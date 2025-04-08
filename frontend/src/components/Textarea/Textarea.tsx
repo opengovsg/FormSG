@@ -26,6 +26,10 @@ export interface TextareaProps extends ChakraTextareaProps {
    * Whether the input is in a success state.
    */
   isSuccess?: boolean
+  /**
+   * Whether the input is in a high contrast state.
+   */
+  highContrast?: boolean
 }
 
 export const Textarea = forwardRef<TextareaProps, 'textarea'>(
@@ -47,6 +51,7 @@ export const Textarea = forwardRef<TextareaProps, 'textarea'>(
         maxRows={maxAutosizeRows}
         sx={inputStyles}
         {...inputProps}
+        {...(props.highContrast && { variant: 'highContrast' })}
       />
     )
   },
