@@ -9,11 +9,11 @@ const SHORT_ENV_MAP = {
   prod: 'prod',
   production: 'prod',
   stg: 'stg',
-  staging: 'stg',
+  staging: 'staging',
   'stg-alt': 'stg-alt',
-  'staging-alt': 'stg-alt',
+  'staging-alt': 'staging-alt',
   'stg-alt2': 'stg-alt2',
-  'staging-alt2': 'stg-alt2',
+  'staging-alt2': 'staging-alt2',
   'stg-alt3': 'stg-alt3',
   'staging-alt3': 'stg-alt3',
   test: 'test',
@@ -42,6 +42,7 @@ const getParamString = async (env) => {
   const client = new SSMClient({ region: 'ap-southeast-1' })
 
   if (isIacMigratedSsmKeys(env)) {
+    console.log('Running on IaC migrated environment...')
     const PARAM_KEY_PREFIX = `/virus-scanner/${SHORT_ENV_MAP[env]}/`
     
     const keyValuePromises = PARAM_KEYS.map(async key => {
@@ -59,16 +60,17 @@ const getParamString = async (env) => {
     const keyValuePairs = await Promise.all(keyValuePromises)
     return keyValuePairs.join('\n')
   }
-
+  console.log('Running on pre-IaC migrated environment...')
   const parameterName = `/virus-scanner/${SHORT_ENV_MAP[env]}`
 
+  console.log(`Fetching ${parameterName} from SSM...`)
   const res = await client.send(
     new GetParameterCommand({
       Name: parameterName,
     }),
   )
   const parameterString = (res.Parameter?.Value ?? '')
-
+  console.log(`Successfully fetched ${parameterName} from SSM`)
   return parameterString
 }
 
