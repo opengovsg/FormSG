@@ -25,7 +25,7 @@ export const HomeNoField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Controller
         control={control}
         rules={validationRules}

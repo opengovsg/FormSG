@@ -51,7 +51,7 @@ interface FieldFactoryProps {
 }
 
 export const FieldFactory = memo(
-  ({ field, highContrast, ...rest }: FieldFactoryProps) => {
+  ({ field, ...rest }: FieldFactoryProps) => {
     const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
     switch (field.fieldType) {
       case BasicField.Section:
@@ -67,13 +67,7 @@ export const FieldFactory = memo(
       case BasicField.Decimal:
         return <DecimalField schema={field} {...rest} />
       case BasicField.ShortText:
-        return (
-          <ShortTextField
-            schema={field}
-            highContrast={highContrast}
-            {...rest}
-          />
-        )
+        return <ShortTextField schema={field} {...rest} />
       case BasicField.LongText:
         return <LongTextField schema={field} {...rest} />
       case BasicField.YesNo:

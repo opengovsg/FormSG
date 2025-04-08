@@ -27,7 +27,7 @@ export const DecimalField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Controller
         control={control}
         rules={validationRules}
@@ -38,6 +38,7 @@ export const DecimalField = ({
             inputMode="decimal"
             aria-label={`${schema.questionNumber}. ${schema.title}`}
             preventDefaultOnEnter
+            highContrast
             {...field}
           />
         )}

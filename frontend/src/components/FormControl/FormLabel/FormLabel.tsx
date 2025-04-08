@@ -56,7 +56,7 @@ export interface FormLabelProps extends ChakraFormLabelProps {
   /**
    * Whether the field is in a high contrast state.
    */
-  isHighContrast?: boolean
+  highContrast?: boolean
 }
 
 /**
@@ -76,7 +76,7 @@ export const FormLabel = ({
   questionNumber,
   description,
   useMarkdownForDescription = false,
-  isHighContrast = false,
+  highContrast = false,
   children,
   ...labelProps
 }: FormLabelProps): JSX.Element => {
@@ -87,7 +87,7 @@ export const FormLabel = ({
       flexDir="column"
       overflowWrap="break-word"
       {...labelProps}
-      {...(isHighContrast && {
+      {...(highContrast && {
         variant: 'highContrast',
       })}
     >

@@ -35,7 +35,7 @@ export const YesNoField = ({
   const { control } = useFormContext<YesNoFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Controller
         control={control}
         rules={validationRules}

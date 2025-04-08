@@ -51,7 +51,7 @@ export const RatingField = ({
   const { errors } = useFormState<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Controller
         rules={validationRules}
         control={control}

@@ -81,7 +81,7 @@ export const RadioField = ({
   })
 
   return (
-    <FieldContainer schema={schema} errorKey={radioInputName}>
+    <FieldContainer schema={schema} errorKey={radioInputName} highContrast>
       <Controller
         name={radioInputName}
         rules={validationRules}

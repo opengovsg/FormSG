@@ -93,7 +93,7 @@ export const CheckboxField = ({
     [checkboxInputName, getValues],
   )
   return (
-    <FieldContainer schema={schema} errorKey={checkboxInputName}>
+    <FieldContainer schema={schema} errorKey={checkboxInputName} highContrast>
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller
           name={checkboxInputName}
@@ -113,6 +113,7 @@ export const CheckboxField = ({
                   value={englishCheckboxOptions[idx]}
                   aria-label={o}
                   {...(idx === 0 ? { ref } : {})}
+                  highContrast
                 >
                   {o}
                 </Checkbox>

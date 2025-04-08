@@ -88,6 +88,7 @@ export const DateField = ({
             colorScheme={`theme-${colorTheme}`}
             {...field}
             isDateUnavailable={isDateUnavailable}
+            highContrast
           />
         )}
       />

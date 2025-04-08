@@ -13,7 +13,7 @@ import {
   Tr,
   VisuallyHidden,
 } from '@chakra-ui/react'
-import { get, head, uniq } from 'lodash'
+import { get } from 'lodash'
 import simplur from 'simplur'
 
 import { FormColorTheme, Language } from '~shared/types'
@@ -188,7 +188,7 @@ export const TableField = ({
     schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
 
   return (
-    <TableFieldContainer schema={schema}>
+    <TableFieldContainer schema={schema} highContrast>
       <Box
         display="block"
         w="100%"

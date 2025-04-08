@@ -27,7 +27,7 @@ export const NumberField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Controller
         control={control}
         rules={validationRules}
@@ -46,6 +46,7 @@ export const NumberField = ({
               // Only allow numeric inputs
               onChange(val.replace(/\D/g, ''))
             }}
+            highContrast
             {...rest}
           />
         )}
