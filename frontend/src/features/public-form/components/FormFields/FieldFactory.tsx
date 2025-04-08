@@ -47,10 +47,11 @@ interface FieldFactoryProps {
   disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
   colorTheme?: FormColorTheme
+  highContrast?: boolean
 }
 
 export const FieldFactory = memo(
-  ({ field, ...rest }: FieldFactoryProps) => {
+  ({ field, highContrast, ...rest }: FieldFactoryProps) => {
     const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
     switch (field.fieldType) {
       case BasicField.Section:
@@ -66,7 +67,13 @@ export const FieldFactory = memo(
       case BasicField.Decimal:
         return <DecimalField schema={field} {...rest} />
       case BasicField.ShortText:
-        return <ShortTextField schema={field} {...rest} />
+        return (
+          <ShortTextField
+            schema={field}
+            highContrast={highContrast}
+            {...rest}
+          />
+        )
       case BasicField.LongText:
         return <LongTextField schema={field} {...rest} />
       case BasicField.YesNo:
