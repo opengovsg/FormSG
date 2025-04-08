@@ -116,6 +116,7 @@ export const RadioField = ({
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
                 isDisabled={schema.disabled}
+                highContrast
               >
                 {option}
               </Radio>

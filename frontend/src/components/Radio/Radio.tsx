@@ -101,6 +101,11 @@ export interface RadioProps
    * @default true
    */
   allowDeselect?: boolean
+
+  /**
+   * Whether the radio button is in a high contrast state.
+   */
+  highContrast?: boolean
 }
 
 type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
@@ -116,7 +121,7 @@ type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
  * @see Docs https://chakra-ui.com/radio
  */
 export const Radio = forwardRef<RadioProps, 'input'>(
-  ({ allowDeselect = true, ...props }, ref) => {
+  ({ allowDeselect = true, highContrast, ...props }, ref) => {
     const { onChange: onChangeProp, value: valueProp } = props
 
     const group = useRadioGroupContext()
@@ -213,6 +218,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,
+      ...(highContrast && { color: 'neutral.800' }),
     }
 
     return (
