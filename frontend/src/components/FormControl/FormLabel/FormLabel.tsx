@@ -87,7 +87,9 @@ export const FormLabel = ({
       flexDir="column"
       overflowWrap="break-word"
       {...labelProps}
-      variant={isHighContrast ? 'highContrast' : undefined}
+      {...(isHighContrast && {
+        variant: 'highContrast',
+      })}
     >
       <Box overflowWrap="anywhere">
         {questionNumber && (
