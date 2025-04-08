@@ -40,7 +40,7 @@ export interface InputProps extends ChakraInputProps {
   /**
    * Whether the input is in a high contrast state. (e.g For MRF prefills)
    */
-  isHighContrast?: boolean
+  highContrast?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -54,7 +54,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isPrefillLocked',
     'preventDefaultOnEnter',
     'hasInputRightElement',
-    'isHighContrast',
+    'highContrast',
   ])
 
   const preventDefault = useMemo(
@@ -115,7 +115,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            {...(props.isHighContrast && {
+            {...(props.highContrast && {
               variant: 'highContrast',
             })}
             sx={merge(

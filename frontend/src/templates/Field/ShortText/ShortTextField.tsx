@@ -15,7 +15,6 @@ export interface ShortTextFieldProps extends BaseFieldProps {
   schema: ShortTextFieldSchema
   disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
-  highContrast?: boolean
 }
 
 export const ShortTextField = ({
@@ -43,7 +42,7 @@ export const ShortTextField = ({
         isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true
         isPrefillLocked={isPrefillLocked}
-        isHighContrast={fieldContainerProps.highContrast}
+        highContrast
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

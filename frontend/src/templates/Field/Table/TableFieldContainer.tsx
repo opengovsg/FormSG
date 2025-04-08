@@ -11,6 +11,10 @@ import { TableFieldSchema } from '../types'
 
 export type BaseTableFieldProps = {
   schema: TableFieldSchema
+  /**
+   * Whether the field is in a high contrast state.
+   */
+  highContrast?: boolean
 }
 
 export interface TableFieldContainerProps extends BaseTableFieldProps {
@@ -56,6 +60,7 @@ export const TableFieldContainer = ({
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={description}
+        highContrast
       >
         {title}
       </FormLabel>

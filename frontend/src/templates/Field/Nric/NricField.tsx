@@ -27,11 +27,12 @@ export const NricField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} highContrast>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
+        highContrast
         {...register(schema._id, {
           ...validationRules,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
