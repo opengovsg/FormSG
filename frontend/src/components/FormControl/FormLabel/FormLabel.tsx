@@ -76,7 +76,7 @@ export const FormLabel = ({
   questionNumber,
   description,
   useMarkdownForDescription = false,
-  isHighContrast = true,
+  isHighContrast = false,
   children,
   ...labelProps
 }: FormLabelProps): JSX.Element => {
