@@ -81,6 +81,7 @@ export const DropdownField = ({
             colorScheme={`theme-${colorTheme}`}
             items={fieldOptions}
             {...field}
+            highContrast
           />
         )}
       />

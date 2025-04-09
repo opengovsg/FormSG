@@ -43,6 +43,7 @@ export interface SingleSelectProviderProps<
   /** Variant of component */
   variant?: 'clear'
   fullWidth?: boolean
+  highContrast?: boolean
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -66,6 +67,7 @@ export const SingleSelectProvider = ({
   comboboxProps = {},
   variant,
   fullWidth = false,
+  highContrast = false,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -236,6 +238,7 @@ export const SingleSelectProvider = ({
     isClearable,
     colorScheme,
     variant,
+    highContrast,
   })
 
   const virtualListHeight = useMemo(() => {
