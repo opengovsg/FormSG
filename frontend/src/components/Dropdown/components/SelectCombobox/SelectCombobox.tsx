@@ -86,6 +86,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             ) : null}
             <Text
               textStyle="body-1"
+              noOfLines={1}
               {...(isDisabled
                 ? {
                     whiteSpace: 'nowrap',
