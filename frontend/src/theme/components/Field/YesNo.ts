@@ -33,7 +33,7 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
     _disabled: {
       bg: 'neutral.200',
       cursor: 'not-allowed',
-      color: 'neutral.500',
+      color: props.highContrast ? 'neutral.800' : 'secondary.500',
       _active: {
         boxShadow: 'none',
         borderColor: 'neutral.500',

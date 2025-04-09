@@ -45,6 +45,7 @@ export const YesNoField = ({
             colorScheme={`theme-${colorTheme}`}
             title={`${schema.questionNumber}. ${schema.title}`}
             {...field}
+            highContrast
           />
         )}
       />
