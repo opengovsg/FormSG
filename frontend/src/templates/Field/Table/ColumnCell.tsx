@@ -35,6 +35,7 @@ export interface ColumnCellProps
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
+  highContrast?: boolean
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
@@ -44,6 +45,7 @@ export interface FieldColumnCellProps<T extends Column = Column> {
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
+  highContrast?: boolean
 }
 
 const ShortTextColumnCell = ({
@@ -144,6 +146,7 @@ const DropdownColumnCell = ({
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
           {...field}
+          highContrast
         />
       )}
     />
@@ -181,6 +184,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            highContrast
           />
         )
       case BasicField.Dropdown:
@@ -191,6 +195,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            highContrast
           />
         )
       default:
