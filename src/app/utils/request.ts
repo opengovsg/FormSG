@@ -35,12 +35,43 @@ export const getTrace = <R extends LooseRequest>(
   return req.get('cf-ray') ?? req.id // trace using cloudflare cf-ray header, with x-request-id header as backup
 }
 
+const HEADERS_RULES = {
+  referer: {
+    // Match the referer URL and replace the last 24 characters of the key with asterisks
+    // e.g.                  /edit/<form_id>/?key=12345678901234567890123456789012345678901234567890
+    // will be replaced with /edit/<form_id>/?key=12345678901234567890123456************************
+    regex: /\/edit\/[a-zA-Z0-9]{24}\?key=.+(.{24})$/i,
+    replacement: '************************',
+  },
+}
+
+const maskRefererHeaders = (
+  headers: ReqMeta['headers'],
+): ReqMeta['headers'] => {
+  if (typeof headers === 'string') {
+    return headers
+  }
+  if (!headers.referer) {
+    return headers
+  }
+
+  for (const [headerKey, { regex, replacement }] of Object.entries(
+    HEADERS_RULES,
+  )) {
+    const value = headers[headerKey]
+    if (typeof value === 'string') {
+      headers[headerKey] = value.replace(regex, replacement)
+    }
+  }
+  return headers
+}
+
 export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
   return {
     ip: getRequestIp(req),
     trace: getTrace(req), // trace using cloudflare cf-ray header, with x-request-id header as backup
     url: req.baseUrl + req.path,
     urlWithQueryParams: req.originalUrl,
-    headers: req.headers,
+    headers: maskRefererHeaders(req.headers),
   }
 }
