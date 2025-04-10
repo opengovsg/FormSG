@@ -39,6 +39,7 @@ export const HomeNoField = ({
             // the field is prefilled or not (placeholder and prefill look similar)
             examplePlaceholder={schema.disabled ? 'off' : undefined}
             {...field}
+            highContrast
           />
         )}
       />

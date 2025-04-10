@@ -18,6 +18,7 @@ export const MobileField = ({
       <MobileFieldInput
         schema={schema}
         disableRequiredValidation={disableRequiredValidation}
+        highContrast
       />
     </FieldContainer>
   )
