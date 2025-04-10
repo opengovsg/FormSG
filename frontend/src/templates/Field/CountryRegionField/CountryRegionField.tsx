@@ -60,6 +60,7 @@ export const CountryRegionField = ({
             colorScheme={`theme-${colorTheme}`}
             items={schemaWithFieldOptions.fieldOptions}
             {...field}
+            highContrast
           />
         )}
       />
