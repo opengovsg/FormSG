@@ -40,7 +40,7 @@ const HEADERS_RULES = {
     // Match the referer URL and replace the last 24 characters of the key with asterisks
     // e.g.                  /edit/<form_id>/?key=12345678901234567890123456789012345678901234567890
     // will be replaced with /edit/<form_id>/?key=12345678901234567890123456************************
-    regex: /\/edit\/[a-zA-Z0-9]{24}\?key=.+(.{24})$/i,
+    regex: /(?<=\/edit\/[a-zA-Z0-9]{24}\?key=.+).{24}$/i,
     replacement: '************************',
   },
 }
@@ -51,10 +51,9 @@ const maskRefererHeaders = (
   if (typeof headers === 'string') {
     return headers
   }
-  if (!headers.referer) {
+  if (!headers?.referer) {
     return headers
   }
-
   for (const [headerKey, { regex, replacement }] of Object.entries(
     HEADERS_RULES,
   )) {
