@@ -67,6 +67,10 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
    * autoformatting will be enabled.
    */
   allowInternational?: boolean
+  /**
+   * Whether the input is in a high contrast state.
+   */
+  highContrast?: boolean
 }
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
@@ -79,6 +83,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       value,
       examples = defaultExamples,
       examplePlaceholder = 'polite',
+      highContrast,
       ...props
     },
     ref,
@@ -97,9 +102,17 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
     return (
       <PhoneNumberInputProvider {...providerProps}>
         {allowInternational ? (
-          <IntlPhoneNumberInput {...props} ref={ref} />
+          <IntlPhoneNumberInput
+            {...props}
+            ref={ref}
+            {...(highContrast && { variant: 'highContrast' })}
+          />
         ) : (
-          <SingleCountryPhoneNumberInput {...props} ref={ref} />
+          <SingleCountryPhoneNumberInput
+            {...props}
+            ref={ref}
+            {...(highContrast && { variant: 'highContrast' })}
+          />
         )}
       </PhoneNumberInputProvider>
     )
