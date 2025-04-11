@@ -39,7 +39,7 @@ export const DecimalField = ({
             inputMode="decimal"
             aria-label={`${schema.questionNumber}. ${schema.title}`}
             preventDefaultOnEnter
-            highContrast
+            highContrast={highContrast}
             {...field}
           />
         )}
