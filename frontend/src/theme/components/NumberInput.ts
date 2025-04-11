@@ -67,8 +67,25 @@ const variantOutline = definePartsStyle((props) => ({
   field: Input.variants?.outline(props).field,
 }))
 
+const variantHighContrast = definePartsStyle((props) => ({
+  field: Input.variants?.highContrast(props).field,
+  stepperButton: {
+    color: 'secondary.800',
+    borderRadius: 0,
+    minH: '100%',
+    _disabled: {
+      color: 'neutral.800',
+      cursor: 'not-allowed',
+    },
+    _last: {
+      borderRightRadius: '4px',
+    },
+  },
+}))
+
 const variants = {
   outline: variantOutline,
+  highContrast: variantHighContrast,
 }
 
 export const NumberInput = defineMultiStyleConfig({

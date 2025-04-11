@@ -2,9 +2,9 @@ import { useRef } from 'react'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
   Box,
+  chakra,
   Divider,
   forwardRef,
-  Input as ChakraInput,
   NumberInputProps as ChakraNumberInputProps,
   useFormControlProps,
   useMultiStyleConfig,
@@ -60,6 +60,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       colorScheme,
       isSuccess,
       isPrefilled,
+      variant: highContrast ? 'highContrast' : undefined,
     })
 
     const stepperWrapperRef = useRef<HTMLDivElement | null>(null)
@@ -95,7 +96,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
         {/* Using base input wrapper instead of `Input` component as the Input 
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
-        <ChakraInput
+        <chakra.input
           {...inputProps}
           paddingInlineEnd={inputEndPadding}
           // This flag should be set for form input fields, to prevent refresh on enter if form only has one input
@@ -114,7 +115,6 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
           // is this input.
           ref={ref}
           __css={styles.field}
-          {...(highContrast && { variant: 'highContrast' })}
         />
         {showSteppers && (
           <Box __css={styles.stepperWrapper} ref={stepperWrapperRef}>
