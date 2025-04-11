@@ -4,7 +4,7 @@ import { createRequest } from 'node-mocks-http'
 import { createReqMeta } from 'src/app/utils/request'
 
 describe('request', () => {
-  it('should mask referer headers', () => {
+  describe('maskRefererHeaders', () => {
     it('should replace captured mrf keys with *', () => {
       // Arrange
       const mockObjectId = new ObjectId()
