@@ -102,6 +102,7 @@ export const ConditionalRoutingOption = ({
     formState: { errors: conditionalRoutingConfigErrors },
     watch: watchConditionalRoutingConfig,
     handleSubmit,
+    setValue: conditionalRoutingConfigSetValue,
   } = useForm<ConditionalRoutingConfig>()
 
   const selectedConditionalFieldId = watch('conditional_field')
@@ -377,6 +378,7 @@ export const ConditionalRoutingOption = ({
         }
         validateCsvFile={validateCsvFile}
         existingCsv={csvFile}
+        setValue={conditionalRoutingConfigSetValue}
       />
 
       <Radio

@@ -379,6 +379,7 @@ export interface ConditionalRoutingOptionModalProps {
   isSubmitDisabled: boolean
   validateCsvFile: (value: File | null) => Promise<string | undefined>
   existingCsv: File | null
+  setValue: UseFormReturn<ConditionalRoutingConfig>['setValue']
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -391,6 +392,7 @@ export const ConditionalRoutingOptionModal = ({
   isSubmitDisabled,
   validateCsvFile,
   existingCsv,
+  setValue,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -398,23 +400,21 @@ export const ConditionalRoutingOptionModal = ({
   const [stepNumber, setStepNumber] = useState<number>(modalStartNumber)
   const [isCsvTemplateDownloaded, setIsCsvTemplateDownloaded] = useState(false)
 
-  const onModalClose = () => {
-    setStepNumber(modalStartNumber)
-    onClose()
-  }
-
-  // if there is an existing csv file, skip instructions to replace modal
+  // on modal open
+  // 1. set attachment component to empty (default)
+  // 2. if there is an existing csv file, skip instructions to replace modal
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
       setStepNumber(modalStartNumber)
+      setValue('csvFile', null)
     }
-  }, [isOpen, modalStartNumber])
+  }, [isOpen, modalStartNumber, setValue])
 
   return (
     <Modal
       size={isMobile ? 'mobile' : undefined}
       isOpen={isOpen}
-      onClose={onModalClose}
+      onClose={onClose}
     >
       <ModalOverlay />
       {stepNumber === 0 && (
@@ -427,7 +427,7 @@ export const ConditionalRoutingOptionModal = ({
             setIsCsvTemplateDownloaded(true)
           }}
           isCsvTemplateDownloaded={isCsvTemplateDownloaded}
-          onClose={onModalClose}
+          onClose={onClose}
         />
       )}
       {stepNumber === 1 && (
