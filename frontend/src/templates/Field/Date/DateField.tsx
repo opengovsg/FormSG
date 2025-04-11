@@ -74,7 +74,11 @@ export const DateField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast {...fieldContainerProps}>
+    <FieldContainer
+      schema={schema}
+      highContrast={highContrast}
+      {...fieldContainerProps}
+    >
       <Controller
         control={control}
         name={schema._id}
@@ -89,7 +93,7 @@ export const DateField = ({
             colorScheme={`theme-${colorTheme}`}
             {...field}
             isDateUnavailable={isDateUnavailable}
-            highContrast
+            highContrast={highContrast}
           />
         )}
       />

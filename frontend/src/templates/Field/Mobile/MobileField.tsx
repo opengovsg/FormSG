@@ -11,14 +11,19 @@ export interface MobileFieldProps extends BaseFieldProps {
 export const MobileField = ({
   schema,
   disableRequiredValidation,
+  highContrast,
   ...fieldContainerProps
 }: MobileFieldProps): JSX.Element => {
   return (
-    <FieldContainer schema={schema} {...fieldContainerProps}>
+    <FieldContainer
+      schema={schema}
+      highContrast={highContrast}
+      {...fieldContainerProps}
+    >
       <MobileFieldInput
         schema={schema}
         disableRequiredValidation={disableRequiredValidation}
-        highContrast
+        highContrast={highContrast}
       />
     </FieldContainer>
   )

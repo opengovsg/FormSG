@@ -133,7 +133,7 @@ export const AddressCompoundField = ({
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={schema.description}
-        highContrast
+        highContrast={highContrast}
       >
         {schema.title}
       </FormLabel>
@@ -145,7 +145,7 @@ export const AddressCompoundField = ({
         id={`${schema._id}-postalCode`}
         isInvalid={!!addressSubFieldErrors?.postalCode}
       >
-        <FormLabel isRequired highContrast>
+        <FormLabel isRequired highContrast={highContrast}>
           Postal code
         </FormLabel>
         <Controller
@@ -166,13 +166,13 @@ export const AddressCompoundField = ({
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
                     placeholder="e.g. 650161"
-                    highContrast
+                    highContrast={highContrast}
                   />
                   <Button
                     onClick={handleVerifyAddress}
                     isLoading={isSubmitting}
                     isDisabled={isButtonDisabled}
-                    highContrast
+                    highContrast={highContrast}
                   >
                     Find address
                   </Button>
@@ -207,7 +207,7 @@ export const AddressCompoundField = ({
                 {...field}
                 aria-label={`${schema.questionNumber}. Block Number`}
                 placeholder="e.g. 161"
-                highContrast
+                highContrast={highContrast}
               />
               <FormErrorMessage>
                 {addressSubFieldErrors?.blockNumber?.message}
@@ -224,7 +224,7 @@ export const AddressCompoundField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!addressSubFieldErrors?.streetName}
       >
-        <FormLabel isRequired highContrast>
+        <FormLabel isRequired highContrast={highContrast}>
           Street name
         </FormLabel>
         <Controller
@@ -242,7 +242,7 @@ export const AddressCompoundField = ({
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
                 }}
-                highContrast
+                highContrast={highContrast}
               />
               <FormErrorMessage>
                 {addressSubFieldErrors?.streetName?.message}
@@ -259,7 +259,7 @@ export const AddressCompoundField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!addressSubFieldErrors?.buildingName}
       >
-        <FormLabel highContrast>Building name</FormLabel>
+        <FormLabel highContrast={highContrast}>Building name</FormLabel>
         <Controller
           name={`${schema._id}.addressSubFields.buildingName`}
           control={formContext.control}
@@ -279,7 +279,7 @@ export const AddressCompoundField = ({
         />
       </FormControl>
       {/** Unit Number & Level Number */}
-      <FormLabel highContrast>Unit number</FormLabel>
+      <FormLabel highContrast={highContrast}>Unit number</FormLabel>
       <Flex direction="row" gap={2} width="100%">
         <FormControl
           id={`${schema._id}-levelNumber`}
@@ -299,7 +299,7 @@ export const AddressCompoundField = ({
                   {...field}
                   aria-label={`${schema.questionNumber}. Level number`}
                   placeholder="Level number"
-                  highContrast
+                  highContrast={highContrast}
                 />
                 <FormErrorMessage>
                   {addressSubFieldErrors?.levelNumber?.message}
@@ -326,7 +326,7 @@ export const AddressCompoundField = ({
                   {...field}
                   aria-label={`${schema.questionNumber}. Unit Number`}
                   placeholder="Unit number"
-                  highContrast
+                  highContrast={highContrast}
                 />
                 <FormErrorMessage>
                   {addressSubFieldErrors?.unitNumber?.message}

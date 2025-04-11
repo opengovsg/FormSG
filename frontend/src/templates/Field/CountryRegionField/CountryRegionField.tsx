@@ -30,6 +30,7 @@ export const CountryRegionField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  highContrast,
   ...fieldContainerProps
 }: CountryRegionFieldProps): JSX.Element => {
   const schemaWithFieldOptions = useMemo(() => {
@@ -49,7 +50,11 @@ export const CountryRegionField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schemaWithFieldOptions} {...fieldContainerProps}>
+    <FieldContainer
+      schema={schemaWithFieldOptions}
+      highContrast={highContrast}
+      {...fieldContainerProps}
+    >
       <Controller
         control={control}
         rules={rules}
@@ -60,7 +65,7 @@ export const CountryRegionField = ({
             colorScheme={`theme-${colorTheme}`}
             items={schemaWithFieldOptions.fieldOptions}
             {...field}
-            highContrast
+            highContrast={highContrast}
           />
         )}
       />

@@ -71,7 +71,7 @@ export const EmailFieldInput = ({
               ? handleInputChange(onChange)(value)
               : onChange({ value })
           }}
-          highContrast
+          highContrast={highContrast}
           preventDefaultOnEnter
           {...field}
           {...inputProps}

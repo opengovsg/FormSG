@@ -23,6 +23,7 @@ export const DropdownField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  highContrast,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
@@ -81,7 +82,7 @@ export const DropdownField = ({
             colorScheme={`theme-${colorTheme}`}
             items={fieldOptions}
             {...field}
-            highContrast
+            highContrast={highContrast}
           />
         )}
       />

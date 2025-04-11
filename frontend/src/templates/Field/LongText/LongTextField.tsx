@@ -28,7 +28,7 @@ export const LongTextField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast>
+    <FieldContainer schema={schema} highContrast={highContrast}>
       <Textarea
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""

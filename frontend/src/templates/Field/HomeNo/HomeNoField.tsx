@@ -16,6 +16,7 @@ export interface HomeNoFieldProps extends BaseFieldProps {
 export const HomeNoField = ({
   schema,
   disableRequiredValidation,
+  highContrast,
 }: HomeNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createHomeNoValidationRules(schema, disableRequiredValidation),
@@ -25,7 +26,7 @@ export const HomeNoField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast>
+    <FieldContainer schema={schema} highContrast={highContrast}>
       <Controller
         control={control}
         rules={validationRules}
@@ -39,7 +40,7 @@ export const HomeNoField = ({
             // the field is prefilled or not (placeholder and prefill look similar)
             examplePlaceholder={schema.disabled ? 'off' : undefined}
             {...field}
-            highContrast
+            highContrast={highContrast}
           />
         )}
       />

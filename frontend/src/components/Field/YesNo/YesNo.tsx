@@ -98,7 +98,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           // can focus this input.
           ref={ref}
           title={props.title}
-          highContrast
+          highContrast={props.highContrast}
         />
         <YesNoOption
           side="right"
@@ -108,7 +108,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           leftIcon={BiCheck}
           label={t('features.publicForm.components.fields.yesNo.yes')}
           title={props.title}
-          highContrast
+          highContrast={props.highContrast}
         />
       </HStack>
     )

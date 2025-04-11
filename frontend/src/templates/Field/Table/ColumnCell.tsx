@@ -89,6 +89,7 @@ const DropdownColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
+  highContrast,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { i18n } = useTranslation()
   const { control } = useFormContext<TableFieldInputs>()
@@ -146,7 +147,7 @@ const DropdownColumnCell = ({
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
           {...field}
-          highContrast
+          highContrast={highContrast}
         />
       )}
     />
@@ -164,6 +165,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
   colorTheme,
+  highContrast,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const isPrint = useIsPrint()
@@ -184,7 +186,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            highContrast
+            highContrast={highContrast}
           />
         )
       case BasicField.Dropdown:
@@ -195,7 +197,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            highContrast
+            highContrast={highContrast}
           />
         )
       default:
@@ -207,6 +209,7 @@ export const ColumnCell = ({
     disableRequiredValidation,
     inputName,
     isDisabled,
+    highContrast,
   ])
 
   return (

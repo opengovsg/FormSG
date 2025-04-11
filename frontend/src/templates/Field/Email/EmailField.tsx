@@ -20,14 +20,19 @@ export const EmailField = ({
   disableRequiredValidation,
   errorVariant,
   inputProps,
+  highContrast,
 }: EmailFieldProps): JSX.Element => {
   return (
-    <FieldContainer schema={schema} errorVariant={errorVariant} highContrast>
+    <FieldContainer
+      schema={schema}
+      errorVariant={errorVariant}
+      highContrast={highContrast}
+    >
       <EmailFieldInput
         schema={schema}
         disableRequiredValidation={disableRequiredValidation}
         inputProps={inputProps}
-        highContrast
+        highContrast={highContrast}
       />
     </FieldContainer>
   )

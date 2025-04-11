@@ -28,6 +28,7 @@ export interface TableFieldContainerProps extends BaseTableFieldProps {
 export const TableFieldContainer = ({
   schema,
   children,
+  highContrast,
 }: TableFieldContainerProps): JSX.Element => {
   const { i18n } = useTranslation()
   const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
@@ -60,7 +61,7 @@ export const TableFieldContainer = ({
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={description}
-        highContrast
+        highContrast={highContrast}
       >
         {title}
       </FormLabel>
