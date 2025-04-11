@@ -352,6 +352,11 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
 
+  const handleOpenModal = () => {
+    conditionalRoutingConfigSetValue('csvFile', null)
+    onOpen()
+  }
+
   return (
     <>
       <ConditionalRoutingMappingDeleteModal
@@ -378,7 +383,6 @@ export const ConditionalRoutingOption = ({
         }
         validateCsvFile={validateCsvFile}
         existingCsv={csvFile}
-        setValue={conditionalRoutingConfigSetValue}
       />
 
       <Radio
@@ -459,7 +463,7 @@ export const ConditionalRoutingOption = ({
                     handleRemoveFileOverride={() =>
                       setIsDeleteConfirmModalOpen(true)
                     }
-                    handleReplaceFileOverride={onOpen}
+                    handleReplaceFileOverride={handleOpenModal}
                     accept={['.csv']}
                   />
                 ) : (
@@ -467,7 +471,7 @@ export const ConditionalRoutingOption = ({
                     w="100%"
                     variant="outline"
                     leftIcon={<BiPlus fontSize="1.5rem" />}
-                    onClick={onOpen}
+                    onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
                     {t(
