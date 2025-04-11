@@ -38,7 +38,7 @@ export const Textarea = forwardRef<TextareaProps, 'textarea'>(
 
     // Omit extra props so they will not be passed into the DOM and trigger
     // React warnings.
-    const inputProps = omit(props, ['isSuccess', 'isPrefilled'])
+    const inputProps = omit(props, ['isSuccess', 'isPrefilled', 'highContrast'])
 
     return (
       <ChakraTextarea

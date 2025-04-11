@@ -146,6 +146,12 @@ Disabled.args = {
   isDisabled: true,
 }
 
+export const HighContrast = Template.bind({})
+HighContrast.args = {
+  isDisabled: true,
+  highContrast: true,
+}
+
 export const Playground: StoryFn<SingleSelectProps> = ({
   items,
   isReadOnly,
