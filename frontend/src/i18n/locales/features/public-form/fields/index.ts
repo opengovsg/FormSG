@@ -49,6 +49,9 @@ export interface Fields {
       }
     }
   }
+  respondentEmail: {
+    info: string
+  }
 }
 
 export * from './en-sg'
