@@ -712,6 +712,7 @@ const _createSubmission = async ({
   responses: ParsedClearFormFieldResponse[]
   unencryptedAttachments?: IAttachmentInfo[]
   emailFields: ProcessedFieldResponse[]
+  respondentEmails?: string[]
   formId: string
   form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
