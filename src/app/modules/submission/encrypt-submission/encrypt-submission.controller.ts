@@ -114,7 +114,9 @@ const submitEncryptModeForm = async (
 
   const formDef = req.formsg.formDef
   const form: IPopulatedEncryptedForm = req.formsg.encryptedFormDef
-
+  console.log(form)
+  console.log('FORM DEF BELOW: ')
+  console.log(formDef)
   setFormTags(formDef)
 
   const ensurePipeline = new Pipeline(

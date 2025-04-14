@@ -49,8 +49,10 @@ export type EncryptFormLoadedDto = {
 
 export type FormFilteredResponseDto = EncryptFormLoadedDto & {
   filteredResponses: ParsedClearFormFieldResponse[]
+  //respondentEmails: string[]
 }
 
 export type FormCompleteDto = FormFilteredResponseDto & {
   encryptedPayload: EncryptSubmissionDto
+  // or here //respondentEmails: string[]
 }

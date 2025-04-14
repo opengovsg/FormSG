@@ -248,7 +248,10 @@ export const FormFields = ({
           )}
         <PublicFormPaymentResumeModal />
         <Box mt="2.5rem">
-          <PublicRespondentEmailField something={'something'} />
+          <PublicRespondentEmailField
+            something={'something'}
+            control={formMethods.control}
+          />
         </Box>
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
