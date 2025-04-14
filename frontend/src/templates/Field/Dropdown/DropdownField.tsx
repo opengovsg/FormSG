@@ -71,7 +71,11 @@ export const DropdownField = ({
   }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 
   return (
-    <FieldContainer schema={schema} {...fieldContainerProps}>
+    <FieldContainer
+      schema={schema}
+      {...fieldContainerProps}
+      highContrast={highContrast}
+    >
       <Controller
         control={control}
         rules={rules}
