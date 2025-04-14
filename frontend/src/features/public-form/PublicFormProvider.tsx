@@ -595,6 +595,7 @@ export const PublicFormProvider = ({
             ? numVisibleFields + 1
             : numVisibleFields,
         },
+        respondentEmails: respondentEmails,
         selectedFormLanguage: selectedLanguage,
       }
 

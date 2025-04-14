@@ -157,6 +157,7 @@ export const validateStorageSubmissionParams = celebrate({
         .positive()
         .max(paymentConfig.maxPaymentAmountCents),
     }),
+    respondentEmails: Joi.array().items(Joi.string()),
     version: Joi.number().required(),
   }),
 })
@@ -623,7 +624,7 @@ export const createFormsgAndRetrieveForm = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
-
+  console.log(`request body: ${JSON.stringify(req.body)}`)
   const logMeta = {
     action: 'createFormsgAndRetrieveForm',
     ...createReqMeta(req),
@@ -648,6 +649,9 @@ export const createFormsgAndRetrieveForm = async (
   } else {
     formsg.featureFlags = featureFlagsListResult.value
   }
+
+  // Step 2a: Retrieve respondent copy emails (put into formsg)
+  formsg.respondentEmails = req.body.respondentEmails
 
   // Step 3a: Retrieve form
   const formResult = await FormService.retrieveFullFormById(formId)
@@ -696,6 +700,5 @@ export const createFormsgAndRetrieveForm = async (
   }
 
   req.formsg = formsg
-
   return next()
 }

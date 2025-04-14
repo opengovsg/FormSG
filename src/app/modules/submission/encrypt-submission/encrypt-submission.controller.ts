@@ -114,9 +114,6 @@ const submitEncryptModeForm = async (
 
   const formDef = req.formsg.formDef
   const form: IPopulatedEncryptedForm = req.formsg.encryptedFormDef
-  console.log(form)
-  console.log('FORM DEF BELOW: ')
-  console.log(formDef)
   setFormTags(formDef)
 
   const ensurePipeline = new Pipeline(
@@ -441,6 +438,7 @@ const submitEncryptModeForm = async (
     responses: req.formsg.filteredResponses,
     unencryptedAttachments: req.formsg.unencryptedAttachments,
     emailFields: parsedResponses.getAllResponses(),
+    respondentEmails: req.formsg.respondentEmails,
     responseMetadata,
     submissionContent,
   })
@@ -706,6 +704,7 @@ const _createSubmission = async ({
   responses,
   unencryptedAttachments,
   emailFields,
+  respondentEmails,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
@@ -803,6 +802,21 @@ const _createSubmission = async ({
       : item.question,
     answer: item.answer,
   }))
+
+  // Asynchronously sending a respondent copy to respondent email fields collected
+  if (respondentEmails) {
+    void MailService.sendSubmissionToAdmin({
+      replyToEmails: respondentEmails,
+      form,
+      submission: {
+        created: createdTime,
+        id: submission.id,
+      },
+      attachments: unencryptedAttachments,
+      formData: emailData.formData,
+      dataCollationData,
+    })
+  }
 
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't

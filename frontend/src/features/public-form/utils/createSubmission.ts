@@ -91,6 +91,7 @@ type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
   paymentProducts?: ProductItem[]
   payments?: PaymentFieldsDto
   version: number
+  respondentEmails?: string[]
 }
 
 type CreateMultirespondentSubmissionFormDataArgs =
@@ -175,7 +176,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       ...formDataArgsRest,
     }),
   )
-
+  console.log(`formData: ${formData.get('body')}`)
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {
       if (attachment) {

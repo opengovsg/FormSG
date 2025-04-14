@@ -167,6 +167,7 @@ export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
+  respondentEmails?: string[]
 }
 
 export type FieldIdToQuarantineKeyType = {
@@ -287,6 +288,7 @@ export const submitStorageModeForm = async ({
   responseMetadata,
   paymentProducts,
   payments,
+  respondentEmails,
   fieldIdToQuarantineKeyMap,
   selectedFormLanguage = Language.ENGLISH,
 }: SubmitStorageFormWithVirusScanningArgs) => {
@@ -304,6 +306,7 @@ export const submitStorageModeForm = async ({
       paymentReceiptEmail,
       paymentProducts,
       payments,
+      respondentEmails,
       version: VIRUS_SCANNER_SUBMISSION_VERSION,
     },
     fieldIdToQuarantineKeyMap,
