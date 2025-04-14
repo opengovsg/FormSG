@@ -1,4 +1,4 @@
-import { PaymentsUpdateDto, PaymentType } from '../types'
+import { Language, PaymentsUpdateDto, PaymentType } from '../types'
 
 export const centsToDollars = (amountCents: number) => {
   const decimalPlaces = 2
@@ -14,7 +14,7 @@ export const dollarsToCents = (dollarStr: string) => {
   return Number(`${tokens[0]}${(tokens[1] ?? '').padEnd(2, '0')}`)
 }
 
-export const formatCurrency = new Intl.NumberFormat('en-SG', {
+export const formatCurrency = new Intl.NumberFormat(Language.ENGLISH, {
   style: 'currency',
   currency: 'SGD',
   minimumFractionDigits: 2,
