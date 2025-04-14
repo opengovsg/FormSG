@@ -38,7 +38,7 @@ export interface InputProps extends ChakraInputProps {
    */
   hasInputRightElement?: boolean
   /**
-   * Whether the input is in a high contrast state. (e.g For MRF prefills)
+   * Better visibility of values in the disabled component when set to true.
    */
   highContrast?: boolean
 }

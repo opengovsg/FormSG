@@ -35,7 +35,7 @@ export interface NumberInputProps extends ChakraNumberInputProps {
   placeholder?: string
 
   /**
-   * Whether the input is in a high contrast state.
+   * Better visibility of values in the disabled component when set to true.
    */
   highContrast?: boolean
 }

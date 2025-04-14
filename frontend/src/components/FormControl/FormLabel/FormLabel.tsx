@@ -54,7 +54,7 @@ export interface FormLabelProps extends ChakraFormLabelProps {
   useMarkdownForDescription?: boolean
 
   /**
-   * Whether the field is in a high contrast state.
+   * Better visibility of values in the disabled component when set to true.
    */
   highContrast?: boolean
 }
