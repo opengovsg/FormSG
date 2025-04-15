@@ -16,7 +16,8 @@ import { itemToIcon, itemToLabelString } from '../../utils/itemUtils'
 import { ComboboxClearButton } from './ComboboxClearButton'
 import { ToggleChevron } from './ToggleChevron'
 
-const disabledScrollableFieldStyles = {
+// RATIONALE: This is used to prevent the scrollbar from blocking the text value, allowing for better readability.
+const hideScrollbarStyles = {
   whiteSpace: 'nowrap',
   overflowX: 'auto',
   scrollBehavior: 'smooth',
@@ -108,7 +109,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
               noOfLines={1}
               {...(isDisabled
                 ? {
-                    ...disabledScrollableFieldStyles,
+                    ...hideScrollbarStyles,
                     color: 'neutral.800',
                   }
                 : {})}
