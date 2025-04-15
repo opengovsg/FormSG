@@ -26,6 +26,19 @@ Default.args = {
   name: 'Default',
 }
 
+export const Disabled = Template.bind({})
+Disabled.args = {
+  name: 'Disabled',
+  isDisabled: true,
+}
+
+export const HighContrast = Template.bind({})
+HighContrast.args = {
+  name: 'HighContrast',
+  isDisabled: true,
+  highContrast: true,
+}
+
 export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'Mobile',
