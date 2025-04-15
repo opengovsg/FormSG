@@ -16,6 +16,25 @@ import { itemToIcon, itemToLabelString } from '../../utils/itemUtils'
 import { ComboboxClearButton } from './ComboboxClearButton'
 import { ToggleChevron } from './ToggleChevron'
 
+const disabledScrollableFieldStyles = {
+  whiteSpace: 'nowrap',
+  overflowX: 'auto',
+  scrollBehavior: 'smooth',
+  pointerEvents: 'auto',
+  flex: '1',
+  minWidth: '0',
+  sx: {
+    // hide scrollbar for Chrome, Safari and Opera
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
+    // hide scrollbar for Firefox
+    scrollbarWidth: 'none',
+    // hide scrollbar for IE and Edge
+    msOverflowStyle: 'none',
+  },
+} as const
+
 export const SelectCombobox = forwardRef<HTMLInputElement>(
   (_props, ref): JSX.Element => {
     const {
@@ -89,23 +108,8 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
               noOfLines={1}
               {...(isDisabled
                 ? {
-                    whiteSpace: 'nowrap',
-                    overflowX: 'auto',
-                    scrollBehavior: 'smooth',
-                    pointerEvents: 'auto',
-                    flex: '1',
-                    minWidth: '0',
+                    ...disabledScrollableFieldStyles,
                     color: 'neutral.800',
-                    sx: {
-                      // hide scrollbar for Chrome, Safari and Opera
-                      '&::-webkit-scrollbar': {
-                        display: 'none',
-                      },
-                      // hide scrollbar for Firefox
-                      scrollbarWidth: 'none',
-                      // hide scrollbar for IE and Edge
-                      msOverflowStyle: 'none',
-                    },
                   }
                 : {})}
             >
