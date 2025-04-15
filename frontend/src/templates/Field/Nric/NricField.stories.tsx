@@ -98,3 +98,15 @@ ValidationValidNric.args = {
   schema: baseSchema,
   defaultValue: 'S0000001I',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+}

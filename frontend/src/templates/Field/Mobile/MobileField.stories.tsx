@@ -127,3 +127,15 @@ ValidationValidMobile.args = {
     value: '98765432',
   },
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+}

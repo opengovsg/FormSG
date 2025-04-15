@@ -51,6 +51,7 @@ Success.args = {
   placeholder: 'Test placeholder',
   defaultValue: 'Field success',
 }
+
 export const Disabled = Template.bind({})
 Disabled.args = {
   defaultValue: 'Some text',
@@ -58,8 +59,16 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const HighContrast = Template.bind({})
-HighContrast.args = {
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  defaultValue: 'Some text',
+  placeholder: 'Test placeholder',
+  isDisabled: false,
+  isHighContrast: true,
+}
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
   defaultValue: 'Some text',
   placeholder: 'Test placeholder',
   isDisabled: true,

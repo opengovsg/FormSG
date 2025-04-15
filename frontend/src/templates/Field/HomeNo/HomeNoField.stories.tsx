@@ -108,3 +108,15 @@ ValidationValidLandline.args = {
   schema: baseSchema,
   defaultValue: '61234567',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+}

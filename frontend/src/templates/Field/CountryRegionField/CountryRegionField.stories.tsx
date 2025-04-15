@@ -99,3 +99,15 @@ export const ValidationInvalidValue = Template.bind({})
 ValidationInvalidValue.args = {
   defaultValue: 'This is not a valid option',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+}

@@ -60,10 +60,17 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const HighContrast = Template.bind({})
-HighContrast.args = {
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
   value: '123',
   isDisabled: true,
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  value: '123',
+  isDisabled: false,
   isHighContrast: true,
 }
 

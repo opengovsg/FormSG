@@ -114,3 +114,15 @@ DownloadEnabledWithDisabledUpload.args = {
   showDownload: true,
   defaultValue: new File(['examplebtyes'], 'example.txt'),
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+}

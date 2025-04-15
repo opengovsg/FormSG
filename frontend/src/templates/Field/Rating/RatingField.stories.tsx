@@ -103,3 +103,15 @@ RatingFieldHeart.args = {
     },
   }),
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...requiredSchema, disabled: true },
+  isHighContrast: true,
+}
+
+export const EnabledHighContrast = Template.bind({})
+EnabledHighContrast.args = {
+  schema: { ...requiredSchema, disabled: false },
+  isHighContrast: true,
+}

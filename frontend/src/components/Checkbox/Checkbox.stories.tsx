@@ -60,6 +60,9 @@ const AllStates: StoryFn<CheckboxProps> = (args) => {
       <Checkbox {...args} isChecked>
         Selected
       </Checkbox>
+      <Checkbox {...args} isChecked isDisabled={false} isHighContrast>
+        Selected enabled highContrast
+      </Checkbox>
       <Checkbox {...args} isDisabled>
         Unselected disabled
       </Checkbox>
