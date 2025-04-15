@@ -43,12 +43,25 @@ const baseSchema: RadioFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-const Template: StoryFn<RadioFieldProps> = (args) => {
-  const formMethods = useForm()
+interface StoryRadioFieldProps extends RadioFieldProps {
+  defaultValue?: {
+    value: string
+    othersInput?: string
+  }
+}
+
+const Template: StoryFn<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
+  const formMethods = useForm({
+    defaultValues: defaultValue
+      ? {
+          [args.schema._id]: defaultValue,
+        }
+      : undefined,
+  })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (values: Record<string, any>) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )
@@ -94,8 +107,20 @@ DisabledHighContrast.args = {
     disabled: true,
   },
   isHighContrast: true,
+  defaultValue: {
+    value: baseSchema.fieldOptions[0],
+  },
 }
 
+export const DisabledHighContrastWithOthersSelected = Template.bind({})
+DisabledHighContrastWithOthersSelected.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: {
+    value: RADIO_OTHERS_INPUT_VALUE,
+    othersInput: 'test',
+  },
+}
 export const EnabledHighContrast = Template.bind({})
 EnabledHighContrast.args = {
   schema: {
@@ -103,4 +128,17 @@ EnabledHighContrast.args = {
     disabled: false,
   },
   isHighContrast: true,
+  defaultValue: {
+    value: baseSchema.fieldOptions[0],
+  },
+}
+
+export const EnabledHighContrastWithOthersSelected = Template.bind({})
+EnabledHighContrastWithOthersSelected.args = {
+  schema: { ...baseSchema, disabled: false },
+  isHighContrast: true,
+  defaultValue: {
+    value: RADIO_OTHERS_INPUT_VALUE,
+    othersInput: 'test',
+  },
 }

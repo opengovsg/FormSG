@@ -14,6 +14,7 @@ import {
   CheckboxField as CheckboxFieldComponent,
   CheckboxFieldProps,
 } from './CheckboxField'
+import { CHECKBOX_OTHERS_INPUT_VALUE } from './constants'
 
 export default {
   title: 'Templates/Field/CheckboxField',
@@ -49,7 +50,14 @@ const baseSchema: CheckboxFieldSchema = {
 
 interface StoryCheckboxFieldProps extends CheckboxFieldProps {
   triggerValidation?: boolean
-  defaultValue?: string
+  defaultValue?: {
+    value: string[]
+    othersInput: string
+  }
+}
+
+interface FormValues {
+  [key: string]: { value: string[]; othersInput: string }
 }
 
 const Template: StoryFn<StoryCheckboxFieldProps> = ({
@@ -57,15 +65,19 @@ const Template: StoryFn<StoryCheckboxFieldProps> = ({
   triggerValidation,
   ...args
 }) => {
-  const formMethods = useForm({
-    defaultValues: {
-      [args.schema._id]: defaultValue,
-    },
+  const formMethods = useForm<FormValues>({
+    defaultValues: defaultValue
+      ? {
+          [args.schema._id]: defaultValue,
+        }
+      : undefined,
   })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string | undefined>) => {
+  const onSubmit = (values: {
+    [key: string]: { value: string[]; othersInput: string }
+  }) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )
@@ -115,10 +127,18 @@ export const DisabledHighContrast = Template.bind({})
 DisabledHighContrast.args = {
   schema: { ...baseSchema, disabled: true },
   isHighContrast: true,
+  defaultValue: {
+    value: [baseSchema.fieldOptions[0], CHECKBOX_OTHERS_INPUT_VALUE],
+    othersInput: 'hello',
+  },
 }
 
 export const EnabledHighContrast = Template.bind({})
 EnabledHighContrast.args = {
   schema: { ...baseSchema, disabled: false },
   isHighContrast: true,
+  defaultValue: {
+    value: [baseSchema.fieldOptions[0], CHECKBOX_OTHERS_INPUT_VALUE],
+    othersInput: 'hello',
+  },
 }
