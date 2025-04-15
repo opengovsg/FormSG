@@ -151,17 +151,12 @@ LinkPrimary.args = {
   colorScheme: 'primary',
 }
 
-export const EnabledHighContrast = ButtonGroupTemplate.bind({})
-EnabledHighContrast.args = {
+export const HighContrast = ButtonGroupTemplate.bind({})
+HighContrast.args = {
   variant: 'solid',
+  children: 'Button',
   colorScheme: 'primary',
-  isHighContrast: true,
-}
-
-export const DisabledHighContrast = ButtonGroupTemplate.bind({})
-DisabledHighContrast.args = {
-  variant: 'solid',
-  colorScheme: 'primary',
-  isDisabled: true,
+  size: 'md',
+  textStyle: 'subhead-1',
   isHighContrast: true,
 }

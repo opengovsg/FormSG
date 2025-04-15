@@ -10,6 +10,7 @@ import Button from '~components/Button'
 
 import { RadioFieldSchema } from '../types'
 
+import { RADIO_OTHERS_INPUT_VALUE } from './constants'
 import {
   RadioField as RadioFieldComponent,
   RadioFieldProps,
@@ -88,12 +89,18 @@ WithoutOthersOption.args = {
 
 export const DisabledHighContrast = Template.bind({})
 DisabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: true },
+  schema: {
+    ...baseSchema,
+    disabled: true,
+  },
   isHighContrast: true,
 }
 
 export const EnabledHighContrast = Template.bind({})
 EnabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: false },
+  schema: {
+    ...baseSchema,
+    disabled: false,
+  },
   isHighContrast: true,
 }

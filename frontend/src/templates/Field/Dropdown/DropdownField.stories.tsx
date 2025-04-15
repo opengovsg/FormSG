@@ -108,12 +108,20 @@ ValidationInvalidValue.args = {
 
 export const DisabledHighContrast = Template.bind({})
 DisabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: true },
+  schema: {
+    ...baseSchema,
+    disabled: true,
+    fieldValue: baseSchema.fieldOptions[0],
+  },
   isHighContrast: true,
 }
 
 export const EnabledHighContrast = Template.bind({})
 EnabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: false },
+  schema: {
+    ...baseSchema,
+    disabled: false,
+    fieldValue: baseSchema.fieldOptions[0],
+  },
   isHighContrast: true,
 }

@@ -105,10 +105,12 @@ export const DisabledHighContrast = Template.bind({})
 DisabledHighContrast.args = {
   schema: { ...baseSchema, disabled: true },
   isHighContrast: true,
+  defaultValue: '53333286M',
 }
 
 export const EnabledHighContrast = Template.bind({})
 EnabledHighContrast.args = {
   schema: { ...baseSchema, disabled: false },
   isHighContrast: true,
+  defaultValue: '53333286M',
 }
