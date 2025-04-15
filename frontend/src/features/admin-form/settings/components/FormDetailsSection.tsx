@@ -3,7 +3,7 @@ import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
-import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -41,6 +41,7 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
   })
 
   const { mutateFormTitle } = useMutateFormSettings()
+  const formTitleValidationRules = useFormTitleValidationRules()
 
   const handleBlur = useCallback(() => {
     return handleSubmit(
@@ -73,9 +74,7 @@ const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
       <Controller<{ title: string }>
         control={control}
         name="title"
-        rules={
-          FORM_TITLE_VALIDATION_RULES as RegisterOptions<{ title: string }>
-        }
+        rules={formTitleValidationRules as RegisterOptions<{ title: string }>}
         render={({ field }) => (
           <Input {...field} onBlur={handleBlur} onKeyDown={handleKeyDown} />
         )}

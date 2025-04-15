@@ -13,7 +13,7 @@ import isEmail from 'validator/lib/isEmail'
 
 import { MultirespondentFormSettings } from '~shared/types/form'
 
-import { OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
+import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
@@ -142,6 +142,9 @@ const MrfEmailNotificationsForm = ({
       ? undefined
       : 'me@example.com'
 
+  const optionalAdminEmailValidationRules =
+    useOptionalAdminEmailValidationRules()
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
@@ -240,7 +243,7 @@ const MrfEmailNotificationsForm = ({
             name={OTHER_PARTIES_EMAIL_INPUT_NAME}
             control={control}
             rules={
-              OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<FormData>
+              optionalAdminEmailValidationRules as RegisterOptions<FormData>
             }
             render={({ field }) => (
               <TagInput

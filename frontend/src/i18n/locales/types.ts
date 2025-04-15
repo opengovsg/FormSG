@@ -18,6 +18,7 @@ import {
   Workflow,
   Workspace,
 } from './features'
+import { FormValidation } from './utils'
 
 interface Translation {
   translation: {
@@ -43,12 +44,16 @@ interface Translation {
       login?: Login
       workspace?: Workspace
     }
+    utils: {
+      formValidation?: FormValidation
+    }
   }
 }
 
 export interface FallbackTranslation extends Translation {
   translation: {
     features: RequiredDeep<Translation['translation']['features']>
+    utils: RequiredDeep<Translation['translation']['utils']>
   }
 }
 
