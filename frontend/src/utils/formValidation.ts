@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import validator from 'validator'
 
-const maxEmailLength = 30
-const maxTitleLength = 200
-const minTitleLength = 4
+const MAX_EMAIL_LENGTH = 30
+const MAX_TITLE_LENGTH = 200
+const MIN_TITLE_LENGTH = 4
 
 export const useFormTitleValidationRules = () => {
   const { t } = useTranslation()
@@ -13,25 +13,25 @@ export const useFormTitleValidationRules = () => {
     () => ({
       required: t('utils.formValidation.titleValidationRules.required'),
       minLength: {
-        value: minTitleLength,
+        value: MIN_TITLE_LENGTH,
         message: t(
           'utils.formValidation.titleValidationRules.minLength.message',
-          { minTitleLength },
+          { MIN_TITLE_LENGTH },
         ),
       },
       maxLength: {
-        value: maxTitleLength,
+        value: MAX_TITLE_LENGTH,
         message: t(
           'utils.formValidation.titleValidationRules.maxLength.message',
-          { maxTitleLength },
+          { MAX_TITLE_LENGTH },
         ),
       },
       validate: {
         trimMinLength: (value: string) =>
-          value.trim().length >= minTitleLength ||
+          value.trim().length >= MIN_TITLE_LENGTH ||
           t(
             'utils.formValidation.titleValidationRules.validate.trimMinLength',
-            { minTitleLength },
+            { MIN_TITLE_LENGTH },
           ),
       },
     }),
@@ -72,10 +72,10 @@ export const useRequiredAdminEmailValidationRules = () => {
         },
         maxLength: (emails: string[]) => {
           return (
-            emails.filter(Boolean).length <= maxEmailLength ||
+            emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
             t(
               'utils.formValidation.requiredEmailAdminValidationRules.validate.maxLength',
-              { maxEmailLength },
+              { MAX_EMAIL_LENGTH },
             )
           )
         },
