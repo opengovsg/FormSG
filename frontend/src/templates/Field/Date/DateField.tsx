@@ -30,7 +30,7 @@ export const DateField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  highContrast,
+  isHighContrast,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
@@ -76,7 +76,7 @@ export const DateField = ({
   return (
     <FieldContainer
       schema={schema}
-      highContrast={highContrast}
+      isHighContrast={isHighContrast}
       {...fieldContainerProps}
     >
       <Controller
@@ -93,7 +93,7 @@ export const DateField = ({
             colorScheme={`theme-${colorTheme}`}
             {...field}
             isDateUnavailable={isDateUnavailable}
-            highContrast={highContrast}
+            isHighContrast={isHighContrast}
           />
         )}
       />

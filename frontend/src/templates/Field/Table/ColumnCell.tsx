@@ -35,7 +35,7 @@ export interface ColumnCellProps
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
@@ -45,7 +45,7 @@ export interface FieldColumnCellProps<T extends Column = Column> {
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 const ShortTextColumnCell = ({
@@ -89,7 +89,7 @@ const DropdownColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
-  highContrast,
+  isHighContrast,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { i18n } = useTranslation()
   const { control } = useFormContext<TableFieldInputs>()
@@ -147,7 +147,7 @@ const DropdownColumnCell = ({
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
           {...field}
-          highContrast={highContrast}
+          isHighContrast={isHighContrast}
         />
       )}
     />
@@ -165,7 +165,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
   colorTheme,
-  highContrast,
+  isHighContrast,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const isPrint = useIsPrint()
@@ -186,7 +186,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            highContrast={highContrast}
+            isHighContrast={isHighContrast}
           />
         )
       case BasicField.Dropdown:
@@ -197,7 +197,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            highContrast={highContrast}
+            isHighContrast={isHighContrast}
           />
         )
       default:
@@ -209,7 +209,7 @@ export const ColumnCell = ({
     disableRequiredValidation,
     inputName,
     isDisabled,
-    highContrast,
+    isHighContrast,
   ])
 
   return (

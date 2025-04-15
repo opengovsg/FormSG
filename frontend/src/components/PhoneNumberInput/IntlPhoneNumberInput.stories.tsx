@@ -64,7 +64,7 @@ export const HighContrast = Template.bind({})
 HighContrast.args = {
   value: '123',
   isDisabled: true,
-  highContrast: true,
+  isHighContrast: true,
 }
 
 export const Playground: StoryFn = ({

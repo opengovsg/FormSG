@@ -70,7 +70,7 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
@@ -83,7 +83,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       value,
       examples = defaultExamples,
       examplePlaceholder = 'polite',
-      highContrast,
+      isHighContrast,
       ...props
     },
     ref,
@@ -105,13 +105,13 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
           <IntlPhoneNumberInput
             {...props}
             ref={ref}
-            {...(highContrast && { variant: 'highContrast' })}
+            {...(isHighContrast && { variant: 'highContrast' })}
           />
         ) : (
           <SingleCountryPhoneNumberInput
             {...props}
             ref={ref}
-            {...(highContrast && { variant: 'highContrast' })}
+            {...(isHighContrast && { variant: 'highContrast' })}
           />
         )}
       </PhoneNumberInputProvider>

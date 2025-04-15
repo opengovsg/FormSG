@@ -44,7 +44,7 @@ interface YesNoOptionProps extends UseRadioProps {
 
   size?: ThemingProps<'Radio'>['size']
 
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 /**

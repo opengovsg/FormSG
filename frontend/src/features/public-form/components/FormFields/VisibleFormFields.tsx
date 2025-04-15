@@ -78,7 +78,7 @@ export const VisibleFormFields = ({
           disableRequiredValidation={
             !isFieldEnabledByWorkflow(workflowStep, field)
           }
-          highContrast={!isFieldEnabledByWorkflow(workflowStep, field)}
+          isHighContrast={!isFieldEnabledByWorkflow(workflowStep, field)}
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
         />

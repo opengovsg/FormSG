@@ -56,7 +56,7 @@ export interface FormLabelProps extends ChakraFormLabelProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 /**
@@ -76,7 +76,7 @@ export const FormLabel = ({
   questionNumber,
   description,
   useMarkdownForDescription = false,
-  highContrast = false,
+  isHighContrast = false,
   children,
   ...labelProps
 }: FormLabelProps): JSX.Element => {
@@ -87,7 +87,7 @@ export const FormLabel = ({
       flexDir="column"
       overflowWrap="break-word"
       {...labelProps}
-      {...(highContrast && {
+      {...(isHighContrast && {
         variant: 'highContrast',
       })}
     >

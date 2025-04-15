@@ -18,7 +18,7 @@ export interface LongTextFieldProps extends BaseFieldProps {
 export const LongTextField = ({
   schema,
   disableRequiredValidation,
-  highContrast,
+  isHighContrast,
 }: LongTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createTextValidationRules(schema, disableRequiredValidation),
@@ -28,11 +28,11 @@ export const LongTextField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast={highContrast}>
+    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Textarea
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
-        {...(highContrast && { variant: 'highContrast' })}
+        {...(isHighContrast && { variant: 'highContrast' })}
         {...register(schema._id, validationRules)}
       />
     </FieldContainer>

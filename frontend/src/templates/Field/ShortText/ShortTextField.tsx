@@ -20,7 +20,7 @@ export interface ShortTextFieldProps extends BaseFieldProps {
 export const ShortTextField = ({
   schema,
   disableRequiredValidation,
-  highContrast,
+  isHighContrast,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
@@ -40,14 +40,14 @@ export const ShortTextField = ({
   return (
     <FieldContainer
       schema={schema}
-      highContrast={highContrast}
+      isHighContrast={isHighContrast}
       {...fieldContainerProps}
     >
       <Input
         isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true
         isPrefillLocked={isPrefillLocked}
-        highContrast={highContrast}
+        isHighContrast={isHighContrast}
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

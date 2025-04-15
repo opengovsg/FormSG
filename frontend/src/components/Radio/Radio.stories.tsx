@@ -36,7 +36,7 @@ export const HighContrast = Template.bind({})
 HighContrast.args = {
   name: 'HighContrast',
   isDisabled: true,
-  highContrast: true,
+  isHighContrast: true,
 }
 
 export const Mobile = Template.bind({})

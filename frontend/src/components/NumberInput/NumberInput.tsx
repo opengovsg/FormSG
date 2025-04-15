@@ -37,7 +37,7 @@ export interface NumberInputProps extends ChakraNumberInputProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(
@@ -50,7 +50,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       isPrefilled,
       colorScheme,
       preventDefaultOnEnter,
-      highContrast,
+      isHighContrast,
       ...props
     },
     ref,
@@ -60,7 +60,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
       colorScheme,
       isSuccess,
       isPrefilled,
-      variant: highContrast ? 'highContrast' : undefined,
+      variant: isHighContrast ? 'highContrast' : undefined,
     })
 
     const stepperWrapperRef = useRef<HTMLDivElement | null>(null)

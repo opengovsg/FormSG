@@ -26,7 +26,7 @@ export interface MobileFieldInputProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 export const MobileFieldInput = ({
@@ -34,7 +34,7 @@ export const MobileFieldInput = ({
   disableRequiredValidation,
   handleInputChange,
   phoneNumberInputProps = {},
-  highContrast,
+  isHighContrast,
 }: MobileFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
     () => createMobileValidationRules(schema, disableRequiredValidation),
@@ -63,7 +63,7 @@ export const MobileFieldInput = ({
           examplePlaceholder={schema.disabled ? 'off' : undefined}
           {...field}
           {...phoneNumberInputProps}
-          highContrast={highContrast}
+          isHighContrast={isHighContrast}
         />
       )}
     />

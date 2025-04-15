@@ -63,7 +63,7 @@ HighContrast.args = {
   defaultValue: 'Some text',
   placeholder: 'Test placeholder',
   isDisabled: true,
-  highContrast: true,
+  isHighContrast: true,
 }
 
 export const Playground: StoryFn = ({

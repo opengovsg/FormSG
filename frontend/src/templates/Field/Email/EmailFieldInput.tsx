@@ -28,7 +28,7 @@ export interface EmailFieldInputProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 export const EmailFieldInput = ({
@@ -36,7 +36,7 @@ export const EmailFieldInput = ({
   disableRequiredValidation,
   handleInputChange,
   inputProps = {},
-  highContrast,
+  isHighContrast,
 }: EmailFieldInputProps): JSX.Element => {
   const { t } = useTranslation()
   const validationErrorMessages = t(
@@ -71,7 +71,7 @@ export const EmailFieldInput = ({
               ? handleInputChange(onChange)(value)
               : onChange({ value })
           }}
-          highContrast={highContrast}
+          isHighContrast={isHighContrast}
           preventDefaultOnEnter
           {...field}
           {...inputProps}

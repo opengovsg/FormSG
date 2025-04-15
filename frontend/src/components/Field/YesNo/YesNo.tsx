@@ -48,7 +48,7 @@ export interface YesNoProps {
   /**
    * Better visibility of values in the disabled component when set to true.
    */
-  highContrast?: boolean
+  isHighContrast?: boolean
 }
 
 /**
@@ -98,7 +98,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           // can focus this input.
           ref={ref}
           title={props.title}
-          highContrast={props.highContrast}
+          isHighContrast={props.isHighContrast}
         />
         <YesNoOption
           side="right"
@@ -108,7 +108,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           leftIcon={BiCheck}
           label={t('features.publicForm.components.fields.yesNo.yes')}
           title={props.title}
-          highContrast={props.highContrast}
+          isHighContrast={props.isHighContrast}
         />
       </HStack>
     )

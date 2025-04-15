@@ -18,7 +18,7 @@ export const NumberField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  highContrast,
+  isHighContrast,
 }: NumberFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNumberValidationRules(schema, disableRequiredValidation),
@@ -28,7 +28,7 @@ export const NumberField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast={highContrast}>
+    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Controller
         control={control}
         rules={validationRules}
@@ -47,7 +47,7 @@ export const NumberField = ({
               // Only allow numeric inputs
               onChange(val.replace(/\D/g, ''))
             }}
-            highContrast={highContrast}
+            isHighContrast={isHighContrast}
             {...rest}
           />
         )}

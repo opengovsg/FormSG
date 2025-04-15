@@ -18,7 +18,7 @@ export interface DecimalFieldProps extends BaseFieldProps {
 export const DecimalField = ({
   schema,
   disableRequiredValidation,
-  highContrast,
+  isHighContrast,
 }: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDecimalValidationRules(schema, disableRequiredValidation),
@@ -28,7 +28,7 @@ export const DecimalField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast={highContrast}>
+    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Controller
         control={control}
         rules={validationRules}
@@ -39,7 +39,7 @@ export const DecimalField = ({
             inputMode="decimal"
             aria-label={`${schema.questionNumber}. ${schema.title}`}
             preventDefaultOnEnter
-            highContrast={highContrast}
+            isHighContrast={isHighContrast}
             {...field}
           />
         )}

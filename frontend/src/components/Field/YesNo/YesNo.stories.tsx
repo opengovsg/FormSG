@@ -80,11 +80,11 @@ HighContrast.args = {
   name: 'testInput',
   defaultValue: 'No',
   isDisabled: true,
-  highContrast: true,
+  isHighContrast: true,
 }
 HighContrast.parameters = {
   controls: {
-    include: ['name', 'isDisabled', 'highContrast'],
+    include: ['name', 'isDisabled', 'isHighContrast'],
   },
 }
 

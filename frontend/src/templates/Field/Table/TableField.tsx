@@ -47,7 +47,7 @@ export const TableField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  highContrast,
+  isHighContrast,
 }: TableFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
@@ -189,7 +189,7 @@ export const TableField = ({
     schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
 
   return (
-    <TableFieldContainer schema={schema} highContrast={highContrast}>
+    <TableFieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Box
         display="block"
         w="100%"

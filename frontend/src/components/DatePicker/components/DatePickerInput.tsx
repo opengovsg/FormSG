@@ -12,58 +12,59 @@ import {
 import { CalendarButton } from '../components/CalendarButton'
 import { useDatePicker } from '../DatePickerContext'
 
-export const DatePickerInput = forwardRef<{ highContrast?: boolean }, 'input'>(
-  ({ highContrast }, ref) => {
-    const {
-      internalInputValue,
-      handleInputChange,
-      handleInputBlur,
-      handleInputClick,
-      fcProps,
-      allowManualInput,
-      placeholder,
-      inputRef,
-      internalValue,
-    } = useDatePicker()
+export const DatePickerInput = forwardRef<
+  { isHighContrast?: boolean },
+  'input'
+>(({ isHighContrast }, ref) => {
+  const {
+    internalInputValue,
+    handleInputChange,
+    handleInputBlur,
+    handleInputClick,
+    fcProps,
+    allowManualInput,
+    placeholder,
+    inputRef,
+    internalValue,
+  } = useDatePicker()
 
-    const mergedInputRef = useMergeRefs(inputRef, ref)
+  const mergedInputRef = useMergeRefs(inputRef, ref)
 
-    const selectedDateAriaLiveText = useMemo(() => {
-      if (!internalValue) {
-        return 'No date selected'
-      }
+  const selectedDateAriaLiveText = useMemo(() => {
+    if (!internalValue) {
+      return 'No date selected'
+    }
 
-      return `Selected date: ${internalValue.toLocaleDateString()}`
-    }, [internalValue])
+    return `Selected date: ${internalValue.toLocaleDateString()}`
+  }, [internalValue])
 
-    return (
-      <>
-        <VisuallyHidden aria-live="assertive">
-          {selectedDateAriaLiveText}
-        </VisuallyHidden>
-        <InputGroup>
-          <ChakraInput
-            inputMode="numeric" // Nudge Android mobile keyboard to be numeric
-            pattern="\d*" // Nudge numeric keyboard on iOS Safari.
-            as={ReactInputMask}
-            mask="99/99/9999"
-            value={internalInputValue}
-            onChange={handleInputChange}
-            placeholder={placeholder}
-            maskPlaceholder={placeholder}
-            ref={mergedInputRef}
-            {...fcProps}
-            borderRightRadius={0}
-            onBlur={handleInputBlur}
-            onClick={handleInputClick}
-            isReadOnly={fcProps.isReadOnly || !allowManualInput}
-            {...(highContrast && { variant: 'highContrast' })}
-          />
-          <InputRightAddon p={0} bg="none">
-            <CalendarButton />
-          </InputRightAddon>
-        </InputGroup>
-      </>
-    )
-  },
-)
+  return (
+    <>
+      <VisuallyHidden aria-live="assertive">
+        {selectedDateAriaLiveText}
+      </VisuallyHidden>
+      <InputGroup>
+        <ChakraInput
+          inputMode="numeric" // Nudge Android mobile keyboard to be numeric
+          pattern="\d*" // Nudge numeric keyboard on iOS Safari.
+          as={ReactInputMask}
+          mask="99/99/9999"
+          value={internalInputValue}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          maskPlaceholder={placeholder}
+          ref={mergedInputRef}
+          {...fcProps}
+          borderRightRadius={0}
+          onBlur={handleInputBlur}
+          onClick={handleInputClick}
+          isReadOnly={fcProps.isReadOnly || !allowManualInput}
+          {...(isHighContrast && { variant: 'highContrast' })}
+        />
+        <InputRightAddon p={0} bg="none">
+          <CalendarButton />
+        </InputRightAddon>
+      </InputGroup>
+    </>
+  )
+})

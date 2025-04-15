@@ -29,7 +29,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  highContrast,
+  isHighContrast,
 }: RadioFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
@@ -85,7 +85,7 @@ export const RadioField = ({
     <FieldContainer
       schema={schema}
       errorKey={radioInputName}
-      highContrast={highContrast}
+      isHighContrast={isHighContrast}
     >
       <Controller
         name={radioInputName}
@@ -121,7 +121,7 @@ export const RadioField = ({
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
                 isDisabled={schema.disabled}
-                highContrast={highContrast}
+                isHighContrast={isHighContrast}
               >
                 {option}
               </Radio>

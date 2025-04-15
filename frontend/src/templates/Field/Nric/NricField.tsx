@@ -18,7 +18,7 @@ export interface NricFieldProps extends BaseFieldProps {
 export const NricField = ({
   schema,
   disableRequiredValidation,
-  highContrast,
+  isHighContrast,
 }: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNricValidationRules(schema, disableRequiredValidation),
@@ -28,12 +28,12 @@ export const NricField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} highContrast={highContrast}>
+    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
-        highContrast={highContrast}
+        isHighContrast={isHighContrast}
         {...register(schema._id, {
           ...validationRules,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
