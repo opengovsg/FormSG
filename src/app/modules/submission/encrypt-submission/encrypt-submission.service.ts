@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
+
 import {
   DateString,
   FormResponseMode,
@@ -34,11 +36,9 @@ import {
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
-import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)

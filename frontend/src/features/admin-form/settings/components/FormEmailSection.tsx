@@ -7,7 +7,7 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Heading } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -17,7 +17,6 @@ import {
   StorageFormSettings,
 } from '~shared/types/form'
 
-import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import {
   OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
   REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
@@ -28,6 +27,10 @@ import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
+
+import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
+import { RespondentCustomiseEmail } from './EmailNotificationsSection/RespondentCustomiseEmail'
+import { CategorySubHeader } from './CategorySubHeader'
 
 interface EmailFormSectionProps {
   isDisabled: boolean
@@ -120,12 +123,15 @@ export const FormEmailSection = ({
 
   const isEmailMode = settings.responseMode === FormResponseMode.Email
 
-  const DESCRIPTION_TEXT = `All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
+  const DESCRIPTION_TEXT = t(
+    'features.adminForm.settings.emailNotifications.section.regular.info',
+  )
 
   return (
     <>
       <FormProvider {...formMethods}>
         <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
+          <CategorySubHeader>Admin</CategorySubHeader>
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
@@ -148,6 +154,9 @@ export const FormEmailSection = ({
               )}
             </FormLabel.Description>
           ) : null}
+          <CategorySubHeader mt={'2.5rem'}>Respondent</CategorySubHeader>
+          <RespondentCopyToggle />
+          <RespondentCustomiseEmail />
         </FormControl>
       </FormProvider>
     </>
