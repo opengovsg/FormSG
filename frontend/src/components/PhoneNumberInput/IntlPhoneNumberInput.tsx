@@ -64,7 +64,6 @@ export const IntlPhoneNumberInput = forwardRef<
         preventDefaultOnEnter
         {...props}
         placeholder={inputPlaceholder}
-        isHighContrast={props.isHighContrast}
       />
     </InputGroup>
   )

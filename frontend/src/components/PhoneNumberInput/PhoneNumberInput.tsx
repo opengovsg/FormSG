@@ -67,10 +67,6 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
    * autoformatting will be enabled.
    */
   allowInternational?: boolean
-  /**
-   * Better visibility of values in the disabled component when set to true.
-   */
-  isHighContrast?: boolean
 }
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
