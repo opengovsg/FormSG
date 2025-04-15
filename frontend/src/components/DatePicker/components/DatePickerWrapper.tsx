@@ -4,37 +4,40 @@ import { useDatePicker } from '../DatePickerContext'
 
 import { DatePickerInput } from './DatePickerInput'
 
-export const DatePickerWrapper = forwardRef<
-  { isHighContrast?: boolean },
-  'input'
->(({ isHighContrast, children }, ref) => {
-  const { disclosureProps, initialFocusRef, closeCalendarOnChange, isMobile } =
-    useDatePicker()
+export const DatePickerWrapper = forwardRef<object, 'input'>(
+  ({ children }, ref) => {
+    const {
+      disclosureProps,
+      initialFocusRef,
+      closeCalendarOnChange,
+      isMobile,
+    } = useDatePicker()
 
-  if (isMobile) {
+    if (isMobile) {
+      return (
+        <Flex>
+          <DatePickerInput ref={ref} />
+          {children}
+        </Flex>
+      )
+    }
+
     return (
       <Flex>
-        <DatePickerInput ref={ref} isHighContrast={isHighContrast} />
-        {children}
+        <Popover
+          placement="bottom-start"
+          isLazy
+          initialFocusRef={initialFocusRef}
+          closeOnBlur={closeCalendarOnChange}
+          returnFocusOnClose={false}
+          {...disclosureProps}
+        >
+          <PopoverAnchor>
+            <DatePickerInput ref={ref} />
+          </PopoverAnchor>
+          {children}
+        </Popover>
       </Flex>
     )
-  }
-
-  return (
-    <Flex>
-      <Popover
-        placement="bottom-start"
-        isLazy
-        initialFocusRef={initialFocusRef}
-        closeOnBlur={closeCalendarOnChange}
-        returnFocusOnClose={false}
-        {...disclosureProps}
-      >
-        <PopoverAnchor>
-          <DatePickerInput ref={ref} isHighContrast={isHighContrast} />
-        </PopoverAnchor>
-        {children}
-      </Popover>
-    </Flex>
-  )
-})
+  },
+)

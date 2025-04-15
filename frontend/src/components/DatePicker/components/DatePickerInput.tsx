@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import ReactInputMask from 'react-input-mask'
 import {
-  FormControlProps,
   forwardRef,
   Input as ChakraInput,
   InputGroup,
@@ -24,10 +23,8 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
     placeholder,
     inputRef,
     internalValue,
+    isHighContrast,
   } = useDatePicker()
-
-  const { isHighContrast: highContrast, ...filteredFcProps } =
-    fcProps as FormControlProps & { isHighContrast?: boolean }
 
   const mergedInputRef = useMergeRefs(inputRef, ref)
 
@@ -38,8 +35,6 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
 
     return `Selected date: ${internalValue.toLocaleDateString()}`
   }, [internalValue])
-
-  // omit
 
   return (
     <>
@@ -57,12 +52,12 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
           placeholder={placeholder}
           maskPlaceholder={placeholder}
           ref={mergedInputRef}
-          {...filteredFcProps}
+          {...fcProps}
           borderRightRadius={0}
           onBlur={handleInputBlur}
           onClick={handleInputClick}
           isReadOnly={fcProps.isReadOnly || !allowManualInput}
-          {...(highContrast && { variant: 'highContrast' })}
+          {...(isHighContrast && { variant: 'highContrast' })}
         />
         <InputRightAddon p={0} bg="none">
           <CalendarButton />
