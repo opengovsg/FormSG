@@ -38,6 +38,7 @@ import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
+import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -145,6 +146,7 @@ export const performEncryptPostSubmissionActions = (
   responses: FieldResponse[],
   emailData?: SubmissionEmailObj,
   attachments?: IAttachmentInfo[],
+  respondentEmails?: string[],
 ): ResultAsync<
   true,
   | FormNotFoundError
@@ -171,16 +173,30 @@ export const performEncryptPostSubmissionActions = (
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
+      //TODO: update with customized email notifications
+      const recipientData: AutoReplyMailData[] = respondentEmails
+        ? respondentEmails?.map((val) => {
+            return {
+              email: val,
+              // subject: '',
+              // sender: '',
+              // body: '',
+              includeFormSummary: true,
+            }
+          })
+        : []
+      console.log(`recipientData: ${recipientData}`)
       // Send Email Confirmations
       return sendEmailConfirmations({
         form,
         submission,
         attachments,
         responsesData: emailData?.autoReplyData,
-        recipientData: extractEmailConfirmationData(
-          responses,
-          form.form_fields,
-        ),
+        recipientData: recipientData,
+        // recipientData: extractEmailConfirmationData(
+        //   responses,
+        //   form.form_fields,
+        // ),
       }).mapErr((error) => {
         logger.error({
           message: 'Error while sending email confirmations',

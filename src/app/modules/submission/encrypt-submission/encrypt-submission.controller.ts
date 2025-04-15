@@ -804,21 +804,6 @@ const _createSubmission = async ({
     answer: item.answer,
   }))
 
-  // Asynchronously sending a respondent copy to respondent email fields collected
-  if (respondentEmails) {
-    void MailService.sendSubmissionToAdmin({
-      replyToEmails: respondentEmails,
-      form,
-      submission: {
-        created: createdTime,
-        id: submission.id,
-      },
-      attachments: unencryptedAttachments,
-      formData: emailData.formData,
-      dataCollationData,
-    })
-  }
-
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -856,11 +841,13 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
+  // send respondent copy email to respondentEmails
   return await performEncryptPostSubmissionActions(
     submission,
     responses,
     emailData,
     unencryptedAttachments,
+    respondentEmails,
   )
 }
 
