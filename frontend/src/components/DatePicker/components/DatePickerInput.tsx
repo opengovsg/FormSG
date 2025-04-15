@@ -13,10 +13,7 @@ import {
 import { CalendarButton } from '../components/CalendarButton'
 import { useDatePicker } from '../DatePickerContext'
 
-export const DatePickerInput = forwardRef<
-  { isHighContrast?: boolean },
-  'input'
->(({ isHighContrast }, ref) => {
+export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
   const {
     internalInputValue,
     handleInputChange,
