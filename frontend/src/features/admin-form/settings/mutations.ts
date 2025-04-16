@@ -312,6 +312,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormRespondentWorkflowCompletion = useMutation(
+    (nextHasRespondentCopy: boolean) =>
+      updateFormRespondentCopy(formId, nextHasRespondentCopy),
+    {
+      onSuccess: (newData) => {
+        console.log(newData)
+        handleSuccess({
+          newData,
+          toastDescription: `hasRespondentWorkflowCompletion is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormEsrvcId = useMutation(
     (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
     {
@@ -528,6 +543,7 @@ export const useMutateFormSettings = () => {
     mutateFormEmails,
     mutateMrfEmailNotifications,
     mutateFormRespondentCopy,
+    mutateFormRespondentWorkflowCompletion,
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,

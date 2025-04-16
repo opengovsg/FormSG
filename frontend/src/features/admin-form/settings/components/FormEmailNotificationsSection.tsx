@@ -31,6 +31,7 @@ import { useAdminFormSettings } from '../queries'
 
 import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
 import { RespondentCustomiseEmail } from './EmailNotificationsSection/RespondentCustomiseEmail'
+import { RespondentWorkflowCompletionToggle } from './EmailNotificationsSection/RespondentWorkflowCompletionToggle'
 import { CategorySubHeader } from './CategorySubHeader'
 
 interface EmailFormSectionProps {
@@ -215,19 +216,38 @@ export const FormEmailNotificationsSection = ({
             <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
               <FormLabel
                 useMarkdownForDescription
-                description={DESCRIPTION_TEXT}
+                description={t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.admin.workflowCompletionInfo',
+                )}
               >
                 {t(
-                  'features.adminForm.settings.emailNotifications.section.regular.label',
+                  'features.adminForm.settings.emailNotifications.section.mrf.admin.workflowCompletionLabel',
                 )}
               </FormLabel>
               <MrfWorkflowCompletionEmailRecipientsInput onSubmit={() => {}} />
+              <FormErrorMessage>
+                {get(errors, 'emails.message')}
+              </FormErrorMessage>
+              {isEmpty(errors) ? (
+                <FormLabel.Description
+                  color="secondary.400"
+                  mt="0.5rem"
+                  opacity={isDisabled ? '0.3' : '1'}
+                >
+                  {t(
+                    'features.adminForm.settings.emailNotifications.section.regular.description',
+                  )}
+                </FormLabel.Description>
+              ) : null}
             </FormControl>
           )}
         </Stack>
         <CategorySubHeader mt={'3rem'}>Respondent</CategorySubHeader>
-        <RespondentCopyToggle />
-        <RespondentCustomiseEmail />
+        <Stack spacing={'1.5rem'}>
+          <RespondentCopyToggle />
+          {isMrf && <RespondentWorkflowCompletionToggle />}
+          {!isMrf && <RespondentCustomiseEmail />}
+        </Stack>
       </FormProvider>
     </>
   )
