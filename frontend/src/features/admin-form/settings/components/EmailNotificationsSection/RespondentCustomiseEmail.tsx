@@ -59,6 +59,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
           onClose={onClose}
           control={control}
           errors={errors}
+          responseMode={settings?.responseMode} //TODO: Fix settings that can be undefined
           setCustomEmail={() => {}}
         />
         <Flex

@@ -136,11 +136,7 @@ export const FormEmailNotificationsSection = ({
       <FormProvider {...formMethods}>
         <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
           <CategorySubHeader>Admin</CategorySubHeader>
-          <FormLabel
-            isRequired={isEmailMode}
-            useMarkdownForDescription
-            description={DESCRIPTION_TEXT}
-          >
+          <FormLabel useMarkdownForDescription description={DESCRIPTION_TEXT}>
             {t(
               'features.adminForm.settings.emailNotifications.section.regular.label',
             )}

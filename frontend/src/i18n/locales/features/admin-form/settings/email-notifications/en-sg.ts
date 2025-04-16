@@ -37,5 +37,20 @@ export const enSG = {
         'Allow respondents to receive a copy of their submission',
       customiseEmailLabel: 'Customise an email acknowledgement to respondents',
     },
+    modal: {
+      headerMrf: 'Edit action email',
+      infoMrf:
+        "Customise the email sent to respondents when it's their turn to fill in the form",
+      headerEncrypt: 'Edit email acknowledgement',
+      infoEncrypt:
+        'Customise the email respondents will receive after submitting your form',
+      subjectTitle: 'Subject',
+      subjectError: 'Email subject cannot be empty',
+      senderNameTitle: 'Sender name',
+      senderNameError: 'Sender name cannot be empty',
+      emailBodyTitle: 'Email body',
+      emailBodyPlaceholder:
+        'Include instructions or a message for your respondents',
+    },
   },
 }
