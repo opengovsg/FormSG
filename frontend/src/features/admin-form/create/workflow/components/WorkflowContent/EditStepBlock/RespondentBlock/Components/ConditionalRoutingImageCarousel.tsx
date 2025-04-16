@@ -68,7 +68,10 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
         <Image
           src={images[currentIndex]}
           alt={`Image ${currentIndex + 1}`}
-          width="90%"
+          boxSize="auto"
+          width="18.25rem"
+          height="14.75rem"
+          objectFit="cover"
         />
         <CarouselButton
           onClick={nextItem}

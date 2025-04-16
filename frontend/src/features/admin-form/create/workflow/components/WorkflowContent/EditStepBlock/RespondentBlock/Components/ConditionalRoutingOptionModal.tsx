@@ -82,7 +82,7 @@ const StepOneModalContent = ({
   ]
 
   return (
-    <ModalContent minW="fit-content">
+    <ModalContent minW="fit-content" maxW="42.5rem">
       <ModalCloseButton />
       <ModalHeader>
         <Text mb="0.25rem">
