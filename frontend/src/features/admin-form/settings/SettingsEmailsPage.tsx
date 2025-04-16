@@ -9,6 +9,7 @@ import { TagInput } from '~components/TagInput'
 
 import { CategoryHeader } from './components/CategoryHeader'
 import { EmailNotificationsHeader } from './components/EmailNotificationsHeader'
+import { FormEmailNotificationsSection } from './components/FormEmailNotificationsSection'
 import { FormEmailSection } from './components/FormEmailSection'
 import { MrfFormEmailSection } from './components/MrfFormEmailSection'
 import { useAdminFormSettings } from './queries'
@@ -31,6 +32,14 @@ const FormEmailSectionContainer = ({
   isDisabled,
   settings,
 }: FormEmailSectionContainerProps): JSX.Element => {
+  const whitelist = true //TODO: fix with betaFlag
+  if (whitelist)
+    return (
+      <FormEmailNotificationsSection
+        isDisabled={isDisabled}
+        settings={settings}
+      />
+    )
   if (settings.responseMode === FormResponseMode.Multirespondent) {
     return <MrfFormEmailSection isDisabled={isDisabled} settings={settings} />
   }
