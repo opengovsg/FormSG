@@ -127,7 +127,11 @@ const StepOneModalContent = ({
                 )}
               </Text>
               <Box>
-                <Text textStyle="subhead-1" color="secondary.500">
+                <Text
+                  textStyle="caption-3"
+                  color="secondary.500"
+                  fontSize={'10px'}
+                >
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.title',
                   )}
@@ -144,7 +148,11 @@ const StepOneModalContent = ({
                 </Text>
               </Box>
               <Box>
-                <Text textStyle="subhead-1" color="secondary.500">
+                <Text
+                  textStyle="caption-3"
+                  color="secondary.500"
+                  fontSize={'10px'}
+                >
                   {t(
                     'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.title',
                   )}

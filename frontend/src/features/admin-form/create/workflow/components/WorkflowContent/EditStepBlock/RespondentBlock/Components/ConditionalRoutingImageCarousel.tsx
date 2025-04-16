@@ -79,14 +79,14 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
           icon={<FaChevronRight fontSize="0.7rem" color="#445072" />}
         />
       </Stack>
+      <Text color="secondary.400" textStyle="caption-2">
+        {captions[currentIndex]}
+      </Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={currentIndex}
         onClick={setCurrentIndex}
       />
-      <Text color="secondary.400" textStyle="caption-2">
-        {captions[currentIndex]}
-      </Text>
     </Stack>
   )
 }
