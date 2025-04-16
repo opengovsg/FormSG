@@ -7,7 +7,7 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Heading } from '@chakra-ui/react'
+import { FormControl, Heading, Stack } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -94,6 +94,56 @@ const AdminEmailRecipientsInput = ({
   )
 }
 
+// MRF Workflow Completion Input
+// TODO: similar to AdminEmailRecipientsInput, see if can extract out
+interface MrfWorkflowCompletionEmailRecipientsInputProps {
+  onSubmit: (params: { mrfWorkflowCompletionEmails: string[] }) => void
+}
+
+const MrfWorkflowCompletionEmailRecipientsInput = ({
+  onSubmit,
+}: MrfWorkflowCompletionEmailRecipientsInputProps): JSX.Element => {
+  const { getValues, setValue, control, handleSubmit } = useFormContext<{
+    mrfWorkflowCompletionEmails: string[]
+    isRequired: boolean
+  }>()
+
+  const { data: settings } = useAdminFormSettings()
+
+  const EMAILS_FIELD_NAME = 'mrfWorkflowCompletionEmails'
+
+//   const handleBlur = useCallback(() => {
+//     // Get rid of bad tags before submitting.
+//     setValue(
+//       EMAILS_FIELD_NAME,
+//       (getValues(EMAILS_FIELD_NAME) || []).filter((email) => isEmail(email)),
+//     )
+//     handleSubmit(onSubmit)()
+//   }, [getValues, handleSubmit, onSubmit, setValue])
+
+  const emailsFieldPlaceholder =
+    getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
+
+  return (
+    <Controller<{ mrfWorkflowCompletionEmails: string[]; isRequired: boolean }>
+      control={control}
+      name={EMAILS_FIELD_NAME}
+      rules={{
+        required: 'ERROR',
+      }}
+      render={({ field }) => (
+        <TagInput
+          placeholder={emailsFieldPlaceholder}
+          {...field}
+          value={field.value as string[]}
+          tagValidation={isEmail}
+        //   onBlur={handleBlur}
+        />
+      )}
+    />
+  )
+}
+
 export const FormEmailNotificationsSection = ({
   isDisabled,
   settings,
@@ -105,7 +155,12 @@ export const FormEmailNotificationsSection = ({
   )
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: { emails: settings.emails },
+    defaultValues: {
+      emails: settings.emails,
+      newResponseEmails: [],
+      //   mrfWorkflowCompletionEmails: settings.mrfAdminWorkflowCompletionEmails,
+      mrfWorkflowCompletionEmails: [],
+    },
   })
 
   const {
@@ -125,7 +180,7 @@ export const FormEmailNotificationsSection = ({
 
   useEffect(() => reset({ emails: settings.emails }), [settings.emails, reset])
 
-  const isEmailMode = settings.responseMode === FormResponseMode.Email
+  const isMrf = settings.responseMode === FormResponseMode.Multirespondent
 
   const DESCRIPTION_TEXT = t(
     'features.adminForm.settings.emailNotifications.section.regular.info',
@@ -134,30 +189,45 @@ export const FormEmailNotificationsSection = ({
   return (
     <>
       <FormProvider {...formMethods}>
-        <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
-          <CategorySubHeader>Admin</CategorySubHeader>
-          <FormLabel useMarkdownForDescription description={DESCRIPTION_TEXT}>
-            {t(
-              'features.adminForm.settings.emailNotifications.section.regular.label',
-            )}
-          </FormLabel>
-          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
-          <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
-          {isEmpty(errors) ? (
-            <FormLabel.Description
-              color="secondary.400"
-              mt="0.5rem"
-              opacity={isDisabled ? '0.3' : '1'}
-            >
+        <CategorySubHeader>Admin</CategorySubHeader>
+        <Stack spacing={'1.5rem'}>
+          <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
+            <FormLabel useMarkdownForDescription description={DESCRIPTION_TEXT}>
               {t(
-                'features.adminForm.settings.emailNotifications.section.regular.description',
+                'features.adminForm.settings.emailNotifications.section.regular.label',
               )}
-            </FormLabel.Description>
-          ) : null}
-          <CategorySubHeader mt={'3rem'}>Respondent</CategorySubHeader>
-          <RespondentCopyToggle />
-          <RespondentCustomiseEmail />
-        </FormControl>
+            </FormLabel>
+            <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
+            <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
+            {isEmpty(errors) ? (
+              <FormLabel.Description
+                color="secondary.400"
+                mt="0.5rem"
+                opacity={isDisabled ? '0.3' : '1'}
+              >
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.regular.description',
+                )}
+              </FormLabel.Description>
+            ) : null}
+          </FormControl>
+          {isMrf && (
+            <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
+              <FormLabel
+                useMarkdownForDescription
+                description={DESCRIPTION_TEXT}
+              >
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.regular.label',
+                )}
+              </FormLabel>
+              <MrfWorkflowCompletionEmailRecipientsInput onSubmit={() => {}} />
+            </FormControl>
+          )}
+        </Stack>
+        <CategorySubHeader mt={'3rem'}>Respondent</CategorySubHeader>
+        <RespondentCopyToggle />
+        <RespondentCustomiseEmail />
       </FormProvider>
     </>
   )

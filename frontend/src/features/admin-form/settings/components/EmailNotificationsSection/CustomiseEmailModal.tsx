@@ -16,12 +16,12 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { get } from 'lodash'
 
 import { FormResponseMode } from '~shared/types'
 
 import { NextAndBackButtonGroup } from '~components/Button'
 import Textarea from '~components/Textarea'
-import { get } from 'lodash'
 
 type CustomiseEmailFormInputs = {
   subject: string
