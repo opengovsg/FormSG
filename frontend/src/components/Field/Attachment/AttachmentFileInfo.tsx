@@ -74,6 +74,7 @@ export const AttachmentFileInfo = ({
             icon={<BiDownload />}
             onClick={handleDownloadFile}
             isDisabled={isDownloadDisabled}
+            _hover={{ backgroundColor: 'primary.200' }}
           />
         ) : null}
         {showReplace ? (
@@ -84,6 +85,7 @@ export const AttachmentFileInfo = ({
             )}
             icon={<BiEditAlt />}
             onClick={handleReplaceFile}
+            _hover={{ backgroundColor: 'primary.200' }}
           />
         ) : null}
       </Flex>
