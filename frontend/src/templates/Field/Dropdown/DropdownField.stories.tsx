@@ -114,4 +114,5 @@ DisabledHighContrast.args = {
     fieldValue: baseSchema.fieldOptions[0],
   },
   isHighContrast: true,
+  defaultValue: baseSchema.fieldOptions[0],
 }

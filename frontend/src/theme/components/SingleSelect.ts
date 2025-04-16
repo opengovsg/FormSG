@@ -127,11 +127,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
       _disabled: {
         cursor: 'not-allowed',
         bg: 'neutral.200',
-        color: 'neutral.500',
-        _active: {
-          bg: 'neutral.200',
-          color: props.isHighContrast ? 'neutral.800' : 'neutral.500',
-        },
+        color: props.isHighContrast ? 'neutral.800' : 'neutral.500',
       },
     },
   }
