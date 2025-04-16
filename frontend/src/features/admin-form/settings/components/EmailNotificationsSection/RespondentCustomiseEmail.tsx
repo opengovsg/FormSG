@@ -15,7 +15,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
 
   const hasCaptcha = useMemo(() => settings?.hasCaptcha, [settings]) //TODO: update settings from hasCaptcha to rc
 
-  //   const { mutateFormCaptcha } = useMutateFormSettings()
+  const { mutateFormCaptcha } = useMutateFormSettings()
 
   //   const handleRespondentCustomiseEmail = useCallback(() => {
   //     if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return

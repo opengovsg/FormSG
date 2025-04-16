@@ -47,6 +47,7 @@ export const updateSettingsValidator = celebrate({
     supportedLanguages: Joi.array().items(
       Joi.string().valid(...Object.values(Language)),
     ),
+    hasRespondentCopy: Joi.boolean(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

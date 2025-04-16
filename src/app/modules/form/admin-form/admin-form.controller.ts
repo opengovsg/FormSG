@@ -1377,7 +1377,6 @@ export const _handleUpdateSettings: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
-
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>

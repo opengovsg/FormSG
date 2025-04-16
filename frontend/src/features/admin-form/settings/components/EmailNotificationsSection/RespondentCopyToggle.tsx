@@ -12,21 +12,25 @@ export const RespondentCopyToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const hasCaptcha = useMemo(() => settings?.hasCaptcha, [settings]) //TODO: update settings from hasCaptcha to rc
+  const hasRespondentCopy = useMemo(
+    () => settings?.hasRespondentCopy,
+    [settings],
+  )
 
-  const { mutateFormCaptcha } = useMutateFormSettings()
+  const { mutateFormRespondentCopy } = useMutateFormSettings()
 
   const handleToggleRespondentCopy = useCallback(() => {
-    if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return
-    const nextHasCaptcha = !settings.hasCaptcha
-    return mutateFormCaptcha.mutate(nextHasCaptcha)
-  }, [isLoadingSettings, mutateFormCaptcha, settings])
+    if (!settings || isLoadingSettings || mutateFormRespondentCopy.isLoading)
+      return
+    const nextHasRespondentCopy = !settings.hasRespondentCopy
+    return mutateFormRespondentCopy.mutate(nextHasRespondentCopy)
+  }, [isLoadingSettings, mutateFormRespondentCopy, settings])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Toggle
-        isLoading={mutateFormCaptcha.isLoading}
-        isChecked={hasCaptcha}
+        isLoading={mutateFormRespondentCopy.isLoading}
+        isChecked={hasRespondentCopy}
         label={t(
           'features.adminForm.settings.emailNotifications.section.regular.info',
         )}

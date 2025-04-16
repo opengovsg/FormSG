@@ -47,6 +47,7 @@ const FORM_SETTINGS_FIELDS = [
   'webhook',
   'hasMultiLang',
   'supportedLanguages',
+  'hasRespondentCopy',
 ] as const
 
 export const EMAIL_FORM_SETTINGS_FIELDS = [

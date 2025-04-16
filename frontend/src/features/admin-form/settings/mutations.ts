@@ -37,6 +37,7 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormRespondentCopy,
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
@@ -296,6 +297,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormRespondentCopy = useMutation(
+    (nextHasRespondentCopy: boolean) =>
+      updateFormRespondentCopy(formId, nextHasRespondentCopy),
+    {
+      onSuccess: (newData) => {
+        console.log(newData)
+        handleSuccess({
+          newData,
+          toastDescription: `hasRespondentCopy is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormEsrvcId = useMutation(
     (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
     {
@@ -511,6 +527,7 @@ export const useMutateFormSettings = () => {
     mutateFormIssueNotification,
     mutateFormEmails,
     mutateMrfEmailNotifications,
+    mutateFormRespondentCopy,
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,

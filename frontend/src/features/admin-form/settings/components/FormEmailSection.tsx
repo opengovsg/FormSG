@@ -154,7 +154,7 @@ export const FormEmailSection = ({
               )}
             </FormLabel.Description>
           ) : null}
-          <CategorySubHeader mt={'2.5rem'}>Respondent</CategorySubHeader>
+          <CategorySubHeader mt={'3rem'}>Respondent</CategorySubHeader>
           <RespondentCopyToggle />
           <RespondentCustomiseEmail />
         </FormControl>
