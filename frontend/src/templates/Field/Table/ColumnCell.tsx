@@ -54,6 +54,7 @@ const ShortTextColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
+  isHighContrast,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
   const rules = useMemo(
     () =>
@@ -76,6 +77,7 @@ const ShortTextColumnCell = ({
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           aria-labelledby={schema._id}
+          isHighContrast={isHighContrast}
           {...field}
         />
       )}
