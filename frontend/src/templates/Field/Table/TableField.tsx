@@ -260,7 +260,7 @@ export const TableField = ({
                         columnSchema: schema.columns[j],
                         colorTheme,
                         selectedLanguage,
-                        ...(isHighContrast && { isHighContrast }),
+                        isHighContrast,
                       })}
                     </Td>
                   ))}
