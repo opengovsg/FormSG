@@ -23,17 +23,20 @@ export const CalendarButton = (): JSX.Element => {
       sx={
         isHighContrast
           ? {
-              bg: 'neutral.200',
-              color: 'neutral.800',
-              borderColor: 'neutral.400',
-              _hover: {
+              _disabled: {
                 bg: 'neutral.200',
                 color: 'neutral.800',
                 borderColor: 'neutral.400',
-              },
-              '& svg': {
-                stroke: 'neutral.400',
-                fill: 'neutral.800',
+                opacity: 1,
+                _hover: {
+                  bg: 'neutral.200',
+                  color: 'neutral.800',
+                  borderColor: 'neutral.400',
+                },
+                '& svg': {
+                  stroke: 'neutral.400',
+                  fill: 'neutral.800',
+                },
               },
             }
           : undefined
