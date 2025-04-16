@@ -142,11 +142,13 @@ export const CheckboxField = ({
                       colorScheme={fieldColorScheme}
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
+                      {...(isHighContrast && { variant: 'highContrast' })}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}
                       aria-label='"Other" response'
                       {...register(othersInputName, othersValidationRules)}
+                      {...(isHighContrast && { variant: 'highContrast' })}
                     />
                     <FormErrorMessage
                       ml={styles.othersInput?.ml as string}
