@@ -1,15 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { BiEditAlt, BiPencil } from 'react-icons/bi'
-import {
-  Flex,
-  FormLabel,
-  Skeleton,
-  Stack,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { BiEditAlt } from 'react-icons/bi'
+import { Flex, FormLabel, Skeleton, useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -27,11 +20,30 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
 
   const { mutateFormCaptcha } = useMutateFormSettings()
 
-  //   const handleRespondentCustomiseEmail = useCallback(() => {
+  // const handleRespondentCustomiseEmail = useCallback(
+  //   (data: string) => {
   //     if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return
-  //     const nextHasCaptcha = !settings.hasCaptcha
-  //     return mutateFormCaptcha.mutate(nextHasCaptcha)
-  //   }, [isLoadingSettings, mutateFormCaptcha, settings])
+  //     console.log(data)
+  //   },
+  //   [isLoadingSettings, mutateFormCaptcha, settings],
+  // )
+
+  const handleRespondentCustomiseEmail = ({
+    subject,
+    senderName,
+    emailBody,
+  }: {
+    subject: string
+    senderName: string
+    emailBody: string
+  }) => {
+    console.log(subject)
+    console.log(senderName)
+    console.log(emailBody)
+    // if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return
+    onClose()
+    return
+  }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -48,6 +60,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
   const {
     formState: { errors },
     control,
+    handleSubmit,
   } = formMethods
 
   return (
@@ -59,8 +72,10 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
           onClose={onClose}
           control={control}
           errors={errors}
+          onSubmit={handleSubmit((values) =>
+            handleRespondentCustomiseEmail(values),
+          )}
           responseMode={settings?.responseMode} //TODO: Fix settings that can be undefined
-          setCustomEmail={() => {}}
         />
         <Flex
           justifyContent="space-between"
@@ -81,7 +96,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
             gap="0.5rem"
           >
             <BiEditAlt />
-            Test
+            Edit
           </Button>
         </Flex>
       </Skeleton>
