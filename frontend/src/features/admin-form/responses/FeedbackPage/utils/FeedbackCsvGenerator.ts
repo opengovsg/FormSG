@@ -1,5 +1,7 @@
+import { withTranslation } from 'react-i18next'
 import { isValid, parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
+import i18next from 'i18next'
 
 import { FormFeedbackDto } from '~shared/types'
 
@@ -11,7 +13,11 @@ import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/p
 export class FeedbackCsvGenerator extends CsvGenerator {
   constructor(expectedNumberOfRecords: number) {
     super(expectedNumberOfRecords, 0)
-    this.setHeader(['Date', 'Comment', 'Rating'])
+    this.setHeader([
+      i18next.t('features.adminForm.feedback.feedbackCsvGenerator.date'),
+      i18next.t('features.adminForm.feedback.feedbackCsvGenerator.comment'),
+      i18next.t('features.adminForm.feedback.feedbackCsvGenerator.rating'),
+    ])
   }
 
   /**

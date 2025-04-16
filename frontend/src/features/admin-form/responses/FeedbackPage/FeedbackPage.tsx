@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
@@ -10,7 +11,6 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
 
@@ -31,8 +31,8 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useFormFeedback, useFormIssues } from '../queries'
 
-import { ISSUE_TABLE_COLUMNS } from './issue/IssueTable'
-import { REVIEW_TABLE_COLUMNS } from './review/ReviewTable'
+import { useIssueTableColumns } from './issue/IssueTable'
+import { useReviewTableColumns } from './review/ReviewTable'
 import { EmptyFeedback } from './EmptyFeedback'
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
@@ -62,7 +62,54 @@ interface Review extends Feedback {
   download: UseMutationResult<void, Error, DownloadFormFeedbackMutationArgs>
 }
 
+interface ReviewInformationTranslations {
+  averageScore: string
+  reviewsToDate: (reviewCount: number) => string
+}
+
+interface IssueInformationTranslations {
+  tooltip: string
+  issuesToDate: (issueCount: number) => string
+}
+
+interface FeedbackPageTranslations {
+  issues: string
+  reviews: string
+  reviewInformation: ReviewInformationTranslations
+  issueInformation: IssueInformationTranslations
+}
+
 export const FeedbackPage = (): JSX.Element => {
+  // Translations to be parsed into helper functions
+  const { t } = useTranslation()
+
+  const translations: FeedbackPageTranslations = useMemo(
+    () => ({
+      issues: t('features.adminForm.feedback.feedbackPage.issues'),
+      reviews: t('features.adminForm.feedback.feedbackPage.reviews'),
+      reviewInformation: {
+        averageScore: t(
+          'features.adminForm.feedback.feedbackPage.reviewInformation.averageScore',
+        ),
+        reviewsToDate: (reviewCount: number) =>
+          t(
+            'features.adminForm.feedback.feedbackPage.reviewInformation.reviewsToDate',
+            { reviewCount },
+          ),
+      },
+      issueInformation: {
+        tooltip: t(
+          'features.adminForm.feedback.feedbackPage.issueInformation.tooltip',
+        ),
+        issuesToDate: (issueCount: number) =>
+          t(
+            'features.adminForm.feedback.feedbackPage.issueInformation.issuesToDate',
+            { issueCount },
+          ),
+      },
+    }),
+    [t],
+  )
   // Extract form information
   const { data: form } = useAdminForm()
   const { formId } = useParams()
@@ -94,6 +141,10 @@ export const FeedbackPage = (): JSX.Element => {
     download: issueDownload,
     isGetLoading: isIssueLoading,
   }
+
+  // Table column hooks for issue and review tables
+  const issueTableColumns = useIssueTableColumns()
+  const reviewTableColumns = useReviewTableColumns()
 
   // Download button handler
   const handleFeedbackDownloadClick = useCallback(() => {
@@ -154,6 +205,7 @@ export const FeedbackPage = (): JSX.Element => {
             currentFeedbackType,
             issueProps,
             reviewProps,
+            translations,
           )}
         </Box>
         <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
@@ -165,7 +217,7 @@ export const FeedbackPage = (): JSX.Element => {
             sx={{ borderRightWidth: '0px' }}
             onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
           >
-            Issues
+            {translations.issues}
           </Button>
           <Button
             {...getFeedbackTypeButtonProps(
@@ -174,7 +226,7 @@ export const FeedbackPage = (): JSX.Element => {
             )}
             onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
           >
-            Reviews
+            {translations.reviews}
           </Button>
         </ButtonGroup>
         <Box gridArea="export" justifySelf="flex-end">
@@ -198,8 +250,8 @@ export const FeedbackPage = (): JSX.Element => {
           }
           feedbackColumns={
             currentFeedbackType === FeedbackType.Issues
-              ? ISSUE_TABLE_COLUMNS
-              : REVIEW_TABLE_COLUMNS
+              ? issueTableColumns
+              : reviewTableColumns
           }
           currentPage={currentPage - 1}
         />
@@ -229,6 +281,7 @@ export const FeedbackPage = (): JSX.Element => {
 const getReviewInformationComponent = (
   average: string | undefined,
   count: number | undefined,
+  translations: ReviewInformationTranslations,
 ): JSX.Element => {
   return (
     <Grid
@@ -241,7 +294,7 @@ const getReviewInformationComponent = (
     >
       <Flex gridArea="score" flexDir="column">
         <Text textStyle="caption-2" color="secondary.400">
-          Average Score
+          {translations.averageScore}
         </Text>
         <Text textStyle="display-2">
           {average ? Number(average).toPrecision(2) : '-.--'}
@@ -251,8 +304,8 @@ const getReviewInformationComponent = (
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
             {count}
-          </Text>
-          {simplur` ${[count || 0]}review[|s] to date`}
+          </Text>{' '}
+          {translations.reviewsToDate(count ?? 0)}
         </Text>
       </Box>
     </Grid>
@@ -261,20 +314,17 @@ const getReviewInformationComponent = (
 
 const getIssueInformationComponent = (
   count: number | undefined,
+  translations: IssueInformationTranslations,
 ): JSX.Element => {
   return (
     <Box display="flex" alignItems="center" mb="0.5rem">
       <Text textStyle="h4">
         <Text as="span" color="primary.500">
           {count}
-        </Text>
-        {simplur` ${[count || 0]}issue[|s] to date`}
+        </Text>{' '}
+        {translations.issuesToDate(count ?? 0)}
       </Text>
-      <Tooltip
-        label={`Feedback displayed here relates to form submission issues`}
-        placement="top"
-        textAlign="center"
-      >
+      <Tooltip label={translations.tooltip} placement="top" textAlign="center">
         <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
       </Tooltip>
     </Box>
@@ -285,11 +335,19 @@ const getInformationGridComponent = (
   currentFeedbackType: FeedbackType,
   issueProps: Issue,
   reviewProps: Review,
+  translations: FeedbackPageTranslations,
 ): JSX.Element => {
   if (currentFeedbackType === FeedbackType.Issues) {
-    return getIssueInformationComponent(issueProps.count)
+    return getIssueInformationComponent(
+      issueProps.count,
+      translations.issueInformation,
+    )
   }
-  return getReviewInformationComponent(reviewProps.average, reviewProps.count)
+  return getReviewInformationComponent(
+    reviewProps.average,
+    reviewProps.count,
+    translations.reviewInformation,
+  )
 }
 
 const getFeedbackTypeButtonProps = (
