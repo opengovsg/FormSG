@@ -55,15 +55,15 @@ export const enSG: Workflow = {
               'Please download the CSV template and add the emails for each option.',
             button: 'Download and edit CSV template',
             howto: {
-              title: 'How to use the CSV template:',
+              title: 'How to use the CSV',
               option: {
-                title: 'Option',
+                title: 'OPTIONS',
                 explanation: 'This contains all the options from your field.',
                 notice:
                   'Do not edit, reorder or delete anything in this column.',
               },
               email: {
-                title: 'Email(s)',
+                title: 'EMAILS(S)',
                 explanation:
                   'Add the emails to send the form to for each option.',
                 notice: 'Separate multiple email(s) with a comma.',

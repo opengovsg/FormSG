@@ -126,11 +126,6 @@ const StepOneModalContent = ({
                   'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.title',
                 )}
               </Text>
-              <Text textStyle="body-2">
-                {t(
-                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.templateCreated',
-                ) + ' '}
-              </Text>
               <Box>
                 <Text textStyle="subhead-1" color="secondary.500">
                   {t(
