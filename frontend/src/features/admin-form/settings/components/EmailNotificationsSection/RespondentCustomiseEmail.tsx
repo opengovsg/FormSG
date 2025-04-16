@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiPencil } from 'react-icons/bi'
+import { BiEditAlt, BiPencil } from 'react-icons/bi'
 import { Flex, FormLabel, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -46,7 +46,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
           variant={'outline'}
           gap="0.5rem"
         >
-          <BiPencil />
+          <BiEditAlt />
           Test
         </Button>
       </Flex>
