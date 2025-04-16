@@ -288,6 +288,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       __css={styles.othersRadio}
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
+      isHighContrast={props.isHighContrast}
     >
       {t('features.publicForm.components.fields.option.others')}
     </Radio>

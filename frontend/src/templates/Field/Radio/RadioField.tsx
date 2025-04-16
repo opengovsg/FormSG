@@ -130,6 +130,7 @@ export const RadioField = ({
               <Radio.OthersWrapper
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
+                isHighContrast={isHighContrast}
               >
                 <FormControl
                   isRequired={schema.required}
@@ -140,6 +141,7 @@ export const RadioField = ({
                   <OthersInput
                     aria-label='"Other" response'
                     {...register(othersInputName, othersValidationRules)}
+                    isHighContrast={isHighContrast}
                   />
                   <FormErrorMessage
                     ml={styles.othersInput?.ml as string}
