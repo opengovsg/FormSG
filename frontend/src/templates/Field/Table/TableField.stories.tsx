@@ -220,10 +220,3 @@ DisabledHighContrast.args = {
   isHighContrast: true,
   defaultValue: validValidationDefaultValues,
 }
-
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: false },
-  isHighContrast: true,
-  defaultValue: validValidationDefaultValues,
-}

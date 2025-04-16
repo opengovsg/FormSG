@@ -88,19 +88,6 @@ DisabledHighContrast.parameters = {
   },
 }
 
-export const EnabledHighContrast = TemplateGroup.bind({})
-EnabledHighContrast.args = {
-  name: 'testInput',
-  defaultValue: 'No',
-  isDisabled: false,
-  isHighContrast: true,
-}
-EnabledHighContrast.parameters = {
-  controls: {
-    include: ['name', 'isDisabled', 'isHighContrast'],
-  },
-}
-
 export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'testMobileInput',

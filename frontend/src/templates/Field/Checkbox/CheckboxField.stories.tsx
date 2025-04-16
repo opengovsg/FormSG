@@ -132,13 +132,3 @@ DisabledHighContrast.args = {
     othersInput: 'hello',
   },
 }
-
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: false },
-  isHighContrast: true,
-  defaultValue: {
-    value: [baseSchema.fieldOptions[0], CHECKBOX_OTHERS_INPUT_VALUE],
-    othersInput: 'hello',
-  },
-}

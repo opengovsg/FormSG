@@ -43,13 +43,6 @@ DisabledHighContrast.args = {
   isHighContrast: true,
 }
 
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  defaultValue: new Date('2021-09-13'),
-  isDisabled: false,
-  isHighContrast: true,
-}
-
 export const Error = Template.bind({})
 Error.args = {
   isInvalid: true,

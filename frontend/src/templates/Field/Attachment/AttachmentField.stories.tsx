@@ -121,10 +121,3 @@ DisabledHighContrast.args = {
   isHighContrast: true,
   defaultValue: new File(['examplebtyes'], 'example.txt'),
 }
-
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  schema: { ...baseSchema, disabled: false },
-  isHighContrast: true,
-  defaultValue: new File(['examplebtyes'], 'example.txt'),
-}

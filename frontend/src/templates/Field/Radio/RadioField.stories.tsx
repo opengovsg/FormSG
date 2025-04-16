@@ -121,24 +121,3 @@ DisabledHighContrastWithOthersSelected.args = {
     othersInput: 'test',
   },
 }
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  schema: {
-    ...baseSchema,
-    disabled: false,
-  },
-  isHighContrast: true,
-  defaultValue: {
-    value: baseSchema.fieldOptions[0],
-  },
-}
-
-export const EnabledHighContrastWithOthersSelected = Template.bind({})
-EnabledHighContrastWithOthersSelected.args = {
-  schema: { ...baseSchema, disabled: false },
-  isHighContrast: true,
-  defaultValue: {
-    value: RADIO_OTHERS_INPUT_VALUE,
-    othersInput: 'test',
-  },
-}

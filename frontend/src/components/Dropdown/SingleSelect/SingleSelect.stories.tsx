@@ -153,14 +153,6 @@ DisabledHighContrast.args = {
   isHighContrast: true,
 }
 
-export const EnabledHighContrast = Template.bind({})
-EnabledHighContrast.args = {
-  value: itemToValue(INITIAL_COMBOBOX_ITEMS[3]),
-  initialIsOpen: true,
-  isDisabled: false,
-  isHighContrast: true,
-}
-
 export const Playground: StoryFn<SingleSelectProps> = ({
   items,
   isReadOnly,
