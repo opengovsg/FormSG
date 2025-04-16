@@ -10,6 +10,11 @@ export const enSG = {
       selectRecipient:
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
+        workflowCompletionLabel: 'Notify respondents upon workflow completion',
+        customiseEmailLabel:
+          'Customise the email that notifies respondents to fill in the form',
+        customiseEmailDescription:
+          'This email will be sent to all parties from Step 2 onwards',
         step1: {
           label: 'Respondent in Step 1',
           placeholder: 'Select an email field from your form',
@@ -27,6 +32,11 @@ export const enSG = {
             "Include the admin's email to inform them whenever a workflow is completed",
           description: 'Separate multiple email addresses with a comma',
         },
+      },
+      admin: {
+        workflowCompletionLabel: 'Workflow completion',
+        workflowCompletionInfo:
+          'Notify the following email addresses when all responses for a form are completed',
       },
     },
     regular: {

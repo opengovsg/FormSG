@@ -112,14 +112,14 @@ const MrfWorkflowCompletionEmailRecipientsInput = ({
 
   const EMAILS_FIELD_NAME = 'mrfWorkflowCompletionEmails'
 
-//   const handleBlur = useCallback(() => {
-//     // Get rid of bad tags before submitting.
-//     setValue(
-//       EMAILS_FIELD_NAME,
-//       (getValues(EMAILS_FIELD_NAME) || []).filter((email) => isEmail(email)),
-//     )
-//     handleSubmit(onSubmit)()
-//   }, [getValues, handleSubmit, onSubmit, setValue])
+  //   const handleBlur = useCallback(() => {
+  //     // Get rid of bad tags before submitting.
+  //     setValue(
+  //       EMAILS_FIELD_NAME,
+  //       (getValues(EMAILS_FIELD_NAME) || []).filter((email) => isEmail(email)),
+  //     )
+  //     handleSubmit(onSubmit)()
+  //   }, [getValues, handleSubmit, onSubmit, setValue])
 
   const emailsFieldPlaceholder =
     getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
@@ -137,7 +137,7 @@ const MrfWorkflowCompletionEmailRecipientsInput = ({
           {...field}
           value={field.value as string[]}
           tagValidation={isEmail}
-        //   onBlur={handleBlur}
+          //   onBlur={handleBlur}
         />
       )}
     />
