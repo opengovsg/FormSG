@@ -269,6 +269,7 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Building name`}
+                isHighContrast={isHighContrast}
                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas in field input
