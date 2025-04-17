@@ -154,7 +154,7 @@ export const FormEmailNotificationsSection = ({
     () => new Set(settings.emails),
     [settings.emails],
   )
-
+  console.log(settings)
   const intialMrfNewResponseEmailSet = useMemo(() => {
     if ('mrfNewResponseEmails' in settings) {
       return new Set(settings.mrfNewResponseEmails ?? [])

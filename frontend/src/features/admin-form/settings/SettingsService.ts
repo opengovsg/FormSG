@@ -29,6 +29,12 @@ export interface MrfEmailNotificationSettings {
   stepOneEmailNotificationFieldId: string
 }
 
+export interface RespondentCopyCustomEmailSettings {
+  respondentCopyCustomEmailSubject: string
+  respondentCopyCustomEmailSenderName: string
+  respondentCopyCustomEmailBody: string
+}
+
 type UpdateMultiRespondentFormFn<
   T extends Partial<MultirespondentFormSettings>,
 > = (formId: string, settingsToUpdate: T) => Promise<FormSettings>
@@ -41,6 +47,11 @@ type UpdateStorageFormWhitelistSettingFn = (
 type UpdateFormFn<T extends keyof FormSettings> = (
   formId: string,
   settingsToUpdate: FormSettings[T],
+) => Promise<FormSettings>
+
+type UpdateFormMultipleFn<T extends Partial<FormSettings>> = (
+  formId: string,
+  settingsToUpdate: T,
 ) => Promise<FormSettings>
 
 export const getFormSettings = async (
@@ -153,6 +164,12 @@ export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   MrfEmailNotificationSettings
 > = async (formId, newSettings) => {
   return updateFormSettings(formId, newSettings)
+}
+
+export const updateRespondentCopyCustomEmail: UpdateFormMultipleFn<
+  RespondentCopyCustomEmailSettings
+> = async (formId, newEmailSettings) => {
+  return updateFormSettings(formId, newEmailSettings)
 }
 
 export const updateFormAuthType: UpdateFormFn<'authType'> = async (

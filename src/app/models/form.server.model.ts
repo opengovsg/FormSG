@@ -774,6 +774,20 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: Boolean,
         default: false,
       },
+
+      //variables for respondent copy custom email
+      respondentCopyCustomEmailSubject: {
+        type: String,
+        required: false,
+      },
+      respondentCopyCustomEmailSenderName: {
+        type: String,
+        required: false,
+      },
+      respondentCopyCustomEmailBody: {
+        type: String,
+        required: false,
+      },
     },
     formSchemaOptions,
   )

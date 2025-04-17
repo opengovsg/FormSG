@@ -205,6 +205,10 @@ export interface FormBase {
   metadata?: FormMetadata
   hasMultiLang?: boolean
   supportedLanguages?: Language[]
+
+  respondentCopyCustomEmailSubject: string
+  respondentCopyCustomEmailSenderName: string
+  respondentCopyCustomEmailBody: string
 }
 
 export interface EmailFormBase extends FormBase {

@@ -48,6 +48,9 @@ const FORM_SETTINGS_FIELDS = [
   'hasMultiLang',
   'supportedLanguages',
   'hasRespondentCopy',
+  'respondentCopyCustomEmailSubject',
+  'respondentCopyCustomEmailSenderName',
+  'respondentCopyCustomEmailBody',
 ] as const
 
 export const EMAIL_FORM_SETTINGS_FIELDS = [

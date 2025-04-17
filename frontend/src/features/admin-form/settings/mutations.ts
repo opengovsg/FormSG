@@ -27,6 +27,7 @@ import { adminFormKeys } from '../common/queries'
 import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
+  CustomEmailSettings,
   MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
@@ -51,6 +52,7 @@ import {
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
   updateMrfEmailNotifications,
+  updateRespondentCopyCustomEmail,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -330,6 +332,24 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormRespondentCopyCustomEmail = useMutation(
+    (CustomEmailSettings: CustomEmailSettings) =>
+      updateRespondentCopyCustomEmail(formId, {
+        respondentCopyCustomEmailSubject: CustomEmailSettings.subject,
+        respondentCopyCustomEmailSenderName: CustomEmailSettings.senderName,
+        respondentCopyCustomEmailBody: CustomEmailSettings.emailBody,
+      }),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Respondent copy custom email successfully updated',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormRespondentWorkflowCompletion = useMutation(
     (nextHasRespondentWorkflowCompletion: boolean) =>
       updateFormRespondentWorkflowCompletion(formId, {
@@ -575,6 +595,7 @@ export const useMutateFormSettings = () => {
     mutateFormMrfNewResponseEmails,
     mutateMrfEmailNotifications,
     mutateFormRespondentCopy,
+    mutateFormRespondentCopyCustomEmail,
     mutateFormRespondentWorkflowCompletion,
     mutateFormTitle,
     mutateFormAuthType,

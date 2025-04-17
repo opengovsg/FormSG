@@ -21,31 +21,39 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
 
   const hasCaptcha = useMemo(() => settings?.hasCaptcha, [settings]) //TODO: update settings from hasCaptcha to rc
 
-  const { mutateFormCaptcha } = useMutateFormSettings()
-
-  // const handleRespondentCustomiseEmail = useCallback(
-  //   (data: string) => {
-  //     if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return
-  //     console.log(data)
-  //   },
-  //   [isLoadingSettings, mutateFormCaptcha, settings],
-  // )
+  const { mutateFormRespondentCopyCustomEmail } = useMutateFormSettings()
 
   const handleRespondentCustomiseEmail = ({
     subject,
     senderName,
     emailBody,
   }: {
-    subject: string
-    senderName: string
-    emailBody: string
+    subject: string | undefined
+    senderName: string | undefined
+    emailBody: string | undefined
   }) => {
     console.log(subject)
     console.log(senderName)
     console.log(emailBody)
-    // if (!settings || isLoadingSettings || mutateFormCaptcha.isLoading) return
-    onClose()
-    return
+    if (
+      !settings ||
+      isLoadingSettings ||
+      mutateFormRespondentCopyCustomEmail.isLoading
+    )
+      return
+    return mutateFormRespondentCopyCustomEmail.mutate(
+      {
+        subject: subject,
+        senderName: senderName,
+        emailBody: emailBody,
+      },
+      {
+        onSuccess: () => {
+          // Call onClose after the mutation is successful
+          onClose()
+        },
+      },
+    )
   }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -53,10 +61,9 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
   const formMethods = useForm({
     mode: 'onChange',
     defaultValues: {
-      // subject: settings.customEmailSubject,
-      subject: '',
-      senderName: '',
-      emailBody: '',
+      subject: settings?.respondentCopyCustomEmailBody,
+      senderName: settings?.respondentCopyCustomEmailSenderName,
+      emailBody: settings?.respondentCopyCustomEmailBody,
     },
   })
 

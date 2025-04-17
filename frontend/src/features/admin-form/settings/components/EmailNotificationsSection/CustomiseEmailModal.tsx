@@ -24,9 +24,9 @@ import { NextAndBackButtonGroup } from '~components/Button'
 import Textarea from '~components/Textarea'
 
 type CustomiseEmailFormInputs = {
-  subject: string
-  senderName: string
-  emailBody: string
+  subject: string | undefined
+  senderName: string | undefined
+  emailBody: string | undefined
 }
 
 type ModalTextProps = {
