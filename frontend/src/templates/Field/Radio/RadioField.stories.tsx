@@ -61,7 +61,9 @@ const Template: StoryFn<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, any>) => {
+  const onSubmit = (
+    values: Record<string, { value: string; othersInput?: string }>,
+  ) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )
