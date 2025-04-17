@@ -331,6 +331,9 @@ export interface IMultirespondentForm extends IForm {
   stepOneEmailNotificationFieldId: string
   hasRespondentWorkflowCompletion: boolean
   mrfNewResponseEmails: string[]
+  nextStepCustomEmailSubject: string
+  nextStepCustomEmailSenderName: string
+  nextStepCustomEmailBody: string
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema

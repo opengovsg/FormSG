@@ -35,6 +35,12 @@ export interface RespondentCopyCustomEmailSettings {
   respondentCopyCustomEmailBody: string
 }
 
+export interface MrfNextStepCustomEmailSettings {
+  nextStepCustomEmailSubject: string
+  nextStepCustomEmailSenderName: string
+  nextStepCustomEmailBody: string
+}
+
 type UpdateMultiRespondentFormFn<
   T extends Partial<MultirespondentFormSettings>,
 > = (formId: string, settingsToUpdate: T) => Promise<FormSettings>
@@ -162,6 +168,12 @@ export const updateFormRespondentWorkflowCompletion: UpdateMultiRespondentFormFn
 
 export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   MrfEmailNotificationSettings
+> = async (formId, newSettings) => {
+  return updateFormSettings(formId, newSettings)
+}
+
+export const updateNextStepCustomEmail: UpdateMultiRespondentFormFn<
+  MrfNextStepCustomEmailSettings
 > = async (formId, newSettings) => {
   return updateFormSettings(formId, newSettings)
 }

@@ -56,6 +56,9 @@ export const updateSettingsValidator = celebrate({
       Joi.array().items(Joi.string().email()),
       Joi.string().email({ multiple: true }),
     ),
+    nextStepCustomEmailSubject: Joi.string(),
+    nextStepCustomEmailSenderName: Joi.string(),
+    nextStepCustomEmailBody: Joi.string(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

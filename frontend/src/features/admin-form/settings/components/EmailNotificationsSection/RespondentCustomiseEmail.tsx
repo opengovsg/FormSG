@@ -19,11 +19,12 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const hasCaptcha = useMemo(() => settings?.hasCaptcha, [settings]) //TODO: update settings from hasCaptcha to rc
+  const isMrf = settings?.responseMode == FormResponseMode.Multirespondent
 
-  const { mutateFormRespondentCopyCustomEmail } = useMutateFormSettings()
+  const { mutateFormRespondentCopyCustomEmail, mutateFormNextStepCustomEmail } =
+    useMutateFormSettings()
 
-  const handleRespondentCustomiseEmail = ({
+  const handleCustomiseEmail = ({
     subject,
     senderName,
     emailBody,
@@ -32,39 +33,60 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
     senderName: string | undefined
     emailBody: string | undefined
   }) => {
-    console.log(subject)
-    console.log(senderName)
-    console.log(emailBody)
     if (
       !settings ||
       isLoadingSettings ||
-      mutateFormRespondentCopyCustomEmail.isLoading
+      mutateFormRespondentCopyCustomEmail.isLoading ||
+      mutateFormNextStepCustomEmail.isLoading || //TODO: make these independent
+      !subject ||
+      !senderName ||
+      !emailBody //TODO: resolve undefined errors
     )
       return
-    return mutateFormRespondentCopyCustomEmail.mutate(
-      {
-        subject: subject,
-        senderName: senderName,
-        emailBody: emailBody,
-      },
-      {
-        onSuccess: () => {
-          // Call onClose after the mutation is successful
-          onClose()
-        },
-      },
-    )
+    return isMrf
+      ? mutateFormNextStepCustomEmail.mutate(
+          {
+            nextStepCustomEmailSubject: subject,
+            nextStepCustomEmailSenderName: senderName,
+            nextStepCustomEmailBody: emailBody,
+          },
+          {
+            onSuccess: () => {
+              // Call onClose after the mutation is successful
+              onClose()
+            },
+          },
+        )
+      : mutateFormRespondentCopyCustomEmail.mutate(
+          {
+            respondentCopyCustomEmailSubject: subject,
+            respondentCopyCustomEmailSenderName: senderName,
+            respondentCopyCustomEmailBody: emailBody,
+          },
+          {
+            onSuccess: () => {
+              // Call onClose after the mutation is successful
+              onClose()
+            },
+          },
+        )
   }
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: {
-      subject: settings?.respondentCopyCustomEmailBody,
-      senderName: settings?.respondentCopyCustomEmailSenderName,
-      emailBody: settings?.respondentCopyCustomEmailBody,
-    },
+    defaultValues: isMrf
+      ? {
+          subject: settings?.nextStepCustomEmailSubject,
+          senderName: settings?.nextStepCustomEmailSenderName,
+          emailBody: settings?.nextStepCustomEmailBody,
+        }
+      : {
+          subject: settings?.respondentCopyCustomEmailSubject,
+          senderName: settings?.respondentCopyCustomEmailSenderName,
+          emailBody: settings?.respondentCopyCustomEmailBody,
+        },
   })
 
   const {
@@ -75,12 +97,11 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
 
   const responseMode = settings?.responseMode
 
-  const CUSTOMISE_LABEL_DESCRIPTION =
-    responseMode == FormResponseMode.Multirespondent
-      ? t(
-          'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailLabel',
-        )
-      : undefined
+  const CUSTOMISE_LABEL_DESCRIPTION = isMrf
+    ? t(
+        'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailLabel',
+      )
+    : undefined
   return (
     <>
       <Skeleton isLoaded={!isLoadingSettings && !!settings}>
@@ -90,10 +111,8 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
           onClose={onClose}
           control={control}
           errors={errors}
-          onSubmit={handleSubmit((values) =>
-            handleRespondentCustomiseEmail(values),
-          )}
-          responseMode={responseMode} //TODO: Fix settings that can be undefined
+          onSubmit={handleSubmit((values) => handleCustomiseEmail(values))}
+          responseMode={responseMode}
         />
         <Flex justifyContent="space-between" alignItems="center" mb={2}>
           <FormLabel isRequired description={CUSTOMISE_LABEL_DESCRIPTION}>

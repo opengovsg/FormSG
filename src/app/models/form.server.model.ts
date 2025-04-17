@@ -409,6 +409,20 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     ],
     required: true,
   },
+
+  //variables for next step custom email
+  nextStepCustomEmailSubject: {
+    type: String,
+    required: false,
+  },
+  nextStepCustomEmailSenderName: {
+    type: String,
+    required: false,
+  },
+  nextStepCustomEmailBody: {
+    type: String,
+    required: false,
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(

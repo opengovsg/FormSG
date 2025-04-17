@@ -27,8 +27,9 @@ import { adminFormKeys } from '../common/queries'
 import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
-  CustomEmailSettings,
   MrfEmailNotificationSettings,
+  MrfNextStepCustomEmailSettings,
+  RespondentCopyCustomEmailSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
@@ -52,6 +53,7 @@ import {
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
   updateMrfEmailNotifications,
+  updateNextStepCustomEmail,
   updateRespondentCopyCustomEmail,
 } from './SettingsService'
 
@@ -333,17 +335,30 @@ export const useMutateFormSettings = () => {
   )
 
   const mutateFormRespondentCopyCustomEmail = useMutation(
-    (CustomEmailSettings: CustomEmailSettings) =>
-      updateRespondentCopyCustomEmail(formId, {
-        respondentCopyCustomEmailSubject: CustomEmailSettings.subject,
-        respondentCopyCustomEmailSenderName: CustomEmailSettings.senderName,
-        respondentCopyCustomEmailBody: CustomEmailSettings.emailBody,
-      }),
+    (RespondentCopyCustomEmailSettings: RespondentCopyCustomEmailSettings) =>
+      updateRespondentCopyCustomEmail(
+        formId,
+        RespondentCopyCustomEmailSettings,
+      ),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
           toastDescription: 'Respondent copy custom email successfully updated',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormNextStepCustomEmail = useMutation(
+    (MrfNextStepCustomEmailSettings: MrfNextStepCustomEmailSettings) =>
+      updateNextStepCustomEmail(formId, MrfNextStepCustomEmailSettings),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Next step custom email successfully updated',
         })
       },
       onError: handleError,
@@ -596,6 +611,7 @@ export const useMutateFormSettings = () => {
     mutateMrfEmailNotifications,
     mutateFormRespondentCopy,
     mutateFormRespondentCopyCustomEmail,
+    mutateFormNextStepCustomEmail,
     mutateFormRespondentWorkflowCompletion,
     mutateFormTitle,
     mutateFormAuthType,

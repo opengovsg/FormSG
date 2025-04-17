@@ -244,6 +244,9 @@ export interface MultirespondentFormBase extends FormBase {
   stepOneEmailNotificationFieldId?: string
   hasRespondentWorkflowCompletion: boolean
   mrfNewResponseEmails: string[]
+  nextStepCustomEmailSubject: string
+  nextStepCustomEmailSenderName: string
+  nextStepCustomEmailBody: string
 }
 
 /**
