@@ -595,7 +595,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     submission,
     attachments,
     responsesData,
-    autoReplyMailDatas: recipientData,
+    autoReplyMailDatas: recipientData, //TODO: based on whitelist, update autoReplyMaildata
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({
