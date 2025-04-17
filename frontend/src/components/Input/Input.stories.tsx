@@ -51,11 +51,20 @@ Success.args = {
   placeholder: 'Test placeholder',
   defaultValue: 'Field success',
 }
+
 export const Disabled = Template.bind({})
 Disabled.args = {
   defaultValue: 'Some text',
   placeholder: 'Test placeholder',
   isDisabled: true,
+}
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  defaultValue: 'Some text',
+  placeholder: 'Test placeholder',
+  isDisabled: true,
+  isHighContrast: true,
 }
 
 export const Playground: StoryFn = ({

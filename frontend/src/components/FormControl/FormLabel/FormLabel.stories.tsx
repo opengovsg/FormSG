@@ -49,3 +49,9 @@ WithTooltipText.args = {
   tooltipText: 'This is a tooltip',
   children: 'This is a label that is very very very long',
 }
+
+export const HighContrast = Template.bind({})
+HighContrast.args = {
+  children: 'This is a label that is very very very long',
+  isHighContrast: true,
+}

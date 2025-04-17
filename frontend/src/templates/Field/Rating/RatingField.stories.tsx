@@ -46,13 +46,21 @@ const requiredSchema: RatingFieldSchema = {
 
 interface StoryRatingFieldProps extends RatingFieldProps {
   triggerValidation?: boolean
+  value?: string
 }
 
 const Template: StoryFn<StoryRatingFieldProps> = ({
   triggerValidation,
+  value,
   ...args
 }) => {
-  const formMethods = useForm()
+  const formMethods = useForm({
+    defaultValues: value
+      ? {
+          [args.schema._id]: value,
+        }
+      : undefined,
+  })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
@@ -62,7 +70,7 @@ const Template: StoryFn<StoryRatingFieldProps> = ({
 
   useEffect(() => {
     if (triggerValidation) formMethods.trigger()
-  }, [formMethods, triggerValidation])
+  }, [formMethods, triggerValidation, value, args.schema._id])
 
   return (
     <FormProvider {...formMethods}>
@@ -102,4 +110,11 @@ RatingFieldHeart.args = {
       steps: 6,
     },
   }),
+}
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...requiredSchema, disabled: true },
+  isHighContrast: true,
+  value: '4',
 }

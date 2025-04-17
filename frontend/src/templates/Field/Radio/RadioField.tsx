@@ -29,6 +29,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  isHighContrast,
 }: RadioFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
@@ -81,7 +82,11 @@ export const RadioField = ({
   })
 
   return (
-    <FieldContainer schema={schema} errorKey={radioInputName}>
+    <FieldContainer
+      schema={schema}
+      errorKey={radioInputName}
+      isHighContrast={isHighContrast}
+    >
       <Controller
         name={radioInputName}
         rules={validationRules}
@@ -116,6 +121,7 @@ export const RadioField = ({
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
                 isDisabled={schema.disabled}
+                isHighContrast={isHighContrast}
               >
                 {option}
               </Radio>
@@ -124,6 +130,7 @@ export const RadioField = ({
               <Radio.OthersWrapper
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
+                isHighContrast={isHighContrast}
               >
                 <FormControl
                   isRequired={schema.required}
@@ -134,6 +141,7 @@ export const RadioField = ({
                   <OthersInput
                     aria-label='"Other" response'
                     {...register(othersInputName, othersValidationRules)}
+                    isHighContrast={isHighContrast}
                   />
                   <FormErrorMessage
                     ml={styles.othersInput?.ml as string}

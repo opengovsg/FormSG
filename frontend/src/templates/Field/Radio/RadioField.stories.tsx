@@ -10,6 +10,7 @@ import Button from '~components/Button'
 
 import { RadioFieldSchema } from '../types'
 
+import { RADIO_OTHERS_INPUT_VALUE } from './constants'
 import {
   RadioField as RadioFieldComponent,
   RadioFieldProps,
@@ -42,12 +43,25 @@ const baseSchema: RadioFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-const Template: StoryFn<RadioFieldProps> = (args) => {
-  const formMethods = useForm()
+interface StoryRadioFieldProps extends RadioFieldProps {
+  defaultValue?: {
+    value: string
+    othersInput?: string
+  }
+}
+
+const Template: StoryFn<StoryRadioFieldProps> = ({ defaultValue, ...args }) => {
+  const formMethods = useForm({
+    defaultValues: defaultValue
+      ? {
+          [args.schema._id]: defaultValue,
+        }
+      : undefined,
+  })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string>) => {
+  const onSubmit = (values: Record<string, any>) => {
     setSubmitValues(
       JSON.stringify(values[args.schema._id]) || 'Nothing was selected',
     )
@@ -84,4 +98,26 @@ ValidationOptional.args = {
 export const WithoutOthersOption = Template.bind({})
 WithoutOthersOption.args = {
   schema: merge({}, baseSchema, { othersRadioButton: false }),
+}
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: {
+    ...baseSchema,
+    disabled: true,
+  },
+  isHighContrast: true,
+  defaultValue: {
+    value: baseSchema.fieldOptions[0],
+  },
+}
+
+export const DisabledHighContrastWithOthersSelected = Template.bind({})
+DisabledHighContrastWithOthersSelected.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: {
+    value: RADIO_OTHERS_INPUT_VALUE,
+    othersInput: 'test',
+  },
 }

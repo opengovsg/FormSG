@@ -18,6 +18,8 @@ export interface DatePickerProps extends DatePickerBaseProps, CalendarProps {
   onInputValueChange?: (value: string) => void
   /** Default value for uncontrolled input. */
   defaultInputValue?: string
+  /** Better visibility of values in the disabled component when set to true. */
+  isHighContrast?: boolean
 }
 
 export const DatePicker = forwardRef<DatePickerProps, 'input'>((props, ref) => {

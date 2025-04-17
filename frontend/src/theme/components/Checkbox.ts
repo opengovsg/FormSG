@@ -144,8 +144,19 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
     },
   }
 }
+
+const variantHighContrast: PartsStyleFunction<typeof parts> = (props) => ({
+  label: {
+    _disabled: {
+      color: 'neutral.800',
+      opacity: 1,
+    },
+  },
+})
+
 const variants = {
   fullWidth: variantFullWidth,
+  highContrast: variantHighContrast,
 }
 
 export const Checkbox = {
