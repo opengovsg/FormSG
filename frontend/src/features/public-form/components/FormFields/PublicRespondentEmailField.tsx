@@ -68,9 +68,6 @@ export const PublicRespondentEmailField = ({
           </Box>
         )}
       />
-      {/* <FormErrorMessage>
-        {get(errors, `${RESPONDENT_EMAIL_FIELD_ID}.message`)}
-      </FormErrorMessage> */}
     </FormControl>
   )
 }
