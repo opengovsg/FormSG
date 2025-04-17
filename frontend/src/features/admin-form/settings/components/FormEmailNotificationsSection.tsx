@@ -246,7 +246,7 @@ export const FormEmailNotificationsSection = ({
         <Stack spacing={'1.5rem'}>
           <RespondentCopyToggle />
           {isMrf && <RespondentWorkflowCompletionToggle />}
-          {!isMrf && <RespondentCustomiseEmail />}
+          <RespondentCustomiseEmail />
         </Stack>
       </FormProvider>
     </>

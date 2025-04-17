@@ -2,9 +2,12 @@ import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiEditAlt } from 'react-icons/bi'
-import { Flex, FormLabel, Skeleton, useDisclosure } from '@chakra-ui/react'
+import { Flex, Skeleton, Stack, useDisclosure } from '@chakra-ui/react'
+
+import { FormResponseMode } from '~shared/types'
 
 import Button from '~components/Button'
+import FormLabel from '~components/FormControl/FormLabel'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
@@ -63,6 +66,14 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
     handleSubmit,
   } = formMethods
 
+  const responseMode = settings?.responseMode
+
+  const CUSTOMISE_LABEL_DESCRIPTION =
+    responseMode == FormResponseMode.Multirespondent
+      ? t(
+          'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailLabel',
+        )
+      : undefined
   return (
     <>
       <Skeleton isLoaded={!isLoadingSettings && !!settings}>
@@ -75,18 +86,17 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
           onSubmit={handleSubmit((values) =>
             handleRespondentCustomiseEmail(values),
           )}
-          responseMode={settings?.responseMode} //TODO: Fix settings that can be undefined
+          responseMode={responseMode} //TODO: Fix settings that can be undefined
         />
-        <Flex
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-          mt="2rem"
-        >
-          <FormLabel>
-            {t(
-              'features.adminForm.settings.emailNotifications.section.regular.customiseEmailLabel',
-            )}
+        <Flex justifyContent="space-between" alignItems="center" mb={2}>
+          <FormLabel isRequired description={CUSTOMISE_LABEL_DESCRIPTION}>
+            {responseMode == FormResponseMode.Multirespondent
+              ? t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailLabel',
+                )
+              : t(
+                  'features.adminForm.settings.emailNotifications.section.regular.customiseEmailLabel',
+                )}
           </FormLabel>
           <Button
             onClick={onOpen}

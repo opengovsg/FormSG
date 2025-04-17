@@ -115,12 +115,7 @@ const RespondentWorkflowCompletionInput = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Box>
-        <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-          {t(
-            'features.adminForm.settings.emailNotifications.section.mrf.selectRecipient',
-          )}
-        </Text>
+      <Box mt={'1.5rem'}>
         <Box>
           <FormLabel mb="0.75rem" textColor="secondary.700">
             {t(
@@ -150,7 +145,7 @@ const RespondentWorkflowCompletionInput = ({
             />
           </Skeleton>
         </Box>
-        <Box my="1.5rem">
+        <Box mt="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
             {t(
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
