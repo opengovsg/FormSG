@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { UseQueryResult } from 'react-query'
 import { Box, FormLabel, Skeleton, Text } from '@chakra-ui/react'
 import { isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { MultirespondentFormSettings } from '~shared/types'
+import { FormResponseMode, MultirespondentFormSettings } from '~shared/types'
 
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import Toggle from '~components/Toggle'
@@ -191,19 +192,20 @@ const RespondentWorkflowCompletionInput = ({
 export const RespondentWorkflowCompletionToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
-    useAdminFormSettings()
+    useAdminFormSettings() as UseQueryResult<MultirespondentFormSettings> // force multirespondentformsettings
 
   const hasRespondentWorkflowCompletion = useMemo(
-    // () => settings?.hasRespondentWorkflowCompletion, //TODO: replace this
-    () => settings?.hasRespondentCopy,
+    () => settings?.hasRespondentWorkflowCompletion,
     [settings],
   )
 
   const { mutateFormRespondentWorkflowCompletion } = useMutateFormSettings()
 
-  const [showInputs, setShowInputs] = useState<boolean>(
-    settings ? settings.hasRespondentCopy : false, //TODO: replace this
-  )
+  // const [showInputs, setShowInputs] = useState<boolean>(
+  //   settings?.responseMode === FormResponseMode.Multirespondent
+  //     ? settings.hasRespondentWorkflowCompletion
+  //     : false,
+  // )
 
   const handleToggleRespondentWorkflowCompletion = useCallback(() => {
     if (
@@ -213,10 +215,9 @@ export const RespondentWorkflowCompletionToggle = (): JSX.Element => {
     )
       return
     const nextHasToggleRespondentWorkflowCompletion =
-      // !settings.hasToggleRespondentWorkflowCompletion
-      !settings.hasRespondentCopy //TODO: replace this
+      !settings.hasRespondentWorkflowCompletion
 
-    setShowInputs(nextHasToggleRespondentWorkflowCompletion)
+    // setShowInputs(nextHasToggleRespondentWorkflowCompletion)
     return mutateFormRespondentWorkflowCompletion.mutate(
       nextHasToggleRespondentWorkflowCompletion,
     )
@@ -232,7 +233,7 @@ export const RespondentWorkflowCompletionToggle = (): JSX.Element => {
         )}
         onChange={() => handleToggleRespondentWorkflowCompletion()}
       />
-      {showInputs && (
+      {hasRespondentWorkflowCompletion && settings && (
         <RespondentWorkflowCompletionInput
           settings={settings}
           isDisabled={false}

@@ -387,6 +387,10 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     default: '',
   },
+  hasRespondentWorkflowCompletion: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -747,7 +751,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         require: false,
       },
 
-      //boolean value to enable respondent copy feature
+      //boolean value to enable respondent copy emails
       hasRespondentCopy: {
         type: Boolean,
         default: false,

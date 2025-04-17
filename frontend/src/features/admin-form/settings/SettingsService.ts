@@ -137,6 +137,12 @@ export const updateFormRespondentCopy: UpdateFormFn<
   })
 }
 
+export const updateFormRespondentWorkflowCompletion: UpdateMultiRespondentFormFn<{
+  hasRespondentWorkflowCompletion: boolean
+}> = async (formId, newHasRespondentWorkflowCompletion) => {
+  return updateFormSettings(formId, newHasRespondentWorkflowCompletion)
+}
+
 export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   MrfEmailNotificationSettings
 > = async (formId, newSettings) => {

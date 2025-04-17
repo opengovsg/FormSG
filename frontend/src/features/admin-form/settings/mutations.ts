@@ -9,6 +9,7 @@ import {
   FormSettings,
   FormStatus,
   FormSupportedLanguages,
+  MultirespondentFormSettings,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
@@ -38,6 +39,7 @@ import {
   updateFormIssueNotification,
   updateFormLimit,
   updateFormRespondentCopy,
+  updateFormRespondentWorkflowCompletion,
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
@@ -302,7 +304,6 @@ export const useMutateFormSettings = () => {
       updateFormRespondentCopy(formId, nextHasRespondentCopy),
     {
       onSuccess: (newData) => {
-        console.log(newData)
         handleSuccess({
           newData,
           toastDescription: `hasRespondentCopy is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
@@ -313,15 +314,28 @@ export const useMutateFormSettings = () => {
   )
 
   const mutateFormRespondentWorkflowCompletion = useMutation(
-    (nextHasRespondentCopy: boolean) =>
-      updateFormRespondentCopy(formId, nextHasRespondentCopy),
+    (nextHasRespondentWorkflowCompletion: boolean) =>
+      updateFormRespondentWorkflowCompletion(formId, {
+        hasRespondentWorkflowCompletion: nextHasRespondentWorkflowCompletion,
+      }),
     {
       onSuccess: (newData) => {
         console.log(newData)
-        handleSuccess({
-          newData,
-          toastDescription: `hasRespondentWorkflowCompletion is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
-        })
+        if ('hasRespondentWorkflowCompletion' in newData) {
+          handleSuccess({
+            newData,
+            toastDescription: `hasRespondentWorkflowCompletion is now ${newData?.hasRespondentWorkflowCompletion ? 'enabled' : 'disabled'} on your form`,
+          })
+        } else {
+          toast({
+            title: 'Unexpected form type',
+            description:
+              'This form does not support respondent workflow completion.',
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+          })
+        }
       },
       onError: handleError,
     },
