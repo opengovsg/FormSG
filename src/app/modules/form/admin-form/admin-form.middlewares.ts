@@ -49,6 +49,10 @@ export const updateSettingsValidator = celebrate({
     ),
     hasRespondentCopy: Joi.boolean(),
     hasRespondentWorkflowCompletion: Joi.boolean(),
+    mrfNewResponseEmails: Joi.alternatives().try(
+      Joi.array().items(Joi.string().email()),
+      Joi.string().email({ multiple: true }),
+    ),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

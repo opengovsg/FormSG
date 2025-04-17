@@ -95,21 +95,20 @@ const AdminEmailRecipientsInput = ({
   )
 }
 
-// MRF Workflow Completion Input
-// TODO: similar to AdminEmailRecipientsInput, see if can extract out
-interface MrfWorkflowCompletionEmailRecipientsInputProps {
-  onSubmit: (params: { mrfWorkflowOutcomeEmails: string[] }) => void
+// MRF NewResponsesInput will update emails to receive per-step responses
+interface MrfNewResponseRecipientsInputProps {
+  onSubmit: (params: { newResponseEmails: string[] }) => void
 }
 
-const MrfWorkflowCompletionEmailRecipientsInput = ({
+const MrfNewResponseRecipientsInput = ({
   onSubmit,
-}: MrfWorkflowCompletionEmailRecipientsInputProps): JSX.Element => {
+}: MrfNewResponseRecipientsInputProps): JSX.Element => {
   const { getValues, setValue, control, handleSubmit } = useFormContext<{
-    mrfWorkflowOutcomeEmails: string[]
+    newResponseEmails: string[]
     isRequired: boolean
   }>()
 
-  const EMAILS_FIELD_NAME = 'mrfWorkflowOutcomeEmails'
+  const EMAILS_FIELD_NAME = 'newResponseEmails'
 
   const handleBlur = useCallback(() => {
     // Get rid of bad tags before submitting.
@@ -124,12 +123,12 @@ const MrfWorkflowCompletionEmailRecipientsInput = ({
     getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
 
   return (
-    <Controller<{ mrfWorkflowOutcomeEmails: string[]; isRequired: boolean }>
+    <Controller<{ newResponseEmails: string[]; isRequired: boolean }>
       control={control}
       name={EMAILS_FIELD_NAME}
       rules={
         OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<{
-          mrfWorkflowOutcomeEmails: string[]
+          newResponseEmails: string[]
           isRequired: boolean
         }>
       }
@@ -155,6 +154,14 @@ export const FormEmailNotificationsSection = ({
     () => new Set(settings.emails),
     [settings.emails],
   )
+
+  const intialMrfNewResponseEmailSet = useMemo(() => {
+    if ('mrfNewResponseEmails' in settings) {
+      return new Set(settings.mrfNewResponseEmails ?? [])
+    }
+    return new Set()
+  }, [settings])
+
   const formMethods = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -170,7 +177,7 @@ export const FormEmailNotificationsSection = ({
     reset,
   } = formMethods
 
-  const { mutateFormEmails, mutateFormAdminWorkflowCompletionEmails } =
+  const { mutateFormEmails, mutateFormMrfNewResponseEmails } =
     useMutateFormSettings()
 
   const handleSubmitEmails = useCallback(
@@ -181,20 +188,18 @@ export const FormEmailNotificationsSection = ({
     [initialEmailSet, mutateFormEmails],
   )
 
-  const handleSubmitAdminWorkflowCompletionEmails = useCallback(
-    ({ mrfWorkflowOutcomeEmails }: { mrfWorkflowOutcomeEmails: string[] }) => {
+  const handleSubmitMrfNewResponseEmails = useCallback(
+    ({ newResponseEmails }: { newResponseEmails: string[] }) => {
       if (
         isEqual(
-          new Set(mrfWorkflowOutcomeEmails.filter(Boolean)),
-          initialEmailSet,
+          new Set(newResponseEmails.filter(Boolean)),
+          intialMrfNewResponseEmailSet,
         )
       )
         return
-      return mutateFormAdminWorkflowCompletionEmails.mutate(
-        mrfWorkflowOutcomeEmails,
-      )
+      return mutateFormMrfNewResponseEmails.mutate(newResponseEmails)
     },
-    [initialEmailSet, mutateFormAdminWorkflowCompletionEmails],
+    [intialMrfNewResponseEmailSet, mutateFormMrfNewResponseEmails],
   )
 
   useEffect(() => reset({ emails: settings.emails }), [settings.emails, reset])
@@ -242,8 +247,8 @@ export const FormEmailNotificationsSection = ({
                   'features.adminForm.settings.emailNotifications.section.regular.label',
                 )}
               </FormLabel>
-              <MrfWorkflowCompletionEmailRecipientsInput
-                onSubmit={handleSubmitAdminWorkflowCompletionEmails}
+              <MrfNewResponseRecipientsInput
+                onSubmit={handleSubmitMrfNewResponseEmails}
               />
               <FormErrorMessage>
                 {get(errors, 'mrfWorkflowOutcomeEmails.message')}

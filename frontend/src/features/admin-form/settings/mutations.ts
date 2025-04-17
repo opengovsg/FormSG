@@ -38,6 +38,7 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormMrfNewResponseEmails,
   updateFormRespondentCopy,
   updateFormRespondentWorkflowCompletion,
   updateFormStatus,
@@ -279,6 +280,22 @@ export const useMutateFormSettings = () => {
         handleSuccess({
           newData,
           toastDescription: 'Emails successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormMrfNewResponseEmails = useMutation(
+    (nextMrfNewResponseEmails: string[]) =>
+      updateFormMrfNewResponseEmails(formId, {
+        mrfNewResponseEmails: nextMrfNewResponseEmails,
+      }),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Mrf new response emails successfully updated.',
         })
       },
       onError: handleError,
@@ -555,6 +572,7 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,
+    mutateFormMrfNewResponseEmails,
     mutateMrfEmailNotifications,
     mutateFormRespondentCopy,
     mutateFormRespondentWorkflowCompletion,

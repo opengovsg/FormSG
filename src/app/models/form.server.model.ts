@@ -391,6 +391,24 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: Boolean,
     default: false,
   },
+  mrfNewResponseEmails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    set: transformEmails,
+    validate: [
+      (v: string[]) => {
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return true
+        return v.every((email) => validator.isEmail(email))
+      },
+      'Please provide valid email addresses',
+    ],
+    required: true,
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
