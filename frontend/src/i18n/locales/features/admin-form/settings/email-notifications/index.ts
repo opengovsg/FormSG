@@ -13,6 +13,7 @@ export interface EmailNotifications extends HasTitle {
       respondents: {
         workflowCompletionLabel: string
         customiseEmailLabel: string
+        customiseEmailDescription: string
         step1: {
           label: string
           placeholder: string

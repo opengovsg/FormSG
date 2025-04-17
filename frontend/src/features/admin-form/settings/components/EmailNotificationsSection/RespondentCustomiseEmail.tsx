@@ -99,7 +99,7 @@ export const RespondentCustomiseEmail = (): JSX.Element => {
 
   const CUSTOMISE_LABEL_DESCRIPTION = isMrf
     ? t(
-        'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailLabel',
+        'features.adminForm.settings.emailNotifications.section.mrf.respondents.customiseEmailDescription',
       )
     : undefined
   return (
