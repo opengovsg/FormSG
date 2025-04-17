@@ -63,7 +63,7 @@ export const enSG: Workflow = {
                   'Do not edit, reorder or delete anything in this column.',
               },
               email: {
-                title: 'EMAILS(S)',
+                title: 'EMAIL(S)',
                 explanation:
                   'Add the emails to send the form to for each option.',
                 notice: 'Separate multiple email(s) with a comma.',
