@@ -22,22 +22,10 @@ on:
         description: 'ECS memory to use'
         required: true
         type: number
-      aws-account-id:
-        description: 'AWS account ID to use'
-        required: true
-        type: string
       aws-region:
         description: 'AWS region to use'
         required: true
         default: 'ap-southeast-1'
-        type: string
-      cicd-role:
-        description: 'AWS IAM role to assume by GitHub action runner'
-        required: true
-        type: string
-      ecr-repository:
-        description: 'ECR repository to push image to'
-        required: true
         type: string
       ecs-cluster-name:
         description: 'ECS cluster to deploy to'
@@ -83,28 +71,32 @@ on:
         description: 'FormSG SDK mode'
         required: true
         type: string
-      dd-env:
-        description: 'Datadog environment'
+
+    secrets:
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
         required: true
-        type: string
-      dd-sample-rate:
-        description: 'Datadog sample rate'
+      aws-account-id:
+        description: 'AWS account ID to use'
+        required: false
+      ecr-repository:
+        description: 'ECR repository to push image to'
         required: true
-        type: number
-      dd-rum-client-token:
-        description: 'Datadog RUM client token'
-        required: true
-        type: string
       ga-tracking-id:
         description: 'Google Analytics tracking ID'
         required: true
-        type: string
+      dd-env:
+        description: 'Datadog environment'
+        required: true
       dd-rum-app-id:
         description: 'Datadog RUM app ID'
         required: true
-        type: string
-
-    secrets:
+      dd-rum-client-token:
+        description: 'Datadog RUM client token'
+        required: true
+      dd-sample-rate:
+        description: 'Datadog sample rate'
+        required: true
       DD_API_KEY:
         description: 'Datadog API key'
         required: true
@@ -135,11 +127,11 @@ jobs:
 
       - name: Inject frontend build env vars
         env:
-          VITE_APP_DD_RUM_APP_ID: ${{ inputs.dd-rum-app-id }}
-          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ inputs.dd-rum-client-token }}
-          VITE_APP_DD_RUM_ENV: ${{ inputs.dd-env }}
-          VITE_APP_DD_SAMPLE_RATE: ${{ inputs.dd-sample-rate }}
-          VITE_APP_GA_TRACKING_ID: ${{ inputs.ga-tracking-id }}
+          VITE_APP_DD_RUM_APP_ID: ${{ secrets.dd-rum-app-id }}
+          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.dd-rum-client-token }}
+          VITE_APP_DD_RUM_ENV: ${{ secrets.dd-env }}
+          VITE_APP_DD_SAMPLE_RATE: ${{ secrets.dd-sample-rate }}
+          VITE_APP_GA_TRACKING_ID: ${{ secrets.ga-tracking-id }}
           VITE_APP_FORMSG_SDK_MODE: ${{ inputs.react-app-form-sg-sdk-mode }}
           VITE_APP_URL: ${{ inputs.app-url }}
         run: |
@@ -154,7 +146,7 @@ jobs:
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.cicd-role }}
+          role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
 
       - name: Login to Amazon ECR
@@ -168,8 +160,8 @@ jobs:
         uses: docker/build-push-action@v6
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-          DD_ENV: ${{ inputs.dd-env }}
-          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          DD_ENV: ${{ secrets.dd-env }}
+          ECR_REPOSITORY: ${{ secrets.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
           context: .
@@ -185,8 +177,18 @@ jobs:
 
       - name: Replace variables in task definition file
         id: replace-variables
+        # NOTE: 
+        # This if else check for aws-account-id is only required since AWS account ID is not set in the GitHub secrets.
+        # If aws-account-id is provided, use it directly.
+        # Otherwise, extract it from the IAM role ARN which follows the format:
+        # arn:aws:iam::<account-id>:role/<role-name>
         run: |
-          sed -i 's/<AWS_ACCOUNT_ID>/${{ inputs.aws-account-id }}/g' ${{ inputs.ecs-task-definition-path }}
+          if [[ -n "${{ secrets.aws-account-id }}" ]]; then
+            AWS_ACCOUNT_ID="${{ secrets.aws-account-id }}"
+          else
+            AWS_ACCOUNT_ID=$(echo "${{ secrets.cicd-role }}" | sed -n 's/.*:iam::\([0-9]*\):.*/\1/p')
+          fi
+          sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
@@ -203,7 +205,7 @@ jobs:
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ env.IMAGE_TAG }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ecr-repository }}:${{ env.IMAGE_TAG }}
           # TODO: check again if ENV_TYPE and ENV_SITE_NAME is still required here
           environment-variables: |
             ENV_TYPE=${{ inputs.environment }}
