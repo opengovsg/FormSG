@@ -24,26 +24,32 @@ jobs:
     needs: extract-account-id
     uses: ./.github/workflows/deploy-ecs.yml
     with:
+      # Environment configuration
       environment: 'uat'
       environment-site-name: 'uat'
       shortEnv: 'uat'
+      app-version: ${{ github.sha }}
+      app-url: 'https://uat.form.gov.sg'
+      react-app-form-sg-sdk-mode: 'staging'
+      # AWS configuration
+      aws-region: 'ap-southeast-1'
+      # ECS configuration
       ecs-cpu: 1024
       ecs-memory: 2048
-      codedeploy-application: 'formsg-uat-ecs-app'
-      codedeploy-appspec-path: deploy/appspec.yml
-      codedeploy-deployment-group: 'formsg-uat-ecs-dg'
       ecs-cluster-name: 'formsg-uat-ecs'
       ecs-service-name: 'formsg-uat-ecs-service'
       ecs-task-definition: 'formsg-uat-ecs'
       ecs-task-definition-path: 'deploy/ecs-task-definition.json'
       ecs-container-name: 'formsg-app'
-      app-version: ${{ github.sha }}
+      # CodeDeploy configuration
+      codedeploy-application: 'formsg-uat-ecs-app'
+      codedeploy-appspec-path: deploy/appspec.yml
+      codedeploy-deployment-group: 'formsg-uat-ecs-dg'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.UAT_AWS_ACCOUNT_ID }}
       cicd-role: ${{ secrets.UAT_AWS_CI_ROLE_TO_ASSUME }}
       ecr-repository: ${{ secrets.UAT_ECR_REPOSITORY }}
-
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
       dd-env: ${{ secrets.DD_ENV }}
