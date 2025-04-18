@@ -1,0 +1,29 @@
+name: Deploy Legacy Virus Scanner to new OGP AWS production account
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - uat
+  # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
+  schedule:
+    - cron: '0 16 * * *'
+
+
+jobs:
+  deploy-scanner:
+    name: Deploy Scanner
+    uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
+    with:
+      checkoutBranch: uat
+      environment: uat
+      provisionedConcurrency: 1
+    secrets:
+      cicd-role: ${{ secrets.UAT_AWS_CI_ROLE_TO_ASSUME }}
