@@ -23,4 +23,3 @@ jobs:
       provisionedConcurrency: 1
     secrets: 
       cicd-role: ${{ secrets.STG_ALT3_AWS_CI_ROLE_TO_ASSUME }}
-    secrets: inherit
