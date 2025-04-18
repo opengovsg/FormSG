@@ -15,15 +15,15 @@ on:
         description: 'Branch to checkout code from'
         required: true
         type: string
-      # For AWS authentication 
-      cicd-role: 
-        description: 'AWS IAM role to assume by GitHub action runner'
-        required: true
-        type: string
       aws-region: 
         description: 'AWS region to use'
-        required: true
+        required: false
         default: 'ap-southeast-1'
+        type: string
+    secrets:
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
+        required: true
         type: string
 
 permissions:
@@ -54,7 +54,7 @@ jobs:
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.cicd-role }}
+          role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
         working-directory: ./serverless/virus-scanner-guardduty
