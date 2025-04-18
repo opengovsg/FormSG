@@ -1,0 +1,53 @@
+name: Deploy FormSG app to uat
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  extract-account-id:
+    runs-on: ubuntu-latest
+    outputs:
+      aws_account_id: ${{ steps.set-account-id.outputs.aws_account_id }}
+    steps:
+      - id: set-account-id
+        run: |
+          ACCOUNT_ID=$(echo "${{ secrets.AWS_CI_ROLE_TO_ASSUME }}" | cut -d':' -f5)
+          echo "aws_account_id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
+  deploy:
+    name: Deploy
+    needs: extract-account-id
+    uses: ./.github/workflows/deploy-ecs.yml
+    with:
+      environment: 'uat'
+      environment-site-name: 'uat'
+      shortEnv: 'uat'
+      ecs-cpu: 1024
+      ecs-memory: 2048
+      codedeploy-application: 'formsg-uat-ecs-app'
+      codedeploy-appspec-path: deploy/appspec.yml
+      codedeploy-deployment-group: 'formsg-uat-ecs-dg'
+      ecs-cluster-name: 'formsg-uat-ecs'
+      ecs-service-name: 'formsg-uat-ecs-service'
+      ecs-task-definition: 'formsg-uat-ecs'
+      ecs-task-definition-path: 'deploy/ecs-task-definition.json'
+      ecs-container-name: 'formsg-app'
+      app-version: ${{ github.sha }}
+    secrets:
+      # AWS credentials and configuration
+      aws-account-id: ${{ secrets.UAT_AWS_ACCOUNT_ID }}
+      cicd-role: ${{ secrets.UAT_AWS_CI_ROLE_TO_ASSUME }}
+      ecr-repository: ${{ secrets.UAT_ECR_REPOSITORY }}
+
+      # Monitoring and analytics configuration
+      ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
+      dd-env: ${{ secrets.DD_ENV }}
+      dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
+      dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
+      dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
