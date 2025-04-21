@@ -634,6 +634,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       submissionId,
       attachments,
       respondentEmails,
+    }).mapErr((error) => {
+      logger.error({
+        message: 'Send multirespondent respondent copy email error',
+        meta: logMeta,
+        error,
+      })
+      return error
     })
   }
 
@@ -863,6 +870,13 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       submissionId,
       attachments,
       respondentEmails,
+    }).mapErr((error) => {
+      logger.error({
+        message: 'Send multirespondent respondent copy email error',
+        meta: logMeta,
+        error,
+      })
+      return error
     })
   }
 
