@@ -13,6 +13,14 @@ export const Textarea = {
         py: '0.5rem',
       }
     },
+    highContrast: (props: StyleFunctionProps) => {
+      return {
+        ...Input.variants.highContrast(props).field,
+        transitionProperty: 'common',
+        transitionDuration: 'normal',
+        py: '0.5rem',
+      }
+    },
   },
   defaultProps: {
     variant: 'outline',

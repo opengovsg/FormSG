@@ -11,6 +11,10 @@ import { TableFieldSchema } from '../types'
 
 export type BaseTableFieldProps = {
   schema: TableFieldSchema
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
 }
 
 export interface TableFieldContainerProps extends BaseTableFieldProps {
@@ -24,6 +28,7 @@ export interface TableFieldContainerProps extends BaseTableFieldProps {
 export const TableFieldContainer = ({
   schema,
   children,
+  isHighContrast,
 }: TableFieldContainerProps): JSX.Element => {
   const { i18n } = useTranslation()
   const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
@@ -56,6 +61,7 @@ export const TableFieldContainer = ({
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={description}
+        isHighContrast={isHighContrast}
       >
         {title}
       </FormLabel>

@@ -196,16 +196,27 @@ ValidationEmpty.args = {
   triggerValidation: true,
 }
 
+const validValidationDefaultValues = baseSchema.columns.reduce<
+  Record<string, string>
+>((acc, c) => {
+  if (c.columnType === BasicField.ShortText) {
+    acc[c._id] = 'This is a valid value'
+  } else if (c.columnType === BasicField.Dropdown) {
+    acc[c._id] = STORYBOOK_DROPDOWN_OPTIONS[1]
+  }
+  return acc
+}, {})
+
 export const ValidationValid = Template.bind({})
 ValidationValid.args = {
   schema: baseSchema,
   triggerValidation: true,
-  defaultValue: baseSchema.columns.reduce<Record<string, string>>((acc, c) => {
-    if (c.columnType === BasicField.ShortText) {
-      acc[c._id] = 'This is a valid value'
-    } else if (c.columnType === BasicField.Dropdown) {
-      acc[c._id] = STORYBOOK_DROPDOWN_OPTIONS[1]
-    }
-    return acc
-  }, {}),
+  defaultValue: validValidationDefaultValues,
+}
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: validValidationDefaultValues,
 }

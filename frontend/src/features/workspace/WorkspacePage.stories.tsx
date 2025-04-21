@@ -139,6 +139,7 @@ Empty.parameters = {
         return res(ctx.json([]))
       },
     ),
+    ...BASE_MSW_HANDLERS,
   ],
 }
 

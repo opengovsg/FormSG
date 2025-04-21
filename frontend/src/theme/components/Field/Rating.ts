@@ -83,7 +83,7 @@ const iconOptionStyle: SystemStyleFunction = (props) => {
     },
     _disabled: {
       borderColor: 'neutral.500',
-      color: 'neutral.500',
+      color: 'neutral.600',
       cursor: 'not-allowed',
       _active: {
         color: 'neutral.500',

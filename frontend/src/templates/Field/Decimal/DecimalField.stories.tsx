@@ -143,3 +143,10 @@ ValidationInvalidDecimal.args = {
   schema: baseSchema,
   defaultValue: '-e',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: '1.32',
+}
