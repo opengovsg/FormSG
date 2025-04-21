@@ -185,7 +185,7 @@ export const performEncryptPostSubmissionActions = (
             }
           })
         : []
-      console.log(`recipientData: ${recipientData}`)
+
       // Send Email Confirmations
       return sendEmailConfirmations({
         form,

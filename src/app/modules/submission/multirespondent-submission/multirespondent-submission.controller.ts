@@ -147,13 +147,14 @@ const submitMultirespondentForm = async (
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
   })
-  console.log(`emails: ${req.formsg.respondentEmails}`)
+
   await performMultiRespondentPostSubmissionCreateActions({
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
+    respondentEmails: req.formsg.respondentEmails,
   })
 }
 
@@ -241,6 +242,7 @@ const updateMultirespondentSubmission = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
+    respondentEmails: req.formsg.respondentEmails,
   })
 }
 
