@@ -18,6 +18,7 @@ export type MultirespondentFormLoadedDto = {
   responseMode: FormResponseMode.Multirespondent
   formDef: IPopulatedMultirespondentForm
   featureFlags: string[]
+  respondentEmails?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {

@@ -635,6 +635,7 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {
     responseMode: FormResponseMode.Encrypt,
+    respondentEmails: req.body.respondentEmails, // retrive and include respondent copy emails into formsg
   } as EncryptFormLoadedDto
 
   // Step 2: Retrieve feature flags
@@ -649,9 +650,6 @@ export const createFormsgAndRetrieveForm = async (
   } else {
     formsg.featureFlags = featureFlagsListResult.value
   }
-
-  // Step 2a: Retrieve respondent copy emails (put into formsg)
-  formsg.respondentEmails = req.body.respondentEmails
 
   // Step 3a: Retrieve form
   const formResult = await FormService.retrieveFullFormById(formId)

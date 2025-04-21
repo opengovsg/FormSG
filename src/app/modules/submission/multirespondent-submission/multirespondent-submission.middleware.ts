@@ -117,6 +117,7 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {
     responseMode: FormResponseMode.Multirespondent,
+    respondentEmails: req.body.respondentEmails, // retrive and include respondent copy emails into formsg
   } as MultirespondentFormLoadedDto
 
   // Step 2a: Retrieve feature flags
