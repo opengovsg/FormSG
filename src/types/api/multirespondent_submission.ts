@@ -11,6 +11,7 @@ export type ParsedMultirespondentSubmissionBody = {
   responseMetadata?: ResponseMetadata
   version: number
   workflowStep: number
+  respondentEmails?: string[]
 }
 
 export type MultirespondentFormLoadedDto = {

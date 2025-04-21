@@ -147,6 +147,7 @@ const submitMultirespondentForm = async (
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
   })
+  console.log(`EMAILS: ${req.formsg.respondentEmails}`)
 
   await performMultiRespondentPostSubmissionCreateActions({
     submissionId: submission._id.toString(),

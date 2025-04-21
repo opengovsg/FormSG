@@ -84,6 +84,7 @@ type CreateEmailSubmissionFormDataArgs = {
   formFields: FormFieldDto[]
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
+  respondentEmails?: string[]
 }
 
 type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
@@ -91,7 +92,6 @@ type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
   paymentProducts?: ProductItem[]
   payments?: PaymentFieldsDto
   version: number
-  respondentEmails?: string[]
 }
 
 type CreateMultirespondentSubmissionFormDataArgs =
