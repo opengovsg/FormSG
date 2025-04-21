@@ -430,6 +430,48 @@ const sendMrfOutcomeEmails = ({
   )
 }
 
+const sendMrfNewResponseEmails = ({
+  form,
+  responses,
+  submissionId,
+  attachments,
+}: {
+  form: IPopulatedMultirespondentForm
+  responses: FieldResponsesV3
+  submissionId: string
+  attachments?: IAttachmentInfo[]
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+  const formQuestionAnswers = getQuestionTitleAnswerString({
+    formFields: form.form_fields,
+    responses,
+  })
+
+  const newResponseEmails =
+    form.mrfNewResponseEmails && Array.isArray(form.mrfNewResponseEmails)
+      ? form.mrfNewResponseEmails
+      : []
+
+  return MailService.sendMrfNewResponseEmail({
+    emails: newResponseEmails,
+    formId: form._id,
+    formTitle: form.title,
+    responseId: submissionId,
+    formQuestionAnswers,
+    attachments: attachments,
+  }).orElse((error) => {
+    logger.error({
+      message: 'Failed to send respondent copy email',
+      meta: {
+        action: 'sendMrfRespondentCopyEmail',
+        formId: form._id,
+        submissionId,
+      },
+      error,
+    })
+    return errAsync(error)
+  })
+}
+
 const sendMrfRespondentCopyEmails = ({
   form,
   responses,
@@ -625,6 +667,19 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formId: form._id,
     submissionId,
   }
+  //send newResponse emails
+  sendMrfNewResponseEmails({
+    form,
+    responses,
+    submissionId,
+    attachments,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Send multirespondent new response email error',
+      meta: logMeta,
+      error,
+    }) // return nothing since if successful submission does not depend on this email submission
+  })
 
   //send respondent copy emails if needed
   if (respondentEmails) {
@@ -862,6 +917,20 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
+  //send newResponse emails
+  sendMrfNewResponseEmails({
+    form,
+    responses,
+    submissionId,
+    attachments,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Send multirespondent new response email error',
+      meta: logMeta,
+      error,
+    }) // return nothing since if successful submission does not depend on this email submission
+  })
+
   //send respondent copy emails if needed (before rejection/approved etc.)
   if (respondentEmails) {
     sendMrfRespondentCopyEmails({
@@ -875,8 +944,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         message: 'Send multirespondent respondent copy email error',
         meta: logMeta,
         error,
-      })
-      return error
+      }) // return nothing since if successful submission does not depend on this email submission
     })
   }
 
