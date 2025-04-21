@@ -1,9 +1,4 @@
-import {
-  Control,
-  Controller,
-  RegisterOptions,
-  useFormState,
-} from 'react-hook-form'
+import { Controller, RegisterOptions, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, FormControl, FormLabel, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -15,32 +10,27 @@ import { OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { TagInput } from '~components/TagInput'
 
-interface RespondentEmailData {
-  [RESPONDENT_EMAIL_FIELD_ID]: string[]
-}
-interface PublicRespondentEmailFieldProps {
-  something: string
-  control: Control<RespondentEmailData>
-}
-
-export const PublicRespondentEmailField = ({
-  control,
-}: PublicRespondentEmailFieldProps): JSX.Element => {
+export const PublicRespondentEmailField = (): JSX.Element => {
   const { t } = useTranslation()
 
-  const { errors } = useFormState({
+  const {
     control,
-    name: RESPONDENT_EMAIL_FIELD_ID,
-  })
+    formState: { errors },
+  } = useFormContext<{ respondent_email_field: string[] }>()
 
   return (
     <FormControl isInvalid={!!errors?.[RESPONDENT_EMAIL_FIELD_ID]}>
-      <Controller<RespondentEmailData>
+      <Controller
         name={RESPONDENT_EMAIL_FIELD_ID}
         control={control}
         rules={
-          OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<RespondentEmailData>
-        }
+          OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<
+            {
+              respondent_email_field: string[]
+            },
+            'respondent_email_field'
+          >
+        } // need to cast rules with both type of form and field name
         render={({ field }) => (
           <Box>
             <FormLabel>Email me a copy of my responses</FormLabel>

@@ -4,7 +4,10 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
-import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
+import {
+  PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+  RESPONDENT_EMAIL_FIELD_ID,
+} from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
 import { AttachmentFieldResponseV3, FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -165,6 +168,9 @@ export const FormFields = ({
     }
   }
 
+  //default respondent email fields
+  defaultFormValues[RESPONDENT_EMAIL_FIELD_ID] = []
+
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
@@ -248,10 +254,7 @@ export const FormFields = ({
           )}
         <PublicFormPaymentResumeModal />
         <Box mt="2.5rem">
-          <PublicRespondentEmailField
-            something={'something'}
-            control={formMethods.control}
-          />
+          <PublicRespondentEmailField />
         </Box>
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}

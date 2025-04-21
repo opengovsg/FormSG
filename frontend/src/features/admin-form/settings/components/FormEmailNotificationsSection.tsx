@@ -154,7 +154,7 @@ export const FormEmailNotificationsSection = ({
     () => new Set(settings.emails),
     [settings.emails],
   )
-  console.log(settings)
+
   const intialMrfNewResponseEmailSet = useMemo(() => {
     if ('mrfNewResponseEmails' in settings) {
       return new Set(settings.mrfNewResponseEmails ?? [])
@@ -162,14 +162,20 @@ export const FormEmailNotificationsSection = ({
     return new Set()
   }, [settings])
 
+  const defaultValues =
+    settings.responseMode == FormResponseMode.Multirespondent
+      ? {
+          emails: settings.emails,
+          mrfWorkflowCompletionEmails: [],
+          newResponseEmails: settings.mrfNewResponseEmails,
+        }
+      : {
+          emails: settings.emails,
+        }
+
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: {
-      emails: settings.emails,
-      newResponseEmails: [],
-      //   mrfWorkflowCompletionEmails: settings.mrfAdminWorkflowCompletionEmails,
-      mrfWorkflowCompletionEmails: [],
-    },
+    defaultValues: defaultValues,
   })
 
   const {
