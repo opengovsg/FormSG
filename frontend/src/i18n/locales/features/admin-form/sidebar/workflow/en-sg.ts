@@ -53,7 +53,7 @@ export const enSG: Workflow = {
               'We have created a CSV template with the options from the field you selected.',
             pleaseDownload:
               'Please download the CSV template and add the emails for each option.',
-            button: 'Download and edit CSV template',
+            button: 'Download and edit CSV',
             howto: {
               title: 'How to use the CSV',
               option: {
@@ -73,7 +73,7 @@ export const enSG: Workflow = {
           },
           nextButton: 'Next: Upload CSV file',
           carousel: {
-            caption1: 'Download and edit the CSV template FormSG has created',
+            caption1: 'Download and edit the CSV FormSG has created',
             caption2:
               'The CSV template includes options from your selected field',
             caption3: 'Enter emails for each option',
