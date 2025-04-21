@@ -78,6 +78,7 @@ const multirespondentSubmissionBodySchema = Joi.object({
     numVisibleFields: Joi.number(),
   }),
   version: Joi.number().required(),
+  respondentEmails: Joi.array().items(Joi.string()),
 })
 
 export const validateMultirespondentSubmissionParams = celebrate({
