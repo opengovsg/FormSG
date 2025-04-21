@@ -25,7 +25,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Skeleton,
   Tab,
   TabList,
   TabPanel,
@@ -41,8 +40,6 @@ import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
 import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
-
-import { useUser } from '~features/user/queries'
 
 import { pdfBinaryToImageDataUrls } from '../utils'
 
@@ -247,9 +244,6 @@ const MagicFormBuilderCreateFormPrompt = ({
     isVisionPromptSubmitLoading ? PROMPT_TYPE.VISION : PROMPT_TYPE.TEXT,
   )
 
-  const { user, isLoading: isUserLoading } = useUser()
-  const isComponentLoading = isUserLoading
-
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
@@ -269,12 +263,8 @@ const MagicFormBuilderCreateFormPrompt = ({
         </Badge>
       </ModalHeader>
       <ModalBody>
-        <Skeleton isLoaded={!isComponentLoading}>
-          {isTest ||
-          (isMfbTextEnabled &&
-            isMfbVisionEnabled &&
-            !isUserLoading &&
-            user?.betaFlags?.mfbVision) ? (
+        <>
+          {isTest || (isMfbTextEnabled && isMfbVisionEnabled) ? (
             <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
               <TabList px="2px" mb="1rem">
                 <Tab
@@ -315,7 +305,7 @@ const MagicFormBuilderCreateFormPrompt = ({
               setValue={setValue}
               errors={errors}
             />
-          ) : isMfbVisionEnabled && user?.betaFlags?.mfbVision ? (
+          ) : isMfbVisionEnabled ? (
             <VisionPromptModalBodyContent
               control={visionControl}
               errors={visionErrors}
@@ -324,7 +314,7 @@ const MagicFormBuilderCreateFormPrompt = ({
               isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
             />
           ) : null}
-        </Skeleton>
+        </>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup
@@ -357,7 +347,6 @@ const MagicFormBuilderCreateFormPrompt = ({
                   }
                 })
           }
-          isNextDisabled={isComponentLoading}
           isNextLoading={
             isTextPromptSubmitLoading || isVisionPromptSubmitLoading
           }
