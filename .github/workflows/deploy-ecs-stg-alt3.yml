@@ -13,6 +13,7 @@ jobs:
   deploy:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
+    environment: 'stg-alt3'
     with:
       # Environment configuration
       environment: 'stg-alt3'
@@ -41,10 +42,9 @@ jobs:
 
     secrets:
       # AWS credentials and configuration
-      aws-account-id: ${{ secrets.STG_ALT3_AWS_ACCOUNT_ID }}
-      cicd-role: ${{ secrets.STG_ALT3_AWS_CI_ROLE_TO_ASSUME }}
-      ecr-repository: ${{ secrets.STG_ALT3_ECR_REPOSITORY }}
-
+      aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
+      ecr-repository: ${{ secrets.ECR_REPO }}
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
       dd-env: ${{ secrets.DD_ENV }}
