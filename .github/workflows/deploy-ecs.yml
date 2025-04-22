@@ -75,6 +75,14 @@ on:
         description: 'FormSG SDK mode'
         required: true
         type: string
+      dd-env:
+        description: 'Datadog environment'
+        required: true
+        type: string
+      ecr-repository:
+        description: 'ECR repository to push image to'
+        required: true
+        type: string
 
     secrets:
       cicd-role:
@@ -82,15 +90,9 @@ on:
         required: true
       aws-account-id:
         description: 'AWS account ID to use'
-        required: false
-      ecr-repository:
-        description: 'ECR repository to push image to'
         required: true
       ga-tracking-id:
         description: 'Google Analytics tracking ID'
-        required: true
-      dd-env:
-        description: 'Datadog environment'
         required: true
       dd-rum-app-id:
         description: 'Datadog RUM app ID'

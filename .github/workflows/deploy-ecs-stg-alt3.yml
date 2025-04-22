@@ -39,15 +39,15 @@ jobs:
       codedeploy-application: 'formsg-stg-alt3-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-stg-alt3-ecs-dg'
-
+      # Datadog config 
+      dd-env: 'stg-alt3'
+      ecr-repository: 'formsg'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
-      ecr-repository: ${{ secrets.ECR_REPO }}
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
-      dd-env: ${{ secrets.DD_ENV }}
       dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
       dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
       dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
