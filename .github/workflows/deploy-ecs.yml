@@ -2,6 +2,10 @@ name: Deploy to AWS ECS
 on:
   workflow_call:
     inputs:
+      gha-environment:
+        description: 'GitHub Actions environment for pulling the appropriate environment variables/secrets'
+        required: true
+        type: string
       environment:
         description: 'Deployment environment'
         required: true
@@ -110,10 +114,9 @@ jobs:
   deploy:
     name: Deploy to ECS
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.gha-environment }}
     env:
       IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{  github.run_attempt  }}
-      CURRENT_ENV: ${{ inputs.environment }}
     steps:
       - name: Checkout branch source code into runner environment
         # Required for the frontend build env vars

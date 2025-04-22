@@ -14,6 +14,7 @@ jobs:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
     with:
+      gha-environment: 'stg-alt3'
       # Environment configuration
       environment: 'stg-alt3'
       environment-site-name: 'stg-alt3'
