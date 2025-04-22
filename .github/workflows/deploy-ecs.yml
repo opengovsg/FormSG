@@ -134,7 +134,7 @@ jobs:
         env:
           VITE_APP_DD_RUM_APP_ID: ${{ secrets.dd-rum-app-id }}
           VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.dd-rum-client-token }}
-          VITE_APP_DD_RUM_ENV: ${{ secrets.dd-env }}
+          VITE_APP_DD_RUM_ENV: ${{ inputs.dd-env }}
           VITE_APP_DD_SAMPLE_RATE: ${{ secrets.dd-sample-rate }}
           VITE_APP_GA_TRACKING_ID: ${{ secrets.ga-tracking-id }}
           VITE_APP_FORMSG_SDK_MODE: ${{ inputs.react-app-form-sg-sdk-mode }}
@@ -210,7 +210,7 @@ jobs:
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ecr-repository }}:${{ env.IMAGE_TAG }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ env.IMAGE_TAG }}
           # TODO: check again if ENV_TYPE and ENV_SITE_NAME is still required here
           environment-variables: |
             ENV_TYPE=${{ inputs.environment }}
