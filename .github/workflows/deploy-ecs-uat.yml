@@ -10,19 +10,10 @@ on:
       - uat
 
 jobs:
-  extract-account-id:
-    runs-on: ubuntu-latest
-    outputs:
-      aws_account_id: ${{ steps.set-account-id.outputs.aws_account_id }}
-    steps:
-      - id: set-account-id
-        run: |
-          ACCOUNT_ID=$(echo "${{ secrets.AWS_CI_ROLE_TO_ASSUME }}" | cut -d':' -f5)
-          echo "aws_account_id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
   deploy:
     name: Deploy
-    needs: extract-account-id
     uses: ./.github/workflows/deploy-ecs.yml
+    environment: 'uat'
     with:
       # Environment configuration
       environment: 'uat'
@@ -47,9 +38,9 @@ jobs:
       codedeploy-deployment-group: 'formsg-uat-ecs-dg'
     secrets:
       # AWS credentials and configuration
-      aws-account-id: ${{ secrets.UAT_AWS_ACCOUNT_ID }}
-      cicd-role: ${{ secrets.UAT_AWS_CI_ROLE_TO_ASSUME }}
-      ecr-repository: ${{ secrets.UAT_ECR_REPOSITORY }}
+      aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
+      ecr-repository: ${{ secrets.ECR_REPO }}
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
       dd-env: ${{ secrets.DD_ENV }}
