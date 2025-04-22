@@ -184,6 +184,10 @@ const confirmStripePaymentPendingSubmission = (
   return okAsync(payment)
 }
 
+enum ProcessEventType {
+  DuplicateEvent = 'DuplicateEvent',
+  NewEvent = 'NewEvent',
+}
 /**
  * Retrieves and updates payment document of the given paymentId with the event.
  * NOTE: This is exported only for testing
@@ -207,7 +211,7 @@ export const processStripeEventWithinSession = (
   event: Stripe.Event,
   session: mongoose.ClientSession,
 ): ResultAsync<
-  void,
+  ProcessEventType,
   | MalformedStripeEventObjectError
   | MalformedStripeChargeObjectError
   | PaymentNotFoundError
@@ -245,7 +249,7 @@ export const processStripeEventWithinSession = (
           message: 'Duplicate event received by Stripe event handler',
           meta: logMeta,
         })
-        return okAsync(undefined)
+        return okAsync(ProcessEventType.DuplicateEvent)
       }
 
       if (payment.targetAccountId !== event.account) {
@@ -310,7 +314,7 @@ export const processStripeEventWithinSession = (
               return new DatabaseError(getMongoErrorMessage(error))
             }),
           )
-          .andThen(() => okAsync(undefined))
+          .andThen(() => okAsync(ProcessEventType.NewEvent))
       )
     },
   )
@@ -338,7 +342,7 @@ export const processStripeEvent = (
   paymentId: string,
   event: Stripe.Event,
 ): ResultAsync<
-  void,
+  ProcessEventType,
   | MalformedStripeEventObjectError
   | MalformedStripeChargeObjectError
   | PaymentNotFoundError
@@ -354,6 +358,7 @@ export const processStripeEvent = (
     event,
   }
 
+  let evtResult: ProcessEventType = ProcessEventType.NewEvent
   // Step 0: Set up the session and start the transaction
   return ResultAsync.fromPromise(mongoose.startSession(), (error) => {
     logger.error({
@@ -369,7 +374,8 @@ export const processStripeEvent = (
           // Since withTransaction uses throw-catch to determine whether to
           // commit or abort, need to map out of neverthrow
           processStripeEventWithinSession(paymentId, event, session).match(
-            () => {
+            (evt) => {
+              evtResult = evt
               return
             },
             (err) => {
@@ -396,7 +402,7 @@ export const processStripeEvent = (
     )
       .andThen(() => {
         void session.endSession()
-        return okAsync(undefined)
+        return okAsync(evtResult)
       })
       .orElse((err) => {
         void session.endSession()
@@ -473,8 +479,14 @@ export const handleStripeEvent = (
     case 'charge.succeeded': {
       result = getMetadataPaymentId(event.data.object.metadata).asyncAndThen(
         (paymentId) =>
-          processStripeEvent(paymentId, event).andThen(() => {
+          processStripeEvent(paymentId, event).andThen((processedEventType) => {
             if (event.type !== 'charge.succeeded') return okAsync(undefined)
+
+            if (processedEventType === ProcessEventType.DuplicateEvent) {
+              // If the event was a duplicate, we do not need to send the
+              // confirmation email again.
+              return okAsync(undefined)
+            }
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
@@ -512,6 +524,10 @@ export const handleStripeEvent = (
           return error
         })
         .andThen((paymentId) => processStripeEvent(paymentId, event))
+        .andThen(() => {
+          // do not have to forward processEventType to result
+          return okAsync(undefined)
+        })
       break
     }
     case 'charge.refund.updated': {
@@ -541,6 +557,10 @@ export const handleStripeEvent = (
           return error
         })
         .andThen((paymentId) => processStripeEvent(paymentId, event))
+        .andThen(() => {
+          // do not have to forward processEventType to result
+          return okAsync(undefined)
+        })
       break
     }
     case 'payout.canceled':
