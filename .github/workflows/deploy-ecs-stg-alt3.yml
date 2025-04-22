@@ -22,10 +22,9 @@ jobs:
       app-version: ${{ github.sha }}
       app-url: 'https://stg-alt3.form.gov.sg'
       react-app-form-sg-sdk-mode: 'staging'
-
       # AWS configuration
       aws-region: 'ap-southeast-1'
-
+      ecr-repository: 'formsg'
       # ECS configuration
       ecs-cpu: 1024
       ecs-memory: 2048
@@ -34,14 +33,12 @@ jobs:
       ecs-task-definition: 'formsg-stg-alt3-ecs'
       ecs-task-definition-path: 'deploy/ecs-task-definition.json'
       ecs-container-name: 'formsg-app'
-
       # CodeDeploy configuration
       codedeploy-application: 'formsg-stg-alt3-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-stg-alt3-ecs-dg'
       # Datadog config 
       dd-env: 'stg-alt3'
-      ecr-repository: 'formsg'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}

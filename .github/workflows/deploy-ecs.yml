@@ -165,8 +165,8 @@ jobs:
         uses: docker/build-push-action@v6
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
-          DD_ENV: ${{ secrets.dd-env }}
-          ECR_REPOSITORY: ${{ secrets.ecr-repository }}
+          DD_ENV: ${{ inputs.dd-env }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
           context: .
