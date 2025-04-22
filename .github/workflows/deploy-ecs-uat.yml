@@ -24,6 +24,7 @@ jobs:
       react-app-form-sg-sdk-mode: 'staging'
       # AWS configuration
       aws-region: 'ap-southeast-1'
+      ecr-repository: 'formsg'
       # ECS configuration
       ecs-cpu: 1024
       ecs-memory: 2048
@@ -36,14 +37,14 @@ jobs:
       codedeploy-application: 'formsg-uat-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-uat-ecs-dg'
+      # Datadog config 
+      dd-env: 'uat'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
-      ecr-repository: ${{ secrets.ECR_REPO }}
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
-      dd-env: ${{ secrets.DD_ENV }}
       dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
       dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
       dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
