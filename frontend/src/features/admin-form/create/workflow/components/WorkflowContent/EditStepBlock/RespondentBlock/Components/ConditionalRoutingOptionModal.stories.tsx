@@ -69,7 +69,7 @@ export const DownloadCsvTemplateStep = {}
 
 export const UploadCsvFileStep = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
@@ -98,7 +98,7 @@ export const UploadCsvFileStep = {
 
 export const UploadCsvFileStepWithAttachmentSelected = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
@@ -131,7 +131,7 @@ export const UploadCsvFileStepWithAttachmentSelected = {
 
 export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
