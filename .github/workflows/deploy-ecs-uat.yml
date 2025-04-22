@@ -13,8 +13,8 @@ jobs:
   deploy:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
-    environment: 'uat'
     with:
+      gha-environment: 'uat'
       # Environment configuration
       environment: 'uat'
       environment-site-name: 'uat'
