@@ -802,7 +802,7 @@ export const saveRespondentCopy = async (
     submissionSecretKey,
     encryptedContent,
     // presignedUrl: respondentCopyContentpresignedUrl,
-    presignedUrl: encryptedContent,
+    presignedUrl: encryptedContent, //TODO: see if need to send to s3
   }
 
   return next()

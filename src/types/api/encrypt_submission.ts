@@ -8,6 +8,7 @@ import {
   FormResponseMode,
   PaymentFieldsDto,
   ProductItem,
+  RespondentCopyDto,
   StorageModeSubmissionContentDto,
 } from '../../../shared/types'
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
@@ -55,4 +56,5 @@ export type FormFilteredResponseDto = EncryptFormLoadedDto & {
 
 export type FormCompleteDto = FormFilteredResponseDto & {
   encryptedPayload: EncryptSubmissionDto
+  respondentCopyEncryptedPayload: RespondentCopyDto
 }

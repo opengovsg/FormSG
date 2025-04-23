@@ -729,4 +729,11 @@ export const saveRespondentCopy = async (
   )
 
   // Save respondentCopy payload to req
+  req.formsg.respondentCopyEncryptedPayload = {
+    submissionSecretKey,
+    encryptedContent,
+    presignedUrl: encryptedContent, //TODO: see if need to send to s3
+  }
+
+  return next()
 }

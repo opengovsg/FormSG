@@ -471,6 +471,8 @@ const _createPaymentSubmission = async ({
 }) => {
   const encryptedPayload = req.formsg.encryptedPayload
 
+  const respondentCopyPayload = req.formsg.respondentCopyEncryptedPayload
+
   const amount = getPaymentAmount(
     form.payments_field,
     encryptedPayload.payments,
@@ -690,6 +692,8 @@ const _createPaymentSubmission = async ({
     submissionId: pendingSubmissionId,
     timestamp: (pendingSubmission.created || new Date()).getTime(),
     paymentData: { paymentId },
+    respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
+    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 }
 
@@ -706,7 +710,9 @@ const _createSubmission = async ({
   emailFields,
   respondentEmails,
 }: {
-  req: Parameters<SubmitEncryptModeFormHandlerType>[0]
+  req: Parameters<SubmitEncryptModeFormHandlerType>[0] & {
+    formsg: FormCompleteDto
+  }
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
@@ -835,10 +841,15 @@ const _createSubmission = async ({
     const authCookieName = getCookieNameByAuthType(form.authType)
     res.clearCookie(authCookieName)
   }
+
+  const respondentCopyPayload = req.formsg.respondentCopyEncryptedPayload
+
   res.json({
     message: 'Form submission successful.',
     submissionId,
     timestamp: createdTime.getTime(),
+    respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
+    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 
   // send respondent copy email to respondentEmails
