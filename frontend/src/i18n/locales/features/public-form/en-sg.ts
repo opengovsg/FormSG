@@ -53,5 +53,9 @@ export const enSG: PublicForm = {
     instructions: {
       title: 'Instructions',
     },
+    respondentCopyEmailBlock: {
+      title: 'Send the following emails a copy of my responses',
+      sendButton: 'Send',
+    },
   },
 }

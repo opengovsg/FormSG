@@ -33,7 +33,9 @@ export const PublicRespondentEmailField = (): JSX.Element => {
         } // need to cast rules with both type of form and field name
         render={({ field }) => (
           <Box>
-            <FormLabel>Email me a copy of my responses</FormLabel>
+            <FormLabel>
+              {t('features.publicForm.components.fields.respondentEmail.title')}
+            </FormLabel>
             <TagInput
               {...field}
               value={field.value as string[]}

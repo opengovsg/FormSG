@@ -50,6 +50,7 @@ export interface Fields {
     }
   }
   respondentEmail: {
+    title: string
     info: string
   }
 }

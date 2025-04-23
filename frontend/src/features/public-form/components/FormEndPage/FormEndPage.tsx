@@ -11,6 +11,7 @@ import { EndPageBlock } from '../../../../components/FormEndPage/EndPageBlock'
 import { ThankYouSvgr } from '../../../../components/FormEndPage/ThankYouSvgr'
 
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
+import { RespondentCopyEmailBlockInput } from './components/RespondentCopyEmailBlock'
 
 export interface FormEndPageProps {
   formTitle: FormDto['title']
@@ -19,10 +20,12 @@ export interface FormEndPageProps {
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
   isFeedbackSectionHidden: boolean
   colorTheme: FormColorTheme
+  handleSubmitRespondentCopy: (inputs: RespondentCopyEmailBlockInput) => void
 }
 
 export const FormEndPage = ({
   handleSubmitFeedback,
+  handleSubmitRespondentCopy,
   isFeedbackSectionHidden,
   colorTheme,
   ...endPageProps
@@ -46,6 +49,7 @@ export const FormEndPage = ({
             {...endPageProps}
             colorTheme={colorTheme}
             isButtonHidden={!!previousSubmissionId}
+            onSubmit={handleSubmitRespondentCopy}
           />
           {isFeedbackSectionHidden ? null : (
             <FeedbackBlock

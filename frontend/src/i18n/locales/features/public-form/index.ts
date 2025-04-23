@@ -47,6 +47,10 @@ export interface PublicForm {
     instructions: {
       title: string
     }
+    respondentCopyEmailBlock: {
+      title: string
+      sendButton: string
+    }
   }
 }
 
