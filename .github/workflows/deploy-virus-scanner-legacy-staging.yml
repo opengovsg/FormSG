@@ -1,7 +1,7 @@
 name: Deploy Legacy Virus Scanner to new OGP AWS environment
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

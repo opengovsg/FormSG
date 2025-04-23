@@ -1,13 +1,13 @@
 name: Deploy FormSG app to stg-alt3
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
   push:
     branches:
-      - staging-alt3 
+      - staging-alt3
 
 jobs:
   deploy:
@@ -37,7 +37,7 @@ jobs:
       codedeploy-application: 'formsg-stg-alt3-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-stg-alt3-ecs-dg'
-      # Datadog config 
+      # Datadog config
       dd-env: 'stg-alt3'
     secrets:
       # AWS credentials and configuration

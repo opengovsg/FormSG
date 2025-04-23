@@ -1,7 +1,7 @@
 name: Deploy Virus Scanner GuardDuty to IaC OGP AWS environment
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
