@@ -149,7 +149,7 @@ const submitMultirespondentForm = async (
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
     respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
-    respondentCopySecretKey: respondentCopyPayload.encryptedSubmissionSecretKey,
+    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 
   await performMultiRespondentPostSubmissionCreateActions({
@@ -238,7 +238,7 @@ const updateMultirespondentSubmission = async (
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
     respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
-    respondentCopySecretKey: respondentCopyPayload.encryptedSubmissionSecretKey,
+    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 
   const currentStepNumber = submission.workflowStep

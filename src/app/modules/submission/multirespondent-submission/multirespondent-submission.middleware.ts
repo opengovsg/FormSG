@@ -61,7 +61,6 @@ import {
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
 import { validateMrfFieldResponses } from './multirespondent-submission.utils'
-import { uploadAndGetPresignedUrl } from '../submission.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -780,9 +779,11 @@ export const saveRespondentCopy = async (
     }
   }
 
-  // encrypt content
-  const { encryptedContent, encryptedSubmissionSecretKey } =
-    formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+  // Encrypt content
+  const { encryptedContent, submissionSecretKey } = formsgSdk.cryptoV3.encrypt(
+    strippedAttachmentResponses,
+    formPublicKey,
+  )
 
   // const fileUuid = crypto.randomUUID()
   // const file = new File([encryptedContent], fileUuid, {
@@ -798,7 +799,7 @@ export const saveRespondentCopy = async (
 
   // TODO: Update this to use presigned URL
   req.formsg.respondentCopyEncryptedPayload = {
-    encryptedSubmissionSecretKey,
+    submissionSecretKey,
     encryptedContent,
     // presignedUrl: respondentCopyContentpresignedUrl,
     presignedUrl: encryptedContent,

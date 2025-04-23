@@ -861,6 +861,7 @@ export const handleStorageSubmission = [
   EncryptSubmissionMiddleware.validateStorageSubmission,
   EncryptSubmissionMiddleware.validatePaymentSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,
+  EncryptSubmissionMiddleware.saveRespondentCopy,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 

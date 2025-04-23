@@ -137,7 +137,7 @@ export type MultirespondentSubmissionBase = z.infer<
 >
 
 export type RespondentCopyDto = {
-  encryptedSubmissionSecretKey: string
+  submissionSecretKey: string
   encryptedContent: string
   presignedUrl: string
 }
