@@ -14,10 +14,6 @@ on:
         description: 'Deployment environment site name'
         required: true
         type: string # staging, staging-alt, staging-alt2, stg-alt3, prod, uat
-      shortEnv:
-        description: 'Deployment environment, the short version (one of [dev, prod, stg, test, uat, vapt])'
-        required: true
-        type: string
       ecs-cpu:
         description: 'ECS CPU units to use'
         required: true
@@ -182,20 +178,9 @@ jobs:
 
       - name: Replace variables in task definition file
         id: replace-variables
-        # NOTE: 
-        # This if else check for aws-account-id is only required since AWS account ID is not set in the GitHub secrets.
-        # If aws-account-id is provided, use it directly.
-        # Otherwise, extract it from the IAM role ARN which follows the format:
-        # arn:aws:iam::<account-id>:role/<role-name>
         run: |
-          if [[ -n "${{ secrets.aws-account-id }}" ]]; then
-            AWS_ACCOUNT_ID="${{ secrets.aws-account-id }}"
-          else
-            AWS_ACCOUNT_ID=$(echo "${{ secrets.cicd-role }}" | sed -n 's/.*:iam::\([0-9]*\):.*/\1/p')
-          fi
-          sed -i "s/<AWS_ACCOUNT_ID>/$AWS_ACCOUNT_ID/g" ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<ENV>/${{ inputs.environment }}/g' ${{ inputs.ecs-task-definition-path }}
-          sed -i 's/<SHORT_ENV>/${{ inputs.shortEnv }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.aws-account-id }}/g" ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<DD_ENV>/${{ inputs.dd-env }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ENVIRONMENT_SITE_NAME>/${{ inputs.environment-site-name }}/g' ${{ inputs.ecs-task-definition-path }}

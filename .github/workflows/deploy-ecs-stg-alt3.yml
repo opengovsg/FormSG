@@ -18,7 +18,6 @@ jobs:
       # Environment configuration
       environment: 'stg-alt3'
       environment-site-name: 'stg-alt3'
-      shortEnv: 'stg'
       app-version: ${{ github.sha }}
       app-url: 'https://stg-alt3.form.gov.sg'
       react-app-form-sg-sdk-mode: 'staging'
