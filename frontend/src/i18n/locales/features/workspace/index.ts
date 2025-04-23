@@ -1,4 +1,5 @@
 import { CreateModal } from './create'
+import { SideMenu } from './side-menu'
 
 export * from './en-sg'
 
@@ -79,4 +80,5 @@ export interface Workspace {
       }
     }
   }
+  sideMenu: SideMenu
 }

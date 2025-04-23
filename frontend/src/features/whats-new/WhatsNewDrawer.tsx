@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Drawer,
   DrawerBody,
@@ -21,14 +22,13 @@ export type WhatsNewDrawerProps = Pick<
   'onClose' | 'isOpen'
 >
 
-const UNEXTENDED_LIST_LINK_TEXT = 'View all updates'
-const EXTENDED_LIST_LINK_TEXT = 'Show less'
 const DEFAULT_FEATURE_UPDATE_COUNT = 10
 
 const showExtendListButton =
   FEATURE_UPDATE_LIST.features.length > DEFAULT_FEATURE_UPDATE_COUNT
 
 export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
+  const { t } = useTranslation()
   const [isListExtended, setIsListExtended] = useState<boolean>(false)
 
   const listOfFeatureUpdatesShown: FeatureUpdate[] = useMemo(() => {
@@ -51,7 +51,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           top="1.25rem"
         />
         <DrawerHeader textStyle="h2" color="secondary.700">
-          What's new
+          {t('features.whatsNew.header')}
         </DrawerHeader>
         <DrawerBody
           whiteSpace="pre-wrap"
@@ -70,8 +70,8 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
                 onClick={handleOnViewAllUpdatesClick}
               >
                 {isListExtended
-                  ? EXTENDED_LIST_LINK_TEXT
-                  : UNEXTENDED_LIST_LINK_TEXT}
+                  ? t('features.whatsNew.extendList.extended')
+                  : t('features.whatsNew.extendList.unextended')}
               </Button>
             )}
           </Stack>
