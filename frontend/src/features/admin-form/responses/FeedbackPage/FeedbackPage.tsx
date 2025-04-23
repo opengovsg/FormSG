@@ -77,6 +77,8 @@ interface FeedbackPageTranslations {
   reviews: string
   reviewInformation: ReviewInformationTranslations
   issueInformation: IssueInformationTranslations
+  feedbackHeaders: string[]
+  issueHeaders: string[]
 }
 
 export const FeedbackPage = (): JSX.Element => {
@@ -107,6 +109,16 @@ export const FeedbackPage = (): JSX.Element => {
             { issueCount },
           ),
       },
+      feedbackHeaders: [
+        t('features.adminForm.feedback.feedbackCsvGenerator.date'),
+        t('features.adminForm.feedback.feedbackCsvGenerator.comment'),
+        t('features.adminForm.feedback.feedbackCsvGenerator.rating'),
+      ],
+      issueHeaders: [
+        t('features.adminForm.feedback.issueCsvGenerator.date'),
+        t('features.adminForm.feedback.issueCsvGenerator.issue'),
+        t('features.adminForm.feedback.issueCsvGenerator.email'),
+      ],
     }),
     [t],
   )
@@ -123,7 +135,9 @@ export const FeedbackPage = (): JSX.Element => {
 
   // Hooks for form reviews
   const { data: reviewData, isLoading: isReviewLoading } = useFormFeedback()
-  const reviewDownload = useFormFeedbackMutations().downloadFormFeedbackMutation
+  const reviewDownload = useFormFeedbackMutations(
+    translations.feedbackHeaders,
+  ).downloadFormFeedbackMutation
   const reviewProps: Review = {
     count: reviewData?.count,
     data: reviewData?.feedback,
@@ -134,7 +148,9 @@ export const FeedbackPage = (): JSX.Element => {
 
   // Hooks for form issues
   const { data: issueData, isLoading: isIssueLoading } = useFormIssues()
-  const issueDownload = useFormIssueMutations().downloadFormIssueMutation
+  const issueDownload = useFormIssueMutations(
+    translations.issueHeaders,
+  ).downloadFormIssueMutation
   const issueProps: Issue = {
     count: issueData?.count,
     data: issueData?.issues,

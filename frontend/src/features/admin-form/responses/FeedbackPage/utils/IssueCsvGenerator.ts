@@ -1,6 +1,5 @@
 import { isValid } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
-import i18next from 'i18next'
 
 import { FormIssueDto } from '~shared/types'
 
@@ -11,13 +10,9 @@ import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/p
  * Class to encapsulate the IssueCsv and its attributes
  */
 export class IssueCsvGenerator extends CsvGenerator {
-  constructor(expectedNumberOfRecords: number) {
+  constructor(expectedNumberOfRecords: number, headers: string[]) {
     super(expectedNumberOfRecords, 0)
-    this.setHeader([
-      i18next.t('features.adminForm.feedback.issueCsvGenerator.date'),
-      i18next.t('features.adminForm.feedback.issueCsvGenerator.issue'),
-      i18next.t('features.adminForm.feedback.issueCsvGenerator.email'),
-    ])
+    this.setHeader(headers)
   }
 
   /**
