@@ -16,7 +16,6 @@ on:
   schedule:
     - cron: '0 16 * * *'
 
-
 jobs:
   deploy-scanner:
     name: Deploy Scanner
@@ -25,5 +24,5 @@ jobs:
       checkoutBranch: staging-alt3
       environment: stg-alt3
       provisionedConcurrency: 1
-    secrets: 
-      cicd-role: ${{ secrets.STG_ALT3_AWS_CI_ROLE_TO_ASSUME }}
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

@@ -1,4 +1,4 @@
-name: AWS Deploy Virus Scanner GuardDuty to new OGP AWS environment 
+name: AWS Deploy Virus Scanner GuardDuty to IaC OGP AWS environment
 
 on:
   workflow_call:
@@ -15,7 +15,7 @@ on:
         description: 'Branch to checkout code from'
         required: true
         type: string
-      aws-region: 
+      aws-region:
         description: 'AWS region to use'
         required: false
         default: 'ap-southeast-1'
@@ -24,7 +24,6 @@ on:
       cicd-role:
         description: 'AWS IAM role to assume by GitHub action runner'
         required: true
-        type: string
 
 permissions:
   id-token: write

@@ -1,4 +1,4 @@
-name: AWS Deploy Virus Scanner Legacy to new OGP AWS environment 
+name: AWS Deploy Virus Scanner Legacy to IaC OGP AWS environment
 
 on:
   workflow_call:
@@ -15,16 +15,15 @@ on:
         description: 'Provisioned concurrency'
         required: true
         type: number
-      aws-region: 
+      aws-region:
         description: 'AWS region to use'
         required: false
         default: 'ap-southeast-1'
         type: string
-    secrets: 
-      cicd-role: 
+    secrets:
+      cicd-role:
         description: 'AWS IAM role to assume by GitHub action runner'
         required: true
-        type: string
 
 permissions:
   id-token: write

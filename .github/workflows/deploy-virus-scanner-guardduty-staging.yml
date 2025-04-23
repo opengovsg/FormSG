@@ -1,4 +1,4 @@
-name: Deploy Virus Scanner GuardDuty to new OGP AWS environment
+name: Deploy Virus Scanner GuardDuty to IaC OGP AWS environment
 
 concurrency:
   group: ${{ github.ref }}
@@ -21,5 +21,5 @@ jobs:
       checkoutBranch: staging-alt3
       environment: stg-alt3
       provisionedConcurrency: 1
-    secrets: 
-      cicd-role: ${{ secrets.STG_ALT3_AWS_CI_ROLE_TO_ASSUME }}
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
