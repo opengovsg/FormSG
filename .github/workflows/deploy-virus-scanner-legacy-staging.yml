@@ -11,7 +11,7 @@ permissions:
 on:
   push:
     branches:
-      - staging-alt3
+      - stg-alt3
   # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
   schedule:
     - cron: '0 16 * * *'
@@ -21,7 +21,7 @@ jobs:
     name: Deploy Scanner
     uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
     with:
-      checkoutBranch: 'staging-alt3'
+      checkoutBranch: 'stg-alt3'
       gha-environment: 'stg-alt3'
       environment: 'stg-alt3'
       provisionedConcurrency: 1

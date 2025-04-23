@@ -4,15 +4,17 @@ on:
   push:
     branches-ignore: 
       - staging
-      - staing-alt2
-      - staging-alt3
+      - staging-alt
+      - staging-alt2
+      - stg-alt3
       - uat
   pull_request:
     types: [opened, reopened]
       branches-ignore:
         - staging
-        - staing-alt2
-        - staging-alt3
+        - staging-alt
+        - staging-alt2
+        - stg-alt3
         - uat
 
 jobs:
