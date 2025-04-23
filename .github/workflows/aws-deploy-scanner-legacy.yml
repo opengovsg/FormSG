@@ -7,6 +7,10 @@ on:
         description: 'Branch to checkout code from'
         required: true
         type: string
+      gha-environment:
+        description: 'GitHub Actions environment'
+        required: true
+        type: string
       environment:
         description: 'Deployment environment'
         required: true
@@ -33,7 +37,7 @@ jobs:
   virus-scanner:
     name: virus scanner serverless
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.gha-environment }}
     steps:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4

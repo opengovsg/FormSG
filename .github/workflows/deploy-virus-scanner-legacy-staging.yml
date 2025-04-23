@@ -22,6 +22,7 @@ jobs:
     uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
     with:
       checkoutBranch: 'staging-alt3'
+      gha-environment: 'stg-alt3'
       environment: 'stg-alt3'
       provisionedConcurrency: 1
     secrets:
