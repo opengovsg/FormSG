@@ -15,7 +15,7 @@ import {
 import { BasicField } from '~shared/types'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import { CheckboxField, CheckboxFieldSchema } from '~templates/Field'
@@ -114,6 +114,8 @@ export const EmailModeCreationScreen = ({
     formState: { errors },
   } = formMethods
 
+  const formTitleValidationRules = useFormTitleValidationRules()
+
   const inputRef = useRef<HTMLInputElement>(null)
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 200)
@@ -121,7 +123,7 @@ export const EmailModeCreationScreen = ({
 
   const formTitleRegister = register(
     'title',
-    FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+    formTitleValidationRules as RegisterOptions<
       CreateFormWizardInputProps,
       'title'
     >,

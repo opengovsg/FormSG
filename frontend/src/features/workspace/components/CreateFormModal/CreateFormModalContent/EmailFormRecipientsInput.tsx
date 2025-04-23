@@ -6,8 +6,8 @@ import isEmail from 'validator/lib/isEmail'
 import { FormResponseMode } from '~shared/types/form/form'
 
 import {
-  OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
-  REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
+  useOptionalAdminEmailValidationRules,
+  useRequiredAdminEmailValidationRules,
 } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
@@ -26,6 +26,11 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
 
   const { watch } = formMethods
   const responseModeValue = watch('responseMode')
+
+  const requiredAdminEmailValidationRules =
+    useRequiredAdminEmailValidationRules()
+  const optionalAdminEmailValidationRules =
+    useOptionalAdminEmailValidationRules()
 
   const {
     control,
@@ -49,8 +54,8 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         name="emails"
         rules={
           (responseModeValue === FormResponseMode.Email
-            ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
-            : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES) as RegisterOptions<CreateFormWizardInputProps>
+            ? requiredAdminEmailValidationRules
+            : optionalAdminEmailValidationRules) as RegisterOptions<CreateFormWizardInputProps>
         }
         render={({ field }) => (
           <TagInput

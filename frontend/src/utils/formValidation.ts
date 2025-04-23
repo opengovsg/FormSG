@@ -1,67 +1,102 @@
-import { UseControllerProps } from 'react-hook-form'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import validator from 'validator'
 
 const MAX_EMAIL_LENGTH = 30
-
 const MAX_TITLE_LENGTH = 200
 const MIN_TITLE_LENGTH = 4
 
-export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
-  required: 'Form name is required',
-  minLength: {
-    value: MIN_TITLE_LENGTH,
-    message: `Form name must be at least ${MIN_TITLE_LENGTH} characters`,
-  },
-  maxLength: {
-    value: MAX_TITLE_LENGTH,
-    message: `Form name must be at most ${MAX_TITLE_LENGTH} characters`,
-  },
-  validate: {
-    trimMinLength: (value: string) => {
-      return (
-        value.trim().length >= MIN_TITLE_LENGTH ||
-        `Form name must be at least ${MIN_TITLE_LENGTH} characters`
-      )
-    },
-  },
+export const useFormTitleValidationRules = () => {
+  const { t } = useTranslation()
+
+  return useMemo(
+    () => ({
+      required: t('utils.formValidation.titleValidationRules.required'),
+      minLength: {
+        value: MIN_TITLE_LENGTH,
+        message: t(
+          'utils.formValidation.titleValidationRules.minLength.message',
+          { MIN_TITLE_LENGTH },
+        ),
+      },
+      maxLength: {
+        value: MAX_TITLE_LENGTH,
+        message: t(
+          'utils.formValidation.titleValidationRules.maxLength.message',
+          { MAX_TITLE_LENGTH },
+        ),
+      },
+      validate: {
+        trimMinLength: (value: string) =>
+          value.trim().length >= MIN_TITLE_LENGTH ||
+          t(
+            'utils.formValidation.titleValidationRules.validate.trimMinLength',
+            { MIN_TITLE_LENGTH },
+          ),
+      },
+    }),
+    [t],
+  )
 }
 
-export const REQUIRED_ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] =
-  {
-    validate: {
-      required: (emails: string[]) => {
-        return (
-          emails.filter(Boolean).length > 0 ||
-          'You must at least enter one email to receive responses'
-        )
-      },
-      valid: (emails: string[]) => {
-        return (
-          emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
-          'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'
-        )
-      },
-      duplicate: (emails: string[]) => {
-        const truthyEmails = emails.filter(Boolean)
-        return (
-          new Set(truthyEmails).size === truthyEmails.length ||
-          'Please remove duplicate emails'
-        )
-      },
-      maxLength: (emails: string[]) => {
-        return (
-          emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
-          `Please limit number of emails to ${MAX_EMAIL_LENGTH}`
-        )
-      },
-    },
-  }
+export const useRequiredAdminEmailValidationRules = () => {
+  const { t } = useTranslation()
 
-export const OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] =
-  {
-    ...REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
-    validate: {
-      ...REQUIRED_ADMIN_EMAIL_VALIDATION_RULES.validate,
-      required: () => true,
-    },
-  }
+  return useMemo(
+    () => ({
+      validate: {
+        required: (emails: string[]) => {
+          return (
+            emails.filter(Boolean).length > 0 ||
+            t(
+              'utils.formValidation.requiredEmailAdminValidationRules.validate.required',
+            )
+          )
+        },
+        valid: (emails: string[]) => {
+          return (
+            emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
+            t(
+              'utils.formValidation.requiredEmailAdminValidationRules.validate.valid',
+            )
+          )
+        },
+        duplicate: (emails: string[]) => {
+          const truthyEmails = emails.filter(Boolean)
+          return (
+            new Set(truthyEmails).size === truthyEmails.length ||
+            t(
+              'utils.formValidation.requiredEmailAdminValidationRules.validate.duplicate',
+            )
+          )
+        },
+        maxLength: (emails: string[]) => {
+          return (
+            emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
+            t(
+              'utils.formValidation.requiredEmailAdminValidationRules.validate.maxLength',
+              { MAX_EMAIL_LENGTH },
+            )
+          )
+        },
+      },
+    }),
+    [t],
+  )
+}
+
+export const useOptionalAdminEmailValidationRules = () => {
+  const requiredAdminEmailValidationRules =
+    useRequiredAdminEmailValidationRules()
+
+  return useMemo(
+    () => ({
+      ...requiredAdminEmailValidationRules,
+      validate: {
+        ...requiredAdminEmailValidationRules.validate,
+        required: () => true,
+      },
+    }),
+    [requiredAdminEmailValidationRules],
+  )
+}
