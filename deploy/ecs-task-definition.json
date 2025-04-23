@@ -136,11 +136,14 @@
       ],
       "essential": true,
       "environment": [
+        { "name": "ECS_FARGATE", "value": "true" },
         { "name": "TZ", "value": "Asia/Singapore" },
         { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
-        { "name": "ECS_FARGATE", "value": "true" },
         { "name": "DD_APM_ENABLED", "value": "true" },
-        { "name": "DD_SITE", "value": "datadoghq.com" }
+        { "name": "DD_SITE", "value": "datadoghq.com" },
+        { "name": "DD_TAGS", "value": "env:<ENVIRONMENT_SITE_NAME> service:formsg team:formsg" },
+        { "name": "DD_LOGS_INJECTION", "value": "true" },
+        { "name": "DD_RUNTIME_METRICS_ENABLED", "value": "true" }
       ],
       "mountPoints": [],
       "volumesFrom": [],
