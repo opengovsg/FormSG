@@ -46,6 +46,7 @@ interface DatePickerContextReturn {
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
   monthsToDisplay?: number
+  isHighContrast: boolean
 }
 
 const DatePickerContext = createContext<DatePickerContextReturn | null>(null)
@@ -93,6 +94,7 @@ const useProvideDatePicker = ({
   colorScheme = 'primary',
   monthsToDisplay,
   refocusOnClose = true,
+  isHighContrast = false,
   ...props
 }: DatePickerProps): DatePickerContextReturn => {
   const initialFocusRef = useRef<HTMLInputElement>(null)
@@ -244,5 +246,6 @@ const useProvideDatePicker = ({
     isDateUnavailable,
     disclosureProps,
     monthsToDisplay,
+    isHighContrast,
   }
 }

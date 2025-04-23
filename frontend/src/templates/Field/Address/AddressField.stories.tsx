@@ -197,3 +197,10 @@ ValidPostalCodeApiFail.play = async ({ canvasElement }) => {
   // Simulate clicking the "Submit" button
   userEvent.click(canvas.getByRole('button', { name: /Find Address/i }))
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: WithValues.args.defaultValue,
+}

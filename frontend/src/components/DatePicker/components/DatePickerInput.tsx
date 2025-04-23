@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import ReactInputMask from 'react-input-mask'
 import {
   forwardRef,
-  Input,
+  Input as ChakraInput,
   InputGroup,
   InputRightAddon,
   useMergeRefs,
@@ -23,6 +23,7 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
     placeholder,
     inputRef,
     internalValue,
+    isHighContrast,
   } = useDatePicker()
 
   const mergedInputRef = useMergeRefs(inputRef, ref)
@@ -41,7 +42,7 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
         {selectedDateAriaLiveText}
       </VisuallyHidden>
       <InputGroup>
-        <Input
+        <ChakraInput
           inputMode="numeric" // Nudge Android mobile keyboard to be numeric
           pattern="\d*" // Nudge numeric keyboard on iOS Safari.
           as={ReactInputMask}
@@ -56,6 +57,7 @@ export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
           onBlur={handleInputBlur}
           onClick={handleInputClick}
           isReadOnly={fcProps.isReadOnly || !allowManualInput}
+          {...(isHighContrast && { variant: 'highContrast' })}
         />
         <InputRightAddon p={0} bg="none">
           <CalendarButton />

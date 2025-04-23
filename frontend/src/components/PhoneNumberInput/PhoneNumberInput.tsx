@@ -79,6 +79,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       value,
       examples = defaultExamples,
       examplePlaceholder = 'polite',
+      isHighContrast,
       ...props
     },
     ref,
@@ -97,9 +98,17 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
     return (
       <PhoneNumberInputProvider {...providerProps}>
         {allowInternational ? (
-          <IntlPhoneNumberInput {...props} ref={ref} />
+          <IntlPhoneNumberInput
+            {...props}
+            ref={ref}
+            {...(isHighContrast && { variant: 'highContrast' })}
+          />
         ) : (
-          <SingleCountryPhoneNumberInput {...props} ref={ref} />
+          <SingleCountryPhoneNumberInput
+            {...props}
+            ref={ref}
+            {...(isHighContrast && { variant: 'highContrast' })}
+          />
         )}
       </PhoneNumberInputProvider>
     )

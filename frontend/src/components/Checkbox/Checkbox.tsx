@@ -24,6 +24,10 @@ export interface CheckboxProps extends ChakraCheckboxProps {
    * Background and shadow colors of checkbox.
    */
   colorScheme?: FieldColorScheme
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
 }
 
 type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
@@ -33,7 +37,7 @@ type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
 }
 
 export const Checkbox = forwardRef<CheckboxProps, 'input'>(
-  ({ children, colorScheme = 'primary', ...props }, ref) => {
+  ({ children, colorScheme = 'primary', isHighContrast, ...props }, ref) => {
     // Passing all props for cleanliness but the size prop is the most relevant
     const { icon: iconStyles } = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
     return (
@@ -50,6 +54,7 @@ export const Checkbox = forwardRef<CheckboxProps, 'input'>(
         colorScheme={colorScheme}
         ref={ref}
         {...props}
+        {...(isHighContrast && { variant: 'highContrast' })}
       >
         {children}
       </ChakraCheckbox>

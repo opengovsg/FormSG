@@ -36,6 +36,13 @@ Prefilled.args = {
   isDisabled: true,
 }
 
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  defaultValue: new Date('2021-09-13'),
+  isDisabled: true,
+  isHighContrast: true,
+}
+
 export const Error = Template.bind({})
 Error.args = {
   isInvalid: true,

@@ -47,6 +47,7 @@ interface FieldFactoryProps {
   disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
   colorTheme?: FormColorTheme
+  isHighContrast?: boolean
 }
 
 export const FieldFactory = memo(

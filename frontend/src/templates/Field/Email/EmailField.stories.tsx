@@ -120,3 +120,10 @@ ValidationInvalidEmail.args = {
   schema: baseSchema,
   defaultValue: { value: 'not an email' },
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: { value: 'test@example.com' },
+}

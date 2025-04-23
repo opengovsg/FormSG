@@ -29,6 +29,7 @@ export interface AddressCompoundFieldProps extends BaseFieldProps {
 export const AddressCompoundField = ({
   schema,
   disableRequiredValidation,
+  isHighContrast,
 }: AddressCompoundFieldProps): JSX.Element => {
   const formContext = useFormContext<AddressCompoundFieldInput>()
   const { getValues, setValue, trigger, setError, watch } = formContext
@@ -132,6 +133,7 @@ export const AddressCompoundField = ({
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
         description={schema.description}
+        isHighContrast={isHighContrast}
       >
         {schema.title}
       </FormLabel>
@@ -143,7 +145,9 @@ export const AddressCompoundField = ({
         id={`${schema._id}-postalCode`}
         isInvalid={!!addressSubFieldErrors?.postalCode}
       >
-        <FormLabel isRequired>Postal code</FormLabel>
+        <FormLabel isRequired isHighContrast={isHighContrast}>
+          Postal code
+        </FormLabel>
         <Controller
           name={`${schema._id}.addressSubFields.postalCode`}
           control={formContext.control}
@@ -162,11 +166,13 @@ export const AddressCompoundField = ({
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
                     placeholder="e.g. 650161"
+                    isHighContrast={isHighContrast}
                   />
                   <Button
                     onClick={handleVerifyAddress}
                     isLoading={isSubmitting}
                     isDisabled={isButtonDisabled}
+                    isHighContrast={isHighContrast}
                   >
                     Find address
                   </Button>
@@ -187,7 +193,9 @@ export const AddressCompoundField = ({
         id={`${schema._id}-blockNumber`}
         isInvalid={!!addressSubFieldErrors?.blockNumber}
       >
-        <FormLabel isRequired>Block number</FormLabel>
+        <FormLabel isRequired isHighContrast>
+          Block number
+        </FormLabel>
         <Controller
           name={`${schema._id}.addressSubFields.blockNumber`}
           control={formContext.control}
@@ -199,6 +207,7 @@ export const AddressCompoundField = ({
                 {...field}
                 aria-label={`${schema.questionNumber}. Block Number`}
                 placeholder="e.g. 161"
+                isHighContrast={isHighContrast}
               />
               <FormErrorMessage>
                 {addressSubFieldErrors?.blockNumber?.message}
@@ -215,7 +224,9 @@ export const AddressCompoundField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!addressSubFieldErrors?.streetName}
       >
-        <FormLabel isRequired>Street name</FormLabel>
+        <FormLabel isRequired isHighContrast={isHighContrast}>
+          Street name
+        </FormLabel>
         <Controller
           name={`${schema._id}.addressSubFields.streetName`}
           control={formContext.control}
@@ -231,6 +242,7 @@ export const AddressCompoundField = ({
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
                 }}
+                isHighContrast={isHighContrast}
               />
               <FormErrorMessage>
                 {addressSubFieldErrors?.streetName?.message}
@@ -247,7 +259,7 @@ export const AddressCompoundField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!addressSubFieldErrors?.buildingName}
       >
-        <FormLabel>Building name</FormLabel>
+        <FormLabel isHighContrast={isHighContrast}>Building name</FormLabel>
         <Controller
           name={`${schema._id}.addressSubFields.buildingName`}
           control={formContext.control}
@@ -257,6 +269,7 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Building name`}
+                isHighContrast={isHighContrast}
                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas in field input
@@ -267,7 +280,7 @@ export const AddressCompoundField = ({
         />
       </FormControl>
       {/** Unit Number & Level Number */}
-      <FormLabel>Unit number</FormLabel>
+      <FormLabel isHighContrast={isHighContrast}>Unit number</FormLabel>
       <Flex direction="row" gap={2} width="100%">
         <FormControl
           id={`${schema._id}-levelNumber`}
@@ -287,6 +300,7 @@ export const AddressCompoundField = ({
                   {...field}
                   aria-label={`${schema.questionNumber}. Level number`}
                   placeholder="Level number"
+                  isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
                   {addressSubFieldErrors?.levelNumber?.message}
@@ -313,6 +327,7 @@ export const AddressCompoundField = ({
                   {...field}
                   aria-label={`${schema.questionNumber}. Unit Number`}
                   placeholder="Unit number"
+                  isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
                   {addressSubFieldErrors?.unitNumber?.message}

@@ -101,6 +101,11 @@ export interface RadioProps
    * @default true
    */
   allowDeselect?: boolean
+
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
 }
 
 type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
@@ -116,7 +121,7 @@ type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
  * @see Docs https://chakra-ui.com/radio
  */
 export const Radio = forwardRef<RadioProps, 'input'>(
-  ({ allowDeselect = true, ...props }, ref) => {
+  ({ allowDeselect = true, isHighContrast, ...props }, ref) => {
     const { onChange: onChangeProp, value: valueProp } = props
 
     const group = useRadioGroupContext()
@@ -213,6 +218,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,
+      ...(isHighContrast && { color: 'neutral.800' }),
     }
 
     return (
@@ -282,6 +288,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       __css={styles.othersRadio}
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
+      isHighContrast={props.isHighContrast}
     >
       {t('features.publicForm.components.fields.option.others')}
     </Radio>
