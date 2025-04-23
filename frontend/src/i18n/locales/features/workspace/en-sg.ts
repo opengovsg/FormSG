@@ -1,4 +1,5 @@
 import { enSG as create } from './create'
+import { enSG as sideMenu } from './side-menu'
 import { Workspace } from '.'
 
 export const enSG: Workspace = {
@@ -78,4 +79,5 @@ export const enSG: Workspace = {
       },
     },
   },
+  sideMenu,
 }

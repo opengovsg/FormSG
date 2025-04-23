@@ -6,7 +6,7 @@ export const INVALID_DROPDOWN_OPTION_ERROR =
   'Entered value is not a valid dropdown option'
 
 export const CANNOT_TRANSFER_OWNERSHIP_TO_SELF =
-  'You cannot transfer ownership to yourself'
+  'constants.validationConstants.CANNOT_TRANSFER_OWNERSHIP_TO_SELF'
 export const INVALID_COUNTRY_REGION_OPTION_ERROR =
   'Please select a valid country/region from the dropdown list'
 

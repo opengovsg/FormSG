@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiMenuAltLeft, BiPlus } from 'react-icons/bi'
 import { Flex, FlexProps, Text, useDisclosure } from '@chakra-ui/react'
 
@@ -17,6 +18,8 @@ export const WorkspaceMenuHeader = ({
   onMenuClick,
   ...props
 }: WorkspaceMenuHeaderProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
   return (
     <Flex
@@ -33,7 +36,7 @@ export const WorkspaceMenuHeader = ({
           <IconButton
             icon={<BiMenuAltLeft />}
             onClick={() => onMenuClick && onMenuClick()}
-            aria-label="open folder drawer"
+            aria-label={t('features.workspace.sideMenu.aria.openDrawer')}
             variant="clear"
             colorScheme="primary"
             color="secondary.500"
@@ -41,14 +44,14 @@ export const WorkspaceMenuHeader = ({
           />
         )}
         <Text textStyle="h4" color="secondary.700">
-          Folders
+          {t('features.workspace.sideMenu.header')}
         </Text>
       </Flex>
 
       {shouldShowAddWorkspaceButton && (
         <IconButton
           size="lg"
-          aria-label="Create new folder"
+          aria-label={t('features.workspace.sideMenu.aria.createFolder')}
           variant="clear"
           colorScheme="primary"
           color="secondary.500"
