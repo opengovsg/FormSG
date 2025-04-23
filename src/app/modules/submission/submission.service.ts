@@ -10,6 +10,11 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 
 import {
   AttachmentPresignedPostDataMapType,
@@ -1404,4 +1409,71 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
         })),
       )
   )
+}
+
+/**
+ * Uploads a file into specified s3 bucket and returns a presigned url for later retrieval
+ * Not utilizing ResultAsync
+ * @param bucketName name of bucket
+ * @param objectKey object key name
+ * @param content object to be uploaded to s3
+ * @returns s3 presigned url
+ */
+export const uploadAndGetPresignedUrl = async ({
+  bucketName,
+  objectKey,
+  content,
+}: {
+  bucketName: string
+  objectKey: string
+  content: File
+}) => {
+  // Initalize s3 client
+  const s3 = new S3Client({ region: 'ap-southeast-1' })
+
+  // Upload the object
+  const uploadContent = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: objectKey,
+    Body: content,
+    ContentType: 'text/plain',
+  })
+
+  await s3.send(uploadContent)
+
+  // Create a presigned URL valid for 1 hour
+  const getObjectCommand = new GetObjectCommand({
+    Bucket: bucketName,
+    Key: objectKey,
+  })
+
+  // Create a presigned URL valid for 30 mins
+  // const presignedUrl = await getSignedUrl(s3, getObjectCommand, {
+  //   expiresIn: 1800,
+  // })
+
+  // AwsConfig.s3.getSignedUrl(
+  //   'getObject',
+  //   {
+  //     Bucket: AwsConfig.attachmentS3Bucket,
+  //     Key: objectPath,
+  //     Expires: urlValidDuration,
+  //   },
+  //   (error, url) => {
+  //     if (error) {
+  //       logger.error({
+  //         message: 'Error occured whilst retrieving signed URL from S3',
+  //         meta: {
+  //           action: 'transformAttachmentMetaStream',
+  //           key,
+  //           objectPath,
+  //         },
+  //         error,
+  //       })
+  //       return callback(error)
+  //     }
+  //   },
+  // )
+  const presignedUrl = 'test'
+  return presignedUrl
 }

@@ -71,7 +71,8 @@ export const EndPageBlock = ({
     }
     return 'You have successfully submitted your response.'
   }, [formTitle])
-
+  console.log(submissionData)
+  console.log(JSON.stringify(submissionData))
   return (
     <>
       <Box ref={focusRef}>

@@ -136,6 +136,12 @@ export type MultirespondentSubmissionBase = z.infer<
   typeof MultirespondentSubmissionBase
 >
 
+export type RespondentCopyDto = {
+  encryptedSubmissionSecretKey: string
+  encryptedContent: string
+  presignedUrl: string
+}
+
 export type StorageModeChartsDto = StorageModeSubmissionBase & {
   created: DateString
 }
@@ -292,6 +298,8 @@ export type SubmissionResponseDto = {
 
   // mrf only fields
   mrfStep?: number
+  respondentCopyPresignedUrl?: string
+  respondentCopySecretKey?: string
 }
 
 export type SubmissionErrorDto = ErrorDto & {

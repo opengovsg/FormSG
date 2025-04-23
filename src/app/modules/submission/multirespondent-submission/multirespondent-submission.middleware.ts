@@ -61,6 +61,7 @@ import {
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
 import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import { uploadAndGetPresignedUrl } from '../submission.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -743,6 +744,64 @@ export const encryptSubmission = async (
      * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
      */
     mrfVersion: 1,
+  }
+
+  return next()
+}
+
+/**
+ * Encrypts submission and saves content to s3 temporarily for respondent copy email
+ */
+export const saveRespondentCopy = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef
+  const formPublicKey = formDef.publicKey
+  const responses = req.body.responses
+
+  // Remove attachments
+  const strippedAttachmentResponses: Record<
+    string,
+    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+  > = {}
+
+  for (const id of Object.keys(responses)) {
+    const response = responses[id]
+    if (response.fieldType !== BasicField.Attachment) {
+      strippedAttachmentResponses[id] = response
+      continue
+    }
+
+    strippedAttachmentResponses[id] = {
+      ...response,
+      answer: { ...response.answer, filename: undefined, content: undefined },
+    }
+  }
+
+  // encrypt content
+  const { encryptedContent, encryptedSubmissionSecretKey } =
+    formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+
+  const fileUuid = crypto.randomUUID()
+  const file = new File([encryptedContent], fileUuid, {
+    type: 'text/plain',
+  })
+
+  // send content to s3, retrieve s3 presigned url
+  // const respondentCopyContentpresignedUrl = await uploadAndGetPresignedUrl({
+  //   bucketName: 'temporary bucket name',
+  //   objectKey: fileUuid,
+  //   content: file,
+  // })
+
+  // TODO: Update this to use presigned URL
+  req.formsg.respondentCopyEncryptedPayload = {
+    encryptedSubmissionSecretKey,
+    encryptedContent,
+    // presignedUrl: respondentCopyContentpresignedUrl,
+    presignedUrl: encryptedContent,
   }
 
   return next()

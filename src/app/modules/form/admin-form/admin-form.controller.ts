@@ -1215,6 +1215,10 @@ export const createForm: ControllerHandler<
           {
             ...formParams,
             admin: user._id,
+            //TODO: update settings
+            respondentCopyCustomEmailSubject: '',
+            respondentCopyCustomEmailSenderName: '',
+            respondentCopyCustomEmailBody: ''
           },
           workspaceId,
         ),

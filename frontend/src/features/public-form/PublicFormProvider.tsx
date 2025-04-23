@@ -195,7 +195,9 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-
+  console.log('respondent copy prints: ')
+  console.log(submissionData?.respondentCopyPresignedUrl)
+  console.log(submissionData?.respondentCopySecretKey)
   const {
     data,
     isLoading: isFormLoading,
@@ -886,12 +888,20 @@ export const PublicFormProvider = ({
               : submitMultirespondentFormMutation
           )
             .mutateAsync(formData, {
-              onSuccess: ({ submissionId, timestamp, mrfStep }) => {
+              onSuccess: ({
+                submissionId,
+                timestamp,
+                mrfStep,
+                respondentCopyPresignedUrl,
+                respondentCopySecretKey,
+              }) => {
                 trackSubmitForm(form)
                 setSubmissionData({
                   id: submissionId,
                   timestamp,
                   mrfStep,
+                  respondentCopyPresignedUrl,
+                  respondentCopySecretKey,
                 })
               },
             })

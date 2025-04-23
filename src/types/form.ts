@@ -281,6 +281,9 @@ interface IFormBaseDocument<T extends IFormSchema> {
   endPage: Required<NonNullable<T['endPage']>>
   webhook: Required<NonNullable<T['webhook']>>
   responseMode: NonNullable<T['responseMode']>
+  // respondentCopyCustomEmailSubject : NonNullable<T['respondentCopyCustomEmailSubject']>
+  // respondentCopyCustomEmailSenderName : NonNullable<T['respondentCopyCustomEmailSenderName']>
+  // respondentCopyCustomEmailBody : NonNullable<T['respondentCopyCustomEmailBody']>
 }
 
 export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema

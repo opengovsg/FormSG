@@ -31,6 +31,9 @@ export type OverrideProps = {
   emails?: string | string[]
   publicKey?: string
   submissionLimit?: number | null
+  respondentCopyCustomEmailSubject?: string | undefined //TODO: review this
+  respondentCopyCustomEmailSenderName?: string | undefined
+  respondentCopyCustomEmailBody?: string | undefined
 }
 
 export type EditFormFieldResult = Result<FormFieldSchema[], EditFieldError>
