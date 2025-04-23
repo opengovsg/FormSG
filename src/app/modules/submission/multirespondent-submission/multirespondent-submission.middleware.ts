@@ -784,10 +784,10 @@ export const saveRespondentCopy = async (
   const { encryptedContent, encryptedSubmissionSecretKey } =
     formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
 
-  const fileUuid = crypto.randomUUID()
-  const file = new File([encryptedContent], fileUuid, {
-    type: 'text/plain',
-  })
+  // const fileUuid = crypto.randomUUID()
+  // const file = new File([encryptedContent], fileUuid, {
+  //   type: 'text/plain',
+  // })
 
   // send content to s3, retrieve s3 presigned url
   // const respondentCopyContentpresignedUrl = await uploadAndGetPresignedUrl({
