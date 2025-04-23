@@ -21,8 +21,8 @@ jobs:
     name: Deploy Scanner
     uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
     with:
-      checkoutBranch: staging-alt3
-      environment: stg-alt3
+      checkoutBranch: 'staging-alt3'
+      environment: 'stg-alt3'
       provisionedConcurrency: 1
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
