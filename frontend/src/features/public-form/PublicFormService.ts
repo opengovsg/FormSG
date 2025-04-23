@@ -497,10 +497,11 @@ export const submitFormIssue = async (
 
 export const submitFormRespondentCopy = async (
   formId: string,
+  submissionId: string,
   respondentCopyToPost: SubmitFormRespondentCopyDto,
 ): Promise<SuccessMessageDto> => {
   return ApiService.post<SuccessMessageDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/respondentCopy`,
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}/respondentCopy`,
     respondentCopyToPost,
   ).then(({ data }) => data)
 }

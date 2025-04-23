@@ -1,8 +1,6 @@
-import { FormDto } from './form'
-
 export type SubmitFormRespondentCopyDto = {
-  formId: FormDto['_id']
+  emails?: string[]
   respondentCopySecretKey: string
   respondentCopyPresignedUrl: string
-  mrfStep: string
+  mrfStep?: number
 }

@@ -22,7 +22,7 @@ import {
   submitEmailModeFormWithFetch,
   submitFormFeedback,
   submitFormIssue,
-  submitFormRespodentCopy,
+  submitFormRespondentCopy,
   submitMultirespondentForm,
   SubmitStorageFormClearArgs,
   submitStorageModeForm,
@@ -223,12 +223,15 @@ export const useSubmitFormIssueMutations = (formId: string) => {
   return { submitFormIssueMutation }
 }
 
-export const useSubmitFormRespondentCopyMutation = (formId: string) => {
+export const useSubmitFormRespondentCopyMutation = (
+  formId: string,
+  submissionId: string,
+) => {
   const toast = useToast({ isClosable: true })
 
   const submitFormRespondentCopyMutation = useMutation(
     (args: SubmitFormRespondentCopyDto) =>
-      submitFormRespondentCopy(formId, args),
+      submitFormRespondentCopy(formId, submissionId, args),
     {
       onError: (error: Error) => {
         toast({ status: 'danger', description: error.message })

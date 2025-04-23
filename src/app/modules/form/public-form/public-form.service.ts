@@ -16,6 +16,7 @@ import { JwtName } from '../../spcp/spcp.types'
 import { FormNotFoundError } from '../form.errors'
 
 import { Metatags } from './public-form.types'
+import { EmailSubmissionSchema } from 'src/app/models/submission.server.model'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const FormModel = getFormModel(mongoose)
@@ -142,3 +143,16 @@ export const createMetatags = ({
     return okAsync(metatags)
   })
 }
+
+// export const sendRespondentCopy = ({
+//   formId,
+//   submissionId,
+//   emails,
+//   responses,
+//   mrfStep,
+// }: { formId: string
+//   submissionId: string
+//   emails: string[]
+//   responses: string //TODO: fix this
+//   mrfStep?: number
+// }): 

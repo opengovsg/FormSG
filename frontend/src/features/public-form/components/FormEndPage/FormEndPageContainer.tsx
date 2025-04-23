@@ -5,7 +5,10 @@ import { FormResponseMode } from '~shared/types'
 
 import { useToast } from '~hooks/useToast'
 
-import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
+import {
+  useSubmitFormFeedbackMutation,
+  useSubmitFormRespondentCopyMutation,
+} from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
@@ -19,6 +22,9 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     formId,
     submissionData?.id ?? '',
   )
+  const { submitFormRespondentCopyMutation } =
+    useSubmitFormRespondentCopyMutation(formId, submissionData?.id ?? '')
+
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
@@ -88,8 +94,9 @@ export const FormEndPageContainer = (): JSX.Element | null => {
 
       const inputs = {
         ..._inputs,
-        respondentCopySecretKey: submissionData?.respondentCopySecretKey,
-        respondentCopyPresignedUrl: submissionData?.respondentCopyPresignedUrl,
+        respondentCopySecretKey: submissionData?.respondentCopySecretKey ?? '',
+        respondentCopyPresignedUrl:
+          submissionData?.respondentCopyPresignedUrl ?? '',
         ...(isMrf && { mrfStep: submissionData?.mrfStep }),
       }
 
@@ -110,6 +117,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
       submissionData?.respondentCopyPresignedUrl,
       submissionData?.mrfStep,
       isMrf,
+      submitFormRespondentCopyMutation,
       toast,
     ],
   )
