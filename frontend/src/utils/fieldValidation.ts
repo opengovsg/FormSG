@@ -551,24 +551,6 @@ export const createTextValidationRules: ValidationRuleFn<
   }
 }
 
-export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
-  schema,
-  disableRequiredValidation,
-): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validUen: (val?: string) => {
-        if (!val) return true
-        return isUenValid(val) || 'Please enter a valid UEN'
-      },
-    },
-  }
-}
-
 export const useUenValidationRules = (
   schema: UenFieldBase,
   disableRequiredValidation?: boolean,
