@@ -6,6 +6,9 @@
       "portMappings": [
         { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
       ],
+      "environment": [
+        { "name": "DD_SERVICE", "value": "formsg" }
+      ],
       "secrets": [
         { "name": "IS_IAC_MIGRATED", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/IS_IAC_MIGRATED" },
         { "name": "WOGAA_SECRET_KEY", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAA_SECRET_KEY" },
@@ -141,7 +144,6 @@
         { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
         { "name": "DD_APM_ENABLED", "value": "true" },
         { "name": "DD_SITE", "value": "datadoghq.com" },
-        { "name": "DD_SERVICE", "value": "formsg" }, 
         { "name": "DD_TAGS", "value": "env:<DD_ENV> team:formsg service:formsg" },
         { "name": "DD_LOGS_INJECTION", "value": "true" },
         { "name": "DD_RUNTIME_METRICS_ENABLED", "value": "true" }
