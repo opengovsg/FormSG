@@ -1,7 +1,12 @@
-export interface FieldValidation {
+interface BaseValidation {
   required: string
+}
 
-  // number field
+const baseValidation: BaseValidation = {
+  required: 'This field is required',
+}
+
+interface NumberFieldValidation {
   exactDigits: string
   minDigits: string
   maxDigits: string
@@ -9,20 +14,9 @@ export interface FieldValidation {
   numbersRange: string
   numberMinimum: string
   numberMaximum: string
-
-  // decimal field
-  validDecimal: string
-  validDecimalNoLeadingZeros: string
-  decimalRange: string
-  decimalMinimum: string
-  decimalMaximum: string
-
-  // UEN field
-  validUen: string
 }
 
-export const enSG: FieldValidation = {
-  required: 'This field is required',
+const numberFieldValidation: NumberFieldValidation = {
   exactDigits:
     'Please enter {threshold} {threshold, plural, =1 {digit} other {digits}} ({current}/{threshold})',
   minDigits:
@@ -33,13 +27,41 @@ export const enSG: FieldValidation = {
   numbersRange: 'Please enter a number between {min} and {max}',
   numberMinimum: 'Please enter a number that is at least {min}',
   numberMaximum: 'Please enter a number that is at most {max}',
+}
 
+interface DecimalFieldValidation {
+  validDecimal: string
+  validDecimalNoLeadingZeros: string
+  decimalRange: string
+  decimalMinimum: string
+  decimalMaximum: string
+}
+
+const decimalFieldValidation: DecimalFieldValidation = {
   validDecimal: 'Please enter a valid decimal',
   validDecimalNoLeadingZeros:
     'Please enter a valid decimal without leading zeros',
   decimalRange: 'Please enter a decimal between {min} and {max} (inclusive)',
   decimalMinimum: 'Please enter a decimal greater than or equal to {min}',
   decimalMaximum: 'Please enter a decimal less than or equal to {max}',
+}
 
+interface UenFieldValidation {
+  validUen: string
+}
+
+const uenFieldValidation: UenFieldValidation = {
   validUen: 'Please enter a valid UEN',
+}
+
+export type FieldValidation = BaseValidation &
+  NumberFieldValidation &
+  DecimalFieldValidation &
+  UenFieldValidation
+
+export const enSG: FieldValidation = {
+  ...baseValidation,
+  ...numberFieldValidation,
+  ...decimalFieldValidation,
+  ...uenFieldValidation,
 }
