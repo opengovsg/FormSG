@@ -54,14 +54,32 @@ const uenFieldValidation: UenFieldValidation = {
   validUen: 'Please enter a valid UEN',
 }
 
+interface DateFieldValidation {
+  validDate: string
+  noFutureDate: string
+  noPastDate: string
+  dateOutOfRange: string
+  invalidDay: string
+}
+
+const dateFieldValidation: DateFieldValidation = {
+  validDate: 'Please enter a valid date',
+  noFutureDate: 'Only dates today or before are allowed',
+  noPastDate: 'Only dates today or after are allowed',
+  dateOutOfRange: 'Selected date is not within the allowed date range',
+  invalidDay: 'This date is not allowed by the form admin',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
-  UenFieldValidation
+  UenFieldValidation &
+  DateFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
   ...numberFieldValidation,
   ...decimalFieldValidation,
   ...uenFieldValidation,
+  ...dateFieldValidation,
 }

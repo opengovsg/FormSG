@@ -661,75 +661,76 @@ const parseDate = (val: string) => {
   return parse(val, DATE_PARSE_FORMAT, new Date())
 }
 
-export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useDateValidationRules = (
+  schema: DateFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validDate: (val) => {
-        if (!val) return true
-        if (val === DATE_PARSE_FORMAT.toLowerCase()) {
-          return REQUIRED_ERROR
-        }
-        return isValid(parseDate(val)) || 'Please enter a valid date'
-      },
-      noFuture: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.NoFuture
-        ) {
-          return true
-        }
-        return (
-          !isDateAfterToday(parseDate(val)) ||
-          'Only dates today or before are allowed'
-        )
-      },
-      noPast: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.NoPast
-        ) {
-          return true
-        }
-        return (
-          !isDateBeforeToday(parseDate(val)) ||
-          'Only dates today or after are allowed'
-        )
-      },
-      range: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.Custom
-        ) {
-          return true
-        }
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
-        return (
-          !isDateOutOfRange(
-            parseDate(val),
-            loadDateFromNormalizedDate(customMinDate),
-            loadDateFromNormalizedDate(customMaxDate),
-          ) || 'Selected date is not within the allowed date range'
-        )
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validDate: (val) => {
+          if (!val) return true
+          if (val === DATE_PARSE_FORMAT.toLowerCase()) {
+            return t('required')
+          }
+          return isValid(parseDate(val)) || t('validDate')
+        },
+        noFuture: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.NoFuture
+          ) {
+            return true
+          }
+          return !isDateAfterToday(parseDate(val)) || t('noFutureDate')
+        },
+        noPast: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.NoPast
+          ) {
+            return true
+          }
+          return !isDateBeforeToday(parseDate(val)) || t('noPastDate')
+        },
+        range: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.Custom
+          ) {
+            return true
+          }
+
+          const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+          return (
+            !isDateOutOfRange(
+              parseDate(val),
+              loadDateFromNormalizedDate(customMinDate),
+              loadDateFromNormalizedDate(customMaxDate),
+            ) || t('dateOutOfRange')
+          )
+        },
+        invalidDays: (val) =>
+          !val ||
+          !schema.invalidDays ||
+          !schema.invalidDays.length ||
+          !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
+          t('invalidDay'),
       },
-      invalidDays: (val) =>
-        !val ||
-        !schema.invalidDays ||
-        !schema.invalidDays.length ||
-        !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
-        'This date is not allowed by the form admin',
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
