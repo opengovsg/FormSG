@@ -569,6 +569,31 @@ export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
   }
 }
 
+export const useUenValidationRules = (
+  schema: UenFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validUen: (val?: string) => {
+          if (!val) return true
+          return isUenValid(val) || t('validUen')
+        },
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
 export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
   schema,
   disableRequiredValidation,

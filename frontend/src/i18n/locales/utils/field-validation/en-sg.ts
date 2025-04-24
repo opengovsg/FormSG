@@ -16,6 +16,9 @@ export interface FieldValidation {
   decimalRange: string
   decimalMinimum: string
   decimalMaximum: string
+
+  // UEN field
+  validUen: string
 }
 
 export const enSG: FieldValidation = {
@@ -37,4 +40,6 @@ export const enSG: FieldValidation = {
   decimalRange: 'Please enter a decimal between {min} and {max} (inclusive)',
   decimalMinimum: 'Please enter a decimal greater than or equal to {min}',
   decimalMaximum: 'Please enter a decimal less than or equal to {max}',
+
+  validUen: 'Please enter a valid UEN',
 }
