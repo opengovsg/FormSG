@@ -70,11 +70,20 @@ const dateFieldValidation: DateFieldValidation = {
   invalidDay: 'This date is not allowed by the form admin',
 }
 
+interface NricFieldValidation {
+  validNric: string
+}
+
+const nricFieldValidation: NricFieldValidation = {
+  validNric: 'Please enter a valid NRIC/FIN',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
   UenFieldValidation &
-  DateFieldValidation
+  DateFieldValidation &
+  NricFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -82,4 +91,5 @@ export const enSG: FieldValidation = {
   ...decimalFieldValidation,
   ...uenFieldValidation,
   ...dateFieldValidation,
+  ...nricFieldValidation,
 }

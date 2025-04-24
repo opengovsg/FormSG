@@ -576,26 +576,29 @@ export const useUenValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useNricValidationRules = (
+  schema: NricFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validNric: (val?: string) => {
-        if (!val) return true
-        return (
-          isNricValid(val) ||
-          isMFinSeriesValid(val) ||
-          'Please enter a valid NRIC/FIN'
-        )
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validNric: (val?: string) => {
+          if (!val) return true
+          return isNricValid(val) || isMFinSeriesValid(val) || t('validNric')
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const createCheckboxValidationRules: ValidationRuleFn<
