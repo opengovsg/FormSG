@@ -5,5 +5,13 @@ Allow: /
 Allow: /public/
 Disallow: *
 
+User-agent: Googlebot
+Disallow: /*/edit/
+Allow: /
+
+User-agent: Bingbot
+Disallow: /*/edit/
+Allow: /
+
 User-agent: *
-Disallow:
+Disallow: /
