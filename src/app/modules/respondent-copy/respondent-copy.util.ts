@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
 import { MapRouteError } from 'src/types'
 
+import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError } from '../core/core.errors'
 import * as FormErrors from '../form/form.errors'
 

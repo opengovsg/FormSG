@@ -195,9 +195,7 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  console.log('respondent copy prints: ')
-  console.log(submissionData?.respondentCopyPresignedUrl)
-  console.log(submissionData?.respondentCopySecretKey)
+
   const {
     data,
     isLoading: isFormLoading,
