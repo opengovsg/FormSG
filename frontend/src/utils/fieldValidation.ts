@@ -2,13 +2,16 @@
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
+import { useMemo } from 'react'
 import {
   FieldValues,
   Path,
   RegisterOptions,
   UseFormGetValues,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { isValid, parse } from 'date-fns'
+import { TFunction } from 'i18next'
 import { identity } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
@@ -112,11 +115,19 @@ type ValidationRuleFnUnitAndLevelNo<T extends FieldBase = FieldBase> = (
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ) => RegisterOptions
 
+const I18N_KEY_PREFIX = 'utils.fieldValidation'
+
 const requiredSingleAnswerValidationFn =
-  (schema: Pick<FieldBase, 'required'>, disableRequiredValidation?: boolean) =>
+  (
+    schema: Pick<FieldBase, 'required'>,
+    disableRequiredValidation?: boolean,
+    t?: TFunction,
+  ) =>
   (value?: SingleAnswerValue) => {
     if (disableRequiredValidation || !schema.required) return true
-    return !!value?.trim() || REQUIRED_ERROR
+    // TODO: migrate REQUIRED_ERROR to point to 'required' instead
+    const errorMessage = t ? t('required') : REQUIRED_ERROR
+    return !!value?.trim() || errorMessage
   }
 
 /**
@@ -347,77 +358,96 @@ export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
   }
 }
 
-export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useNumberValidationRules = (
+  schema: NumberFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  const { selectedValidation } = schema.ValidationOptions
-  const { selectedLengthValidation, customVal } =
-    schema.ValidationOptions.LengthValidationOptions
-  const { customMin, customMax } =
-    schema.ValidationOptions.RangeValidationOptions
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validNumberLength: (val: string) => {
-        if (
-          selectedValidation !== NumberSelectedValidation.Length ||
-          !val ||
-          !customVal
-        )
-          return true
+  return useMemo(() => {
+    const { selectedValidation } = schema.ValidationOptions
+    const { selectedLengthValidation, customVal } =
+      schema.ValidationOptions.LengthValidationOptions
+    const { customMin, customMax } =
+      schema.ValidationOptions.RangeValidationOptions
 
-        const currLen = val.trim().length
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validNumberLength: (val: string) => {
+          if (
+            selectedValidation !== NumberSelectedValidation.Length ||
+            !val ||
+            !customVal
+          )
+            return true
 
-        switch (selectedLengthValidation) {
-          case NumberSelectedLengthValidation.Exact:
-            return (
-              currLen === customVal ||
-              simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-          case NumberSelectedLengthValidation.Min:
-            return (
-              currLen >= customVal ||
-              simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-          case NumberSelectedLengthValidation.Max:
-            return (
-              currLen <= customVal ||
-              simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-        }
+          const currLen = val.trim().length
+
+          switch (selectedLengthValidation) {
+            case NumberSelectedLengthValidation.Exact:
+              return (
+                currLen === customVal ||
+                t('exactDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case NumberSelectedLengthValidation.Min:
+              return (
+                currLen >= customVal ||
+                t('minDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case NumberSelectedLengthValidation.Max:
+              return (
+                currLen <= customVal ||
+                t('maxDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+          }
+        },
+        validNumberRange: (val: string) => {
+          if (selectedValidation !== NumberSelectedValidation.Range || !val)
+            return true
+
+          const numVal = parseInt(val)
+          if (Number.isNaN(numVal)) {
+            return t('validNumber')
+          }
+
+          const hasMinimum = customMin !== null
+          const hasMaximum = customMax !== null
+          const satisfiesMinimum = !hasMinimum || customMin <= numVal
+          const satisfiesMaximum = !hasMaximum || numVal <= customMax
+          const isInRange = satisfiesMinimum && satisfiesMaximum
+
+          if (isInRange) {
+            return true
+          } else if (hasMinimum && hasMaximum) {
+            return t('numbersRange', {
+              min: customMin,
+              max: customMax,
+            })
+          } else if (hasMinimum) {
+            return t('numberMinimum', { min: customMin })
+          } else if (hasMaximum) {
+            return t('numberMaximum', { max: customMax })
+          }
+        },
       },
-      validNumberRange: (val: string) => {
-        if (selectedValidation !== NumberSelectedValidation.Range || !val)
-          return true
-
-        const numVal = parseInt(val)
-        if (Number.isNaN(numVal)) {
-          return 'Please enter a valid number'
-        }
-
-        const hasMinimum = customMin !== null
-        const hasMaximum = customMax !== null
-        const satisfiesMinimum = !hasMinimum || customMin <= numVal
-        const satisfiesMaximum = !hasMaximum || numVal <= customMax
-        const isInRange = satisfiesMinimum && satisfiesMaximum
-
-        if (isInRange) {
-          return true
-        } else if (hasMinimum && hasMaximum) {
-          return `Please enter a number between ${customMin} and ${customMax}`
-        } else if (hasMinimum) {
-          return `Please enter a number that is at least ${customMin}`
-        } else if (hasMaximum) {
-          return `Please enter a number that is at most ${customMax}`
-        }
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const createDecimalValidationRules: ValidationRuleFn<
