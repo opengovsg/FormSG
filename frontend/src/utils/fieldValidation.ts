@@ -450,58 +450,68 @@ export const useNumberValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createDecimalValidationRules: ValidationRuleFn<
-  DecimalFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validDecimal: (val: string) => {
-        const {
-          ValidationOptions: { customMax, customMin },
-          validateByValue,
-        } = schema
-        if (!val) return true
+export const useDecimalValidationRules = (
+  schema: DecimalFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-        const numVal = Number(val)
-        if (isNaN(numVal)) {
-          return 'Please enter a valid decimal'
-        }
+  return useMemo(() => {
+    const {
+      ValidationOptions: { customMax, customMin },
+      validateByValue,
+    } = schema
 
-        // Validate leading zeros
-        if (/^0[0-9]/.test(val)) {
-          return 'Please enter a valid decimal without leading zeros'
-        }
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validDecimal: (val: string) => {
+          if (!val) return true
 
-        if (!validateByValue) return true
+          const numVal = Number(val)
+          if (isNaN(numVal)) {
+            return t('validDecimal')
+          }
 
-        if (
-          customMin !== null &&
-          customMax !== null &&
-          (numVal < customMin || numVal > customMax)
-        ) {
-          return `Please enter a decimal between ${formatNumberToLocaleString(
-            customMin,
-          )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
-        }
-        if (customMin !== null && numVal < customMin) {
-          return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
-            customMin,
-          )}`
-        }
-        if (customMax !== null && numVal > customMax) {
-          return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
-            customMax,
-          )}`
-        }
+          // Validate leading zeros
+          if (/^0[0-9]/.test(val)) {
+            return t('validDecimalNoLeadingZeros')
+          }
 
-        return true
+          if (!validateByValue) return true
+
+          if (
+            customMin !== null &&
+            customMax !== null &&
+            (numVal < customMin || numVal > customMax)
+          ) {
+            return t('decimalRange', {
+              min: formatNumberToLocaleString(customMin),
+              max: formatNumberToLocaleString(customMax),
+            })
+          }
+          if (customMin !== null && numVal < customMin) {
+            return t('decimalMinimum', {
+              min: formatNumberToLocaleString(customMin),
+            })
+          }
+          if (customMax !== null && numVal > customMax) {
+            return t('decimalMaximum', {
+              max: formatNumberToLocaleString(customMax),
+            })
+          }
+
+          return true
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const createTextValidationRules: ValidationRuleFn<
