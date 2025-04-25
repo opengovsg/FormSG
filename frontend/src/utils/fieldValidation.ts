@@ -60,12 +60,9 @@ import { Fields } from '~/i18n/locales/features/public-form/fields'
 
 import {
   INVALID_BLOCK_UNIT_ERROR,
-  INVALID_COUNTRY_REGION_OPTION_ERROR,
-  INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_ERROR,
   INVALID_LEVEL_UNIT_ERROR,
   INVALID_NON_NUMERICAL_ERROR,
-  INVALID_POSTAL_CODE_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
 import {
@@ -178,19 +175,21 @@ export const createBaseValidationRules = <
   }
 }
 
+// i18n this next
 export const createDropdownValidationRules: ValidationRuleFn<
   DropdownFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return createDropdownValidationRulesWithCustomErrorMessage(
-    INVALID_DROPDOWN_OPTION_ERROR,
+    'Entered value is not a valid dropdown option',
   )(schema, disableRequiredValidation)
 }
 
+// i18n this next
 export const createCountryRegionValidationRules: ValidationRuleFn<
   DropdownFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return createDropdownValidationRulesWithCustomErrorMessage(
-    INVALID_COUNTRY_REGION_OPTION_ERROR,
+    'Please select a valid country/region from the dropdown list',
   )(schema, disableRequiredValidation)
 }
 
@@ -249,6 +248,7 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
   }
 }
 
+// i18n this next
 export const createPostalCodeValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
@@ -264,7 +264,7 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
       },
       validPostalCode: (value: string) => {
         if (value === '') return true
-        return validatePostalCode(value) || INVALID_POSTAL_CODE_ERROR
+        return validatePostalCode(value) || 'Please enter a valid postal code'
       },
     },
   }
