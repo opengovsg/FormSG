@@ -1,10 +1,9 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { createTextValidationRules } from '~utils/fieldValidation'
+import { useTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -20,9 +19,9 @@ export const LongTextField = ({
   disableRequiredValidation,
   isHighContrast,
 }: LongTextFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createTextValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useTextValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

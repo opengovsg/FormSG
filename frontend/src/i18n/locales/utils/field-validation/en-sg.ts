@@ -104,6 +104,21 @@ const dropdownFieldValidation: DropdownFieldValidation = {
     'Please select a valid country/region from the dropdown list',
 }
 
+interface TextFieldValidation {
+  exactCharacters: string
+  minCharacters: string
+  maxCharacters: string
+}
+
+const textFieldValidation: TextFieldValidation = {
+  exactCharacters:
+    'Please enter {threshold} {threshold, plural, =1 {character} other {characters}} ({current}/{threshold})',
+  minCharacters:
+    'Please enter at least {threshold} {threshold, plural, =1 {character} other {characters}} ({current}/{threshold})',
+  maxCharacters:
+    'Please enter at most {threshold} {threshold, plural, =1 {character} other {characters}} ({current}/{threshold})',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
@@ -111,7 +126,8 @@ export type FieldValidation = BaseValidation &
   DateFieldValidation &
   NricFieldValidation &
   CheckboxFieldValidation &
-  DropdownFieldValidation
+  DropdownFieldValidation &
+  TextFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -123,4 +139,5 @@ export const enSG: FieldValidation = {
   ...checkboxFieldValidation,
   ...checkboxFieldValidation,
   ...dropdownFieldValidation,
+  ...textFieldValidation,
 }

@@ -520,41 +520,59 @@ export const useDecimalValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createTextValidationRules: ValidationRuleFn<
-  ShortTextFieldBase | LongTextFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  const { selectedValidation, customVal } = schema.ValidationOptions
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validText: (val?: string) => {
-        if (!val || !customVal) return true
+export const useTextValidationRules = (
+  schema: ShortTextFieldBase | LongTextFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-        const currLen = val.trim().length
+  return useMemo(() => {
+    const { selectedValidation, customVal } = schema.ValidationOptions
 
-        switch (selectedValidation) {
-          case TextSelectedValidation.Exact:
-            return (
-              currLen === customVal ||
-              simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Minimum:
-            return (
-              currLen >= customVal ||
-              simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Maximum:
-            return (
-              currLen <= customVal ||
-              simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-        }
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validText: (val?: string) => {
+          if (!val || !customVal) return true
+
+          const currLen = val.trim().length
+
+          switch (selectedValidation) {
+            case TextSelectedValidation.Exact:
+              return (
+                currLen === customVal ||
+                t('exactCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case TextSelectedValidation.Minimum:
+              return (
+                currLen >= customVal ||
+                t('minCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case TextSelectedValidation.Maximum:
+              return (
+                currLen <= customVal ||
+                t('maxCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+          }
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const useUenValidationRules = (
