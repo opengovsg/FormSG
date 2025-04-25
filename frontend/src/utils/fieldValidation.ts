@@ -175,41 +175,47 @@ export const createBaseValidationRules = <
   }
 }
 
-// i18n this next
-export const createDropdownValidationRules: ValidationRuleFn<
-  DropdownFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
+export const useDropdownValidationRules: ValidationRuleFn<DropdownFieldBase> = (
+  schema,
+  disableRequiredValidation,
+): RegisterOptions => {
   return createDropdownValidationRulesWithCustomErrorMessage(
-    'Entered value is not a valid dropdown option',
+    'invalidDropdownOption',
   )(schema, disableRequiredValidation)
 }
 
-// i18n this next
-export const createCountryRegionValidationRules: ValidationRuleFn<
+export const useCountryRegionValidationRules: ValidationRuleFn<
   DropdownFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return createDropdownValidationRulesWithCustomErrorMessage(
-    'Please select a valid country/region from the dropdown list',
+    'invalidCountryRegion',
   )(schema, disableRequiredValidation)
 }
 
-export const createDropdownValidationRulesWithCustomErrorMessage: (
-  errorMessage: string,
+const createDropdownValidationRulesWithCustomErrorMessage: (
+  errorKey: 'invalidDropdownOption' | 'invalidCountryRegion',
 ) => ValidationRuleFn<DropdownFieldBase> =
-  (errorMessage) =>
+  (errorKey) =>
   (schema, disableRequiredValidation): RegisterOptions => {
-    return {
-      validate: {
-        required: requiredSingleAnswerValidationFn(
-          schema,
-          disableRequiredValidation,
-        ),
-        validOptions: (value: string) => {
-          if (!value) return
-          return schema.fieldOptions.includes(value) || errorMessage
+    const { t } = useTranslation('translation', {
+      keyPrefix: I18N_KEY_PREFIX,
+    })
+
+    return useMemo(() => {
+      return {
+        validate: {
+          required: requiredSingleAnswerValidationFn(
+            schema,
+            disableRequiredValidation,
+            t,
+          ),
+          validOptions: (value: string) => {
+            if (!value) return true
+            return schema.fieldOptions.includes(value) || t(errorKey)
+          },
         },
-      },
-    }
+      }
+    }, [schema, disableRequiredValidation, t])
   }
 
 export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (

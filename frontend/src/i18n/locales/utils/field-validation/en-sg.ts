@@ -93,13 +93,25 @@ const checkboxFieldValidation: CheckboxFieldValidation = {
     'Please select at most {threshold} {threshold, plural, =1 {option} other {options}} ({current}/{threshold})',
 }
 
+interface DropdownFieldValidation {
+  invalidDropdownOption: string
+  invalidCountryRegion: string
+}
+
+const dropdownFieldValidation: DropdownFieldValidation = {
+  invalidDropdownOption: 'Entered value is not a valid dropdown option',
+  invalidCountryRegion:
+    'Please select a valid country/region from the dropdown list',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
   UenFieldValidation &
   DateFieldValidation &
   NricFieldValidation &
-  CheckboxFieldValidation
+  CheckboxFieldValidation &
+  DropdownFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -109,4 +121,6 @@ export const enSG: FieldValidation = {
   ...dateFieldValidation,
   ...nricFieldValidation,
   ...checkboxFieldValidation,
+  ...checkboxFieldValidation,
+  ...dropdownFieldValidation,
 }
