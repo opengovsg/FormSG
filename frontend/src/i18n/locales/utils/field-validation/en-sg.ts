@@ -78,12 +78,28 @@ const nricFieldValidation: NricFieldValidation = {
   validNric: 'Please enter a valid NRIC/FIN',
 }
 
+interface CheckboxFieldValidation {
+  exactOptions: string
+  minOptions: string
+  maxOptions: string
+}
+
+const checkboxFieldValidation: CheckboxFieldValidation = {
+  exactOptions:
+    'Please select exactly {threshold} {threshold, plural, =1 {option} other {options}} ({current}/{threshold})',
+  minOptions:
+    'Please select at least {threshold} {threshold, plural, =1 {option} other {options}} ({current}/{threshold})',
+  maxOptions:
+    'Please select at most {threshold} {threshold, plural, =1 {option} other {options}} ({current}/{threshold})',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
   UenFieldValidation &
   DateFieldValidation &
-  NricFieldValidation
+  NricFieldValidation &
+  CheckboxFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -92,4 +108,5 @@ export const enSG: FieldValidation = {
   ...uenFieldValidation,
   ...dateFieldValidation,
   ...nricFieldValidation,
+  ...checkboxFieldValidation,
 }

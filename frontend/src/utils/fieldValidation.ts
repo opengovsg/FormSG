@@ -601,45 +601,62 @@ export const useNricValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createCheckboxValidationRules: ValidationRuleFn<
-  CheckboxFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: (val?: CheckboxFieldValues['value']) => {
-        if (disableRequiredValidation || !schema.required) return true
-        if (!val) return REQUIRED_ERROR
-        // Trim strings before checking for emptiness
-        return val.map((v) => v.trim()).some(identity) || REQUIRED_ERROR
+export const useCheckboxValidationRules = (
+  schema: CheckboxFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    const {
+      ValidationOptions: { customMin, customMax },
+      validateByValue,
+    } = schema
+
+    return {
+      validate: {
+        required: (val?: CheckboxFieldValues['value']) => {
+          if (disableRequiredValidation || !schema.required) return true
+          if (!val) return t('required')
+          // Trim strings before checking for emptiness
+          return val.map((v) => v.trim()).some(identity) || t('required')
+        },
+        validOptions: (val?: CheckboxFieldValues['value']) => {
+          if (!val || val.length === 0 || !validateByValue) return true
+
+          if (
+            customMin &&
+            customMax &&
+            customMin === customMax &&
+            val.length !== customMin
+          ) {
+            return t('exactOptions', {
+              current: val.length,
+              threshold: customMin,
+            })
+          }
+
+          if (customMin && val.length < customMin) {
+            return t('minOptions', {
+              current: val.length,
+              threshold: customMin,
+            })
+          }
+
+          if (customMax && val.length > customMax) {
+            return t('maxOptions', {
+              current: val.length,
+              threshold: customMax,
+            })
+          }
+
+          return true
+        },
       },
-      validOptions: (val?: CheckboxFieldValues['value']) => {
-        const {
-          ValidationOptions: { customMin, customMax },
-          validateByValue,
-        } = schema
-        if (!val || val.length === 0 || !validateByValue) return true
-
-        if (
-          customMin &&
-          customMax &&
-          customMin === customMax &&
-          val.length !== customMin
-        ) {
-          return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
-        }
-
-        if (customMin && val.length < customMin) {
-          return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
-        }
-
-        if (customMax && val.length > customMax) {
-          return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
-        }
-
-        return true
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 const parseDate = (val: string) => {
