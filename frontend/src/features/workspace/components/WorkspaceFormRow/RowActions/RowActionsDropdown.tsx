@@ -148,7 +148,7 @@ export const RowActionsDropdown = ({
               isDisabled={isDisabled}
               _active={{ bg: 'secondary.100' }}
               isActive={isOpen}
-              aria-label="More actions"
+              aria-label={t('features.common.moreOptions')}
               icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
             />
           </ButtonGroup>

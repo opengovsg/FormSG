@@ -55,7 +55,7 @@ export const useCreateFormWizard = (): CreateFormWizardContextReturn => {
   const context = useContext(CreateFormWizardContext)
   if (!context) {
     throw new Error(
-      t('features.workspace.modals.create.errors.useWizardWithinContext'),
+      t('features.workspace.modals.forms.create.errors.useWizardWithinContext'),
     )
   }
   return context

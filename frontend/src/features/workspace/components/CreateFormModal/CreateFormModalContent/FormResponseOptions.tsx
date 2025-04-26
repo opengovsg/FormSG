@@ -53,9 +53,12 @@ export const FormResponseOptions = forwardRef<
   'button'
 >(({ value, onChange, isSingpass, handleEmailButtonPress }, ref) => {
   const { t } = useTranslation()
-  const { storage, mrf } = t('features.workspace.modals.create.details.type', {
-    returnObjects: true,
-  })
+  const { storage, mrf } = t(
+    'features.workspace.modals.forms.create.details.type',
+    {
+      returnObjects: true,
+    },
+  )
   return (
     <>
       <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>

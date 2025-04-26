@@ -62,17 +62,20 @@ export const enSG: CreateModal = {
       filename: 'Form Secret Key - {titleInputValue} - FormID({formId}).txt',
       subject: 'Shared Secret Key for {titleInputValue}',
       body: `
-        Dear collaborator,
-
-        I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
-
-        Form title: {titleInputValue}
-
-        Secret key: {secretKey}
-
-        All you need to do is keep this email as a record, and please do not share this key with anyone else.
-
-        Thank you for helping to safekeep my form!`,
+          Dear collaborator,
+  
+          I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
+  
+          Form title: {titleInputValue}
+  
+          Secret key: {secretKey}
+  
+          All you need to do is keep this email as a record, and please do not share this key with anyone else.
+  
+          Thank you for helping to safekeep my form!`,
     },
+  },
+  emailFormRecipient: {
+    placeholder: 'Separate emails with a comma',
   },
 }

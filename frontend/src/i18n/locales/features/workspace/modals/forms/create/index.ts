@@ -1,4 +1,5 @@
 export * from './en-sg'
+
 export interface CreateModal {
   title: {
     setup: string
@@ -55,5 +56,8 @@ export interface CreateModal {
       subject: string
       body: string
     }
+  }
+  emailFormRecipient: {
+    placeholder: string
   }
 }

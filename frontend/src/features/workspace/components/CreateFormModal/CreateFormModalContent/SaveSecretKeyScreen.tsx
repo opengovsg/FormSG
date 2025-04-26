@@ -41,7 +41,9 @@ import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 /** Default hook to be used in SaveSecretKeyScreen */
 const useSaveSecretKeyDefault = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.workspace.modals.forms.create',
+  })
   const {
     formMethods: {
       control,
@@ -72,12 +74,9 @@ const useSaveSecretKeyDefault = () => {
 
   trackClickSecretKeyMailTo(titleInputValue)
   const mailToHref = useMemo(() => {
-    const subject = t(
-      'features.workspace.modals.create.secretKey.email.subject',
-      { titleInputValue },
-    )
+    const subject = t('secretKey.email.subject', { titleInputValue })
     const body = dedent(
-      t('features.workspace.modals.create.secretKey.email.body', {
+      t('secretKey.email.body', {
         titleInputValue,
         secretKey,
       }),
@@ -92,7 +91,7 @@ const useSaveSecretKeyDefault = () => {
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
-      t('features.workspace.modals.create.secretKey.email.filename', {
+      t('secretKey.email.filename', {
         titleInputValue,
         formId,
       }),
@@ -173,7 +172,9 @@ interface SaveSecretKeyScreenProps {
 export const SaveSecretKeyScreen = ({
   useSaveSecretKey = useSaveSecretKeyDefault,
 }: SaveSecretKeyScreenProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.workspace.modals.forms.create',
+  })
   const {
     isLoading,
     handleCopyKey,
@@ -208,26 +209,20 @@ export const SaveSecretKeyScreen = ({
                 color="primary.500"
               />
               <Text as="header" textStyle="h2" color="secondary.700">
-                {t('features.workspace.modals.create.secretKey.title')}
+                {t('secretKey.title')}
               </Text>
             </Stack>
             <UnorderedList mb="2.5rem" styleType="disc" spacing={2}>
               <ListItem>
                 <Text textStyle="body-1" color="secondary.500">
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble1',
-                  )}
+                  {t('secretKey.message.preamble1')}
                 </Text>
               </ListItem>
               <ListItem>
                 <Text textStyle="body-1" color="secondary.500">
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble2.prefix',
-                  )}
+                  {t('secretKey.message.preamble2.prefix')}
                   <Text color="danger.500" textStyle="subhead-1" as="span">
-                    {t(
-                      'features.workspace.modals.create.secretKey.message.preamble2.warning',
-                    )}
+                    {t('secretKey.message.preamble2.warning')}
                   </Text>
                 </Text>
               </ListItem>
@@ -236,7 +231,7 @@ export const SaveSecretKeyScreen = ({
               <Tooltip
                 mt={0}
                 label={t(
-                  `features.workspace.modals.create.secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
+                  `secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
                 )}
               >
                 <Code
@@ -269,7 +264,7 @@ export const SaveSecretKeyScreen = ({
               </Tooltip>
               <ButtonGroup>
                 <Button onClick={handleDownloadKey}>
-                  {t('features.workspace.modals.create.secretKey.download')}
+                  {t('secretKey.download')}
                 </Button>
                 <IconButton
                   as="a"
@@ -289,7 +284,7 @@ export const SaveSecretKeyScreen = ({
                   required: true,
                 })}
               >
-                {t('features.workspace.modals.create.secretKey.declaration')}
+                {t('secretKey.declaration')}
               </Checkbox>
             </Box>
           )}
@@ -302,9 +297,7 @@ export const SaveSecretKeyScreen = ({
             onClick={handleDownloadAndNavigate}
             isFullWidth
           >
-            <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.create.secretKey.confirm')}
-            </Text>
+            <Text lineHeight="1.5rem">{t('secretKey.confirm')}</Text>
           </Button>
         </Container>
       </ModalBody>

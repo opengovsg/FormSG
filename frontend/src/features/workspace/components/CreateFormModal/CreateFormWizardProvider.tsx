@@ -123,7 +123,9 @@ const useCreateFormWizardContext = (
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = responseMode
           throw new Error(
-            t('features.workspace.modals.create.errors.responseMode.invalid'),
+            t(
+              'features.workspace.modals.forms.create.errors.responseMode.invalid',
+            ),
           )
         }
       }
@@ -188,7 +190,7 @@ const useCreateFormWizardContext = (
     handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
-    modalHeader: t('features.workspace.modals.create.title.setup'),
+    modalHeader: t('features.workspace.modals.forms.create.title.setup'),
     onClose,
   }
 }

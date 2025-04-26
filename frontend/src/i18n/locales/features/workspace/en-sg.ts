@@ -1,4 +1,5 @@
-import { enSG as create } from './create'
+import { enSG as header } from './header'
+import { enSG as modals } from './modals'
 import { enSG as sideMenu } from './side-menu'
 import { Workspace } from '.'
 
@@ -34,15 +35,6 @@ export const enSG: Workspace = {
     share: 'Share form',
     admins: 'Manage form admins',
     move: 'Move to Folder',
-  },
-  modals: {
-    create,
-    delete: {
-      title: 'Delete form',
-      description:
-        'You will lose all responses and feedback for the following form permanently. Are you sure you want to delete the form?',
-      confirm: 'Yes, delete form',
-    },
   },
   skeleton: {
     title: 'Loading title... Loading title...',
@@ -80,4 +72,6 @@ export const enSG: Workspace = {
     },
   },
   sideMenu,
+  header,
+  modals,
 }
