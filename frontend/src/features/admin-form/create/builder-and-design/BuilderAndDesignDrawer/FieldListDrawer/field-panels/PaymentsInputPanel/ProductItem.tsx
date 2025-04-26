@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded, BiEditAlt, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -128,6 +129,7 @@ const MobileProductItemMenu = ({
   onEditClick: () => void
   onDeleteClick: () => void
 }) => {
+  const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const buttonProps: Partial<ButtonProps> = useMemo(
@@ -144,7 +146,7 @@ const MobileProductItemMenu = ({
     <Box display={{ md: 'none' }}>
       <IconButton
         variant="clear"
-        aria-label="More options"
+        aria-label={t('features.common.moreOptions')}
         icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
         onClick={onOpen}
         size="xs"

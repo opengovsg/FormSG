@@ -56,7 +56,7 @@ export const DeleteFormModal = ({
   if (!formToDelete) return null
 
   const { title, description, confirm } = t(
-    'features.workspace.modals.delete',
+    'features.workspace.modals.forms.delete',
     { returnObjects: true },
   )
   return (

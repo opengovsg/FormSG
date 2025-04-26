@@ -87,4 +87,5 @@ export interface Common {
     text: string
     ariaLabel: string
   }
+  moreOptions: string
 }
