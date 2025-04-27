@@ -30,15 +30,15 @@ export interface Feedback {
       issuesToDate: string
       tooltip: string
     }
-  }
-  feedbackCsvGenerator: {
-    date: string
-    comment: string
-    rating: string
-  }
-  issueCsvGenerator: {
-    date: string
-    issue: string
-    email: string
+    feedbackCsvGenerator: {
+      date: string
+      comment: string
+      rating: string
+    }
+    issueCsvGenerator: {
+      date: string
+      issue: string
+      email: string
+    }
   }
 }

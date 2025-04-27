@@ -32,15 +32,15 @@ export const enSG: Feedback = {
         '{issueCount, plural, =1 {issue to date} other {issues to date}}',
       tooltip: 'Feedback displayed here relates to form submission issues',
     },
-  },
-  feedbackCsvGenerator: {
-    date: 'Date',
-    comment: 'Comment',
-    rating: 'Rating',
-  },
-  issueCsvGenerator: {
-    date: 'Date',
-    issue: 'Issue',
-    email: 'Email',
+    feedbackCsvGenerator: {
+      date: 'Date',
+      comment: 'Comment',
+      rating: 'Rating',
+    },
+    issueCsvGenerator: {
+      date: 'Date',
+      issue: 'Issue',
+      email: 'Email',
+    },
   },
 }
