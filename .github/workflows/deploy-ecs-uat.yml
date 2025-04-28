@@ -1,7 +1,7 @@
 name: Deploy FormSG app to uat
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -18,7 +18,6 @@ jobs:
       # Environment configuration
       environment: 'uat'
       environment-site-name: 'uat'
-      shortEnv: 'uat'
       app-version: ${{ github.sha }}
       app-url: 'https://uat.form.gov.sg'
       react-app-form-sg-sdk-mode: 'staging'
@@ -37,7 +36,7 @@ jobs:
       codedeploy-application: 'formsg-uat-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-uat-ecs-dg'
-      # Datadog config 
+      # Datadog config
       dd-env: 'uat'
     secrets:
       # AWS credentials and configuration
@@ -45,7 +44,7 @@ jobs:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
       # Monitoring and analytics configuration
       ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
-      dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
       dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
+      dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
       dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
