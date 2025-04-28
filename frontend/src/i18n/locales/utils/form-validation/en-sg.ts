@@ -4,13 +4,13 @@ export const enSG: FormValidation = {
   titleValidationRules: {
     required: 'Form name is required',
     minLength: {
-      message: 'Form name must be at least {minTitleLength} characters',
+      message: 'Form name must be at least {MIN_TITLE_LENGTH} characters',
     },
     maxLength: {
-      message: 'Form name must be at most {maxTitleLength} characters',
+      message: 'Form name must be at most {MAX_TITLE_LENGTH} characters',
     },
     validate: {
-      trimMinLength: 'Form name must be at least {minTitleLength} characters',
+      trimMinLength: 'Form name must be at least {MIN_TITLE_LENGTH} characters',
     },
   },
   requiredEmailAdminValidationRules: {
