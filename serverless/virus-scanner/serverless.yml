@@ -34,7 +34,6 @@ provider:
 
 functions:
   virus-scanner:
-    name: legacy-virus-scanner-${opt:stage}
     image:
       name: legacy-virus-scanner
     # max timeout per invocation
