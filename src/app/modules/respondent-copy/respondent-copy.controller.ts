@@ -2,15 +2,14 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync } from 'neverthrow'
-import { FieldResponsesV3 } from 'shared/types'
+import { randomBytes, secretbox } from 'tweetnacl'
+import { decodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
-import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { getQuestionTitleAnswerString } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
 
 import {
@@ -42,13 +41,45 @@ const decryptRespondentCopySubmission = async (
     req.body
 
   // decrypt responses
-  const decryptedContent = formsgSdk.cryptoV3.decryptFromSubmissionKey(
-    respondentCopySecretKey,
-    {
-      encryptedContent: respondentCopyPresignedUrl,
-      version: 2.1,
-    },
-  )
+  // const decryptedContent = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+  //   respondentCopySecretKey,
+  //   {
+  //     encryptedContent: respondentCopyPresignedUrl,
+  //     version: 2.1,
+  //   },
+  // )
+
+  const decrypt = (messageWithNonce, key) => {
+    const keyUint8Array = decodeBase64(key)
+    const messageWithNonceAsUint8Array = decodeBase64(messageWithNonce)
+    const nonce = messageWithNonceAsUint8Array.slice(0, secretbox.nonceLength)
+    const message = messageWithNonceAsUint8Array.slice(
+      secretbox.nonceLength,
+      messageWithNonce.length,
+    )
+
+    const decrypted = secretbox.open(message, nonce, keyUint8Array)
+
+    const base64DecryptedMessage = encodeUTF8(decrypted)
+    // return JSON.parse(base64DecryptedMessage)
+    return base64DecryptedMessage
+  }
+
+  let decryptedContent
+  try {
+    decryptedContent = decrypt(
+      respondentCopyPresignedUrl,
+      respondentCopySecretKey,
+    )
+  } catch (e) {
+    logger.error({
+      message: 'Failed to decrypt respondent copy URL',
+      meta: {
+        action: 'sendMrfRespondentCopyEmail',
+        error: e,
+      },
+    })
+  }
 
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 
@@ -56,7 +87,7 @@ const decryptRespondentCopySubmission = async (
   //   ? (decryptedContent.responses as FieldResponsesV3)
   // : (decryptedContent.responses as FieldResponses[])
 
-  req.unencryptedContent = decryptedContent.responses as FieldResponsesV3
+  req.unencryptedContent = decryptedContent
 
   console.log(
     `THIS IS THE DECRYPTED RESPONSES ${JSON.stringify(req.unencryptedContent)}`,
@@ -70,7 +101,7 @@ const submitFormRespondentCopy = async (
   res: Parameters<DecryptRespondentCopySubmissionHandlerType>[1],
 ) => {
   const { formId, submissionId } = req.params
-  const { emails } = req.body
+  const { emails, mrfStep } = req.body
   const logMeta = {
     action: 'submitFormRespondentCopy',
     ...createReqMeta(req),
@@ -92,16 +123,33 @@ const submitFormRespondentCopy = async (
     )
     .andThen((form) => FormService.isFormPublic(form).map(() => form))
     .andThen((form) => {
-      const formQuestionAnswers = getQuestionTitleAnswerString({
-        formFields: form.form_fields,
-        responses: req.unencryptedContent,
-      })
-      return MailService.sendMrfRespondentCopyEmail({
+      // if (!mrfStep) {
+      //   //TODO: update with customized email notifications
+      //   const recipientData: AutoReplyMailData[] = emails
+      //     ? emails?.map((val) => {
+      //         return {
+      //           email: val,
+      //           // subject: '',
+      //           // sender: '',
+      //           // body: '',
+      //           includeFormSummary: true,
+      //         }
+      //       })
+      //     : []
+      //   return MailService.sendAutoReplyEmails({
+      //     form,
+      //     submission,
+      //     responsesData,
+      //     autoReplyMailDatas: recipientData, //TODO: based on whitelist, update autoReplyMaildata
+      //   })
+      // }
+
+      return MailService.sendRespondentCopyEmail({
         emails: emails,
         formId: formId,
         formTitle: 'TEST TITLE', //TODO fix this
         responseId: submissionId,
-        formQuestionAnswers,
+        mailHtml: req.unencryptedContent,
       })
         .orElse((error) => {
           logger.error({

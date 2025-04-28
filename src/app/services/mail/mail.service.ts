@@ -1100,6 +1100,32 @@ export class MailService {
       })
     })
   }
+
+  sendRespondentCopyEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    mailHtml,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    mailHtml: string
+  }) => {
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `Thank you for submitting ${formTitle} (${responseId})`,
+      html: mailHtml,
+    }
+
+    return this.#sendNodeMail(mail, {
+      formId,
+      mailId: 'workflowNotification',
+    })
+  }
 }
 
 export default new MailService()

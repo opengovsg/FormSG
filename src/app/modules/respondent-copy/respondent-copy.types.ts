@@ -1,5 +1,3 @@
-import { FieldResponse, FieldResponsesV3 } from 'shared/types'
-
 import { ControllerHandler } from '../core/core.types'
 
 export type DecryptRespondentCopySubmissionHandlerType = ControllerHandler<
@@ -16,5 +14,5 @@ export type DecryptRespondentCopySubmissionHandlerType = ControllerHandler<
 
 export type DecryptRespondentCopySubmissionRequest =
   Parameters<DecryptRespondentCopySubmissionHandlerType>[0] & {
-    unencryptedContent: FieldResponsesV3
+    unencryptedContent: string
   }
