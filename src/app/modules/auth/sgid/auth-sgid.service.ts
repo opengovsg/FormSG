@@ -1,8 +1,8 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
-import fs from 'fs'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { SgidPublicOfficerEmploymentList } from 'shared/types/auth'
 
+import { retrieveFileContent } from 'src/app/utils/iac'
 import { ISgidVarsSchema } from 'src/types'
 
 import { sgid } from '../../../config/features/sgid.config'
@@ -24,12 +24,16 @@ export class AuthSgidServiceClass {
 
   constructor({
     privateKey,
+    privateKeyPath,
     hostname,
     adminLoginRedirectUri: redirectUri,
     clientId,
     clientSecret,
   }: ISgidVarsSchema) {
-    this.privateKey = Buffer.from(privateKey, 'base64').toString('utf8')
+    this.privateKey = retrieveFileContent({
+      preIacFilePath: privateKeyPath,
+      postIacBase64EncodedString: privateKey,
+    })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
