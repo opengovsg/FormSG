@@ -10,6 +10,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   FormStatus,
+  Language,
   PublicFormDto,
 } from '../../../../shared/types'
 import { encryptString } from '../../../../shared/utils/crypto'
@@ -601,11 +602,13 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     }
     case BasicField.Date: {
-      const sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
+      const sampleValue = faker.date
+        .anytime()
+        .toLocaleDateString(Language.ENGLISH, {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
       return {
         id: field._id,
         question: field.title,
