@@ -428,6 +428,14 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'MRF_PENDING_SUBMISSION_EMAIL_REMINDER_RATE_LIMIT',
     },
   },
+  iacMigration: {
+    isMigrated: {
+      doc: 'Toggle to determine whether to execute pre or post IaC migration logic',
+      format: Boolean,
+      default: false,
+      env: 'IS_IAC_MIGRATED',
+    },
+  },
   reactMigration: {
     useFetchForSubmissions: {
       // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved

@@ -1,9 +1,10 @@
-import express, { Router } from 'express'
+import { Router } from 'express'
 
 import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
 import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
+import { retrieveJsonContent } from '../../../../utils/iac'
 
 // Handles CorpPass OIDC requests
 
@@ -14,10 +15,14 @@ export const CorppassOidcRouter = Router()
  * @route GET api/v3/corppass/.well-known/jwks.json
  * @returns 200
  */
-CorppassOidcRouter.use(
-  '/.well-known/jwks.json',
-  express.static(spcpMyInfoConfig.cpOidcRpJwksPublicPath),
-)
+CorppassOidcRouter.get('/.well-known/jwks.json', (_req, res) => {
+  res.json(
+    retrieveJsonContent({
+      preIacFilePath: spcpMyInfoConfig.cpOidcRpJwksPublicPath,
+      postIacJsonString: spcpMyInfoConfig.cpOidcRpJwksPublic,
+    }),
+  )
+})
 
 /**
  * Handles form login after user has completed authentication on cp oidc
