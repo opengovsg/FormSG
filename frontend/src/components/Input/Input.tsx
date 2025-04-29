@@ -37,6 +37,10 @@ export interface InputProps extends ChakraInputProps {
    * Whether there's an input right element. Used to provide additional padding
    */
   hasInputRightElement?: boolean
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -50,6 +54,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isPrefillLocked',
     'preventDefaultOnEnter',
     'hasInputRightElement',
+    'isHighContrast',
   ])
 
   const preventDefault = useMemo(
@@ -88,32 +93,38 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
         </InputGroup>
       )
     } else {
-      return props.isPrefillLocked ? (
-        <InputGroup>
+      if (props.isPrefillLocked) {
+        return (
+          <InputGroup>
+            <ChakraInput
+              ref={ref}
+              {...preventDefault}
+              {...inputProps}
+              isDisabled
+              // Padding to allow for lock icon overflow.
+              sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
+            />
+            <InputRightElement>
+              <BxLockAlt />
+            </InputRightElement>
+          </InputGroup>
+        )
+      } else {
+        return (
           <ChakraInput
             ref={ref}
             {...preventDefault}
             {...inputProps}
-            isDisabled={true}
-            // Padding to allow for lock icon overflow.
-            sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
+            {...(props.isHighContrast && {
+              variant: 'highContrast',
+            })}
+            sx={merge(
+              props.hasInputRightElement ? { pr: '2.75rem' } : {},
+              props.sx,
+            )}
           />
-          <InputRightElement>
-            <BxLockAlt />
-          </InputRightElement>
-        </InputGroup>
-      ) : (
-        <ChakraInput
-          ref={ref}
-          {...preventDefault}
-          {...inputProps}
-          sx={merge(
-            props.hasInputRightElement ? { pr: '2.75rem' } : {},
-            inputStyles.field,
-            props.sx,
-          )}
-        />
-      )
+        )
+      }
     }
   }
 

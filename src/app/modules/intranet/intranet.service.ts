@@ -1,10 +1,9 @@
-import fs from 'fs'
-
 import {
   IIntranet,
   intranetConfig,
 } from '../../config/features/intranet.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { retrieveFileContent } from '../../utils/iac'
 
 const logger = createLoggerWithLabel(module)
 
@@ -22,15 +21,16 @@ class IntranetServiceClass {
     // e.g. intranet-only forms, then this try-catch should be removed so that
     // an error is thrown if the intranet IP list file does not exist.
     // For now, the functionality is not crucial, so we can default to an empty array.
-    if (!intranetConfig.intranetIpListPath) {
+    // TODO: (IaC Migration) Remove this double check after IaC migration is fully completed
+    if (!intranetConfig.intranetIpList && !intranetConfig.intranetIpListPath) {
       this.intranetIps = []
       return
     }
     try {
-      this.intranetIps = fs
-        .readFileSync(intranetConfig.intranetIpListPath)
-        .toString()
-        .split('\n')
+      this.intranetIps = retrieveFileContent({
+        preIacFilePath: intranetConfig.intranetIpListPath,
+        postIacBase64EncodedString: intranetConfig.intranetIpList,
+      }).split('\n')
     } catch {
       logger.warn({
         message: 'Could not read file containing intranet IPs',

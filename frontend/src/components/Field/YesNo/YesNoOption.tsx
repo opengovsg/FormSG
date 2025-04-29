@@ -43,6 +43,8 @@ interface YesNoOptionProps extends UseRadioProps {
   onChange?: UseRadioGroupReturn['onChange']
 
   size?: ThemingProps<'Radio'>['size']
+
+  isHighContrast?: boolean
 }
 
 /**

@@ -38,6 +38,7 @@ export const CheckboxField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  isHighContrast,
 }: CheckboxFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
@@ -93,7 +94,11 @@ export const CheckboxField = ({
     [checkboxInputName, getValues],
   )
   return (
-    <FieldContainer schema={schema} errorKey={checkboxInputName}>
+    <FieldContainer
+      schema={schema}
+      errorKey={checkboxInputName}
+      isHighContrast={isHighContrast}
+    >
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller
           name={checkboxInputName}
@@ -113,6 +118,7 @@ export const CheckboxField = ({
                   value={englishCheckboxOptions[idx]}
                   aria-label={o}
                   {...(idx === 0 ? { ref } : {})}
+                  isHighContrast={isHighContrast}
                 >
                   {o}
                 </Checkbox>
@@ -136,11 +142,13 @@ export const CheckboxField = ({
                       colorScheme={fieldColorScheme}
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
+                      {...(isHighContrast && { variant: 'highContrast' })}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}
                       aria-label='"Other" response'
                       {...register(othersInputName, othersValidationRules)}
+                      {...(isHighContrast && { variant: 'highContrast' })}
                     />
                     <FormErrorMessage
                       ml={styles.othersInput?.ml as string}

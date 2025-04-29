@@ -100,3 +100,10 @@ ValidationValidUen.args = {
   schema: baseSchema,
   defaultValue: '53333286M',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: '53333286M',
+}

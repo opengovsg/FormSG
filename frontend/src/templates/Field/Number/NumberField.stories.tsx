@@ -166,3 +166,10 @@ ValidationMax1Length.args = {
   },
   defaultValue: '67574',
 }
+
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  schema: { ...baseSchema, disabled: true },
+  isHighContrast: true,
+  defaultValue: '123',
+}

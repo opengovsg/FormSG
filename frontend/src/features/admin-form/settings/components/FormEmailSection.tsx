@@ -19,8 +19,8 @@ import {
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import {
-  OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
-  REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
+  useOptionalAdminEmailValidationRules,
+  useRequiredAdminEmailValidationRules,
 } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -50,6 +50,11 @@ const AdminEmailRecipientsInput = ({
 
   const { data: settings } = useAdminFormSettings()
 
+  const requiredAdminEmailValidationRules =
+    useRequiredAdminEmailValidationRules()
+  const optionalAdminEmailValidationRules =
+    useOptionalAdminEmailValidationRules()
+
   const handleBlur = useCallback(() => {
     // Get rid of bad tags before submitting.
     setValue(
@@ -68,8 +73,8 @@ const AdminEmailRecipientsInput = ({
       name={EMAILS_FIELD_NAME}
       rules={
         (settings?.responseMode === FormResponseMode.Email
-          ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
-          : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES) as RegisterOptions<{
+          ? requiredAdminEmailValidationRules
+          : optionalAdminEmailValidationRules) as RegisterOptions<{
           emails: string[]
           isRequired: boolean
         }>

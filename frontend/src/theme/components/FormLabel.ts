@@ -7,4 +7,12 @@ export const FormLabel: ComponentStyleConfig = {
     ...textStyles['subhead-1'],
     mb: '0.75rem',
   },
+  variants: {
+    highContrast: {
+      _disabled: {
+        color: 'primary.800',
+        opacity: 1,
+      },
+    },
+  },
 }

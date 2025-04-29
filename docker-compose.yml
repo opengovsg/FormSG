@@ -84,8 +84,8 @@ services:
       - SGID_JWT_SECRET=sgidjwtsecret
       - SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5001/api/v3/auth/sgid/login/callback
       - SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5001/sgid/login
-      - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+      - SGID_PRIVATE_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
+      - SGID_PUBLIC_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
       - SES_PASS
       - SES_USER
       - OTP_LIFE_SPAN

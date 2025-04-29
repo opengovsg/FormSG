@@ -271,6 +271,19 @@ const variantInputAttached: SystemStyleFunction = (props) => {
   }
 }
 
+const variantHighcontrast: SystemStyleFunction = (props) => {
+  const style = variantSolid(props)
+
+  return {
+    ...style,
+    _disabled: {
+      bg: 'neutral.600',
+      borderColor: 'neutral.600',
+      opacity: 1,
+    },
+  }
+}
+
 export const Button = {
   baseStyle: {
     // Keep bg when printing.
@@ -306,6 +319,7 @@ export const Button = {
     link: variantLink,
     inputAttached: variantInputAttached,
     inverseOutline: variantInverseOutline,
+    highContrast: variantHighcontrast,
   },
   defaultProps: {
     variant: 'solid',

@@ -54,6 +54,10 @@ export type BaseFieldProps = {
    * Optional specification for error message variant.
    */
   errorVariant?: 'white'
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -66,6 +70,7 @@ export const FieldContainer = ({
   errorKey,
   showMyInfoBadge,
   errorVariant,
+  isHighContrast,
 }: FieldContainerProps): JSX.Element => {
   const { i18n } = useTranslation()
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
@@ -104,6 +109,7 @@ export const FieldContainer = ({
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined
           }
+          isHighContrast={isHighContrast}
           description={description}
         >
           {title}

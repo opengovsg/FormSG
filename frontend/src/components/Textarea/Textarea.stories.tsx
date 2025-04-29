@@ -51,6 +51,14 @@ Disabled.args = {
   isDisabled: true,
 }
 
+export const DisabledHighContrast = Template.bind({})
+DisabledHighContrast.args = {
+  placeholder: 'Test placeholder',
+  defaultValue: 'Prefilled field',
+  isDisabled: true,
+  variant: 'highContrast',
+}
+
 export const Playground: StoryFn = ({
   name,
   label,

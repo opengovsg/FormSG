@@ -18,6 +18,7 @@ export interface UenFieldProps extends BaseFieldProps {
 export const UenField = ({
   schema,
   disableRequiredValidation,
+  isHighContrast,
 }: UenFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createUenValidationRules(schema, disableRequiredValidation),
@@ -27,11 +28,12 @@ export const UenField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} isHighContrast={isHighContrast}>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter
+        isHighContrast={isHighContrast}
         {...register(schema._id, {
           ...validationRules,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) =>

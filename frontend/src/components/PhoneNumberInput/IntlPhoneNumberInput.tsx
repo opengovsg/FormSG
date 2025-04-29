@@ -53,6 +53,7 @@ export const IntlPhoneNumberInput = forwardRef<
       <CountrySelect
         isReadOnly={props.isReadOnly}
         isDisabled={props.isDisabled}
+        isHighContrast={props.variant === 'highContrast'}
       />
       <Input
         onBlur={handleInputBlur}
@@ -72,6 +73,7 @@ export const IntlPhoneNumberInput = forwardRef<
 interface CountrySelectProps {
   isDisabled?: boolean
   isReadOnly?: boolean
+  isHighContrast?: boolean
 }
 
 const CountrySelect: FCC<CountrySelectProps> = (props) => {
@@ -106,7 +108,10 @@ const CountrySelect: FCC<CountrySelectProps> = (props) => {
           as={Flags[country]}
           sx={styles.icon}
         />
-        <Icon as={BiChevronDown} />
+        <Icon
+          as={BiChevronDown}
+          sx={props.isHighContrast ? { color: 'neutral.800' } : undefined}
+        />
       </Flex>
       <chakra.select
         aria-label="Country selector"

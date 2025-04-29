@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
@@ -102,32 +109,28 @@ export interface FieldRowContainerProps {
 /**
  * Used for highlighting fields that were created by Magic Form Builder.
  */
-const HighlightableFlex = ({
-  isHighlighted,
-  ref,
-  ...props
-}: {
-  isHighlighted?: boolean
-  ref?: React.RefObject<HTMLDivElement>
-} & FlexProps) => {
-  const { children } = props
+type HighlightableFlexProps = FlexProps & { isHighlighted?: boolean }
+const HighlightableFlex = forwardRef<HTMLDivElement, HighlightableFlexProps>(
+  (props, ref) => {
+    const { children, isHighlighted } = props
 
-  const augmentedProps = isHighlighted
-    ? {
-        ...props,
-        borderColor: 'primary.500',
-        borderRadius: '0.25rem',
-        borderWidth: '0.125rem',
-        bg: 'secondary.100',
-      }
-    : props
+    const augmentedProps = isHighlighted
+      ? {
+          ...props,
+          borderColor: 'primary.500',
+          borderRadius: '0.25rem',
+          borderWidth: '0.125rem',
+          bg: 'secondary.100',
+        }
+      : props
 
-  return (
-    <Flex {...augmentedProps} ref={ref}>
-      {children}
-    </Flex>
-  )
-}
+    return (
+      <Flex {...augmentedProps} ref={ref}>
+        {children}
+      </Flex>
+    )
+  },
+)
 
 const FieldRowContainer = ({
   responseMode,

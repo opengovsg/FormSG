@@ -116,9 +116,37 @@ const outlineVariant = (props: StyleFunctionProps) => {
   }
 }
 
+const highContrastVariant = (props: StyleFunctionProps) => {
+  const baseStyles = outlineVariant(props)
+
+  return {
+    ...baseStyles,
+    field: {
+      ...baseStyles.field,
+      _disabled: {
+        bg: 'neutral.200',
+        borderColor: 'neutral.400',
+        color: 'neutral.800',
+        opacity: 1,
+        _hover: {
+          bg: 'neutral.200',
+          color: 'neutral.800',
+          opacity: 1,
+        },
+        _active: {
+          bg: 'neutral.200',
+          color: 'neutral.800',
+          opacity: 1,
+        },
+      },
+    },
+  }
+}
+
 export const Input = {
   variants: {
     outline: outlineVariant,
+    highContrast: highContrastVariant,
   },
   sizes,
   defaultProps: {

@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import _ from 'lodash'
 
-import { IPopulatedForm } from 'src/types'
+import { IPopulatedForm, ISgidVarsSchema } from 'src/types'
 
 import { MOCK_COOKIE_AGE } from '../../myinfo/__tests__/myinfo.test.constants'
 import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
@@ -81,6 +81,6 @@ export const MOCK_OPTIONS = {
   cookieMaxAge: MOCK_COOKIE_AGE,
   cookieMaxAgePreserved: MOCK_COOKIE_AGE * 2,
   jwtSecret: 'jwt-secret',
-}
+} as ISgidVarsSchema
 
 export const MOCK_JWT_ALGORITHM = 'HS256'
