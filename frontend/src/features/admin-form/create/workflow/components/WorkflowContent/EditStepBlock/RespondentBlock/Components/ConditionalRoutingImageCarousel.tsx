@@ -32,11 +32,11 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
   }) => (
     <Button
       borderRadius="full"
-      padding="2px"
-      width="20px"
-      height="20px"
-      minWidth="20px"
-      minHeight="20px"
+      padding="0.125rem"
+      width="1.25rem"
+      height="1.25rem"
+      minWidth="1.25rem"
+      minHeight="1.25rem"
       display="flex"
       backgroundColor="secondary.200"
       borderColor="secondary.200"
