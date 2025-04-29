@@ -495,7 +495,7 @@ export const usePreviewFormMutations = (formId: string) => {
   }
 }
 
-export const useFormFeedbackMutations = () => {
+export const useFormFeedbackMutations = (headers: string[]) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -511,7 +511,7 @@ export const useFormFeedbackMutations = () => {
 
   const downloadFormFeedbackMutation = useMutation(
     ({ formId, formTitle }: DownloadFormFeedbackMutationArgs) =>
-      downloadFormReview(formId, formTitle),
+      downloadFormReview(formId, formTitle, headers),
     {
       onSuccess: () => {
         toast({
@@ -525,7 +525,7 @@ export const useFormFeedbackMutations = () => {
   return { downloadFormFeedbackMutation }
 }
 
-export const useFormIssueMutations = () => {
+export const useFormIssueMutations = (headers: string[]) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -541,7 +541,7 @@ export const useFormIssueMutations = () => {
 
   const downloadFormIssuesMutation = useMutation(
     ({ formId, formTitle, count }: DownloadFormIssuesMutationArgs) =>
-      downloadFormIssue(formId, formTitle, count || 0),
+      downloadFormIssue(formId, formTitle, count || 0, headers),
     {
       onSuccess: () => {
         toast({

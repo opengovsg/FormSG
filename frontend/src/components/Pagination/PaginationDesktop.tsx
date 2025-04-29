@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
 import {
   Box,
@@ -62,6 +63,8 @@ export const PaginationDesktop = ({
   currentPage,
   isDisabled,
 }: PaginationProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const paginationRange = usePaginationRange<typeof SEPARATOR>({
     totalCount,
     pageSize,
@@ -90,7 +93,7 @@ export const PaginationDesktop = ({
     <Box __css={styles.container}>
       <IconButton
         sx={styles.stepper}
-        aria-label="Previous page"
+        aria-label={t('components.pagination.paginationDesktop.previousPage')}
         isDisabled={isDisablePrevPage}
         onClick={handlePageBack}
         icon={<BiChevronLeft />}
@@ -108,7 +111,7 @@ export const PaginationDesktop = ({
       </HStack>
       <IconButton
         sx={styles.stepper}
-        aria-label="Next page"
+        aria-label={t('components.pagination.paginationDesktop.nextPage')}
         isDisabled={isDisableNextPage}
         onClick={handlePageNext}
         icon={<BiChevronRight />}
