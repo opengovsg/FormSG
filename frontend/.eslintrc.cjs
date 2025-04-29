@@ -45,6 +45,12 @@ module.exports = {
         'no-unsafe-optional-chaining': 'off',
       },
     },
+    {
+      files: ['**/*Context.[jt]s?(x)', '**/*Provider.[jt]s?(x)'],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
   ],
   ignorePatterns: ['!.storybook'],
   rules: {
