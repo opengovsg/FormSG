@@ -2,11 +2,11 @@ import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { SgidPublicOfficerEmploymentList } from 'shared/types/auth'
 
-import { retrieveFileContent } from 'src/app/utils/iac'
 import { ISgidVarsSchema } from 'src/types'
 
 import { sgid } from '../../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { retrieveFileContent } from '../../../utils/iac'
 import {
   SgidCreateRedirectUrlError,
   SgidFetchAccessTokenError,
