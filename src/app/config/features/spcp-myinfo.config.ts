@@ -2,6 +2,11 @@ import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
+import {
+  validateIacStringParam,
+  validateNonIacStringParam,
+} from '../../../app/utils/iac'
+
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
 
@@ -17,12 +22,16 @@ type ISpcpConfig = {
   spOidcNdiJwksEndpoint: string
   spOidcRpClientId: string
   spOidcRpRedirectUrl: string
+  spOidcRpJwksPublic: string
+  spOidcRpJwksSecret: string
   spOidcRpJwksPublicPath: string
   spOidcRpJwksSecretPath: string
   cpOidcNdiDiscoveryEndpoint: string
   cpOidcNdiJwksEndpoint: string
   cpOidcRpClientId: string
   cpOidcRpRedirectUrl: string
+  cpOidcRpJwksPublic: string
+  cpOidcRpJwksSecret: string
   cpOidcRpJwksPublicPath: string
   cpOidcRpJwksSecretPath: string
 }
@@ -30,6 +39,8 @@ type ISpcpConfig = {
 type IMyInfoConfig = {
   spEsrvcId: string // Needed for MyInfo
   myInfoClientMode: MyInfoMode
+  myInfoKey: string
+  myInfoCert: string
   myInfoKeyPath: string
   myInfoCertPath: string
   myInfoClientId: string
@@ -99,15 +110,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: MyInfoMode.Production,
     env: 'MYINFO_CLIENT_CONFIG',
   },
+  myInfoKey: {
+    doc: 'MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_FORMSG_KEY',
+  },
+  myInfoCert: {
+    doc: "MyInfo's public certificate, which is used to verify their signature.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_CERT',
+  },
   myInfoKeyPath: {
-    doc: 'Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
-    format: String,
+    doc: 'Path to MyInfo private key',
+    format: validateNonIacStringParam,
     default: null,
     env: 'MYINFO_FORMSG_KEY_PATH',
   },
   myInfoCertPath: {
-    doc: "Path to MyInfo's public certificate, which is used to verify their signature.",
-    format: String,
+    doc: 'Path to MyInfo public certificate',
+    format: validateNonIacStringParam,
     default: null,
     env: 'MYINFO_CERT_PATH',
   },
@@ -153,15 +176,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'SP_OIDC_RP_REDIRECT_URL',
   },
+  spOidcRpJwksPublic: {
+    doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'SP_OIDC_RP_JWKS_PUBLIC',
+  },
+  spOidcRpJwksSecret: {
+    doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
+    format: validateIacStringParam,
+    default: null,
+    env: 'SP_OIDC_RP_JWKS_SECRET',
+  },
   spOidcRpJwksPublicPath: {
-    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI.  This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: String,
+    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
+    format: validateNonIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
   },
   spOidcRpJwksSecretPath: {
     doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: String,
+    format: validateNonIacStringParam,
     default: null,
     env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
   },
@@ -189,15 +224,27 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     default: null,
     env: 'CP_OIDC_RP_REDIRECT_URL',
   },
+  cpOidcRpJwksPublic: {
+    doc: "The Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json",
+    format: validateIacStringParam,
+    default: null,
+    env: 'CP_OIDC_RP_JWKS_PUBLIC',
+  },
+  cpOidcRpJwksSecret: {
+    doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
+    format: validateIacStringParam,
+    default: null,
+    env: 'CP_OIDC_RP_JWKS_SECRET',
+  },
   cpOidcRpJwksPublicPath: {
-    doc: "Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI.  This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.",
-    format: String,
+    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
+    format: validateNonIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_PUBLIC_PATH',
   },
   cpOidcRpJwksSecretPath: {
-    doc: "Path to the Relying Party's Secret Json Web Key Set used for Cingpass-related communication with NDI",
-    format: String,
+    doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
+    format: validateNonIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
   },

@@ -8,12 +8,70 @@ const SHORT_ENV_MAP = {
   development: 'dev',
   prod: 'prod',
   production: 'prod',
-  stg: 'staging',
+  stg: 'stg',
   staging: 'staging',
+  'stg-alt': 'stg-alt',
+  'staging-alt': 'staging-alt',
+  'stg-alt2': 'stg-alt2',
+  'staging-alt2': 'staging-alt2',
+  'stg-alt3': 'stg-alt3',
+  'staging-alt3': 'stg-alt3',
   test: 'test',
   testing: 'test',
   uat: 'uat',
   vapt: 'vapt',
+}
+
+/**
+ * Returns true if the environment is an IaC migrated environment.
+ * IaC migrated environments use new SSM keys and format that are different from the legacy ones.
+ */
+const isIacMigratedSsmKeys = (env) => {
+  return env === SHORT_ENV_MAP['stg-alt3']
+}
+
+const PARAM_KEYS = [
+  'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
+  'VIRUS_SCANNER_CLEAN_S3_BUCKET'
+]
+
+/**
+ * Fetches the parameter string for the given environment from SSM. 
+ */
+const getParamString = async (env) => {
+  const client = new SSMClient({ region: 'ap-southeast-1' })
+
+  if (isIacMigratedSsmKeys(env)) {
+    console.log('Running on IaC migrated environment...')
+    const PARAM_KEY_PREFIX = `/virus-scanner/${SHORT_ENV_MAP[env]}/`
+    
+    const keyValuePromises = PARAM_KEYS.map(async key => {
+      console.log(`Fetching ${PARAM_KEY_PREFIX}${key} from SSM...`)
+      const res = await client.send(
+        new GetParameterCommand({
+          Name: `${PARAM_KEY_PREFIX}${key}`,
+        }),
+      )
+      console.log(`Successfully fetched ${PARAM_KEY_PREFIX}${key} from SSM`)
+      return `${key}=${res.Parameter.Value}`
+    })
+
+    // Wait for all promises to resolve
+    const keyValuePairs = await Promise.all(keyValuePromises)
+    return keyValuePairs.join('\n')
+  }
+  console.log('Running on pre-IaC migrated environment...')
+  const parameterName = `/virus-scanner/${SHORT_ENV_MAP[env]}`
+
+  console.log(`Fetching ${parameterName} from SSM...`)
+  const res = await client.send(
+    new GetParameterCommand({
+      Name: parameterName,
+    }),
+  )
+  const parameterString = (res.Parameter?.Value ?? '')
+  console.log(`Successfully fetched ${parameterName} from SSM`)
+  return parameterString
 }
 
 // This is a helper for local file runs or jest, as specified in package.json
@@ -37,20 +95,13 @@ async function saveAllParameters() {
     )
     exit(0)
   }
-  const client = new SSMClient({ region: 'ap-southeast-1' })
-  const parameterName = `/virus-scanner/${SHORT_ENV_MAP[process.env.ENV]}`
 
-  const res = await client.send(
-    new GetParameterCommand({
-      Name: parameterName,
-    }),
-  )
-
-  const parameterString = (res.Parameter?.Value ?? '')
+  const parameterString = await getParamString(process.env.ENV)
 
   // Add on NODE_ENV
   const parameterStringWithNodeEnv = parameterString.concat(`\nNODE_ENV=${process.env.ENV}`)
 
+  console.log(`Writing env variables to .env.${process.env.ENV}`)
   await fs.promises.writeFile(`.env.${process.env.ENV}`, parameterStringWithNodeEnv)
 }
 

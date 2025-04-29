@@ -82,6 +82,10 @@ export type PublicApiConfig = {
   apiKeyVersion: string
 }
 
+export type IacMigrationConfig = {
+  isMigrated: boolean
+}
+
 export type ReactMigrationConfig = {
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
@@ -112,6 +116,7 @@ export type Config = {
   siteBannerContent: string
   adminBannerContent: string
   rateLimitConfig: RateLimitConfig
+  iacMigration: IacMigrationConfig
   reactMigration: ReactMigrationConfig
   killEmailMode: IOptionalVarsSchema['killEmailMode']
   secretEnv: string
@@ -154,6 +159,8 @@ export interface ICompulsoryVarsSchema {
 export interface ISgidVarsSchema {
   clientId: string
   clientSecret: string
+  privateKey: string
+  publicKey: string
   privateKeyPath: string
   publicKeyPath: string
   formLoginRedirectUri: string
@@ -214,6 +221,10 @@ export interface IOptionalVarsSchema {
     makeTextPrompt: number
     makeVisionPrompt: number
     mrfPendingSubmissionEmailReminder: number
+  }
+  iacMigration: {
+    // TODO: (IaC Migration) Remove this after IaC migration is fully completed
+    isMigrated: boolean
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved

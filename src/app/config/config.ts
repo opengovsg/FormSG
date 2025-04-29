@@ -88,10 +88,13 @@ const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
 const s3 = new aws.S3({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
-  // Endpoint and path style overrides are needed only in development mode
+  // Endpoint override is needed only in development mode
   // for localstack to work, or for Cloudflare R2.
   endpoint: isDevOrTest || hasR2Buckets ? s3BucketUrlVars.endPoint : undefined,
-  s3ForcePathStyle: isDevOrTest || hasR2Buckets ? true : undefined,
+  // RATIONALE: For new buckets, AWS S3 returns virtual-hosted style urls by default.
+  // However, due to backwards compatibility, some of our existing buckets and our CSP connect-url config use path style.
+  // This param ensures that the signed url uses path style.
+  s3ForcePathStyle: true,
 })
 
 // using aws-sdk v3 (FRM-993)
@@ -267,6 +270,7 @@ const config: Config = {
   siteBannerContent: basicVars.banner.siteBannerContent,
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
+  iacMigration: basicVars.iacMigration,
   reactMigration: basicVars.reactMigration,
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   killEmailMode: basicVars.killEmailMode,
