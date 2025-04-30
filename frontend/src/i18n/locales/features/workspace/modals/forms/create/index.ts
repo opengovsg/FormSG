@@ -23,10 +23,24 @@ export interface CreateModal {
       storage: {
         title: string
         subtitle: string
+        optionDescriptionItems: {
+          supportSingpassMyinfo: string
+          supportWebhooks: string
+          sensitivity: string
+        }
       }
       mrf: {
         title: string
         subtitle: string
+        optionDescriptionItems: {
+          supportApprovalWorkflow: string
+          sensitivity: string
+        }
+      }
+      email: {
+        description: string
+        link: string
+        continuedDescription: string
       }
     }
     notifications: {
@@ -49,15 +63,41 @@ export interface CreateModal {
       copied: string
     }
     download: string
-    declaration: string
+    declaration: {
+      text: string
+      aria: string
+    }
     confirm: string
     email: {
       filename: string
       subject: string
       body: string
     }
+    warning: {
+      beforeUnload: string
+      popState: string
+    }
+    mailSecretKey: {
+      aria: string
+    }
   }
   emailFormRecipient: {
     placeholder: string
+  }
+  emailModeFeedbackCreation: {
+    checkboxFieldSchema: {
+      title: string
+      fieldOptions: {
+        collectSensitiveHighData: string
+      }
+    }
+    feedbackScreen: {
+      header: string
+      description: string
+      setupForm: string
+    }
+    creationScreen: {
+      header: string
+    }
   }
 }

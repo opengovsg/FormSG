@@ -113,15 +113,14 @@ const useSaveSecretKeyDefault = () => {
       if (!hasDownloaded) {
         e.preventDefault() // if event doesn't get explicitly handled, default action WILL not be taken
         // returnValue is deprecated, but we return it regardless to support legacy cases (e.g. Chrome/Edge < 119)
-        e.returnValue = 'You have not downloaded your Secret Key yet'
+        e.returnValue = t('secretKey.warning.beforeUnload')
       }
     }
 
     const handlePopState = (e: PopStateEvent) => {
       if (!hasDownloaded) {
         window.history.pushState(null, '', window.location.href)
-        const confirmMessage =
-          "You have not downloaded your Secret Key yet. You won't be able to access your form responses without it. Are you sure you want to leave?"
+        const confirmMessage = t('secretKey.warning.popState')
         if (window.confirm(confirmMessage)) {
           onClose()
         }
@@ -269,7 +268,7 @@ export const SaveSecretKeyScreen = ({
                 <IconButton
                   as="a"
                   icon={<BiMailSend />}
-                  aria-label="Email the secret key to someone"
+                  aria-label={t('secretKey.mailSecretKey.aria')}
                   href={mailToHref}
                   variant="outline"
                 />
@@ -279,12 +278,12 @@ export const SaveSecretKeyScreen = ({
           {hasDownloaded && (
             <Box mt="1rem">
               <Checkbox
-                aria-label="Storage mode form acknowledgement"
+                aria-label={t('secretKey.declaration.aria')}
                 {...register('storageAck', {
                   required: true,
                 })}
               >
-                {t('secretKey.declaration')}
+                {t('secretKey.declaration.text')}
               </Checkbox>
             </Box>
           )}

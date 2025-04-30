@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { FormProvider, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
@@ -29,17 +30,26 @@ import {
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 
-const CHECKBOX_FIELD_SCHEMA: CheckboxFieldSchema = {
-  _id: 'reason',
-  fieldOptions: ['I need to collect Sensitive High data'],
-  othersRadioButton: true,
-  ValidationOptions: { customMax: null, customMin: null },
-  validateByValue: false,
-  fieldType: BasicField.Checkbox,
-  title: 'Why are you creating an Email mode form?',
-  description: '',
-  required: true,
-  disabled: false,
+const useCheckboxFieldSchema: () => CheckboxFieldSchema = () => {
+  const { t } = useTranslation()
+  const {
+    title,
+    fieldOptions: { collectSensitiveHighData },
+  } = t(
+    'features.workspace.modals.forms.create.emailModeFeedbackCreation.checkboxFieldSchema',
+  )
+  return {
+    _id: 'reason',
+    fieldOptions: [collectSensitiveHighData],
+    othersRadioButton: true,
+    ValidationOptions: { customMax: null, customMin: null },
+    validateByValue: false,
+    fieldType: BasicField.Checkbox,
+    title: title,
+    description: '',
+    required: true,
+    disabled: false,
+  }
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
@@ -50,6 +60,12 @@ export const EmailModeFeedbackScreen = ({
   useCreateFormWizardParam?: typeof useCreateFormWizard
   useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
 }): JSX.Element => {
+  const { t } = useTranslation()
+  const { feedbackScreen: translations } = t(
+    'features.workspace.modals.forms.create.emailModeFeedbackCreation',
+    { returnObjects: true },
+  )
+  const checkboxFieldSchema = useCheckboxFieldSchema()
   const { formMethods, submitEmailModeFeedback, isLoading, isFetching } =
     useCreateFormWizardParam()
   const {
@@ -63,11 +79,9 @@ export const EmailModeFeedbackScreen = ({
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          Before you get started
+          {translations.header}
           <Text textStyle="body-1" color="secondary.700" mt="1rem">
-            We’d love to understand why you chose to create an Email mode form.
-            This will help us ensure a smooth transition once we phase out Email
-            mode.
+            {translations.description}
           </Text>
         </Container>
       </ModalHeader>
@@ -76,7 +90,7 @@ export const EmailModeFeedbackScreen = ({
         <FormProvider {...formMethods}>
           <Container maxW="42.5rem" p={0}>
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
-              <CheckboxField schema={CHECKBOX_FIELD_SCHEMA} />
+              <CheckboxField schema={checkboxFieldSchema} />
             </FormControl>
             <Button
               rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
@@ -86,7 +100,7 @@ export const EmailModeFeedbackScreen = ({
               isDisabled={isFetching}
               onClick={submitEmailModeFeedback(feedbackForm)}
             >
-              <Text lineHeight="1.5rem">Next: Set up your form</Text>
+              <Text lineHeight="1.5rem">{translations.setupForm}</Text>
             </Button>
           </Container>
         </FormProvider>
@@ -102,6 +116,17 @@ export const EmailModeCreationScreen = ({
   useCreateFormWizardParam?: typeof useCreateFormWizard
   useAdminUseEmailModeFormViewParam?: typeof useAdminUseEmailModeFormView
 }): JSX.Element => {
+  const { t } = useTranslation()
+  const { header } = t(
+    'features.workspace.modals.forms.create.emailModeFeedbackCreation.creationScreen',
+    { returnObjects: true },
+  )
+  const { name, notifications, create } = t(
+    'features.workspace.modals.forms.create.details',
+    {
+      returnObjects: true,
+    },
+  )
   const {
     formMethods,
 
@@ -137,14 +162,14 @@ export const EmailModeCreationScreen = ({
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          Set up your form in Email mode
+          {header}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <FormProvider {...formMethods}>
           <Container maxW="42.5rem" p={0}>
             <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-              <FormLabel useMarkdownForDescription>Form name</FormLabel>
+              <FormLabel useMarkdownForDescription>{name.label}</FormLabel>
 
               <Input {...formTitleRegister} ref={mergedRef} />
               <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
@@ -153,9 +178,12 @@ export const EmailModeCreationScreen = ({
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
                 useMarkdownForDescription
-                description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+                description={t(
+                  'features.workspace.modals.forms.create.details.notifications.description',
+                  { GUIDE_PREVENT_EMAIL_BOUNCE },
+                )}
               >
-                Notifications for new responses
+                {notifications.label}
               </FormLabel>
               <EmailFormRecipientsInput />
             </FormControl>
@@ -169,7 +197,7 @@ export const EmailModeCreationScreen = ({
               onClick={handleCreateEmailModeForm()}
               data-dd-action-name="dashboard.create.create_email"
             >
-              <Text lineHeight="1.5rem">Create form</Text>
+              <Text lineHeight="1.5rem">{create}</Text>
             </Button>
           </Container>
         </FormProvider>

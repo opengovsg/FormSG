@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Drawer,
@@ -37,6 +38,11 @@ import { useDashboard, useWorkspace } from './queries'
 import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { defaultTitle, emailRetirementNotice } = t(
+    'features.workspace.workspacePage',
+    { returnObjects: true },
+  )
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
   const siteBannerContentGB = useFeatureValue('site-banner-content', '')
@@ -68,11 +74,11 @@ export const WorkspacePage = (): JSX.Element => {
   const DEFAULT_WORKSPACE = useMemo(() => {
     return {
       _id: '',
-      title: 'All forms',
+      title: defaultTitle,
       formIds: dashboardForms ? dashboardForms.map(({ _id }) => _id) : [],
       admin: user?._id,
     }
-  }, [dashboardForms, user]) as Workspace
+  }, [dashboardForms, user, defaultTitle]) as Workspace
 
   if (isWorkspaceLoading || isDashboardLoading) return <></>
 
@@ -166,18 +172,22 @@ export const WorkspacePage = (): JSX.Element => {
           >
             <InlineMessage>
               <Text>
-                Email mode forms will be retired on{' '}
+                {emailRetirementNotice.description}{' '}
                 <Text as="span" fontWeight="bold">
-                  30 June 2025
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.date',
+                    {
+                      retirementDate: new Date(Date.UTC(2025, 5, 30, 3, 0, 0)),
+                    },
+                  )}
                 </Text>
-                . Email functionalities will continue to be available in Storage
-                mode.{' '}
+                {emailRetirementNotice.additionalDescription}{' '}
                 <Link
                   display="inline"
                   href={KILL_EMAIL_MODE_LINK}
                   target="_blank"
                 >
-                  Learn what this means for you.
+                  {emailRetirementNotice.learnMore}
                 </Link>
               </Text>
             </InlineMessage>
