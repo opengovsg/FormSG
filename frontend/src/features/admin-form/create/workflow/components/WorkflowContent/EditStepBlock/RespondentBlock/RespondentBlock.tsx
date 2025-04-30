@@ -93,18 +93,12 @@ export const RespondentBlock = ({
                 formMethods={formMethods}
                 isLoading={isLoading}
               />
-              {/* TODO (MRF-Conditional-Routing): Remove isTest and user check when
-              conditional routing is out of beta */}
-              {isTest || user?.betaFlags?.mrfConditionalRouting ? (
-                <>
-                  <ConditionalRoutingOption
-                    selectedWorkflowType={selectedWorkflowType}
-                    conditionalFormFields={dropdownFormFields}
-                    formMethods={formMethods}
-                    isLoading={isLoading}
-                  />
-                </>
-              ) : null}
+              <ConditionalRoutingOption
+                selectedWorkflowType={selectedWorkflowType}
+                conditionalFormFields={dropdownFormFields}
+                formMethods={formMethods}
+                isLoading={isLoading}
+              />
             </Radio.RadioGroup>
           </Stack>
           <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
