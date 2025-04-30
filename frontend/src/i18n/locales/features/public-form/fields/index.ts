@@ -22,6 +22,7 @@ export interface Fields {
     maxFileSize: string
     fileConstraintsText: string
     ariaLabelRemove: string
+    ariaLabelReplace: string
     error: {
       fileEmpty: string
       fileTooLarge: string

@@ -1,5 +1,4 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
-import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -7,6 +6,7 @@ import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { retrieveFileContent } from '../../utils/iac'
 import { ApplicationError } from '../core/core.errors'
 
 import { internalAttrListToScopes } from './sgid.adapter'
@@ -46,6 +46,8 @@ export class SgidServiceClass {
     cookieDomain,
     cookieMaxAge,
     cookieMaxAgePreserved,
+    privateKey,
+    publicKey,
     privateKeyPath,
     publicKeyPath,
     hostname,
@@ -54,7 +56,10 @@ export class SgidServiceClass {
     clientSecret,
     jwtSecret,
   }: ISgidVarsSchema) {
-    this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
+    this.privateKey = retrieveFileContent({
+      preIacFilePath: privateKeyPath,
+      postIacBase64EncodedString: privateKey,
+    })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
@@ -63,7 +68,10 @@ export class SgidServiceClass {
       redirectUri,
       privateKey: this.privateKey,
     })
-    this.publicKey = fs.readFileSync(publicKeyPath)
+    this.publicKey = retrieveFileContent({
+      preIacFilePath: publicKeyPath,
+      postIacBase64EncodedString: publicKey,
+    })
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved

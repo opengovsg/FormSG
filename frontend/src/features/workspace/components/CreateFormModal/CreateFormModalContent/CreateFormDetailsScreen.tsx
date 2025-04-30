@@ -13,7 +13,7 @@ import {
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
@@ -75,6 +75,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     handleEmailFeedbackSubmit()
   }
 
+  const formTitleValidationRules = useFormTitleValidationRules()
+
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -93,7 +95,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 autoFocus
                 {...register(
                   'title',
-                  FORM_TITLE_VALIDATION_RULES as RegisterOptions<
+                  formTitleValidationRules as RegisterOptions<
                     CreateFormWizardInputProps,
                     'title'
                   >,

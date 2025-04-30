@@ -19,6 +19,7 @@ export const enSG: Fields = {
     maxFileSize: 'Maximum file size: {readableMaxSize}',
     fileConstraintsText: 'Files should not be more than 10 pages long.',
     ariaLabelRemove: 'Click to remove file',
+    ariaLabelReplace: 'Click to replace file',
     error: {
       fileEmpty:
         'You have uploaded an empty file, please upload a valid attachment',

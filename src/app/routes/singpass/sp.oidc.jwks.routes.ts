@@ -1,5 +1,6 @@
-import express, { Router } from 'express'
+import { Router } from 'express'
 
+import { retrieveJsonContent } from '../../../app/utils/iac'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Handles SingPass JWKS requests
@@ -10,8 +11,11 @@ export const SpOidcJwksRouter = Router()
  * @route GET /sp/.well-known/jwks.json
  * @returns 200
  */
-
-SpOidcJwksRouter.get(
-  '/',
-  express.static(spcpMyInfoConfig.spOidcRpJwksPublicPath),
-)
+SpOidcJwksRouter.get('/', (_req, res) => {
+  res.json(
+    retrieveJsonContent({
+      preIacFilePath: spcpMyInfoConfig.spOidcRpJwksPublicPath,
+      postIacJsonString: spcpMyInfoConfig.spOidcRpJwksPublic,
+    }),
+  )
+})
