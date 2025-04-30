@@ -53,17 +53,17 @@ export const enSG: Workflow = {
               'We have created a CSV template with the options from the field you selected.',
             pleaseDownload:
               'Please download the CSV template and add the emails for each option.',
-            button: 'Download and edit CSV template',
+            button: 'Download and edit CSV',
             howto: {
-              title: 'How to use the CSV template:',
+              title: 'How to use the CSV',
               option: {
-                title: 'Option',
+                title: 'OPTIONS',
                 explanation: 'This contains all the options from your field.',
                 notice:
                   'Do not edit, reorder or delete anything in this column.',
               },
               email: {
-                title: 'Email(s)',
+                title: 'EMAIL(S)',
                 explanation:
                   'Add the emails to send the form to for each option.',
                 notice: 'Separate multiple email(s) with a comma.',
@@ -72,6 +72,14 @@ export const enSG: Workflow = {
             },
           },
           nextButton: 'Next: Upload CSV file',
+          carousel: {
+            caption1: 'Download and edit the CSV FormSG has created',
+            caption2:
+              'The CSV template includes options from your selected field',
+            caption3: 'Enter emails for each option',
+            caption4: 'Upload your updated CSV file',
+            caption5: 'Save CSV file to update routing',
+          },
         },
         step2: {
           title: 'Upload your completed CSV file',
@@ -80,6 +88,16 @@ export const enSG: Workflow = {
             prefix: 'Please ensure that your file is saved in',
             csv: 'comma-separated values (.csv)',
             suffix: 'format.',
+          },
+        },
+        stepReplace: {
+          title: 'Replace your CSV file',
+          confirm: 'Save CSV file',
+          description: {
+            info: 'Replacing the file will delete the existing CSV and update your dropdown options(s) and email routing.',
+            warning: 'This action cannot be undone. ',
+            info1: 'To assign multiple emails to an option,',
+            info2: 'separate them with commas.',
           },
         },
       },

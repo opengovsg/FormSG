@@ -2273,10 +2273,13 @@ const _handleUpdateOptionsToRecipientsMap: ControllerHandler<
     fieldId: string
   },
   FormFieldDto | ErrorDto,
-  { optionsToRecipientsMap: Record<string, string[]> }
+  {
+    optionsToRecipientsMap: Record<string, string[]>
+    fieldOptions: string[]
+  }
 > = (req, res) => {
   const { formId, fieldId } = req.params
-  const { optionsToRecipientsMap } = req.body
+  const { optionsToRecipientsMap, fieldOptions } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
@@ -2294,6 +2297,7 @@ const _handleUpdateOptionsToRecipientsMap: ControllerHandler<
         form,
         fieldId,
         optionsToRecipientsMap,
+        fieldOptions,
       )
     })
     .map((updatedFormField) =>
@@ -2321,6 +2325,7 @@ export const handleUpdateOptionsToRecipientsMap = [
   celebrate({
     [Segments.BODY]: Joi.object({
       optionsToRecipientsMap: Joi.object(),
+      fieldOptions: Joi.array().items(Joi.string()).required(),
     }),
     [Segments.PARAMS]: Joi.object({
       formId: Joi.string().required(),

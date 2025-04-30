@@ -1,0 +1,92 @@
+import { useState } from 'react'
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { Button, Image, Stack, Text } from '@chakra-ui/react'
+
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
+
+interface ImageCarouselProps {
+  images: string[]
+  captions: string[]
+}
+
+export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
+  const numSteps = images.length
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
+
+  const nextItem = () => {
+    setCurrentIndex((prevIndex) => prevIndex + 1)
+  }
+
+  const prevItem = () => {
+    setCurrentIndex((prevIndex) => prevIndex - 1)
+  }
+
+  const CarouselButton = ({
+    onClick,
+    isDisabled,
+    icon,
+  }: {
+    onClick: () => void
+    isDisabled: boolean
+    icon: React.ReactNode
+  }) => (
+    <Button
+      borderRadius="full"
+      padding="0.125rem"
+      width="1.25rem"
+      height="1.25rem"
+      minWidth="1.25rem"
+      minHeight="1.25rem"
+      display="flex"
+      backgroundColor="secondary.200"
+      borderColor="secondary.200"
+      _hover={{ bg: 'secondary.300', borderColor: 'secondary.300' }}
+      _disabled={{ bg: 'neutral.200', cursor: 'not-allowed' }}
+      onClick={onClick}
+      isDisabled={isDisabled}
+      opacity={isDisabled ? 0 : 1}
+      pointerEvents={isDisabled ? 'none' : 'auto'}
+    >
+      {icon}
+    </Button>
+  )
+
+  return (
+    <Stack
+      spacing="1rem"
+      alignItems="center"
+      w="100%"
+      flex="1"
+      maxWidth="466px"
+    >
+      <Stack direction="row" w="100%" align="center">
+        <CarouselButton
+          onClick={prevItem}
+          isDisabled={currentIndex <= 0}
+          icon={<FaChevronLeft fontSize="0.7rem" color="#445072" />}
+        />
+        <Image
+          src={images[currentIndex]}
+          alt={`Image ${currentIndex + 1}`}
+          boxSize="auto"
+          width="18.25rem"
+          height="14.75rem"
+          objectFit="cover"
+        />
+        <CarouselButton
+          onClick={nextItem}
+          isDisabled={currentIndex >= numSteps - 1}
+          icon={<FaChevronRight fontSize="0.7rem" color="#445072" />}
+        />
+      </Stack>
+      <Text color="secondary.400" textStyle="caption-2">
+        {captions[currentIndex]}
+      </Text>
+      <ProgressIndicator
+        numIndicators={numSteps}
+        currActiveIdx={currentIndex}
+        onClick={setCurrentIndex}
+      />
+    </Stack>
+  )
+}
