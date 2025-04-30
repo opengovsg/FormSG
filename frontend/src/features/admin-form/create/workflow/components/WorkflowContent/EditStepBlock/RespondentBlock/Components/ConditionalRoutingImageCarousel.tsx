@@ -10,7 +10,7 @@ interface ImageCarouselProps {
 }
 
 export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
-  const NUM_STEPS = images.length
+  const numSteps = images.length
   const [currentIndex, setCurrentIndex] = useState<number>(0)
 
   const nextItem = () => {
@@ -75,7 +75,7 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
         />
         <CarouselButton
           onClick={nextItem}
-          isDisabled={currentIndex >= NUM_STEPS - 1}
+          isDisabled={currentIndex >= numSteps - 1}
           icon={<FaChevronRight fontSize="0.7rem" color="#445072" />}
         />
       </Stack>
@@ -83,7 +83,7 @@ export const ImageCarousel = ({ images, captions }: ImageCarouselProps) => {
         {captions[currentIndex]}
       </Text>
       <ProgressIndicator
-        numIndicators={NUM_STEPS}
+        numIndicators={numSteps}
         currActiveIdx={currentIndex}
         onClick={setCurrentIndex}
       />
