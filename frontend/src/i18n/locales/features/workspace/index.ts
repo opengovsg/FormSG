@@ -71,6 +71,15 @@ export interface Workspace {
       }
     }
   }
+  workspacePage: {
+    defaultTitle: string
+    emailRetirementNotice: {
+      description: string
+      date: string
+      additionalDescription: string
+      learnMore: string
+    }
+  }
   sideMenu: SideMenu
   header: Header
   modals: Modals

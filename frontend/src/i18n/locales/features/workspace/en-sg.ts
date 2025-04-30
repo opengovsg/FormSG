@@ -71,6 +71,16 @@ export const enSG: Workspace = {
       },
     },
   },
+  workspacePage: {
+    defaultTitle: 'All forms',
+    emailRetirementNotice: {
+      description: 'Email mode forms will be retired on',
+      date: '{retirementDate, date, long}',
+      additionalDescription:
+        '. Email functionalities will continue to be available in Storage mode.',
+      learnMore: 'Learn what this means for you.',
+    },
+  },
   sideMenu,
   header,
   modals,

@@ -27,15 +27,14 @@ export const useSaveSecretKey = ({
   onClose: () => void
   isFormStateValid: boolean
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.workspace.modals.forms.create',
+  })
 
   const mailToHref = useMemo(() => {
-    const subject = t(
-      'features.workspace.modals.create.secretKey.email.subject',
-      { titleInputValue: formTitle },
-    )
+    const subject = t('secretKey.email.subject', { titleInputValue: formTitle })
     const body = dedent(
-      t('features.workspace.modals.create.secretKey.email.body', {
+      t('secretKey.email.body', {
         titleInputValue: formTitle,
         secretKey,
       }),
@@ -50,7 +49,7 @@ export const useSaveSecretKey = ({
   const handleDownloadKey = useCallback(() => {
     FileSaver.saveAs(
       new Blob([secretKey], { type: 'text/plain;charset=utf-8' }),
-      t('features.workspace.modals.create.secretKey.email.filename', {
+      t('secretKey.email.filename', {
         titleInputValue: formTitle,
         formId,
       }),

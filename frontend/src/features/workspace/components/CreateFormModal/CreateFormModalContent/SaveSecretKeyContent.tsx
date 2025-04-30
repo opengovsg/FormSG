@@ -151,7 +151,7 @@ export const SaveSecretKeyContent = ({
                 <IconButton
                   as="a"
                   icon={<BiMailSend />}
-                  aria-label="Email the secret key to someone"
+                  aria-label={t('secretKey.mailSecretKey.aria')}
                   href={mailToHref}
                   variant="outline"
                   onClick={handleTrackEmail}
@@ -162,12 +162,12 @@ export const SaveSecretKeyContent = ({
           {hasDownloadedKey && (
             <Box mt="1rem">
               <Checkbox
-                aria-label="Storage mode form acknowledgement"
+                aria-label={t('secretKey.declaration.aria')}
                 {...registerStorageAck('storageAck', {
                   required: true,
                 })}
               >
-                {t('secretKey.declaration')}
+                {t('secretKey.declaration.text')}
               </Checkbox>
             </Box>
           )}

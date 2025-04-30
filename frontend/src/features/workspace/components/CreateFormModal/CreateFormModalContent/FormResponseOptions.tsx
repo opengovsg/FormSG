@@ -73,13 +73,9 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports email submissions' },
-              { text: 'Supports Singpass & Myinfo' },
-              { text: 'Supports webhooks for integrations' },
-              {
-                text: 'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
-                badge: 'new',
-              },
+              { text: storage.optionDescriptionItems.supportSingpassMyinfo },
+              { text: storage.optionDescriptionItems.supportWebhooks },
+              { text: storage.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>
@@ -96,12 +92,11 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports email submissions' },
-              { text: 'Supports approval workflows' },
               {
-                text: 'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
-                badge: 'new',
+                text: mrf.optionDescriptionItems.supportApprovalWorkflow,
+                badge: 'New',
               },
+              { text: mrf.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>

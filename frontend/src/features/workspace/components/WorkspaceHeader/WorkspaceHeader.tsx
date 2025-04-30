@@ -9,7 +9,6 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
