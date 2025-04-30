@@ -347,7 +347,6 @@ export const ConditionalRoutingOption = ({
         'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.duplicateOptions',
       )
     }
-    return
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
