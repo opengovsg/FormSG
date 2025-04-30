@@ -53,14 +53,19 @@ export const updateOptionsToRecipientsMap = async ({
   formId,
   fieldId,
   optionsToRecipientsMap,
+  fieldOptions,
 }: {
   formId: string
   fieldId: string
   optionsToRecipientsMap: DropdownFieldBase['optionsToRecipientsMap']
+  fieldOptions: DropdownFieldBase['fieldOptions']
 }): Promise<FormFieldDto> => {
   return ApiService.put<FormFieldDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/options-to-recipients-map`,
-    { optionsToRecipientsMap },
+    {
+      optionsToRecipientsMap: optionsToRecipientsMap,
+      fieldOptions: fieldOptions,
+    },
   )
     .then(({ data }) => data)
     .then(transformAllIsoStringsToDate)

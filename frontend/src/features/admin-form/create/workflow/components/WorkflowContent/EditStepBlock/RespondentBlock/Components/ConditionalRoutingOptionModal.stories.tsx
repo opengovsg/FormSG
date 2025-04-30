@@ -18,6 +18,7 @@ const ModalContainer = ({
   isSubmitDisabled,
   validateCsvFile,
   csvFile,
+  existingCsv,
 }: Omit<ConditionalRoutingOptionModalProps, 'control'> & {
   csvFile?: File | null
 }) => {
@@ -39,23 +40,28 @@ const ModalContainer = ({
       validateCsvFile={validateCsvFile}
       conditionalFieldItems={[]}
       isLoading={false}
+      existingCsv={existingCsv}
     />
   )
 }
+
+const defaultArgs = {
+  isOpen: true,
+  onClose: () => {},
+  errors: {},
+  onDownloadCsvClick: () => {},
+  onSubmit: () => {},
+  isSubmitDisabled: false,
+  validateCsvFile: async () => undefined,
+}
+
+const testFile = new File(['content'], 'test.csv', { type: 'text/csv' })
 
 export default {
   component: ModalContainer,
   title:
     'Features/AdminForm/create/workflow/components/WorkflowContent/EditStepBlock/ConditionalRoutingOptionModal',
-  args: {
-    isOpen: true,
-    onClose: () => {},
-    errors: {},
-    onDownloadCsvClick: () => {},
-    onSubmit: () => {},
-    isSubmitDisabled: false,
-    validateCsvFile: async () => undefined,
-  },
+  args: defaultArgs,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
 }
 
@@ -63,7 +69,7 @@ export const DownloadCsvTemplateStep = {}
 
 export const UploadCsvFileStep = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
@@ -92,7 +98,7 @@ export const UploadCsvFileStep = {
 
 export const UploadCsvFileStepWithAttachmentSelected = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
@@ -125,7 +131,7 @@ export const UploadCsvFileStepWithAttachmentSelected = {
 
 export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
   play: async () => {
-    const downloadButton = screen.getByText('Download and edit CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV')
     const nextButton = screen.getByText('Next: Upload CSV file')
     await waitFor(
       async () => {
@@ -158,5 +164,57 @@ export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
         message: 'Dummy error message',
       },
     },
+  },
+}
+
+export const ReplaceCSVFileStepEmpty = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ReplaceCSVFileStep = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+    csvFile: testFile,
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  },
+}
+
+export const ReplaceCSVFileStepErrorMessage = {
+  args: {
+    ...defaultArgs,
+    existingCsv: testFile,
+    csvFile: testFile,
+    errors: {
+      csvFile: {
+        message: 'Dummy error message',
+      },
+    },
+  },
+  play: async () => {
+    await waitFor(
+      async () => {
+        expect(screen.getByText('Replace your CSV file')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
   },
 }

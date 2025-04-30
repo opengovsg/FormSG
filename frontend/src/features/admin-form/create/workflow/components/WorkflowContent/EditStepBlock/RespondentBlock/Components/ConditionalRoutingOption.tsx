@@ -102,6 +102,7 @@ export const ConditionalRoutingOption = ({
     formState: { errors: conditionalRoutingConfigErrors },
     watch: watchConditionalRoutingConfig,
     handleSubmit,
+    setValue: conditionalRoutingConfigSetValue,
   } = useForm<ConditionalRoutingConfig>()
 
   const selectedConditionalFieldId = watch('conditional_field')
@@ -232,12 +233,17 @@ export const ConditionalRoutingOption = ({
         }, {})
       }
 
+      const getOptionsFromCsv = (csvRows: string[][]): string[] => {
+        return csvRows.map(([option]) => option)
+      }
+
       editOptionToRecipientsMutation.mutate(
         {
           fieldId: conditionalFieldId,
           optionsToRecipientsMap: csvToOptionsToRecipientsMap(
             conditionalRoutingCsvRows,
           ),
+          fieldOptions: getOptionsFromCsv(conditionalRoutingCsvRows),
         },
         {
           onSuccess: () => {
@@ -255,6 +261,7 @@ export const ConditionalRoutingOption = ({
       {
         fieldId: selectedConditionalField._id,
         optionsToRecipientsMap: {},
+        fieldOptions: selectedConditionalField.fieldOptions,
       },
       {
         onSuccess: () => {
@@ -335,22 +342,19 @@ export const ConditionalRoutingOption = ({
       optionsSet.add(option)
     }
 
-    const selectedConditionalFieldOptions =
-      selectedConditionalField?.fieldOptions
-
     if (optionsSet.size < conditionalRoutingCsvRows.length) {
       return t(
         'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.duplicateOptions',
       )
     }
-
-    return validateCsvOptionsWithFieldOptions(
-      [...optionsSet],
-      selectedConditionalFieldOptions || [],
-    )
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
+
+  const handleOpenModal = () => {
+    conditionalRoutingConfigSetValue('csvFile', null)
+    onOpen()
+  }
 
   return (
     <>
@@ -377,6 +381,7 @@ export const ConditionalRoutingOption = ({
           )
         }
         validateCsvFile={validateCsvFile}
+        existingCsv={csvFile}
       />
 
       <Radio
@@ -451,11 +456,13 @@ export const ConditionalRoutingOption = ({
                     onChange={() => {}}
                     value={csvFile}
                     showDownload
-                    showRemove
+                    showRemove={false}
+                    showReplace
                     handleDownloadFileOverride={handleCsvDownload}
                     handleRemoveFileOverride={() =>
                       setIsDeleteConfirmModalOpen(true)
                     }
+                    handleReplaceFileOverride={handleOpenModal}
                     accept={['.csv']}
                   />
                 ) : (
@@ -463,7 +470,7 @@ export const ConditionalRoutingOption = ({
                     w="100%"
                     variant="outline"
                     leftIcon={<BiPlus fontSize="1.5rem" />}
-                    onClick={onOpen}
+                    onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
                     {t(

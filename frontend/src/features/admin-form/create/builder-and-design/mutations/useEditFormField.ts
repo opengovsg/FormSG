@@ -88,14 +88,17 @@ export const useEditFormField = () => {
       ({
         fieldId,
         optionsToRecipientsMap,
+        fieldOptions,
       }: {
         fieldId: string
         optionsToRecipientsMap: DropdownFieldBase['optionsToRecipientsMap']
+        fieldOptions: DropdownFieldBase['fieldOptions']
       }) => {
         return updateOptionsToRecipientsMap({
           formId,
           fieldId,
           optionsToRecipientsMap,
+          fieldOptions,
         })
       },
       {

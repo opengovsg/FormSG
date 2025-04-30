@@ -13,7 +13,6 @@ import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -50,7 +49,6 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from '../../../../../shared/utils/nric-validation'
-import { checkIsOptionsMismatched } from '../../../../../shared/utils/options-recipients-map-validation'
 import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
@@ -736,12 +734,10 @@ export const duplicateForm = (
  * - All options have at least one recipient email
  * - Options cannot be empty strings
  * - All recipient emails are valid email addresses
- * - All options in mapping exist in the field's options and vice versa
  */
 
 const validateOptionsToRecipientsMap = (
   optionsToRecipientsMap: Record<string, string[]>,
-  selectedConditionalFieldOptions: string[],
 ): Result<undefined, MalformedParametersError> => {
   // Mapping is being removed
   if (
@@ -782,19 +778,6 @@ const validateOptionsToRecipientsMap = (
     }
   }
 
-  if (
-    checkIsOptionsMismatched(
-      Object.keys(optionsToRecipientsMap),
-      selectedConditionalFieldOptions,
-    )
-  ) {
-    return err(
-      new MalformedParametersError(
-        CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-      ),
-    )
-  }
-
   return ok(undefined)
 }
 
@@ -802,6 +785,7 @@ export const updateOptionsToRecipientsMap = (
   form: IPopulatedForm,
   fieldId: string,
   optionsToRecipientsMap: Record<string, string[]>,
+  fieldOptions: string[],
 ): ResultAsync<
   FormFieldSchema,
   PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
@@ -822,7 +806,6 @@ export const updateOptionsToRecipientsMap = (
 
   const validationResult = validateOptionsToRecipientsMap(
     optionsToRecipientsMap,
-    formFieldToUpdate.fieldOptions,
   )
 
   if (validationResult.isErr()) {
@@ -841,6 +824,7 @@ export const updateOptionsToRecipientsMap = (
   const updatedFormField = {
     ...formFieldToUpdate.toObject(),
     optionsToRecipientsMap,
+    fieldOptions,
   }
 
   return ResultAsync.fromPromise(
