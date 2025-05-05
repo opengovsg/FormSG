@@ -112,7 +112,7 @@ export interface LandingPage {
           five: string
         }
       }
-      email: {
+      mrf: {
         tab: string
         description: string
         steps: {
@@ -120,6 +120,8 @@ export interface LandingPage {
           two: string
           three: string
           four: string
+          five: string
+          six: string
         }
       }
     }

@@ -64,18 +64,18 @@ export const enSG: LandingPage = {
   storageModeSection: {
     title: 'Secure collection of responses',
     subtitle:
-      'All form responses are either encrypted end-to-end (Storage mode) or sent directly to your email inbox (Email mode). This means third parties, including FormSG, will not be able to access or view your form data.',
+      'All form responses are encrypted and can be sent directly to your email inbox or exported as a spreadsheet. This means third parties, including FormSG, will not be able to access or view your form data and emails.',
     modes: {
       storage: {
-        title: 'Storage mode',
-        sensitivityLevel: 'Sensitive (Normal)',
+        title: 'Security Classification',
+        sensitivityLevel: 'Up to Confidential (Cloud-Eligible)',
       },
       email: {
-        title: 'Email mode',
-        sensitivityLevel: 'Sensitive (High)',
+        title: 'Info Sensitivity',
+        sensitivityLevel: 'Up to Sensitive (High)',
       },
     },
-    guideCtaLabel: 'Read more about Storage Mode',
+    guideCtaLabel: 'Read more',
   },
   opensourceSection: {
     title: 'Open sourced',
@@ -89,7 +89,7 @@ export const enSG: LandingPage = {
       'Have a question? Most answers can be found in our self-service Help Center. Common questions include:',
     visitHelpCenterCtaLabel: 'Visit our Help Center',
     common: {
-      sourceLinkLabel: 'Source',
+      sourceLinkLabel: 'Read more',
     },
     qnaAccordionItem: {
       loseSecretKey: {
@@ -112,13 +112,9 @@ export const enSG: LandingPage = {
       },
       increaseAttachmentSizeLimit: {
         question: 'How do I increase attachment size limit?',
-        answer: `
-          The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
+        answer: `The current size limit 20 MB for storage mode forms.
 
-          7 MB for email mode forms is a hard limit because the email service we use has a fixed 10 MB outgoing size, and we buffer 3 MB for email fields and metadata.
-
-          Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 7 attachments on your form in email mode, and a max of 20 attachments in storage mode. If your user has to submit more than 7  documents in email mode (or more than 20 in storage mode), you may create just one attachment field of 7 or 20 MB in their respective modes, and advise your user to zip documents up and submit as one attachment.
-        `,
+            Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 20 attachments. If your user has to submit more documents, you may create one 20MB attachment field, and advise your user to zip documents up and submit them as one attachment.`,
       },
       howDoesE2eWork: {
         question: 'How does end-to-end encryption work?',
@@ -144,7 +140,7 @@ export const enSG: LandingPage = {
       storage: {
         tab: 'Storage mode',
         description:
-          'View your responses within FormSG. All data is end-to-end encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
+          'Collect responses from individual respondents. Ideal for one-way submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
         steps: {
           one: 'Log in to FormSG via Internet or Intranet',
           two: 'Create a new Storage mode form and store Secret Key safely',
@@ -153,15 +149,18 @@ export const enSG: LandingPage = {
           five: 'Download your responses as a CSV and collect responses at your email address',
         },
       },
-      email: {
-        tab: 'Email mode',
+      mrf: {
+        tab: 'Multi-respondent mode',
         description:
-          'Receive your responses at your email address. Form sends responses directly to your email and does not store any response data.',
+          'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
         steps: {
           one: 'Log in to FormSG via Internet or Intranet',
-          two: 'Create a new form and choose Email mode',
-          three: 'Build and publish your form',
-          four: 'Collect responses at your email address',
+          two: 'Create a new multi-respondent form and store the Secret Key safely',
+          three:
+            'Build form fields and assign them to various steps in your workflow',
+          four: `Share form link for automatic routing to next respondent(s)`,
+          five: 'Upload Secret Key and view your responses',
+          six: 'Download your responses as a CSV and collect responses at your email address',
         },
       },
     },

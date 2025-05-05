@@ -3,7 +3,7 @@ export const enSG = {
   input: {
     label: 'Endpoint URL',
     description:
-      'For developers and IT officers usage. We will POST encrypted form responses in real-time to the HTTPS endpoint specified here.',
+      'FormSG will POST encrypted form responses in real-time to the HTTPS endpoint specified here. Ensure that your external system can support the same data classification.',
   },
   retry: {
     label: 'Enable retries',
