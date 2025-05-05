@@ -532,6 +532,12 @@ export const LandingPage = (): JSX.Element => {
                     'features.landingPage.howItWorksSection.modes.storage.steps.five',
                   )}
                 </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={6} />
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.six',
+                  )}
+                </ListItem>
               </OrderedList>
             </TabPanel>
             <TabPanel>

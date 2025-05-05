@@ -144,9 +144,10 @@ export const enSG: LandingPage = {
         steps: {
           one: 'Log in to FormSG via Internet or Intranet',
           two: 'Create a new Storage mode form and store Secret Key safely',
-          three: 'Build and share form link with respondents',
-          four: 'Upload Secret Key and view your responses',
-          five: 'Download your responses as a CSV and collect responses at your email address',
+          three: 'Build form fields',
+          four: 'Share form link with respondents',
+          five: 'Upload Secret Key and view your responses',
+          six: 'Download your responses as a CSV and collect responses at your email address',
         },
       },
       mrf: {

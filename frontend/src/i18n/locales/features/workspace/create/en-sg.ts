@@ -36,7 +36,7 @@ export const enSG: CreateModal = {
     notifications: {
       label: 'Notifications for new responses',
       description:
-        'All email addresses below will be notified. Ensure that the inboxes can support the same data classification.',
+        'All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.',
     },
     create: 'Create form',
   },

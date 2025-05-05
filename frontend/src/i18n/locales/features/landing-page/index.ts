@@ -110,6 +110,7 @@ export interface LandingPage {
           three: string
           four: string
           five: string
+          six: string
         }
       }
       mrf: {
