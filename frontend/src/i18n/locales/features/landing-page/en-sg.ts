@@ -66,13 +66,13 @@ export const enSG: LandingPage = {
     subtitle:
       'All form responses are encrypted and can be sent directly to your email inbox or exported as a spreadsheet. This means third parties, including FormSG, will not be able to access or view your form data and emails.',
     modes: {
-      storage: {
+      security: {
         title: 'Security Classification',
-        sensitivityLevel: 'Up to Confidential (Cloud-Eligible)',
+        description: 'Up to Confidential (Cloud-Eligible)',
       },
-      email: {
+      sensitivity: {
         title: 'Info Sensitivity',
-        sensitivityLevel: 'Up to Sensitive (High)',
+        description: 'Up to Sensitive (High)',
       },
     },
     guideCtaLabel: 'Read more',
