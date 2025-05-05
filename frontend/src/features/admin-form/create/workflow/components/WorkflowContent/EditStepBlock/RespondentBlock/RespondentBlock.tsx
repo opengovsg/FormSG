@@ -39,10 +39,6 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
-  // TODO (MRF-Conditional-Routing): Remove isTest and user/useUser when conditional routing is out of beta
-  const { user } = useUser()
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
   const { emailFormFields = [], dropdownFormFields = [] } =
     useAdminFormWorkflow()
 
