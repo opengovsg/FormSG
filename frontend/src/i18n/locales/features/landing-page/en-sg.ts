@@ -112,7 +112,7 @@ export const enSG: LandingPage = {
       },
       increaseAttachmentSizeLimit: {
         question: 'How do I increase attachment size limit?',
-        answer: `The current size limit 20 MB for storage mode forms.
+        answer: `The current size limit is 20 MB for storage mode forms.
 
             Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 20 attachments. If your user has to submit more documents, you may create one 20MB attachment field, and advise your user to zip documents up and submit them as one attachment.`,
       },

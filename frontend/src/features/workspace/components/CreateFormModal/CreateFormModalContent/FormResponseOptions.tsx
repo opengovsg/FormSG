@@ -103,15 +103,6 @@ export const FormResponseOptions = forwardRef<
           />
         </Tile>
       </Stack>
-      {/* TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented. */}
-      {/* <InlineMessage mt="1rem">
-        <Text>
-          We're phasing out Email mode in the coming months. Don't worry!
-          Storage Mode already supports email functionalities. You can still{' '}
-          <Link onClick={() => handleEmailButtonPress()}>use it for now</Link>,
-          but we'd love to hear why.
-        </Text>
-      </InlineMessage> */}
     </>
   )
 })
