@@ -31,9 +31,9 @@ import {
   CONTACT_US,
   FORM_GUIDE,
   GUIDE_ATTACHMENT_SIZE_LIMIT,
+  GUIDE_DATA_CLASSIFICATION,
   GUIDE_E2EE,
   GUIDE_SECRET_KEY_LOSS,
-  GUIDE_STORAGE_MODE,
   GUIDE_TRANSFER_OWNERSHIP,
   LANDING_PAGE_EXAMPLE_FORMS,
   OGP_ALL_PRODUCTS,
@@ -323,30 +323,32 @@ export const LandingPage = (): JSX.Element => {
           color="secondary.500"
         >
           <Flex align="center">
-            <Icon as={BiLockAlt} fontSize="1.5rem" mr="0.5rem" />
             <Text textStyle="subhead-3">
-              {t('features.landingPage.storageModeSection.modes.storage.title')}
+              {t(
+                'features.landingPage.storageModeSection.modes.security.title',
+              )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.storage.sensitivityLevel',
+              'features.landingPage.storageModeSection.modes.security.description',
             )}
           </SectionBodyText>
           <Flex align="center">
-            <Icon as={BiMailSend} fontSize="1.5rem" mr="0.5rem" />
             <Text textStyle="subhead-3">
-              {t('features.landingPage.storageModeSection.modes.email.title')}
+              {t(
+                'features.landingPage.storageModeSection.modes.sensitivity.title',
+              )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.email.sensitivityLevel',
+              'features.landingPage.storageModeSection.modes.sensitivity.description',
             )}
           </SectionBodyText>
         </SimpleGrid>
         <FeatureLink
-          href={GUIDE_STORAGE_MODE}
+          href={GUIDE_DATA_CLASSIFICATION}
           externalLinkIcon={
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
@@ -484,7 +486,7 @@ export const LandingPage = (): JSX.Element => {
               {t('features.landingPage.howItWorksSection.modes.storage.tab')}
             </Tab>
             <Tab>
-              {t('features.landingPage.howItWorksSection.modes.email.tab')}
+              {t('features.landingPage.howItWorksSection.modes.mrf.tab')}
             </Tab>
           </TabList>
 
@@ -532,12 +534,18 @@ export const LandingPage = (): JSX.Element => {
                     'features.landingPage.howItWorksSection.modes.storage.steps.five',
                   )}
                 </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={6} />
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.storage.steps.six',
+                  )}
+                </ListItem>
               </OrderedList>
             </TabPanel>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
                 {t(
-                  'features.landingPage.howItWorksSection.modes.email.description',
+                  'features.landingPage.howItWorksSection.modes.mrf.description',
                 )}
               </SectionBodyText>
               <OrderedList
@@ -550,25 +558,37 @@ export const LandingPage = (): JSX.Element => {
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
                   {t(
-                    'features.landingPage.howItWorksSection.modes.email.steps.one',
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.one',
                   )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
                   {t(
-                    'features.landingPage.howItWorksSection.modes.email.steps.two',
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.two',
                   )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
                   {t(
-                    'features.landingPage.howItWorksSection.modes.email.steps.three',
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.three',
                   )}
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />
                   {t(
-                    'features.landingPage.howItWorksSection.modes.email.steps.four',
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.four',
+                  )}
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={5} />
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.five',
+                  )}
+                </ListItem>
+                <ListItem textStyle="body-2">
+                  <OrderedListIcon index={6} />
+                  {t(
+                    'features.landingPage.howItWorksSection.modes.mrf.steps.six',
                   )}
                 </ListItem>
               </OrderedList>
