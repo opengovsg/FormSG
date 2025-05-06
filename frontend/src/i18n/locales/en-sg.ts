@@ -11,7 +11,10 @@ import { enSG as whatsNew } from './features/whats-new'
 import { enSG as workspace } from './features/workspace'
 import { enSG as fieldValidation } from './utils/field-validation'
 import { enSG as formValidation } from './utils/form-validation'
+<<<<<<< HEAD
 import { enSG as workspaceValidation } from './utils/workspace-validation'
+=======
+>>>>>>> 44b5baa0f (chore: lint)
 import { FallbackTranslation } from './types'
 
 export const enSG: FallbackTranslation = {
