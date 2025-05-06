@@ -56,13 +56,13 @@ export interface LandingPage {
     title: string
     subtitle: string
     modes: {
-      storage: {
+      security: {
         title: string
-        sensitivityLevel: string
+        description: string
       }
-      email: {
+      sensitivity: {
         title: string
-        sensitivityLevel: string
+        description: string
       }
     }
     guideCtaLabel: string
@@ -110,9 +110,10 @@ export interface LandingPage {
           three: string
           four: string
           five: string
+          six: string
         }
       }
-      email: {
+      mrf: {
         tab: string
         description: string
         steps: {
@@ -120,6 +121,8 @@ export interface LandingPage {
           two: string
           three: string
           four: string
+          five: string
+          six: string
         }
       }
     }

@@ -10,7 +10,8 @@ export const SINGPASS_FAQ = 'https://www.singpass.gov.sg/main/html/faq.html'
 // FormSG guide links
 export const FORM_GUIDE = 'https://go.gov.sg/formsg-guides'
 export const GUIDE_WEBHOOKS = 'https://go.gov.sg/formsg-guide-webhooks'
-export const GUIDE_STORAGE_MODE = 'https://go.gov.sg/formsg-guide-storage-mode'
+export const GUIDE_DATA_CLASSIFICATION =
+  'https://go.gov.sg/formsg-data-classification'
 export const GUIDE_FORM_LOGIC = 'https://go.gov.sg/formsg-guide-logic'
 export const GUIDE_FORM_MRF = 'https://go.gov.sg/formsg-guide-mrf'
 export const GUIDE_MRF_MODE = 'http://go.gov.sg/formsg-mrf'
