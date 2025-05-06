@@ -19,8 +19,6 @@ export type SubmissionData = {
   /** Submission time in ms from epoch  */
   timestamp: number
   mrfStep?: number
-  respondentCopyPresignedUrl?: string
-  respondentCopySecretKey?: string
 }
 
 export interface PublicFormContextProps

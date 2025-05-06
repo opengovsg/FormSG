@@ -32,14 +32,6 @@ const FormEmailSectionContainer = ({
   isDisabled,
   settings,
 }: FormEmailSectionContainerProps): JSX.Element => {
-  const whitelist = true //TODO: fix with betaFlag
-  if (whitelist)
-    return (
-      <FormEmailNotificationsSection
-        isDisabled={isDisabled}
-        settings={settings}
-      />
-    )
   if (settings.responseMode === FormResponseMode.Multirespondent) {
     return <MrfFormEmailSection isDisabled={isDisabled} settings={settings} />
   }

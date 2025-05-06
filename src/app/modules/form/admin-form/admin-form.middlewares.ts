@@ -48,17 +48,6 @@ export const updateSettingsValidator = celebrate({
       Joi.string().valid(...Object.values(Language)),
     ),
     hasRespondentCopy: Joi.boolean(),
-    respondentCopyCustomEmailSubject: Joi.string(),
-    respondentCopyCustomEmailSenderName: Joi.string(),
-    respondentCopyCustomEmailBody: Joi.string(),
-    hasRespondentWorkflowCompletion: Joi.boolean(),
-    mrfNewResponseEmails: Joi.alternatives().try(
-      Joi.array().items(Joi.string().email()),
-      Joi.string().email({ multiple: true }),
-    ),
-    nextStepCustomEmailSubject: Joi.string(),
-    nextStepCustomEmailSenderName: Joi.string(),
-    nextStepCustomEmailBody: Joi.string(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

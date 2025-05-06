@@ -28,8 +28,6 @@ import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
   MrfEmailNotificationSettings,
-  MrfNextStepCustomEmailSettings,
-  RespondentCopyCustomEmailSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
@@ -42,7 +40,6 @@ import {
   updateFormLimit,
   updateFormMrfNewResponseEmails,
   updateFormRespondentCopy,
-  updateFormRespondentWorkflowCompletion,
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
@@ -53,8 +50,6 @@ import {
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
   updateMrfEmailNotifications,
-  updateNextStepCustomEmail,
-  updateRespondentCopyCustomEmail,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -290,22 +285,6 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateFormMrfNewResponseEmails = useMutation(
-    (nextMrfNewResponseEmails: string[]) =>
-      updateFormMrfNewResponseEmails(formId, {
-        mrfNewResponseEmails: nextMrfNewResponseEmails,
-      }),
-    {
-      onSuccess: (newData) => {
-        handleSuccess({
-          newData,
-          toastDescription: 'Mrf new response emails successfully updated.',
-        })
-      },
-      onError: handleError,
-    },
-  )
-
   const mutateMrfEmailNotifications = useMutation(
     (MrfEmailNotificationSettings: MrfEmailNotificationSettings) =>
       updateMrfEmailNotifications(formId, MrfEmailNotificationSettings),
@@ -329,65 +308,6 @@ export const useMutateFormSettings = () => {
           newData,
           toastDescription: `hasRespondentCopy is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
         })
-      },
-      onError: handleError,
-    },
-  )
-
-  const mutateFormRespondentCopyCustomEmail = useMutation(
-    (RespondentCopyCustomEmailSettings: RespondentCopyCustomEmailSettings) =>
-      updateRespondentCopyCustomEmail(
-        formId,
-        RespondentCopyCustomEmailSettings,
-      ),
-    {
-      onSuccess: (newData) => {
-        handleSuccess({
-          newData,
-          toastDescription: 'Respondent copy custom email successfully updated',
-        })
-      },
-      onError: handleError,
-    },
-  )
-
-  const mutateFormNextStepCustomEmail = useMutation(
-    (MrfNextStepCustomEmailSettings: MrfNextStepCustomEmailSettings) =>
-      updateNextStepCustomEmail(formId, MrfNextStepCustomEmailSettings),
-    {
-      onSuccess: (newData) => {
-        handleSuccess({
-          newData,
-          toastDescription: 'Next step custom email successfully updated',
-        })
-      },
-      onError: handleError,
-    },
-  )
-
-  const mutateFormRespondentWorkflowCompletion = useMutation(
-    (nextHasRespondentWorkflowCompletion: boolean) =>
-      updateFormRespondentWorkflowCompletion(formId, {
-        hasRespondentWorkflowCompletion: nextHasRespondentWorkflowCompletion,
-      }),
-    {
-      onSuccess: (newData) => {
-        console.log(newData)
-        if ('hasRespondentWorkflowCompletion' in newData) {
-          handleSuccess({
-            newData,
-            toastDescription: `hasRespondentWorkflowCompletion is now ${newData?.hasRespondentWorkflowCompletion ? 'enabled' : 'disabled'} on your form`,
-          })
-        } else {
-          toast({
-            title: 'Unexpected form type',
-            description:
-              'This form does not support respondent workflow completion.',
-            status: 'warning',
-            duration: 5000,
-            isClosable: true,
-          })
-        }
       },
       onError: handleError,
     },
@@ -607,12 +527,8 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,
-    mutateFormMrfNewResponseEmails,
     mutateMrfEmailNotifications,
     mutateFormRespondentCopy,
-    mutateFormRespondentCopyCustomEmail,
-    mutateFormNextStepCustomEmail,
-    mutateFormRespondentWorkflowCompletion,
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,

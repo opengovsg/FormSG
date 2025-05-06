@@ -5,7 +5,6 @@ import {
   FormAuthType,
   SubmitFormFeedbackBodyDto,
   SubmitFormIssueBodyDto,
-  SubmitFormRespondentCopyDto,
 } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -22,7 +21,6 @@ import {
   submitEmailModeFormWithFetch,
   submitFormFeedback,
   submitFormIssue,
-  submitFormRespondentCopy,
   submitMultirespondentForm,
   SubmitStorageFormClearArgs,
   submitStorageModeForm,
@@ -221,23 +219,4 @@ export const useSubmitFormIssueMutations = (formId: string) => {
     },
   )
   return { submitFormIssueMutation }
-}
-
-export const useSubmitFormRespondentCopyMutation = (
-  formId: string,
-  submissionId: string,
-) => {
-  const toast = useToast({ isClosable: true })
-
-  const submitFormRespondentCopyMutation = useMutation(
-    (args: SubmitFormRespondentCopyDto) =>
-      submitFormRespondentCopy(formId, submissionId, args),
-    {
-      onError: (error: Error) => {
-        toast({ status: 'danger', description: error.message })
-      },
-    },
-  )
-
-  return { submitFormRespondentCopyMutation }
 }

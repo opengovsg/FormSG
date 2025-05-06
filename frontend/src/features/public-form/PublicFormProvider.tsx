@@ -766,8 +766,6 @@ export const PublicFormProvider = ({
                     timestamp,
                     // payment forms will have non-empty paymentData field
                     paymentData,
-                    respondentCopyPresignedUrl,
-                    respondentCopySecretKey,
                   }) => {
                     trackSubmitForm(form)
                     postIFrameMessage({ state: 'submitted', submissionId })
@@ -788,8 +786,6 @@ export const PublicFormProvider = ({
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
-                      respondentCopyPresignedUrl,
-                      respondentCopySecretKey,
                     })
                   },
                 },
@@ -836,8 +832,6 @@ export const PublicFormProvider = ({
                   timestamp,
                   // payment forms will have non-empty paymentData field
                   paymentData,
-                  respondentCopyPresignedUrl,
-                  respondentCopySecretKey,
                 }) => {
                   trackSubmitForm(form)
                   postIFrameMessage({ state: 'submitted', submissionId })
@@ -857,8 +851,6 @@ export const PublicFormProvider = ({
                   setSubmissionData({
                     id: submissionId,
                     timestamp,
-                    respondentCopyPresignedUrl,
-                    respondentCopySecretKey,
                   })
                 },
               },
@@ -894,20 +886,12 @@ export const PublicFormProvider = ({
               : submitMultirespondentFormMutation
           )
             .mutateAsync(formData, {
-              onSuccess: ({
-                submissionId,
-                timestamp,
-                mrfStep,
-                respondentCopyPresignedUrl,
-                respondentCopySecretKey,
-              }) => {
+              onSuccess: ({ submissionId, timestamp, mrfStep }) => {
                 trackSubmitForm(form)
                 setSubmissionData({
                   id: submissionId,
                   timestamp,
                   mrfStep,
-                  respondentCopyPresignedUrl,
-                  respondentCopySecretKey,
                 })
               },
             })

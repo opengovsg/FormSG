@@ -5,15 +5,11 @@ import { FormResponseMode } from '~shared/types'
 
 import { useToast } from '~hooks/useToast'
 
-import {
-  useSubmitFormFeedbackMutation,
-  useSubmitFormRespondentCopyMutation,
-} from '~features/public-form/mutations'
+import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
 import { PaymentEndPagePreview } from './components/PaymentEndPagePreview'
-import { RespondentCopyEmailBlockInput } from './components/RespondentCopyEmailBlock'
 import { FormEndPage } from './FormEndPage'
 
 export const FormEndPageContainer = (): JSX.Element | null => {
@@ -22,8 +18,6 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     formId,
     submissionData?.id ?? '',
   )
-  const { submitFormRespondentCopyMutation } =
-    useSubmitFormRespondentCopyMutation(formId, submissionData?.id ?? '')
 
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
@@ -76,52 +70,6 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     ],
   )
 
-  /**
-   * Handles respondent copy submission
-   */
-  const handleSubmitRespondentCopy = useCallback(
-    (_inputs: RespondentCopyEmailBlockInput) => {
-      if (isPreview) {
-        toast({
-          description:
-            'Respondent copies sent! Since you are in preview mode, no actual emails were sent.',
-          status: 'success',
-          isClosable: true,
-        })
-        setIsFeedbackSubmitted(true)
-        return
-      }
-
-      const inputs = {
-        ..._inputs,
-        respondentCopySecretKey: submissionData?.respondentCopySecretKey ?? '',
-        respondentCopyPresignedUrl:
-          submissionData?.respondentCopyPresignedUrl ?? '',
-        ...(isMrf && { mrfStep: submissionData?.mrfStep }),
-      }
-
-      return submitFormRespondentCopyMutation.mutateAsync(inputs, {
-        onSuccess: () => {
-          toast({
-            description:
-              'A copy of your responses has been sent to all emails!',
-            status: 'success',
-            isClosable: true,
-          })
-        },
-      })
-    },
-    [
-      isPreview,
-      submissionData?.respondentCopySecretKey,
-      submissionData?.respondentCopyPresignedUrl,
-      submissionData?.mrfStep,
-      isMrf,
-      submitFormRespondentCopyMutation,
-      toast,
-    ],
-  )
-
   if (!form || !submissionData) return null
 
   if (isPaymentEnabled) {
@@ -145,7 +93,6 @@ export const FormEndPageContainer = (): JSX.Element | null => {
         endPage={form.endPage}
         isFeedbackSectionHidden={isFeedbackSubmitted}
         handleSubmitFeedback={handleSubmitFeedback}
-        handleSubmitRespondentCopy={handleSubmitRespondentCopy}
       />
     </Box>
   )

@@ -11,9 +11,6 @@ export interface EmailNotifications extends HasTitle {
     mrf: {
       selectRecipient: string
       respondents: {
-        workflowCompletionLabel: string
-        customiseEmailLabel: string
-        customiseEmailDescription: string
         step1: {
           label: string
           placeholder: string
@@ -31,17 +28,11 @@ export interface EmailNotifications extends HasTitle {
           tooltipText: string
         }
       }
-      admin: {
-        workflowCompletionLabel: string
-        workflowCompletionInfo: string
-      }
     }
     regular: {
       label: string
       info: string
       description: string
-      respondentCopyLabel: string
-      customiseEmailLabel: string
     }
     modal: {
       headerMrf: string

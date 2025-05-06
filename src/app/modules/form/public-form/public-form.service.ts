@@ -16,7 +16,6 @@ import { JwtName } from '../../spcp/spcp.types'
 import { FormNotFoundError } from '../form.errors'
 
 import { Metatags } from './public-form.types'
-import { EmailSubmissionSchema } from 'src/app/models/submission.server.model'
 
 const FormFeedbackModel = getFormFeedbackModel(mongoose)
 const FormModel = getFormModel(mongoose)

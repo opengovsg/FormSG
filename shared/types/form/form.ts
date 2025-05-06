@@ -205,10 +205,6 @@ export interface FormBase {
   metadata?: FormMetadata
   hasMultiLang?: boolean
   supportedLanguages?: Language[]
-
-  respondentCopyCustomEmailSubject: string
-  respondentCopyCustomEmailSenderName: string
-  respondentCopyCustomEmailBody: string
 }
 
 export interface EmailFormBase extends FormBase {
@@ -242,11 +238,6 @@ export interface MultirespondentFormBase extends FormBase {
   emails: string[]
   stepsToNotify: FormWorkflowStepDto['_id'][]
   stepOneEmailNotificationFieldId?: string
-  hasRespondentWorkflowCompletion: boolean
-  mrfNewResponseEmails: string[]
-  nextStepCustomEmailSubject: string
-  nextStepCustomEmailSenderName: string
-  nextStepCustomEmailBody: string
 }
 
 /**

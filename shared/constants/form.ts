@@ -48,9 +48,6 @@ const FORM_SETTINGS_FIELDS = [
   'hasMultiLang',
   'supportedLanguages',
   'hasRespondentCopy',
-  'respondentCopyCustomEmailSubject',
-  'respondentCopyCustomEmailSenderName',
-  'respondentCopyCustomEmailBody',
 ] as const
 
 export const EMAIL_FORM_SETTINGS_FIELDS = [
@@ -73,11 +70,6 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   'emails',
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',
-  'hasRespondentWorkflowCompletion',
-  'mrfNewResponseEmails',
-  'nextStepCustomEmailSubject',
-  'nextStepCustomEmailSenderName',
-  'nextStepCustomEmailBody',
 ] as const
 
 // Fields that are necessary for decrypting the cipherTexts given peer's private key

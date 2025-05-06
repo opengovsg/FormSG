@@ -1,7 +1,6 @@
 import {
   FieldResponsesV3,
   FormResponseMode,
-  RespondentCopyDto,
   ResponseMetadata,
   SubmissionAttachmentsMap,
 } from '../../../shared/types'
@@ -24,7 +23,6 @@ export type MultirespondentFormLoadedDto = {
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
   encryptedPayload: MultirespondentSubmissionDto
-  respondentCopyEncryptedPayload: RespondentCopyDto
 }
 
 export type MultirespondentSubmissionDto = {

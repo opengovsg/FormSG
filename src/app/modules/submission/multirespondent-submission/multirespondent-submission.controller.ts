@@ -140,16 +140,12 @@ const submitMultirespondentForm = async (
 
   const submission = createMultiRespondentFormSubmissionResult.value
 
-  const respondentCopyPayload = req.formsg.respondentCopyEncryptedPayload
-
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
     submissionId: submission._id,
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
-    respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
-    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 
   await performMultiRespondentPostSubmissionCreateActions({
@@ -229,16 +225,12 @@ const updateMultirespondentSubmission = async (
 
   const submission = updateMultiRespondentFormSubmissionResult.value
 
-  const respondentCopyPayload = req.formsg.respondentCopyEncryptedPayload
-
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
     submissionId,
     timestamp: (submission.created || new Date()).getTime(),
     mrfStep: submission.workflowStep,
-    respondentCopyPresignedUrl: respondentCopyPayload.presignedUrl,
-    respondentCopySecretKey: respondentCopyPayload.submissionSecretKey,
   })
 
   const currentStepNumber = submission.workflowStep
@@ -266,7 +258,6 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
-  MultirespondentSubmissionMiddleware.saveRespondentCopy,
   submitMultirespondentForm,
 ] as ControllerHandler[]
 
@@ -280,7 +271,6 @@ export const handleUpdateMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
-  MultirespondentSubmissionMiddleware.saveRespondentCopy,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
 

@@ -10,10 +10,6 @@ import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import {
-  RespondentCopyEmailBlock,
-  RespondentCopyEmailBlockInput,
-} from '~features/public-form/components/FormEndPage/components/RespondentCopyEmailBlock'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
@@ -23,7 +19,6 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
-  onSubmit: (input: RespondentCopyEmailBlockInput) => void
 }
 
 export const EndPageBlock = ({
@@ -33,7 +28,6 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
-  onSubmit,
 }: EndPageBlockProps): JSX.Element => {
   const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
@@ -77,8 +71,6 @@ export const EndPageBlock = ({
     }
     return 'You have successfully submitted your response.'
   }, [formTitle])
-  console.log(submissionData)
-  console.log(JSON.stringify(submissionData))
 
   return (
     <>
@@ -103,9 +95,6 @@ export const EndPageBlock = ({
           <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
             {submissionTimestamp}
           </Text>
-        </Box>
-        <Box mt="2.25rem">
-          <RespondentCopyEmailBlock onSubmit={onSubmit} />
         </Box>
 
         <Box mt="2.25rem">

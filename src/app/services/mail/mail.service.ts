@@ -991,61 +991,6 @@ export class MailService {
     })
   }
 
-  sendMrfNewResponseEmail = ({
-    emails,
-    formId,
-    formTitle,
-    responseId,
-    formQuestionAnswers,
-    attachments,
-  }: {
-    emails: string[]
-    formId: string
-    formTitle: string
-    responseId: string
-    formQuestionAnswers: QuestionAnswer[]
-    attachments?: Mail.Attachment[]
-  }) => {
-    const htmlData = {
-      formTitle,
-      responseId: responseId.toString(),
-      formQuestionAnswers,
-      respondentCopy: true,
-    }
-
-    const generatedHtml = fromPromise(
-      render(MrfWorkflowCompletionEmail(htmlData)),
-      (e) => {
-        logger.error({
-          message: 'Failed to render MrfRespondentCopyEmail',
-          meta: {
-            action: 'sendMrfNewResponseEmail',
-            error: e,
-          },
-        })
-
-        return new MailGenerationError(
-          'Error generating mrf new response email',
-        )
-      },
-    )
-
-    return generatedHtml.andThen((mailHtml) => {
-      const mail: MailOptions = {
-        to: emails,
-        from: this.#senderFromString,
-        subject: `New response has been submitted for ${formTitle} (${responseId})`,
-        html: mailHtml,
-        attachments,
-      }
-
-      return this.#sendNodeMail(mail, {
-        formId,
-        mailId: 'workflowNotification',
-      })
-    })
-  }
-
   sendMrfRespondentCopyEmail = ({
     emails,
     formId,

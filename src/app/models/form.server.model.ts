@@ -387,42 +387,6 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     default: '',
   },
-  hasRespondentWorkflowCompletion: {
-    type: Boolean,
-    default: false,
-  },
-  mrfNewResponseEmails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    set: transformEmails,
-    validate: [
-      (v: string[]) => {
-        if (!Array.isArray(v)) return false
-        if (v.length === 0) return true
-        return v.every((email) => validator.isEmail(email))
-      },
-      'Please provide valid email addresses',
-    ],
-    required: true,
-  },
-
-  //variables for next step custom email
-  nextStepCustomEmailSubject: {
-    type: String,
-    required: false,
-  },
-  nextStepCustomEmailSenderName: {
-    type: String,
-    required: false,
-  },
-  nextStepCustomEmailBody: {
-    type: String,
-    required: false,
-  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -787,20 +751,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       hasRespondentCopy: {
         type: Boolean,
         default: false,
-      },
-
-      //variables for respondent copy custom email
-      respondentCopyCustomEmailSubject: {
-        type: String,
-        required: false,
-      },
-      respondentCopyCustomEmailSenderName: {
-        type: String,
-        required: false,
-      },
-      respondentCopyCustomEmailBody: {
-        type: String,
-        required: false,
       },
     },
     formSchemaOptions,

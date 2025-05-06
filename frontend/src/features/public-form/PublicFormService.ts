@@ -17,7 +17,6 @@ import {
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   SubmitFormFeedbackBodyDto,
-  SubmitFormRespondentCopyDto,
 } from '~shared/types/form'
 import {
   FormAuthType,
@@ -492,17 +491,6 @@ export const submitFormIssue = async (
   return ApiService.post<SuccessMessageDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/issue`,
     issueToPost,
-  ).then(({ data }) => data)
-}
-
-export const submitFormRespondentCopy = async (
-  formId: string,
-  submissionId: string,
-  respondentCopyToPost: SubmitFormRespondentCopyDto,
-): Promise<SuccessMessageDto> => {
-  return ApiService.post<SuccessMessageDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}/respondentCopy`,
-    respondentCopyToPost,
   ).then(({ data }) => data)
 }
 

@@ -1,16 +1,8 @@
-import { render } from '@react-email/render'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { randomBytes, secretbox } from 'tweetnacl'
-import {
-  decodeBase64,
-  decodeUTF8,
-  encodeBase64,
-  encodeUTF8,
-} from 'tweetnacl-util'
 
 import { IAttachmentInfo } from 'src/types'
 
@@ -31,14 +23,12 @@ import {
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { MailGenerationError } from '../../../services/mail/mail.errors'
 import {
   getLogicUnitPreventingSubmitV3,
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
 import { isFieldResponseV3Equal } from '../../../utils/response-v3'
-import MrfWorkflowCompletionEmail from '../../../views/templates/MrfWorkflowCompletionEmail'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
@@ -70,10 +60,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import {
-  getQuestionTitleAnswerString,
-  validateMrfFieldResponses,
-} from './multirespondent-submission.utils'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -756,114 +743,6 @@ export const encryptSubmission = async (
      * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
      */
     mrfVersion: 1,
-  }
-
-  return next()
-}
-
-/**
- * Encrypts submission and saves email html content to s3 temporarily for respondent copy email
- */
-export const saveRespondentCopy = async (
-  req: ProcessedMultirespondentSubmissionHandlerRequest,
-  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
-  next: NextFunction,
-) => {
-  const formDef = req.formsg.formDef
-  const formPublicKey = formDef.publicKey
-  const responses = req.body.responses
-  const { formId, submissionId } = req.params
-
-  // Remove attachments
-  // const strippedAttachmentResponses: Record<
-  //   string,
-  //   ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
-  // > = {}
-
-  // for (const id of Object.keys(responses)) {
-  //   const response = responses[id]
-  //   if (response.fieldType !== BasicField.Attachment) {
-  //     strippedAttachmentResponses[id] = response
-  //     continue
-  //   }
-
-  //   strippedAttachmentResponses[id] = {
-  //     ...response,
-  //     answer: { ...response.answer, filename: undefined, content: undefined },
-  //   }
-  // }
-
-  // build the HTML file
-  const formQuestionAnswers = getQuestionTitleAnswerString({
-    formFields: formDef.form_fields,
-    responses,
-  })
-
-  const htmlData = {
-    formTitle: formDef.title,
-    responseId: submissionId ?? '',
-    formQuestionAnswers,
-  }
-
-  let generatedHtml
-  try {
-    generatedHtml = await render(MrfWorkflowCompletionEmail(htmlData))
-  } catch (e) {
-    logger.error({
-      message: 'Failed to render MrfRespondentCopyEmail',
-      meta: {
-        action: 'sendMrfRespondentCopyEmail',
-        error: e,
-      },
-    })
-
-    return new MailGenerationError('Error generating mrf respondent copy email')
-  }
-
-  // Encrypt content
-  //TODO: extract out encryption functions
-  const newNonce = () => randomBytes(secretbox.nonceLength)
-  const generateKey = () => encodeBase64(randomBytes(secretbox.keyLength))
-  const encrypt = (json: string, key: string) => {
-    const keyUint8Array = decodeBase64(key)
-
-    const nonce = newNonce()
-    const messageUint8 = decodeUTF8(JSON.stringify(json))
-    const box = secretbox(messageUint8, nonce, keyUint8Array)
-
-    const fullMessage = new Uint8Array(nonce.length + box.length)
-    fullMessage.set(nonce)
-    fullMessage.set(box, nonce.length)
-
-    const base64FullMessage = encodeBase64(fullMessage)
-    return base64FullMessage
-  }
-
-  const key = generateKey()
-  const respondentCopyEncryptedContent = encrypt(generatedHtml, key)
-
-  // const { encryptedContent, submissionSecretKey } = formsgSdk.cryptoV3.encrypt(
-  //   strippedAttachmentResponses,
-  //   formPublicKey,
-  // )
-
-  // const fileUuid = crypto.randomUUID()
-  // const file = new File([encryptedContent], fileUuid, {
-  //   type: 'text/plain',
-  // })
-
-  // send content to s3, retrieve s3 presigned url
-  // const respondentCopyContentpresignedUrl = await uploadAndGetPresignedUrl({
-  //   bucketName: 'temporary bucket name',
-  //   objectKey: fileUuid,
-  //   content: file,
-  // })
-
-  // TODO: Update this to use presigned URL
-  req.formsg.respondentCopyEncryptedPayload = {
-    submissionSecretKey: key,
-    encryptedContent: respondentCopyEncryptedContent,
-    presignedUrl: respondentCopyEncryptedContent, //TODO: send to DB
   }
 
   return next()

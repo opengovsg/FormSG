@@ -10,11 +10,6 @@ export const enSG = {
       selectRecipient:
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
-        workflowCompletionLabel: 'Notify respondents upon workflow completion',
-        customiseEmailLabel:
-          'Customise the email that notifies respondents to fill in the form',
-        customiseEmailDescription:
-          'This email will be sent to all parties from Step 2 onwards',
         step1: {
           label: 'Respondent in Step 1',
           placeholder: 'Select an email field from your form',
@@ -33,34 +28,11 @@ export const enSG = {
           description: 'Separate multiple email addresses with a comma',
         },
       },
-      admin: {
-        workflowCompletionLabel: 'Workflow completion',
-        workflowCompletionInfo:
-          'Notify the following email addresses when all responses for a form are completed',
-      },
     },
     regular: {
       label: 'Notifications for new responses',
       info: 'Notify the following email addresses when a responses is submitted',
       description: 'Separate multiple email addresses with a comma',
-      respondentCopyLabel:
-        'Allow respondents to receive a copy of their submission',
-      customiseEmailLabel: 'Customise an email acknowledgement to respondents',
-    },
-    modal: {
-      headerMrf: 'Edit action email',
-      infoMrf:
-        "Customise the email sent to respondents when it's their turn to fill in the form",
-      headerEncrypt: 'Edit email acknowledgement',
-      infoEncrypt:
-        'Customise the email respondents will receive after submitting your form',
-      subjectTitle: 'Subject',
-      subjectError: 'Email subject cannot be empty',
-      senderNameTitle: 'Sender name',
-      senderNameError: 'Sender name cannot be empty',
-      emailBodyTitle: 'Email body',
-      emailBodyPlaceholder:
-        'Include instructions or a message for your respondents',
     },
   },
 }
