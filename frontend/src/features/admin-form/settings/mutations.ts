@@ -38,7 +38,6 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
-  updateFormMrfNewResponseEmails,
   updateFormRespondentCopy,
   updateFormStatus,
   updateFormSupportedLanguages,

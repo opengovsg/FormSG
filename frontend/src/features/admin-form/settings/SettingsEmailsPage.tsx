@@ -9,7 +9,6 @@ import { TagInput } from '~components/TagInput'
 
 import { CategoryHeader } from './components/CategoryHeader'
 import { EmailNotificationsHeader } from './components/EmailNotificationsHeader'
-import { FormEmailNotificationsSection } from './components/FormEmailNotificationsSection'
 import { FormEmailSection } from './components/FormEmailSection'
 import { MrfFormEmailSection } from './components/MrfFormEmailSection'
 import { useAdminFormSettings } from './queries'

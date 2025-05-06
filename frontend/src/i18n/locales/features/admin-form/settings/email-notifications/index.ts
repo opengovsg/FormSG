@@ -34,17 +34,5 @@ export interface EmailNotifications extends HasTitle {
       info: string
       description: string
     }
-    modal: {
-      headerMrf: string
-      infoMrf: string
-      headerEncrypt: string
-      infoEncrypt: string
-      subjectTitle: string
-      subjectError: string
-      senderNameTitle: string
-      senderNameError: string
-      emailBodyTitle: string
-      emailBodyPlaceholder: string
-    }
   }
 }
