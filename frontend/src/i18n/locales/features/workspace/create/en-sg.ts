@@ -36,7 +36,7 @@ export const enSG: CreateModal = {
     notifications: {
       label: 'Notifications for new responses',
       description:
-        'All email addresses below will be notified. Learn more on [how to guard against email bounces]({GUIDE_PREVENT_EMAIL_BOUNCE}).',
+        'All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.',
     },
     create: 'Create form',
   },

@@ -125,7 +125,7 @@ export const FormEmailSection = ({
 
   const isEmailMode = settings.responseMode === FormResponseMode.Email
 
-  const DESCRIPTION_TEXT = `All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
+  const DESCRIPTION_TEXT = `All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.`
 
   return (
     <>
