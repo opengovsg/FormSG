@@ -6,7 +6,7 @@ import isEmail from 'validator/lib/isEmail'
 
 import { RESPONDENT_EMAIL_FIELD_ID } from '~shared/constants'
 
-import { OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
+import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { TagInput } from '~components/TagInput'
 
@@ -24,7 +24,7 @@ export const PublicRespondentEmailField = (): JSX.Element => {
         name={RESPONDENT_EMAIL_FIELD_ID}
         control={control}
         rules={
-          OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES as RegisterOptions<
+          useOptionalAdminEmailValidationRules as RegisterOptions<
             {
               respondent_email_field: string[]
             },
