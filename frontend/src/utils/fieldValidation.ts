@@ -122,7 +122,7 @@ const requiredSingleAnswerValidationFn =
   ) =>
   (value?: SingleAnswerValue) => {
     if (disableRequiredValidation || !schema.required) return true
-    // TODO: migrate REQUIRED_ERROR to point to 'required' instead
+    // TODO: migrate REQUIRED_ERROR to point to 'required' instead of 'This field is required'
     const errorMessage = t ? t('required') : REQUIRED_ERROR
     return !!value?.trim() || errorMessage
   }
@@ -160,6 +160,7 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   }
 }
 
+// TODO: remove after useBaseValidationRules is used instead. keeping this for backward compatibility
 export const createBaseValidationRules = <
   TFieldValues extends FieldValues = FieldValues,
   TFieldName extends Path<TFieldValues> = never,
@@ -173,6 +174,31 @@ export const createBaseValidationRules = <
       disableRequiredValidation,
     ),
   }
+}
+
+// Hook version using i18n
+const useBaseValidationRules = <
+  TFieldValues extends FieldValues = FieldValues,
+  TFieldName extends Path<TFieldValues> = never,
+>(
+  schema: Pick<FieldBase, 'required'>,
+  disableRequiredValidation?: boolean,
+): RegisterOptions<TFieldValues, TFieldName> => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const useDropdownValidationRules: ValidationRuleFn<DropdownFieldBase> = (
@@ -218,11 +244,11 @@ const createDropdownValidationRulesWithCustomErrorMessage: (
     }, [schema, disableRequiredValidation, t])
   }
 
-export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
+export const useRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   schema,
   disableRequiredValidation,
 ): RegisterOptions => {
-  return createBaseValidationRules(schema, disableRequiredValidation)
+  return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
 export const createAttachmentValidationRules: ValidationRuleFn<
@@ -759,11 +785,11 @@ export const useDateValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
+export const useRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
   disableRequiredValidation,
 ): RegisterOptions => {
-  return createBaseValidationRules(schema, disableRequiredValidation)
+  return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
 export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
