@@ -96,7 +96,6 @@ export const EndPageBlock = ({
             {submissionTimestamp}
           </Text>
         </Box>
-
         <Box mt="2.25rem">
           {isButtonHidden || (
             <Button

@@ -39,6 +39,7 @@ import { sendEmailConfirmations } from '../submission.service'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -173,8 +174,7 @@ export const performEncryptPostSubmissionActions = (
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      //TODO: update with customized email notifications
-      const recipientData: AutoReplyMailData[] = respondentEmails
+      const respondentData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
             return {
               email: val,
@@ -192,11 +192,10 @@ export const performEncryptPostSubmissionActions = (
         submission,
         attachments,
         responsesData: emailData?.autoReplyData,
-        recipientData: recipientData,
-        // recipientData: extractEmailConfirmationData(
-        //   responses,
-        //   form.form_fields,
-        // ),
+        recipientData: [
+          ...extractEmailConfirmationData(responses, form.form_fields),
+          ...respondentData, // add respondentCopyEmails
+        ],
       }).mapErr((error) => {
         logger.error({
           message: 'Error while sending email confirmations',

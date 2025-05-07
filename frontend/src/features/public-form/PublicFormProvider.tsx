@@ -555,7 +555,7 @@ export const PublicFormProvider = ({
     }) => {
       const { form } = data ?? {}
       if (!form) return
-      console.log(`respondentEmails: ${respondentEmails}`)
+
       let captchaResponse: string | null
 
       if (enableTurnstileFeatureFlag) {

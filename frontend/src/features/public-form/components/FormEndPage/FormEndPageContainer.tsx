@@ -18,7 +18,6 @@ export const FormEndPageContainer = (): JSX.Element | null => {
     formId,
     submissionData?.id ?? '',
   )
-
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 

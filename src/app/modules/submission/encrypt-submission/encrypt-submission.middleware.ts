@@ -624,7 +624,7 @@ export const createFormsgAndRetrieveForm = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
-  console.log(`request body: ${JSON.stringify(req.body)}`)
+
   const logMeta = {
     action: 'createFormsgAndRetrieveForm',
     ...createReqMeta(req),

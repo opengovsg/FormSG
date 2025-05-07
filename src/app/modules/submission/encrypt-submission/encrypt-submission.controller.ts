@@ -114,6 +114,7 @@ const submitEncryptModeForm = async (
 
   const formDef = req.formsg.formDef
   const form: IPopulatedEncryptedForm = req.formsg.encryptedFormDef
+
   setFormTags(formDef)
 
   const ensurePipeline = new Pipeline(
@@ -835,7 +836,6 @@ const _createSubmission = async ({
     const authCookieName = getCookieNameByAuthType(form.authType)
     res.clearCookie(authCookieName)
   }
-
   res.json({
     message: 'Form submission successful.',
     submissionId,

@@ -142,16 +142,3 @@ export const createMetatags = ({
     return okAsync(metatags)
   })
 }
-
-// export const sendRespondentCopy = ({
-//   formId,
-//   submissionId,
-//   emails,
-//   responses,
-//   mrfStep,
-// }: { formId: string
-//   submissionId: string
-//   emails: string[]
-//   responses: string //TODO: fix this
-//   mrfStep?: number
-// }): 
