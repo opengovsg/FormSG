@@ -260,11 +260,11 @@ export const FormFields = ({
           )}
         <PublicFormPaymentResumeModal />
         {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
-        {form?.hasRespondentCopy && isRespondentCopyEnabled && (
+        {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
           <Box mt="2.5rem">
             <PublicRespondentEmailField />
           </Box>
-        )}
+        ) : null}
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}

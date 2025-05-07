@@ -13,6 +13,19 @@ import { TagInput } from '~components/TagInput'
 export const PublicRespondentEmailField = (): JSX.Element => {
   const { t } = useTranslation()
 
+  const baseRules = useOptionalAdminEmailValidationRules()
+  const rules: RegisterOptions<
+    { respondent_email_field: string[] },
+    'respondent_email_field'
+  > = {
+    ...baseRules,
+    validate: {
+      ...baseRules.validate,
+      maxEmails: (value: string[]) =>
+        value.length <= 5 || 'Please enter a maximum of 5 emails',
+    },
+  }
+
   const {
     control,
     formState: { errors },
@@ -23,14 +36,7 @@ export const PublicRespondentEmailField = (): JSX.Element => {
       <Controller
         name={RESPONDENT_EMAIL_FIELD_ID}
         control={control}
-        rules={
-          useOptionalAdminEmailValidationRules as RegisterOptions<
-            {
-              respondent_email_field: string[]
-            },
-            'respondent_email_field'
-          >
-        } // need to cast rules with both type of form and field name
+        rules={rules}
         render={({ field }) => (
           <Box>
             <FormLabel>
