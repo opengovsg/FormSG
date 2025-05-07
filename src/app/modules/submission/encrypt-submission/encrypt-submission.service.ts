@@ -36,10 +36,10 @@ import {
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
-import { extractEmailConfirmationData } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
