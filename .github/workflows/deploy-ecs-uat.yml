@@ -1,0 +1,50 @@
+name: Deploy FormSG app to uat
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy-ecs.yml
+    with:
+      gha-environment: 'uat'
+      # Environment configuration
+      environment: 'uat'
+      environment-site-name: 'uat'
+      app-version: ${{ github.sha }}
+      app-url: 'https://uat.form.gov.sg'
+      react-app-form-sg-sdk-mode: 'staging'
+      # AWS configuration
+      aws-region: 'ap-southeast-1'
+      ecr-repository: 'formsg'
+      # ECS configuration
+      ecs-cpu: 1024
+      ecs-memory: 2048
+      ecs-cluster-name: 'formsg-uat-ecs'
+      ecs-service-name: 'formsg-uat-ecs-service'
+      ecs-task-definition: 'formsg-uat-ecs'
+      ecs-task-definition-path: 'deploy/ecs-task-definition.json'
+      ecs-container-name: 'formsg-app'
+      # CodeDeploy configuration
+      codedeploy-application: 'formsg-uat-ecs-app'
+      codedeploy-appspec-path: deploy/appspec.yml
+      codedeploy-deployment-group: 'formsg-uat-ecs-dg'
+      # Datadog config
+      dd-env: 'uat'
+    secrets:
+      # AWS credentials and configuration
+      aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
+      # Monitoring and analytics configuration
+      ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
+      dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
+      dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
+      dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
