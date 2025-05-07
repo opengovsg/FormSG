@@ -50,7 +50,9 @@ export const findPaymentById = (
       paymentId,
       null,
       // readPreference from transaction isn't respected, thus we are setting it on operation
-      session ? { session, readPreference: 'primary' } : null,
+      session
+        ? { session, readPreference: 'primary' }
+        : { readPreference: 'primary' },
     ),
     (error) => {
       logger.error({
