@@ -2,9 +2,11 @@ import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isEmpty, times } from 'lodash'
 
 import {
+  featureFlags,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
 } from '~shared/constants'
@@ -66,6 +68,9 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  // TODO: (respondent copy): Remove when respondent copy is out of beta
+  const isRespondentCopyEnabled = useFeatureIsOn(featureFlags.respondentCopy)
+
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
 
@@ -200,7 +205,8 @@ export const FormFields = ({
   )
 
   const hasLockedNormalPrefills = hasLockedPrefills && hasNormalPrefills
-
+  console.log(`hasrespondentcopt: ${form?.hasRespondentCopy}`)
+  console.log(isRespondentCopyEnabled)
   return (
     <FormProvider {...formMethods}>
       <form noValidate>
@@ -253,9 +259,12 @@ export const FormFields = ({
             </Box>
           )}
         <PublicFormPaymentResumeModal />
-        <Box mt="2.5rem">
-          <PublicRespondentEmailField />
-        </Box>
+        {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
+        {form?.hasRespondentCopy && isRespondentCopyEnabled && (
+          <Box mt="2.5rem">
+            <PublicRespondentEmailField />
+          </Box>
+        )}
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}

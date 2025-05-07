@@ -16,6 +16,7 @@ const PUBLIC_FORM_FIELDS = [
   'title',
   '_id',
   'responseMode',
+  'hasRespondentCopy',
 ] as const
 
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS

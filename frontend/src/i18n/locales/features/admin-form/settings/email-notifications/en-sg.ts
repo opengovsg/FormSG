@@ -31,7 +31,7 @@ export const enSG = {
     },
     regular: {
       label: 'Notifications for new responses',
-      info: 'Notify the following email addresses when a responses is submitted',
+      info: 'Allow respondents to receive a copy of their submission',
       description: 'Separate multiple email addresses with a comma',
     },
   },
