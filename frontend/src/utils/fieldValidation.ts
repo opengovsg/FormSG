@@ -251,15 +251,10 @@ export const useRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
-export const createAttachmentValidationRules: ValidationRuleFn<
+export const useAttachmentValidationRules: ValidationRuleFn<
   AttachmentFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: (value?: File) => {
-      if (disableRequiredValidation || !schema.required) return true
-      return !!value || REQUIRED_ERROR
-    },
-  }
+  return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
 export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
