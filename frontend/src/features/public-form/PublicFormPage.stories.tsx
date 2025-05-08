@@ -825,6 +825,21 @@ WithPayment.parameters = {
   ],
 }
 
+export const WithRespondentCopy = Template.bind({})
+WithRespondentCopy.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          hasRespondentCopy: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
 export const ThankYouPage = Template.bind({})
 ThankYouPage.parameters = {
   msw: [
