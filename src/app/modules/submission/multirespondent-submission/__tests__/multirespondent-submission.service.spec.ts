@@ -1508,6 +1508,7 @@ describe('multirespondent-submission.service', () => {
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        respondentEmails: respondentEmails,
       })
 
       // Assert
