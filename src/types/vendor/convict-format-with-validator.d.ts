@@ -21,8 +21,9 @@ declare module 'convict-format-with-validator' {
   }
 
   /**
-   * RATIONALE: Required for env vars which are potentially undefined but passed via SSM which require a non-empty string.
-   * Hence, a placeholder is used to indicate that the value is undefined.
+   * RATIONALE: Required for env vars which can be potentially undefined so that the default convict schema fallback is used
+   * but also passed via SSM parameter which does not support undefined values.
+   * Hence, a placeholder string representing undefined is used to evaluate to the default fallback.
    */
   const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
   export const possiblyUndefinedString = {
