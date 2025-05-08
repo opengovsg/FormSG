@@ -290,3 +290,50 @@ Tablet.parameters = {
   },
   chromatic: { viewports: [viewports.md] },
 }
+
+
+export const PublicFormHasRespondentCopy = Template.bind({})
+PublicFormHasRespondentCopy.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Encrypt,
+    overrides: {
+      status: FormStatus.Public,
+      emails: [],
+      ...PAYMENTS_DISABLED,
+      hasRespondentCopy: true,
+    },
+  }),
+}
+
+export const PublicMultiRespondentForm = Template.bind({})
+PublicMultiRespondentForm = {
+  mode: FormResponseMode.Multirespondent,
+  overrides: {
+    form_fields: [
+      {
+        _id: 'email_field_id',
+        fieldType: BasicField.Email,
+        title: 'Respondent 1 Email',
+      } as FormFieldDto,
+    ],
+    status: FormStatus.Public,
+    stepOneEmailNotificationFieldId: 'email_field_id',
+    emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+    stepsToNotify: ['field_id_2'],
+    workflow: [
+      {
+        _id: 'field_id_1',
+        workflow_type: WorkflowType.Dynamic,
+        field: 'email_field_id',
+        edit: [],
+      },
+      {
+        _id: 'field_id_2',
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+      },
+    ],
+    hasRespondentCopy: true,
+  },
+}
