@@ -1415,6 +1415,33 @@ describe('multirespondent-submission.service', () => {
     })
   })
 
+  describe('sendRespondentCopyEmails', () => {
+    it('invokes the sendMrfRespondentCopyEmails function when respondentEmails are present', async () => {
+      // Arrange
+      const mockEmails = ['test@example.com', 'test2@example.com']
+      const sendMrfRespondentCopyEmailSpy = jest
+        .spyOn(MailService, 'sendMrfRespondentCopyEmail')
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      await sendMrfRespondentCopyEmail({
+        submissionId: 'submissionId',
+        emails: mockEmails,
+        formTitle: 'Test Form',
+        responseUrl: 'http://test.com',
+        formId: 'formId',
+      })
+
+      // Assert
+      expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          emails: mockEmails,
+          isReminder: true,
+        }),
+      )
+    })
+  })
+
   describe('getPendingStepRecipientEmailsFromSubmittedStepsMeta', () => {
     it('gets correct recipient emails for 2nd step of 5-step mrf submission', async () => {
       // Arrange
