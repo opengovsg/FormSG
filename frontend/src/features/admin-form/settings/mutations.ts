@@ -305,6 +305,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
+          toastDescription: `Respondents will ${newData.hasRespondentCopy ? '' : 'not'} be able to receive a copy of their submission`,
           toastDescription: `hasRespondentCopy is now ${newData.hasRespondentCopy ? 'enabled' : 'disabled'} on your form`,
         })
       },
