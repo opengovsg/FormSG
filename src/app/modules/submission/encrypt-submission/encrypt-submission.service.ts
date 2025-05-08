@@ -178,9 +178,6 @@ export const performEncryptPostSubmissionActions = (
         ? respondentEmails?.map((val) => {
             return {
               email: val,
-              // subject: '',
-              // sender: '',
-              // body: '',
               includeFormSummary: true,
             }
           })
