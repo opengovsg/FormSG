@@ -1,6 +1,6 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
-import convict, { Schema } from 'convict'
+import convict, { Config, Path, Schema } from 'convict'
 import { email, url } from 'convict-format-with-validator'
 import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
@@ -14,27 +14,39 @@ import {
   IProdOnlyVarsSchema,
 } from '../../types'
 
-/**
- * RATIONALE: Required for env vars which can be potentially undefined so that the default convict schema fallback is used
- * but also passed via SSM parameter which does not support undefined values.
- * Hence, a placeholder string representing undefined is used to evaluate to the default fallback.
- */
 const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
-export const possiblyUndefinedString = {
-  name: 'possiblyUndefinedString' as const,
-  coerce: (v: string) => (v === UNDEFINED_PLACEHOLDER_STRING ? undefined : v),
-  validate: function (v: string) {
-    if (v === UNDEFINED_PLACEHOLDER_STRING) {
-      return new Error(
-        `coerce to undefined failed. ${v} should have been coerced to undefined`,
-      )
+
+/**
+ * Resets the values of the optional vars to the application defaults if they are set to the undefined placeholder string in SSM parameter store.
+ *
+ * @generic <T> - The convict schema type.
+ * @param config - The convict config object.
+ * @param optionalValuesFromSsm - The paths to the optional values which may be passed from SSM parameter store and may be set to UNDEFINED_PLACEHOLDER_STRING.
+ *
+ * RATIONALE:
+ * Environment variables for optional values may be set to undefined so that the default convict schema fallback is used.
+ * Since SSM parameter store does not support undefined values, a placeholder string UNDEFINED_PLACEHOLDER_STRING is used.
+ */
+export const resetToApplicationDefaultForUndefinedSsmValues = <T>(
+  config: Config<T>,
+  optionalValuesFromSsm: Path<T>[],
+) => {
+  optionalValuesFromSsm.forEach((value) => {
+    if (config.get(value) === UNDEFINED_PLACEHOLDER_STRING) {
+      config.reset(value)
     }
-  },
+  })
+  return config
 }
+export const optionalValuesFromSsm = [
+  'appConfig.appUrl',
+  'appConfig.description',
+  'appConfig.feAppUrl',
+  'appConfig.twitterImage',
+] as Path<IOptionalVarsSchema>[]
 
 convict.addFormat(url)
 convict.addFormat(email)
-convict.addFormat(possiblyUndefinedString)
 convict.addFormat({
   name: 'string[]',
   validate: (val: string[]) => {
@@ -171,7 +183,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     description: {
       doc: 'Application description in meta tag',
-      format: 'possiblyUndefinedString',
+      format: String,
       default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
@@ -183,8 +195,8 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     feAppUrl: {
       doc: 'For local dev use only - frontend app url',
-      format: 'url',
-      default: 'https://form.gov.sg',
+      format: String,
+      default: 'https://localhost:5174',
       env: 'FE_APP_URL',
     },
     keywords: {
@@ -195,7 +207,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     twitterImage: {
       doc: 'Application image in twitter meta tag',
-      format: 'possiblyUndefinedString',
+      format: String,
       default: '/public/modules/core/img/og/logo-vertical-color.png',
       env: 'APP_TWITTER_IMAGE',
     },

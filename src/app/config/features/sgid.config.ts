@@ -1,4 +1,4 @@
-import convict, { Schema } from 'convict'
+import convict, { Path, Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
 import { ISgidVarsSchema } from '../../../types'
@@ -6,13 +6,14 @@ import {
   validateIacStringParam,
   validateNonIacStringParam,
 } from '../../utils/iac'
-import { possiblyUndefinedString } from '../schema'
+import { resetToApplicationDefaultForUndefinedSsmValues } from '../schema'
 
 convict.addFormat(url)
-convict.addFormat(possiblyUndefinedString)
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
+
+export const optionalValuesFromSsm: Path<ISgidVarsSchema>[] = ['hostname']
 
 export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
   clientId: {
@@ -83,7 +84,7 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
   },
   hostname: {
     doc: 'The sgID authorization hostname.',
-    format: 'possiblyUndefinedString',
+    format: String,
     default: '',
     env: 'SGID_HOSTNAME',
   },
@@ -97,6 +98,10 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
 
 // Load and validate sgid configuration values
 // If environment variables are not present, an error will be thrown
-export const sgid = convict(sgidVarsSchema)
-  .validate({ allowed: 'strict' })
-  .getProperties()
+const sgidConfig = convict(sgidVarsSchema)
+resetToApplicationDefaultForUndefinedSsmValues(
+  sgidConfig,
+  optionalValuesFromSsm,
+)
+
+export const sgid = sgidConfig.validate({ allowed: 'strict' }).getProperties()
