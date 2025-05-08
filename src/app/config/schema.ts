@@ -39,9 +39,7 @@ export const resetToApplicationDefaultForUndefinedSsmValues = <T>(
   return config
 }
 export const optionalValuesFromSsm = [
-  'appConfig.appUrl',
   'appConfig.description',
-  'appConfig.feAppUrl',
   'appConfig.twitterImage',
 ] as Path<IOptionalVarsSchema>[]
 
@@ -195,8 +193,8 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     feAppUrl: {
       doc: 'For local dev use only - frontend app url',
-      format: String,
-      default: 'https://localhost:5174',
+      format: 'url',
+      default: 'https://form.gov.sg',
       env: 'FE_APP_URL',
     },
     keywords: {
