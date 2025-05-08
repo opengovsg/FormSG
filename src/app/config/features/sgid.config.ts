@@ -1,11 +1,12 @@
 import convict, { Schema } from 'convict'
-import { possiblyUndefinedString, url } from 'convict-format-with-validator'
+import { url } from 'convict-format-with-validator'
 
 import { ISgidVarsSchema } from '../../../types'
 import {
   validateIacStringParam,
   validateNonIacStringParam,
 } from '../../utils/iac'
+import { possiblyUndefinedString } from '../schema'
 
 convict.addFormat(url)
 convict.addFormat(possiblyUndefinedString)
@@ -82,7 +83,7 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
   },
   hostname: {
     doc: 'The sgID authorization hostname.',
-    format: possiblyUndefinedString,
+    format: 'possiblyUndefinedString',
     default: '',
     env: 'SGID_HOSTNAME',
   },

@@ -19,16 +19,4 @@ declare module 'convict-format-with-validator' {
     coerce,
     validate,
   }
-
-  /**
-   * RATIONALE: Required for env vars which can be potentially undefined so that the default convict schema fallback is used
-   * but also passed via SSM parameter which does not support undefined values.
-   * Hence, a placeholder string representing undefined is used to evaluate to the default fallback.
-   */
-  const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
-  export const possiblyUndefinedString = {
-    name: 'possiblyUndefinedString' as const,
-    coerce: (v) => (v === UNDEFINED_PLACEHOLDER_STRING ? undefined : v),
-    validate,
-  }
 }

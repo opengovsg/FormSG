@@ -1,11 +1,12 @@
 import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Schema } from 'convict'
-import { possiblyUndefinedString, url } from 'convict-format-with-validator'
+import { url } from 'convict-format-with-validator'
 
 import {
   validateIacStringParam,
   validateNonIacStringParam,
 } from '../../../app/utils/iac'
+import { possiblyUndefinedString } from '../schema'
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
@@ -89,7 +90,7 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
   spcpCookieDomain: {
     doc: 'Domain name set on cookie that holds the SPCP jwt',
-    format: possiblyUndefinedString,
+    format: 'possiblyUndefinedString',
     default: '',
     env: 'SPCP_COOKIE_DOMAIN',
   },

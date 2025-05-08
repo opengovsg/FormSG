@@ -1,11 +1,7 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
 import convict, { Schema } from 'convict'
-import {
-  email,
-  possiblyUndefinedString,
-  url,
-} from 'convict-format-with-validator'
+import { email, url } from 'convict-format-with-validator'
 import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
 import validator from 'validator'
@@ -17,6 +13,24 @@ import {
   IOptionalVarsSchema,
   IProdOnlyVarsSchema,
 } from '../../types'
+
+/**
+ * RATIONALE: Required for env vars which can be potentially undefined so that the default convict schema fallback is used
+ * but also passed via SSM parameter which does not support undefined values.
+ * Hence, a placeholder string representing undefined is used to evaluate to the default fallback.
+ */
+const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
+export const possiblyUndefinedString = {
+  name: 'possiblyUndefinedString' as const,
+  coerce: (v: string) => (v === UNDEFINED_PLACEHOLDER_STRING ? undefined : v),
+  validate: function (v: string) {
+    if (v === UNDEFINED_PLACEHOLDER_STRING) {
+      return new Error(
+        `coerce to undefined failed. ${v} should have been coerced to undefined`,
+      )
+    }
+  },
+}
 
 convict.addFormat(url)
 convict.addFormat(email)
@@ -157,7 +171,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     description: {
       doc: 'Application description in meta tag',
-      format: possiblyUndefinedString,
+      format: 'possiblyUndefinedString',
       default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
@@ -181,7 +195,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     twitterImage: {
       doc: 'Application image in twitter meta tag',
-      format: possiblyUndefinedString,
+      format: 'possiblyUndefinedString',
       default: '/public/modules/core/img/og/logo-vertical-color.png',
       env: 'APP_TWITTER_IMAGE',
     },
