@@ -1,5 +1,5 @@
 import convict, { Schema } from 'convict'
-import { url } from 'convict-format-with-validator'
+import { possiblyUndefinedString, url } from 'convict-format-with-validator'
 
 import { ISgidVarsSchema } from '../../../types'
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../utils/iac'
 
 convict.addFormat(url)
+convict.addFormat(possiblyUndefinedString)
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
@@ -81,7 +82,7 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
   },
   hostname: {
     doc: 'The sgID authorization hostname.',
-    format: String,
+    format: possiblyUndefinedString,
     default: '',
     env: 'SGID_HOSTNAME',
   },

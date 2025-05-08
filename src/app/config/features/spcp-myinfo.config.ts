@@ -1,6 +1,6 @@
 import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Schema } from 'convict'
-import { url } from 'convict-format-with-validator'
+import { possiblyUndefinedString, url } from 'convict-format-with-validator'
 
 import {
   validateIacStringParam,
@@ -54,6 +54,7 @@ type IMyInfoConfig = {
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
 
 convict.addFormat(url)
+convict.addFormat(possiblyUndefinedString)
 
 const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   isSPMaintenance: {
@@ -88,7 +89,7 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
   spcpCookieDomain: {
     doc: 'Domain name set on cookie that holds the SPCP jwt',
-    format: String,
+    format: possiblyUndefinedString,
     default: '',
     env: 'SPCP_COOKIE_DOMAIN',
   },

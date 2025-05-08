@@ -19,4 +19,15 @@ declare module 'convict-format-with-validator' {
     coerce,
     validate,
   }
+
+  /**
+   * RATIONALE: Required for env vars which are potentially undefined but passed via SSM which require a non-empty string.
+   * Hence, a placeholder is used to indicate that the value is undefined.
+   */
+  const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
+  export const possiblyUndefinedString = {
+    name: 'possiblyUndefinedString' as const,
+    coerce: (v) => (v === UNDEFINED_PLACEHOLDER_STRING ? undefined : v),
+    validate,
+  }
 }

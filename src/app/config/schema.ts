@@ -1,7 +1,11 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
 import convict, { Schema } from 'convict'
-import { email, url } from 'convict-format-with-validator'
+import {
+  email,
+  possiblyUndefinedString,
+  url,
+} from 'convict-format-with-validator'
 import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
 import validator from 'validator'
@@ -16,6 +20,7 @@ import {
 
 convict.addFormat(url)
 convict.addFormat(email)
+convict.addFormat(possiblyUndefinedString)
 convict.addFormat({
   name: 'string[]',
   validate: (val: string[]) => {
@@ -152,7 +157,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     description: {
       doc: 'Application description in meta tag',
-      format: String,
+      format: possiblyUndefinedString,
       default: 'Trusted form manager of the Singapore Government',
       env: 'APP_DESC',
     },
@@ -176,7 +181,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     },
     twitterImage: {
       doc: 'Application image in twitter meta tag',
-      format: String,
+      format: possiblyUndefinedString,
       default: '/public/modules/core/img/og/logo-vertical-color.png',
       env: 'APP_TWITTER_IMAGE',
     },
