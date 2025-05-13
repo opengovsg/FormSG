@@ -23,7 +23,7 @@ jobs:
     with:
       checkoutBranch: 'release-al2'
       gha-environment: 'release-al2'
-      environment: 'prod'
+      environment: 'production'
       provisionedConcurrency: 1
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
