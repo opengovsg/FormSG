@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - release-al2
+      - test/migrate-prod-to-iac
 
 jobs:
   deploy-scanner-guardduty:
