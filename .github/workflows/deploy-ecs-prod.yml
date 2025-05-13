@@ -16,7 +16,7 @@ jobs:
     with:
       gha-environment: 'release-al2'
       # Environment configuration
-      environment: 'prod'
+      environment: 'production'
       environment-site-name: 'prod'
       app-version: ${{ github.sha }}
       app-url: 'https://form.gov.sg'
