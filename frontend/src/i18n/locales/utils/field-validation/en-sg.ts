@@ -119,6 +119,19 @@ const textFieldValidation: TextFieldValidation = {
     'Please enter at most {threshold} {threshold, plural, =1 {character} other {characters}} ({current}/{threshold})',
 }
 
+interface EmailFieldValidation {
+  invalidEmail: string
+  pleaseVerifyEmail: string
+  domainDisallowed: string
+}
+
+const emailFieldValidation: EmailFieldValidation = {
+  invalidEmail: 'Please enter a valid email',
+  pleaseVerifyEmail: 'Please verify your email address',
+  // TODO: decide how to combine with src/i18n/locales/features/public-form/fields/en-sg.ts
+  domainDisallowed: 'Domain disallowed',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
@@ -127,7 +140,8 @@ export type FieldValidation = BaseValidation &
   NricFieldValidation &
   CheckboxFieldValidation &
   DropdownFieldValidation &
-  TextFieldValidation
+  TextFieldValidation &
+  EmailFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -140,4 +154,5 @@ export const enSG: FieldValidation = {
   ...checkboxFieldValidation,
   ...dropdownFieldValidation,
   ...textFieldValidation,
+  ...emailFieldValidation,
 }

@@ -160,6 +160,41 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   }
 }
 
+const useBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
+  VerifiableFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: (value?: VerifiableFieldValues) => {
+          return requiredSingleAnswerValidationFn(
+            schema,
+            disableRequiredValidation,
+            t,
+          )(value?.value)
+        },
+        hasSignature: (val?: VerifiableFieldValues) => {
+          if (!schema.isVerifiable) return true
+          // Either signature is filled, or both fields have no input.
+          if (!!val?.signature || (!val?.value && !val?.signature)) {
+            return true
+          }
+          if (schema.fieldType === BasicField.Mobile) {
+            return 'Please verify your mobile number'
+          }
+          if (schema.fieldType === BasicField.Email) {
+            return t('pleaseVerifyEmail')
+          }
+        },
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
 // TODO: remove after useBaseValidationRules is used instead. keeping this for backward compatibility
 export const createBaseValidationRules = <
   TFieldValues extends FieldValues = FieldValues,
@@ -787,24 +822,36 @@ export const useRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
-export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
+export const useEmailValidationRules: ValidationRuleFnEmailAndMobile<
   EmailFieldBase
 > = (
   schema,
   disableRequiredValidation,
   validationErrorMessages,
 ): RegisterOptions => {
-  return {
-    validate: {
-      baseValidations: (val?: VerifiableFieldValues) => {
-        return baseEmailValidationFn({ schema, validationErrorMessages })(
-          val?.value,
-        )
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  const baseVfnRules = useBaseVfnFieldValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
+  return useMemo(() => {
+    return {
+      validate: {
+        baseValidations: (val?: VerifiableFieldValues) => {
+          return baseEmailValidationFn({
+            schema,
+            t,
+            validationErrorMessages,
+          })(val?.value)
+        },
+        ...baseVfnRules.validate,
       },
-      ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
-        .validate,
-    },
-  }
+    }
+  }, [baseVfnRules.validate, schema, t, validationErrorMessages])
 }
 
 /**
@@ -814,9 +861,11 @@ export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
 export const baseEmailValidationFn =
   ({
     schema,
+    t,
     validationErrorMessages = { domainDisallowed: 'Domain disallowed' },
   }: {
     schema: MinimumFieldValidationProps<EmailFieldBase>
+    t?: TFunction
     validationErrorMessages?: EmailValidationErrorMessages
   }) =>
   (inputValue?: string) => {
@@ -825,7 +874,8 @@ export const baseEmailValidationFn =
     const trimmedInputValue = inputValue.trim()
 
     // Valid email check
-    if (!validator.isEmail(trimmedInputValue)) return INVALID_EMAIL_ERROR
+    if (!validator.isEmail(trimmedInputValue))
+      return t ? t('invalidEmail') : INVALID_EMAIL_ERROR
 
     // Valid domain check
     const allowedDomains = new Set(schema.allowedEmailDomains)
