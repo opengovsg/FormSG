@@ -22,6 +22,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
+  STATUS_TRACKER_ROUTE,
   TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
@@ -200,6 +201,14 @@ export const AppRouter = (): JSX.Element => {
           element={
             <ParamIdValidator
               element={<PrivateElement element={<TemplateFormPage />} />}
+            />
+          }
+        />
+        <Route
+          path={STATUS_TRACKER_ROUTE}
+          element={
+            <ParamIdValidator
+              element={<PublicElement element={<NotFoundErrorPage />} />}
             />
           }
         />
