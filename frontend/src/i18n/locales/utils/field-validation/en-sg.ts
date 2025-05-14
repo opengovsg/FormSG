@@ -132,6 +132,16 @@ const emailFieldValidation: EmailFieldValidation = {
   domainDisallowed: 'Domain disallowed',
 }
 
+interface MobileFieldValidation {
+  validMobile: string
+  pleaseVerifyMobile: string
+}
+
+const mobileFieldValidation: MobileFieldValidation = {
+  validMobile: 'Please enter a valid mobile number',
+  pleaseVerifyMobile: 'Please verify your mobile number',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
@@ -141,7 +151,8 @@ export type FieldValidation = BaseValidation &
   CheckboxFieldValidation &
   DropdownFieldValidation &
   TextFieldValidation &
-  EmailFieldValidation
+  EmailFieldValidation &
+  MobileFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -155,4 +166,5 @@ export const enSG: FieldValidation = {
   ...dropdownFieldValidation,
   ...textFieldValidation,
   ...emailFieldValidation,
+  ...mobileFieldValidation,
 }

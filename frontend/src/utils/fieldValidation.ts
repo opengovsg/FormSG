@@ -184,7 +184,7 @@ const useBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
             return true
           }
           if (schema.fieldType === BasicField.Mobile) {
-            return 'Please verify your mobile number'
+            return t('pleaseVerifyMobile')
           }
           if (schema.fieldType === BasicField.Email) {
             return t('pleaseVerifyEmail')
@@ -195,7 +195,7 @@ const useBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   }, [schema, disableRequiredValidation, t])
 }
 
-// TODO: remove after useBaseValidationRules is used instead. keeping this for backward compatibility
+// TODO: remove after useBaseValidationRules is used instead. keeping this for backward compatibility. this is being used in 52 other occurences at the moment.
 export const createBaseValidationRules = <
   TFieldValues extends FieldValues = FieldValues,
   TFieldName extends Path<TFieldValues> = never,
@@ -406,18 +406,28 @@ export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   }
 }
 
-export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
+export const useMobileValidationRules: ValidationRuleFnEmailAndMobile<
   MobileFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      baseValidations: (val?: VerifiableFieldValues) => {
-        return baseMobileValidationFn(schema)(val?.value)
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  const baseVfnRules = useBaseVfnFieldValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
+  return useMemo(() => {
+    return {
+      validate: {
+        baseValidations: (val?: VerifiableFieldValues) => {
+          return baseMobileValidationFn(schema, t)(val?.value)
+        },
+        ...baseVfnRules.validate,
       },
-      ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
-        .validate,
-    },
-  }
+    }
+  }, [baseVfnRules.validate, schema, t])
 }
 
 export const useNumberValidationRules = (
@@ -891,14 +901,12 @@ export const baseEmailValidationFn =
   }
 
 export const baseMobileValidationFn =
-  (_schema: MinimumFieldValidationProps<MobileFieldBase>) =>
-  (inputValue?: string) => {
+  (_schema: MinimumFieldValidationProps<MobileFieldBase>, t: TFunction) =>
+  (inputValue?: string): true | string => {
     if (!inputValue) return true
 
     // Valid mobile check
-    return (
-      isMobilePhoneNumber(inputValue) || 'Please enter a valid mobile number'
-    )
+    return isMobilePhoneNumber(inputValue) || (t('validMobile') as string)
   }
 
 export const createChildrenValidationRules: ValidationRuleFn<
