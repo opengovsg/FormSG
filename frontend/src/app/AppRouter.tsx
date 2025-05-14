@@ -65,6 +65,7 @@ const PrivacyPolicyPage = loadable(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = loadable(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = loadable(() => import('~features/admin-form/preview'))
 const TemplateFormPage = loadable(() => import('~features/admin-form/template'))
+const StatusTrackerPage = loadable(() => import('~features/status-tracker'))
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
@@ -208,7 +209,7 @@ export const AppRouter = (): JSX.Element => {
           path={STATUS_TRACKER_ROUTE}
           element={
             <ParamIdValidator
-              element={<PublicElement element={<NotFoundErrorPage />} />}
+              element={<PublicElement element={<StatusTrackerPage />} />}
             />
           }
         />
