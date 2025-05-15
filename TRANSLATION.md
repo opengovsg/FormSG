@@ -10,6 +10,8 @@ FormSG uses the following i18n libraries:
 - [**react-i18next**](https://react.i18next.com/): React bindings for i18next
 - [**i18next-icu**](https://react.i18next.com/misc/using-with-icu-format): Support for ICU message pluralization format
 
+To make a text available for translation, it needs to be "externalized" first. Externalization is when you replace hardcoded English text in your code with function calls that fetch the appropriate translated version based on the user's selected language.
+
 Our approach is hook-based, where we use the `useTranslation` hook to access and render translated strings:
 
 ```typescript
@@ -22,13 +24,10 @@ const MyComponent = () => {
   })
 
   // Use the translation function to render strings
-
   return (
     <div>
       <h1>{t('title')}</h1>
-
       <p>{t('description')}</p>
-
       <button>{t('buttons.submit')}</button>
     </div>
   )
