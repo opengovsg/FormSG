@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
 import { validatePostalCode } from '~shared/utils/address-validation'
 
-import { VALID_POSTAL_CODE_NO_ADDRESS_ERROR } from '~constants/validation'
 import {
   useBlockNumberValidationRules,
   useLevelNumberValidationRules,
@@ -53,6 +53,10 @@ export const AddressCompoundField = ({
     schema,
     disableRequiredValidation,
   )
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'utils.fieldValidation',
+  })
 
   const unitNumber = watch(`${schema._id}.addressSubFields.unitNumber`)
   const levelNumber = watch(`${schema._id}.addressSubFields.levelNumber`)
@@ -108,11 +112,11 @@ export const AddressCompoundField = ({
         if (!result.success) {
           setError(`${schema._id}.addressSubFields.blockNumber`, {
             type: 'manual',
-            message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+            message: t('invalidPostalCode'),
           })
           setError(`${schema._id}.addressSubFields.streetName`, {
             type: 'manual',
-            message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+            message: t('invalidPostalCode'),
           })
           setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
           setValue(`${schema._id}.addressSubFields.streetName`, '')
