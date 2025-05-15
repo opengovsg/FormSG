@@ -341,6 +341,26 @@ export const createStreetNameValidationRules: ValidationRuleFn<
   }
 }
 
+export const useStreetNameValidationRules: ValidationRuleFn<
+  AddressCompoundFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
 export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   AddressCompoundFieldBase
 > = (

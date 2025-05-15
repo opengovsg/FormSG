@@ -9,8 +9,8 @@ import {
   createBlockNumberValidationRules,
   createLevelNumberValidationRules,
   createPostalCodeValidationRules,
-  createStreetNameValidationRules,
   createUnitNumberValidationRules,
+  useStreetNameValidationRules,
 } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -49,9 +49,9 @@ export const AddressCompoundField = ({
     [schema, disableRequiredValidation],
   )
 
-  const streetNameValidationRules = useMemo(
-    () => createStreetNameValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const streetNameValidationRules = useStreetNameValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const unitNumber = watch(`${schema._id}.addressSubFields.unitNumber`)
