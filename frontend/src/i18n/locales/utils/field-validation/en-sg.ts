@@ -142,6 +142,14 @@ const mobileFieldValidation: MobileFieldValidation = {
   pleaseVerifyMobile: 'Please verify your mobile number',
 }
 
+interface HomeNoFieldValidation {
+  validHomeNo: string
+}
+
+const homeNoFieldValidation: HomeNoFieldValidation = {
+  validHomeNo: 'Please enter a valid landline number',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
@@ -152,7 +160,8 @@ export type FieldValidation = BaseValidation &
   DropdownFieldValidation &
   TextFieldValidation &
   EmailFieldValidation &
-  MobileFieldValidation
+  MobileFieldValidation &
+  HomeNoFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -167,4 +176,5 @@ export const enSG: FieldValidation = {
   ...textFieldValidation,
   ...emailFieldValidation,
   ...mobileFieldValidation,
+  ...homeNoFieldValidation,
 }

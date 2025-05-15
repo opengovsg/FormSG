@@ -264,22 +264,29 @@ export const useAttachmentValidationRules: ValidationRuleFn<
   return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
-export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useHomeNoValidationRules = (
+  schema: HomenoFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validHomeNo: (val?: string) => {
-        if (!val) return true
-        return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validHomeNo: (val?: string) => {
+          if (!val) return true
+          return isHomePhoneNumber(val) || t('validHomeNo')
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 // i18n this next
