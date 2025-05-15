@@ -12,7 +12,7 @@
   "dependencies": {
     "@react-email/components": "^0.0.26",
     "react": "^18.2.0",
-    "react-email": "^3.0.4"
+    "react-email": "^4.0.13"
   },
   "devDependencies": {
     "@storybook/react-vite": "^8.3.5",
