@@ -626,7 +626,6 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  //send respondent copy emails if needed
   if (respondentEmails) {
     sendMrfRespondentCopyEmails({
       form,
@@ -862,7 +861,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  //send respondent copy emails if needed (before rejection/approved etc.)
   if (respondentEmails) {
     sendMrfRespondentCopyEmails({
       form,
@@ -875,7 +873,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         message: 'Send multirespondent respondent copy email error',
         meta: logMeta,
         error,
-      }) // return nothing since if successful submission does not depend on this email submission
+      }) // return nothing; since successful submission does not depend on this respondent copy emails sent
     })
   }
 

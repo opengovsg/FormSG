@@ -173,7 +173,6 @@ export const FormFields = ({
     }
   }
 
-  //default respondent email fields
   defaultFormValues[RESPONDENT_EMAIL_FIELD_ID] = []
 
   const formMethods = useForm<FormFieldValues>({
@@ -205,8 +204,7 @@ export const FormFields = ({
   )
 
   const hasLockedNormalPrefills = hasLockedPrefills && hasNormalPrefills
-  console.log(`hasrespondentcopt: ${form?.hasRespondentCopy}`)
-  console.log(isRespondentCopyEnabled)
+
   return (
     <FormProvider {...formMethods}>
       <form noValidate>

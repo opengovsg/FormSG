@@ -747,7 +747,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         require: false,
       },
 
-      //boolean value to enable respondent copy emails
       hasRespondentCopy: {
         type: Boolean,
         default: false,

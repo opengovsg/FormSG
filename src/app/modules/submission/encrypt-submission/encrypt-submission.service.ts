@@ -174,7 +174,7 @@ export const performEncryptPostSubmissionActions = (
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      const respondentData: AutoReplyMailData[] = respondentEmails
+      const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
             return {
               email: val,
@@ -183,7 +183,6 @@ export const performEncryptPostSubmissionActions = (
           })
         : []
 
-      // Send Email Confirmations
       return sendEmailConfirmations({
         form,
         submission,
@@ -191,7 +190,7 @@ export const performEncryptPostSubmissionActions = (
         responsesData: emailData?.autoReplyData,
         recipientData: [
           ...extractEmailConfirmationData(responses, form.form_fields),
-          ...respondentData, // add respondentCopyEmails
+          ...respondentCopyEmailData,
         ],
       }).mapErr((error) => {
         logger.error({

@@ -842,7 +842,6 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  // send respondent copy email to respondentEmails
   return await performEncryptPostSubmissionActions(
     submission,
     responses,
