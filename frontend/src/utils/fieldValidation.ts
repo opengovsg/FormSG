@@ -58,13 +58,7 @@ import { isUenValid } from '~shared/utils/uen-validation'
 
 import { Fields } from '~/i18n/locales/features/public-form/fields'
 
-import {
-  INVALID_BLOCK_UNIT_ERROR,
-  INVALID_EMAIL_ERROR,
-  INVALID_LEVEL_UNIT_ERROR,
-  INVALID_NON_NUMERICAL_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import {
   AddressCompoundFieldInput,
   CheckboxFieldValues,
@@ -289,56 +283,56 @@ export const useHomeNoValidationRules = (
   }, [schema, disableRequiredValidation, t])
 }
 
-// i18n this next
-export const createPostalCodeValidationRules: ValidationRuleFn<
+export const usePostalCodeValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validOnlyNumbers: (value: string) => {
-        if (value === '') return true
-        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validOnlyNumbers: (value: string) => {
+          if (value === '') return true
+          return validateNoNonNumerical(value) || t('invalidNonNumerical')
+        },
+        validPostalCode: (value: string) => {
+          if (value === '') return true
+          return validatePostalCode(value) || t('invalidPostalCode')
+        },
       },
-      validPostalCode: (value: string) => {
-        if (value === '') return true
-        return validatePostalCode(value) || 'Please enter a valid postal code'
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createBlockNumberValidationRules: ValidationRuleFn<
+export const useBlockNumberValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validBlock: (value: string) => {
-        if (value === '') return true
-        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
-      },
-    },
-  }
-}
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-export const createStreetNameValidationRules: ValidationRuleFn<
-  AddressCompoundFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-    },
-  }
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validBlock: (value: string) => {
+          if (value === '') return true
+          return validateNoSpecialCharacters(value) || t('invalidBlockUnit')
+        },
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 export const useStreetNameValidationRules: ValidationRuleFn<
@@ -361,48 +355,64 @@ export const useStreetNameValidationRules: ValidationRuleFn<
   }, [schema, disableRequiredValidation, t])
 }
 
-export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+export const useLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   AddressCompoundFieldBase
 > = (
   schema,
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
-  return {
-    validate: {
-      validLevel: (value: string) => {
-        if (value === '') return true
-        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        validLevel: (value: string) => {
+          if (value === '') return true
+          return validateNoNonNumerical(value) || t('invalidNonNumerical')
+        },
+        validInput: () => {
+          if (!getValues) return true
+          const levelNo = getValues(
+            `${schema._id}.addressSubFields.levelNumber`,
+          )
+          const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+          return validateLevelUnit(levelNo, unitNo) || t('invalidLevelUnit')
+        },
       },
-      validInput: () => {
-        if (!getValues) return true
-        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
-        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
-        return validateLevelUnit(levelNo, unitNo) || INVALID_LEVEL_UNIT_ERROR
-      },
-    },
-  }
+    }
+  }, [schema, getValues, t])
 }
 
-export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+export const useUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   AddressCompoundFieldBase
 > = (
   schema,
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
-  return {
-    validate: {
-      validUnit: (value: string) => {
-        if (value === '') return true
-        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        validUnit: (value: string) => {
+          if (value === '') return true
+          return validateNoSpecialCharacters(value) || t('invalidBlockUnit')
+        },
+        validInput: () => {
+          if (!getValues) return true
+          const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+          const levelNo = getValues(
+            `${schema._id}.addressSubFields.levelNumber`,
+          )
+          return validateLevelUnit(unitNo, levelNo) || t('invalidLevelUnit')
+        },
       },
-      validInput: () => {
-        if (!getValues) return true
-        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
-        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
-        return validateLevelUnit(unitNo, levelNo) || INVALID_LEVEL_UNIT_ERROR
-      },
-    },
-  }
+    }
+  }, [schema, getValues, t])
 }
 
 export const useMobileValidationRules: ValidationRuleFnEmailAndMobile<

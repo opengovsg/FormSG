@@ -150,6 +150,20 @@ const homeNoFieldValidation: HomeNoFieldValidation = {
   validHomeNo: 'Please enter a valid landline number',
 }
 
+interface AddressFieldValidation {
+  invalidNonNumerical: string
+  invalidPostalCode: string
+  invalidBlockUnit: string
+  invalidLevelUnit: string
+}
+
+const addressFieldValidation: AddressFieldValidation = {
+  invalidNonNumerical: 'Please use numbers only',
+  invalidPostalCode: 'Please enter a valid postal code',
+  invalidBlockUnit: 'Please use numbers and letters only',
+  invalidLevelUnit: 'Please include both level and unit number',
+}
+
 export type FieldValidation = BaseValidation &
   NumberFieldValidation &
   DecimalFieldValidation &
@@ -161,7 +175,8 @@ export type FieldValidation = BaseValidation &
   TextFieldValidation &
   EmailFieldValidation &
   MobileFieldValidation &
-  HomeNoFieldValidation
+  HomeNoFieldValidation &
+  AddressFieldValidation
 
 export const enSG: FieldValidation = {
   ...baseValidation,
@@ -177,4 +192,6 @@ export const enSG: FieldValidation = {
   ...emailFieldValidation,
   ...mobileFieldValidation,
   ...homeNoFieldValidation,
+  ...addressFieldValidation,
+  // NOTE: excluding MyInfo fields for now.
 }
