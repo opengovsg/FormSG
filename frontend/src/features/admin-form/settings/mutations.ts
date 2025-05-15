@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
@@ -52,6 +53,7 @@ import {
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -305,7 +307,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `Respondents will ${newData.hasRespondentCopy ? '' : 'not'} be able to receive a copy of their submission`,
+          toastDescription: `${t('features.adminForm.toasts.respondentCopy.successBefore')} ${newData.hasRespondentCopy ? '' : t('features.adminForm.toasts.respondentCopy.disabled')}${t('features.adminForm.toasts.respondentCopy.successAfter')}`,
         })
       },
       onError: handleError,
