@@ -358,6 +358,7 @@ export type PaymentSubmissionData = {
 export type StatusTrackerData = {
   submittedSteps: SubmittedStep[] | undefined
   workflow: FormWorkflowDto
+  responseId: string | undefined
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.

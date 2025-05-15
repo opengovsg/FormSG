@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom'
-import { Box, Flex, GridItem, Text } from '@chakra-ui/react'
+import { Box, Flex, Text } from '@chakra-ui/react'
 
-import { useStatusTracker } from './queries'
+import { StepData } from '~shared/types'
+
 import {
   BackgroundBox,
   BaseGridLayout,
@@ -9,17 +10,8 @@ import {
   NonMobileSidebarGridArea,
 } from '~features/login/LoginPageTemplate'
 
-// // Grid area styling for the login form.
-// export const StatusTrackerGridArea: FCC = ({ children }) => (
-//   <GridItem
-//     gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
-//     py="4rem"
-//     display="flex"
-//     alignItems={{ base: 'initial', lg: 'center' }}
-//     justifyContent="center"
-//     children={children}
-//   />
-// )
+import { useStatusTracker } from './queries'
+import { StatusTrackerStepper } from './StatusPoint'
 
 export const StatusTrackerPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
@@ -29,7 +21,21 @@ export const StatusTrackerPage = (): JSX.Element => {
   const { data, isLoading, error } = useStatusTracker(submissionId)
 
   //   if (isLoading) return <Spinner />
-  if (error || !data) return <Text>"Something went wrong"</Text>
+  if (error || !data || !data.submittedSteps || !data.workflow)
+    return <Text>"Something went wrong"</Text>
+
+  const { submittedSteps, workflow } = data
+
+  const activeStep = submittedSteps.length - 1
+  const stepData: StepData[] = workflow.map((step, index) => {
+    if (index <= activeStep) {
+      return {
+        name: step.name ? step.name : `Step ${index + 1}`,
+        timestamp: submittedSteps[index].submittedAt,
+      }
+    }
+    return { name: step.name ? step.name : `Step ${index + 1}` }
+  })
 
   return (
     <BackgroundBox>
@@ -41,11 +47,11 @@ export const StatusTrackerPage = (): JSX.Element => {
         <LoginGridArea>
           <Box>
             <Flex direction="column">
-              <Text>Hello World!</Text>
-              <Text>{formId}</Text>
-              <Text>{submissionId}</Text>
-              <Text>{JSON.stringify(data.submittedSteps)}</Text>
-              <Text>{JSON.stringify(data.workflow)}</Text>
+              <Text textStyle="h4">Response ID: {data.responseId}</Text>
+              <StatusTrackerStepper
+                steps={stepData}
+                activeStep={activeStep + 1}
+              />
             </Flex>
           </Box>
         </LoginGridArea>
