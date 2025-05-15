@@ -132,34 +132,6 @@ const requiredSingleAnswerValidationFn =
  * @param schema verifiable field schema
  * @returns base verifiable fields' validation rules
  */
-const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
-  VerifiableFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: (value?: VerifiableFieldValues) => {
-        return requiredSingleAnswerValidationFn(
-          schema,
-          disableRequiredValidation,
-        )(value?.value)
-      },
-      hasSignature: (val?: VerifiableFieldValues) => {
-        if (!schema.isVerifiable) return true
-        // Either signature is filled, or both fields have no input.
-        if (!!val?.signature || (!val?.value && !val?.signature)) {
-          return true
-        }
-        if (schema.fieldType === BasicField.Mobile) {
-          return 'Please verify your mobile number'
-        }
-        if (schema.fieldType === BasicField.Email) {
-          return 'Please verify your email address'
-        }
-      },
-    },
-  }
-}
-
 const useBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   VerifiableFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
