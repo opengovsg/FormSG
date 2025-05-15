@@ -1,12 +1,13 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
+import { StatusTrackerData } from '~shared/types'
+
 import { ApiError } from '~typings/core'
 
 import { getStatusTrackerData } from './StatusTrackerService'
 
 export const useStatusTracker = (
-  formId: string,
   submissionId: string,
-): UseQueryResult<string, ApiError> => {
+): UseQueryResult<StatusTrackerData, ApiError> => {
   return useQuery(submissionId, () => getStatusTrackerData(submissionId))
 }
