@@ -11,7 +11,7 @@ import {
 } from '~features/login/LoginPageTemplate'
 
 import { useStatusTracker } from './queries'
-import { StatusTrackerStepper } from './StatusPoint'
+import { StatusTrackerStepper, TimelineRunSteps } from './StatusPoint'
 
 export const StatusTrackerPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
@@ -48,10 +48,11 @@ export const StatusTrackerPage = (): JSX.Element => {
           <Box>
             <Flex direction="column">
               <Text textStyle="h4">Response ID: {data.responseId}</Text>
-              <StatusTrackerStepper
+              {/* <StatusTrackerStepper
                 steps={stepData}
                 activeStep={activeStep + 1}
-              />
+              /> */}
+              <TimelineRunSteps steps={stepData} />
             </Flex>
           </Box>
         </LoginGridArea>
