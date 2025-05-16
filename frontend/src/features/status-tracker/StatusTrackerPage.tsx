@@ -26,18 +26,20 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { submittedSteps, workflow } = data
 
-  const activeStep = submittedSteps.length - 1
+  const workflowSteps = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {
     const name = step.name ? step.name : `Step ${index + 1}`
     const stepNumber = index + 1
     const workflowStatus =
-      index <= activeStep
-        ? submittedSteps[index].isApproval
-          ? submittedSteps[index].status
+      index <= workflowSteps
+        ? submittedSteps[index].isApproval // if it is a workflow approval
+          ? workflow[index].approval_field // if this step is an approval step
+            ? submittedSteps[index].status
+            : WorkflowStatus.COMPLETED
           : WorkflowStatus.COMPLETED
         : WorkflowStatus.PENDING
 
-    if (index <= activeStep) {
+    if (index <= workflowSteps) {
       return {
         name: name,
         stepNumber: stepNumber,

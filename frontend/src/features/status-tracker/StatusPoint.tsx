@@ -17,7 +17,8 @@ const StatusIcon = ({
   stepNumber: number
 }): JSX.Element => {
   switch (workflowStatus) {
-    case WorkflowStatus.COMPLETED || WorkflowStatus.APPROVED:
+    case WorkflowStatus.COMPLETED:
+    case WorkflowStatus.APPROVED:
       return (
         <Circle size="2rem" bg={statusColor[workflowStatus]}>
           <Icon as={MdCheck} color="#F5F6F8" boxSize="1rem" />
@@ -95,7 +96,7 @@ export const TimelineRunSteps = ({
         <Divider
           borderLeft="2px"
           orientation="vertical"
-          h={'28'}
+          h="2rem"
           mx="1rem"
           my="1.5rem"
           borderColor={statusColor[step.workflowStatus]}
