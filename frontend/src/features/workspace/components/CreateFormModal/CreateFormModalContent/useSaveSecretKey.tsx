@@ -14,7 +14,7 @@ import FileSaver from 'file-saver'
  * Contains common logic for handling secret key mailTo, copy, download
  * and whether to allow user to submit (such as verifying that the user has downloaded the secret key).
  */
-export const useSecretKeyDownload = ({
+export const useSaveSecretKey = ({
   secretKey,
   formTitle,
   formId,

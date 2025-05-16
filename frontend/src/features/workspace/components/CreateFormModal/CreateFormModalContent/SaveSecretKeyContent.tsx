@@ -20,7 +20,7 @@ import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useSecretKeyDownload } from './useSaveSecretKey'
+import { useSaveSecretKey } from './useSaveSecretKey'
 
 export interface SaveSecretKeyFormInput {
   storageAck: boolean
@@ -37,7 +37,7 @@ export const SaveSecretKeyContent = ({
   onSubmitClick,
   registerStorageAck,
   isLoading,
-  useSecretKeyDownloadHook = useSecretKeyDownload,
+  useSaveSecretKeyHook = useSaveSecretKey,
 }: {
   contentTitle: string
   secretKey: string
@@ -49,7 +49,7 @@ export const SaveSecretKeyContent = ({
   onSubmitClick: () => void
   registerStorageAck: UseFormRegister<SaveSecretKeyFormInput>
   isLoading: boolean
-  useSecretKeyDownloadHook?: typeof useSecretKeyDownload
+  useSaveSecretKeyHook?: typeof useSaveSecretKey
 }): JSX.Element => {
   const { t } = useTranslation()
 
@@ -60,7 +60,7 @@ export const SaveSecretKeyContent = ({
     hasDownloadedKey,
     handleDownloadKey,
     mailToHref,
-  } = useSecretKeyDownloadHook({
+  } = useSaveSecretKeyHook({
     secretKey,
     formTitle,
     formId,

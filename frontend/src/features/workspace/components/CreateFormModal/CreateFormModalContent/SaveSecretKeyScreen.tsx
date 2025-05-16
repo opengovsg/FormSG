@@ -15,12 +15,12 @@ import {
   SaveSecretKeyContent,
   SaveSecretKeyFormInput,
 } from './SaveSecretKeyContent'
-import { useSecretKeyDownload } from './useSaveSecretKey'
+import { useSaveSecretKey } from './useSaveSecretKey'
 
 export const SaveSecretKeyScreen = ({
-  useSecretKeyDownloadHook = useSecretKeyDownload,
+  useSaveSecretKeyHook = useSaveSecretKey,
 }: {
-  useSecretKeyDownloadHook?: typeof useSecretKeyDownload
+  useSaveSecretKeyHook?: typeof useSaveSecretKey
 }): JSX.Element => {
   const { t } = useTranslation()
 
@@ -64,7 +64,7 @@ export const SaveSecretKeyScreen = ({
       secretKey={secretKey}
       onSubmitClick={handleDownloadAndNavigate}
       handleTrackEmail={() => trackClickSecretKeyMailTo(formTitle)}
-      useSecretKeyDownloadHook={useSecretKeyDownloadHook}
+      useSaveSecretKeyHook={useSaveSecretKeyHook}
     />
   )
 }

@@ -117,7 +117,7 @@ export const StorageModeAckScreen = () => {
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
           <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <ModalCloseButton />
-            <SaveSecretKeyScreen useSecretKeyDownloadHook={mockHook} />
+            <SaveSecretKeyScreen useSaveSecretKeyHook={mockHook} />
           </CreateFormWizardProvider>
         </ModalContent>
       </Modal>
