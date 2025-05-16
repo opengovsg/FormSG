@@ -1,17 +1,38 @@
 import { useParams } from 'react-router-dom'
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, GridItem, Text } from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
+
+import { FCC } from '~typings/react'
 
 import {
   BackgroundBox,
   BaseGridLayout,
+  FooterGridArea,
   LoginGridArea,
   NonMobileSidebarGridArea,
 } from '~features/login/LoginPageTemplate'
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
+import { AppFooter } from '~/app/AppFooter'
+
+// Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
+export const NonMobileSidebarGridAreaStatusTracker: FCC = ({ children }) => (
+  <GridItem
+    display={{ base: 'none', md: 'flex' }}
+    gridColumn={{ md: '1 / 13', lg: '2 / 6' }}
+    // colSpan={{ md: 12, lg: 5 }}
+    // pl={{ base: '1.5rem', lg: '8%' }}
+    h={{ md: '20.5rem', lg: 'auto' }}
+    pt={{ base: '1.5rem', md: '2.5rem', lg: '3rem' }}
+    pb={{ lg: '3rem' }}
+    flexDir="column"
+    alignItems={{ base: 'center', lg: 'flex-end' }}
+    justifyContent="center"
+    children={children}
+  />
+)
 
 export const StatusTrackerPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
@@ -58,18 +79,34 @@ export const StatusTrackerPage = (): JSX.Element => {
   return (
     <BackgroundBox>
       <BaseGridLayout flex={1}>
-        <NonMobileSidebarGridArea
-          maxW="100%"
-          aria-hidden
-        ></NonMobileSidebarGridArea>
+        <NonMobileSidebarGridAreaStatusTracker maxW="100%" aria-hidden>
+          <Box w="100%">
+            <Flex direction="row">
+              <Text>FORM TITLE</Text>
+            </Flex>
+            <Text textStyle="h6">Track your FormSG Response status</Text>
+          </Box>
+        </NonMobileSidebarGridAreaStatusTracker>
         <LoginGridArea>
           <Box>
             <Flex direction="column">
-              <Text textStyle="h4">Response ID: {data.responseId}</Text>
+              <Text mb="2rem" textStyle="h4">
+                Response ID: {data.responseId}
+              </Text>
               <TimelineRunSteps steps={stepData} />
             </Flex>
           </Box>
         </LoginGridArea>
+        <FooterGridArea>
+          <AppFooter
+            compactMonochromeLogos
+            variant="compact"
+            containerProps={{
+              px: 0,
+              bg: 'transparent',
+            }}
+          />
+        </FooterGridArea>
       </BaseGridLayout>
     </BackgroundBox>
   )
