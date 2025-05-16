@@ -46,7 +46,6 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
-  SubmissionType,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 import {
