@@ -46,6 +46,7 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+  SubmissionType,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 import {
@@ -3353,4 +3354,43 @@ export const handleSetGoLinkSuffix: ControllerHandler<
         return res.status(statusCode).json({ message: errorMessage })
       })
   )
+}
+
+export const handleConvertEmailToStorageMode: ControllerHandler<
+  { formId: string },
+  unknown,
+  { publicKey: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { publicKey } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) => {
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      })
+    })
+    .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
+    .map((form) => {
+      return AdminFormService.convertEmailToStorageMode({ form, publicKey })
+    })
+    .map(() => {
+      logger.info({
+        message: 'Form successfully converted to storage mode',
+        meta: {
+          action: 'handleConvertEmailToStorageMode',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+      })
+      return res.sendStatus(StatusCodes.OK)
+    })
+    .mapErr((error) => {
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }

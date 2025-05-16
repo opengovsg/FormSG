@@ -100,3 +100,9 @@ export class ModelGetClientFailureError extends ApplicationError {
     super(message, ErrorCodes.ADMIN_FORM_MODEL_GET_CLIENT_FAILURE)
   }
 }
+
+export class FormAlreadyHasPublicKeyError extends ApplicationError {
+  constructor(message = 'Form already has a public key') {
+    super(message, ErrorCodes.ADMIN_FORM_FORM_ALREADY_HAS_PUBLIC_KEY)
+  }
+}

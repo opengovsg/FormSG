@@ -16,7 +16,6 @@ import {
   Code,
   Container,
   Icon,
-  Link,
   ListItem,
   ModalBody,
   Stack,

@@ -60,6 +60,7 @@ import {
   IMultirespondentForm,
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
+  IPopulatedEmailForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
   IPopulatedUser,
@@ -110,6 +111,7 @@ import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormAlreadyHasPublicKeyError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
@@ -2320,4 +2322,52 @@ export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
       return transformMongoError(error)
     },
   )
+}
+
+/**
+ * Ensures that the form does not have a public key to prevent undesired overwrites.
+ * @param form The form to check
+ * @returns ok(form) if the form does not have a public key
+ * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
+ */
+const ensureFormHasNoPublicKey = (
+  form: IPopulatedEmailForm,
+): Result<IPopulatedEmailForm, FormAlreadyHasPublicKeyError> => {
+  if (form.publicKey) {
+    return err(new FormAlreadyHasPublicKeyError())
+  }
+  return ok(form)
+}
+
+/**
+ * Converts an email mode form to storage mode by replacing it with a storage mode form with the same id.
+ * @param form The form to convert to storage mode
+ * @param publicKey The public key to set on the form
+ * @returns ok(updated form) on success
+ * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
+ */
+export const convertEmailToStorageMode = async ({
+  form,
+  publicKey,
+}: {
+  form: IPopulatedEmailForm
+  publicKey: string
+}) => {
+  return ensureFormHasNoPublicKey(form).map((form) => {
+    return ResultAsync.fromPromise(
+      form.replaceWithStorageModeFormWithSameId({ publicKey }),
+      (error) => {
+        logger.error({
+          message: 'Error occurred when converting email to storage mode',
+          meta: {
+            action: 'convertEmailToStorageMode',
+            formId: form._id,
+            publicKey,
+          },
+          error,
+        })
+        return transformMongoError(error)
+      },
+    )
+  })
 }

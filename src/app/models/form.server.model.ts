@@ -341,7 +341,33 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     // is non-empty.
     required: [true, 'Emails field is required'],
   },
+  isForceConvertToStorageMode: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+EmailFormSchema.methods.replaceWithStorageModeFormWithSameId = async function ({
+  publicKey,
+}: {
+  publicKey: string
+}) {
+  const FormModel = mongoose.model(FORM_SCHEMA_ID)
+
+  const emailModeFormData = this.toObject()
+  const emailModeFormId = this._id
+
+  await this.deleteOne()
+
+  const replacedStorageModeFormDoc = new FormModel({
+    ...emailModeFormData,
+    _id: emailModeFormId,
+    responseMode: FormResponseMode.Encrypt,
+    publicKey,
+  })
+  await replacedStorageModeFormDoc.save()
+  return replacedStorageModeFormDoc
+}
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   publicKey: {

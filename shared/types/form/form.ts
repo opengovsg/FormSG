@@ -210,6 +210,7 @@ export interface FormBase {
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
+  isForceConvertToStorageMode?: boolean
 }
 
 export interface WhitelistedSubmitterIds {

@@ -247,6 +247,17 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   removePaymentAccount<T = IEncryptedFormSchema>(): Promise<T>
 
   /**
+   * Replaces an email mode form with a storage mode form with the same id.
+   * @param publicKey the public key to set for encrypting form responses
+   * @returns updated form with storage mode values populated
+   */
+  replaceWithStorageModeFormWithSameId({
+    publicKey,
+  }: {
+    publicKey: string
+  }): Promise<IPopulatedEncryptedForm>
+
+  /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
    * @returns params required to create a new duplicated form object
@@ -316,6 +327,7 @@ export interface IEmailForm extends IForm {
   // strings to string array.
   emails: string[] | string
   publicKey?: never
+  isForceConvertToStorageMode: boolean
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema

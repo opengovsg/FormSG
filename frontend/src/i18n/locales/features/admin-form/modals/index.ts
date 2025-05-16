@@ -19,4 +19,7 @@ export interface Modals {
   dirty: {
     cancelButtonText: string
   }
+  emailModeMigration: {
+    title: string
+  }
 }

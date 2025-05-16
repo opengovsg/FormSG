@@ -20,4 +20,8 @@ export const enSG = {
   dirty: {
     cancelButtonText: 'No, return to editing',
   },
+  emailModeMigration: {
+    title:
+      'Your form must first be converted to storage mode. Download your Secret Key to proceed.',
+  },
 }

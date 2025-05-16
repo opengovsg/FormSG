@@ -4,6 +4,7 @@ import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
 import {
+  EmailFormDto,
   FormAuthType,
   FormResponseMode,
   FormStatus,
@@ -17,12 +18,16 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
+import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
-  const { data: { form_fields } = {} } = useAdminForm()
-  const { data: formSettings, isLoading: isLoadingSettings } =
+  const {
+    data: { form_fields, _id: formId, ...adminFormData } = {},
+    isLoading: isLoadingForm,
+  } = useAdminForm()
+  const { data: formSettings, isLoading: isLoadingFormSettings } =
     useAdminFormSettings()
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
@@ -63,7 +68,7 @@ export const FormStatusToggle = (): JSX.Element => {
   const { mutateFormStatus } = useMutateFormSettings()
 
   const handleToggleStatus = useCallback(() => {
-    if (!status || isLoadingSettings || mutateFormStatus.isLoading) return
+    if (!status || isLoadingFormSettings || mutateFormStatus.isLoading) return
 
     const nextStatus =
       status === FormStatus.Public ? FormStatus.Private : FormStatus.Public
@@ -78,7 +83,7 @@ export const FormStatusToggle = (): JSX.Element => {
 
     return mutateFormStatus.mutate(nextStatus)
   }, [
-    isLoadingSettings,
+    isLoadingFormSettings,
     mutateFormStatus,
     onOpenActivationModal,
     responseMode,
@@ -89,9 +94,35 @@ export const FormStatusToggle = (): JSX.Element => {
     `features.adminForm.settings.general.status.description.${isFormPublic ? 'open' : 'closed'}`,
   )
 
+  const isForceConvertFromEmailToStorage =
+    responseMode === FormResponseMode.Email &&
+    (adminFormData as EmailFormDto).isForceConvertToStorageMode
+  const emailModeConvertModalProps = useDisclosure()
+  const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
+
+  const onFormToggleStatusClick = useCallback(() => {
+    if (!isFormPublic && isForceConvertFromEmailToStorage) {
+      return onOpenEmailModeConvertModal()
+    }
+    return handleToggleStatus()
+  }, [
+    handleToggleStatus,
+    isForceConvertFromEmailToStorage,
+    isFormPublic,
+    onOpenEmailModeConvertModal,
+  ])
+
   return (
-    <Skeleton isLoaded={!isLoadingSettings && !!status}>
+    <Skeleton isLoaded={!isLoadingFormSettings && !isLoadingForm && !!status}>
       <Stack>
+        {isForceConvertFromEmailToStorage && (
+          <EmailModeConvertModal
+            {...emailModeConvertModalProps}
+            formTitle={formSettings!.title}
+            formId={formId!}
+          />
+        )}
+        )
         {(formSettings?.responseMode === FormResponseMode.Encrypt ||
           formSettings?.responseMode === FormResponseMode.Multirespondent) && (
           <SecretKeyActivationModal
@@ -118,7 +149,7 @@ export const FormStatusToggle = (): JSX.Element => {
             aria-describedby="form-status"
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}
-            onChange={handleToggleStatus}
+            onChange={onFormToggleStatusClick}
           />
         </Flex>
         {preventActivationMessage ? (
