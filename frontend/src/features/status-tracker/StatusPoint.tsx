@@ -1,8 +1,10 @@
+import { MdCheck, MdClose, MdRadioButtonUnchecked } from 'react-icons/md'
 import {
   Box,
   Circle,
   Divider,
   Flex,
+  Icon,
   Step,
   StepDescription,
   StepIcon,
@@ -63,6 +65,25 @@ type TimelineStepProps = {
   showCompletedLabel: boolean
 }
 
+enum StatusType {
+  PENDING,
+  COMPLETED,
+  REJECTED,
+}
+
+const StatusIcon = ({
+  statusType,
+}: {
+  statusType: StatusType
+}): JSX.Element => {
+  return (
+    // <Icon as={MdCheck}></Icon>
+    <Circle size="2rem" border="2px solid" borderColor="#E5E9F8">
+      <Icon as={MdCheck} color="green.500" boxSize="16px" />
+    </Circle>
+  )
+}
+
 const TimelineStep = ({
   name,
   timestamp,
@@ -70,7 +91,8 @@ const TimelineStep = ({
 }: TimelineStepProps) => {
   return (
     <Flex alignItems="center" gap={4}>
-      <Circle bgColor={'green'} size="1.5rem" zIndex={2} />
+
+      <StatusIcon statusType={StatusType.COMPLETED} />
       <Flex flexDir="column" gap="0.25rem">
         {/* {showCompletedLabel && (
           <Text
@@ -168,7 +190,7 @@ export const TimelineRunSteps = ({
           borderLeft="2px"
           orientation="vertical"
           h={'28'}
-          mx="0.75rem"
+          mx="1rem"
           my="-1.5rem"
           borderColor="interaction.support.disabled"
           zIndex={1}
