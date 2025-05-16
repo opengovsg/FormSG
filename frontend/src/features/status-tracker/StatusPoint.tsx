@@ -3,6 +3,12 @@ import { Circle, Divider, Flex, Icon, Text } from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
 
+const statusColor: Record<WorkflowStatus, string> = {
+  [WorkflowStatus.PENDING]: '#E5E9F8', // grey
+  [WorkflowStatus.COMPLETED]: '#05CC9A', // green
+  [WorkflowStatus.APPROVED]: '#05CC9A',
+  [WorkflowStatus.REJECTED]: '#C03434', // red
+}
 const StatusIcon = ({
   workflowStatus,
   stepNumber,
@@ -13,25 +19,33 @@ const StatusIcon = ({
   switch (workflowStatus) {
     case WorkflowStatus.COMPLETED || WorkflowStatus.APPROVED:
       return (
-        <Circle size="2rem" bg="#05CC9A">
+        <Circle size="2rem" bg={statusColor[workflowStatus]}>
           <Icon as={MdCheck} color="#F5F6F8" boxSize="1rem" />
         </Circle>
       )
     case WorkflowStatus.PENDING:
       return (
-        <Circle size="2rem" border="2px solid" borderColor="#E5E9F8">
+        <Circle
+          size="2rem"
+          border="2px solid"
+          borderColor={statusColor[workflowStatus]}
+        >
           <Text textStyle="caption-2">{stepNumber}</Text>
         </Circle>
       )
     case WorkflowStatus.REJECTED:
       return (
-        <Circle size="2rem" bg="#C03434">
-          <Icon as={MdClose} color="#F5F6F8" boxSize="1rem" />
+        <Circle size="2rem" bg={statusColor[workflowStatus]}>
+          <Icon as={MdClose} color="#C03434" boxSize="1rem" />
         </Circle>
       )
     default:
       return (
-        <Circle size="2rem" border="2px solid" borderColor="#E5E9F8"></Circle>
+        <Circle
+          size="2rem"
+          border="2px solid"
+          borderColor={statusColor[workflowStatus]}
+        ></Circle>
       )
   }
 }
@@ -76,20 +90,20 @@ export const TimelineRunSteps = ({
 }): JSX.Element[] => {
   return steps.map((step, i) => (
     <>
-      {i !== 0 && (
+      <TimelineStep {...step} />
+      {i !== steps.length - 1 && (
         <Divider
           borderLeft="2px"
           orientation="vertical"
           h={'28'}
           mx="1rem"
-          my="-1.5rem"
-          borderColor="interaction.support.disabled"
+          my="1.5rem"
+          borderColor={statusColor[step.workflowStatus]}
           zIndex={1}
-          mt="0.25rem"
-          mb="0.25rem"
+          mt="0.5rem"
+          mb="0.5rem"
         />
       )}
-      <TimelineStep {...step} />
     </>
   ))
 }
