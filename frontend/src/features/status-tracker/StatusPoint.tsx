@@ -32,7 +32,6 @@ export const StatusTrackerStepper = ({
       orientation="vertical"
       gap="0rem"
       lineHeight="2rem"
-      // height="200px"
     >
       {steps.map((step, index) => (
         <Step key={index}>
@@ -73,15 +72,35 @@ enum StatusType {
 
 const StatusIcon = ({
   statusType,
+  stepNumber,
 }: {
   statusType: StatusType
+  stepNumber: number
 }): JSX.Element => {
-  return (
-    // <Icon as={MdCheck}></Icon>
-    <Circle size="2rem" border="2px solid" borderColor="#E5E9F8">
-      <Icon as={MdCheck} color="green.500" boxSize="16px" />
-    </Circle>
-  )
+  switch (statusType) {
+    case StatusType.COMPLETED:
+      return (
+        <Circle size="2rem" bg="#05CC9A">
+          <Icon as={MdCheck} color="#F5F6F8" boxSize="1rem" />
+        </Circle>
+      )
+    case StatusType.PENDING:
+      return (
+        <Circle size="2rem" border="2px solid" borderColor="#E5E9F8">
+          <Text textStyle="caption-2">{stepNumber}</Text>
+        </Circle>
+      )
+    case StatusType.REJECTED:
+      return (
+        <Circle size="2rem" bg="#C03434">
+          <Icon as={MdClose} color="#F5F6F8" boxSize="1rem" />
+        </Circle>
+      )
+    default:
+      return (
+        <Circle size="2rem" border="2px solid" borderColor="#E5E9F8"></Circle>
+      )
+  }
 }
 
 const TimelineStep = ({
@@ -91,7 +110,6 @@ const TimelineStep = ({
 }: TimelineStepProps) => {
   return (
     <Flex alignItems="center" gap={4}>
-
       <StatusIcon statusType={StatusType.COMPLETED} />
       <Flex flexDir="column" gap="0.25rem">
         {/* {showCompletedLabel && (
