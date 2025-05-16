@@ -13,7 +13,6 @@ import {
   SaveSecretKeyContent,
   SaveSecretKeyFormInput,
 } from '~features/workspace/components/CreateFormModal/CreateFormModalContent/SaveSecretKeyContent'
-import { useSecretKeyDownload } from '~features/workspace/components/CreateFormModal/CreateFormModalContent/useSaveSecretKey'
 
 import { useToast } from '../../../../hooks/useToast'
 import { adminFormSettingsKeys } from '../queries'
@@ -45,21 +44,6 @@ export const EmailModeConvertModal = ({
     defaultValues: {
       storageAck: false,
     },
-  })
-
-  const {
-    isSubmitEnabled,
-    hasCopiedKey,
-    handleCopyKey,
-    hasDownloadedKey,
-    handleDownloadKey,
-    mailToHref,
-  } = useSecretKeyDownload({
-    secretKey,
-    formTitle,
-    formId,
-    onClose,
-    isFormStateValid,
   })
 
   const toast = useToast()
@@ -96,13 +80,11 @@ export const EmailModeConvertModal = ({
       contentTitle={t('features.adminForm.modals.emailModeMigration.title')}
       registerStorageAck={register}
       isLoading={convertEmailToStorageModeMutation.isLoading}
-      hasCopiedKey={hasCopiedKey}
-      handleCopyKey={handleCopyKey}
-      handleDownloadKey={handleDownloadKey}
-      mailToHref={mailToHref}
-      hasDownloadedKey={hasDownloadedKey}
-      isSubmitEnabled={isSubmitEnabled}
       secretKey={secretKey}
+      formTitle={formTitle}
+      formId={formId}
+      onClose={onClose}
+      isFormStateValid={isFormStateValid}
       onSubmitClick={() => {
         convertEmailToStorageModeMutation.mutate({ formId, publicKey })
       }}

@@ -42,21 +42,6 @@ export const SaveSecretKeyScreen = ({
   const formId: string =
     queryClient.getQueryData(workspaceKeys.lastCreatedForm) ?? ''
 
-  const {
-    handleCopyKey,
-    handleDownloadKey,
-    mailToHref,
-    hasDownloadedKey,
-    isSubmitEnabled,
-    hasCopiedKey,
-  } = useSecretKeyDownloadHook({
-    secretKey,
-    formTitle,
-    onClose,
-    isFormStateValid: isValid,
-    formId,
-  })
-
   const handleDownloadAndNavigate = useCallback(() => {
     if (formId) {
       queryClient.invalidateQueries(workspaceKeys.lastCreatedForm)
@@ -72,15 +57,14 @@ export const SaveSecretKeyScreen = ({
         register as unknown as UseFormRegister<SaveSecretKeyFormInput>
       }
       isLoading={isLoading}
-      hasCopiedKey={hasCopiedKey}
-      handleCopyKey={handleCopyKey}
-      handleDownloadKey={handleDownloadKey}
-      mailToHref={mailToHref}
-      hasDownloadedKey={hasDownloadedKey}
-      isSubmitEnabled={isSubmitEnabled}
+      formTitle={formTitle}
+      formId={formId}
+      onClose={onClose}
+      isFormStateValid={isValid}
       secretKey={secretKey}
       onSubmitClick={handleDownloadAndNavigate}
       handleTrackEmail={() => trackClickSecretKeyMailTo(formTitle)}
+      useSecretKeyDownloadHook={useSecretKeyDownloadHook}
     />
   )
 }

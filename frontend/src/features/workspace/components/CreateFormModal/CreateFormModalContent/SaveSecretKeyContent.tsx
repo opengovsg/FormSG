@@ -20,38 +20,53 @@ import Checkbox from '~components/Checkbox'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { useSecretKeyDownload } from './useSaveSecretKey'
+
 export interface SaveSecretKeyFormInput {
   storageAck: boolean
 }
 
 export const SaveSecretKeyContent = ({
+  contentTitle,
+  secretKey,
+  formTitle,
+  formId,
+  onClose,
+  isFormStateValid,
+  handleTrackEmail,
+  onSubmitClick,
   registerStorageAck,
   isLoading,
-  hasCopiedKey,
-  handleCopyKey,
-  handleDownloadKey,
-  mailToHref,
-  hasDownloadedKey,
-  isSubmitEnabled,
-  secretKey,
-  onSubmitClick,
-  contentTitle,
-  handleTrackEmail,
+  useSecretKeyDownloadHook = useSecretKeyDownload,
 }: {
+  contentTitle: string
+  secretKey: string
+  formTitle: string
+  formId: string
+  onClose: () => void
+  isFormStateValid: boolean
+  handleTrackEmail: () => void
+  onSubmitClick: () => void
   registerStorageAck: UseFormRegister<SaveSecretKeyFormInput>
   isLoading: boolean
-  hasCopiedKey: boolean
-  handleCopyKey: () => void
-  handleDownloadKey: () => void
-  mailToHref: string
-  hasDownloadedKey: boolean
-  isSubmitEnabled: boolean
-  secretKey: string
-  onSubmitClick: () => void
-  contentTitle: string
-  handleTrackEmail?: () => void
+  useSecretKeyDownloadHook?: typeof useSecretKeyDownload
 }): JSX.Element => {
   const { t } = useTranslation()
+
+  const {
+    isSubmitEnabled,
+    hasCopiedKey,
+    handleCopyKey,
+    hasDownloadedKey,
+    handleDownloadKey,
+    mailToHref,
+  } = useSecretKeyDownloadHook({
+    secretKey,
+    formTitle,
+    formId,
+    onClose,
+    isFormStateValid,
+  })
 
   return (
     <>
