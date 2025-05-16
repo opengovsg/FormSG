@@ -32,7 +32,6 @@ import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScree
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import {
   CreateFormFlowStates,
-  CreateFormWizardContext,
   CreateFormWizardContextReturn,
   CreateFormWizardInputProps,
 } from './CreateFormWizardContext'
@@ -83,8 +82,6 @@ const Template: StoryFn<CreateFormModalProps> = (args) => {
 export const Default = Template.bind({})
 
 export const StorageModeAckScreen = () => {
-  const { register } = useForm<CreateFormWizardInputProps>()
-
   const secretKey = 'mock-secret-key'
 
   const { hasCopied: hasCopiedKey, onCopy } = useClipboard(secretKey)
@@ -99,25 +96,14 @@ export const StorageModeAckScreen = () => {
 
   const mockHook = useCallback(() => {
     return {
-      isLoading: false,
       isSubmitEnabled: false,
-      hasDownloaded: false,
       hasCopiedKey,
       handleCopyKey,
+      hasDownloadedKey: false,
       handleDownloadKey: () => console.log('download key'),
-      handleEmailKey: () => console.log('email key'),
       mailToHref: 'mailto:?subject=&body=',
-      handleDownloadAndNavigate: () => console.log('download and navigate'),
-      handleCreateStorageModeForm: () =>
-        Promise.resolve(console.log('create storage mode form')),
-      secretKey,
-      register,
-      handleCreateStorageModeOrMultirespondentForm: () =>
-        Promise.resolve(
-          console.log('create storage mode or multirespondent form'),
-        ),
     }
-  }, [handleCopyKey, hasCopiedKey, register])
+  }, [handleCopyKey, hasCopiedKey])
 
   return (
     <WorkspaceProvider
@@ -131,7 +117,7 @@ export const StorageModeAckScreen = () => {
         <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
           <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <ModalCloseButton />
-            <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
+            <SaveSecretKeyScreen useSecretKeyDownloadHook={mockHook} />
           </CreateFormWizardProvider>
         </ModalContent>
       </Modal>

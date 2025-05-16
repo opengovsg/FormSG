@@ -15,7 +15,7 @@ export enum CreateFormFlowStates {
   EmailModeCreation = 'emailModeCreation',
 }
 
-export type CreateFormWizardInputProps = {
+export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
   // Email form props
