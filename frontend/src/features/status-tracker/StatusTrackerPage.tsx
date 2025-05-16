@@ -11,7 +11,7 @@ import {
 } from '~features/login/LoginPageTemplate'
 
 import { useStatusTracker } from './queries'
-import { StatusTrackerStepper, TimelineRunSteps } from './StatusPoint'
+import { TimelineRunSteps } from './StatusPoint'
 
 export const StatusTrackerPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
@@ -28,13 +28,26 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const activeStep = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {
+    const stepNumber = index + 1
+
     if (index <= activeStep) {
+      const approvalStatus = submittedSteps[index].isApproval
+        ? submittedSteps[index].status
+        : undefined
+
       return {
-        name: step.name ? step.name : `Step ${index + 1}`,
+        name: step.name ? step.name : `Step ${stepNumber}`,
+        stepNumber: stepNumber,
         timestamp: submittedSteps[index].submittedAt,
+        isApproval: submittedSteps[index].isApproval,
+        approvalStatus: approvalStatus,
       }
     }
-    return { name: step.name ? step.name : `Step ${index + 1}` }
+
+    return {
+      name: step.name ? step.name : `Step ${index + 1}`,
+      stepNumber: stepNumber,
+    }
   })
 
   return (
@@ -48,10 +61,6 @@ export const StatusTrackerPage = (): JSX.Element => {
           <Box>
             <Flex direction="column">
               <Text textStyle="h4">Response ID: {data.responseId}</Text>
-              {/* <StatusTrackerStepper
-                steps={stepData}
-                activeStep={activeStep + 1}
-              /> */}
               <TimelineRunSteps steps={stepData} />
             </Flex>
           </Box>
