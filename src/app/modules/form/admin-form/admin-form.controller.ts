@@ -91,6 +91,7 @@ import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
+import { getSubmissionType } from '../form.utils'
 
 import {
   PREVIEW_CORPPASS_UID,
@@ -607,7 +608,15 @@ export const countFormSubmissions: ControllerHandler<
   }
 
   // Step 3: Has permissions, continue to retrieve submission counts.
-  return SubmissionService.getFormSubmissionsCount(formId, dateRange)
+  return formResult
+    .map(({ responseMode }) => getSubmissionType(responseMode))
+    .asyncAndThen((submissionType) =>
+      SubmissionService.getFormSubmissionsCount({
+        formId,
+        dateRange,
+        submissionType, // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
+      }),
+    )
     .map((count) => res.json(count))
     .mapErr((error) => {
       logger.error({

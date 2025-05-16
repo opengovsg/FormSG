@@ -40,6 +40,7 @@ import {
 } from '../core/core.errors'
 import { IntranetService } from '../intranet/intranet.service'
 import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
+import * as SubmissionService from '../submission/submission.service'
 
 import {
   FormDeletedError,
@@ -47,6 +48,7 @@ import {
   FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from './form.errors'
+import { getSubmissionType } from './form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -247,38 +249,38 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   // returning form without any actions.
   if (submissionLimit === null) return okAsync(form)
 
-  return ResultAsync.fromPromise(
-    SubmissionModel.countDocuments({
-      form: formId,
-    }).exec(),
-    (error) => {
+  return SubmissionService.getFormSubmissionsCount({
+    formId,
+    submissionType: getSubmissionType(form.responseMode), // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
+  })
+    .andThen((currentCount) => {
+      // Limit has not been hit yet, passthrough.
+      if (currentCount < submissionLimit) return okAsync(form)
+
+      logger.info({
+        message: 'Form reached maximum submission count, deactivating.',
+        meta: logMeta,
+      })
+
+      // Map success case back into error to display to client as form has been
+      // deactivated.
+      return deactivateForm(formId).andThen(() =>
+        errAsync(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
+        ),
+      )
+    })
+    .mapErr((error) => {
       logger.error({
         message: 'Error while counting submissions for form',
         meta: logMeta,
         error,
       })
       return transformMongoError(error)
-    },
-  ).andThen((currentCount) => {
-    // Limit has not been hit yet, passthrough.
-    if (currentCount < submissionLimit) return okAsync(form)
-
-    logger.info({
-      message: 'Form reached maximum submission count, deactivating.',
-      meta: logMeta,
     })
-
-    // Map success case back into error to display to client as form has been
-    // deactivated.
-    return deactivateForm(formId).andThen(() =>
-      errAsync(
-        new PrivateFormError(
-          'Submission made after form submission limit was reached',
-          form.title,
-        ),
-      ),
-    )
-  })
 }
 
 export const checkHasRespondentNotWhitelistedFailure = (

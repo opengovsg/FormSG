@@ -1,4 +1,8 @@
-import { FormPermission, FormResponseMode } from '../../../../shared/types'
+import {
+  FormPermission,
+  FormResponseMode,
+  SubmissionType,
+} from '../../../../shared/types'
 import {
   FormFieldSchema,
   FormLogicSchema,
@@ -181,3 +185,21 @@ export const getLogicById = (
  * See https://mathiasbynens.be/notes/javascript-escapes for regex on unicode escape sequences
  */
 export const UNICODE_ESCAPED_REGEX = /[^\\](\\\\)*\\u[0-9a-fA-F]{4}/
+
+/**
+ * Returns the submission type for a given form response mode
+ * @param responseMode the response mode of the form
+ * @returns the matching submission type for the given form response mode
+ */
+export const getSubmissionType = (
+  responseMode: FormResponseMode,
+): SubmissionType => {
+  switch (responseMode) {
+    case FormResponseMode.Encrypt:
+      return SubmissionType.Encrypt
+    case FormResponseMode.Multirespondent:
+      return SubmissionType.Multirespondent
+    case FormResponseMode.Email:
+      return SubmissionType.Email
+  }
+}
