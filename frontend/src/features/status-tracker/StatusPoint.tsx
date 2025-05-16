@@ -1,97 +1,29 @@
-import { MdCheck, MdClose, MdRadioButtonUnchecked } from 'react-icons/md'
-import {
-  Box,
-  Circle,
-  Divider,
-  Flex,
-  Icon,
-  Step,
-  StepDescription,
-  StepIcon,
-  StepIndicator,
-  StepNumber,
-  Stepper,
-  StepSeparator,
-  StepStatus,
-  StepTitle,
-  Text,
-} from '@chakra-ui/react'
+import { MdCheck, MdClose } from 'react-icons/md'
+import { Circle, Divider, Flex, Icon, Text } from '@chakra-ui/react'
 
-import { StepData } from '~shared/types'
-
-export const StatusTrackerStepper = ({
-  steps,
-  activeStep,
-}: {
-  steps: StepData[]
-  activeStep: number
-}): JSX.Element => {
-  return (
-    <Stepper
-      index={activeStep}
-      orientation="vertical"
-      gap="0rem"
-      lineHeight="2rem"
-    >
-      {steps.map((step, index) => (
-        <Step key={index}>
-          <Flex direction={'row'} align="center">
-            <StepIndicator>
-              <StepStatus
-                complete={<StepIcon />}
-                incomplete={<StepNumber />}
-                active={<StepNumber />}
-              />
-            </StepIndicator>
-
-            <Box flexShrink="0">
-              <StepTitle>{step.name}</StepTitle>
-              {step.timestamp ? (
-                <StepDescription>{step.timestamp}</StepDescription>
-              ) : null}
-            </Box>
-          </Flex>
-          <StepSeparator />
-        </Step>
-      ))}
-    </Stepper>
-  )
-}
-
-type TimelineStepProps = {
-  name: string
-  stepNumber: number
-  timestamp: string | undefined
-  isApprovalAndRejected?: boolean
-}
-
-enum StatusType {
-  PENDING,
-  COMPLETED,
-  REJECTED,
-}
+import { StepData, WorkflowStatus } from '~shared/types'
 
 const StatusIcon = ({
-  statusType,
+  workflowStatus,
   stepNumber,
 }: {
-  statusType: StatusType
+  workflowStatus: WorkflowStatus
   stepNumber: number
 }): JSX.Element => {
-  switch (statusType) {
-    case StatusType.COMPLETED:
+  switch (workflowStatus) {
+    case WorkflowStatus.COMPLETED || WorkflowStatus.APPROVED:
       return (
         <Circle size="2rem" bg="#05CC9A">
           <Icon as={MdCheck} color="#F5F6F8" boxSize="1rem" />
         </Circle>
       )
-    case StatusType.PENDING:
+    case WorkflowStatus.PENDING:
       return (
         <Circle size="2rem" border="2px solid" borderColor="#E5E9F8">
           <Text textStyle="caption-2">{stepNumber}</Text>
         </Circle>
       )
-    case StatusType.REJECTED:
+    case WorkflowStatus.REJECTED:
       return (
         <Circle size="2rem" bg="#C03434">
           <Icon as={MdClose} color="#F5F6F8" boxSize="1rem" />
@@ -108,15 +40,27 @@ const TimelineStep = ({
   name,
   stepNumber,
   timestamp,
-  isApprovalAndRejected,
-}: TimelineStepProps) => {
+  workflowStatus,
+}: StepData) => {
+  let approvalText
+  switch (workflowStatus) {
+    case WorkflowStatus.APPROVED:
+      approvalText = 'Approved'
+      break
+    case WorkflowStatus.REJECTED:
+      approvalText = 'Not Approved'
+      break
+    default:
+      approvalText = undefined
+      break
+  }
+
   return (
     <Flex alignItems="center" gap={4}>
-      <StatusIcon statusType={StatusType.COMPLETED} />
+      <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
       <Flex flexDir="column" gap="0.25rem">
-        <Text textStyle="caption-2" fontSize={12}>
-          {name}
-        </Text>
+        <Text textStyle="caption-2">{name}</Text>
+        <Text textStyle="caption-2">{approvalText}</Text>
         <Text textStyle="caption-2" textColor={'#848484'}>
           {timestamp}
         </Text>
@@ -125,29 +69,12 @@ const TimelineStep = ({
   )
 }
 
-// Used for public view
-export enum RunStepStatusType {
-  FORM_SUBMITTED = 1,
-  AWAITING_REVIEW,
-  PROCESSED,
-  APPROVED,
-  REJECTED,
-}
-
 export const TimelineRunSteps = ({
   steps,
 }: {
   steps: StepData[]
 }): JSX.Element[] => {
-  const timelineStepProps = steps.map((step, i) => {
-
-    return {
-      name: step.name,
-      timestamp: step.timestamp,
-    }
-  })
-
-  return timelineStepProps.map((props, i) => (
+  return steps.map((step, i) => (
     <>
       {i !== 0 && (
         <Divider
@@ -162,7 +89,7 @@ export const TimelineRunSteps = ({
           mb="0.25rem"
         />
       )}
-      <TimelineStep {...props} />
+      <TimelineStep {...step} />
     </>
   ))
 }

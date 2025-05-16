@@ -4,6 +4,5 @@ export type StepData = {
   name: string
   stepNumber: number
   timestamp?: string
-  isApproval?: boolean
-  workflowStatus?: WorkflowStatus
+  workflowStatus: WorkflowStatus
 }

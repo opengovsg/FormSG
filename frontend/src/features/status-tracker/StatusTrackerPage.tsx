@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { Box, Flex, Text } from '@chakra-ui/react'
 
-import { StepData } from '~shared/types'
+import { StepData, WorkflowStatus } from '~shared/types'
 
 import {
   BackgroundBox,
@@ -28,25 +28,28 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const activeStep = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {
+    const name = step.name ? step.name : `Step ${index + 1}`
     const stepNumber = index + 1
+    const workflowStatus =
+      index <= activeStep
+        ? submittedSteps[index].isApproval
+          ? submittedSteps[index].status
+          : WorkflowStatus.COMPLETED
+        : WorkflowStatus.PENDING
 
     if (index <= activeStep) {
-      const approvalStatus = submittedSteps[index].isApproval
-        ? submittedSteps[index].status
-        : undefined
-
       return {
-        name: step.name ? step.name : `Step ${stepNumber}`,
+        name: name,
         stepNumber: stepNumber,
         timestamp: submittedSteps[index].submittedAt,
-        isApproval: submittedSteps[index].isApproval,
-        approvalStatus: approvalStatus,
+        workflowStatus: workflowStatus,
       }
     }
 
     return {
-      name: step.name ? step.name : `Step ${index + 1}`,
+      name: name,
       stepNumber: stepNumber,
+      workflowStatus: workflowStatus,
     }
   })
 
