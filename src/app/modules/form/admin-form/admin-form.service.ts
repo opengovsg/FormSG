@@ -36,6 +36,7 @@ import {
   FormPermission,
   FormResponseMode,
   FormSettings,
+  FormStatus,
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
@@ -104,6 +105,7 @@ import {
   getFormFieldById,
   getFormFieldIndexById,
   getLogicById,
+  isFormEmailMode,
   isFormEncryptMode,
 } from '../form.utils'
 
@@ -1863,6 +1865,19 @@ export const updateFormSettings = (
     return errAsync(
       new MalformedParametersError('Webhooks not supported on MRF'),
     )
+  }
+
+  if (isFormEmailMode(originalForm)) {
+    if (
+      originalForm.isForceConvertToStorageMode &&
+      body.status === FormStatus.Public
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Operation denied: You must convert your form to storage mode before you may open your form to responses.',
+        ),
+      )
+    }
   }
 
   // Don't allow emails updates or single response per submitterId

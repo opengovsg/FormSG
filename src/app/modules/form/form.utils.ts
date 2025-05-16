@@ -6,6 +6,7 @@ import {
 import {
   FormFieldSchema,
   FormLogicSchema,
+  IEmailFormSchema,
   IEncryptedFormSchema,
   IFormHasEmailSchema,
   IFormSchema,
@@ -37,6 +38,17 @@ export const transformEmails = (v: string | string[]): string[] => {
   } else {
     return transformEmailString(v)
   }
+}
+
+/**
+ * Typeguard to check if given form is an email mode form.
+ * @param form the form to check
+ * @returns true if form is email mode form, false otherwise.
+ */
+export const isFormEmailMode = (
+  form: IFormSchema | IPopulatedForm,
+): form is IEmailFormSchema => {
+  return form.responseMode === FormResponseMode.Email
 }
 
 /**
