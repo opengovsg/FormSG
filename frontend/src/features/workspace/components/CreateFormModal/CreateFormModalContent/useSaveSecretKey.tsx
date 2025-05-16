@@ -10,7 +10,7 @@ import { useClipboard } from '@chakra-ui/react'
 import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
-/**, SaveSecretKeyScreenInputProps
+/**
  * Contains common logic for handling secret key mailTo, copy, download
  * and whether to allow user to submit (such as verifying that the user has downloaded the secret key).
  */
