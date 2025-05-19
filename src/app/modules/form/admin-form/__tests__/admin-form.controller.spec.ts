@@ -74,6 +74,7 @@ import {
   FormSettings,
   FormStatus,
   LogicDto,
+  SubmissionType,
 } from '../../../../../../shared/types'
 import * as CryptoUtil from '../../../../../../shared/utils/crypto'
 import ParsedResponsesObject from '../../../submission/ParsedResponsesObject.class'
@@ -1779,6 +1780,73 @@ describe('admin-form.controller', () => {
       })
       expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(expectedSubmissionCount)
+    })
+
+    it('should pass the correct submission type to query for based on given form response mode', async () => {
+      const mockReqWithQuery = merge({}, MOCK_REQ)
+      const mockRes = expressHandler.mockResponse()
+
+      const MOCK_STORAGE_MODE_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Encrypt,
+      } as IPopulatedForm
+      const MOCK_EMAIL_MODE_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Email,
+      } as IPopulatedForm
+      const MOCK_MULTI_RESPONDENT_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Multirespondent,
+      } as IPopulatedForm
+
+      // Mock return count
+      const expectedSubmissionCount = 12
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+      MockAuthService.getFormAfterPermissionChecks
+        .mockReturnValueOnce(okAsync(MOCK_STORAGE_MODE_FORM as IPopulatedForm))
+        .mockReturnValueOnce(okAsync(MOCK_EMAIL_MODE_FORM as IPopulatedForm)) // Email mode form
+        .mockReturnValueOnce(
+          okAsync(MOCK_MULTI_RESPONDENT_FORM as IPopulatedForm),
+        )
+      MockSubmissionService.getFormSubmissionsCount
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+
+      // Act - Invoke 3 times to test each form response mode
+      for (let i = 0; i < 3; i++) {
+        await AdminFormController.countFormSubmissions(
+          mockReqWithQuery,
+          mockRes,
+          jest.fn(),
+        )
+      }
+      // Assert
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(1, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Encrypt,
+        dateRange: {},
+      })
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(2, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Email,
+        dateRange: {},
+      })
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(3, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Multirespondent,
+        dateRange: {},
+      })
     })
 
     it('should return 403 when ForbiddenFormError is returned when verifying user permissions', async () => {
