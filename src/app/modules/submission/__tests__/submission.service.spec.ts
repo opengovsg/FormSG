@@ -175,6 +175,107 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
+    it('should return correct all form counts when not providing submission type', async () => {
+      // Arrange
+      const encryptSubmissionCount = 4
+      const emailSubmissionCount = 2
+      const multirespondentSubmissionCount = 3
+
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = times(emailSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Email,
+          form: MOCK_FORM_ID,
+          responseHash: 'hash',
+          responseSalt: 'salt',
+          created: new Date('2019-01-01'),
+          recipientEmails: [],
+        }),
+      )
+      const subMultirespondentPromise = times(
+        multirespondentSubmissionCount,
+        () =>
+          Submission.create({
+            submissionType: SubmissionType.Multirespondent,
+            form: MOCK_FORM_ID,
+            workflowStep: 0,
+            version: 1,
+            encryptedContent: 'some random encrypted content',
+            encryptedSubmissionSecretKey:
+              'some random encrypted submission secret key',
+            submissionPublicKey: 'some random submission public key',
+          }),
+      )
+      await Promise.all([
+        ...subEncryptPromise,
+        ...subEmailPromise,
+        ...subMultirespondentPromise,
+      ])
+
+      const expectedSubmissionCount =
+        encryptSubmissionCount +
+        emailSubmissionCount +
+        multirespondentSubmissionCount
+
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return correct form counts when submission type is provided', async () => {
+      // Arrange
+      const expectedSubmissionCount = 4
+      const subEncryptPromise = times(expectedSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = Submission.create({
+        submissionType: SubmissionType.Email,
+        form: MOCK_FORM_ID,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        created: new Date('2019-01-01'),
+        recipientEmails: [],
+      })
+      const subMultirespondentPromise = Submission.create({
+        submissionType: SubmissionType.Multirespondent,
+        form: MOCK_FORM_ID,
+        workflowStep: 0,
+        version: 1,
+        encryptedContent: 'some random encrypted content',
+        encryptedSubmissionSecretKey:
+          'some random encrypted submission secret key',
+        submissionPublicKey: 'some random submission public key',
+      })
+      await Promise.all([
+        ...subEncryptPromise,
+        subEmailPromise,
+        subMultirespondentPromise,
+      ])
+
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        submissionType: SubmissionType.Encrypt,
+      })
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
     it('should return correct form counts in range when date range is provided', async () => {
       // Arrange
       const expectedSubmissionCount = 4
