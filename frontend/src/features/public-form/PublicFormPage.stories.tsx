@@ -836,7 +836,7 @@ ThankYouPage.parameters = {
 ThankYouPage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   await waitFor(async () => {
-    await expect(canvas.getByText(/yes\/no/i)).toBeInTheDocument
+    await expect(canvas.getByText(/yes\/no/i)).toBeInTheDocument()
   })
   await waitFor(async () => {
     const noQuestionChoice = canvas.getByRole('button', {
