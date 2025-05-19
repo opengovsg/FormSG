@@ -2,7 +2,12 @@ import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
-import { UseDisclosureReturn } from '@chakra-ui/react'
+import {
+  Modal,
+  ModalContent,
+  useBreakpointValue,
+  UseDisclosureReturn,
+} from '@chakra-ui/react'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -24,6 +29,7 @@ export interface EmailModeConvertModalProps
 }
 
 export const EmailModeConvertModal = ({
+  isOpen,
   onClose,
   formTitle,
   formId,
@@ -47,6 +53,12 @@ export const EmailModeConvertModal = ({
   })
 
   const toast = useToast()
+
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'full',
+  })
 
   const convertEmailToStorageModeMutation = useMutation(
     convertEmailToStorageMode,
@@ -76,21 +88,25 @@ export const EmailModeConvertModal = ({
   )
 
   return (
-    <SaveSecretKeyContent
-      contentTitle={t('features.adminForm.modals.emailModeMigration.title')}
-      registerStorageAck={register}
-      isLoading={convertEmailToStorageModeMutation.isLoading}
-      secretKey={secretKey}
-      formTitle={formTitle}
-      formId={formId}
-      onClose={onClose}
-      isFormStateValid={isFormStateValid}
-      onSubmitClick={() => {
-        convertEmailToStorageModeMutation.mutate({ formId, publicKey })
-      }}
-      handleTrackEmail={() =>
-        trackClickSecretKeyMailToEmailToStorageConvertedForm(formId)
-      }
-    />
+    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
+      <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+        <SaveSecretKeyContent
+          contentTitle={t('features.adminForm.modals.emailModeMigration.title')}
+          registerStorageAck={register}
+          isLoading={convertEmailToStorageModeMutation.isLoading}
+          secretKey={secretKey}
+          formTitle={formTitle}
+          formId={formId}
+          onClose={onClose}
+          isFormStateValid={isFormStateValid}
+          onSubmitClick={() => {
+            convertEmailToStorageModeMutation.mutate({ formId, publicKey })
+          }}
+          handleTrackEmail={() =>
+            trackClickSecretKeyMailToEmailToStorageConvertedForm(formId)
+          }
+        />
+      </ModalContent>
+    </Modal>
   )
 }
