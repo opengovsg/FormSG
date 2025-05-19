@@ -1003,7 +1003,7 @@ describe('Form Model', () => {
 
     describe('Email form schema', () => {
       const EMAIL_FORM_DEFAULTS = merge(
-        { responseMode: 'email' },
+        { responseMode: 'email', isForceConvertToStorageMode: false },
         FORM_DEFAULTS,
       )
 

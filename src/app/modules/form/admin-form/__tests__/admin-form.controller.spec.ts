@@ -1719,9 +1719,12 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), {
-        startDate: undefined,
-        endDate: undefined,
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: {
+          startDate: undefined,
+          endDate: undefined,
+        },
       })
       expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(expectedSubmissionCount)
@@ -1770,7 +1773,10 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), expectedDateRange)
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: expectedDateRange,
+      })
       expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(expectedSubmissionCount)
     })
@@ -2041,9 +2047,12 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), {
-        startDate: undefined,
-        endDate: undefined,
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: {
+          startDate: undefined,
+          endDate: undefined,
+        },
       })
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({

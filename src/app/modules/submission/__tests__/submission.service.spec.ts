@@ -166,9 +166,9 @@ describe('submission.service', () => {
       await Promise.all(subPromises)
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -217,10 +217,10 @@ describe('submission.service', () => {
       ])
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        { startDate: '2019-01-01', endDate: '2019-01-01' },
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: { startDate: '2019-01-01', endDate: '2019-01-01' },
+      })
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -245,10 +245,10 @@ describe('submission.service', () => {
 
       // Act
       const queryDateRange = { startDate: '2020-01-01', endDate: '2020-01-01' }
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        queryDateRange,
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: queryDateRange,
+      })
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({
@@ -265,10 +265,13 @@ describe('submission.service', () => {
 
     it('should return MalformedParametersError when date range provided is malformed', async () => {
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        { startDate: 'some malformed start date', endDate: '2020-01-01' },
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: {
+          startDate: 'some malformed start date',
+          endDate: '2020-01-01',
+        },
+      })
 
       // Assert
       expect(countSpy).not.toHaveBeenCalled()
@@ -288,9 +291,9 @@ describe('submission.service', () => {
       )
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({

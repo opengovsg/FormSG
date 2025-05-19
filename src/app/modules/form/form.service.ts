@@ -253,6 +253,14 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
     formId,
     submissionType: getSubmissionType(form.responseMode), // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
   })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while counting submissions for form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    })
     .andThen((currentCount) => {
       // Limit has not been hit yet, passthrough.
       if (currentCount < submissionLimit) return okAsync(form)
@@ -272,14 +280,6 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
           ),
         ),
       )
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while counting submissions for form',
-        meta: logMeta,
-        error,
-      })
-      return transformMongoError(error)
     })
 }
 
