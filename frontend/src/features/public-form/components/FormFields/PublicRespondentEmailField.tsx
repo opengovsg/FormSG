@@ -32,7 +32,7 @@ export const PublicRespondentEmailField = (): JSX.Element => {
   } = useFormContext<{ respondent_email_field: string[] }>()
 
   return (
-    <FormControl isInvalid={!!errors?.[RESPONDENT_EMAIL_FIELD_ID]}>
+    <FormControl isInvalid={!!errors?.[RESPONDENT_EMAIL_FIELD_ID]?.message}>
       <Controller
         name={RESPONDENT_EMAIL_FIELD_ID}
         control={control}
