@@ -485,7 +485,13 @@ export const handleStripeEvent = (
             if (processedEventType === ProcessEventType.DuplicateEvent) {
               // If the event was a duplicate, we do not need to send the
               // confirmation email again.
-              return okAsync(undefined)
+              // TODO: FRM-2017 Removing this temporarily as we found that there were
+              // instances where webhooks were not sent as a result
+              logger.warn({
+                message: 'Duplicated Event found',
+                meta: logMeta,
+              })
+              // return okAsync(undefined)
             }
 
             return PaymentsService.performPaymentPostSubmissionActions(
