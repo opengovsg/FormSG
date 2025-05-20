@@ -53,7 +53,7 @@ export const SaveSecretKeyScreen = ({
     <SaveSecretKeyContent
       contentTitle={t('features.workspace.modals.create.secretKey.title')}
       registerStorageAck={
-        // HACK: Since CreateFormWizardInputProps must have storageAck, we can cast it to SaveSecretKeyFormInput.
+        // NOTE: Since CreateFormWizardInputProps has storageAck field, we can cast it to SaveSecretKeyFormInput.
         register as unknown as UseFormRegister<SaveSecretKeyFormInput>
       }
       isLoading={isLoading}
