@@ -782,11 +782,6 @@ const _createSubmission = async ({
     responseMetadata,
   }
 
-  logger.info({
-    message: 'Sending admin notification mail',
-    meta: logMetaWithSubmission,
-  })
-
   const emailData = new SubmissionEmailObj(
     emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
@@ -806,6 +801,11 @@ const _createSubmission = async ({
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
   if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    logger.info({
+      message: 'Sending admin notification mail',
+      meta: logMetaWithSubmission,
+    })
+
     void MailService.sendSubmissionToAdmin({
       replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
       form,
