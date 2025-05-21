@@ -64,12 +64,14 @@ export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
     pb={{ base: '1.5rem', lg: '3rem' }}
     flexDir="column"
     alignItems={{ base: 'center', lg: 'flex-end' }}
-    bgGradient={{
-      base: 'linear(to-b, primary.500 100%, primary.500 100%)',
-    }}
     justifyContent="center"
     children={children}
-    mx={{ base: '-1.5rem', lg: '0' }} // negative horizontal margin matching the container padding
+    bgGradient={{
+      base: 'linear(to-b, primary.500 100%, primary.500 100%)',
+      md: 'linear(to-b, primary.500 20.5rem, transparent 0)', // match BackgroundBox
+      lg: 'linear(to-r, primary.500 calc(41.6667% - 4px), transparent 0)', // match BackgroundBox
+    }}
+    mx={{ base: '-1.5rem', md: '-1.75rem', lg: '-2rem' }} // negative horizontal margin matching the container padding
   />
 )
 
