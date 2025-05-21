@@ -61,6 +61,7 @@ type FormDefaultableKey =
   | 'endPage'
   | 'hasCaptcha'
   | 'hasIssueNotification'
+  | 'hasRespondentCopy'
   | 'authType'
   | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
@@ -264,6 +265,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   permissionList: NonNullable<T['permissionList']>
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
+  hasRespondentCopy: NonNullable<T['hasRespondentCopy']>
   authType: NonNullable<T['authType']>
   isSubmitterIdCollectionEnabled: NonNullable<
     T['isSubmitterIdCollectionEnabled']

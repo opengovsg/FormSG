@@ -836,7 +836,7 @@ ThankYouPage.parameters = {
 ThankYouPage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
   await waitFor(async () => {
-    await expect(canvas.getByText(/yes\/no/i)).toBeInTheDocument
+    await expect(canvas.getByText(/yes\/no/i)).toBeInTheDocument()
   })
   await waitFor(async () => {
     const noQuestionChoice = canvas.getByRole('button', {
@@ -862,4 +862,19 @@ ThankYouPage.play = async ({ canvasElement }) => {
       timeout: 5000,
     },
   )
+}
+
+export const WithRespondentCopy = Template.bind({})
+WithRespondentCopy.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          hasRespondentCopy: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
 }

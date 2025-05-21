@@ -430,6 +430,45 @@ const sendMrfOutcomeEmails = ({
   )
 }
 
+const sendMrfRespondentCopyEmails = ({
+  form,
+  responses,
+  submissionId,
+  attachments,
+  respondentEmails,
+}: {
+  form: IPopulatedMultirespondentForm
+  responses: FieldResponsesV3
+  submissionId: string
+  attachments?: IAttachmentInfo[]
+  respondentEmails: string[]
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+  const formQuestionAnswers = getQuestionTitleAnswerString({
+    formFields: form.form_fields,
+    responses,
+  })
+
+  return MailService.sendMrfRespondentCopyEmail({
+    emails: respondentEmails,
+    formId: form._id,
+    formTitle: form.title,
+    responseId: submissionId,
+    formQuestionAnswers,
+    attachments: attachments,
+  }).orElse((error) => {
+    logger.error({
+      message: 'Failed to send respondent copy email',
+      meta: {
+        action: 'sendMrfRespondentCopyEmail',
+        formId: form._id,
+        submissionId,
+      },
+      error,
+    })
+    return errAsync(error)
+  })
+}
+
 const saveAttachmentsToDbIfExists = ({
   formId,
   attachments,
@@ -567,12 +606,14 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
+  respondentEmails,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
+  respondentEmails?: string[]
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
@@ -583,6 +624,23 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     currentWorkflowStep: currentStepNumber,
     formId: form._id,
     submissionId,
+  }
+
+  if (respondentEmails) {
+    sendMrfRespondentCopyEmails({
+      form,
+      responses,
+      submissionId,
+      attachments,
+      respondentEmails,
+    }).mapErr((error) => {
+      logger.error({
+        message: 'Send multirespondent respondent copy email error',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
   }
 
   return sendNextStepEmail({
@@ -777,6 +835,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
+  respondentEmails,
 }: {
   submissionId: string
   form: IPopulatedMultirespondentForm
@@ -784,6 +843,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
+  respondentEmails?: string[]
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -799,6 +859,22 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentWorkflowStep: currentStepNumber,
     formId: form._id,
     submissionId,
+  }
+
+  if (respondentEmails) {
+    sendMrfRespondentCopyEmails({
+      form,
+      responses,
+      submissionId,
+      attachments,
+      respondentEmails,
+    }).mapErr((error) => {
+      logger.error({
+        message: 'Send multirespondent respondent copy email error',
+        meta: logMeta,
+        error,
+      }) // return nothing; since successful submission does not depend on this respondent copy emails sent
+    })
   }
 
   const isStepRejectedResult = checkIsStepRejected({

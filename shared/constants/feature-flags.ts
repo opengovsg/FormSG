@@ -14,4 +14,5 @@ export const featureFlags = {
   mfb: 'magic-form-builder' as const,
   mfbVision: 'magic-form-builder-vision' as const,
   guardduty: 'guardduty' as const,
+  respondentCopy: 'respondent-copy' as const,
 }

@@ -24,6 +24,8 @@ import {
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
 
+const respondentCopyHeading = 'Thank you for submitting this form'
+
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
   NOT_APPROVED = 'Not approved' 
@@ -39,16 +41,23 @@ export type WorkflowEmailData = {
   responseId: string
   formQuestionAnswers: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
+  respondentCopy?: boolean | undefined
 }
 
 export const MrfWorkflowCompletionEmail = ({
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41', 
   formQuestionAnswers = [], 
-  outcome
+  outcome,
+  respondentCopy,
 }: WorkflowEmailData): JSX.Element => {
-  const headingText =  
+  let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
+  
+  // if is respondent copy, replace header
+  if (respondentCopy) {
+    headingText = respondentCopyHeading
+  }
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>

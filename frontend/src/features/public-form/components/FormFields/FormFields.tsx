@@ -2,9 +2,14 @@ import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isEmpty, times } from 'lodash'
 
-import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
+import {
+  featureFlags,
+  PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+  RESPONDENT_EMAIL_FIELD_ID,
+} from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
 import { AttachmentFieldResponseV3, FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -34,6 +39,7 @@ import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/Payme
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
+import { PublicRespondentEmailField } from './PublicRespondentEmailField'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
@@ -62,6 +68,9 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  // TODO: (respondent copy): Remove when respondent copy is out of beta
+  const isRespondentCopyEnabled = useFeatureIsOn(featureFlags.respondentCopy)
+
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
 
@@ -164,6 +173,8 @@ export const FormFields = ({
     }
   }
 
+  defaultFormValues[RESPONDENT_EMAIL_FIELD_ID] = []
+
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
@@ -246,6 +257,12 @@ export const FormFields = ({
             </Box>
           )}
         <PublicFormPaymentResumeModal />
+        {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
+        {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
+          <Box mt="2.5rem">
+            <PublicRespondentEmailField />
+          </Box>
+        ) : null}
         <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}

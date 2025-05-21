@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
+
 import {
   DateString,
   FormResponseMode,
@@ -145,6 +147,7 @@ export const performEncryptPostSubmissionActions = (
   responses: FieldResponse[],
   emailData?: SubmissionEmailObj,
   attachments?: IAttachmentInfo[],
+  respondentEmails?: string[],
 ): ResultAsync<
   true,
   | FormNotFoundError
@@ -171,16 +174,24 @@ export const performEncryptPostSubmissionActions = (
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
-      // Send Email Confirmations
+      const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
+        ? respondentEmails?.map((val) => {
+            return {
+              email: val,
+              includeFormSummary: true,
+            }
+          })
+        : []
+
       return sendEmailConfirmations({
         form,
         submission,
         attachments,
         responsesData: emailData?.autoReplyData,
-        recipientData: extractEmailConfirmationData(
-          responses,
-          form.form_fields,
-        ),
+        recipientData: [
+          ...extractEmailConfirmationData(responses, form.form_fields),
+          ...respondentCopyEmailData,
+        ],
       }).mapErr((error) => {
         logger.error({
           message: 'Error while sending email confirmations',

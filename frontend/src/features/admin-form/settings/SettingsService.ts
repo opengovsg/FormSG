@@ -129,6 +129,14 @@ export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
   return updateFormSettings(formId, { emails: newEmails })
 }
 
+export const updateFormRespondentCopy: UpdateFormFn<
+  'hasRespondentCopy'
+> = async (formId, newHasRespondentCopy) => {
+  return updateFormSettings(formId, {
+    hasRespondentCopy: newHasRespondentCopy,
+  })
+}
+
 export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   MrfEmailNotificationSettings
 > = async (formId, newSettings) => {

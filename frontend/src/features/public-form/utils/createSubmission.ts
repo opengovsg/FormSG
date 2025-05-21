@@ -84,6 +84,7 @@ type CreateEmailSubmissionFormDataArgs = {
   formFields: FormFieldDto[]
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
+  respondentEmails?: string[]
 }
 
 type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {

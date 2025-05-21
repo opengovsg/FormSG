@@ -179,6 +179,7 @@ export interface FormBase {
   authType: FormAuthType
   isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean
+  hasRespondentCopy: boolean
 
   status: FormStatus
 

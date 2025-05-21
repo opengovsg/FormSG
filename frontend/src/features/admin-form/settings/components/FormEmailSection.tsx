@@ -7,7 +7,7 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { Box, FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -26,8 +26,12 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
+import { useUser } from '~features/user/queries'
+
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
+
+import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
 
 interface EmailFormSectionProps {
   isDisabled: boolean
@@ -96,6 +100,10 @@ export const FormEmailSection = ({
   isDisabled,
   settings,
 }: EmailFormSectionProps): JSX.Element => {
+  //TODO: (Respondent Copy): Remove isTest and user when respondent copy is out of beta
+  const { user } = useUser()
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
   const { t } = useTranslation()
   const initialEmailSet = useMemo(
     () => new Set(settings.emails),
@@ -154,6 +162,13 @@ export const FormEmailSection = ({
             </FormLabel.Description>
           ) : null}
         </FormControl>
+        {isTest || user?.betaFlags?.respondentCopy ? (
+          <FormControl isDisabled={isDisabled}>
+            <Box mt={'1.5rem'}>
+              <RespondentCopyToggle />
+            </Box>
+          </FormControl>
+        ) : null}
       </FormProvider>
     </>
   )
