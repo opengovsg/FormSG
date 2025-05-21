@@ -80,7 +80,9 @@ const TimelineStep = ({
       <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
       <Flex flexDir="column" gap="0.25rem">
         <Text textStyle="caption-2">{name}</Text>
-        <Text textStyle="caption-2">{approvalText}</Text>
+        <Text textStyle="caption-2" textColor={'#848484'}>
+          {approvalText}
+        </Text>
         <Text textStyle="caption-2" textColor={'#848484'}>
           {submissionTimestamp}
         </Text>

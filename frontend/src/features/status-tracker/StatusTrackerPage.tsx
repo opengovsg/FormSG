@@ -35,7 +35,7 @@ const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
     // colSpan={{ base: '-1', md: 12, lg: 5 }}
-    pl={{ base: '1.5rem', lg: '8%' }}
+    pl={{ base: '1.5rem', lg: '0%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
     pt={{ base: '1.5rem', lg: '3rem' }}
     pb={{ base: '1.5rem', lg: '3rem' }}
