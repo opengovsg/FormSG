@@ -153,6 +153,7 @@ export type SubmitEmailFormArgs = {
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
+  respondentEmails?: string[]
   selectedFormLanguage?: Language
 }
 
@@ -234,6 +235,7 @@ export const submitStorageModeFormWithFetch = async ({
   responseMetadata,
   paymentProducts,
   payments,
+  respondentEmails,
   fieldIdToQuarantineKeyMap,
 }: SubmitStorageFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
@@ -250,6 +252,7 @@ export const submitStorageModeFormWithFetch = async ({
       paymentReceiptEmail,
       paymentProducts,
       payments,
+      respondentEmails,
       version: VIRUS_SCANNER_SUBMISSION_VERSION,
     },
     fieldIdToQuarantineKeyMap,
@@ -287,6 +290,7 @@ export const submitStorageModeForm = async ({
   responseMetadata,
   paymentProducts,
   payments,
+  respondentEmails,
   fieldIdToQuarantineKeyMap,
   selectedFormLanguage = Language.ENGLISH,
 }: SubmitStorageFormWithVirusScanningArgs) => {
@@ -304,6 +308,7 @@ export const submitStorageModeForm = async ({
       paymentReceiptEmail,
       paymentProducts,
       payments,
+      respondentEmails,
       version: VIRUS_SCANNER_SUBMISSION_VERSION,
     },
     fieldIdToQuarantineKeyMap,
@@ -375,6 +380,7 @@ export const submitMultirespondentForm = async ({
   captchaType = '',
   responseMetadata,
   fieldIdToQuarantineKeyMap,
+  respondentEmails,
   selectedFormLanguage = Language.ENGLISH,
 }: SubmitMultirespondentFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
@@ -389,6 +395,7 @@ export const submitMultirespondentForm = async ({
       formInputs: filteredInputs,
       responseMetadata,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+      respondentEmails: respondentEmails,
     },
     fieldIdToQuarantineKeyMap,
   )
@@ -419,6 +426,7 @@ export const updateMultirespondentSubmission = async ({
   responseMetadata,
   fieldIdToQuarantineKeyMap,
   submissionSecretKey,
+  respondentEmails,
 }: SubmitMultirespondentFormWithVirusScanningArgs & {
   submissionId?: string
 }) => {
@@ -435,6 +443,7 @@ export const updateMultirespondentSubmission = async ({
       responseMetadata,
       submissionSecretKey,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+      respondentEmails: respondentEmails,
     },
     fieldIdToQuarantineKeyMap,
   )

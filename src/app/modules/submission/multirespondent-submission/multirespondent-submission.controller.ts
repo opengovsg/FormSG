@@ -154,6 +154,7 @@ const submitMultirespondentForm = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
+    respondentEmails: req.formsg.respondentEmails,
   })
 }
 
@@ -241,6 +242,7 @@ const updateMultirespondentSubmission = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
+    respondentEmails: req.formsg.respondentEmails,
   })
 }
 

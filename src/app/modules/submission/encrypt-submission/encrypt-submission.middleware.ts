@@ -157,6 +157,7 @@ export const validateStorageSubmissionParams = celebrate({
         .positive()
         .max(paymentConfig.maxPaymentAmountCents),
     }),
+    respondentEmails: Joi.array().items(Joi.string()),
     version: Joi.number().required(),
   }),
 })
@@ -634,6 +635,7 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {
     responseMode: FormResponseMode.Encrypt,
+    respondentEmails: req.body.respondentEmails, // retrive and include respondent copy emails into formsg
   } as EncryptFormLoadedDto
 
   // Step 2: Retrieve feature flags
@@ -696,6 +698,5 @@ export const createFormsgAndRetrieveForm = async (
   }
 
   req.formsg = formsg
-
   return next()
 }

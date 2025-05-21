@@ -37,6 +37,7 @@ export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
   paymentProducts?: Array<ProductItem>
   paymentReceiptEmail?: string
   payments?: PaymentFieldsDto
+  respondentEmails?: string[]
   version: number
 }
 
@@ -45,6 +46,7 @@ export type EncryptFormLoadedDto = {
   featureFlags: string[]
   formDef: IPopulatedForm
   encryptedFormDef: IPopulatedEncryptedForm
+  respondentEmails?: string[]
 }
 
 export type FormFilteredResponseDto = EncryptFormLoadedDto & {

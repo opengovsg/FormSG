@@ -746,6 +746,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         enum: Object.values(Language),
         require: false,
       },
+
+      hasRespondentCopy: {
+        type: Boolean,
+        default: false,
+      },
     },
     formSchemaOptions,
   )

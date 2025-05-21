@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
@@ -9,6 +10,7 @@ import {
   FormSettings,
   FormStatus,
   FormSupportedLanguages,
+  MultirespondentFormSettings,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
@@ -37,6 +39,7 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormRespondentCopy,
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
@@ -50,6 +53,7 @@ import {
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -296,6 +300,20 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormRespondentCopy = useMutation(
+    (nextHasRespondentCopy: boolean) =>
+      updateFormRespondentCopy(formId, nextHasRespondentCopy),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `${t('features.adminForm.toasts.respondentCopy.successBefore')} ${newData.hasRespondentCopy ? '' : t('features.adminForm.toasts.respondentCopy.disabled')}${t('features.adminForm.toasts.respondentCopy.successAfter')}`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormEsrvcId = useMutation(
     (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
     {
@@ -511,6 +529,7 @@ export const useMutateFormSettings = () => {
     mutateFormIssueNotification,
     mutateFormEmails,
     mutateMrfEmailNotifications,
+    mutateFormRespondentCopy,
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,

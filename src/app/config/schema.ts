@@ -1,6 +1,6 @@
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import awsInfo from 'aws-info'
-import convict, { Schema } from 'convict'
+import convict, { Config, Path, Schema } from 'convict'
 import { email, url } from 'convict-format-with-validator'
 import { isNil } from 'lodash'
 import mongodbUri from 'mongodb-uri'
@@ -13,6 +13,35 @@ import {
   IOptionalVarsSchema,
   IProdOnlyVarsSchema,
 } from '../../types'
+
+const UNDEFINED_PLACEHOLDER_STRING = '__UNDEFINED__'
+
+/**
+ * Resets the values of the optional vars to the application defaults if they are set to the undefined placeholder string in SSM parameter store.
+ *
+ * @generic <T> - The convict schema type.
+ * @param config - The convict config object.
+ * @param optionalValuesFromSsm - The paths to the optional values which may be passed from SSM parameter store and may be set to UNDEFINED_PLACEHOLDER_STRING.
+ *
+ * RATIONALE:
+ * Environment variables for optional values may be set to undefined so that the default convict schema fallback is used.
+ * Since SSM parameter store does not support undefined values, a placeholder string UNDEFINED_PLACEHOLDER_STRING is used.
+ */
+export const resetToApplicationDefaultForUndefinedSsmValues = <T>(
+  config: Config<T>,
+  optionalValuesFromSsm: Path<T>[],
+) => {
+  optionalValuesFromSsm.forEach((value) => {
+    if (config.get(value) === UNDEFINED_PLACEHOLDER_STRING) {
+      config.reset(value)
+    }
+  })
+  return config
+}
+export const optionalValuesFromSsm = [
+  'appConfig.description',
+  'appConfig.twitterImage',
+] as Path<IOptionalVarsSchema>[]
 
 convict.addFormat(url)
 convict.addFormat(email)

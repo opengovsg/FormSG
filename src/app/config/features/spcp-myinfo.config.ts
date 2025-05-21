@@ -1,11 +1,12 @@
 import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
-import convict, { Schema } from 'convict'
+import convict, { Path, Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
 import {
   validateIacStringParam,
   validateNonIacStringParam,
 } from '../../../app/utils/iac'
+import { resetToApplicationDefaultForUndefinedSsmValues } from '../schema'
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
 const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
@@ -54,6 +55,8 @@ type IMyInfoConfig = {
 export type ISpcpMyInfo = ISpcpConfig & IMyInfoConfig
 
 convict.addFormat(url)
+
+const optionalValuesFromSsm: Path<ISpcpMyInfo>[] = ['spcpCookieDomain']
 
 const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   isSPMaintenance: {
@@ -250,6 +253,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
   },
 }
 
-export const spcpMyInfoConfig = convict(spcpMyInfoSchema)
+const spcpMyInfoConfigIntermediate = convict(spcpMyInfoSchema)
+resetToApplicationDefaultForUndefinedSsmValues(
+  spcpMyInfoConfigIntermediate,
+  optionalValuesFromSsm,
+)
+
+export const spcpMyInfoConfig = spcpMyInfoConfigIntermediate
   .validate({ allowed: 'strict' })
   .getProperties()

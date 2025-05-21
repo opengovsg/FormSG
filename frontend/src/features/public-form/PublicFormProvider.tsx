@@ -22,6 +22,7 @@ import {
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+  RESPONDENT_EMAIL_FIELD_ID,
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
@@ -549,6 +550,7 @@ export const PublicFormProvider = ({
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: paymentVariableInputAmountField,
       [PAYMENT_PRODUCT_FIELD_ID]: paymentProducts,
+      [RESPONDENT_EMAIL_FIELD_ID]: respondentEmails,
       ...formInputs
     }) => {
       const { form } = data ?? {}
@@ -593,6 +595,7 @@ export const PublicFormProvider = ({
             ? numVisibleFields + 1
             : numVisibleFields,
         },
+        respondentEmails: respondentEmails,
         selectedFormLanguage: selectedLanguage,
       }
 

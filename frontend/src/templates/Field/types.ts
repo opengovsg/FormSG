@@ -4,6 +4,7 @@ import {
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+  RESPONDENT_EMAIL_FIELD_ID,
 } from '~shared/constants'
 import {
   ProductItemInput,
@@ -61,6 +62,7 @@ export type FormFieldValues = Record<
   [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
   [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?: string
   [PAYMENT_PRODUCT_FIELD_ID]?: ProductItemInput[]
+  [RESPONDENT_EMAIL_FIELD_ID]?: string[]
 }
 
 export type AddressCompoundFieldInput = FieldInput<AddressCompoundFieldValues>

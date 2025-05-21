@@ -50,6 +50,10 @@ export interface Fields {
       }
     }
   }
+  respondentEmail: {
+    title: string
+    info: string
+  }
 }
 
 export * from './en-sg'

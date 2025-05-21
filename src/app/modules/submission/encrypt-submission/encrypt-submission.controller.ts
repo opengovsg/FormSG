@@ -439,6 +439,7 @@ const submitEncryptModeForm = async (
     responses: req.formsg.filteredResponses,
     unencryptedAttachments: req.formsg.unencryptedAttachments,
     emailFields: parsedResponses.getAllResponses(),
+    respondentEmails: req.formsg.respondentEmails,
     responseMetadata,
     submissionContent,
   })
@@ -704,6 +705,7 @@ const _createSubmission = async ({
   responses,
   unencryptedAttachments,
   emailFields,
+  respondentEmails,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
@@ -711,6 +713,7 @@ const _createSubmission = async ({
   responses: ParsedClearFormFieldResponse[]
   unencryptedAttachments?: IAttachmentInfo[]
   emailFields: ProcessedFieldResponse[]
+  respondentEmails?: string[]
   formId: string
   form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
@@ -782,11 +785,6 @@ const _createSubmission = async ({
     responseMetadata,
   }
 
-  logger.info({
-    message: 'Sending admin notification mail',
-    meta: logMetaWithSubmission,
-  })
-
   const emailData = new SubmissionEmailObj(
     emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
@@ -806,6 +804,11 @@ const _createSubmission = async ({
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
   if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    logger.info({
+      message: 'Sending admin notification mail',
+      meta: logMetaWithSubmission,
+    })
+
     void MailService.sendSubmissionToAdmin({
       replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
       form,
@@ -844,6 +847,7 @@ const _createSubmission = async ({
     responses,
     emailData,
     unencryptedAttachments,
+    respondentEmails,
   )
 }
 

@@ -31,6 +31,7 @@ export interface EmailNotifications extends HasTitle {
     }
     regular: {
       label: string
+      info: string
       description: string
     }
   }

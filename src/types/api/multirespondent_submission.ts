@@ -11,12 +11,14 @@ export type ParsedMultirespondentSubmissionBody = {
   responseMetadata?: ResponseMetadata
   version: number
   workflowStep: number
+  respondentEmails?: string[]
 }
 
 export type MultirespondentFormLoadedDto = {
   responseMode: FormResponseMode.Multirespondent
   formDef: IPopulatedMultirespondentForm
   featureFlags: string[]
+  respondentEmails?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
