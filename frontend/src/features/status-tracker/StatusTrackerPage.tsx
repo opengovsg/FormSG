@@ -18,6 +18,7 @@ import { FCC } from '~typings/react'
 import { FooterLinkWithIcon } from '~components/Footer/common/types'
 import { AppGrid } from '~templates/AppGrid'
 
+import NotFoundErrorPage from '~pages/NotFoundError'
 import {
   BackgroundBox,
   BaseGridLayout,
@@ -85,9 +86,8 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   if (isLoading) return <StatusTrackerSkeletonPage />
 
-  //   if (isLoading) return <Spinner />
   if (error || !data || !data.submittedSteps || !data.workflow)
-    return <Text>"Something went wrong"</Text>
+    return <NotFoundErrorPage />
 
   const { submittedSteps, workflow } = data
 

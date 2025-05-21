@@ -1,22 +1,6 @@
-import {
-  Box,
-  Flex,
-  GridItem,
-  GridProps,
-  Skeleton,
-  SkeletonText,
-  Spinner,
-  Text,
-} from '@chakra-ui/react'
+import { Box, Flex, Skeleton } from '@chakra-ui/react'
 
-import { AppFooter } from '~/app/AppFooter'
-
-import {
-  BackgroundBox,
-  BaseGridLayout,
-  FooterGridArea,
-  LoginGridArea,
-} from '~features/login/LoginPageTemplate'
+import { BackgroundBox, LoginGridArea } from '~features/login/LoginPageTemplate'
 
 import {
   StatusTrackerBaseGridLayout,
