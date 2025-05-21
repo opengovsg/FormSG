@@ -138,7 +138,7 @@
         { "name": "DD_APM_NON_LOCAL_TRAFFIC", "value": "true" },
         { "name": "DD_APM_ENABLED", "value": "true" },
         { "name": "DD_SITE", "value": "datadoghq.com" },
-        { "name": "DD_TAGS", "value": "env:<DD_ENV> team:formsg service:formsg" },
+        { "name": "DD_TAGS", "value": "env:<DD_ENV> team:formsg service:formsg iac:true" },
         { "name": "DD_LOGS_INJECTION", "value": "true" },
         { "name": "DD_RUNTIME_METRICS_ENABLED", "value": "true" }
       ],
