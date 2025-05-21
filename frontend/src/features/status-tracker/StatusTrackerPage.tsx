@@ -123,7 +123,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           <StatusTrackerFormInfo />
         </StatusTrackerFormInfoGridArea>
         <LoginGridArea>
-          <Box mt="10.125rem">
+          <Box mt={{ base: '1rem', lg: '10.125rem' }}>
             <Flex direction="column">
               <Text mb="2rem" textStyle="h4">
                 Response ID: {data.responseId}
