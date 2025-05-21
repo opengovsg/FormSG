@@ -487,6 +487,10 @@ export const handleStripeEvent = (
               // confirmation email again.
               // TODO: FRM-2017 Removing this temporarily as we found that there were
               // instances where webhooks were not sent as a result
+              logger.warn({
+                message: 'Duplicated Event found',
+                meta: logMeta,
+              })
               // return okAsync(undefined)
             }
 
