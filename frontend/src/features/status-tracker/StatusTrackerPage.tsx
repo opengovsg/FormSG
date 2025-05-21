@@ -20,7 +20,7 @@ import { AppGrid } from '~templates/AppGrid'
 
 import {
   BackgroundBox,
-  BaseGridLayout,
+  // BaseGridLayout,
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
@@ -31,12 +31,13 @@ import { TimelineRunSteps } from './StatusPoint'
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
+    mt={{ base: '1rem', lg: '8.125rem', md: '1.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
     // colSpan={{ base: '-1', md: 12, lg: 5 }}
     pl={{ base: '1.5rem', lg: '8%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
-    pt={{ base: '1.5rem', md: '2.5rem', lg: '3rem' }}
+    pt={{ base: '1.5rem', lg: '3rem' }}
     pb={{ base: '1.5rem', lg: '3rem' }}
     flexDir="column"
     alignItems={{ base: 'center', lg: 'flex-end' }}
@@ -49,6 +50,15 @@ const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   />
 )
 
+// Component that controls the various grid areas according to responsive breakpoints.
+const BaseGridLayout = (props: GridProps) => (
+  <AppGrid
+    templateRows={{ md: 'auto 1fr auto', lg: '1fr auto' }}
+    alignItems="start"
+    {...props}
+  />
+)
+
 const StatusTrackerFormInfo = (): JSX.Element => {
   return (
     <Box w="100%">
@@ -57,7 +67,7 @@ const StatusTrackerFormInfo = (): JSX.Element => {
           FORM TITLE
         </Text>
       </Flex>
-      <Text textStyle="h6" color="#FFFFFF">
+      <Text textStyle="h6" color="#FFFFFF" mt="1rem">
         Track your FormSG Response status
       </Text>
     </Box>
@@ -113,7 +123,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           <StatusTrackerFormInfo />
         </StatusTrackerFormInfoGridArea>
         <LoginGridArea>
-          <Box>
+          <Box mt="10.125rem">
             <Flex direction="column">
               <Text mb="2rem" textStyle="h4">
                 Response ID: {data.responseId}

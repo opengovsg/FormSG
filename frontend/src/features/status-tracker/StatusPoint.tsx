@@ -2,6 +2,7 @@ import { MdCheck, MdClose } from 'react-icons/md'
 import { Circle, Divider, Flex, Icon, Text } from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
+import { format } from 'date-fns'
 
 const statusColor: Record<WorkflowStatus, string> = {
   [WorkflowStatus.PENDING]: '#E5E9F8', // grey
@@ -57,6 +58,10 @@ const TimelineStep = ({
   timestamp,
   workflowStatus,
 }: StepData) => {
+  const submissionTimestamp = timestamp
+    ? format(new Date(timestamp), 'dd MMM yyyy, HH:mm:ss z')
+    : timestamp
+
   let approvalText
   switch (workflowStatus) {
     case WorkflowStatus.APPROVED:
@@ -77,7 +82,7 @@ const TimelineStep = ({
         <Text textStyle="caption-2">{name}</Text>
         <Text textStyle="caption-2">{approvalText}</Text>
         <Text textStyle="caption-2" textColor={'#848484'}>
-          {timestamp}
+          {submissionTimestamp}
         </Text>
       </Flex>
     </Flex>
