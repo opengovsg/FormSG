@@ -4,12 +4,17 @@ import {
   Flex,
   GridItem,
   GridProps,
+  Image,
   Link,
-  Stack,
   Text,
 } from '@chakra-ui/react'
 
-import { StepData, WorkflowStatus } from '~shared/types'
+import {
+  FormColorTheme,
+  FormLogoState,
+  StepData,
+  WorkflowStatus,
+} from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -19,6 +24,7 @@ import { FooterLinkWithIcon } from '~components/Footer/common/types'
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { useEnv } from '~features/env/queries'
 import {
   BackgroundBox,
   BaseGridLayout,
@@ -26,10 +32,24 @@ import {
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
+import {
+  FormBannerLogo,
+  FormBannerLogoProps,
+  PublicFormLogo,
+  useFormBannerLogo,
+} from '~features/public-form/components/FormLogo'
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
+
+const FORMSG_LOGO_URL = 'https://file.go.gov.sg/formslogotransparent120px.png'
+
+type StatusTrackerFormInfoProps = FormBannerLogoProps & {
+  isLoading?: boolean
+  loggedInId?: string
+  onLogout?: () => void
+}
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
@@ -65,7 +85,14 @@ export const StatusTrackerBaseGridLayout = (props: GridProps) => (
 const StatusTrackerFormInfo = (): JSX.Element => {
   return (
     <Box w="100%">
-      <Flex direction="row">
+      <Flex direction="row" alignItems="center" gap="0.5rem">
+        {/* <FormBannerLogo {...logoProps} /> */}
+        <Image
+          src={FORMSG_LOGO_URL}
+          alt={'test'}
+          boxSize={'3rem'}
+          objectFit="contain"
+        />
         <Text textStyle="body-2" color="#FFFFFF">
           FORM TITLE
         </Text>
@@ -84,12 +111,26 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
 
+  // const { data: { logoBucketUrl } = {} } = useEnv(
+  //   data?.form?.startPage.logo.state === FormLogoState.Custom,
+  // )
+
+  // const statusTrackerLogoProps = useFormBannerLogo({
+  //   // logoBucketUrl,
+  //   logoBucketUrl: FORMSG_LOGO_URL,
+  //   // logo: data?.form?.startPage.logo,
+  //   logo: undefined,
+  //   agency: data?.form?.admin.agency,
+  //   colorTheme: data?.form?.startPage.colorTheme,
+  //   showDefaultLogoIfNoLogo: true,
+  // })
+
   if (isLoading) return <StatusTrackerSkeletonPage />
 
   if (error || !data || !data.submittedSteps || !data.workflow)
     return <NotFoundErrorPage />
 
-  const { submittedSteps, workflow } = data
+  const { submittedSteps, workflow, form } = data
 
   const workflowSteps = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {

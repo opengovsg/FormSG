@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
-import { FormAuthType } from './form/form'
+import { FormAuthType, PublicFormDto } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
@@ -359,6 +359,7 @@ export type StatusTrackerData = {
   submittedSteps: SubmittedStep[] | undefined
   workflow: FormWorkflowDto
   responseId: string | undefined
+  form: PublicFormDto
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.

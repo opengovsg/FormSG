@@ -43,6 +43,7 @@ const getStatusTrackerSubmissionData: ControllerHandler<
         submittedSteps: submissionData.submittedSteps,
         workflow: submissionData.workflow,
         responseId: submissionData.id,
+        form: submissionData.form,
       }
 
       // Return relevant data in response
