@@ -20,6 +20,7 @@ import { AppGrid } from '~templates/AppGrid'
 
 import {
   BackgroundBox,
+  BaseGridLayout,
   // BaseGridLayout,
   FooterGridArea,
   LoginGridArea,
@@ -27,9 +28,10 @@ import {
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
+import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
-const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
+export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
     mt={{ base: '1rem', lg: '8.125rem', md: '1.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
@@ -51,7 +53,7 @@ const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
 )
 
 // Component that controls the various grid areas according to responsive breakpoints.
-const BaseGridLayout = (props: GridProps) => (
+export const StatusTrackerBaseGridLayout = (props: GridProps) => (
   <AppGrid
     templateRows={{ md: 'auto 1fr auto', lg: '1fr auto' }}
     alignItems="start"
@@ -80,6 +82,8 @@ export const StatusTrackerPage = (): JSX.Element => {
   if (!submissionId) throw new Error('No submissionId provided')
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
+
+  if (isLoading) return <StatusTrackerSkeletonPage />
 
   //   if (isLoading) return <Spinner />
   if (error || !data || !data.submittedSteps || !data.workflow)
@@ -118,7 +122,7 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   return (
     <BackgroundBox>
-      <BaseGridLayout flex={1}>
+      <StatusTrackerBaseGridLayout flex={1}>
         <StatusTrackerFormInfoGridArea>
           <StatusTrackerFormInfo />
         </StatusTrackerFormInfoGridArea>
@@ -132,7 +136,7 @@ export const StatusTrackerPage = (): JSX.Element => {
             </Flex>
           </Box>
         </LoginGridArea>
-      </BaseGridLayout>
+      </StatusTrackerBaseGridLayout>
       <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
         <FooterGridArea>
           <AppFooter
