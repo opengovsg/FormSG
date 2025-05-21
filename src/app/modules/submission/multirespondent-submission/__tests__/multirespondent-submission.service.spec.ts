@@ -1387,6 +1387,141 @@ describe('multirespondent-submission.service', () => {
     })
   })
 
+  describe('sendRespondentCopyEmail', () => {
+    it('sends respondent copy on first step submission when respondent emails are present', async () => {
+      // Arrange
+      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfRespondentCopyEmail',
+      )
+
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
+      const respondentEmails = ['test@example.com', 'test1@example.com']
+
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        respondentEmails: respondentEmails,
+      })
+
+      // Assert
+      expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(respondentEmails)
+      expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
+        2,
+      )
+    })
+
+    it('sends respondent copy on subsequent step submission when respondent emails are present', async () => {
+      // Arrange
+      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfRespondentCopyEmail',
+      )
+
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
+      const stepOneEditEmailFieldId = new ObjectId().toHexString()
+
+      const expectedStepOneEmail = 'expected_step_one_email@example.com'
+      const notExpectedStepOneEmail = 'not_expected_step_one_email@example.com'
+      const expectedStaticEmail = 'expected_static_email@example.com'
+      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Dynamic,
+          field: stepOneEditEmailFieldId,
+          edit: [stepOneEditEmailFieldId],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [expectedStepTwoEmail],
+          edit: [],
+        },
+      ]
+
+      const form: IPopulatedMultirespondentForm = {
+        _id: mockFormId,
+        workflow,
+        emails: [expectedStaticEmail],
+        stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
+        stepOneEmailNotificationFieldId,
+      } as IPopulatedMultirespondentForm
+      const respondentEmails = ['test@example.com', 'test1@example.com']
+
+      const submissionResponses: FieldResponsesV3 = {
+        [stepOneEmailNotificationFieldId]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: expectedStepOneEmail,
+          },
+        },
+        [stepOneEditEmailFieldId]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: notExpectedStepOneEmail,
+          },
+        },
+      }
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: submissionResponses,
+          workflowStep: workflow.length - 1,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        respondentEmails: respondentEmails,
+      })
+
+      // Assert
+      expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(respondentEmails)
+      expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
+        2,
+      )
+    })
+  })
+
   describe('sendNextStepReminderEmail', () => {
     it('invokes the sendMRFWorkflowStepEmail function with isReminder set to true and correct recipient emails', async () => {
       // Arrange

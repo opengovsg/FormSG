@@ -97,6 +97,7 @@ const FORM_DEFAULTS = {
   hasCaptcha: true,
   hasIssueNotification: true,
   hasMultiLang: false,
+  hasRespondentCopy: false,
   form_fields: [],
   form_logics: [],
   permissionList: [],

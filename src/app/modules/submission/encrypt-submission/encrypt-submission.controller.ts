@@ -439,6 +439,7 @@ const submitEncryptModeForm = async (
     responses: req.formsg.filteredResponses,
     unencryptedAttachments: req.formsg.unencryptedAttachments,
     emailFields: parsedResponses.getAllResponses(),
+    respondentEmails: req.formsg.respondentEmails,
     responseMetadata,
     submissionContent,
   })
@@ -704,6 +705,7 @@ const _createSubmission = async ({
   responses,
   unencryptedAttachments,
   emailFields,
+  respondentEmails,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
@@ -711,6 +713,7 @@ const _createSubmission = async ({
   responses: ParsedClearFormFieldResponse[]
   unencryptedAttachments?: IAttachmentInfo[]
   emailFields: ProcessedFieldResponse[]
+  respondentEmails?: string[]
   formId: string
   form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
@@ -844,6 +847,7 @@ const _createSubmission = async ({
     responses,
     emailData,
     unencryptedAttachments,
+    respondentEmails,
   )
 }
 

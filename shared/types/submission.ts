@@ -349,6 +349,7 @@ export type StorageModeSubmissionContentDto = {
   version: number
   responseMetadata?: ResponseMetadata
   payments?: PaymentFieldsDto
+  respondentEmails?: string[]
 }
 
 export type PaymentSubmissionData = {

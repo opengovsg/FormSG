@@ -23,4 +23,9 @@ export const enSG = {
         'Something went wrong when creating your field. Please refresh and try again.',
     },
   },
+  respondentCopy: {
+    successBefore: 'Respondents will',
+    disabled: 'not ',
+    successAfter: 'be able to receive a copy of their submission',
+  },
 }

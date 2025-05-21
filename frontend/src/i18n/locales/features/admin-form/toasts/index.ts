@@ -12,4 +12,9 @@ export interface Toasts {
     update: Toast
     duplicate: Toast & { successButNoLogic: string }
   }
+  respondentCopy: {
+    successBefore: string
+    disabled: string
+    successAfter: string
+  }
 }

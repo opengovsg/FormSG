@@ -20,8 +20,11 @@ import { TagInput } from '~components/TagInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
+import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
+
+import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
 
 interface MrfEmailNotificationsFormProps {
   settings: MultirespondentFormSettings
@@ -49,6 +52,10 @@ const MrfEmailNotificationsForm = ({
     formWorkflow,
     emailFormFields = [],
   } = useAdminFormWorkflow()
+
+  //TODO: (Respondent Copy): Remove isTest and user when respondent copy is out of beta
+  const { user } = useUser()
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   const formWorkflowStepsWithStepNumber =
     formWorkflow?.map((step, index) => ({
@@ -268,6 +275,13 @@ const MrfEmailNotificationsForm = ({
             </FormErrorMessage>
           )}
         </FormControl>
+        {isTest || user?.betaFlags?.respondentCopy ? (
+          <FormControl isDisabled={isDisabled}>
+            <Box mt={'1.5rem'}>
+              <RespondentCopyToggle />
+            </Box>
+          </FormControl>
+        ) : null}
       </Box>
     </form>
   )

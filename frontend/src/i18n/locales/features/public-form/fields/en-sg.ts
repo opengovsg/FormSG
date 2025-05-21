@@ -59,4 +59,8 @@ export const enSG: Fields = {
       },
     },
   },
+  respondentEmail: {
+    title: 'Send the following emails a copy of my responses upon submission',
+    info: 'Separate multiple email addresses with a comma',
+  },
 }
