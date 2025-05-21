@@ -37,7 +37,7 @@ const StatusIcon = ({
     case WorkflowStatus.REJECTED:
       return (
         <Circle size="2rem" bg={statusColor[workflowStatus]}>
-          <Icon as={MdClose} color="#C03434" boxSize="1rem" />
+          <Icon as={MdClose} color="#F5F6F8" boxSize="1rem" />
         </Circle>
       )
     default:
@@ -71,7 +71,7 @@ const TimelineStep = ({
   }
 
   return (
-    <Flex alignItems="center" gap={4}>
+    <Flex alignItems="center" gap={4} height="3.5rem">
       <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
       <Flex flexDir="column" gap="0.25rem">
         <Text textStyle="caption-2">{name}</Text>
@@ -101,8 +101,8 @@ export const TimelineRunSteps = ({
           my="1.5rem"
           borderColor={statusColor[step.workflowStatus]}
           zIndex={1}
-          mt="0.5rem"
-          mb="0.5rem"
+          mt="0rem"
+          mb="0rem"
         />
       )}
     </>

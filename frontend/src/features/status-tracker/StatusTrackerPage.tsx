@@ -1,38 +1,68 @@
 import { useParams } from 'react-router-dom'
-import { Box, Flex, GridItem, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  GridItem,
+  GridProps,
+  Link,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
 
+import { AppFooter } from '~/app/AppFooter'
+
 import { FCC } from '~typings/react'
+
+import { FooterLinkWithIcon } from '~components/Footer/common/types'
+import { AppGrid } from '~templates/AppGrid'
 
 import {
   BackgroundBox,
   BaseGridLayout,
   FooterGridArea,
   LoginGridArea,
-  NonMobileSidebarGridArea,
 } from '~features/login/LoginPageTemplate'
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
-import { AppFooter } from '~/app/AppFooter'
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
-export const NonMobileSidebarGridAreaStatusTracker: FCC = ({ children }) => (
+const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
-    display={{ base: 'none', md: 'flex' }}
-    gridColumn={{ md: '1 / 13', lg: '2 / 6' }}
-    // colSpan={{ md: 12, lg: 5 }}
-    // pl={{ base: '1.5rem', lg: '8%' }}
+    display={{ base: 'flex', md: 'flex' }}
+    gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
+    // colSpan={{ base: '-1', md: 12, lg: 5 }}
+    pl={{ base: '1.5rem', lg: '8%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
     pt={{ base: '1.5rem', md: '2.5rem', lg: '3rem' }}
-    pb={{ lg: '3rem' }}
+    pb={{ base: '1.5rem', lg: '3rem' }}
     flexDir="column"
     alignItems={{ base: 'center', lg: 'flex-end' }}
+    bgGradient={{
+      base: 'linear(to-b, primary.500 100%, primary.500 100%)',
+    }}
     justifyContent="center"
     children={children}
+    mx={{ base: '-1.5rem', lg: '0' }} // negative horizontal margin matching the container padding
   />
 )
+
+const StatusTrackerFormInfo = (): JSX.Element => {
+  return (
+    <Box w="100%">
+      <Flex direction="row">
+        <Text textStyle="body-2" color="#FFFFFF">
+          FORM TITLE
+        </Text>
+      </Flex>
+      <Text textStyle="h6" color="#FFFFFF">
+        Track your FormSG Response status
+      </Text>
+    </Box>
+  )
+}
 
 export const StatusTrackerPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
@@ -79,14 +109,9 @@ export const StatusTrackerPage = (): JSX.Element => {
   return (
     <BackgroundBox>
       <BaseGridLayout flex={1}>
-        <NonMobileSidebarGridAreaStatusTracker maxW="100%" aria-hidden>
-          <Box w="100%">
-            <Flex direction="row">
-              <Text>FORM TITLE</Text>
-            </Flex>
-            <Text textStyle="h6">Track your FormSG Response status</Text>
-          </Box>
-        </NonMobileSidebarGridAreaStatusTracker>
+        <StatusTrackerFormInfoGridArea>
+          <StatusTrackerFormInfo />
+        </StatusTrackerFormInfoGridArea>
         <LoginGridArea>
           <Box>
             <Flex direction="column">
@@ -97,6 +122,8 @@ export const StatusTrackerPage = (): JSX.Element => {
             </Flex>
           </Box>
         </LoginGridArea>
+      </BaseGridLayout>
+      <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
         <FooterGridArea>
           <AppFooter
             compactMonochromeLogos
