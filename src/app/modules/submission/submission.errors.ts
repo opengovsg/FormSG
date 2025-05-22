@@ -163,7 +163,7 @@ export class FeatureDisabledError extends ApplicationError {
 
 export class InvalidFileKeyError extends ApplicationError {
   constructor(message = 'Invalid file key. File keys should be valid UUIDs.') {
-    super(message, undefined, ErrorCodes.SUBMISSION_CLAMAV_INVALID_FILE_KEY)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_FILE_KEY)
   }
 }
 
@@ -177,12 +177,12 @@ export class GuardDutyInvalidFileKeyError extends ApplicationError {
 
 export class VirusScanFailedError extends ApplicationError {
   constructor(message = 'Virus scan failed. Please try again.') {
-    super(message, undefined, ErrorCodes.SUBMISSION_CLAMAV_VIRUS_SCAN_FAILED)
+    super(message, undefined, ErrorCodes.SUBMISSION_VIRUS_SCAN_FAILED)
   }
 }
 
 export class GuardDutyVirusScanFailedError extends ApplicationError {
-  constructor(message = 'GUARDDUTY Virus scan failed. Please try again.') {
+  constructor(message = 'Virus scan failed. Please try again.') {
     super(message, undefined, ErrorCodes.SUBMISSION_GD_VIRUS_SCAN_FAILED)
   }
 }
