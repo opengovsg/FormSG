@@ -94,7 +94,7 @@ export const EditStepBlock = ({
       workflow_type: inputs.workflow_type,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
-      name: inputs.step_name,
+      step_name: inputs.step_name,
     }
 
     switch (inputs.workflow_type) {

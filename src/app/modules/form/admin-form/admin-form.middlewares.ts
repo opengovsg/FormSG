@@ -94,6 +94,7 @@ export const createWorkflowStepValidator = celebrate({
       then: Joi.string().required(),
       otherwise: Joi.forbidden(),
     }),
+    step_name: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -122,6 +123,7 @@ export const updateWorkflowStepValidator = celebrate({
       then: Joi.string().required(),
       otherwise: Joi.forbidden(),
     }),
+    step_name: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),

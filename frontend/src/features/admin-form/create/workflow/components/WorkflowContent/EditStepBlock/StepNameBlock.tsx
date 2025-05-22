@@ -17,6 +17,7 @@ import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 
 import { EditStepBlockContainer } from './EditStepBlockContainer'
+import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 
 type StepNameProps = {
   stepNumber: number
@@ -69,11 +70,12 @@ export const StepNameBlock = ({
           <Controller
             control={control}
             name={STEP_NAME} // check this
-            render={() => (
+            render={({ field }) => (
               <Input
-                id={STEP_NAME}
+                // id={STEP_NAME}
                 placeholder={displayStepName}
                 _placeholder={{ color: 'secondary.700' }} // check this
+                {...field}
               />
             )}
           />
