@@ -195,9 +195,8 @@ const asyncVirusScanning = (
   enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
-  | VirusScanFailedError
-  | DownloadCleanFileFailedError
-  | MaliciousFileDetectedError
+  | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+  | SubmissionService.TriggerGuarddutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     // we'll invoke both lambdas and one of them will be in-shadow in order
@@ -247,9 +246,7 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     IdTaggedParsedClearAttachmentResponseV3,
-    | VirusScanFailedError
-    | DownloadCleanFileFailedError
-    | MaliciousFileDetectedError
+    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results = []

@@ -34,6 +34,11 @@ import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import {
   DownloadCleanFileFailedError,
+  GuardDutyDownloadCleanFileFailedError,
+  GuardDutyInvalidFileKeyError,
+  GuardDutyMaliciousFileDetectedError,
+  GuardDutyVirusScanFailedError,
+  InvalidFileKeyError,
   MaliciousFileDetectedError,
   VirusScanFailedError,
 } from '../submission.errors'
@@ -173,9 +178,8 @@ const asyncVirusScanning = (
   enableGuarddutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
-  | VirusScanFailedError
-  | DownloadCleanFileFailedError
-  | MaliciousFileDetectedError
+  | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+  | SubmissionService.TriggerGuarddutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
@@ -223,14 +227,12 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     ParsedClearFormFieldResponse,
-    | VirusScanFailedError
-    | DownloadCleanFileFailedError
-    | MaliciousFileDetectedError
+    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results: Result<
     ParsedClearFormFieldResponse,
-    VirusScanFailedError | DownloadCleanFileFailedError
+    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
   >[] = []
   for (const response of responses) {
     if (isQuarantinedAttachmentResponse(response)) {
@@ -266,9 +268,14 @@ export const scanAndRetrieveAttachments = async (
   // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
+    | InvalidFileKeyError
     | VirusScanFailedError
     | DownloadCleanFileFailedError
     | MaliciousFileDetectedError
+    | GuardDutyInvalidFileKeyError
+    | GuardDutyVirusScanFailedError
+    | GuardDutyDownloadCleanFileFailedError
+    | GuardDutyMaliciousFileDetectedError
   > =
     // On the local development environment, there is only 1 lambda and the virus scanning service WILL CRASH if multiple lambda invocations are
     // attempted at the same time. Reference: https://www.notion.so/opengov/Encryption-Boundary-Shift-the-journey-so-far-dfc6e15fc65f45eba3dd6a9af48eebea?pvs=4#d0944ba61aad45ce988ed0474f131e59

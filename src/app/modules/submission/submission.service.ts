@@ -66,6 +66,11 @@ import {
   AttachmentTooLargeError,
   AttachmentUploadError,
   DownloadCleanFileFailedError,
+  GuardDutyDownloadCleanFileFailedError,
+  GuardDutyInvalidFileKeyError,
+  GuardDutyMaliciousFileDetectedError,
+  GuardDutyParseVirusScannerLambdaPayloadError,
+  GuardDutyVirusScanFailedError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
@@ -273,6 +278,12 @@ const parseVirusScannerLambdaPayload = (
   return err(new ParseVirusScannerLambdaPayloadError())
 }
 
+type TriggerVirusScanningError =
+  | VirusScanFailedError
+  | InvalidFileKeyError
+  | MaliciousFileDetectedError
+  | ParseVirusScannerLambdaPayloadError
+
 /**
  * Invokes lambda to scan the file in the quarantine bucket for viruses.
  * @param quarantineFileKey object key of the file in the quarantine bucket
@@ -283,7 +294,7 @@ export const triggerVirusScanning = (
   quarantineFileKey: string,
 ): ResultAsync<
   ParseVirusScannerLambdaPayloadOkType,
-  VirusScanFailedError | MaliciousFileDetectedError
+  TriggerVirusScanningError
 > => {
   const logMeta = {
     action: 'triggerVirusScanning',
@@ -344,6 +355,8 @@ export const triggerVirusScanning = (
   })
 }
 
+type DownloadCleanFileError = DownloadCleanFileFailedError | InvalidFileKeyError
+
 /**
  * Downloads file from clean bucket
  * @param cleanFileKey object key of the file in the clean bucket
@@ -355,7 +368,7 @@ export const downloadCleanFile = (
   cleanFileKey: string,
   versionId: string,
   bucketName: string,
-) => {
+): ResultAsync<Buffer, DownloadCleanFileError> => {
   const logMeta = {
     action: 'downloadCleanFile',
     cleanFileKey,
@@ -428,6 +441,10 @@ export const downloadCleanFile = (
   )
 }
 
+export type TriggerVirusScanThenDownloadCleanFileChainError =
+  | TriggerVirusScanningError
+  | DownloadCleanFileError
+
 /**
  * Helper function to trigger virus scanning and download clean file.
  * @param response quarantined attachment response from storage submissions v2.1+.
@@ -440,12 +457,7 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
 >(
   response: T,
   formId: string,
-): ResultAsync<
-  T,
-  | VirusScanFailedError
-  | DownloadCleanFileFailedError
-  | MaliciousFileDetectedError
-> => {
+): ResultAsync<T, TriggerVirusScanThenDownloadCleanFileChainError> => {
   const logMeta = {
     action: 'triggerVirusScanThenDownloadCleanFileChain',
     formId,
@@ -1269,6 +1281,12 @@ export const transformAttachmentMetasToSignedUrls = (
   )
 }
 
+type TriggerGuarddutyScanningError =
+  | GuardDutyVirusScanFailedError
+  | GuardDutyInvalidFileKeyError
+  | GuardDutyMaliciousFileDetectedError
+  | GuardDutyParseVirusScannerLambdaPayloadError
+
 /**
  * Guardduty scanning
  * Invokes guadduty lambda to scan the file in the quarantine bucket for check for tags.
@@ -1280,7 +1298,7 @@ export const triggerGuarddutyScanning = (
   quarantineFileKey: string,
 ): ResultAsync<
   ParseVirusScannerLambdaPayloadOkType,
-  VirusScanFailedError | MaliciousFileDetectedError
+  TriggerGuarddutyScanningError
 > => {
   const logMeta = {
     action: 'triggerGuarddutyScanning',
@@ -1293,7 +1311,7 @@ export const triggerGuarddutyScanning = (
       meta: logMeta,
     })
 
-    return errAsync(new InvalidFileKeyError())
+    return errAsync(new GuardDutyInvalidFileKeyError())
   }
 
   return ResultAsync.fromPromise(
@@ -1309,7 +1327,7 @@ export const triggerGuarddutyScanning = (
         error,
       })
 
-      return new VirusScanFailedError()
+      return new GuardDutyVirusScanFailedError()
     },
   ).andThen((data: InvokeCommandOutput) => {
     if (data && data.Payload)
@@ -1321,15 +1339,16 @@ export const triggerGuarddutyScanning = (
           error: error,
         })
 
-        if (error instanceof ParseVirusScannerLambdaPayloadError) return error
-        else if (error.statusCode === StatusCodes.NOT_FOUND)
-          return new InvalidFileKeyError(
+        if (error instanceof ParseVirusScannerLambdaPayloadError) {
+          return new GuardDutyParseVirusScannerLambdaPayloadError()
+        } else if (error.statusCode === StatusCodes.NOT_FOUND) {
+          return new GuardDutyInvalidFileKeyError(
             'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
           )
-        else if (error.statusCode !== StatusCodes.BAD_REQUEST)
-          return new VirusScanFailedError()
-
-        return new MaliciousFileDetectedError()
+        } else if (error.statusCode !== StatusCodes.BAD_REQUEST) {
+          return new GuardDutyVirusScanFailedError()
+        }
+        return new GuardDutyMaliciousFileDetectedError()
       })
 
     // if data or data.Payload is undefined
@@ -1337,10 +1356,14 @@ export const triggerGuarddutyScanning = (
       message: 'data or data.Payload from virus scanner lambda is undefined',
       meta: logMeta,
     })
-
-    return errAsync(new ParseVirusScannerLambdaPayloadError())
+    return errAsync(new GuardDutyParseVirusScannerLambdaPayloadError())
   })
 }
+
+export type TriggerGuarddutyScanThenDownloadCleanFileChainError =
+  | TriggerGuarddutyScanningError
+  | GuardDutyDownloadCleanFileFailedError
+  | GuardDutyInvalidFileKeyError
 
 /**
  * Helper function to trigger guardduty scanning and download clean file.
@@ -1354,13 +1377,7 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
 >(
   response: T,
   formId: string,
-): ResultAsync<
-  T,
-  // void,
-  | VirusScanFailedError
-  | DownloadCleanFileFailedError
-  | MaliciousFileDetectedError
-> => {
+): ResultAsync<T, TriggerGuarddutyScanThenDownloadCleanFileChainError> => {
   const logMeta = {
     action: 'triggerGuarddutyScanThenDownloadCleanFileChain',
     formId,
@@ -1370,14 +1387,14 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
   return (
     triggerGuarddutyScanning(response.answer)
       .mapErr((error) => {
-        if (error instanceof MaliciousFileDetectedError) {
+        if (error instanceof GuardDutyMaliciousFileDetectedError) {
           logger.error({
             message:
               'GUARDDUTY Malicious file detected during lambda virus scan',
             meta: logMeta,
             error,
           })
-          return new MaliciousFileDetectedError(response.filename)
+          return new GuardDutyMaliciousFileDetectedError(response.filename)
         }
         return error
       })
@@ -1403,5 +1420,16 @@ export const triggerGuarddutyScanThenDownloadCleanFileChain = <
           answer: response.filename,
         })),
       )
+      .mapErr((error) => {
+        // RATIONALE: Perform exception wrapping to convert error codes to GuardDuty-specific error codes
+        // to distinguish from ClamAVerrors on observability platform (eg, on DataDog).
+        if (error instanceof DownloadCleanFileFailedError) {
+          return new GuardDutyDownloadCleanFileFailedError()
+        }
+        if (error instanceof InvalidFileKeyError) {
+          return new GuardDutyInvalidFileKeyError()
+        }
+        return error
+      })
   )
 }
