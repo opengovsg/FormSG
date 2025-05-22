@@ -171,7 +171,7 @@ export const handler = async (
     }
     case MalwareScanTagValue.ACCESS_DENIED:
     case MalwareScanTagValue.FAILED: {
-      // if Guardduty scan was unsuccessful for whatever reason
+      // if GuardDuty scan was unsuccessful for whatever reason
       const resultValue = tagResult
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

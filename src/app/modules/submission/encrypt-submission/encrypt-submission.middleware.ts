@@ -165,17 +165,17 @@ export const validateStorageSubmissionParams = celebrate({
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
   formId: string,
-  enableGuarddutyLambdaInvoke: boolean | undefined,
+  enableGuardDutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
   | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-  | SubmissionService.TriggerGuarddutyScanThenDownloadCleanFileChainError
+  | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
       // we'll invoke both lambdas and one of them will be in-shadow in order
       // for us to compare the reliability of the services
-      if (enableGuarddutyLambdaInvoke) {
+      if (enableGuardDutyLambdaInvoke) {
         // trigger virus-scanner, ignore results because running in-shadow
         SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
           response,
@@ -183,13 +183,13 @@ const asyncVirusScanning = (
         )
 
         // use guardduty scan results
-        return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
       } else {
         // trigger guardduty, ignore results because running in-shadow
-        SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+        SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
@@ -254,12 +254,12 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
+  const gbGuardDuty = req.growthbook?.isOn(featureFlags.guardduty)
   // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
     | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-    | SubmissionService.TriggerGuarddutyScanThenDownloadCleanFileChainError
+    | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   > =
     // On the local development environment, there is only 1 lambda and the virus scanning service WILL CRASH if multiple lambda invocations are
     // attempted at the same time. Reference: https://www.notion.so/opengov/Encryption-Boundary-Shift-the-journey-so-far-dfc6e15fc65f45eba3dd6a9af48eebea?pvs=4#d0944ba61aad45ce988ed0474f131e59
@@ -277,7 +277,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             req.body.responses,
             req.formsg.formDef._id.toString(),
-            gbGuardduty,
+            gbGuardDuty,
           ),
         )
 

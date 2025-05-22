@@ -1231,9 +1231,9 @@ export const getQuarantinePresignedPostData = (
   return ResultAsync.combine([
     currentQuarantineBucketPost,
     guarddutyQuarantineBucketPost,
-  ]).map(([currentQuarantineData, newGuarddutyData]) => [
+  ]).map(([currentQuarantineData, newGuardDutyData]) => [
     ...currentQuarantineData,
-    ...newGuarddutyData,
+    ...newGuardDutyData,
   ])
 }
 
@@ -1281,27 +1281,27 @@ export const transformAttachmentMetasToSignedUrls = (
   )
 }
 
-type TriggerGuarddutyScanningError =
+type TriggerGuardDutyScanningError =
   | GuardDutyVirusScanFailedError
   | GuardDutyInvalidFileKeyError
   | GuardDutyMaliciousFileDetectedError
   | GuardDutyParseVirusScannerLambdaPayloadError
 
 /**
- * Guardduty scanning
+ * GuardDuty scanning
  * Invokes guadduty lambda to scan the file in the quarantine bucket for check for tags.
  * @param quarantineFileKey object key of the file in the quarantine bucket
  * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
  * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
  */
-export const triggerGuarddutyScanning = (
+export const triggerGuardDutyScanning = (
   quarantineFileKey: string,
 ): ResultAsync<
   ParseVirusScannerLambdaPayloadOkType,
-  TriggerGuarddutyScanningError
+  TriggerGuardDutyScanningError
 > => {
   const logMeta = {
-    action: 'triggerGuarddutyScanning',
+    action: 'triggerGuardDutyScanning',
     quarantineFileKey,
   }
 
@@ -1360,8 +1360,8 @@ export const triggerGuarddutyScanning = (
   })
 }
 
-export type TriggerGuarddutyScanThenDownloadCleanFileChainError =
-  | TriggerGuarddutyScanningError
+export type TriggerGuardDutyScanThenDownloadCleanFileChainError =
+  | TriggerGuardDutyScanningError
   | GuardDutyDownloadCleanFileFailedError
   | GuardDutyInvalidFileKeyError
 
@@ -1370,22 +1370,22 @@ export type TriggerGuarddutyScanThenDownloadCleanFileChainError =
  * @param response quarantined attachment response from storage submissions v2.1+.
  * @returns modified response with content replaced with clean file buffer and answer replaced with filename.
  */
-export const triggerGuarddutyScanThenDownloadCleanFileChain = <
+export const triggerGuardDutyScanThenDownloadCleanFileChain = <
   T extends
     | ParsedClearAttachmentResponse
     | ParsedClearAttachmentFieldResponseV3,
 >(
   response: T,
   formId: string,
-): ResultAsync<T, TriggerGuarddutyScanThenDownloadCleanFileChainError> => {
+): ResultAsync<T, TriggerGuardDutyScanThenDownloadCleanFileChainError> => {
   const logMeta = {
-    action: 'triggerGuarddutyScanThenDownloadCleanFileChain',
+    action: 'triggerGuardDutyScanThenDownloadCleanFileChain',
     formId,
     quarantineFileKey: response.answer,
   }
   // Step 3: Trigger lambda to scan attachments.
   return (
-    triggerGuarddutyScanning(response.answer)
+    triggerGuardDutyScanning(response.answer)
       .mapErr((error) => {
         if (error instanceof GuardDutyMaliciousFileDetectedError) {
           logger.error({

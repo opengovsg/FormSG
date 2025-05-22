@@ -189,16 +189,16 @@ type IdTaggedParsedClearAttachmentResponseV3 =
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
   formId: string,
-  enableGuarddutyLambdaInvoke: boolean | undefined,
+  enableGuardDutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
   | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-  | SubmissionService.TriggerGuarddutyScanThenDownloadCleanFileChainError
+  | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     // we'll invoke both lambdas and one of them will be in-shadow in order
     // for us to compare the reliability of the services
-    if (enableGuarddutyLambdaInvoke) {
+    if (enableGuardDutyLambdaInvoke) {
       // trigger virus-scanner, ignore results because running in-shadow
       SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response.answer,
@@ -206,7 +206,7 @@ const asyncVirusScanning = (
       )
 
       // use guardduty scan results
-      return SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+      return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
         response.answer,
         formId,
       ).map((attachmentResponse) => ({
@@ -215,7 +215,7 @@ const asyncVirusScanning = (
       }))
     } else {
       // trigger guardduty, ignore results because running in-shadow
-      SubmissionService.triggerGuarddutyScanThenDownloadCleanFileChain(
+      SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
         response.answer,
         formId,
       )
@@ -275,7 +275,7 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-  const gbGuardduty = req.growthbook?.isOn(featureFlags.guardduty)
+  const gbGuardDuty = req.growthbook?.isOn(featureFlags.guardduty)
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
   const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
@@ -314,7 +314,7 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             attachmentResponsesToRetrieve,
             req.formsg.formDef._id.toString(),
-            gbGuardduty,
+            gbGuardDuty,
           ),
         )
 
