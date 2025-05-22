@@ -38,6 +38,7 @@ import {
   PublicFormLogo,
   useFormBannerLogo,
 } from '~features/public-form/components/FormLogo'
+import { FormNotFound } from '~features/public-form/components/FormNotFound'
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'

@@ -9,6 +9,7 @@ import { DatabaseError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
 import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
+import { mapRouteError } from '../submission/submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -21,8 +22,8 @@ const validateGetStatusTrackerParams = celebrate({
 
 const getStatusTrackerSubmissionData: ControllerHandler<
   { submissionId: string },
-  StatusTrackerData,
-  string // what is the req.body?
+  StatusTrackerData | { message: string },
+  undefined // no req.body
 > = async (req, res) => {
   const { submissionId } = req.params
   const logMeta = {
@@ -34,17 +35,17 @@ const getStatusTrackerSubmissionData: ControllerHandler<
   return okAsync(submissionId)
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
-      logger.info({
-        message: `Testing BE API: ${submissionData}`,
-        meta: logMeta,
-      })
-
       const statusTrackerData: StatusTrackerData = {
         submittedSteps: submissionData.submittedSteps,
         workflow: submissionData.workflow,
         responseId: submissionData.id,
         form: submissionData.form,
       }
+
+      logger.info({
+        message: `Testing BE API: ${submissionData}`,
+        meta: logMeta,
+      })
 
       // Return relevant data in response
       res.status(StatusCodes.OK).json(statusTrackerData)
@@ -55,8 +56,10 @@ const getStatusTrackerSubmissionData: ControllerHandler<
         meta: { ...logMeta, error: error },
       })
 
-      // Return error in response
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
     })
 }
 
