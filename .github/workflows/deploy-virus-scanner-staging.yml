@@ -26,7 +26,7 @@ jobs:
       checkoutBranch: 'staging'
     secrets: inherit
   deploy-scanner-guardduty:
-    name: Deploy Scanner Guardduty
+    name: Deploy Scanner GuardDuty
     uses: ./.github/workflows/aws-deploy-scanner-guardduty.yml
     with:
       environment: 'staging'

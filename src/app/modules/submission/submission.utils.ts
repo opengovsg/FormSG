@@ -129,6 +129,9 @@ import {
   DownloadCleanFileFailedError,
   ExpectedResponseNotFoundError,
   FeatureDisabledError,
+  GuardDutyInvalidFileKeyError,
+  GuardDutyParseVirusScannerLambdaPayloadError,
+  GuardDutyVirusScanFailedError,
   InvalidEncodingError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
@@ -136,6 +139,7 @@ import {
   MaliciousFileDetectedError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
   SubmissionFailedError,
@@ -336,7 +340,10 @@ const errorMapper: MapRouteError = (
     case DatabaseError:
     case EmptyErrorFieldError:
     case VirusScanFailedError:
+    case GuardDutyVirusScanFailedError:
     case DownloadCleanFileFailedError:
+    case ParseVirusScannerLambdaPayloadError:
+    case GuardDutyParseVirusScannerLambdaPayloadError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
@@ -345,6 +352,7 @@ const errorMapper: MapRouteError = (
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
+    case GuardDutyInvalidFileKeyError:
     case MaliciousFileDetectedError:
     case ExpectedResponseNotFoundError:
       return {

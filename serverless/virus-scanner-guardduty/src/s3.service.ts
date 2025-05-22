@@ -253,7 +253,7 @@ export class S3Service {
 
       // return tag once found
       this.logger.info(
-        `Guardduty scan complete. Tags found for ${bucketName}/${objectKey}: ${malwareScanTag.Value}`,
+        `GuardDuty scan complete. Tags found for ${bucketName}/${objectKey}: ${malwareScanTag.Value}`,
       )
       return malwareScanTag
     } catch (e) {
