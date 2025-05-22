@@ -153,4 +153,9 @@ export const enSG: Workflow = {
       suffix: 'in Settings.',
     },
   },
+  stepName: {
+    label: 'Step name',
+    description:
+      'A short and clear name for easy reference. This will be visible to the respondent only if Status Tracking is enabled.',
+  },
 }

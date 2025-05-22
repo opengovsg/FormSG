@@ -18,4 +18,5 @@ export type EditStepInputs = FormWorkflowStep & {
   field?: FormWorkflowStepDynamic['field']
   approval_field?: FormFieldDto['_id']
   conditional_field?: FormFieldDto['_id']
+  step_name: FormWorkflowStepStatic['name']
 }
