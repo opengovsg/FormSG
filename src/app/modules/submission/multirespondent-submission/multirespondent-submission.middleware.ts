@@ -35,11 +35,8 @@ import * as FormService from '../../form/form.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
-  DownloadCleanFileFailedError,
   InvalidSubmissionTypeError,
-  MaliciousFileDetectedError,
   ProcessingError,
-  VirusScanFailedError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
 import {
