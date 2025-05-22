@@ -33,6 +33,7 @@ export const enSG = {
       label: 'Notifications for new responses',
       info: 'Allow respondents to receive a copy of their submission',
       description: 'Separate multiple email addresses with a comma',
+      statusTrackerInfo: 'Allow respondents to track their submission status',
     },
   },
 }

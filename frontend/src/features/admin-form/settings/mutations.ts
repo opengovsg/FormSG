@@ -50,6 +50,7 @@ import {
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
   updateMrfEmailNotifications,
+  updateMrfStatusTracker,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -300,6 +301,25 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateMrfStatusTracker = useMutation(
+    (nextHasStatusTracker: boolean) =>
+      updateMrfStatusTracker(formId, {
+        hasStatusTracker: nextHasStatusTracker,
+      }),
+    {
+      onSuccess: (newData) => {
+        const hasStatusTracker =
+          'hasStatusTracker' in newData ? newData.hasStatusTracker : false
+
+        handleSuccess({
+          newData,
+          toastDescription: `${t('features.adminForm.toasts.statusTracker.successBefore')} ${hasStatusTracker ? '' : t('features.adminForm.toasts.statusTracker.disabled')}${t('features.adminForm.toasts.statusTracker.successAfter')}`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormRespondentCopy = useMutation(
     (nextHasRespondentCopy: boolean) =>
       updateFormRespondentCopy(formId, nextHasRespondentCopy),
@@ -529,6 +549,7 @@ export const useMutateFormSettings = () => {
     mutateFormIssueNotification,
     mutateFormEmails,
     mutateMrfEmailNotifications,
+    mutateMrfStatusTracker,
     mutateFormRespondentCopy,
     mutateFormTitle,
     mutateFormAuthType,

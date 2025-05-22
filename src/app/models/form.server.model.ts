@@ -387,6 +387,10 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     default: '',
   },
+  hasStatusTracker: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(

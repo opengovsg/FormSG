@@ -28,4 +28,10 @@ export const enSG = {
     disabled: 'not ',
     successAfter: 'be able to receive a copy of their submission',
   },
+  statusTracker: {
+    successBefore: 'Respondents will',
+    disabled: 'not ',
+    successAfter:
+      'be able to receive a status tracking link of their submission',
+  },
 }

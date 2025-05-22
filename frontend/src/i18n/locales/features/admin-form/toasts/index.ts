@@ -17,4 +17,9 @@ export interface Toasts {
     disabled: string
     successAfter: string
   }
+  statusTracker: {
+    successBefore: string
+    disabled: string
+    successAfter: string
+  }
 }

@@ -137,6 +137,12 @@ export const updateFormRespondentCopy: UpdateFormFn<
   })
 }
 
+export const updateMrfStatusTracker: UpdateMultiRespondentFormFn<{
+  hasStatusTracker: boolean
+}> = async (formId, newHasStatusTracker) => {
+  return updateFormSettings(formId, newHasStatusTracker)
+}
+
 export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   MrfEmailNotificationSettings
 > = async (formId, newSettings) => {
