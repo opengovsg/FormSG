@@ -167,9 +167,23 @@ export class InvalidFileKeyError extends ApplicationError {
   }
 }
 
+export class GuardDutyInvalidFileKeyError extends ApplicationError {
+  constructor(
+    message = 'GUARDDUTY Invalid file key. File keys should be valid UUIDs.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_GD_INVALID_FILE_KEY)
+  }
+}
+
 export class VirusScanFailedError extends ApplicationError {
   constructor(message = 'Virus scan failed. Please try again.') {
     super(message, undefined, ErrorCodes.SUBMISSION_VIRUS_SCAN_FAILED)
+  }
+}
+
+export class GuardDutyVirusScanFailedError extends ApplicationError {
+  constructor(message = 'Virus scan failed. Please try again.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_GD_VIRUS_SCAN_FAILED)
   }
 }
 
@@ -187,12 +201,34 @@ export class DownloadCleanFileFailedError extends ApplicationError {
   }
 }
 
+export class GuardDutyDownloadCleanFileFailedError extends ApplicationError {
+  constructor(
+    message = 'Attempt to download clean file failed. Please try again.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_GD_DOWNLOAD_CLEAN_FILE_FAILED,
+    )
+  }
+}
+
 export class ParseVirusScannerLambdaPayloadError extends ApplicationError {
   constructor(message = 'Unexpected payload from virus scanning lambda.') {
     super(
       message,
       undefined,
       ErrorCodes.SUBMISSION_PARSE_VIRUS_SCANNER_LAMBDA_PAYLOAD,
+    )
+  }
+}
+
+export class GuardDutyParseVirusScannerLambdaPayloadError extends ApplicationError {
+  constructor(message = 'Unexpected payload from virus scanning lambda.') {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_GD_PARSE_VIRUS_SCANNER_LAMBDA_PAYLOAD,
     )
   }
 }
@@ -205,6 +241,16 @@ export class MaliciousFileDetectedError extends ApplicationError {
       } has failed our virus scan. Try to create and upload it again.`,
       undefined,
       ErrorCodes.SUBMISSION_MALICIOUS_FILE_DETECTED,
+    )
+  }
+}
+
+export class GuardDutyMaliciousFileDetectedError extends ApplicationError {
+  constructor(filename?: string) {
+    super(
+      `Your ${filename ? `file "${filename}"` : 'attachments(s)'} has failed our virus scan. Try to create and upload it again.`,
+      undefined,
+      ErrorCodes.SUBMISSION_GD_MALICIOUS_FILE_DETECTED,
     )
   }
 }
