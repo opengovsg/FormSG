@@ -16,8 +16,8 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 
-import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 type StepNameProps = {
   stepNumber: number
@@ -69,12 +69,15 @@ export const StepNameBlock = ({
           </FormLabel>
           <Controller
             control={control}
-            name={STEP_NAME} // check this
+            name={STEP_NAME}
             render={({ field }) => (
               <Input
-                // id={STEP_NAME}
+                // utilizing placeholder to mimic default step name
                 placeholder={displayStepName}
-                _placeholder={{ color: 'secondary.700' }} // check this
+                _placeholder={{ color: 'secondary.700' }}
+                _focus={{
+                  _placeholder: { color: 'transparent' },
+                }}
                 {...field}
               />
             )}
