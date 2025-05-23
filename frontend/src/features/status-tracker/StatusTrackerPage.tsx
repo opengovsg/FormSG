@@ -43,6 +43,7 @@ import { FormNotFound } from '~features/public-form/components/FormNotFound'
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 const FORMSG_LOGO_URL = 'https://file.go.gov.sg/formslogotransparent120px.png'
 
@@ -167,6 +168,11 @@ export const StatusTrackerPage = (): JSX.Element => {
   })
 
   return (
+    // <PublicFormProvider
+    //   formId={formId}
+    //   submissionId={submissionId}
+    //   startTime={startTime}
+    // >
     <BackgroundBox>
       <StatusTrackerBaseGridLayout flex={1}>
         <StatusTrackerFormInfoGridArea>
@@ -196,5 +202,6 @@ export const StatusTrackerPage = (): JSX.Element => {
         </FooterGridArea>
       </BaseGridLayout>
     </BackgroundBox>
+    // </PublicFormProvider>
   )
 }

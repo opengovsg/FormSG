@@ -283,11 +283,13 @@ const MrfEmailNotificationsForm = ({
             </Box>
           </FormControl>
         ) : null}
-        <FormControl isDisabled={isDisabled}>
-          <Box mt={'1.5rem'}>
-            <StatusTrackerToggle />
-          </Box>
-        </FormControl>
+        {isTest || user?.betaFlags?.statusTracker ? (
+          <FormControl isDisabled={isDisabled}>
+            <Box mt={'1.5rem'}>
+              <StatusTrackerToggle />
+            </Box>
+          </FormControl>
+        ) : null}
       </Box>
     </form>
   )
