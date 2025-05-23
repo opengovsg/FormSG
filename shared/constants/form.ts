@@ -31,6 +31,7 @@ export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'publicKey',
   'workflow',
+  'hasStatusTracker',
 ] as const
 
 const FORM_SETTINGS_FIELDS = [

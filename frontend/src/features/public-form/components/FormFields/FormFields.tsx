@@ -202,7 +202,7 @@ export const FormFields = ({
   const hasNormalPrefills = Object.values(fieldPrefillMap).some(
     (field) => !field.lockPrefill && field.prefillValue,
   )
-
+  console.log(form)
   const hasLockedNormalPrefills = hasLockedPrefills && hasNormalPrefills
 
   return (
@@ -258,7 +258,9 @@ export const FormFields = ({
           )}
         <PublicFormPaymentResumeModal />
         {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
-        {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
+        {form &&
+        (form?.hasRespondentCopy ||
+          ('hasStatusTracker' in form && form?.hasStatusTracker)) ? (
           <Box mt="2.5rem">
             <PublicRespondentEmailField />
           </Box>

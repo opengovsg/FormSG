@@ -6,6 +6,7 @@ import {
   Hr,
   Html,
   Img,
+  Link,
   Preview,
   Section,
   Text,
@@ -24,8 +25,6 @@ import {
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
 
-const respondentCopyHeading = 'Thank you for submitting this form'
-
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
   NOT_APPROVED = 'Not approved' 
@@ -42,6 +41,8 @@ export type WorkflowEmailData = {
   formQuestionAnswers: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
   respondentCopy?: boolean | undefined
+  statusTracker?: boolean | undefined
+  formId?: string
 }
 
 export const MrfWorkflowCompletionEmail = ({
@@ -50,14 +51,18 @@ export const MrfWorkflowCompletionEmail = ({
   formQuestionAnswers = [], 
   outcome,
   respondentCopy,
+  statusTracker,
+  formId,
 }: WorkflowEmailData): JSX.Element => {
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
   
   // if is respondent copy, replace header
-  if (respondentCopy) {
-    headingText = respondentCopyHeading
+  if (respondentCopy || statusTracker) {
+    headingText = 'Thank you for submitting this form'
   }
+
+  const responsesHeader = statusTracker && !respondentCopy ? `Track you response status for ${formTitle}` : `Responses for ${formTitle}`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
@@ -71,30 +76,45 @@ export const MrfWorkflowCompletionEmail = ({
       <Head /> 
       <Preview>{headingText}</Preview>
       <Body style={mainStyle}>
-          <Container style={containerStyle}>
-            <Section style={sectionStyle}>
-              <Img style={{height: '24px', marginBottom: '40px'}} src={FORMSG_LOGO_URL} alt="FormSG" />
-              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
-                {headingText}
+        <Container style={containerStyle}>
+          <Section style={sectionStyle}>
+            <Img style={{ height: '24px', marginBottom: '40px' }} src={FORMSG_LOGO_URL} alt="FormSG" />
+            <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
+              {headingText}
+            </Heading>
+            {outcome && (
+              <>
+                <Text style={{ ...outcomeTextStyle, ...questionMargin }}>Outcome</Text>
+                <Text style={{ ...outcomeTextStyle, fontWeight: 400, ...answerMargin }}>{outcome}</Text>
+              </>
+            )}
+            <Hr style={{ margin: '40px 0' }} />
+            <Section style={{ marginBottom: '40px' }}>
+              <Heading style={{ ...headingTextStyle}}>
+                {responsesHeader}
               </Heading>
-              {outcome && (
-                <>
-                  <Text style={{...outcomeTextStyle, ...questionMargin}}>Outcome</Text>
-                  <Text style={{...outcomeTextStyle, fontWeight: 400, ...answerMargin}}>{outcome}</Text>
-                </>
+              {statusTracker ? (
+                // update this to match all envs
+                <Link href={`https://form.gov.sg/${formId}/status/${responseId}`} style={{
+                  textDecoration: 'underline',
+                  color: "blue.500",
+                }}> 
+                You can check the status of your response at the link here
+                </Link>
+              ) : null}
+            </Section>
+            {respondentCopy === false ? null : (
+              <>
+                <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
+                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{responseId}</Text>
+                {formQuestionAnswers.map(renderQuestionAnswer)}
+              </>
               )}
-              <Hr style={{margin: '40px 0'}}/>
-              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
-                Responses for {formTitle} 
-              </Heading>
-              <Text style={{...primaryTextStyle, ...questionMargin}}>Response ID</Text>
-              <Text style={{...secondaryTextStyle, ...answerMargin}}>{responseId}</Text>
-              {formQuestionAnswers.map(renderQuestionAnswer)}
-              <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
-                For more details, please contact the respondent(s) or form administrator. 
-              </Text>
-            </Section> 
-          </Container>
+            <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
+              For more details, please contact the respondent(s) or form administrator.
+            </Text>
+          </Section>
+        </Container>
       </Body>
     </Html>
   )
