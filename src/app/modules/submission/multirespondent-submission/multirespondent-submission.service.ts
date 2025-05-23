@@ -635,7 +635,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       respondentEmails,
     }).mapErr((error) => {
       logger.error({
-        message: `Send multirespondent respondent copy email error ${respondentEmails} something here ${respondentEmails ? 'HAS' : 'NONE'}`,
+        message: 'Send multirespondent respondent copy email error',
         meta: logMeta,
         error,
       })
@@ -861,7 +861,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  if (respondentEmails) {
+  if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,
