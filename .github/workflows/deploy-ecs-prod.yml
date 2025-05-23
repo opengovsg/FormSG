@@ -26,8 +26,8 @@ jobs:
       aws-region: 'ap-southeast-1'
       ecr-repository: 'formsg'
       # ECS configuration
-      ecs-cpu: 1024
-      ecs-memory: 2048
+      ecs-cpu: 2048
+      ecs-memory: 4096
       ecs-cluster-name: 'formsg-prod-ecs'
       ecs-service-name: 'formsg-prod-ecs-service'
       ecs-task-definition: 'formsg-prod-ecs'
