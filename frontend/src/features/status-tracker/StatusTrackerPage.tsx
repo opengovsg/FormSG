@@ -89,7 +89,6 @@ const StatusTrackerFormInfo = (): JSX.Element => {
   return (
     <Box w="100%">
       <Flex direction="row" alignItems="center" gap="0.5rem">
-        {/* <FormBannerLogo {...logoProps} /> */}
         <Image
           src={FORMSG_LOGO_URL}
           alt={'test'}
@@ -133,22 +132,20 @@ export const StatusTrackerPage = (): JSX.Element => {
   if (error || !data || !data.submittedSteps || !data.workflow)
     return <NotFoundErrorPage />
 
-  const { submittedSteps, workflow, form } = data
+  const { submittedSteps, workflow } = data
 
   const workflowSteps = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {
-    const name = step.name ? step.name : `Step ${index + 1}`
+    const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
 
     const submittedStep = submittedSteps[index]
-    const stepStatus = submittedStep.isApproval
-      ? submittedStep.status
-      : undefined
+
     const workflowStatus =
       index <= workflowSteps
         ? workflow[index].approval_field // if this step is an approval step
-          ? stepStatus
-            ? stepStatus
+          ? 'status' in submittedStep // if status is in submitted step
+            ? submittedStep.status
             : WorkflowStatus.COMPLETED
           : WorkflowStatus.COMPLETED
         : WorkflowStatus.PENDING
