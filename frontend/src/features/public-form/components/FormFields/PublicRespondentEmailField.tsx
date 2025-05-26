@@ -10,8 +10,11 @@ import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { TagInput } from '~components/TagInput'
 
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
 export const PublicRespondentEmailField = (): JSX.Element => {
   const { t } = useTranslation()
+  const { form } = usePublicFormContext()
 
   const baseRules = useOptionalAdminEmailValidationRules()
   const rules: RegisterOptions<
@@ -26,6 +29,23 @@ export const PublicRespondentEmailField = (): JSX.Element => {
     },
   }
 
+  const fieldTitle =
+    form?.hasRespondentCopy &&
+    'hasStatusTracker' in form &&
+    form?.hasStatusTracker
+      ? t(
+          'features.publicForm.components.fields.respondentEmail.respondentCopyAndStatusTracker',
+        )
+      : form?.hasRespondentCopy
+        ? t(
+            'features.publicForm.components.fields.respondentEmail.respondentCopy',
+          )
+        : form && 'hasStatusTracker' in form && form?.hasStatusTracker
+          ? t(
+              'features.publicForm.components.fields.respondentEmail.statusTracker',
+            )
+          : t('features.publicForm.components.fields.respondentEmail.title') // default
+
   const {
     control,
     formState: { errors },
@@ -39,9 +59,7 @@ export const PublicRespondentEmailField = (): JSX.Element => {
         rules={rules}
         render={({ field }) => (
           <Box>
-            <FormLabel>
-              {t('features.publicForm.components.fields.respondentEmail.title')}
-            </FormLabel>
+            <FormLabel>{fieldTitle}</FormLabel>
             <TagInput
               {...field}
               value={field.value as string[]}
