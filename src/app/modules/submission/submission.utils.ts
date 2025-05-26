@@ -181,11 +181,6 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
       }
-    case SubmissionSaveError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-      }
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -335,15 +330,19 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
       }
+    case SubmissionSaveError:
     case PaymentNotFoundError:
     case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
+    case InvalidFileKeyError:
+    case GuardDutyInvalidFileKeyError:
     case VirusScanFailedError:
     case GuardDutyVirusScanFailedError:
     case DownloadCleanFileFailedError:
     case ParseVirusScannerLambdaPayloadError:
     case GuardDutyParseVirusScannerLambdaPayloadError:
+    case MailSendError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
@@ -351,8 +350,6 @@ const errorMapper: MapRouteError = (
     case SubmissionFailedError:
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
-    case InvalidFileKeyError:
-    case GuardDutyInvalidFileKeyError:
     case MaliciousFileDetectedError:
     case ExpectedResponseNotFoundError:
       return {
@@ -365,11 +362,6 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case MailSendError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: error.message,
-      }
     default:
       logger.error({
         message: 'Unknown route error observed',
@@ -378,7 +370,6 @@ const errorMapper: MapRouteError = (
         },
         error,
       })
-
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
