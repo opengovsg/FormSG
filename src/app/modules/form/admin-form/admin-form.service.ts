@@ -2340,21 +2340,6 @@ export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
 }
 
 /**
- * Ensures that the form does not have a public key to prevent undesired overwrites.
- * @param form The form to check
- * @returns ok(form) if the form does not have a public key
- * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
- */
-export const ensureFormHasNoPublicKey = (
-  form: IPopulatedForm,
-): Result<IPopulatedForm, FormAlreadyHasPublicKeyError> => {
-  if (form.publicKey) {
-    return err(new FormAlreadyHasPublicKeyError())
-  }
-  return ok(form)
-}
-
-/**
  * Converts an email mode form to storage mode by replacing it with a storage mode form with the same id.
  * @param form The form to convert to storage mode
  * @param publicKey The public key to set on the form

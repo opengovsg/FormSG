@@ -10776,7 +10776,7 @@ describe('admin-form.controller', () => {
       },
     })
 
-    it('should return 200 ok when form is email mode and has no public key', async () => {
+    it('should return 200 ok when form is email mode', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
 
@@ -10786,9 +10786,6 @@ describe('admin-form.controller', () => {
       )
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
-      )
-      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
-        ok(MOCK_FORM),
       )
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
         ok(MOCK_FORM as IPopulatedEmailForm),
@@ -10839,9 +10836,6 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(nonEmailModeForm),
       )
-      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
-        ok(nonEmailModeForm),
-      )
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
         err(
           new ResponseModeError(
@@ -10862,39 +10856,6 @@ describe('admin-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.UNPROCESSABLE_ENTITY,
       )
-      expect(
-        MockAdminFormService.convertEmailToStorageMode,
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return 422 when form already has public key', async () => {
-      // Arrange
-      const mockRes = expressHandler.mockResponse()
-      // Mock various services to return expected results
-      MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(MOCK_USER),
-      )
-      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
-        err(new FormAlreadyHasPublicKeyError()),
-      )
-
-      // Act
-      await AdminFormController.handleConvertEmailToStorageMode(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(
-        StatusCodes.UNPROCESSABLE_ENTITY,
-      )
-      expect(
-        MockAdminFormService.ensureFormHasNoPublicKey,
-      ).toHaveBeenCalledWith(MOCK_FORM)
       expect(
         MockAdminFormService.convertEmailToStorageMode,
       ).not.toHaveBeenCalled()
