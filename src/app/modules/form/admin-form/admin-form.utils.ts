@@ -51,7 +51,6 @@ import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 import {
   EditFieldError,
   FieldNotFoundError,
-  FormAlreadyHasPublicKeyError,
   GoGovAlreadyExistError,
   GoGovBadGatewayError,
   GoGovError,
@@ -163,7 +162,6 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case ResponseModeError:
-    case FormAlreadyHasPublicKeyError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,

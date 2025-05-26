@@ -113,7 +113,6 @@ import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
   FieldNotFoundError,
-  FormAlreadyHasPublicKeyError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'

@@ -92,7 +92,6 @@ import * as AdminFormController from '../admin-form.controller'
 import {
   EditFieldError,
   FieldNotFoundError,
-  FormAlreadyHasPublicKeyError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'

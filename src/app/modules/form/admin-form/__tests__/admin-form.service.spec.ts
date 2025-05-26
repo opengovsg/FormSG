@@ -83,7 +83,6 @@ import {
 import {
   EditFieldError,
   FieldNotFoundError,
-  FormAlreadyHasPublicKeyError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
