@@ -353,20 +353,26 @@ EmailFormSchema.methods.replaceWithStorageModeFormWithSameId = async function ({
   publicKey: string
 }) {
   const FormModel = mongoose.model(FORM_SCHEMA_ID)
+  const session = await mongoose.startSession()
+  try {
+    await session.withTransaction(async () => {
+      const emailModeFormData = this.toObject()
+      const emailModeFormId = this._id
 
-  const emailModeFormData = this.toObject()
-  const emailModeFormId = this._id
+      await this.deleteOne({ session })
 
-  await this.deleteOne()
-
-  const replacedStorageModeFormDoc = new FormModel({
-    ...emailModeFormData,
-    _id: emailModeFormId,
-    responseMode: FormResponseMode.Encrypt,
-    publicKey,
-  })
-  await replacedStorageModeFormDoc.save()
-  return replacedStorageModeFormDoc
+      const replacedStorageModeFormDoc = new FormModel({
+        ...emailModeFormData,
+        _id: emailModeFormId,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey,
+      })
+      await replacedStorageModeFormDoc.save({ session })
+      return replacedStorageModeFormDoc
+    })
+  } finally {
+    await session.endSession()
+  }
 }
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
