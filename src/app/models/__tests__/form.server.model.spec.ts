@@ -1031,7 +1031,7 @@ describe('Form Model', () => {
         const emailForm = await emailFormToReplace.save()
 
         // Act
-        await emailForm.replaceWithStorageModeFormWithSameId({
+        await emailForm.__replaceWithStorageModeFormWithSameId({
           publicKey: MOCK_PUBLIC_KEY,
         })
 

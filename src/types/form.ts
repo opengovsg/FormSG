@@ -258,6 +258,21 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   }): Promise<IPopulatedEncryptedForm>
 
   /**
+   * Internal method to replace an email mode form with a storage mode form with the same id.
+   * Used for testing purposes.
+   * @param publicKey the public key to set for encrypting form responses
+   * @param session the session to use for the transaction
+   * @returns updated form with storage mode values populated
+   */
+  __replaceWithStorageModeFormWithSameId({
+    publicKey,
+    session,
+  }: {
+    publicKey: string
+    session?: ClientSession
+  }): Promise<IPopulatedEncryptedForm>
+
+  /**
    * Return essential form creation parameters with the given properties.
    * @param overrideProps the props to override on the duplicated form
    * @returns params required to create a new duplicated form object
