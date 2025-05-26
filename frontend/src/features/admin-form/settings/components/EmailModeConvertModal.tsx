@@ -80,7 +80,7 @@ export const EmailModeConvertModal = ({
         toast.closeAll()
         toast({
           description: t('features.adminForm.toasts.emailModeMigration.error'),
-          status: 'error',
+          status: 'danger',
           isClosable: true,
         })
       },
