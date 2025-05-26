@@ -92,6 +92,7 @@ import * as AdminFormController from '../admin-form.controller'
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormAlreadyHasPublicKeyError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
@@ -10744,6 +10745,159 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleConvertEmailToStorageMode', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      responseMode: FormResponseMode.Email,
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+      body: {
+        publicKey: 'some public key',
+      },
+    })
+
+    it('should return 200 ok when form is email mode and has no public key', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Mock various services to return expected results
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
+        ok(MOCK_FORM),
+      )
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEmailForm),
+      )
+      MockAdminFormService.convertEmailToStorageMode.mockReturnValueOnce(
+        okAsync(MOCK_FORM as IPopulatedEncryptedForm),
+      )
+
+      // Act
+      await AdminFormController.handleConvertEmailToStorageMode(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(
+        MockAdminFormService.convertEmailToStorageMode,
+      ).toHaveBeenCalledWith({
+        form: MOCK_FORM,
+        publicKey: MOCK_REQ.body.publicKey,
+      })
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
+    it('should return 422 when form is not in email mode', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      // Mock form to be in non-email mode
+      const nonEmailModeForm = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Encrypt,
+      }
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(nonEmailModeForm),
+      )
+      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
+        ok(nonEmailModeForm),
+      )
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+        err(
+          new ResponseModeError(
+            [FormResponseMode.Email],
+            FormResponseMode.Encrypt,
+          ),
+        ),
+      )
+
+      // Act
+      await AdminFormController.handleConvertEmailToStorageMode(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(
+        MockAdminFormService.convertEmailToStorageMode,
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return 422 when form already has public key', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.ensureFormHasNoPublicKey.mockReturnValueOnce(
+        err(new FormAlreadyHasPublicKeyError()),
+      )
+
+      // Act
+      await AdminFormController.handleConvertEmailToStorageMode(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(
+        MockAdminFormService.ensureFormHasNoPublicKey,
+      ).toHaveBeenCalledWith(MOCK_FORM)
+      expect(
+        MockAdminFormService.convertEmailToStorageMode,
+      ).not.toHaveBeenCalled()
     })
   })
 })

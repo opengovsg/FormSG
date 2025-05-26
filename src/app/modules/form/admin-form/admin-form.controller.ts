@@ -3381,6 +3381,7 @@ export const handleConvertEmailToStorageMode: ControllerHandler<
         level: PermissionLevel.Write,
       })
     })
+    .andThen((form) => AdminFormService.ensureFormHasNoPublicKey(form))
     .andThen((form) => EmailSubmissionService.checkFormIsEmailMode(form))
     .map((form) => {
       return AdminFormService.convertEmailToStorageMode({ form, publicKey })

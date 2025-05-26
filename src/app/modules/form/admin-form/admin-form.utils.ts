@@ -163,6 +163,7 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case ResponseModeError:
+    case FormAlreadyHasPublicKeyError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
@@ -207,11 +208,6 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Something went wrong. Please try creating fields again.',
-      }
-    case FormAlreadyHasPublicKeyError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage: 'Form already has a public key.',
       }
     default:
       logger.error({

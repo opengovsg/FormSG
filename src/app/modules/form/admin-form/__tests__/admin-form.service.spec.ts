@@ -1633,7 +1633,7 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('convertEmailToStorageMode', () => {
+  describe('ensureFormHasNoPublicKey', () => {
     const MOCK_EMAIL_FORM = {
       _id: new ObjectId(),
       status: FormStatus.Private,
@@ -1641,7 +1641,7 @@ describe('admin-form.service', () => {
       emails: ['test@example.com'],
     } as IPopulatedEmailForm
 
-    it('should not convert form if public key already exists', async () => {
+    it('should return FormAlreadyHasPublicKeyError if form has public key', async () => {
       // Arrange
       const emailForm = merge({}, MOCK_EMAIL_FORM, {
         responseMode: FormResponseMode.Email,
@@ -1650,10 +1650,8 @@ describe('admin-form.service', () => {
       })
 
       // Act
-      const actualResult = await AdminFormService.convertEmailToStorageMode({
-        form: emailForm,
-        publicKey: 'already existing public key',
-      })
+      const actualResult =
+        await AdminFormService.ensureFormHasNoPublicKey(emailForm)
 
       // Assert
       expect(actualResult.isErr()).toBeTrue()

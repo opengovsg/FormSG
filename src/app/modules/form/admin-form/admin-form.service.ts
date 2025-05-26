@@ -2345,9 +2345,9 @@ export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
  * @returns ok(form) if the form does not have a public key
  * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
  */
-const ensureFormHasNoPublicKey = (
-  form: IPopulatedEmailForm,
-): Result<IPopulatedEmailForm, FormAlreadyHasPublicKeyError> => {
+export const ensureFormHasNoPublicKey = (
+  form: IPopulatedForm,
+): Result<IPopulatedForm, FormAlreadyHasPublicKeyError> => {
   if (form.publicKey) {
     return err(new FormAlreadyHasPublicKeyError())
   }
@@ -2361,28 +2361,26 @@ const ensureFormHasNoPublicKey = (
  * @returns ok(updated form) on success
  * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
  */
-export const convertEmailToStorageMode = async ({
+export const convertEmailToStorageMode = ({
   form,
   publicKey,
 }: {
   form: IPopulatedEmailForm
   publicKey: string
 }) => {
-  return ensureFormHasNoPublicKey(form).map((form) => {
-    return ResultAsync.fromPromise(
-      form.replaceWithStorageModeFormWithSameId({ publicKey }),
-      (error) => {
-        logger.error({
-          message: 'Error occurred when converting email to storage mode',
-          meta: {
-            action: 'convertEmailToStorageMode',
-            formId: form._id,
-            publicKey,
-          },
-          error,
-        })
-        return transformMongoError(error)
-      },
-    )
-  })
+  return ResultAsync.fromPromise(
+    form.replaceWithStorageModeFormWithSameId({ publicKey }),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when converting email to storage mode',
+        meta: {
+          action: 'convertEmailToStorageMode',
+          formId: form._id,
+          publicKey,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
 }
