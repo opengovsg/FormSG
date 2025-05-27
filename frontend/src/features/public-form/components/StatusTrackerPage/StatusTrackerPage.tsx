@@ -89,15 +89,14 @@ export const StatusTrackerBaseGridLayout = (props: GridProps) => (
 
 const StatusTrackerFormInfo = (): JSX.Element => {
   // trying to get logo to work
-  const { form, isAuthRequired } = usePublicFormContext()
+  const { form } = usePublicFormContext()
 
   const { data: { logoBucketUrl } = {} } = useEnv(
-    form?.startPage.logo.state === FormLogoState.Custom, // form = formId only
+    form?.startPage.logo.state === FormLogoState.Custom,
   )
 
   const statusTrackerLogoProps = useFormBannerLogo({
-    // logoBucketUrl,
-    logoBucketUrl: FORMSG_LOGO_URL,
+    logoBucketUrl: logoBucketUrl,
     logo: form?.startPage.logo,
     agency: form?.admin.agency,
     colorTheme: form?.startPage.colorTheme,
