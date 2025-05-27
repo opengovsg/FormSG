@@ -32,6 +32,7 @@ import {
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
+import { FormFooter } from '~features/public-form/components/FormFooter'
 import {
   FormBannerLogo,
   FormBannerLogoProps,
@@ -87,9 +88,30 @@ export const StatusTrackerBaseGridLayout = (props: GridProps) => (
 )
 
 const StatusTrackerFormInfo = (): JSX.Element => {
+  // trying to get logo to work
+  const { form, isAuthRequired } = usePublicFormContext()
+
+  const { data: { logoBucketUrl } = {} } = useEnv(
+    form?.startPage.logo.state === FormLogoState.Custom, // form = formId only
+  )
+
+  const statusTrackerLogoProps = useFormBannerLogo({
+    // logoBucketUrl,
+    logoBucketUrl: FORMSG_LOGO_URL,
+    logo: form?.startPage.logo,
+    agency: form?.admin.agency,
+    colorTheme: form?.startPage.colorTheme,
+    showDefaultLogoIfNoLogo: true,
+  })
   return (
     <Box w="100%">
       <Flex direction="row" alignItems="center" gap="0.5rem">
+        <FormBannerLogo
+          isLoading={false}
+          {...statusTrackerLogoProps}
+          onLogout={undefined}
+          loggedInId={undefined}
+        />
         <Image
           src={FORMSG_LOGO_URL}
           alt={'test'}
@@ -97,7 +119,7 @@ const StatusTrackerFormInfo = (): JSX.Element => {
           objectFit="contain"
         />
         <Text textStyle="body-2" color="#FFFFFF">
-          FORM TITLE
+          {form?.title}
         </Text>
       </Flex>
       <Text textStyle="h6" color="#FFFFFF" mt="1rem">
@@ -113,23 +135,6 @@ export const StatusTrackerPage = (): JSX.Element => {
   if (!submissionId) throw new Error('No submissionId provided')
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
-
-  // trying to get logo to work
-  // const { form, isAuthRequired } = usePublicFormContext()
-
-  // const { data: { logoBucketUrl } = {} } = useEnv(
-  //   data?.form?.startPage.logo.state === FormLogoState.Custom, // form = formId only
-  // )
-
-  // const statusTrackerLogoProps = useFormBannerLogo({
-  //   // logoBucketUrl,
-  //   logoBucketUrl: FORMSG_LOGO_URL,
-  //   logo: data?.form?.startPage.logo,
-  //   // logo: undefined,
-  //   agency: data?.form?.admin.agency,
-  //   colorTheme: data?.form?.startPage.colorTheme,
-  //   showDefaultLogoIfNoLogo: true,
-  // })
 
   if (isLoading) return <StatusTrackerSkeletonPage />
 
@@ -172,11 +177,7 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const startTime = Date.now()
   return (
-    <PublicFormProvider
-      formId={formId}
-      // submissionId={submissionId}
-      startTime={startTime}
-    >
+    <PublicFormProvider formId={formId} startTime={startTime}>
       <BackgroundBox>
         <StatusTrackerBaseGridLayout flex={1}>
           <StatusTrackerFormInfoGridArea>
@@ -185,12 +186,6 @@ export const StatusTrackerPage = (): JSX.Element => {
           <LoginGridArea>
             <Box mt={{ base: '1rem', lg: '10.125rem' }}>
               <Flex direction="column">
-                {/* <FormBannerLogo
-                  isLoading={isLoading}
-                  {...statusTrackerLogoProps}
-                  onLogout={undefined}
-                  loggedInId={undefined}
-                /> */}
                 <Text mb="2rem" textStyle="h4">
                   Response ID: {data.responseId}
                 </Text>
@@ -200,7 +195,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           </LoginGridArea>
         </StatusTrackerBaseGridLayout>
         <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
-          <FooterGridArea>
+          {/* <FooterGridArea>
             <AppFooter
               compactMonochromeLogos
               variant="compact"
@@ -209,8 +204,9 @@ export const StatusTrackerPage = (): JSX.Element => {
                 bg: 'transparent',
               }}
             />
-          </FooterGridArea>
+          </FooterGridArea> */}
         </BaseGridLayout>
+        <FormFooter />
       </BackgroundBox>
     </PublicFormProvider>
   )
