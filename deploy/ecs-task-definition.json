@@ -7,7 +7,8 @@
         { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
       ],
       "environment": [
-        { "name": "DD_SERVICE", "value": "formsg" }
+        { "name": "DD_SERVICE", "value": "formsg" }, 
+        { "name": "DD_ENV", "value": "<DD_ENV>" }
       ],
       "secrets": [
         { "name": "IS_IAC_MIGRATED", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/IS_IAC_MIGRATED" },
