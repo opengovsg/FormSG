@@ -34,7 +34,7 @@ export const setErrorCode = (error: ApplicationError) => {
  * @param errorCode The error code to submit the metric for
  */
 export const submitErrorCountMetric = (errorCode: number) => {
-  tracer.dogstatsd.increment('error.count', 1, {
+  tracer.dogstatsd.increment('formsg.error.count', 1, {
     code: errorCode,
   })
 }
