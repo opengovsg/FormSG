@@ -172,46 +172,46 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const startTime = Date.now()
   return (
-    // <PublicFormProvider
-    //   formId={formId}
-    //   submissionId={submissionId}
-    //   startTime={startTime}
-    // >
-    <BackgroundBox>
-      <StatusTrackerBaseGridLayout flex={1}>
-        <StatusTrackerFormInfoGridArea>
-          <StatusTrackerFormInfo />
-        </StatusTrackerFormInfoGridArea>
-        <LoginGridArea>
-          <Box mt={{ base: '1rem', lg: '10.125rem' }}>
-            <Flex direction="column">
-              {/* <FormBannerLogo
+    <PublicFormProvider
+      formId={formId}
+      // submissionId={submissionId}
+      startTime={startTime}
+    >
+      <BackgroundBox>
+        <StatusTrackerBaseGridLayout flex={1}>
+          <StatusTrackerFormInfoGridArea>
+            <StatusTrackerFormInfo />
+          </StatusTrackerFormInfoGridArea>
+          <LoginGridArea>
+            <Box mt={{ base: '1rem', lg: '10.125rem' }}>
+              <Flex direction="column">
+                {/* <FormBannerLogo
                   isLoading={isLoading}
                   {...statusTrackerLogoProps}
                   onLogout={undefined}
                   loggedInId={undefined}
                 /> */}
-              <Text mb="2rem" textStyle="h4">
-                Response ID: {data.responseId}
-              </Text>
-              <TimelineRunSteps steps={stepData} />
-            </Flex>
-          </Box>
-        </LoginGridArea>
-      </StatusTrackerBaseGridLayout>
-      <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
-        <FooterGridArea>
-          <AppFooter
-            compactMonochromeLogos
-            variant="compact"
-            containerProps={{
-              px: 0,
-              bg: 'transparent',
-            }}
-          />
-        </FooterGridArea>
-      </BaseGridLayout>
-    </BackgroundBox>
-    // </PublicFormProvider>
+                <Text mb="2rem" textStyle="h4">
+                  Response ID: {data.responseId}
+                </Text>
+                <TimelineRunSteps steps={stepData} />
+              </Flex>
+            </Box>
+          </LoginGridArea>
+        </StatusTrackerBaseGridLayout>
+        <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
+          <FooterGridArea>
+            <AppFooter
+              compactMonochromeLogos
+              variant="compact"
+              containerProps={{
+                px: 0,
+                bg: 'transparent',
+              }}
+            />
+          </FooterGridArea>
+        </BaseGridLayout>
+      </BackgroundBox>
+    </PublicFormProvider>
   )
 }
