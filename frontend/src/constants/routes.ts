@@ -56,7 +56,7 @@ export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'
 export const EDIT_SUBMISSION_PAGE_SUBROUTE = 'edit/:submissionId'
 
 /** Status tracker route */
-export const STATUS_TRACKER_ROUTE = `/${PUBLICFORM_ROUTE}/status/:submissionId`
+export const STATUS_TRACKER_SUBROUTE = `status/:submissionId`
 
 // Search param keys for multi-language
 export const UNICODE_LOCALE = 'unicodeLocale'

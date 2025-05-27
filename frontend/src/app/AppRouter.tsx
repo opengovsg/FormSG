@@ -22,7 +22,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
-  STATUS_TRACKER_ROUTE,
+  STATUS_TRACKER_SUBROUTE,
   TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
@@ -156,6 +156,14 @@ export const AppRouter = (): JSX.Element => {
               />
             }
           />
+          <Route
+            path={STATUS_TRACKER_SUBROUTE}
+            element={
+              <ParamIdValidator
+                element={<PublicElement element={<StatusTrackerPage />} />}
+              />
+            }
+          />
         </Route>
         <Route
           path={`${ADMINFORM_ROUTE}/:formId`}
@@ -202,14 +210,6 @@ export const AppRouter = (): JSX.Element => {
           element={
             <ParamIdValidator
               element={<PrivateElement element={<TemplateFormPage />} />}
-            />
-          }
-        />
-        <Route
-          path={STATUS_TRACKER_ROUTE}
-          element={
-            <ParamIdValidator
-              element={<PublicElement element={<StatusTrackerPage />} />}
             />
           }
         />
