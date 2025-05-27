@@ -95,7 +95,7 @@ export const MrfWorkflowCompletionEmail = ({
               </Heading>
               {statusTracker ? (
                 // update this to match all envs
-                <Link href={`https://form.gov.sg/${formId}/status/${responseId}`} style={{
+                <Link href={`${window.location.origin}/${formId}/status/${responseId}`} style={{
                   textDecoration: 'underline',
                   color: "blue.500",
                 }}> 

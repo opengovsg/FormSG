@@ -39,11 +39,12 @@ import {
   useFormBannerLogo,
 } from '~features/public-form/components/FormLogo'
 import { FormNotFound } from '~features/public-form/components/FormNotFound'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
-import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 const FORMSG_LOGO_URL = 'https://file.go.gov.sg/formslogotransparent120px.png'
 
@@ -59,7 +60,6 @@ export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
     mt={{ base: '1rem', lg: '8.125rem', md: '1.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
-    // colSpan={{ base: '-1', md: 12, lg: 5 }}
     pl={{ base: '1.5rem', lg: '0%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
     pt={{ base: '1.5rem', lg: '3rem' }}
@@ -114,15 +114,18 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
 
+  // trying to get logo to work
+  // const { form, isAuthRequired } = usePublicFormContext()
+
   // const { data: { logoBucketUrl } = {} } = useEnv(
-  //   data?.form?.startPage.logo.state === FormLogoState.Custom,
+  //   data?.form?.startPage.logo.state === FormLogoState.Custom, // form = formId only
   // )
 
   // const statusTrackerLogoProps = useFormBannerLogo({
   //   // logoBucketUrl,
   //   logoBucketUrl: FORMSG_LOGO_URL,
-  //   // logo: data?.form?.startPage.logo,
-  //   logo: undefined,
+  //   logo: data?.form?.startPage.logo,
+  //   // logo: undefined,
   //   agency: data?.form?.admin.agency,
   //   colorTheme: data?.form?.startPage.colorTheme,
   //   showDefaultLogoIfNoLogo: true,
@@ -167,6 +170,7 @@ export const StatusTrackerPage = (): JSX.Element => {
     }
   })
 
+  const startTime = Date.now()
   return (
     // <PublicFormProvider
     //   formId={formId}
@@ -181,6 +185,12 @@ export const StatusTrackerPage = (): JSX.Element => {
         <LoginGridArea>
           <Box mt={{ base: '1rem', lg: '10.125rem' }}>
             <Flex direction="column">
+              {/* <FormBannerLogo
+                  isLoading={isLoading}
+                  {...statusTrackerLogoProps}
+                  onLogout={undefined}
+                  loggedInId={undefined}
+                /> */}
               <Text mb="2rem" textStyle="h4">
                 Response ID: {data.responseId}
               </Text>

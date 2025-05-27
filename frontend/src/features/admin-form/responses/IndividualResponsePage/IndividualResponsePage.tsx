@@ -201,14 +201,14 @@ export const IndividualResponsePage = (): JSX.Element => {
                 isLoading={isLoading}
                 isError={isError}
               />
-              <Stack direction="row" bg="red">
+              <Stack direction="row" align="center">
                 <StackRow
                   label={MRF_PENDING_RESPONSE_AT_LABEL}
                   value={
                     workflowStatus === undefined ||
                     workflowCurrentStepNumber === undefined ||
                     workflowNumTotalSteps === undefined
-                      ? ''
+                      ? 'None'
                       : getPendingResponseAtString({
                           workflowStatus,
                           workflowCurrentStepNumber,
@@ -219,7 +219,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                   isError={isError}
                 />
                 <Link
-                  href={`https://form.gov.sg/${formId}/status/${submissionId}`}
+                  href={`${window.location.origin}/${formId}/status/${submissionId}`}
                   isExternal
                 >
                   <Box fontSize="1.25rem" display="flex" alignItems="center">
