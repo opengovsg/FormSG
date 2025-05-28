@@ -24,6 +24,8 @@ import {
   questionMargin,
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
+import { Environment } from '../../../types'
+import config from '../../config/config'
 
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
@@ -54,15 +56,21 @@ export const MrfWorkflowCompletionEmail = ({
   statusTracker,
   formId,
 }: WorkflowEmailData): JSX.Element => {
+  const appUrl =
+    process.env.NODE_ENV === Environment.Dev
+      ? config.app.feAppUrl
+      : config.app.appUrl
+  
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
   
-  // if is respondent copy, replace header
   if (respondentCopy || statusTracker) {
     headingText = 'Thank you for submitting this form'
   }
 
   const responsesHeader = statusTracker && !respondentCopy ? `Track you response status for ${formTitle}` : `Responses for ${formTitle}`
+
+  const statusTrackerLink = `${appUrl}/${formId}/status/${responseId}`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
@@ -95,7 +103,7 @@ export const MrfWorkflowCompletionEmail = ({
               </Heading>
               {statusTracker ? (
                 // update this to match all envs
-                <Link href={`${window.location.origin}/${formId}/status/${responseId}`} style={{
+                <Link href={statusTrackerLink} style={{
                   textDecoration: 'underline',
                   color: "blue.500",
                 }}> 
