@@ -6,6 +6,7 @@ import {
   GridProps,
   Image,
   Link,
+  Skeleton,
   Text,
 } from '@chakra-ui/react'
 
@@ -43,6 +44,8 @@ import { FormNotFound } from '~features/public-form/components/FormNotFound'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
+import { PublicFormWrapper } from '../PublicFormWrapper'
+
 import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './StatusPoint'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
@@ -58,7 +61,7 @@ type StatusTrackerFormInfoProps = FormBannerLogoProps & {
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
-    mt={{ base: '1rem', lg: '8.125rem', md: '1.125rem' }}
+    mt={{ base: '1rem', lg: '7.125rem', md: '1.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
     pl={{ base: '1.5rem', lg: '0%' }}
@@ -95,6 +98,8 @@ const StatusTrackerFormInfo = (): JSX.Element => {
     form?.startPage.logo.state === FormLogoState.Custom,
   )
 
+  const showLogo = form?.startPage.logo.state !== FormLogoState.None
+
   const statusTrackerLogoProps = useFormBannerLogo({
     logoBucketUrl: logoBucketUrl,
     logo: form?.startPage.logo,
@@ -102,21 +107,28 @@ const StatusTrackerFormInfo = (): JSX.Element => {
     colorTheme: form?.startPage.colorTheme,
     showDefaultLogoIfNoLogo: true,
   })
+
   return (
     <Box w="100%">
       <Flex direction="row" alignItems="center" gap="0.5rem">
-        <FormBannerLogo
-          isLoading={false}
-          {...statusTrackerLogoProps}
-          onLogout={undefined}
-          loggedInId={undefined}
-        />
-        <Image
-          src={FORMSG_LOGO_URL}
-          alt={'test'}
-          boxSize={'3rem'}
-          objectFit="contain"
-        />
+        {showLogo ? (
+          <Box
+            w="3rem"
+            h="3rem"
+            borderRadius="full"
+            overflow="hidden"
+            bg="white"
+          >
+            <Image
+              src={statusTrackerLogoProps.logoImgSrc}
+              alt={statusTrackerLogoProps.logoImgAlt}
+              objectFit="contain"
+              w="100%"
+              h="100%"
+              p="0.25rem"
+            />
+          </Box>
+        ) : null}
         <Text textStyle="body-2" color="#FFFFFF">
           {form?.title}
         </Text>
@@ -194,7 +206,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           </LoginGridArea>
         </StatusTrackerBaseGridLayout>
         <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
-          {/* <FooterGridArea>
+          <FooterGridArea>
             <AppFooter
               compactMonochromeLogos
               variant="compact"
@@ -203,9 +215,8 @@ export const StatusTrackerPage = (): JSX.Element => {
                 bg: 'transparent',
               }}
             />
-          </FooterGridArea> */}
+          </FooterGridArea>
         </BaseGridLayout>
-        <FormFooter />
       </BackgroundBox>
     </PublicFormProvider>
   )
