@@ -47,7 +47,7 @@ import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 import { PublicFormWrapper } from '../PublicFormWrapper'
 
 import { useStatusTracker } from './queries'
-import { TimelineRunSteps } from './StatusPoint'
+import { TimelineRunSteps } from './TimelineRunSteps'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
 
 const FORMSG_LOGO_URL = 'https://file.go.gov.sg/formslogotransparent120px.png'

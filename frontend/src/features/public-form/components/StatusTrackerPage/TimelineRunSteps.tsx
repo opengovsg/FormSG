@@ -1,5 +1,5 @@
 import { MdCheck, MdClose } from 'react-icons/md'
-import { Circle, Divider, Flex, Icon, Text } from '@chakra-ui/react'
+import { Box, Circle, Divider, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { StepData, WorkflowStatus } from '~shared/types'
@@ -76,18 +76,20 @@ const TimelineStep = ({
   }
 
   return (
-    <Flex alignItems="center" gap={4} height="3.5rem">
-      <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
-      <Flex flexDir="column" gap="0.25rem">
-        <Text textStyle="caption-2">{name}</Text>
-        <Text textStyle="caption-2" textColor={'#848484'}>
-          {approvalText}
-        </Text>
-        <Text textStyle="caption-2" textColor={'#848484'}>
-          {submissionTimestamp}
-        </Text>
+    <Box>
+      <Flex alignItems="center" gap={4} height="3.5rem">
+        <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
+        <Stack spacing="4px">
+          <Text textStyle="caption-2">{name}</Text>
+          <Text textStyle="caption-2" color="content.medium">
+            {approvalText}
+          </Text>
+          <Text textStyle="caption-2" color="content.medium">
+            {submissionTimestamp}
+          </Text>
+        </Stack>
       </Flex>
-    </Flex>
+    </Box>
   )
 }
 
