@@ -155,7 +155,7 @@
   },
   "devDependencies": {
     "@opengovsg/mockpass": "^4.3.4",
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.52.0",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.42",
     "@types/busboy": "^1.5.4",
