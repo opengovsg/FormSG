@@ -41,7 +41,7 @@ export const StepNameBlock = ({
 
   const displayStepName = customStepName
     ? customStepName
-    : `Step ${stepNumber + 1}`
+    : `${t('features.common.entities.step')} ${stepNumber + 1}`
 
   return (
     <EditStepBlockContainer>
@@ -53,6 +53,7 @@ export const StepNameBlock = ({
           borderWidth="1px"
           borderColor="secondary.300"
           borderRadius="4px"
+          textStyle="subhead-3"
         >
           {stepNumber + 1}
         </Text>
