@@ -1,4 +1,4 @@
-import { setErrorCode } from '../datadog/datadog.utils'
+import { setErrorCode, submitErrorCountMetric } from '../datadog/datadog.utils'
 
 /**
  * Global Error Code Registry
@@ -273,6 +273,7 @@ export class ApplicationError extends Error {
 
     if (this.code) {
       setErrorCode(this)
+      submitErrorCountMetric(this.code)
     }
   }
 }
