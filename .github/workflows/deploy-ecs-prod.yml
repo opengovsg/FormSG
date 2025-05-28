@@ -38,7 +38,7 @@ jobs:
       codedeploy-appspec-path: deploy/appspec.yml
       codedeploy-deployment-group: 'formsg-prod-ecs-dg'
       # Datadog config
-      dd-env: 'production'
+      dd-env: 'production-iac'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
