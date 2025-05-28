@@ -273,7 +273,10 @@ export class ApplicationError extends Error {
 
     if (this.code) {
       setErrorCode(this)
-      submitErrorCountMetric(this.code)
+      submitErrorCountMetric({
+        errorName: this.name,
+        errorCode: this.code,
+      })
     }
   }
 }

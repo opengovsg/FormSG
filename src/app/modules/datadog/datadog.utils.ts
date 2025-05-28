@@ -33,8 +33,18 @@ export const setErrorCode = (error: ApplicationError) => {
  * Submits an error count metric to Datadog. Used for monitoring errors and dashboard visualizations.
  * @param errorCode The error code to submit the metric for
  */
-export const submitErrorCountMetric = (errorCode: number) => {
+export const submitErrorCountMetric = ({
+  errorName,
+  errorCode,
+}: {
+  errorName: string
+  errorCode: number
+}) => {
   tracer.dogstatsd.increment('formsg.error.count', 1, {
     code: errorCode,
+    // NOTE: since the granularity is the same even when adding name (ie, the name is the same for each error code),
+    // the number and hence cost of custom metrics is the same despite adding the name tag.
+    // Avoid using the error message as it can frequently change, increasing the number and cost of custom metrics.
+    name: `[${errorCode}] ${errorName}`,
   })
 }
