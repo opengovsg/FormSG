@@ -41,7 +41,7 @@ export const StepNameBlock = ({
 
   const displayStepName = customStepName
     ? customStepName
-    : `${t('features.common.entities.step')} ${stepNumber + 1}`
+    : `Step ${stepNumber + 1}`
 
   return (
     <EditStepBlockContainer>
@@ -59,8 +59,9 @@ export const StepNameBlock = ({
         </Text>
       </Box>
       <Box>
-        <FormControl id={STEP_NAME} isRequired>
+        <FormControl id={STEP_NAME} isRequired={false}>
           <FormLabel
+            isRequired
             textStyle={'subhead-1'}
             description={t(
               'features.adminForm.sidebar.workflow.stepName.description',

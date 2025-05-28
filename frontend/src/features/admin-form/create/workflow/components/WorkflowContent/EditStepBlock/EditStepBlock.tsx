@@ -72,6 +72,10 @@ export const EditStepBlock = ({
       inputs.approval_field = undefined
     }
 
+    if (inputs.step_name === '') {
+      inputs.step_name = undefined
+    }
+
     if (isFirstStepByStepNumber(stepNumber)) {
       if (inputs.field) {
         return onSubmit({
