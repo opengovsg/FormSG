@@ -5,18 +5,36 @@ import { format } from 'date-fns'
 import { StepData, WorkflowStatus } from '~shared/types'
 
 const statusColor: Record<WorkflowStatus, string> = {
-  [WorkflowStatus.PENDING]: '#E5E9F8', // grey
+  [WorkflowStatus.PENDING]: '#E5E9F8', // grey TODO: update these to correct colours
   [WorkflowStatus.COMPLETED]: '#05CC9A', // green
   [WorkflowStatus.APPROVED]: '#05CC9A',
   [WorkflowStatus.REJECTED]: '#C03434', // red
 }
+
+const statusTextMap: Record<WorkflowStatus, string | undefined> = {
+  [WorkflowStatus.APPROVED]: 'Approved',
+  [WorkflowStatus.REJECTED]: 'Not Approved',
+  [WorkflowStatus.PENDING]: undefined,
+  [WorkflowStatus.COMPLETED]: undefined,
+}
+
 const StatusIcon = ({
   workflowStatus,
   stepNumber,
+  isCurrentPendingStep,
 }: {
   workflowStatus: WorkflowStatus
   stepNumber: number
+  isCurrentPendingStep: boolean | undefined
 }): JSX.Element => {
+  if (isCurrentPendingStep) {
+    return (
+      <Circle size="2rem" border="2px" borderColor="yellow.100" bg="yellow.50">
+        <Text textStyle="caption-2">{stepNumber}</Text>
+      </Circle>
+    )
+  }
+
   switch (workflowStatus) {
     case WorkflowStatus.COMPLETED:
     case WorkflowStatus.APPROVED:
@@ -57,36 +75,36 @@ const TimelineStep = ({
   stepNumber,
   timestamp,
   workflowStatus,
+  isCurrentPendingStep,
 }: StepData) => {
   const submissionTimestamp = timestamp
     ? format(new Date(timestamp), 'dd MMM yyyy, HH:mm:ss z')
     : timestamp
 
-  let approvalText
-  switch (workflowStatus) {
-    case WorkflowStatus.APPROVED:
-      approvalText = 'Approved'
-      break
-    case WorkflowStatus.REJECTED:
-      approvalText = 'Not Approved'
-      break
-    default:
-      approvalText = undefined
-      break
-  }
+  const approvalText = isCurrentPendingStep
+    ? 'Pending'
+    : statusTextMap[workflowStatus]
 
   return (
     <Box>
       <Flex alignItems="center" gap={4} height="3.5rem">
-        <StatusIcon workflowStatus={workflowStatus} stepNumber={stepNumber} />
+        <StatusIcon
+          workflowStatus={workflowStatus}
+          stepNumber={stepNumber}
+          isCurrentPendingStep={isCurrentPendingStep}
+        />
         <Stack spacing="4px">
           <Text textStyle="caption-2">{name}</Text>
-          <Text textStyle="caption-2" color="content.medium">
-            {approvalText}
-          </Text>
-          <Text textStyle="caption-2" color="content.medium">
-            {submissionTimestamp}
-          </Text>
+          {approvalText ? (
+            <Text textStyle="caption-2" color="content.medium">
+              {approvalText}
+            </Text>
+          ) : null}
+          {submissionTimestamp ? (
+            <Text textStyle="caption-2" color="content.medium">
+              {submissionTimestamp}
+            </Text>
+          ) : null}
         </Stack>
       </Flex>
     </Box>

@@ -5,4 +5,5 @@ export type StepData = {
   stepNumber: number
   timestamp?: string
   workflowStatus: WorkflowStatus
+  isCurrentPendingStep?: boolean
 }

@@ -50,14 +50,6 @@ import { useStatusTracker } from './queries'
 import { TimelineRunSteps } from './TimelineRunSteps'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
 
-const FORMSG_LOGO_URL = 'https://file.go.gov.sg/formslogotransparent120px.png'
-
-type StatusTrackerFormInfoProps = FormBannerLogoProps & {
-  isLoading?: boolean
-  loggedInId?: string
-  onLogout?: () => void
-}
-
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
@@ -154,7 +146,6 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { submittedSteps, workflow } = data
 
-  const workflowSteps = submittedSteps.length - 1
   const stepData: StepData[] = workflow.map((step, index) => {
     const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
@@ -162,7 +153,7 @@ export const StatusTrackerPage = (): JSX.Element => {
     const submittedStep = submittedSteps[index]
 
     const workflowStatus =
-      index <= workflowSteps
+      index < submittedSteps.length
         ? workflow[index].approval_field // if this step is an approval step
           ? 'status' in submittedStep // if status is in submitted step
             ? submittedStep.status
@@ -170,7 +161,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           : WorkflowStatus.COMPLETED
         : WorkflowStatus.PENDING
 
-    if (index <= workflowSteps) {
+    if (index < submittedSteps.length) {
       return {
         name: name,
         stepNumber: stepNumber,
@@ -183,6 +174,7 @@ export const StatusTrackerPage = (): JSX.Element => {
       name: name,
       stepNumber: stepNumber,
       workflowStatus: workflowStatus,
+      isCurrentPendingStep: index == submittedSteps.length,
     }
   })
 
