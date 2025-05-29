@@ -11,8 +11,6 @@ import WinstonCloudWatch from 'winston-cloudwatch'
 import { Environment } from '../../types'
 
 import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
-import { IncomingHttpHeaders } from 'http'
-import { getRequestIp, getTrace } from '../utils/request'
 
 // Params to enforce the logging format.
 export type CustomLoggerParams = {
@@ -192,7 +190,7 @@ const getModuleLabel = (callingModule: NodeModule) => {
  */
 const createCustomLogger = (logger: Logger) => {
   return {
-    info: (params: Omit<CustomLoggerParams, 'error'>, p0: string, logMeta: { submissionId: string; ip: ReturnType<getRequestIp>; trace: ReturnType<getTrace>; url: string; urlWithQueryParams: string; headers: IncomingHttpHeaders; action: string }) => {
+    info: (params: Omit<CustomLoggerParams, 'error'>) => {
       const { message, meta } = params
       return logger.info(message, { meta })
     },
