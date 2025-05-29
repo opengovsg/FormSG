@@ -360,7 +360,7 @@ export type StatusTrackerData = {
   submittedSteps: SubmittedStep[] | undefined
   workflow: FormWorkflowDto
   responseId: string | undefined
-  form: PublicFormDto
+  form: string
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
