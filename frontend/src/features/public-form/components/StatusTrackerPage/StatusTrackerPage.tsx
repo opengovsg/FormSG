@@ -1,27 +1,12 @@
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Flex,
-  GridItem,
-  GridProps,
-  Image,
-  Link,
-  Skeleton,
-  Text,
-} from '@chakra-ui/react'
+import { Box, Flex, GridItem, GridProps, Image, Text } from '@chakra-ui/react'
 
-import {
-  FormColorTheme,
-  FormLogoState,
-  StepData,
-  WorkflowStatus,
-} from '~shared/types'
+import { FormLogoState, StepData, WorkflowStatus } from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 
 import { FCC } from '~typings/react'
 
-import { FooterLinkWithIcon } from '~components/Footer/common/types'
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -33,22 +18,13 @@ import {
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
-import { FormFooter } from '~features/public-form/components/FormFooter'
-import {
-  FormBannerLogo,
-  FormBannerLogoProps,
-  PublicFormLogo,
-  useFormBannerLogo,
-} from '~features/public-form/components/FormLogo'
-import { FormNotFound } from '~features/public-form/components/FormNotFound'
+import { useFormBannerLogo } from '~features/public-form/components/FormLogo'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import { PublicFormWrapper } from '../PublicFormWrapper'
-
 import { useStatusTracker } from './queries'
-import { TimelineRunSteps } from './TimelineRunSteps'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
+import { TimelineRunSteps } from './TimelineRunSteps'
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (

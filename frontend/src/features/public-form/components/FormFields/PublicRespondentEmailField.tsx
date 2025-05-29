@@ -8,10 +8,10 @@ import { RESPONDENT_EMAIL_FIELD_ID } from '~shared/constants'
 
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import FormLabel from '~components/FormControl/FormLabel'
 
 export const PublicRespondentEmailField = (): JSX.Element => {
   const { t } = useTranslation()
