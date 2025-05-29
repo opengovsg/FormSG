@@ -162,7 +162,6 @@ const dbConfig: DbConfig = {
     pass: '',
     // Only create indexes in dev env to avoid adverse production impact.
     autoIndex: isDevOrTest,
-    promiseLibrary: global.Promise,
   },
 }
 
