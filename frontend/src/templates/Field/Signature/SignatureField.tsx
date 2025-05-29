@@ -64,23 +64,12 @@ export const SignatureField = ({
         {/* <FormLabel isRequired isHighContrast={isHighContrast}>
           Draw / Text
         </FormLabel> */}
-        <Controller
-          // name={'value'}
-          control={formContext.control}
-          // rules={postalCodeValidationRules}
-          render={({ field }) => {
-            return (
-              <Stack direction="column" gap={0.5} marginBottom="1.5rem">
-                {/* <FormLabel>
+        <Stack direction="column" gap={0.5} marginBottom="1.5rem">
+          {/* <FormLabel>
                   Throttle 0, minDis: 1, veloFilterWeight: 0.3
                 </FormLabel> */}
-                <Flex
-                  direction="row"
-                  gap={2}
-                  justify="space-between"
-                  width="100%"
-                >
-                  {/* <Input
+          <Flex direction="row" gap={2} justify="space-between" width="100%">
+            {/* <Input
                     {...field}
                     aria-label={`${schema.questionNumber}. Draw??`}
                     placeholder="HAHAHAH"
@@ -95,63 +84,60 @@ export const SignatureField = ({
                     Draw
                   </Button> */}
 
-                  <Box
-                    background="white"
-                    width="502px"
-                    height="202px"
-                    border="1px solid"
-                    borderColor="neutral.400"
-                    borderRadius="0.25rem"
-                  >
-                    {showSignaturePlaceholder && (
-                      <Box
-                        width="502px"
-                        height="202px"
-                        justifyItems="center"
-                        alignContent="center"
-                        position="absolute"
-                        pointerEvents="none"
-                      >
-                        <Text color="#A0A4AD">Sign here</Text>
-                      </Box>
-                    )}
-                    <SignatureCanvas
-                      ref={signatureRef}
-                      penColor="black"
-                      canvasProps={{
-                        width: 500,
-                        height: 200,
-                        className: 'sigCanvas',
-                      }}
-                      throttle={0}
-                      minDistance={3}
-                      velocityFilterWeight={0.7}
-                      minWidth={2}
-                      maxWidth={2.5}
-                      onBegin={() => {
-                        setShowSignaturePlaceholder(false)
-                      }}
-                      onEnd={() => {
-                        // const sigDataUrl = signatureRef.current?.toDataURL()
-                        // const sigData = signatureRef.current?.toData() ?? []
-                      }}
-                    />
-                  </Box>
-                </Flex>
-                <Box alignSelf="end" marginTop="0.5rem">
-                  <Button
-                    onClick={handleClearSignature}
-                    isLoading={isSubmitting}
-                    isHighContrast={isHighContrast}
-                  >
-                    Clear
-                  </Button>
+            <Box
+              background="white"
+              width="502px"
+              height="202px"
+              border="1px solid"
+              borderColor="neutral.400"
+              borderRadius="0.25rem"
+            >
+              {showSignaturePlaceholder && (
+                <Box
+                  width="502px"
+                  height="202px"
+                  justifyItems="center"
+                  alignContent="center"
+                  position="absolute"
+                  pointerEvents="none"
+                >
+                  <Text color="#A0A4AD">Sign here</Text>
                 </Box>
-                <FormErrorMessage>{errors.draw?.message}</FormErrorMessage>
-              </Stack>
-            )
-          }}
-        />
+              )}
+              <SignatureCanvas
+                ref={signatureRef}
+                penColor="black"
+                canvasProps={{
+                  width: 500,
+                  height: 200,
+                  className: 'sigCanvas',
+                }}
+                throttle={0}
+                minDistance={3}
+                velocityFilterWeight={0.7}
+                minWidth={2}
+                maxWidth={2.5}
+                onBegin={() => {
+                  setShowSignaturePlaceholder(false)
+                }}
+                onEnd={() => {
+                  // const sigDataUrl = signatureRef.current?.toDataURL()
+                  // const sigData = signatureRef.current?.toData() ?? []
+                }}
+              />
+            </Box>
+          </Flex>
+          <Box alignSelf="end" marginTop="0.5rem">
+            <Button
+              onClick={handleClearSignature}
+              isLoading={isSubmitting}
+              isHighContrast={isHighContrast}
+            >
+              Clear
+            </Button>
+          </Box>
+          <FormErrorMessage>{errors.draw?.message}</FormErrorMessage>
+        </Stack>
       </FormControl>
     </Box>
   )
