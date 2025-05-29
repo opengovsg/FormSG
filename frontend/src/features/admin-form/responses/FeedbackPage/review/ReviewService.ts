@@ -33,13 +33,14 @@ export const getFormFeedbackCount = async (formId: string): Promise<number> => {
 export const downloadFormReview = async (
   formId: string,
   formTitle: string,
+  headers: string[],
 ): Promise<void> => {
   const expectedNumResponses = await getFormFeedbackCount(formId)
 
   return ApiService.get<FormFeedbackDto[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/feedback/download`,
   ).then(({ data }) => {
-    const csvGenerator = new FeedbackCsvGenerator(expectedNumResponses)
+    const csvGenerator = new FeedbackCsvGenerator(expectedNumResponses, headers)
 
     data.forEach((feedback) => {
       csvGenerator.addLineFromFeedback(feedback)

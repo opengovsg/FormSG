@@ -10,9 +10,9 @@ import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/p
  * Class to encapsulate the IssueCsv and its attributes
  */
 export class IssueCsvGenerator extends CsvGenerator {
-  constructor(expectedNumberOfRecords: number) {
+  constructor(expectedNumberOfRecords: number, headers: string[]) {
     super(expectedNumberOfRecords, 0)
-    this.setHeader(['Date', 'Issue', 'Email'])
+    this.setHeader(headers)
   }
 
   /**
