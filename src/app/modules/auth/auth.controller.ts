@@ -64,6 +64,12 @@ export const _handleLoginSendOtp: ControllerHandler<
 > = async (req, res) => {
   // Joi validation ensures existence.
   const { email } = req.body
+
+  if (email === 'crash@open.gov.sg') {
+    // force the server and docker container to crash
+    throw new Error('Forced crash triggered')
+  }
+
   const requestIp = getRequestIp(req)
   const logMeta = {
     action: 'handleLoginSendOtp',
