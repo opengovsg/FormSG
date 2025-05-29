@@ -341,5 +341,13 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
+    case BasicField.Signature:
+      // // TODO: FRM-2029 unimplemented
+      return null
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustiveCheck: never = field
+      throw new Error(`Unsupported field type: ${_exhaustiveCheck}`)
+    }
   }
 }

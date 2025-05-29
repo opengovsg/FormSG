@@ -396,6 +396,7 @@ const createResponsesV3 = (
         }
         break
       }
+      case BasicField.Signature: // TODO: FRM-2029 unsure of output type yet
       case BasicField.Section:
       case BasicField.Image:
       case BasicField.Statement: {

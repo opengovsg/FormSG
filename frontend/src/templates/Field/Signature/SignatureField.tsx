@@ -65,7 +65,7 @@ export const SignatureField = ({
           Draw / Text
         </FormLabel> */}
         <Controller
-          name={'value'}
+          // name={'value'}
           control={formContext.control}
           // rules={postalCodeValidationRules}
           render={({ field }) => {

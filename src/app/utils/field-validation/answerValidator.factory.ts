@@ -252,6 +252,8 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Address:
       if (formField.required) return constructAddressValidatorV3(formField)
       return constructOptionalAddressValidatorV3(formField)
+    case BasicField.Signature: // TODO: FRM-2029
+      return () => left('Not yet implemented: Signature field type')
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>

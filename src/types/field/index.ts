@@ -20,6 +20,7 @@ import type { IRadioFieldSchema } from './radioField'
 import type { IRatingFieldSchema } from './ratingField'
 import type { ISectionFieldSchema } from './sectionField'
 import type { IShortTextFieldSchema } from './shortTextField'
+import type { ISignatureFieldSchema } from './signatureField'
 import type { IStatementFieldSchema } from './statementField'
 import type { ITableFieldSchema } from './tableField'
 import type { IUenFieldSchema } from './uenField'
@@ -80,6 +81,7 @@ export type FormFieldSchema =
   | IRatingFieldSchema
   | ISectionFieldSchema
   | IShortTextFieldSchema
+  | ISignatureFieldSchema
   | IStatementFieldSchema
   | ITableFieldSchema
   | IUenFieldSchema
@@ -123,6 +125,7 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<IRatingFieldSchema>
   | OmitUnusedValidatorProps<ISectionFieldSchema>
   | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ISignatureFieldSchema>
   | OmitUnusedValidatorProps<IStatementFieldSchema>
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
