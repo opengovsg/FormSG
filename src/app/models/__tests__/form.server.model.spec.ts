@@ -928,6 +928,7 @@ describe('Form Model', () => {
           stepsToNotify: [],
           emails: [],
           stepOneEmailNotificationFieldId: '',
+          hasStatusTracker: false,
         },
         FORM_DEFAULTS,
       )
