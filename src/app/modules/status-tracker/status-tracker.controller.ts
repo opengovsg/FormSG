@@ -5,10 +5,8 @@ import { StatusTrackerData } from 'shared/types'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { DatabaseError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
 import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
-import { SubmissionNotFoundError } from '../submission/submission.errors'
 import { mapRouteError } from '../submission/submission.utils'
 
 const logger = createLoggerWithLabel(module)
