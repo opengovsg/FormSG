@@ -24,6 +24,7 @@ import {
   RatingField,
   SectionField,
   ShortTextField,
+  SignatureField,
   TableField,
   UenField,
   YesNoField,
@@ -123,6 +124,8 @@ export const FieldFactory = memo(
         return <TableField schema={field} {...rest} />
       case BasicField.Address:
         return <AddressCompoundField schema={field} {...rest} />
+      case BasicField.Signature:
+        return <SignatureField schema={field} {...rest} />
       case BasicField.Children:
         return (
           <ChildrenCompoundField
@@ -131,6 +134,11 @@ export const FieldFactory = memo(
             {...rest}
           />
         )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _exhaustiveCheck: never = field
+        throw new Error(`Unsupported field type: ${_exhaustiveCheck}`)
+      }
     }
   },
   (prevProps, nextProps) =>
