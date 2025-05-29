@@ -1,7 +1,5 @@
-import { LeanDocument } from 'mongoose'
+import { FormField } from 'shared/types'
 
-import { FormFieldSchema } from '../field'
-
-export type PossiblyPrefilledField = LeanDocument<FormFieldSchema> & {
+export type PossiblyPrefilledField = FormField & {
   fieldValue?: string
 }
