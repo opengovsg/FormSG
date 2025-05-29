@@ -2,7 +2,6 @@ import { calculateObjectSize, ObjectId } from 'bson'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
-  HydratedDocument,
   Mongoose,
   Query,
   Schema,

@@ -1,6 +1,6 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
 import { CallbackError, Mongoose, Schema } from 'mongoose'
-// https://stackoverflow.com/a/61679809 //TODO: remove if import from mongodb works
+// https://stackoverflow.com/a/61679809
 import { MongoError } from 'mongoose/node_modules/mongodb'
 import validator from 'validator'
 

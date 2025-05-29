@@ -1,5 +1,7 @@
-import { FormField } from 'shared/types'
+import { FlattenMaps } from 'mongoose'
 
-export type PossiblyPrefilledField = FormField & {
+import { FormFieldSchema } from '../field'
+
+export type PossiblyPrefilledField = FlattenMaps<FormFieldSchema> & {
   fieldValue?: string
 }
