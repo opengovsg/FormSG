@@ -29,7 +29,7 @@ const StatusIcon = ({
 }): JSX.Element => {
   if (isCurrentPendingStep) {
     return (
-      <Circle size="2rem" border="2px" borderColor="yellow.100" bg="yellow.50">
+      <Circle size="2rem" border="2px" borderColor="warning.500" bg="yellow.50">
         <Text textStyle="caption-2">{stepNumber}</Text>
       </Circle>
     )
