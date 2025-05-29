@@ -123,14 +123,7 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const formSchemaOptions: SchemaOptions<
-  IFormSchema, // Schema definition
-  unknown, // Not using custom statics
-  unknown, // Not using custom methods
-  unknown, // Not using query helpers
-  unknown, // Not using virtuals
-  HydratedDocument<IFormSchema>
-> = {
+const formSchemaOptions: SchemaOptions<IFormSchema> = {
   id: false,
   toJSON: {
     getters: true,
