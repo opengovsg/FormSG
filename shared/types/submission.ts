@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
-import { FormAuthType, PublicFormDto } from './form/form'
+import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
