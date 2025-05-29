@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../config/config'
 import * as StatusTrackerController from '../../../../modules/status-tracker/status-tracker.controller'
+import { limitRate } from '../../../../utils/limit-rate'
 
 export const StatusTrackerRouter = Router()
 
@@ -13,5 +15,6 @@ export const StatusTrackerRouter = Router()
  */
 StatusTrackerRouter.get(
   '/:submissionId([a-fA-F0-9]{24})',
+  limitRate({ max: rateLimitConfig.publicApi }),
   StatusTrackerController.handleGetStatusTracker,
 )
