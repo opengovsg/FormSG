@@ -36,6 +36,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Decimal,
   BasicField.Nric,
   BasicField.Uen,
+  BasicField.Signature,
 ]
 
 export const MYINFO_FIELDS_ORDERED = [

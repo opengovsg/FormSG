@@ -43,6 +43,7 @@ import {
   BiUser,
   BiUserVoice,
 } from 'react-icons/bi'
+import { FaFileSignature } from 'react-icons/fa'
 import { SlLocationPin } from 'react-icons/sl'
 import { As } from '@chakra-ui/react'
 
@@ -284,6 +285,12 @@ export const BASICFIELD_TO_DRAWER_META: {
       'road',
       'venue',
     ],
+  },
+  [BasicField.Signature]: {
+    label: 'Signature',
+    icon: FaFileSignature,
+    isSubmitted: true,
+    searchAliases: ['sign', 'signature', 'draw'],
   },
 }
 

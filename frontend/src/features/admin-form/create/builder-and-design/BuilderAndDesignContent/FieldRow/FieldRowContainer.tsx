@@ -50,6 +50,7 @@ import {
   RadioField,
   RatingField,
   ShortTextField,
+  SignatureField,
   TableField,
   UenField,
   YesNoField,
@@ -551,5 +552,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <ChildrenCompoundField schema={field} {...rest} />
     case BasicField.Address:
       return <AddressCompoundField schema={field} {...rest} />
+    case BasicField.Signature:
+      return <SignatureField schema={field} {...rest} />
   }
 }

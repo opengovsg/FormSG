@@ -68,6 +68,7 @@
     "react-remove-scroll": "^2.5.10",
     "react-router-dom": "^6.0.2",
     "react-roving-tabindex": "^3.2.0",
+    "react-signature-canvas": "^1.1.0-alpha.2",
     "react-swipeable": "^7.0.0",
     "react-table": "^7.7.0",
     "react-textarea-autosize": "^8.3.3",

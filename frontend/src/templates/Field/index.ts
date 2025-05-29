@@ -18,6 +18,7 @@ import RadioField from './Radio'
 import RatingField from './Rating'
 import SectionFieldContainer from './Section'
 import ShortTextField from './ShortText'
+import SignatureField from './Signature'
 import TableField from './Table'
 import UenField from './Uen'
 import YesNoField from './YesNo'
@@ -48,6 +49,7 @@ export {
   RatingField,
   SectionField,
   ShortTextField,
+  SignatureField,
   TableField,
   UenField,
   YesNoField,

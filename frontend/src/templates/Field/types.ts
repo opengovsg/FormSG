@@ -34,6 +34,7 @@ import {
   RatingFieldBase,
   SectionFieldBase,
   ShortTextFieldBase,
+  SignatureFieldBase,
   StatementFieldBase,
   TableFieldBase,
   UenFieldBase,
@@ -181,3 +182,4 @@ export type UenFieldSchema = FormFieldWithQuestionNo<UenFieldBase>
 export type YesNoFieldSchema = FormFieldWithQuestionNo<YesNoFieldBase>
 export type ChildrenCompoundFieldSchema =
   FormFieldWithQuestionNo<ChildrenCompoundFieldBase>
+export type SignatureFieldSchema = FormFieldWithQuestionNo<SignatureFieldBase>
