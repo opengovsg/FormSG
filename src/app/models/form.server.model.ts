@@ -2,6 +2,7 @@ import { calculateObjectSize, ObjectId } from 'bson'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
+  HydratedDocument,
   Mongoose,
   Query,
   Schema,
@@ -122,7 +123,14 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const formSchemaOptions: SchemaOptions = {
+const formSchemaOptions: SchemaOptions<
+  IFormSchema, // Schema definition
+  unknown, // Not using custom statics
+  unknown, // Not using custom methods
+  unknown, // Not using query helpers
+  unknown, // Not using virtuals
+  HydratedDocument<IFormSchema>
+> = {
   id: false,
   toJSON: {
     getters: true,
