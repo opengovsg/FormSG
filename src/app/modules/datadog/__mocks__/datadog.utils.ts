@@ -16,3 +16,8 @@ export const setFormTags = (_form: IPopulatedForm) => {
 export const setErrorCode = (_error: ApplicationError) => {
   return
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const submitErrorCountMetric = (_errorCode: number) => {
+  return
+}
