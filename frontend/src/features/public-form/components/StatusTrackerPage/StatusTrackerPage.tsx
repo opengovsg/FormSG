@@ -18,7 +18,10 @@ import {
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
-import { useFormBannerLogo } from '~features/public-form/components/FormLogo'
+import {
+  PublicFormLogo,
+  useFormBannerLogo,
+} from '~features/public-form/components/FormLogo'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -62,24 +65,24 @@ const StatusTrackerFormInfo = (): JSX.Element => {
   // trying to get logo to work
   const { form } = usePublicFormContext()
 
-  const { data: { logoBucketUrl } = {} } = useEnv(
-    form?.startPage.logo.state === FormLogoState.Custom,
-  )
+  // const { data: { logoBucketUrl } = {} } = useEnv(
+  //   form?.startPage.logo.state === FormLogoState.Custom,
+  // )
 
-  const showLogo = form?.startPage.logo.state !== FormLogoState.None
+  // const showLogo = form?.startPage.logo.state !== FormLogoState.None
 
-  const statusTrackerLogoProps = useFormBannerLogo({
-    logoBucketUrl: logoBucketUrl,
-    logo: form?.startPage.logo,
-    agency: form?.admin.agency,
-    colorTheme: form?.startPage.colorTheme,
-    showDefaultLogoIfNoLogo: true,
-  })
+  // const statusTrackerLogoProps = useFormBannerLogo({
+  //   logoBucketUrl: logoBucketUrl,
+  //   logo: form?.startPage.logo,
+  //   agency: form?.admin.agency,
+  //   colorTheme: form?.startPage.colorTheme,
+  //   showDefaultLogoIfNoLogo: true,
+  // })
 
   return (
     <Box w="100%">
       <Flex direction="row" alignItems="center" gap="0.5rem">
-        {showLogo ? (
+        {/* {showLogo ? (
           <Box
             w="3rem"
             h="3rem"
@@ -96,7 +99,7 @@ const StatusTrackerFormInfo = (): JSX.Element => {
               p="0.25rem"
             />
           </Box>
-        ) : null}
+        ) : null} */}
         <Text textStyle="body-2" color="#FFFFFF">
           {form?.title}
         </Text>
@@ -163,8 +166,9 @@ export const StatusTrackerPage = (): JSX.Element => {
             <StatusTrackerFormInfo />
           </StatusTrackerFormInfoGridArea>
           <LoginGridArea>
-            <Box mt={{ base: '1rem', lg: '10.125rem' }}>
+            <Box mt={{ base: '1rem', lg: '2.33rem' }}>
               <Flex direction="column">
+                <PublicFormLogo />
                 <Text mb="2rem" textStyle="h4">
                   Response ID: {data.responseId}
                 </Text>
