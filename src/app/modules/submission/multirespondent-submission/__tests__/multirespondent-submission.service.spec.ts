@@ -1388,6 +1388,87 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('sendRespondentCopyEmail', () => {
+    it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionCreateActions', async () => {
+      // Arrange
+      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfRespondentCopyEmail',
+      )
+
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
+      const emptyRespondentEmails: string[] = []
+
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        respondentEmails: emptyRespondentEmails,
+      })
+
+      // Assert
+      expect(sendMrfRespondentCopyEmailSpy).not.toHaveBeenCalled()
+    })
+
+    it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionUpdateActions', async () => {
+      // Arrange
+      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfRespondentCopyEmail',
+      )
+
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
+      const emptyRespondentEmails: string[] = []
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+        } as IPopulatedMultirespondentForm,
+        currentStepNumber: 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        respondentEmails: emptyRespondentEmails,
+      })
+
+      // Assert
+      expect(sendMrfRespondentCopyEmailSpy).not.toHaveBeenCalled()
+    })
+
     it('sends respondent copy on first step submission when respondent emails are present', async () => {
       // Arrange
       const sendMrfRespondentCopyEmailSpy = jest.spyOn(
