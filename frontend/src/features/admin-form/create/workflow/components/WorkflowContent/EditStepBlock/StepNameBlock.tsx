@@ -3,20 +3,17 @@ import { useTranslation } from 'react-i18next'
 import {
   Box,
   FormControl,
+  FormErrorMessage,
   FormHelperText,
   Input,
   Stack,
   Text,
 } from '@chakra-ui/react'
 
-import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
 
-import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
-import { StepLabel } from '../StepLabel'
 
-import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 type StepNameProps = {
@@ -59,7 +56,11 @@ export const StepNameBlock = ({
         </Text>
       </Box>
       <Box>
-        <FormControl id={STEP_NAME} isRequired={false}>
+        <FormControl
+          id={STEP_NAME}
+          isRequired={false}
+          isInvalid={!!errors[STEP_NAME]}
+        >
           <FormLabel
             isRequired
             textStyle={'subhead-1'}
@@ -72,6 +73,12 @@ export const StepNameBlock = ({
           <Controller
             control={control}
             name={STEP_NAME}
+            rules={{
+              maxLength: {
+                value: 30,
+                message: 'Please keep the step name under 30 characters',
+              },
+            }}
             render={({ field }) => (
               <Input
                 // utilizing placeholder to mimic default step name
@@ -84,6 +91,13 @@ export const StepNameBlock = ({
               />
             )}
           />
+          {errors?.step_name ? (
+            <FormErrorMessage>{errors.step_name.message}</FormErrorMessage>
+          ) : customStepName ? (
+            <FormHelperText color="secondary.700">
+              {30 - (customStepName?.length ?? 0)} characters left
+            </FormHelperText>
+          ) : null}
         </FormControl>
       </Box>
     </EditStepBlockContainer>
