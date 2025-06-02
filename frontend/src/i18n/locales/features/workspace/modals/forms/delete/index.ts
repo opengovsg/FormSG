@@ -1,6 +1,6 @@
 export * from './en-sg'
 
-export interface DeleteModal {
+export interface DeleteFormModal {
   title: string
   description: string
   confirm: string

@@ -1,6 +1,6 @@
-import { CreateModal } from '.'
+import { CreateFormModal } from '.'
 
-export const enSG: CreateModal = {
+export const enSG: CreateFormModal = {
   title: {
     setup: 'Set up your form',
     duplicate: 'Duplicate form',
@@ -102,24 +102,5 @@ export const enSG: CreateModal = {
   },
   emailFormRecipient: {
     placeholder: 'Separate emails with a comma',
-  },
-  // TODO: (Kill Email Mode) Might not be needed once kill email mode is fully implemented
-  emailModeFeedbackCreation: {
-    checkboxFieldSchema: {
-      title: 'Why are you creating an Email mode form?',
-      fieldOptions: {
-        collectSensitiveHighData: 'I need to collect Sensitive High data',
-      },
-    },
-    feedbackScreen: {
-      header: 'Before you get started',
-      description: `We’d love to understand why you chose to create an Email mode form.
-      This will help us ensure a smooth transition once we phase out Email
-      mode.`,
-      setupForm: 'Next: Set up your form',
-    },
-    creationScreen: {
-      header: 'Set up your form in Email mode',
-    },
   },
 }
