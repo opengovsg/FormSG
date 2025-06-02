@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - release-al2
-      - test/migrate-prod-to-iac
   # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
   schedule:
     - cron: '0 16 * * *'
