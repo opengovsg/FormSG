@@ -23,11 +23,7 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  CANNOT_TRANSFER_OWNERSHIP_TO_SELF,
-  INVALID_EMAIL_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useUserMutations } from '~features/user/mutations'
@@ -169,7 +165,9 @@ export const TransferOwnershipModal = ({
                       }
                       return (
                         !isOwnEmail(value) ||
-                        t(CANNOT_TRANSFER_OWNERSHIP_TO_SELF)
+                        t(
+                          'constants.validationConstants.cannotTransferOwnershipToSelf',
+                        )
                       )
                     },
                   })}
