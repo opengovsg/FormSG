@@ -1,14 +1,14 @@
 export interface ValidationConstants {
-  REQUIRED_ERROR: string
-  INVALID_EMAIL_ERROR: string
-  INVALID_DROPDOWN_OPTION_ERROR: string
-  CANNOT_TRANSFER_OWNERSHIP_TO_SELF: string
-  INVALID_COUNTRY_REGION_OPTION_ERROR: string
-  INVALID_POSTAL_CODE_ERROR: string
-  VALID_POSTAL_CODE_NO_ADDRESS_ERROR: string
-  INVALID_BLOCK_UNIT_ERROR: string
-  INVALID_NON_NUMERICAL_ERROR: string
-  INVALID_LEVEL_UNIT_ERROR: string
+  requiredError: string
+  invalidEmailError: string
+  invalidDropdownOptionError: string
+  cannotTransferOwnershipToSelf: string
+  invalidCountryRegionOptionError: string
+  invalidPostalCodeError: string
+  validPostalCodeNoAddressError: string
+  invalidBlockUnitError: string
+  invalidNonNumericalError: string
+  invalidLevelUnitError: string
 }
 
 export * from './en-sg'
