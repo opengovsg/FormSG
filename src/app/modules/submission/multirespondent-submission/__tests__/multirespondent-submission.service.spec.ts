@@ -1538,6 +1538,7 @@ describe('multirespondent-submission.service', () => {
         responseUrl: 'http://test.com',
         formId: 'formId',
         reminderStepNumber: 1,
+        senderEmail: 'senderEmail@example.com',
       })
 
       // Assert
