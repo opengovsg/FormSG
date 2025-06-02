@@ -34,7 +34,7 @@ export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
     mt={{ base: '1rem', lg: '7.125rem', md: '1.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
-    gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 6' }}
+    gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 5' }}
     pl={{ base: '1.5rem', lg: '0%' }}
     h={{ md: '20.5rem', lg: 'auto' }}
     pt={{ base: '1.5rem', lg: '3rem' }}
@@ -49,6 +49,7 @@ export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
       lg: 'linear(to-r, primary.500 calc(41.6667% - 4px), transparent 0)', // match BackgroundBox
     }}
     mx={{ base: '-1.5rem', md: '-1.75rem', lg: '-2rem' }} // negative horizontal margin matching the container padding
+    // overflow="hidden"
   />
 )
 
