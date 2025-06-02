@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   FormControl,
   Modal,
@@ -17,7 +18,7 @@ import {
 import { Workspace } from '~shared/types/workspace'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
+import { useWorkspaceTitleValidationRules } from '~utils/workspaceValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
@@ -39,6 +40,7 @@ export const RenameWorkspaceModal = ({
   onClose,
   activeWorkspace,
 }: RenameWorkspaceModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
   const {
     handleSubmit,
@@ -57,6 +59,7 @@ export const RenameWorkspaceModal = ({
     md: 'md',
   })
   const isMobile = useIsMobile()
+  const workspaceValidationRules = useWorkspaceTitleValidationRules()
 
   const handleRenameWorkspace = handleSubmit((data) => {
     // no changes made
@@ -76,17 +79,21 @@ export const RenameWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Rename folder</ModalHeader>
+        <ModalHeader>
+          {t('features.workspace.modals.workspace.rename.renameFolder')}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text textStyle="subhead-1">Folder name</Text>
+          <Text textStyle="subhead-1">
+            {t('features.workspace.modals.workspace.rename.folderName')}
+          </Text>
           <FormControl isRequired isInvalid={!!errors.title}>
             <Input
               mt="0.75rem"
               autoFocus
               {...register(
                 'title',
-                WORKSPACE_TITLE_VALIDATION_RULES as RegisterOptions<
+                workspaceValidationRules as RegisterOptions<
                   RenameWorkspaceInputProps,
                   'title'
                 >,
@@ -110,10 +117,10 @@ export const RenameWorkspaceModal = ({
               colorScheme="secondary"
               isFullWidth={isMobile}
             >
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button onClick={handleRenameWorkspace} isFullWidth={isMobile}>
-              Rename folder
+              {t('features.workspace.modals.workspace.rename.renameFolder')}
             </Button>
           </Stack>
         </ModalFooter>

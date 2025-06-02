@@ -1,6 +1,6 @@
 export * from './en-sg'
 
-export interface CreateModal {
+export interface CreateFormModal {
   title: {
     setup: string
     duplicate: string
@@ -83,21 +83,5 @@ export interface CreateModal {
   }
   emailFormRecipient: {
     placeholder: string
-  }
-  emailModeFeedbackCreation: {
-    checkboxFieldSchema: {
-      title: string
-      fieldOptions: {
-        collectSensitiveHighData: string
-      }
-    }
-    feedbackScreen: {
-      header: string
-      description: string
-      setupForm: string
-    }
-    creationScreen: {
-      header: string
-    }
   }
 }

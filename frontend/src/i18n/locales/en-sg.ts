@@ -10,6 +10,7 @@ import { enSG as user } from './features/user'
 import { enSG as whatsNew } from './features/whats-new'
 import { enSG as workspace } from './features/workspace'
 import { enSG as formValidation } from './utils/form-validation'
+import { enSG as workspaceValidation } from './utils/workspace-validation'
 import { FallbackTranslation } from './types'
 
 export const enSG: FallbackTranslation = {
@@ -27,6 +28,7 @@ export const enSG: FallbackTranslation = {
     },
     utils: {
       formValidation,
+      workspaceValidation,
     },
     components: {
       pagination,
