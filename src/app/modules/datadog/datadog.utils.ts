@@ -21,10 +21,30 @@ export const setFormTags = (form: IPopulatedForm) => {
  */
 export const setErrorCode = (error: ApplicationError) => {
   const span = tracer.scope().active()
+
   if (span && error.code) {
-    span.setTag('status', 'error') // RATIONALE: ensures all errors are indexed by DD default error retention filter. This allows for Trace analytic monitors to work on error codes set below.
     span.setTag('span.error.type', error.code)
     span.setTag('span.error.message', `[${error.code}] ${error.message}`)
     if (error.stack) span.setTag('span.error.stack', `${error.stack}`)
   }
+}
+
+/**
+ * Submits an error count metric to Datadog. Used for monitoring errors and dashboard visualizations.
+ * @param errorCode The error code to submit the metric for
+ */
+export const submitErrorCountMetric = ({
+  errorName,
+  errorCode,
+}: {
+  errorName: string
+  errorCode: number
+}) => {
+  tracer.dogstatsd.increment('formsg.error.count', 1, {
+    code: errorCode,
+    // NOTE: since the granularity is the same even when adding name (ie, the name is the same for each error code),
+    // the number and hence cost of custom metrics is the same despite adding the name tag.
+    // Avoid using the error message as it can frequently change, increasing the number and cost of custom metrics.
+    name: `[${errorCode}] ${errorName}`,
+  })
 }

@@ -42,6 +42,7 @@ jobs:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
       - name: Setup Node.js
         uses: actions/setup-node@v4

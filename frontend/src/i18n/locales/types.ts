@@ -1,8 +1,10 @@
 import { RequiredDeep } from 'type-fest'
 
+import { Pagination } from './components'
 import {
   App,
   Common,
+  Feedback,
   Fields,
   HeaderAndInstructions,
   LandingPage,
@@ -36,6 +38,7 @@ interface Translation {
         modals?: Modals
         toasts?: Toasts
         settings?: Settings
+        feedback?: Feedback
       }
       app?: App
       common?: Common
@@ -47,6 +50,9 @@ interface Translation {
     utils: {
       formValidation?: FormValidation
     }
+    components: {
+      pagination?: Pagination
+    }
   }
 }
 
@@ -54,6 +60,7 @@ export interface FallbackTranslation extends Translation {
   translation: {
     features: RequiredDeep<Translation['translation']['features']>
     utils: RequiredDeep<Translation['translation']['utils']>
+    components: RequiredDeep<Translation['translation']['components']>
   }
 }
 

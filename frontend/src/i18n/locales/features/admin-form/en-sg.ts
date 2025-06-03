@@ -1,3 +1,4 @@
+import { enSG as feedback } from './feedback'
 import { enSG as meta } from './meta'
 import { enSG as modals } from './modals'
 import { enSG as navbar } from './navbar'
@@ -12,4 +13,5 @@ export const enSG = {
   modals,
   toasts,
   settings,
+  feedback,
 }

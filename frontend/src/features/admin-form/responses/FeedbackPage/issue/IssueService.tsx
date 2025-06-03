@@ -24,11 +24,12 @@ export const downloadFormIssue = async (
   formId: string,
   formTitle: string,
   count: number,
+  headers: string[],
 ): Promise<void> => {
   return ApiService.get<FormIssueDto[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/issues/download`,
   ).then(({ data }) => {
-    const csvGenerator = new IssueCsvGenerator(count)
+    const csvGenerator = new IssueCsvGenerator(count, headers)
 
     data.forEach((issue) => {
       csvGenerator.addLineFromIssue(issue)

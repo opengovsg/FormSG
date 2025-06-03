@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
@@ -10,7 +11,6 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
 
@@ -31,8 +31,8 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useFormFeedback, useFormIssues } from '../queries'
 
-import { ISSUE_TABLE_COLUMNS } from './issue/IssueTable'
-import { REVIEW_TABLE_COLUMNS } from './review/ReviewTable'
+import { useIssueTableColumns } from './issue/IssueTable'
+import { useReviewTableColumns } from './review/ReviewTable'
 import { EmptyFeedback } from './EmptyFeedback'
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
@@ -54,15 +54,50 @@ interface Feedback {
 interface Issue extends Feedback {
   data: ProcessedIssueMeta[] | undefined
   download: UseMutationResult<void, Error, DownloadFormIssuesMutationArgs>
+  translations: IssueInformationTranslations
 }
 
 interface Review extends Feedback {
   data: ProcessedFeedbackMeta[] | undefined
   average: string | undefined
   download: UseMutationResult<void, Error, DownloadFormFeedbackMutationArgs>
+  translations: ReviewInformationTranslations
+}
+
+interface ReviewInformationTranslations {
+  averageScore: string
+  reviewsToDate: string
+}
+
+interface IssueInformationTranslations {
+  tooltip: string
+  issuesToDate: string
+}
+interface FeedbackPageTranslations {
+  issues: string
+  reviews: string
+  reviewInformation: ReviewInformationTranslations
+  issueInformation: IssueInformationTranslations
+  feedbackCsvGenerator: {
+    date: string
+    comment: string
+    rating: string
+  }
+  issueCsvGenerator: {
+    date: string
+    issue: string
+    email: string
+  }
 }
 
 export const FeedbackPage = (): JSX.Element => {
+  const { t } = useTranslation()
+  const translations: FeedbackPageTranslations = t(
+    'features.adminForm.feedback.feedbackPage',
+    {
+      returnObjects: true,
+    },
+  )
   // Extract form information
   const { data: form } = useAdminForm()
   const { formId } = useParams()
@@ -76,24 +111,50 @@ export const FeedbackPage = (): JSX.Element => {
 
   // Hooks for form reviews
   const { data: reviewData, isLoading: isReviewLoading } = useFormFeedback()
-  const reviewDownload = useFormFeedbackMutations().downloadFormFeedbackMutation
+  const reviewDownload = useFormFeedbackMutations([
+    translations.feedbackCsvGenerator.date,
+    translations.feedbackCsvGenerator.comment,
+    translations.feedbackCsvGenerator.rating,
+  ]).downloadFormFeedbackMutation
   const reviewProps: Review = {
     count: reviewData?.count,
     data: reviewData?.feedback,
     average: reviewData?.average,
     download: reviewDownload,
     isGetLoading: isReviewLoading,
+    translations: {
+      averageScore: translations.reviewInformation.averageScore,
+      reviewsToDate: t(
+        'features.adminForm.feedback.feedbackPage.reviewInformation.reviewsToDate',
+        { reviewCount: reviewData?.count ?? 0 },
+      ),
+    },
   }
 
   // Hooks for form issues
   const { data: issueData, isLoading: isIssueLoading } = useFormIssues()
-  const issueDownload = useFormIssueMutations().downloadFormIssueMutation
+  const issueDownload = useFormIssueMutations([
+    translations.issueCsvGenerator.date,
+    translations.issueCsvGenerator.issue,
+    translations.issueCsvGenerator.email,
+  ]).downloadFormIssueMutation
   const issueProps: Issue = {
     count: issueData?.count,
     data: issueData?.issues,
     download: issueDownload,
     isGetLoading: isIssueLoading,
+    translations: {
+      tooltip: translations.issueInformation.tooltip,
+      issuesToDate: t(
+        'features.adminForm.feedback.feedbackPage.issueInformation.issuesToDate',
+        { issueCount: issueData?.count ?? 0 },
+      ),
+    },
   }
+
+  // Table column hooks for issue and review tables
+  const issueTableColumns = useIssueTableColumns()
+  const reviewTableColumns = useReviewTableColumns()
 
   // Download button handler
   const handleFeedbackDownloadClick = useCallback(() => {
@@ -165,7 +226,7 @@ export const FeedbackPage = (): JSX.Element => {
             sx={{ borderRightWidth: '0px' }}
             onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
           >
-            Issues
+            {translations.issues}
           </Button>
           <Button
             {...getFeedbackTypeButtonProps(
@@ -174,7 +235,7 @@ export const FeedbackPage = (): JSX.Element => {
             )}
             onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
           >
-            Reviews
+            {translations.reviews}
           </Button>
         </ButtonGroup>
         <Box gridArea="export" justifySelf="flex-end">
@@ -198,8 +259,8 @@ export const FeedbackPage = (): JSX.Element => {
           }
           feedbackColumns={
             currentFeedbackType === FeedbackType.Issues
-              ? ISSUE_TABLE_COLUMNS
-              : REVIEW_TABLE_COLUMNS
+              ? issueTableColumns
+              : reviewTableColumns
           }
           currentPage={currentPage - 1}
         />
@@ -229,6 +290,7 @@ export const FeedbackPage = (): JSX.Element => {
 const getReviewInformationComponent = (
   average: string | undefined,
   count: number | undefined,
+  translations: ReviewInformationTranslations,
 ): JSX.Element => {
   return (
     <Grid
@@ -241,7 +303,7 @@ const getReviewInformationComponent = (
     >
       <Flex gridArea="score" flexDir="column">
         <Text textStyle="caption-2" color="secondary.400">
-          Average Score
+          {translations.averageScore}
         </Text>
         <Text textStyle="display-2">
           {average ? Number(average).toPrecision(2) : '-.--'}
@@ -251,8 +313,8 @@ const getReviewInformationComponent = (
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
             {count}
-          </Text>
-          {simplur` ${[count || 0]}review[|s] to date`}
+          </Text>{' '}
+          {translations.reviewsToDate}
         </Text>
       </Box>
     </Grid>
@@ -261,20 +323,17 @@ const getReviewInformationComponent = (
 
 const getIssueInformationComponent = (
   count: number | undefined,
+  translations: IssueInformationTranslations,
 ): JSX.Element => {
   return (
     <Box display="flex" alignItems="center" mb="0.5rem">
       <Text textStyle="h4">
         <Text as="span" color="primary.500">
           {count}
-        </Text>
-        {simplur` ${[count || 0]}issue[|s] to date`}
+        </Text>{' '}
+        {translations.issuesToDate}
       </Text>
-      <Tooltip
-        label={`Feedback displayed here relates to form submission issues`}
-        placement="top"
-        textAlign="center"
-      >
+      <Tooltip label={translations.tooltip} placement="top" textAlign="center">
         <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
       </Tooltip>
     </Box>
@@ -287,9 +346,16 @@ const getInformationGridComponent = (
   reviewProps: Review,
 ): JSX.Element => {
   if (currentFeedbackType === FeedbackType.Issues) {
-    return getIssueInformationComponent(issueProps.count)
+    return getIssueInformationComponent(
+      issueProps.count,
+      issueProps.translations,
+    )
   }
-  return getReviewInformationComponent(reviewProps.average, reviewProps.count)
+  return getReviewInformationComponent(
+    reviewProps.average,
+    reviewProps.count,
+    reviewProps.translations,
+  )
 }
 
 const getFeedbackTypeButtonProps = (

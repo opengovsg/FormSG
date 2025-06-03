@@ -7,6 +7,7 @@ import { DateString, FormFeedbackDto, FormId } from '~shared/types'
 import { FeedbackCsvGenerator } from './FeedbackCsvGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
+const HEADERS = ['Date', 'Comment', 'Rating']
 
 describe('FeedbackCsvGenerator', () => {
   beforeEach(() => {
@@ -25,7 +26,10 @@ describe('FeedbackCsvGenerator', () => {
     it('should initialise the instance properties correctly with default numOfMetaDataRows', () => {
       // Arrange
       const expectedNumberOfRecords = 1
-      const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
+      const feedbackCsv = new FeedbackCsvGenerator(
+        expectedNumberOfRecords,
+        HEADERS,
+      )
 
       // Assert
       expect(feedbackCsv.expectedNumberOfRecords).toEqual(
@@ -47,7 +51,10 @@ describe('FeedbackCsvGenerator', () => {
     it('should insert feedback line correctly when feedback.created is undefined', () => {
       // Arrange
       const expectedNumberOfRecords = 1
-      const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
+      const feedbackCsv = new FeedbackCsvGenerator(
+        expectedNumberOfRecords,
+        HEADERS,
+      )
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
       const lineToAdd: FormFeedbackDto = {
@@ -82,7 +89,10 @@ describe('FeedbackCsvGenerator', () => {
     it('should insert feedback line correctly when feedback.created is defined', () => {
       // Arrange
       const expectedNumberOfRecords = 1
-      const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
+      const feedbackCsv = new FeedbackCsvGenerator(
+        expectedNumberOfRecords,
+        HEADERS,
+      )
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
       const MOCK_CREATED_TIME = moment().toISOString()
@@ -116,7 +126,10 @@ describe('FeedbackCsvGenerator', () => {
     it('should insert feedback line correctly when feedback.lastModified is defined', () => {
       // Arrange
       const expectedNumberOfRecords = 1
-      const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
+      const feedbackCsv = new FeedbackCsvGenerator(
+        expectedNumberOfRecords,
+        HEADERS,
+      )
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
       const MOCK_CREATED_TIME = moment().toISOString()
@@ -152,7 +165,10 @@ describe('FeedbackCsvGenerator', () => {
     it('should insert feedback line correctly when feedback.submissionId is defined', () => {
       // Arrange
       const expectedNumberOfRecords = 1
-      const feedbackCsv = new FeedbackCsvGenerator(expectedNumberOfRecords)
+      const feedbackCsv = new FeedbackCsvGenerator(
+        expectedNumberOfRecords,
+        HEADERS,
+      )
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
       const MOCK_CREATED_TIME = moment().toISOString()

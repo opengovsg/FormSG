@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
 import { Box, IconButton, Text, useMultiStyleConfig } from '@chakra-ui/react'
 
@@ -19,6 +20,8 @@ export const PaginationMobile = ({
   currentPage,
   isDisabled,
 }: PaginationMobileProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const styles = useMultiStyleConfig(PAGINATION_THEME_KEY, { isDisabled })
 
   const totalPageCount = Math.ceil(totalCount / pageSize)
@@ -39,17 +42,20 @@ export const PaginationMobile = ({
     <Box __css={styles.container}>
       <IconButton
         sx={styles.stepper}
-        aria-label="Previous page"
+        aria-label={t('components.pagination.paginationMobile.previousPage')}
         isDisabled={isDisablePrevPage}
         onClick={handlePageBack}
         icon={<BiChevronLeft />}
       />
       <Text sx={styles.text} aria-disabled={isDisabled}>
-        Page {currentPage} of {totalPageCount}
+        {t('components.pagination.paginationMobile.currentPageCount', {
+          currentPage,
+          totalPageCount,
+        })}
       </Text>
       <IconButton
         sx={styles.stepper}
-        aria-label="Next page"
+        aria-label={t('components.pagination.paginationMobile.nextPage')}
         isDisabled={isDisableNextPage}
         onClick={handlePageNext}
         icon={<BiChevronRight />}

@@ -9,9 +9,9 @@ import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/p
  * Class to encapsulate the FeedbackCsv and its attributes
  */
 export class FeedbackCsvGenerator extends CsvGenerator {
-  constructor(expectedNumberOfRecords: number) {
+  constructor(expectedNumberOfRecords: number, headers: string[]) {
     super(expectedNumberOfRecords, 0)
-    this.setHeader(['Date', 'Comment', 'Rating'])
+    this.setHeader(headers)
   }
 
   /**
