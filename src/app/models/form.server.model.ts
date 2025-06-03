@@ -277,6 +277,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       gstRegNo: { type: String, default: '', trim: true },
     },
   },
+
+  isForceConvertToStorageMode: {
+    type: Boolean,
+    required: false,
+  },
 })
 
 const EncryptedFormDocumentSchema =

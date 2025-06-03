@@ -122,7 +122,6 @@ export const FormStatusToggle = (): JSX.Element => {
             formId={formId!}
           />
         )}
-        )
         {(formSettings?.responseMode === FormResponseMode.Encrypt ||
           formSettings?.responseMode === FormResponseMode.Multirespondent) && (
           <SecretKeyActivationModal

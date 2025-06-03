@@ -326,6 +326,7 @@ export interface IEncryptedForm extends IForm {
   business?: FormBusinessField
   emails?: string[]
   whitelistedSubmitterIds?: WhitelistedSubmitterIds
+  isForceConvertToStorageMode?: boolean
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
