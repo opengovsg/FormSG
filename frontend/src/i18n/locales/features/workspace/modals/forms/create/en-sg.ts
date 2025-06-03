@@ -27,9 +27,11 @@ export const enSG: CreateFormModal = {
         subtitle:
           'Collect responses from individual respondents. Ideal for one-way submissions.',
         optionDescriptionItems: {
+          supportEmailSubmissions: 'Supports email submissions',
           supportSingpassMyinfo: 'Supports Singpass & Myinfo',
           supportWebhooks: 'Supports webhooks for integrations',
-          sensitivity: 'Up to Restricted and Sensitive (Normal) data',
+          sensitivity:
+            'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },
       },
       mrf: {
@@ -37,8 +39,10 @@ export const enSG: CreateFormModal = {
         subtitle:
           'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions.',
         optionDescriptionItems: {
+          supportEmailSubmissions: 'Supports email submissions',
           supportApprovalWorkflow: 'Supports approval workflows',
-          sensitivity: 'Up to Restricted and Sensitive (Normal) data',
+          sensitivity:
+            'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },
       },
       email: {
