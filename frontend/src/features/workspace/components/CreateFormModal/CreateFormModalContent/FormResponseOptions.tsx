@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { BiLockAlt } from 'react-icons/bi'
 import { forwardRef, Stack, Text, UnorderedList } from '@chakra-ui/react'
+import { merge } from 'lodash'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
@@ -73,9 +74,13 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
+              { text: storage.optionDescriptionItems.supportEmailSubmissions },
               { text: storage.optionDescriptionItems.supportSingpassMyinfo },
               { text: storage.optionDescriptionItems.supportWebhooks },
-              { text: storage.optionDescriptionItems.sensitivity },
+              {
+                text: storage.optionDescriptionItems.sensitivity,
+                badge: 'new',
+              },
             ]}
           />
         </Tile>
@@ -92,11 +97,11 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
+              { text: mrf.optionDescriptionItems.supportEmailSubmissions },
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
-                badge: 'New',
               },
-              { text: mrf.optionDescriptionItems.sensitivity },
+              { text: mrf.optionDescriptionItems.sensitivity, badge: 'new' },
             ]}
           />
         </Tile>
