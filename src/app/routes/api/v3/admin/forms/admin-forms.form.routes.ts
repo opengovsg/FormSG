@@ -133,6 +133,11 @@ AdminFormsFormRouter.post(
   AdminFormController.handleTransferAllFormsOwnership,
 )
 
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/convert-to-storage',
+  AdminFormController.handleConvertEmailToStorageMode,
+)
+
 /**
  * Specific form field REST APIs
  */

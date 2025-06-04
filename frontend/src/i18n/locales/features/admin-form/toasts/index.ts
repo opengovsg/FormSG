@@ -12,6 +12,7 @@ export interface Toasts {
     update: Toast
     duplicate: Toast & { successButNoLogic: string }
   }
+  emailModeMigration: Toast
   respondentCopy: {
     successBefore: string
     disabled: string

@@ -36,6 +36,7 @@ import {
   FormPermission,
   FormResponseMode,
   FormSettings,
+  FormStatus,
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
@@ -60,6 +61,7 @@ import {
   IMultirespondentForm,
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
+  IPopulatedEmailForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
   IPopulatedUser,
@@ -103,6 +105,7 @@ import {
   getFormFieldById,
   getFormFieldIndexById,
   getLogicById,
+  isFormEmailMode,
   isFormEncryptMode,
 } from '../form.utils'
 
@@ -1863,6 +1866,19 @@ export const updateFormSettings = (
     )
   }
 
+  if (isFormEmailMode(originalForm)) {
+    if (
+      originalForm.isForceConvertToStorageMode &&
+      body.status === FormStatus.Public
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Operation denied: You must convert your form to storage mode before you may open your form to responses.',
+        ),
+      )
+    }
+  }
+
   // Don't allow emails updates or single response per submitterId
   // if payments_field is enabled on the form
   if (isFormEncryptMode(originalForm)) {
@@ -2314,6 +2330,37 @@ export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
         meta: {
           action: 'setGoLinkSuffix',
           formId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  )
+}
+
+/**
+ * Converts an email mode form to storage mode by replacing it with a storage mode form with the same id.
+ * @param form The form to convert to storage mode
+ * @param publicKey The public key to set on the form
+ * @returns ok(updated form) on success
+ * @returns err(FormAlreadyHasPublicKeyError) if the form has a public key
+ */
+export const convertEmailToStorageMode = ({
+  form,
+  publicKey,
+}: {
+  form: IPopulatedEmailForm
+  publicKey: string
+}) => {
+  return ResultAsync.fromPromise(
+    form.replaceWithStorageModeFormWithSameId({ publicKey }),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when converting email to storage mode',
+        meta: {
+          action: 'convertEmailToStorageMode',
+          formId: form._id,
+          publicKey,
         },
         error,
       })
