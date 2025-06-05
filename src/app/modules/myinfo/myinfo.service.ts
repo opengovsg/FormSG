@@ -268,11 +268,11 @@ export class MyInfoServiceClass {
         // Compound field, explode subfields.
         allChildAttrs.push(...(myInfoAttr as InternalAttr[]))
         // This compound field is responsible for its own filling.
-        return field
+        return field as PossiblyPrefilledField
       }
 
       if (myInfoAttr === undefined) {
-        return field
+        return field as PossiblyPrefilledField
       }
 
       const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
