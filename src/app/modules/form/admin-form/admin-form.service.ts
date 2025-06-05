@@ -1873,7 +1873,7 @@ export const updateFormSettings = (
     ) {
       return errAsync(
         new MalformedParametersError(
-          'Please refresh the page (Ctrl+Shift+R) to convert your form to storage mode and reopen it',
+          'Please refresh your browser (Ctrl+Shift+R) to convert your form to storage mode before opening it to responses. If you encounter issues, please contact FormSG.',
         ),
       )
     }
