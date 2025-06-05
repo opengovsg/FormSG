@@ -1873,7 +1873,7 @@ export const updateFormSettings = (
     ) {
       return errAsync(
         new MalformedParametersError(
-          'Operation denied: You must convert your form to storage mode before you may open your form to responses.',
+          'Please refresh your browser (Ctrl+Shift+R) to convert your form to storage mode before opening it to responses. If you encounter issues, please contact FormSG.',
         ),
       )
     }
