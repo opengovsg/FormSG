@@ -6,7 +6,7 @@ import {
 import Bluebird from 'bluebird'
 import jwt from 'jsonwebtoken'
 import { cloneDeep } from 'lodash'
-import mongoose, { LeanDocument } from 'mongoose'
+import mongoose, { FlattenMaps } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
@@ -258,7 +258,7 @@ export class MyInfoServiceClass {
   prefillAndSaveMyInfoFields(
     formId: string,
     myInfoData: MyInfoData | SGIDMyInfoData,
-    currFormFields: LeanDocument<IFieldSchema[]>,
+    currFormFields: FlattenMaps<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
     const prefilledFields = currFormFields.map((field) => {

@@ -116,7 +116,6 @@
     "libphonenumber-js": "^1.10.59",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.41",
-    "mongodb": "^6.16.0",
     "mongodb-memory-server-core": "^9.5.0",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^7.4.0",
