@@ -213,35 +213,6 @@ const whitelistedSubmitterIdNestedPath = new Schema(
   { _id: false },
 )
 
-const paymentsSubSchema = new Schema({
-  channel: {
-    type: String,
-    enum: Object.values(PaymentChannel),
-    default: PaymentChannel.Unconnected,
-  },
-  target_account_id: {
-    type: String,
-    default: '',
-    validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
-  },
-  publishable_key: {
-    type: String,
-    default: '',
-    validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-  },
-  payment_methods: {
-    type: [String],
-    default: [],
-  },
-})
-
-const businessSubSchema = new Schema({
-  type: {
-    address: { type: String, default: '', trim: true },
-    gstRegNo: { type: String, default: '', trim: true },
-  },
-})
-
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
     type: String,
