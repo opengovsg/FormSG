@@ -135,7 +135,7 @@ const formSchemaOptions: SchemaOptions<IFormSchema> = {
   },
 }
 
-export const formPaymentsFieldSchema = {
+export const formPaymentsFieldSchema = new Schema({
   enabled: {
     type: Boolean,
     default: false,
@@ -194,93 +194,102 @@ export const formPaymentsFieldSchema = {
     type: Number,
     default: 0,
   },
-}
+})
 
-const whitelistedSubmitterIdNestedPath = {
-  isWhitelistEnabled: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  encryptedWhitelistedSubmitterIds: {
-    type: Schema.Types.ObjectId,
-    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-    required: false,
-    default: undefined,
-  },
-  _id: { id: false },
-}
-
-const EncryptedFormSchema = new Schema<IEncryptedFormSchema>(
+const whitelistedSubmitterIdNestedPath = new Schema(
   {
-    publicKey: {
-      type: String,
+    isWhitelistEnabled: {
+      type: Boolean,
       required: true,
+      default: false,
     },
-    emails: {
-      type: [
-        {
-          type: String,
-          trim: true,
-        },
-      ],
-      set: transformEmails,
-      validate: [
-        (v: string[]) => {
-          if (!Array.isArray(v)) return false
-          if (v.length === 0) return true
-          return v.every((email) => validator.isEmail(email))
-        },
-        'Please provide valid email addresses',
-      ],
-      // Mongoose v6 only checks if the type is an array, not whether the array
-      // is non-empty. We allow this field to not exist for backwards compatibility
-      // TODO: Make this required after all forms have been migrated
+    encryptedWhitelistedSubmitterIds: {
+      type: Schema.Types.ObjectId,
+      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
       required: false,
-    },
-    whitelistedSubmitterIds: {
-      type: whitelistedSubmitterIdNestedPath,
-      get: (v: { isWhitelistEnabled: boolean }) => ({
-        // remove the ObjectId link to whitelist collection's document by default unless asked for.
-        isWhitelistEnabled: v.isWhitelistEnabled,
-      }),
-      default: () => ({
-        isWhitelistEnabled: false,
-      }),
-    },
-    payments_channel: {
-      channel: {
-        type: String,
-        enum: Object.values(PaymentChannel),
-        default: PaymentChannel.Unconnected,
-      },
-      target_account_id: {
-        type: String,
-        default: '',
-        validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
-      },
-      publishable_key: {
-        type: String,
-        default: '',
-        validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-      },
-      payment_methods: {
-        type: [String],
-        default: [],
-      },
-    },
-
-    payments_field: formPaymentsFieldSchema,
-
-    business: {
-      type: {
-        address: { type: String, default: '', trim: true },
-        gstRegNo: { type: String, default: '', trim: true },
-      },
+      default: undefined,
     },
   },
-  { id: false },
+  { _id: false },
 )
+
+const paymentsSubSchema = new Schema({
+  channel: {
+    type: String,
+    enum: Object.values(PaymentChannel),
+    default: PaymentChannel.Unconnected,
+  },
+  target_account_id: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+  },
+  publishable_key: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+  },
+  payment_methods: {
+    type: [String],
+    default: [],
+  },
+})
+
+const businessSubSchema = new Schema({
+  type: {
+    address: { type: String, default: '', trim: true },
+    gstRegNo: { type: String, default: '', trim: true },
+  },
+})
+
+const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
+  publicKey: {
+    type: String,
+    required: true,
+  },
+  emails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    set: transformEmails,
+    validate: [
+      (v: string[]) => {
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return true
+        return v.every((email) => validator.isEmail(email))
+      },
+      'Please provide valid email addresses',
+    ],
+    // Mongoose v6 only checks if the type is an array, not whether the array
+    // is non-empty. We allow this field to not exist for backwards compatibility
+    // TODO: Make this required after all forms have been migrated
+    required: false,
+  },
+  whitelistedSubmitterIds: {
+    type: whitelistedSubmitterIdNestedPath,
+    get: (v: { isWhitelistEnabled: boolean }) => ({
+      // remove the ObjectId link to whitelist collection's document by default unless asked for.
+      isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
+    default: () => ({
+      isWhitelistEnabled: false,
+    }),
+  },
+  payments_channel: {
+    type: paymentsSubSchema,
+  },
+
+  payments_field: {
+    type: formPaymentsFieldSchema,
+  },
+
+  business: {
+    type: businessSubSchema,
+  },
+})
 
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
