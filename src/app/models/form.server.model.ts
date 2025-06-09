@@ -135,7 +135,7 @@ const formSchemaOptions: SchemaOptions<IFormSchema> = {
   },
 }
 
-export const formPaymentsFieldSchema = new Schema({
+export const formPaymentsFieldSchema = {
   enabled: {
     type: Boolean,
     default: false,
@@ -194,7 +194,7 @@ export const formPaymentsFieldSchema = new Schema({
     type: Number,
     default: 0,
   },
-})
+}
 
 const whitelistedSubmitterIdNestedPath = new Schema(
   {
@@ -279,15 +279,34 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     }),
   },
   payments_channel: {
-    type: paymentsSubSchema,
+    channel: {
+      type: String,
+      enum: Object.values(PaymentChannel),
+      default: PaymentChannel.Unconnected,
+    },
+    target_account_id: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+    },
+    publishable_key: {
+      type: String,
+      default: '',
+      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+    },
+    payment_methods: {
+      type: [String],
+      default: [],
+    },
   },
 
-  payments_field: {
-    type: formPaymentsFieldSchema,
-  },
+  payments_field: formPaymentsFieldSchema,
 
   business: {
-    type: businessSubSchema,
+    type: {
+      address: { type: String, default: '', trim: true },
+      gstRegNo: { type: String, default: '', trim: true },
+    },
   },
 })
 
