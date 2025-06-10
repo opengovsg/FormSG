@@ -100,7 +100,6 @@ export interface Fields {
       contact: string
     }
     allowInternationalNumber: string
-    smsCounts: string
   }
   date: {
     dateValidation: {

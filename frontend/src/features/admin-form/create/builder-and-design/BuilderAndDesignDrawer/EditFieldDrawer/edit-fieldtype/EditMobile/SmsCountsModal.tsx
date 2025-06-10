@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import {
   Modal,
@@ -31,6 +32,7 @@ export const SmsCountsModal = ({
   isOpen,
   onClose,
 }: SmsCountsModalProps) => {
+  const { t } = useTranslation()
   const { formId } = useParams()
 
   const modalSize = useBreakpointValue({
@@ -58,7 +60,7 @@ export const SmsCountsModal = ({
           ) : (
             <>
               <Text textStyle="body-2">
-                Form provides {`${smsCount.quota.toLocaleString()}`} free OTP
+                FormSG provides {`${smsCount.quota.toLocaleString()}`} free OTP
                 verifications per account, for forms you are an owner of. Once
                 this limit is reached, your form will automatically be closed.
               </Text>
@@ -78,7 +80,9 @@ export const SmsCountsModal = ({
                 color="secondary.500"
                 mt="2rem"
               >
-                {formatSmsCounts(smsCount)}
+                {`${formatSmsCounts(smsCount)} ${t(
+                  'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
+                )}`}
               </Badge>
             </>
           )}

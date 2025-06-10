@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl } from '@chakra-ui/react'
+import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { SmsCountsDto } from '~shared/types'
@@ -20,6 +20,7 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { ContactSupportMessage } from './ContactSupportMessage'
 import { SmsCountMessage } from './SmsCountMessage'
+import { SmsCountsModal } from './SmsCountsModal'
 
 const EDIT_MOBILE_KEYS = [
   'title',
@@ -68,6 +69,8 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     smsCounts: 5,
   }
 
+  const smsCountsDisclosure = useDisclosure()
+
   return (
     <>
       <CreatePageDrawerContentContainer>
@@ -114,7 +117,13 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
         <Box>
           <FormControl isReadOnly={isLoading}>
             <Toggle
-              {...register('isVerifiable')}
+              {...register('isVerifiable', {
+                onChange: (e) => {
+                  if (e.target.checked) {
+                    smsCountsDisclosure.onOpen()
+                  }
+                },
+              })}
               label={t(
                 'features.adminForm.sidebar.fields.email.otpVerification.title',
               )}
@@ -137,6 +146,11 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           handleCancel={handleCancel}
         />
       </CreatePageDrawerContentContainer>
+      <SmsCountsModal
+        smsCount={smsCount}
+        isOpen={smsCountsDisclosure.isOpen}
+        onClose={smsCountsDisclosure.onClose}
+      />
     </>
   )
 }

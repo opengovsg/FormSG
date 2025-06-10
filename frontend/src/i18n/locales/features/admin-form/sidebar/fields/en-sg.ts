@@ -97,12 +97,11 @@ export const enSG: Fields = {
     otpVerification: {
       title: 'OTP Verification',
       description: 'Respondents must verify by entering a code sent to them.',
-      smsUsed: '/10,000 SMSes used',
+      smsUsed: 'SMSes used',
       thresholdWarning: 'If more than 10k SMSes are required,',
       contact: 'contact support',
     },
     allowInternationalNumber: 'Allow international numbers',
-    smsCounts: 'SMSes used',
   },
   date: {
     dateValidation: {
