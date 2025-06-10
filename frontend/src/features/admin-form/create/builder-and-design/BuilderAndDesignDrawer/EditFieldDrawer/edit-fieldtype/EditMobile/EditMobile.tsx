@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl } from '@chakra-ui/react'
+import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { MobileFieldBase } from '~shared/types/field'
@@ -28,6 +28,15 @@ const EDIT_MOBILE_KEYS = [
 type EditMobileProps = EditFieldProps<MobileFieldBase>
 
 type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
+
+const OTPVerification = (): JSX.Element => {
+  return (
+    <Stack mt={2} spacing={2}>
+      <Text> Hello World</Text>
+      <Text> Hello World</Text>
+    </Stack>
+  )
+}
 
 export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const { t } = useTranslation()
@@ -110,6 +119,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               )}
             />
           </FormControl>
+          <OTPVerification />
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}
