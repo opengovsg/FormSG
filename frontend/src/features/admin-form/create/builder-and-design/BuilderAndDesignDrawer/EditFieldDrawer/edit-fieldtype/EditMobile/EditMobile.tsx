@@ -35,10 +35,10 @@ type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
 const OTPVerificationTextStack = (): JSX.Element => {
   const { t } = useTranslation()
   return (
-    <Stack mt={2} spacing={2}>
+    <Stack mt={4} spacing={2}>
       <HStack>
         <Icon as={BiMessage} />
-        <Text>
+        <Text textStyle="body-2">
           {'0' + // TODO: update count with a call to DB
             t(
               'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
@@ -47,17 +47,15 @@ const OTPVerificationTextStack = (): JSX.Element => {
       </HStack>
       <HStack>
         <Icon as={IoMdCloseCircle} />
-        <Text>
+        <Text textStyle="body-2">
           {t(
             'features.adminForm.sidebar.fields.mobileNo.otpVerification.thresholdWarning',
           )}
         </Text>
         <Link
-          textStyle="subhead-1"
+          textStyle="body-2"
           href={'https://go.gov.sg/form-support'}
           isExternal
-          // Needed for link to open since there are nested onClicks
-          onClickCapture={(e) => e.stopPropagation()}
         >
           {t(
             'features.adminForm.sidebar.fields.mobileNo.otpVerification.contact',
