@@ -29,6 +29,7 @@ export const adminFormKeys = {
     [...adminFormKeys.id(id), 'viewFormTemplate'] as const,
   products: (id: string, products: Product[]) =>
     [...adminFormKeys.id(id), 'products', ...products] as const,
+  smsCount: (id: string) => [...adminFormKeys.id(id), 'smsCount'] as const,
 }
 
 /**
@@ -142,4 +143,13 @@ export const useFormTemplate = (
       enabled: MONGODB_ID_REGEX.test(formId) && enabled,
     },
   )
+}
+
+export const useSmsQuota = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided to useFreeSmsQuota')
+
+  return useQuery(adminFormKeys.smsCount(formId), () => getSmsQuota(formId), {
+    staleTime: 0,
+  })
 }
