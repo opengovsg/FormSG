@@ -67,9 +67,6 @@ export const enSG: Fields = {
     otpVerification: {
       title: 'OTP verification',
       description: 'Respondents must verify by entering a code sent to them.',
-      smsUsed: 'SMSes used',
-      thresholdWarning: 'If more than 10l SMSes are required, ',
-      contact: 'contact support',
     },
     restrictEmailDomains: {
       title: 'Restrict email domains',
@@ -100,6 +97,9 @@ export const enSG: Fields = {
     otpVerification: {
       title: 'OTP Verification',
       description: 'Respondents must verify by entering a code sent to them.',
+      smsUsed: '/10,000 SMSes used',
+      thresholdWarning: 'If more than 10l SMSes are required, ',
+      contact: 'contact support',
     },
     allowInternationalNumber: 'Allow international numbers',
     smsCounts: 'SMSes used',

@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
+import { BiMessage } from 'react-icons/bi'
+import { IoMdCloseCircle } from 'react-icons/io'
+import { Box, FormControl, HStack, Icon, Stack, Text } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { MobileFieldBase } from '~shared/types/field'
@@ -9,6 +11,7 @@ import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import Link from '~components/Link'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
@@ -29,11 +32,38 @@ type EditMobileProps = EditFieldProps<MobileFieldBase>
 
 type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
 
-const OTPVerification = (): JSX.Element => {
+const OTPVerificationTextStack = (): JSX.Element => {
+  const { t } = useTranslation()
   return (
     <Stack mt={2} spacing={2}>
-      <Text> Hello World</Text>
-      <Text> Hello World</Text>
+      <HStack>
+        <Icon as={BiMessage} />
+        <Text>
+          {'0' + // TODO: update count with a call to DB
+            t(
+              'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
+            )}
+        </Text>
+      </HStack>
+      <HStack>
+        <Icon as={IoMdCloseCircle} />
+        <Text>
+          {t(
+            'features.adminForm.sidebar.fields.mobileNo.otpVerification.thresholdWarning',
+          )}
+        </Text>
+        <Link
+          textStyle="subhead-1"
+          href={'https://go.gov.sg/form-support'}
+          isExternal
+          // Needed for link to open since there are nested onClicks
+          onClickCapture={(e) => e.stopPropagation()}
+        >
+          {t(
+            'features.adminForm.sidebar.fields.mobileNo.otpVerification.contact',
+          )}
+        </Link>
+      </HStack>
     </Stack>
   )
 }
@@ -119,7 +149,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               )}
             />
           </FormControl>
-          <OTPVerification />
+          <OTPVerificationTextStack />
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}
