@@ -364,6 +364,11 @@ export type PublicFormViewDto = {
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
 
+export type SmsCountsDto = {
+  quota: number
+  smsCounts: number
+}
+
 export type AdminFormViewDto = {
   form: AdminFormDto
 }

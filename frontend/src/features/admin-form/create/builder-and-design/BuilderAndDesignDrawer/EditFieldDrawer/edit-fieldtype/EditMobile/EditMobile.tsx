@@ -1,17 +1,15 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiMessage } from 'react-icons/bi'
-import { IoMdCloseCircle } from 'react-icons/io'
-import { Box, FormControl, HStack, Icon, Stack, Text } from '@chakra-ui/react'
+import { Box, FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { SmsCountsDto } from '~shared/types'
 import { MobileFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
-import Link from '~components/Link'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
@@ -19,6 +17,9 @@ import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
+
+import { ContactSupportMessage } from './ContactSupportMessage'
+import { SmsCountMessage } from './SmsCountMessage'
 
 const EDIT_MOBILE_KEYS = [
   'title',
@@ -32,40 +33,6 @@ type EditMobileProps = EditFieldProps<MobileFieldBase>
 
 type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
 
-const OTPVerificationTextStack = (): JSX.Element => {
-  const { t } = useTranslation()
-  return (
-    <Stack mt={4} spacing={2}>
-      <HStack>
-        <Icon as={BiMessage} />
-        <Text textStyle="body-2">
-          {'0' + // TODO: update count with a call to DB
-            t(
-              'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
-            )}
-        </Text>
-      </HStack>
-      <HStack>
-        <Icon as={IoMdCloseCircle} />
-        <Text textStyle="body-2">
-          {t(
-            'features.adminForm.sidebar.fields.mobileNo.otpVerification.thresholdWarning',
-          )}
-        </Text>
-        <Link
-          textStyle="body-2"
-          href={'https://go.gov.sg/form-support'}
-          isExternal
-        >
-          {t(
-            'features.adminForm.sidebar.fields.mobileNo.otpVerification.contact',
-          )}
-        </Link>
-      </HStack>
-    </Stack>
-  )
-}
-
 export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -75,6 +42,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     handleUpdateField,
     isLoading,
     handleCancel,
+    watch,
   } = useEditFieldForm<EditMobileInputs, MobileFieldBase>({
     field,
     transform: {
@@ -91,6 +59,14 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
       }),
     [],
   )
+
+  const showOTPText = watch('isVerifiable')
+
+  // const { data: smsCount } = useSmsQuota() /TODO: reintroduce when BE is implemented
+  const smsCount: SmsCountsDto = {
+    quota: 10000,
+    smsCounts: 5,
+  }
 
   return (
     <>
@@ -147,7 +123,12 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               )}
             />
           </FormControl>
-          <OTPVerificationTextStack />
+          {showOTPText && (
+            <Box>
+              <SmsCountMessage smsCount={smsCount} />
+              <ContactSupportMessage />
+            </Box>
+          )}
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}

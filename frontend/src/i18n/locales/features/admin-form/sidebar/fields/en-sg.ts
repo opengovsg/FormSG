@@ -98,7 +98,7 @@ export const enSG: Fields = {
       title: 'OTP Verification',
       description: 'Respondents must verify by entering a code sent to them.',
       smsUsed: '/10,000 SMSes used',
-      thresholdWarning: 'If more than 10k SMSes are required, ',
+      thresholdWarning: 'If more than 10k SMSes are required,',
       contact: 'contact support',
     },
     allowInternationalNumber: 'Allow international numbers',
