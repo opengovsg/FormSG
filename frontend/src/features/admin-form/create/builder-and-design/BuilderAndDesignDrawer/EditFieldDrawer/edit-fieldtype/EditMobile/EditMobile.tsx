@@ -66,11 +66,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const showOTPText = watch('isVerifiable')
 
   const { data: smsCount } = useSmsQuota()
-  // const smsCount: SmsCountsDto = {
-  //   quota: 10000,
-  //   smsCounts: 5,
-  // }
-
   const smsCountsDisclosure = useDisclosure()
 
   return (

@@ -93,7 +93,6 @@ const compileSmsCountModel = (db: Mongoose) => {
     return this.countDocuments({
       formId,
       smsType: SmsType.Verification,
-      isOnboardedAccount: false,
     })
       .read('secondary')
       .exec()
