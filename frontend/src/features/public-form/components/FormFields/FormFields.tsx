@@ -262,11 +262,7 @@ export const FormFields = ({
           )}
         <PublicFormPaymentResumeModal />
         {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
-        {form &&
-        ((form?.hasRespondentCopy && isRespondentCopyEnabled) ||
-          ('hasStatusTracker' in form &&
-            form?.hasStatusTracker &&
-            isStatusTrackerCopyEnabled)) ? (
+        {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
           <Box mt="2.5rem">
             <PublicRespondentEmailField />
           </Box>
