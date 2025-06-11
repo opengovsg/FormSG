@@ -13,17 +13,17 @@ export const ContactSupportMessage = (): JSX.Element => {
       <Text textStyle="caption-1">
         {t(
           'features.adminForm.sidebar.fields.mobileNo.otpVerification.thresholdWarning',
-        )}
-      </Text>{' '}
-      <Link
-        textStyle="caption-1"
-        href={'https://go.gov.sg/form-support'}
-        isExternal
-      >
-        {t(
-          'features.adminForm.sidebar.fields.mobileNo.otpVerification.contact',
-        )}
-      </Link>
+        )}{' '}
+        <Link
+          textStyle="caption-1"
+          href={'https://go.gov.sg/form-support'}
+          isExternal
+        >
+          {t(
+            'features.adminForm.sidebar.fields.mobileNo.otpVerification.contact',
+          )}
+        </Link>
+      </Text>
     </Flex>
   )
 }
