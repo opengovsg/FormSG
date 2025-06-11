@@ -99,7 +99,7 @@ export interface ISmsCountModel extends Model<ISmsCountSchema> {
    * Counts the number of sms which an admin has sent using default (formSG) credentials.
    * NOTE: This counts across all forms which an admin has.
    */
-  retrieveSmsCounts: (userId: string) => Promise<number>
+  retrieveSmsCounts: (formId: string) => Promise<number>
 }
 
 export interface BounceNotificationSmsParams {

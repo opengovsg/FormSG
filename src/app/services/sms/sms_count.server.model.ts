@@ -14,7 +14,7 @@ import {
   SmsType,
 } from './sms.types'
 
-const SMS_COUNT_SCHEMA_NAME = 'SmsCount'
+const SMS_COUNT_SCHEMA_NAME = 'sms'
 
 const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
   form: {
@@ -34,15 +34,6 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
     type: Boolean,
   },
 })
-
-// VerificationSmsCountSchema.pre<IVerificationSmsCountSchema>( //TODO: confirm that this prehook is not necessary
-//   'save',
-//   function (next) {
-//     const formTwilioId = smsConfig.twilioMsgSrvcSid
-//     this.isOnboardedAccount = !(this.msgSrvcSid === formTwilioId)
-//     return next()
-//   },
-// )
 
 const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
   admin: {
@@ -76,6 +67,7 @@ const compileSmsCountModel = (db: Mongoose) => {
         updatedAt: false,
       },
       discriminatorKey: 'smsType',
+      collection: 'sms',
     },
   )
 

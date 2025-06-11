@@ -5,6 +5,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { PossibleDatabaseError } from '../../modules/core/core.errors'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 
+import { LogSmsParams } from './sms.types'
 import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
@@ -34,4 +35,17 @@ export const retrieveSmsCounts = (
       return transformMongoError(error)
     },
   )
+}
+
+export const logSmsSend = (logParams: LogSmsParams) => {
+  return SmsCount.logSms(logParams).catch((error) => {
+    logger.error({
+      message: 'Error logging sms count to database',
+      meta: {
+        action: 'logSmsSend',
+        ...logParams,
+      },
+      error,
+    })
+  })
 }

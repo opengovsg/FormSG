@@ -14,6 +14,8 @@ import {
 } from '../../modules/core/core.errors'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
+import * as SmsService from '../sms/sms.service'
+import { LogType } from '../sms/sms.types'
 
 import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
 import {
@@ -29,6 +31,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const Form = getFormModel(mongoose)
+
 class PostmanSmsService {
   /**
    * Send SMS using Postman API to Member of public
@@ -63,11 +66,52 @@ class PostmanSmsService {
       values: { body: message },
     }
 
+    const useMockPostmanSms = true
+    console.log(`useMockPostmanSms ${useMockPostmanSms}`)
     if (useMockPostmanSms) {
+      console.log('mock dev sms!')
       return MailService.sendLocalDevMail(
         '[Mock Postman SMS] Captured SMS',
         message,
       )
+        .map((result) => {
+          // Fire log sms success promise without waiting.
+          void SmsService.logSmsSend({
+            smsData: {
+              form: '683eafe2b30afb76071139af',
+              formAdmin: {
+                email: 'scott@open.gov.sg',
+                userId: '674d854fe46539c98aebd9ba',
+              },
+              collaboratorEmail: 'scott@open.gov.sg',
+              recipientNumber: '98212388',
+            },
+            smsType: SmsType.Verification,
+            msgSrvcSid: 'MG376e6366c1f35de8d8d3537b77456063',
+            logType: LogType.success,
+          })
+
+          return result
+        })
+        .mapErr((error) => {
+          // Fire log sms failure promise without waiting.
+          void SmsService.logSmsSend({
+            smsData: {
+              form: '683eafe2b30afb76071139af',
+              formAdmin: {
+                email: 'scott@open.gov.sg',
+                userId: '674d854fe46539c98aebd9ba',
+              },
+              collaboratorEmail: 'scott@open.gov.sg',
+              recipientNumber: '98212388',
+            },
+            smsType: SmsType.Verification,
+            msgSrvcSid: 'MG376e6366c1f35de8d8d3537b77456063',
+            logType: LogType.failure,
+          })
+
+          return error
+        })
     }
 
     const campaignUrl =
@@ -92,9 +136,32 @@ class PostmanSmsService {
 
         return new SmsSendError()
       },
-    ).andThen(() => {
-      return okAsync(true as const)
-    })
+    )
+      .andThen(() => {
+        return okAsync(true as const)
+      })
+      .map((result) => {
+        // Fire log sms success promise without waiting.
+        void SmsService.logSmsSend({
+          smsData,
+          smsType,
+          msgSrvcSid: 'test msgSrvcSid',
+          logType: LogType.success,
+        })
+
+        return result
+      })
+      .mapErr((error) => {
+        // Fire log sms failure promise without waiting.
+        void SmsService.logSmsSend({
+          smsData,
+          smsType,
+          msgSrvcSid: 'test msgSrvcSid',
+          logType: LogType.failure,
+        })
+
+        return error
+      })
   }
 
   /**
@@ -133,6 +200,7 @@ class PostmanSmsService {
     }
 
     if (useMockPostmanSms) {
+      console.log(`local sms sent`)
       return MailService.sendLocalDevMail(
         '[Mock Postman SMS] Captured SMS',
         message,
