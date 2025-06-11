@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
-import { PossibleDatabaseError } from 'src/app/modules/core/core.errors'
-import { transformMongoError } from 'src/app/utils/handle-mongo-error'
+import { createLoggerWithLabel } from '../../config/logger'
+import { PossibleDatabaseError } from '../../modules/core/core.errors'
+import { transformMongoError } from '../../utils/handle-mongo-error'
 
 import getSmsCountModel from './sms_count.server.model'
 

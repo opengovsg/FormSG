@@ -13,6 +13,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useSmsQuota } from '~features/admin-form/common/queries'
+
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
@@ -63,11 +65,11 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
 
   const showOTPText = watch('isVerifiable')
 
-  // const { data: smsCount } = useSmsQuota() /TODO: reintroduce when BE is implemented
-  const smsCount: SmsCountsDto = {
-    quota: 10000,
-    smsCounts: 5,
-  }
+  const { data: smsCount } = useSmsQuota()
+  // const smsCount: SmsCountsDto = {
+  //   quota: 10000,
+  //   smsCounts: 5,
+  // }
 
   const smsCountsDisclosure = useDisclosure()
 
