@@ -60,8 +60,10 @@ import {
   ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
+import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
+import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
@@ -3412,7 +3414,7 @@ export const handleConvertEmailToStorageMode: ControllerHandler<
  * @returns 404 when the formId is not found in the database
  * @returns 500 when a database error occurs during retrieval
  */
-export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
+export const handleGetSmsCountForFormAdmin: ControllerHandler<
   {
     formId: string
   },
@@ -3430,7 +3432,7 @@ export const handleGetFreeSmsCountForFormAdmin: ControllerHandler<
     FormService.retrieveFormById(formId)
       // Step 2: Retrieve the free sms count
       .andThen(({ admin }) => {
-        return SmsService.retrieveFreeSmsCounts(String(admin))
+        return SmsService.retrieveSmsCounts(String(admin))
       })
       // Step 3: Map/MapErr accordingly
       .map((freeSmsCountForAdmin) =>
