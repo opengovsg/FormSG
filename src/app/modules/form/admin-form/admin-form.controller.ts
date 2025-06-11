@@ -3422,7 +3422,7 @@ export const handleGetSmsCountForFormAdmin: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const logMeta = {
-    action: 'handleGetFreeSmsCountForFormAdmin',
+    action: 'handleGetSmsCountForFormAdmin',
     ...createReqMeta(req),
     formId,
   }
@@ -3430,14 +3430,14 @@ export const handleGetSmsCountForFormAdmin: ControllerHandler<
   // Step 1: Check that the form exists
   return (
     FormService.retrieveFormById(formId)
-      // Step 2: Retrieve the free sms count
-      .andThen(({ admin }) => {
-        return SmsService.retrieveSmsCounts(String(admin))
+      // Step 2: Retrieve the current sms count
+      .andThen(() => {
+        return SmsService.retrieveSmsCounts(formId)
       })
       // Step 3: Map/MapErr accordingly
-      .map((freeSmsCountForAdmin) =>
+      .map((smsCountForForm) =>
         res.status(StatusCodes.OK).json({
-          smsCounts: freeSmsCountForAdmin,
+          smsCounts: smsCountForForm,
           quota: smsConfig.smsVerificationLimit,
         }),
       )
