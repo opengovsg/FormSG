@@ -1,6 +1,5 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { smsConfig } from '../../../app/config/features/sms.config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 import { USER_SCHEMA_ID } from '../../models/user.server.model'
 
@@ -36,14 +35,14 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
   },
 })
 
-VerificationSmsCountSchema.pre<IVerificationSmsCountSchema>(
-  'save',
-  function (next) {
-    const formTwilioId = smsConfig.twilioMsgSrvcSid
-    this.isOnboardedAccount = !(this.msgSrvcSid === formTwilioId)
-    return next()
-  },
-)
+// VerificationSmsCountSchema.pre<IVerificationSmsCountSchema>( //TODO: confirm that this prehook is not necessary
+//   'save',
+//   function (next) {
+//     const formTwilioId = smsConfig.twilioMsgSrvcSid
+//     this.isOnboardedAccount = !(this.msgSrvcSid === formTwilioId)
+//     return next()
+//   },
+// )
 
 const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
   admin: {
