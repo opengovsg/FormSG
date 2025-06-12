@@ -89,6 +89,12 @@ export type BounceNotificationHtmlData = {
   appName: string
 }
 
+export type FormDeactivatedNotificationHtmlData = {
+  formTitle: string
+  formLink: string
+  appName: string
+}
+
 export type PaymentConfirmationData = {
   appName: string
   formTitle: string
