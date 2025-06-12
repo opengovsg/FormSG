@@ -30,6 +30,7 @@ import getFormModel, {
 } from '../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
+import MailService from '../../services/mail/mail.service'
 import * as SmsService from '../../services/sms/sms.service'
 import {
   getMongoErrorMessage,
@@ -724,13 +725,28 @@ export const checkFormSmsLimitAndDeactivateForm = (
         meta: logMeta,
       })
 
-      return deactivateForm(formId).andThen(() =>
-        errAsync(
-          new PrivateFormError(
-            'Sms Verification made after form submission limit was reached',
-            form.id,
+      return deactivateForm(formId)
+        .andThen(() => {
+          return MailService.sendFormDeactivatedNotification({
+            emailRecipients: form.admin.email ? [form.admin.email] : [],
+            formTitle: form.title,
+            formId,
+          }).mapErr((error) => {
+            logger.error({
+              message: 'Failed to send form deactivated notification email',
+              meta: logMeta,
+              error,
+            })
+            return error // You can also choose to swallow this error if not critical
+          })
+        })
+        .andThen(() =>
+          errAsync(
+            new PrivateFormError(
+              'Sms Verification made after form submission limit was reached',
+              form.id,
+            ),
           ),
-        ),
-      )
+        )
     })
 }

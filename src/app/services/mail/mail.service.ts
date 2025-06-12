@@ -27,6 +27,7 @@ import {
   EmailAddressVerificationOtp,
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
+import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -60,7 +61,6 @@ import {
   generateSubmissionToAdminHtml,
   isToFieldValid,
 } from './mail.utils'
-import { FormDeactivatedNotification } from 'src/app/views/templates/FormDeactivatedNotification'
 
 const logger = createLoggerWithLabel(module)
 
