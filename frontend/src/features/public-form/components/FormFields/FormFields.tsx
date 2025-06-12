@@ -202,7 +202,7 @@ export const FormFields = ({
   const hasNormalPrefills = Object.values(fieldPrefillMap).some(
     (field) => !field.lockPrefill && field.prefillValue,
   )
-  console.log(form)
+
   const hasLockedNormalPrefills = hasLockedPrefills && hasNormalPrefills
 
   return (
