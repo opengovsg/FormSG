@@ -40,6 +40,7 @@ import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
+  FormDeactivatedNotificationHtmlData,
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
@@ -59,6 +60,7 @@ import {
   generateSubmissionToAdminHtml,
   isToFieldValid,
 } from './mail.utils'
+import { FormDeactivatedNotification } from 'src/app/views/templates/FormDeactivatedNotification'
 
 const logger = createLoggerWithLabel(module)
 
@@ -504,6 +506,76 @@ export class MailService {
           meta: {
             action: 'sendBounceNotification',
             bounceType,
+            formTitle,
+            formId,
+          },
+          error,
+        })
+        return error
+      })
+    })
+  }
+
+  /**
+   * Sends a notification for critical bounce
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.bouncedRecipients the emails which caused the critical bounce
+   * @param args.bounceType bounce type given by SNS
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendFormDeactivatedNotification = ({
+    emailRecipients,
+    formTitle,
+    formId,
+  }: {
+    emailRecipients: string[]
+    formTitle: string
+    formId: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: FormDeactivatedNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      appName: this.#appName,
+    }
+
+    const generatedHtml = fromPromise(
+      render(FormDeactivatedNotification(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render FormDeactivatedNotification',
+          meta: {
+            action: 'sendFormDeactivatedNotification',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating form deactivated notification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: 'Form Deactivated due to exceeding free sms threshold',
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending form deactivated notification email',
+          meta: {
+            action: 'sendFormDeactivatedNotification',
             formTitle,
             formId,
           },
