@@ -737,7 +737,7 @@ export const checkFormSmsLimitAndDeactivateForm = (
               meta: logMeta,
               error,
             })
-            return error // You can also choose to swallow this error if not critical
+            return errAsync(error)
           })
         })
         .andThen(() =>
