@@ -69,11 +69,7 @@ export const FormFields = ({
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
   // TODO: (respondent copy): Remove when respondent copy is out of beta
-  // const isRespondentCopyEnabled = useFeatureIsOn(featureFlags.respondentCopy)
-  // const isStatusTrackerCopyEnabled = useFeatureIsOn(featureFlags.statusTracker)
-
-  const isRespondentCopyEnabled = true
-  const isStatusTrackerCopyEnabled = true
+  const isRespondentCopyEnabled = useFeatureIsOn(featureFlags.respondentCopy)
 
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()

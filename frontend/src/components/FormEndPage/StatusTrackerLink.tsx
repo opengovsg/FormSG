@@ -1,13 +1,14 @@
 import { BiLinkExternal } from 'react-icons/bi'
 import {
+  Box,
   FormControl,
-  FormLabel,
   InputGroup,
   InputRightElement,
   Skeleton,
   Stack,
 } from '@chakra-ui/react'
 
+import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import { CopyButton } from '~templates/CopyButton'
@@ -22,10 +23,16 @@ export const StatusTrackerLink = ({
   submissionId,
 }: StatusTrackerLinkProps): JSX.Element => {
   const shareLink = `${window.location.origin}/${formId}/status/${submissionId}`
-  console.log('null')
   return (
     <FormControl isReadOnly>
-      <FormLabel>Form link</FormLabel>
+      <Box>
+        <FormLabel
+          isRequired
+          description={'Track the status of your response through this link'}
+        >
+          Status Tracking link
+        </FormLabel>
+      </Box>
       <Skeleton isLoaded={!!formId}>
         <Stack direction="row" align="center">
           <InputGroup>

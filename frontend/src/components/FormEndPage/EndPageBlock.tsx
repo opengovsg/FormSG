@@ -3,14 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto, Language } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormDto,
+  FormResponseMode,
+  Language,
+} from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import { SubmissionData } from '~features/public-form/PublicFormContext'
+import {
+  SubmissionData,
+  usePublicFormContext,
+} from '~features/public-form/PublicFormContext'
+
+import { StatusTrackerLink } from './StatusTrackerLink'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -31,6 +41,8 @@ export const EndPageBlock = ({
 }: EndPageBlockProps): JSX.Element => {
   const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
+  const { form, formId } = usePublicFormContext()
+
   useEffect(() => {
     if (focusOnMount) {
       focusRef.current?.focus()
@@ -87,7 +99,7 @@ export const EndPageBlock = ({
           </Box>
         ) : null}
       </Box>
-      <Box mt="2rem">
+      <Box mt="1rem">
         <Box>
           <Text textColor="secondary.300" textStyle="caption-2">
             Response ID: {submissionData.id}
@@ -96,6 +108,16 @@ export const EndPageBlock = ({
             {submissionTimestamp}
           </Text>
         </Box>
+
+        {form?.responseMode == FormResponseMode.Multirespondent &&
+        form?.hasStatusTracker ? (
+          <Box mt="2rem">
+            <StatusTrackerLink
+              formId={formId}
+              submissionId={submissionData.id}
+            />
+          </Box>
+        ) : null}
         <Box mt="2.25rem">
           {isButtonHidden || (
             <Button
