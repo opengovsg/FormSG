@@ -719,7 +719,7 @@ export const checkFormSmsLimitAndDeactivateForm = (
   return SmsService.retrieveSmsCounts(formId)
     .mapErr((error) => {
       logger.error({
-        message: 'Error while counting submissions for form',
+        message: 'Error while counting sms threshold for form',
         meta: logMeta,
         error,
       })
@@ -733,28 +733,27 @@ export const checkFormSmsLimitAndDeactivateForm = (
         meta: logMeta,
       })
 
-      return deactivateForm(formId)
-        .andThen(() => {
-          return MailService.sendFormDeactivatedNotification({
-            emailRecipients: form.admin.email ? [form.admin.email] : [],
-            formTitle: form.title,
-            formId,
-          }).mapErr((error) => {
-            logger.error({
-              message: 'Failed to send form deactivated notification email',
-              meta: logMeta,
-              error,
-            })
-            return error
+      return deactivateForm(formId).andThen(() => {
+        // don't have to await sending of the email
+        MailService.sendFormDeactivatedNotification({
+          emailRecipients: form.admin.email
+            ? [form.admin.email, ...form.permissionList.map((x) => x.email)]
+            : [],
+          formTitle: form.title,
+          formId,
+        }).mapErr((error) => {
+          logger.error({
+            message: 'Failed to send form deactivated notification email',
+            meta: logMeta,
+            error,
           })
         })
-        .andThen(() =>
-          errAsync(
-            new PrivateFormError(
-              'Sms Verification made after form submission limit was reached',
-              form.id,
-            ),
+        return errAsync(
+          new PrivateFormError(
+            'Sms Verification made after form submission limit was reached',
+            form.id,
           ),
         )
+      })
     })
 }
