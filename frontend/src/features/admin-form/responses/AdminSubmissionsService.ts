@@ -13,6 +13,7 @@ import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
+import { makeWorkerApiAndCleanup } from './ResponsesPage/storage/StorageResponsesService'
 import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   processDecryptedContent,
@@ -192,15 +193,50 @@ export const getAllDecryptedSubmission = async ({
     endDate,
   })
 
-  return allEncryptedData.map((encryptedData) => {
-    const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
-      encryptedContent: encryptedData.encryptedContent,
-      verifiedContent: encryptedData.verifiedContent,
-      version: encryptedData.version,
+  // Create a pool of workers based on available CPU cores
+  const numWorkers = window.navigator.hardwareConcurrency || 4
+  const workerPool = Array.from({ length: numWorkers }, () =>
+    makeWorkerApiAndCleanup(),
+  )
+
+  try {
+    // Process submissions in chunks to avoid overwhelming the workers
+    const chunkSize = Math.ceil(allEncryptedData.length / numWorkers)
+    const chunks = Array.from({ length: numWorkers }, (_, i) => {
+      const start = i * chunkSize
+      const end = Math.min(start + chunkSize, allEncryptedData.length)
+      return allEncryptedData.slice(start, end)
     })
 
-    if (!decryptedContent) throw new Error('Could not decrypt the response')
+    // Process each chunk in parallel using the worker pool
+    const results = await Promise.all(
+      chunks.map(async (chunk, workerIndex) => {
+        const { workerApi } = workerPool[workerIndex]
+        return Promise.all(
+          chunk.map(async (encryptedData) => {
+            const decryptedContent = await workerApi.decryptSubmission({
+              secretKey,
+              encryptedContent: encryptedData.encryptedContent,
+              verifiedContent: encryptedData.verifiedContent,
+              version: encryptedData.version,
+            })
 
-    return { ...decryptedContent, submissionTime: encryptedData.created }
-  })
+            if (!decryptedContent)
+              throw new Error('Could not decrypt the response')
+
+            return {
+              ...decryptedContent,
+              submissionTime: encryptedData.created,
+            }
+          }),
+        )
+      }),
+    )
+
+    // Flatten the results array
+    return results.flat()
+  } finally {
+    // Clean up workers
+    workerPool.forEach(({ cleanup }) => cleanup())
+  }
 }

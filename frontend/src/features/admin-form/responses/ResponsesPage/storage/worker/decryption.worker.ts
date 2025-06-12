@@ -220,8 +220,26 @@ async function decryptIntoCsv(
   return csvRecord as MaterializedCsvRecord
 }
 
+/**
+ * Decrypts a single submission using the formsgSdk
+ */
+async function decryptSubmission(data: {
+  secretKey: string
+  encryptedContent: string
+  verifiedContent: string | undefined
+  version: number
+}) {
+  const { secretKey, encryptedContent, verifiedContent, version } = data
+  return formsgSdk.crypto.decrypt(secretKey, {
+    encryptedContent,
+    verifiedContent,
+    version,
+  })
+}
+
 const exports = {
   decryptIntoCsv,
+  decryptSubmission,
 }
 
 expose(exports)
