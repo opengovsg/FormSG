@@ -85,17 +85,11 @@ const aggregateWordCloud = (
 export const UnlockedChartsContainer = () => {
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
-  const { data: decryptedContent } = useAllSubmissionData(dateRange)
-
-  const filteredDecryptedData = useMemo(() => {
-    if (!decryptedContent) return []
-    return decryptedContent
-  }, [decryptedContent])
+  const { data: decryptedContent = [] } = useAllSubmissionData(dateRange)
 
   const prettifiedResponsesCount = useMemo(
-    () =>
-      simplur` ${[filteredDecryptedData.length ?? 0]}response[|s] retrieved`,
-    [filteredDecryptedData],
+    () => simplur` ${[decryptedContent.length ?? 0]}response[|s] retrieved`,
+    [decryptedContent],
   )
 
   if (!form) return null
@@ -109,7 +103,7 @@ export const UnlockedChartsContainer = () => {
         formField.fieldType === BasicField.ShortText ||
         formField.fieldType === BasicField.LongText
       ) {
-        const words = aggregateWordCloud(formField._id, filteredDecryptedData)
+        const words = aggregateWordCloud(formField._id, decryptedContent)
         if (!words.length) return null
         return (
           <WordCloud words={words} questionTitle={questionTitle} key={idx} />
@@ -122,7 +116,7 @@ export const UnlockedChartsContainer = () => {
       const dataValues = aggregateSubmissionData(
         formField._id,
         formField,
-        filteredDecryptedData,
+        decryptedContent,
       )
 
       if (dataValues.length === 0) return null
@@ -154,7 +148,7 @@ export const UnlockedChartsContainer = () => {
         <Flex direction="column">
           <Text textStyle="h4" mb="0.125rem">
             <Text as="span" color="primary.500">
-              {filteredDecryptedData.length}
+              {decryptedContent.length}
             </Text>
             {prettifiedResponsesCount}
           </Text>
@@ -172,7 +166,7 @@ export const UnlockedChartsContainer = () => {
         <VStack divider={<Divider />} gap="1.5rem">
           {renderedCharts}
         </VStack>
-      ) : filteredDecryptedData.length === 0 ? (
+      ) : decryptedContent.length === 0 ? (
         <Container p={0} maxW="42.5rem">
           <Stack spacing="1rem" align="center">
             <Text
