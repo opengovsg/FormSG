@@ -215,3 +215,12 @@ export const getSubmissionType = (
       return SubmissionType.Email
   }
 }
+
+export const hasVerifiableMobileFieldformFields = (
+  formFields: IFormSchema['form_fields'],
+): boolean => {
+  if (!formFields) return false
+  return formFields.some(
+    (field) => field.fieldType === 'mobile' && field.isVerifiable === true,
+  )
+}
