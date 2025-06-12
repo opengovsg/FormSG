@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import { ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
-import { PossibleDatabaseError } from '../../modules/core/core.errors'
+import { DatabaseError, PossibleDatabaseError } from '../../modules/core/core.errors'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 
 import { LogSmsParams } from './sms.types'
@@ -47,5 +47,7 @@ export const logSmsSend = (logParams: LogSmsParams) => {
       },
       error,
     })
+
+    return new DatabaseError()
   })
 }
