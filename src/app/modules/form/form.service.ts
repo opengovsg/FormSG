@@ -30,6 +30,10 @@ import getFormModel, {
 } from '../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
+import {
+  MailGenerationError,
+  MailSendError,
+} from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import * as SmsService from '../../services/sms/sms.service'
 import {
@@ -697,7 +701,11 @@ export const checkFormSmsLimitAndDeactivateForm = (
   form: IPopulatedForm,
 ): ResultAsync<
   IPopulatedForm,
-  PossibleDatabaseError | PrivateFormError | FormNotFoundError
+  | PossibleDatabaseError
+  | PrivateFormError
+  | FormNotFoundError
+  | MailGenerationError
+  | MailSendError
 > => {
   const logMeta = {
     action: 'checkFormSmsLimitAndDeactivateForm',
@@ -737,7 +745,7 @@ export const checkFormSmsLimitAndDeactivateForm = (
               meta: logMeta,
               error,
             })
-            return errAsync(error)
+            return error
           })
         })
         .andThen(() =>
