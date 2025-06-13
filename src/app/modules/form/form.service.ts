@@ -699,11 +699,11 @@ export const checkFormSmsLimitAndDeactivateForm = (
   IPopulatedForm,
   PossibleDatabaseError | PrivateFormError | FormNotFoundError
 > => {
+  const formId = String(form._id)
   const logMeta = {
     action: 'checkFormSmsLimitAndDeactivateForm',
-    formId: form._id,
+    formId: formId,
   }
-  const formId = String(form._id)
 
   if (!hasVerifiableMobileFieldformFields(form.form_fields) || form.noSmsLimit)
     return okAsync(form)
@@ -726,20 +726,19 @@ export const checkFormSmsLimitAndDeactivateForm = (
       })
 
       return deactivateForm(formId).andThen(() => {
-        // don't have to await sending of the email
         void MailService.sendFormDeactivatedNotification({
           emailRecipients: form.admin.email
             ? [form.admin.email, ...form.permissionList.map((x) => x.email)]
             : [],
           formTitle: form.title,
           formId,
-        }).mapErr((error) => {
+        }).mapErr((error) =>
           logger.error({
             message: 'Failed to send form deactivated notification email',
             meta: logMeta,
             error,
-          })
-        })
+          }),
+        )
         return errAsync(
           new PrivateFormError(
             'Sms Verification made after form submission limit was reached',
