@@ -110,6 +110,7 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
+  noSmsLimit: false,
 }
 
 const ENCRYPT_MODE_SETTINGS_DEFAULTS = {
