@@ -188,7 +188,7 @@ export interface FormBase {
   isListed: boolean
 
   esrvcId?: string
-
+  noSmsLimit?: boolean
   /**
    * LEGACY: Was previously used for sending with the correct Twilio.
    * @deprecated Twilio support is removed and replaced with postman-sms.

@@ -705,7 +705,7 @@ export const checkFormSmsLimitAndDeactivateForm = (
   }
   const formId = String(form._id)
 
-  if (!hasVerifiableMobileFieldformFields(form.form_fields))
+  if (!hasVerifiableMobileFieldformFields(form.form_fields) || form.noSmsLimit)
     return okAsync(form)
 
   return SmsService.retrieveSmsCounts(formId)

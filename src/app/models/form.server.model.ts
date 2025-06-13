@@ -800,6 +800,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: Boolean,
         default: false,
       },
+
+      noSmsLimit: {
+        type: Boolean,
+        default: false,
+        require: false,
+      },
     },
     formSchemaOptions,
   )
