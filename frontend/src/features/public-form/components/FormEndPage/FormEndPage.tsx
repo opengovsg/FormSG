@@ -1,6 +1,6 @@
 import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, FormResponseMode } from '~shared/types/form'
 
 import {
   SubmissionData,
@@ -11,6 +11,7 @@ import { EndPageBlock } from '../../../../components/FormEndPage/EndPageBlock'
 import { ThankYouSvgr } from '../../../../components/FormEndPage/ThankYouSvgr'
 
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
+import { SubmitAnotherResponseButton } from './SubmitAnotherResponseButton'
 
 export interface FormEndPageProps {
   formTitle: FormDto['title']
@@ -27,7 +28,7 @@ export const FormEndPage = ({
   colorTheme,
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
-  const { previousSubmissionId } = usePublicFormContext()
+  const { form, previousSubmissionId } = usePublicFormContext()
 
   return (
     <Container w="42.5rem" maxW="100%" p={0}>
@@ -54,6 +55,13 @@ export const FormEndPage = ({
               buttonVariant={previousSubmissionId ? 'solid' : 'outline'}
             />
           )}
+          {form?.responseMode == FormResponseMode.Multirespondent &&
+          form?.hasStatusTracker ? (
+            <SubmitAnotherResponseButton
+              endPage={endPageProps.endPage}
+              colorTheme={colorTheme}
+            />
+          ) : null}
         </Stack>
       </Flex>
     </Container>

@@ -15,6 +15,7 @@ import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
+import { SubmitAnotherResponseButton } from '~features/public-form/components/FormEndPage/SubmitAnotherResponseButton'
 import {
   SubmissionData,
   usePublicFormContext,
@@ -117,19 +118,16 @@ export const EndPageBlock = ({
               submissionId={submissionData.id}
             />
           </Box>
-        ) : null}
-        <Box mt="2.25rem">
-          {isButtonHidden || (
-            <Button
-              as="a"
-              href={endPage.buttonLink || window.location.href}
-              variant="solid"
-              colorScheme={`theme-${colorTheme}`}
-            >
-              {endPage.buttonText || 'Submit another response'}
-            </Button>
-          )}
-        </Box>
+        ) : (
+          <Box mt="2.25rem">
+            {isButtonHidden || (
+              <SubmitAnotherResponseButton
+                endPage={endPage}
+                colorTheme={colorTheme}
+              />
+            )}
+          </Box>
+        )}
       </Box>
     </>
   )
