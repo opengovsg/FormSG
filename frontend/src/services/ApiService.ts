@@ -125,7 +125,7 @@ ApiService.interceptors.response.use(
         overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
         overlay.style.zIndex = '10000'
         overlay.innerHTML = `
-          <p style="color: white; text-align: center; margin-top: 50vh;">One more step before you proceed...</p>
+          <p style="color: white; text-align: center; margin-top: 40vh;">One more step before you proceed...</p>
           <div style="display: flex; flex-wrap: nowrap; align-items: center; justify-content: center;" id="turnstile_widget"></div>
         `
         document.body.appendChild(overlay)
