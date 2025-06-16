@@ -148,7 +148,24 @@ ApiService.interceptors.response.use(
               ...retryRequest.headers,
               'cf-turnstile-response': token, // This header allows the request to pass Cloudflare's challenge
             }
-            resolve(ApiService.request(retryRequest))
+            // Replay the original request with the challenge token
+            const { method, url, data, params, headers } = retryRequest
+            console.log('replaying request', {
+              method,
+              url,
+              data,
+              params,
+              headers,
+            })
+            resolve(
+              ApiService.request({
+                method,
+                url,
+                data,
+                params,
+                headers,
+              }),
+            )
           },
         })
       })
