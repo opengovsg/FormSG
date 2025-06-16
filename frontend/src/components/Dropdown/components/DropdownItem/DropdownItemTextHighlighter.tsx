@@ -32,7 +32,7 @@ export const DropdownItemTextHighlighter = ({
     const result = fuzzysort.single(inputValue, textToHighlight)
     // Return the original text if no match is found.
     if (!result) return textToHighlight
-    return fuzzysort.highlight(result, (m, i) => (
+    return result.highlight((m, i) => (
       <HighlightMark showHoverBg={showHoverBg} key={i}>
         {m}
       </HighlightMark>
