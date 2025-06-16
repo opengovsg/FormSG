@@ -21,6 +21,7 @@ import Link from '~components/Link'
 import Spinner from '~components/Spinner'
 
 import { formatSmsCounts } from './utils'
+import { CONTACT_US } from '~constants/links'
 
 type SmsCountsModalProps = {
   smsCount?: SmsCountsDto
@@ -60,19 +61,15 @@ export const SmsCountsModal = ({
           ) : (
             <>
               <Text textStyle="body-2">
-                FormSG provides {`${smsCount.quota.toLocaleString()}`} free OTP
-                verifications per account, for forms you are an owner of. Once
-                this limit is reached, your form will automatically be closed.
+                This form is allocated a limited number of free SMS OTP
+                verifications. Once this limit is reached, the form will be
+                automatically closed to new responses.
               </Text>
               <Text textStyle="body-2" mt="1.5rem">
-                If you are a collaborator, ensure the form's owner has enough
-                free verifications. If you require more than{' '}
-                {`${smsCount.quota.toLocaleString()}`} verifications, please{' '}
-                <Link
-                  href={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`}
-                >
-                  add your Twilio credentials.
-                </Link>
+                If you require more than the free limit, additional usage will
+                incur costs. Please reach out to the FormSG support team by
+                filling out this
+                <Link href={CONTACT_US}>form</Link>.
               </Text>
               <Badge
                 colorScheme="primary"
