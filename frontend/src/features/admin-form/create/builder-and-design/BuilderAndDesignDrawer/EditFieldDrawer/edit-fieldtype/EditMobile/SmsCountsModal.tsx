@@ -13,7 +13,7 @@ import {
 
 import { SmsCountsDto } from '~shared/types/form'
 
-import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
+import { CONTACT_US } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
@@ -21,7 +21,6 @@ import Link from '~components/Link'
 import Spinner from '~components/Spinner'
 
 import { formatSmsCounts } from './utils'
-import { CONTACT_US } from '~constants/links'
 
 type SmsCountsModalProps = {
   smsCount?: SmsCountsDto
