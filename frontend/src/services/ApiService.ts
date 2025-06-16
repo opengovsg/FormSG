@@ -8,8 +8,6 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
-import { getClientEnvVars } from '~features/env/EnvService'
-
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
   code: number
@@ -131,12 +129,10 @@ ApiService.interceptors.response.use(
       }
       overlay.style.display = 'block'
 
-      const { turnstileSiteKey } = await getClientEnvVars()
-
       // Wait for challenge completion
       return new Promise((resolve, reject) => {
         window.turnstile?.render('#turnstile_widget', {
-          sitekey: turnstileSiteKey,
+          sitekey: '0x4AAAAAAAGjGzSGSSzW2nwu',
           'error-callback': () => {
             overlay.style.display = 'none'
             reject(new Error('Turnstile challenge failed'))
