@@ -130,14 +130,17 @@ ApiService.interceptors.response.use(
       overlay.style.display = 'block'
 
       // Wait for challenge completion
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
+        console.log('rendering turnstile')
         window.turnstile?.render('#turnstile_widget', {
           sitekey: '0x4AAAAAAAGjGzSGSSzW2nwu',
           'error-callback': () => {
+            console.log('turnstile error callback')
             overlay.style.display = 'none'
             reject(new Error('Turnstile challenge failed'))
           },
           callback: async (token: string) => {
+            console.log('turnstile callback', token)
             overlay.style.display = 'none'
             // Replay original request with challenge token
             const retryRequest = { ...originalRequest }
