@@ -97,15 +97,7 @@ const checkIsCloudflareChallengeError = (error: AxiosError) => {
   console.log('error:', error.toJSON())
   const response = error.response
   console.log('error response', response)
-  return (
-    error.status === 403
-    // response &&
-    // response.status === 403 &&
-    // response.headers['Server'] === 'cloudflare' &&
-    // response.headers['content-type'].includes('text/html') &&
-    // response.headers['cf-ray'] &&
-    // response.headers['cf-mitigated']
-  )
+  return error.status === 403
 }
 
 ApiService.interceptors.response.use(
@@ -115,10 +107,15 @@ ApiService.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (checkIsCloudflareChallengeError(error)) {
-      console.log('isCloudflareChallengeErrorDetected, reloading page')
-      window.location.reload() // Reload the page to issue the challenge to the user and store the cookie.
-      console.log('Page reloaded')
-      return new Promise(() => {}) // Prevent the original error from propagating
+      console.log(
+        'isCloudflareChallengeErrorDetected, opening challenge in new window',
+      )
+      // Open Cloudflare challenge in a new window/tab
+      window.open(window.location.href, '_blank')
+      return new HttpError(
+        "For your security, we need to verify that you're a real person. A new window will open where you can complete a quick security check. Once completed, please return to this page and try again.",
+        error.status ?? 403,
+      )
     }
 
     if (error.response?.status === 401) {
