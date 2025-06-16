@@ -8,10 +8,7 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
-import {
-  checkIsCloudflareChallengeError,
-  handleCloudflareChallengeError,
-} from '~features/turnstile/handleCloudflareChallenge'
+import { getClientEnvVars } from '~features/env/EnvService'
 
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
@@ -102,30 +99,66 @@ const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
     response.headers['cf-ray']
   )
 }
-
 ApiService.interceptors.response.use(
   (response) => {
     console.log('processing response: ', response)
     return response
   },
-  (error: AxiosError) => {
-    if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      console.log(
-        'isCloudflareChallengeErrorDetected, opening challenge in new window',
-      )
-      // Open Cloudflare challenge in a new window/tab
-      const challengeHtml = error.response.data
-      document.open()
-      document.write(challengeHtml as string)
-      document.close()
+  async (error: AxiosError) => {
+    // Store the original request to replay later if needed
+    const originalRequest = error.request
 
-      return new Promise(() => {})
+    if (error.response && checkIsCloudflareChallengeError(error.response)) {
+      console.log('Cloudflare challenge detected, showing modal')
+
+      // Create modal/overlay container if it doesn't exist
+      let overlay = document.getElementById('cf-turnstile-overlay')
+      if (!overlay) {
+        overlay = document.createElement('div')
+        overlay.id = 'cf-turnstile-overlay'
+        overlay.style.position = 'fixed'
+        overlay.style.top = '0'
+        overlay.style.left = '0'
+        overlay.style.right = '0'
+        overlay.style.bottom = '0'
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+        overlay.style.zIndex = '10000'
+        overlay.innerHTML = `
+          <p style="color: white; text-align: center; margin-top: 50vh;">One more step before you proceed...</p>
+          <div style="display: flex; flex-wrap: nowrap; align-items: center; justify-content: center;" id="turnstile_widget"></div>
+        `
+        document.body.appendChild(overlay)
+      }
+      overlay.style.display = 'block'
+
+      const { turnstileSiteKey } = await getClientEnvVars()
+
+      // Wait for challenge completion
+      return new Promise((resolve, reject) => {
+        window.turnstile?.render('#turnstile_widget', {
+          sitekey: turnstileSiteKey,
+          'error-callback': () => {
+            overlay.style.display = 'none'
+            reject(new Error('Turnstile challenge failed'))
+          },
+          callback: async (token: string) => {
+            overlay.style.display = 'none'
+            // Replay original request with challenge token
+            const retryRequest = { ...originalRequest }
+            retryRequest.headers = {
+              ...retryRequest.headers,
+              'cf-turnstile-response': token, // This header allows the request to pass Cloudflare's challenge
+            }
+            resolve(ApiService.request(retryRequest))
+          },
+        })
+      })
     }
 
     if (error.response?.status === 401) {
       // Remove logged in state from localStorage
       localStorage.removeItem(LOGGED_IN_KEY)
-      // Event to let useLocalStor,age know that key is being deleted.
+      // Event to let useLocalStorage know that key is being deleted.
       window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
     }
 
