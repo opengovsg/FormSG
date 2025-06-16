@@ -109,8 +109,22 @@ ApiService.interceptors.response.use(
     // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
       const originalRequestConfigToReplay = { ...error.config }
+
+      // Load turnstile script
       if (!window.turnstile) {
-        throw new Error(CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE)
+        const turnstileScript = document.createElement('script')
+        turnstileScript.src =
+          'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+        turnstileScript.async = true
+        document.body.appendChild(turnstileScript)
+
+        const turnstileScriptLoaded = await new Promise((resolve) => {
+          turnstileScript.onload = resolve
+        })
+
+        if (!turnstileScriptLoaded || !window.turnstile) {
+          throw new Error(CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE)
+        }
       }
 
       let overlay = document.getElementById('cf-turnstile-overlay')
