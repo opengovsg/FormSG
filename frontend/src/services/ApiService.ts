@@ -104,7 +104,7 @@ ApiService.interceptors.response.use(
   },
   async (error: AxiosError) => {
     // Store the original request to replay later if needed
-    const originalRequest = error.request
+    const originalRequestConfig = { ...error.config }
 
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
       console.log('Cloudflare challenge detected, showing modal')
@@ -142,30 +142,10 @@ ApiService.interceptors.response.use(
           callback: async (token: string) => {
             console.log('turnstile callback', token)
             overlay.style.display = 'none'
-            // Replay original request with challenge token
-            const retryRequest = { ...originalRequest }
-            retryRequest.headers = {
-              ...retryRequest.headers,
-              'cf-turnstile-response': token, // This header allows the request to pass Cloudflare's challenge
-            }
-            // Replay the original request with the challenge token
-            const { method, url, data, params, headers } = retryRequest
-            console.log('replaying request', {
-              method,
-              url,
-              data,
-              params,
-              headers,
-            })
-            resolve(
-              ApiService.request({
-                method,
-                url,
-                data,
-                params,
-                headers,
-              }),
-            )
+            // Replay the original request with the cf_clearance token now in the cookies
+            console.log('cookies', document.cookie)
+            console.log('originalRequestConfig', originalRequestConfig)
+            resolve(ApiService.request(originalRequestConfig))
           },
         })
       })
