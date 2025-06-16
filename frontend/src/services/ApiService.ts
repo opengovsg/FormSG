@@ -92,11 +92,24 @@ export const ApiService = axios.create({
   baseURL: API_BASE_URL,
 })
 
+const checkIsCloudflareChallengeError = (error: AxiosError) => {
+  const response = error.response
+  return (
+    response &&
+    response.status === 403 &&
+    response.headers['Server'] === 'cloudflare' &&
+    response.headers['content-type'].includes('text/html') &&
+    response.headers['cf-ray'] &&
+    response.headers['cf-mitigated']
+  )
+}
+
 ApiService.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      return handleCloudflareChallengeError()
+    if (checkIsCloudflareChallengeError(error)) {
+      window.location.reload() // Reload the page to issue the challenge to the user and store the cookie.
+      return new Promise(() => {}) // Prevent the original error from propagating
     }
 
     if (error.response?.status === 401) {
