@@ -8,6 +8,11 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
+import { getClientEnvVars } from '~features/env/EnvService'
+
+const CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE =
+  'Your request has been blocked for security reasons. Please refresh the page and try again. If this issue persists, contact support@form.gov.sg.'
+
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
   code: number
@@ -97,19 +102,17 @@ const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
     response.headers['cf-ray']
   )
 }
+
 ApiService.interceptors.response.use(
-  (response) => {
-    console.log('processing response: ', response)
-    return response
-  },
+  (response) => response,
   async (error: AxiosError) => {
-    // Store the original request to replay later if needed
-    const originalRequestConfig = { ...error.config }
-
+    // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      console.log('Cloudflare challenge detected, showing modal')
+      const originalRequestConfigToReplay = { ...error.config }
+      if (!window.turnstile) {
+        throw new Error(CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE)
+      }
 
-      // Create modal/overlay container if it doesn't exist
       let overlay = document.getElementById('cf-turnstile-overlay')
       if (!overlay) {
         overlay = document.createElement('div')
@@ -129,25 +132,29 @@ ApiService.interceptors.response.use(
       }
       overlay.style.display = 'block'
 
-      // Wait for challenge completion
+      // NOTE: The env vars check is configured to be skipped by WAF custom rules in order to fetch the CF sitekey.
+      const { turnstileSiteKey } = await getClientEnvVars()
+
       return await new Promise((resolve, reject) => {
-        console.log('rendering turnstile')
-        window.turnstile?.render('#turnstile_widget', {
-          sitekey: '0x4AAAAAAAGjGzSGSSzW2nwu',
-          'error-callback': () => {
-            console.log('turnstile error callback')
-            overlay.style.display = 'none'
-            reject(new Error('Turnstile challenge failed'))
-          },
-          callback: async (token: string) => {
-            console.log('turnstile callback', token)
-            overlay.style.display = 'none'
-            // Replay the original request with the cf_clearance token now in the cookies
-            console.log('cookies', document.cookie)
-            console.log('originalRequestConfig', originalRequestConfig)
-            resolve(ApiService.request(originalRequestConfig))
-          },
-        })
+        const existingWidget = document.querySelector(
+          '#turnstile_widget iframe',
+        )
+        if (existingWidget) {
+          window.turnstile?.reset('#turnstile_widget')
+        } else {
+          window.turnstile?.render('#turnstile_widget', {
+            sitekey: turnstileSiteKey,
+            'error-callback': () => {
+              overlay.style.display = 'none'
+              reject(new Error('Security check failed. Please try again.'))
+            },
+            callback: async () => {
+              overlay.style.display = 'none'
+              // Replay the original request with the cf_clearance token now in the cookies
+              resolve(ApiService.request(originalRequestConfigToReplay))
+            },
+          })
+        }
       })
     }
 
