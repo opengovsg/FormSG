@@ -93,6 +93,7 @@ export const ApiService = axios.create({
 })
 
 const checkIsCloudflareChallengeError = (error: AxiosError) => {
+  console.log('error:', error.toJSON())
   const response = error.response
   return (
     response &&
@@ -108,14 +109,16 @@ ApiService.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (checkIsCloudflareChallengeError(error)) {
+      console.log('isCloudflareChallengeErrorDetected, reloading page')
       window.location.reload() // Reload the page to issue the challenge to the user and store the cookie.
+      console.log('Page reloaded')
       return new Promise(() => {}) // Prevent the original error from propagating
     }
 
     if (error.response?.status === 401) {
       // Remove logged in state from localStorage
       localStorage.removeItem(LOGGED_IN_KEY)
-      // Event to let useLocalStorage know that key is being deleted.
+      // Event to let useLocalStor,age know that key is being deleted.
       window.dispatchEvent(new Event(LOCAL_STORAGE_EVENT))
     }
 
