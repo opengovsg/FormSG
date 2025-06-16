@@ -83,6 +83,7 @@ export const transformAxiosError = (error: Error): ApiError => {
       )
     }
   }
+  console.log('error not matched anything')
   return error
 }
 
@@ -95,18 +96,23 @@ export const ApiService = axios.create({
 const checkIsCloudflareChallengeError = (error: AxiosError) => {
   console.log('error:', error.toJSON())
   const response = error.response
+  console.log('error response', response)
   return (
-    response &&
-    response.status === 403 &&
-    response.headers['Server'] === 'cloudflare' &&
-    response.headers['content-type'].includes('text/html') &&
-    response.headers['cf-ray'] &&
-    response.headers['cf-mitigated']
+    error.status === 403
+    // response &&
+    // response.status === 403 &&
+    // response.headers['Server'] === 'cloudflare' &&
+    // response.headers['content-type'].includes('text/html') &&
+    // response.headers['cf-ray'] &&
+    // response.headers['cf-mitigated']
   )
 }
 
 ApiService.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('processing response: ', response)
+    return response
+  },
   (error: AxiosError) => {
     if (checkIsCloudflareChallengeError(error)) {
       console.log('isCloudflareChallengeErrorDetected, reloading page')
@@ -123,6 +129,7 @@ ApiService.interceptors.response.use(
     }
 
     const transformedError = transformAxiosError(error)
+    console.log('transformedError', transformedError)
     throw transformedError
   },
 )
