@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { SmsCountsDto } from '~shared/types'
 import { MobileFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'

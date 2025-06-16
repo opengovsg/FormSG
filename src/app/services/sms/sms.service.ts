@@ -6,6 +6,7 @@ import {
   DatabaseError,
   PossibleDatabaseError,
 } from '../../modules/core/core.errors'
+import MailService from '../../services/mail/mail.service'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 
 import { ISmsCountSchema, LogSmsParams } from './sms.types'
@@ -45,46 +46,39 @@ export const logSmsSend = (
   logParams: LogSmsParams,
 ): ResultAsync<ISmsCountSchema, DatabaseError> => {
   const formId = String(logParams.smsData.form)
-  return SmsCount.logSms(logParams)
-    .catch((error) => {
-      logger.error({
-        message: 'Error logging sms count to database',
-        meta: {
-          action: 'logSmsSend',
-          ...logParams,
-        },
-        error,
-      })
-
-      return new DatabaseError()
+  return ResultAsync.fromPromise(SmsCount.logSms(logParams), (error) => {
+    logger.error({
+      message: 'Error logging sms count to database',
+      meta: {
+        action: 'logSmsSend',
+        ...logParams,
+      },
+      error,
     })
-    .andThen((ISmsCountSchema) => {
-      return retrieveSmsCounts(formId).map((smsCount) => {
-        const thresholdHit = hasHitSmsThreshold({ smsCount: smsCount })
-        if (thresholdHit) {
-          logger.info({
-            message: `Sms threshold has been hit`,
-            meta: {
-              action: 'logSmsSend',
-              ...logParams,
-              thresholdHit,
-            },
-          })
 
-          // send mail to form admin
-          
-        }
-        return ISmsCountSchema
-      })
+    return new DatabaseError()
+  }).andThen((ISmsCountSchema) => {
+    return retrieveSmsCounts(formId).map((smsCount) => {
+      const thresholdHit = hasHitSmsThreshold({ smsCount: smsCount })
+      if (thresholdHit) {
+        logger.info({
+          message: `Sms threshold has been hit`,
+          meta: {
+            action: 'logSmsSend',
+            ...logParams,
+            thresholdHit,
+          },
+        })
+
+        // send mail to form admin
+        MailService.sendSmsThresholdWarningNotification({
+          emailRecipients: [logParams.smsData.formAdmin.email],
+          formTitle: 'Test', // TODO: update this
+          formId: logParams.smsData.form,
+          smsThreshold: thresholdHit,
+        })
+      }
+      return ISmsCountSchema
     })
+  })
 }
-
-// when sending out a new sms, we can save the previous smsCount
-// after sending out the new sms, we can check the new count of smsCount, if it exceeds 50%/75% then we can send a mail out.
-// function1()
-// .andThen((result1) =>
-//   function2(result1)
-//     .andThen((result2) =>
-//       function3(result2)
-//     )
-// )
