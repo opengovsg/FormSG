@@ -8,7 +8,8 @@ import {
 } from '../../modules/core/core.errors'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 
-import { LogSmsParams } from './sms.types'
+import { ISmsCountSchema, LogSmsParams } from './sms.types'
+import { hasHitSmsThreshold } from './sms.utils'
 import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
@@ -40,17 +41,50 @@ export const retrieveSmsCounts = (
   )
 }
 
-export const logSmsSend = (logParams: LogSmsParams) => {
-  return SmsCount.logSms(logParams).catch((error) => {
-    logger.error({
-      message: 'Error logging sms count to database',
-      meta: {
-        action: 'logSmsSend',
-        ...logParams,
-      },
-      error,
-    })
+export const logSmsSend = (
+  logParams: LogSmsParams,
+): ResultAsync<ISmsCountSchema, DatabaseError> => {
+  const formId = String(logParams.smsData.form)
+  return SmsCount.logSms(logParams)
+    .catch((error) => {
+      logger.error({
+        message: 'Error logging sms count to database',
+        meta: {
+          action: 'logSmsSend',
+          ...logParams,
+        },
+        error,
+      })
 
-    return new DatabaseError()
-  })
+      return new DatabaseError()
+    })
+    .andThen((ISmsCountSchema) => {
+      return retrieveSmsCounts(formId).map((smsCount) => {
+        const thresholdHit = hasHitSmsThreshold({ smsCount: smsCount })
+        if (thresholdHit) {
+          logger.info({
+            message: `Sms threshold has been hit`,
+            meta: {
+              action: 'logSmsSend',
+              ...logParams,
+              thresholdHit,
+            },
+          })
+
+          // send mail to form admin
+          
+        }
+        return ISmsCountSchema
+      })
+    })
 }
+
+// when sending out a new sms, we can save the previous smsCount
+// after sending out the new sms, we can check the new count of smsCount, if it exceeds 50%/75% then we can send a mail out.
+// function1()
+// .andThen((result1) =>
+//   function2(result1)
+//     .andThen((result2) =>
+//       function3(result2)
+//     )
+// )

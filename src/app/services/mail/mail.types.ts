@@ -8,6 +8,7 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
+import { smsThreshold } from '../sms/sms.utils'
 
 export type SendMailOptions = {
   mailId?: string
@@ -94,6 +95,11 @@ export type FormDeactivatedNotificationHtmlData = {
   formLink: string
   appName: string
 }
+
+export type SmsThresholdWarningNotificationHtmlData =
+  FormDeactivatedNotificationHtmlData & {
+    smsThreshold: smsThreshold
+  }
 
 export type PaymentConfirmationData = {
   appName: string

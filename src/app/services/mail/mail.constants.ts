@@ -24,4 +24,5 @@ export enum EmailType {
   PaymentOnboarding = 'Payment onboarding',
   IssueReportedNotification = 'Issue reported notification',
   WorkflowNotification = 'Workflow notification',
+  WarningNotification = 'Warning notification',
 }
