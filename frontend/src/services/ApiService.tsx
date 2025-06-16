@@ -1,3 +1,4 @@
+import { createRoot } from 'react-dom/client'
 import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { StatusCodes } from 'http-status-codes'
@@ -8,10 +9,7 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
-import { getClientEnvVars } from '~features/env/EnvService'
-
-const CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE =
-  'Your request has been blocked for security reasons. Please refresh the page and try again. If this issue persists, contact support@form.gov.sg.'
+import TurnstileOverlay from '~features/turnstile/TurnstileOverlay'
 
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
@@ -110,66 +108,25 @@ ApiService.interceptors.response.use(
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
       const originalRequestConfigToReplay = { ...error.config }
 
-      // Load turnstile script
-      if (!window.turnstile) {
-        const turnstileScript = document.createElement('script')
-        turnstileScript.src =
-          'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-        turnstileScript.async = true
-        document.body.appendChild(turnstileScript)
-
-        const turnstileScriptLoaded = await new Promise((resolve) => {
-          turnstileScript.onload = resolve
-        })
-
-        if (!turnstileScriptLoaded || !window.turnstile) {
-          throw new Error(CLOUDFLARE_UNEXPECTED_ERROR_MESSAGE)
-        }
-      }
-
       let overlay = document.getElementById('cf-turnstile-overlay')
       if (!overlay) {
         overlay = document.createElement('div')
         overlay.id = 'cf-turnstile-overlay'
-        overlay.style.position = 'fixed'
-        overlay.style.top = '0'
-        overlay.style.left = '0'
-        overlay.style.right = '0'
-        overlay.style.bottom = '0'
-        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-        overlay.style.zIndex = '10000'
-        overlay.innerHTML = `
-          <p style="color: white; text-align: center; margin-top: 40vh;">One more step before you proceed...</p>
-          <div style="display: flex; flex-wrap: nowrap; align-items: center; justify-content: center;" id="turnstile_widget"></div>
-        `
         document.body.appendChild(overlay)
-      }
-      overlay.style.display = 'block'
-
-      // NOTE: The env vars check is configured to be skipped by WAF custom rules in order to fetch the CF sitekey.
-      const { turnstileSiteKey } = await getClientEnvVars()
-
-      return await new Promise((resolve, reject) => {
-        const existingWidget = document.querySelector(
-          '#turnstile_widget iframe',
+        const root = createRoot(overlay)
+        root.render(
+          <TurnstileOverlay
+            onSuccess={() => {
+              ApiService.request(originalRequestConfigToReplay)
+            }}
+            onError={() => {
+              throw new Error('Security check failed. Please try again.')
+            }}
+          />,
         )
-        if (existingWidget) {
-          window.turnstile?.reset('#turnstile_widget')
-        } else {
-          window.turnstile?.render('#turnstile_widget', {
-            sitekey: turnstileSiteKey,
-            'error-callback': () => {
-              overlay.style.display = 'none'
-              reject(new Error('Security check failed. Please try again.'))
-            },
-            callback: async () => {
-              overlay.style.display = 'none'
-              // Replay the original request with the cf_clearance token now in the cookies
-              resolve(ApiService.request(originalRequestConfigToReplay))
-            },
-          })
-        }
-      })
+      }
+
+      return
     }
 
     if (error.response?.status === 401) {
