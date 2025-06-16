@@ -2,16 +2,19 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
+import { okAsync } from 'neverthrow'
 
 import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { IFormSchema, IPopulatedForm } from 'src/types'
 
 import {
+  BasicField,
   FormResponseMode,
   FormStatus,
   SubmissionType,
 } from '../../../../../shared/types'
+import * as SmsService from '../../../services/sms/sms.service'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import {
   FormDeletedError,
@@ -34,6 +37,9 @@ const MOCK_ENCRYPTED_FORM_PARAMS = {
   publicKey: 'mockPublicKey',
   responseMode: FormResponseMode.Encrypt,
 }
+
+jest.mock('src/app/services/sms/sms.service')
+const MockSmsService = jest.mocked(SmsService)
 
 describe('FormService', () => {
   beforeAll(async () => {
@@ -306,6 +312,64 @@ describe('FormService', () => {
       expect(retrieveFormSpy).toHaveBeenCalledTimes(1)
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('checkFormSmsLimitAndDeactivateForm', () => {
+    it('should let requests through when form has not yet reached sms threshold limit', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+      } as IPopulatedForm
+
+      MockSmsService.retrieveSmsCounts.mockReturnValue(okAsync(1))
+
+      // Act
+      const actual = await FormService.checkFormSmsLimitAndDeactivateForm(form)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(form)
+    })
+
+    it('should let requests through when form does not have any mobile isVerifiable field', async () => {
+      // Arrange
+      const form = {
+        _id: new ObjectId(),
+        form_fields: [{ fieldType: BasicField.Mobile, isVerifiable: false }],
+      } as IPopulatedForm
+
+      MockSmsService.retrieveSmsCounts.mockReturnValue(okAsync(10001))
+
+      // Act
+      const actual = await FormService.checkFormSmsLimitAndDeactivateForm(form)
+
+      // Assert
+      expect(actual._unsafeUnwrap()).toEqual(form)
+    })
+
+    it('should not let requests through when form has reached the sms threshold limit', async () => {
+      // Arrange
+      const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+        status: FormStatus.Public,
+        form_fields: [{ fieldType: BasicField.Mobile, isVerifiable: true }],
+      })
+      const validForm = new Form(formParams)
+      const form = (await validForm.save()) as IPopulatedForm
+
+      MockSmsService.retrieveSmsCounts.mockReturnValue(okAsync(10001))
+
+      // Act
+      const actual = await FormService.checkFormSmsLimitAndDeactivateForm(form)
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new PrivateFormError(
+          'Sms Verification made after form submission limit was reached',
+          form.title,
+        ),
+      )
+      const updated = await Form.findById(form._id)
+      expect(updated!.status).toBe('PRIVATE')
     })
   })
 

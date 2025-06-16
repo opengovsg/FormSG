@@ -33,11 +33,7 @@ export type FormDeactivatedSmsData = {
 export type BouncedSubmissionSmsData = FormDeactivatedSmsData
 
 export type LogSmsParams = {
-  smsData:
-    | FormOtpData
-    | AdminContactOtpData
-    | FormDeactivatedSmsData
-    | BouncedSubmissionSmsData
+  smsData: FormOtpData
   msgSrvcSid: string
   smsType: SmsType
   logType: LogType

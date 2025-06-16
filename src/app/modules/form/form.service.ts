@@ -742,7 +742,7 @@ export const checkFormSmsLimitAndDeactivateForm = (
         return errAsync(
           new PrivateFormError(
             'Sms Verification made after form submission limit was reached',
-            form.id,
+            form.title,
           ),
         )
       })
