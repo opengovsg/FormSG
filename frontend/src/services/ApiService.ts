@@ -1,5 +1,5 @@
 import { datadogLogs } from '@datadog/browser-logs'
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
 import { ErrorCode } from '~shared/types/errorCodes'
@@ -93,11 +93,14 @@ export const ApiService = axios.create({
   baseURL: API_BASE_URL,
 })
 
-const checkIsCloudflareChallengeError = (error: AxiosError) => {
-  console.log('error:', error.toJSON())
-  const response = error.response
-  console.log('error response', response)
-  return error.status === 403
+const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
+  return (
+    response &&
+    response.status === 403 &&
+    response.headers['server'] === 'cloudflare' &&
+    response.headers['cf-mitigated'] &&
+    response.headers['cf-ray']
+  )
 }
 
 ApiService.interceptors.response.use(
@@ -106,16 +109,17 @@ ApiService.interceptors.response.use(
     return response
   },
   (error: AxiosError) => {
-    if (checkIsCloudflareChallengeError(error)) {
+    if (error.response && checkIsCloudflareChallengeError(error.response)) {
       console.log(
         'isCloudflareChallengeErrorDetected, opening challenge in new window',
       )
       // Open Cloudflare challenge in a new window/tab
-      window.open(window.location.href, '_blank')
-      return new HttpError(
-        "For your security, we need to verify that you're a real person. A new window will open where you can complete a quick security check. Once completed, please return to this page and try again.",
-        error.status ?? 403,
-      )
+      const challengeHtml = error.response.data
+      document.open()
+      document.write(challengeHtml as string)
+      document.close()
+
+      return new Promise(() => {})
     }
 
     if (error.response?.status === 401) {
