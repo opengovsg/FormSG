@@ -15,11 +15,13 @@ export const hasHitSmsThreshold = ({
 }: {
   smsCount: number
 }): smsThreshold | false => {
-  if (smsCount === smsConfig.smsVerificationLimit * smsThreshold.Half)
+  if (
+    smsCount === Math.floor(smsConfig.smsVerificationLimit * smsThreshold.Half)
+  )
     return smsThreshold.Half
   else if (
     smsCount ===
-    smsConfig.smsVerificationLimit * smsThreshold.ThreeQuarters
+    Math.floor(smsConfig.smsVerificationLimit * smsThreshold.ThreeQuarters)
   )
     return smsThreshold.ThreeQuarters
   return false
