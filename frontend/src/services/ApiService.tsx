@@ -101,32 +101,44 @@ const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
   )
 }
 
+const handleCloudflareChallengeError = async (error: AxiosError | null) => {
+  console.log('handleCloudflareChallengeError', error)
+  const originalRequestConfigToReplay = error ? { ...error.config } : null
+
+  let overlay = document.getElementById('cf-turnstile-overlay')
+  // if (!overlay) {
+  overlay = document.createElement('div')
+  overlay.id = 'cf-turnstile-overlay'
+  document.body.appendChild(overlay)
+  const root = createRoot(overlay)
+  return await new Promise((resolve, reject) => {
+    console.log('rendering overlay')
+    root.render(
+      <TurnstileOverlay
+        onSuccess={() => {
+          if (originalRequestConfigToReplay) {
+            resolve(ApiService.request(originalRequestConfigToReplay))
+          }
+        }}
+        onError={() => {
+          reject(new Error('Security check failed. Please try again.'))
+        }}
+      />,
+    )
+  })
+}
+
 ApiService.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      const originalRequestConfigToReplay = { ...error.config }
-
-      let overlay = document.getElementById('cf-turnstile-overlay')
-      if (!overlay) {
-        overlay = document.createElement('div')
-        overlay.id = 'cf-turnstile-overlay'
-        document.body.appendChild(overlay)
-        const root = createRoot(overlay)
-        root.render(
-          <TurnstileOverlay
-            onSuccess={() => {
-              ApiService.request(originalRequestConfigToReplay)
-            }}
-            onError={() => {
-              throw new Error('Security check failed. Please try again.')
-            }}
-          />,
-        )
-      }
-
-      return
+      console.log('rendering overlay for cf challenge')
+      return await handleCloudflareChallengeError(error)
+        .then((response) => response)
+        .catch((error) => {
+          throw error
+        })
     }
 
     if (error.response?.status === 401) {

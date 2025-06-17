@@ -94,7 +94,11 @@ export const useTurnstile = ({
   }, [turnstile, handleChange, widgetID])
 
   useEffect(() => {
+    console.log('hasLoaded', hasLoaded)
+    console.log('widgetID', widgetID)
+    console.log('sitekey', sitekey)
     if (sitekey && hasLoaded && widgetID === undefined) {
+      console.log('attempting to render turnstile')
       const renderProps = {
         sitekey,
         execution,
@@ -105,7 +109,9 @@ export const useTurnstile = ({
         'error-callback': handleError,
       }
       if (enableUsage) {
+        console.log('rendering turnstile')
         const widget = turnstile?.render('#' + containerID, renderProps)
+        console.log('widgetId', widget)
         setWidgetID(widget)
       }
     }
