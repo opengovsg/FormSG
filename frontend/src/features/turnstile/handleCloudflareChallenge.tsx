@@ -57,6 +57,13 @@ export const handleCloudflareChallengeError = async (
               ),
             )
           }}
+          onLoadingError={() => {
+            reject(
+              new Error(
+                'Failed to load the security challenge. Please try again. If this issue persists, contact support@form.gov.sg',
+              ),
+            )
+          }}
         />,
       )
     }).finally(() => {

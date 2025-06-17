@@ -15,6 +15,9 @@ import { HttpError } from '~services/ApiService'
 
 import { useEnv } from '~features/env/queries'
 
+const isDev = process.env.NODE_ENV === 'development'
+const CF_DEV_PASS_SITEKEY = '1x00000000000000000000AA'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,16 +33,27 @@ const queryClient = new QueryClient({
   },
 })
 
+interface TurnstileOverlayProps {
+  onSuccess: (response: string | null) => void
+  onError: () => void
+  onClose: () => void
+  onLoadingError: () => void
+}
+
 const TurnstileOverlay = ({
   onSuccess,
   onError,
   onClose,
-}: {
-  onSuccess: (response: string | null) => void
-  onError: () => void
-  onClose: () => void
-}) => {
-  const { data: { turnstileSiteKey } = {} } = useEnv()
+  onLoadingError,
+}: TurnstileOverlayProps) => {
+  const {
+    data: { turnstileSiteKey = isDev ? CF_DEV_PASS_SITEKEY : undefined } = {},
+  } = useEnv()
+
+  if (turnstileSiteKey === undefined) {
+    onLoadingError()
+    return
+  }
 
   return (
     <Modal isOpen size="md" onClose={onClose}>
@@ -77,11 +91,8 @@ const TurnstileOverlayContainer = ({
   onSuccess,
   onError,
   onClose,
-}: {
-  onSuccess: (response: string | null) => void
-  onError: () => void
-  onClose: () => void
-}) => {
+  onLoadingError,
+}: TurnstileOverlayProps) => {
   return (
     // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={queryClient}>
@@ -89,6 +100,7 @@ const TurnstileOverlayContainer = ({
         onClose={onClose}
         onSuccess={onSuccess}
         onError={onError}
+        onLoadingError={onLoadingError}
       />
     </QueryClientProvider>
   )
