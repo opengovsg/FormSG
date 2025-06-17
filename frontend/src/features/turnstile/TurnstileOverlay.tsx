@@ -1,21 +1,19 @@
-import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import {
   Box,
   Modal,
-  ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalOverlay,
   Skeleton,
+  Stack,
   Text,
 } from '@chakra-ui/react'
+import { Turnstile } from '@marsidev/react-turnstile'
 
-import { noPrintCss } from '~utils/noPrintCss'
 import { HttpError } from '~services/ApiService'
 
 import { useEnv } from '~features/env/queries'
-
-import { useTurnstile } from './useTurnstile'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,53 +33,41 @@ const queryClient = new QueryClient({
 const TurnstileOverlay = ({
   onSuccess,
   onError,
+  onClose,
 }: {
   onSuccess: (response: string | null) => void
   onError: () => void
+  onClose: () => void
 }) => {
   const { data: { turnstileSiteKey } = {} } = useEnv()
 
-  const {
-    hasLoaded: hasTurnstileLoaded,
-    getTurnstileResponse,
-    containerID: turnstileContainerID,
-  } = useTurnstile({
-    sitekey: turnstileSiteKey,
-    enableUsage: true,
-  })
-
-  useEffect(() => {
-    console.log('using effect')
-    if (hasTurnstileLoaded) {
-      console.log('hasTurnstileLoaded', hasTurnstileLoaded)
-      getTurnstileResponse()
-        .then((response) => {
-          console.log('onSuccess')
-          onSuccess(response)
-        })
-        .catch(() => {
-          console.log('onError')
-          onError()
-        })
-    }
-  }, [getTurnstileResponse, hasTurnstileLoaded, onError, onSuccess])
-
   return (
-    <Modal size="full" isOpen onClose={onError}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalBody>
-          <Skeleton isLoaded={hasTurnstileLoaded}>
-            <Text>Hello world</Text>
-            <Box
-              width="100%"
-              height="100%"
-              id={turnstileContainerID}
-              sx={noPrintCss}
-              mt="2rem"
+    <Modal isOpen size="md" onClose={onClose}>
+      <ModalOverlay backgroundColor="rgba(128, 128, 128, 0.5)" />
+      <ModalContent
+        bg="white"
+        w="fit-content"
+        h="fit-content"
+        mx="auto"
+        my="auto"
+        padding="1rem"
+        borderRadius="0.25rem"
+      >
+        <Box display="flex" justifyContent="flex-end" w="100%">
+          <ModalCloseButton />
+        </Box>
+        <Skeleton isLoaded={!!turnstileSiteKey}>
+          <Stack py="0.5rem" spacing="0.5rem" alignItems="center">
+            <Text w="100%" fontSize="lg" fontWeight="bold">
+              Complete this challenge to continue
+            </Text>
+            <Turnstile
+              siteKey={turnstileSiteKey!}
+              onSuccess={onSuccess}
+              onError={onError}
             />
-          </Skeleton>
-        </ModalBody>
+          </Stack>
+        </Skeleton>
       </ModalContent>
     </Modal>
   )
@@ -90,14 +76,20 @@ const TurnstileOverlay = ({
 const TurnstileOverlayContainer = ({
   onSuccess,
   onError,
+  onClose,
 }: {
   onSuccess: (response: string | null) => void
   onError: () => void
+  onClose: () => void
 }) => {
   return (
     // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={queryClient}>
-      <TurnstileOverlay onSuccess={onSuccess} onError={onError} />
+      <TurnstileOverlay
+        onClose={onClose}
+        onSuccess={onSuccess}
+        onError={onError}
+      />
     </QueryClientProvider>
   )
 }

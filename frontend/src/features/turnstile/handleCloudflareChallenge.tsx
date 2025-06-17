@@ -1,4 +1,9 @@
-import { AxiosResponse } from 'axios'
+import { createRoot } from 'react-dom/client'
+import { AxiosError, AxiosResponse } from 'axios'
+
+import { ApiService } from '~services/ApiService'
+
+import TurnstileOverlay from './TurnstileOverlay'
 
 export const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
   return (
@@ -10,8 +15,45 @@ export const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
   )
 }
 
-export const handleCloudflareChallengeError = () => {
-  throw new Error(
-    'Your request was blocked due to security reasons. Please try again.',
-  )
+export const handleCloudflareChallengeError = async (
+  error: AxiosError | null,
+) => {
+  console.log('handleCloudflareChallengeError', error)
+  const originalRequestConfigToReplay = error ? { ...error.config } : null
+
+  const OVERLAY_ID = 'cf-mitigated-challenge-overlay'
+  let overlay = document.getElementById(OVERLAY_ID)
+  if (!overlay) {
+    overlay = document.createElement('div')
+    overlay.id = OVERLAY_ID
+    document.body.insertBefore(overlay, document.body.firstChild)
+    const root = createRoot(overlay)
+    return await new Promise((resolve, reject) => {
+      console.log('rendering overlay')
+      root.render(
+        <TurnstileOverlay
+          onClose={() => {
+            reject(new Error('Security check skipped. Please try again.'))
+          }}
+          onSuccess={() => {
+            if (originalRequestConfigToReplay) {
+              resolve(ApiService.request(originalRequestConfigToReplay))
+            } else {
+              reject(new Error('Something went wrong. Please try again.'))
+            }
+          }}
+          onError={() => {
+            reject(new Error('Security check failed. Please try again.'))
+          }}
+        />,
+      )
+    }).finally(() => {
+      if (overlay) {
+        console.log('removing overlay')
+        root.unmount()
+        document.body.removeChild(overlay)
+      }
+    })
+  }
+  console.log('overlay already exists')
 }

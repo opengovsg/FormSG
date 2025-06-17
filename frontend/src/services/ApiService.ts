@@ -1,6 +1,5 @@
-import { createRoot } from 'react-dom/client'
 import { datadogLogs } from '@datadog/browser-logs'
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
 import { ErrorCode } from '~shared/types/errorCodes'
@@ -9,7 +8,10 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
-import TurnstileOverlay from '~features/turnstile/TurnstileOverlay'
+import {
+  checkIsCloudflareChallengeError,
+  handleCloudflareChallengeError,
+} from '~features/turnstile/handleCloudflareChallenge'
 
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
@@ -90,43 +92,6 @@ export const ApiService = axios.create({
   withCredentials: true,
   baseURL: API_BASE_URL,
 })
-
-const checkIsCloudflareChallengeError = (response: AxiosResponse) => {
-  return (
-    response &&
-    response.status === 403 &&
-    response.headers['server'] === 'cloudflare' &&
-    response.headers['cf-mitigated'] &&
-    response.headers['cf-ray']
-  )
-}
-
-const handleCloudflareChallengeError = async (error: AxiosError | null) => {
-  console.log('handleCloudflareChallengeError', error)
-  const originalRequestConfigToReplay = error ? { ...error.config } : null
-
-  let overlay = document.getElementById('cf-turnstile-overlay')
-  // if (!overlay) {
-  overlay = document.createElement('div')
-  overlay.id = 'cf-turnstile-overlay'
-  document.body.appendChild(overlay)
-  const root = createRoot(overlay)
-  return await new Promise((resolve, reject) => {
-    console.log('rendering overlay')
-    root.render(
-      <TurnstileOverlay
-        onSuccess={() => {
-          if (originalRequestConfigToReplay) {
-            resolve(ApiService.request(originalRequestConfigToReplay))
-          }
-        }}
-        onError={() => {
-          reject(new Error('Security check failed. Please try again.'))
-        }}
-      />,
-    )
-  })
-}
 
 ApiService.interceptors.response.use(
   (response) => response,
