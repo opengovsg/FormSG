@@ -11,7 +11,6 @@ import { mapRouteError } from '../submission/submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
-// TODO: check if this is needed since we are passing variables as params not in body
 const validateGetStatusTrackerParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
     submissionId: Joi.string().required(),

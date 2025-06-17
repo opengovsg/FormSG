@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import { StepData, WorkflowStatus } from '~shared/types'
 
 const statusColor: Record<WorkflowStatus, string> = {
-  [WorkflowStatus.PENDING]: '#E5E9F8', // grey TODO: update these to correct colours
+  [WorkflowStatus.PENDING]: '#E5E9F8', // grey
   [WorkflowStatus.COMPLETED]: '#05CC9A', // green
   [WorkflowStatus.APPROVED]: '#05CC9A',
   [WorkflowStatus.REJECTED]: '#C03434', // red
