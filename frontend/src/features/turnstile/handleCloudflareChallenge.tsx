@@ -33,17 +33,29 @@ export const handleCloudflareChallengeError = async (
       root.render(
         <TurnstileOverlay
           onClose={() => {
-            reject(new Error('Security check skipped. Please try again.'))
+            reject(
+              new Error(
+                'You must complete the security challenge to continue. Please try again.',
+              ),
+            )
           }}
           onSuccess={() => {
             if (originalRequestConfigToReplay) {
               resolve(ApiService.request(originalRequestConfigToReplay))
             } else {
-              reject(new Error('Something went wrong. Please try again.'))
+              reject(
+                new Error(
+                  'Something went wrong. Please try again. If this issue persists, contact support@form.gov.sg',
+                ),
+              )
             }
           }}
           onError={() => {
-            reject(new Error('Security check failed. Please try again.'))
+            reject(
+              new Error(
+                'Your request was blocked for security reasons. Please try again.',
+              ),
+            )
           }}
         />,
       )
@@ -55,5 +67,7 @@ export const handleCloudflareChallengeError = async (
       }
     })
   }
-  console.log('overlay already exists')
+  throw new Error(
+    'Your request was blocked for security reasons. Please try again.',
+  )
 }
