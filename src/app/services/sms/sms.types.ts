@@ -1,12 +1,7 @@
 import { Document, Model } from 'mongoose'
 
 import { FormPermission } from '../../../../shared/types'
-import {
-  AdminContactOtpData,
-  FormOtpData,
-  IFormSchema,
-  IUserSchema,
-} from '../../../types'
+import { FormOtpData, IFormSchema, IUserSchema } from '../../../types'
 
 export enum SmsType {
   Verification = 'VERIFICATION',
