@@ -118,8 +118,9 @@ services:
       - GOGOV_API_KEY
       # Bearer token API key format
       - API_KEY_VERSION=v1
-      # env vars for growthbook
-      - GROWTHBOOK_CLIENT_KEY=growthbook_client_key
+      # env vars for growthbook (development client keys are non-sensitive)
+      # configure here: https://app.growthbook.io/sdks/sdk_19g61ollbqklip
+      - GROWTHBOOK_CLIENT_KEY=sdk-TxTUolCEFDculuDw
       # env vars for virus scanner
       - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
       - GUARDDUTY_LAMBDA_FUNCTION_NAME=function
