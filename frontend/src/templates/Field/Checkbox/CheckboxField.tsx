@@ -66,7 +66,8 @@ export const CheckboxField = ({
   const englishCheckboxOptions = schema.fieldOptions
   const selectedLanguage = i18n.language as Language
 
-  const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
+  const { register, getValues, control, trigger } =
+    useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
@@ -144,6 +145,9 @@ export const CheckboxField = ({
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
                       {...(isHighContrast && { variant: 'highContrast' })}
+                      onChange={() => {
+                        trigger(othersInputName)
+                      }}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}
