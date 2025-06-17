@@ -231,12 +231,6 @@
     "typescript": "^5.4.5",
     "worker-loader": "^2.0.0"
   },
-  "workspaces": [
-    "frontend",
-    "shared",
-    "serverless/virus-scanner",
-    "serverless/virus-scanner-guardduty"
-  ],
   "config": {
     "//": [
       "This is required for the mongodb binary to be downloaded on M1 macs",
