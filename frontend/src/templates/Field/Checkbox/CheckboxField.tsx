@@ -104,7 +104,7 @@ export const CheckboxField = ({
           name={checkboxInputName}
           control={control}
           rules={validationRules}
-          render={({ field: { ref, ...field } }) => (
+          render={({ field: { ref, onBlur, ...field } }) => (
             <CheckboxGroup {...field}>
               {fieldOptions.map((o, idx) => (
                 <Checkbox
@@ -117,6 +117,7 @@ export const CheckboxField = ({
                   // of the language of the form.
                   value={englishCheckboxOptions[idx]}
                   aria-label={o}
+                  onBlur={idx === 0 ? onBlur : undefined}
                   {...(idx === 0 ? { ref } : {})}
                   isHighContrast={isHighContrast}
                 >
