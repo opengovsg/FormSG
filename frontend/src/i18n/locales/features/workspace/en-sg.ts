@@ -77,7 +77,7 @@ export const enSG: Workspace = {
       description: 'Email mode forms will be retired on',
       date: '{retirementDate, date, long}',
       additionalDescription:
-        '. Email functionalities will continue to be available in Storage mode.',
+        'Email functionalities will continue to be available in Storage mode',
       learnMore: 'Learn what this means for you.',
     },
   },

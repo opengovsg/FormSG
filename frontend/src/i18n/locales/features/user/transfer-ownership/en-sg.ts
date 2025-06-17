@@ -11,7 +11,7 @@ export const enSG: TransferOwnership = {
   confirmation: {
     transferringTo: 'You are transferring all forms to',
     loseAccessWarning:
-      '. You will be removed as a collaborator and lose access to the forms you previously owned.',
+      'You will be removed as a collaborator and lose access to the forms you previously owned',
     button: 'Yes, transfer all forms',
   },
 }

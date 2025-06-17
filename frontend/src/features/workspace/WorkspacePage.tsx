@@ -181,7 +181,7 @@ export const WorkspacePage = (): JSX.Element => {
                     },
                   )}
                 </Text>
-                {emailRetirementNotice.additionalDescription}{' '}
+                {'. ' + emailRetirementNotice.additionalDescription + '.'}{' '}
                 <Link
                   display="inline"
                   href={KILL_EMAIL_MODE_LINK}

@@ -195,9 +195,11 @@ export const TransferOwnershipModal = ({
                 <Text as="span" color="danger.500" fontWeight="bold">
                   {email}
                 </Text>
-                {t(
-                  'features.user.transferOwnership.confirmation.loseAccessWarning',
-                )}
+                {'. ' +
+                  t(
+                    'features.user.transferOwnership.confirmation.loseAccessWarning',
+                  ) +
+                  '.'}
               </Text>
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
