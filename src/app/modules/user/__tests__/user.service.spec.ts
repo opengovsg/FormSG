@@ -1,8 +1,8 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectID } from 'bson'
+import { ObjectId } from 'bson'
 import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
-import mongoose, { LeanDocument, Query } from 'mongoose'
+import mongoose, { FlattenMaps, Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import { SeenFlags } from 'shared/types'
 
@@ -28,7 +28,7 @@ describe('user.service', () => {
   // https://www.twilio.com/blog/2018/04/twilio-test-credentials-magic-numbers.html
   const MOCK_CONTACT = '+15005550006'
   const MOCK_OTP = '123456'
-  const USER_ID = new ObjectID()
+  const USER_ID = new ObjectId()
   const ALLOWED_DOMAIN = 'test.gov.sg'
 
   let defaultAgency: AgencyDocument
@@ -110,7 +110,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError when userId is invalid', async () => {
       // Arrange
-      const invalidUserId = new ObjectID()
+      const invalidUserId = new ObjectId()
 
       // Act
       const actualResult = await UserService.createContactOtp(
@@ -169,7 +169,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError when userId is invalid', async () => {
       // Arrange
-      const invalidUserId = new ObjectID()
+      const invalidUserId = new ObjectId()
 
       // Act
       const actualResult = await UserService.verifyContactOtp(
@@ -297,7 +297,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError if userId is invalid', async () => {
       // Arrange
-      const invalidUserId = new ObjectID()
+      const invalidUserId = new ObjectId()
 
       // Act
       const actualResult = await UserService.updateUserContact(
@@ -341,7 +341,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError if userId is invalid', async () => {
       // Arrange
-      const invalidUserId = new ObjectID()
+      const invalidUserId = new ObjectId()
 
       // Act
       const actualResult = await UserService.updateUserLastSeenFlagVersion(
@@ -372,7 +372,7 @@ describe('user.service', () => {
 
     it('should return populated user without apiToken property', async () => {
       // Arrange
-      const MOCK_USER_ID = new ObjectID()
+      const MOCK_USER_ID = new ObjectId()
       const MOCK_EMAIL_DOMAIN = `api${ALLOWED_DOMAIN}`
       const { agency, user } = await dbHandler.insertFormCollectionReqs({
         userId: MOCK_USER_ID,
@@ -403,7 +403,7 @@ describe('user.service', () => {
     })
 
     it('should return populated user with last seen feature update version successfully', async () => {
-      const mockUserIdWithLastSeenFeatureUpdate = new ObjectID()
+      const mockUserIdWithLastSeenFeatureUpdate = new ObjectId()
       const { agency, user } = await dbHandler.insertFormCollectionReqs({
         userId: mockUserIdWithLastSeenFeatureUpdate,
         mailName: 'userWithLastSeenFeatureUpdate',
@@ -430,7 +430,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError when user cannot be found', async () => {
       // Arrange
-      const invalidUser = new ObjectID()
+      const invalidUser = new ObjectId()
 
       // Act
       const actualResult = await UserService.getPopulatedUserById(invalidUser)
@@ -470,7 +470,7 @@ describe('user.service', () => {
       )
 
       // Assert
-      const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
+      const expectedUser: Partial<FlattenMaps<IPopulatedUser>> = {
         agency: defaultAgency.toObject(),
         // Should be transformed to lowercased due to schema.
         email: newUserEmail.toLowerCase(),
@@ -497,7 +497,7 @@ describe('user.service', () => {
       )
 
       // Assert
-      const expectedUser: Partial<LeanDocument<IPopulatedUser>> = {
+      const expectedUser: Partial<FlattenMaps<IPopulatedUser>> = {
         ...defaultUser.toObject(),
         agency: defaultAgency.toObject(),
         lastAccessed: MOCKED_DATE,
@@ -514,7 +514,7 @@ describe('user.service', () => {
   describe('findUserById', () => {
     it('should return admin successfully', async () => {
       // Arrange
-      const mockUserId = new ObjectID().toHexString()
+      const mockUserId = new ObjectId().toHexString()
       const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(defaultUser),
       } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
@@ -530,7 +530,7 @@ describe('user.service', () => {
 
     it('should return DatabaseError when query throws an error', async () => {
       // Arrange
-      const mockUserId = new ObjectID().toHexString()
+      const mockUserId = new ObjectId().toHexString()
       const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockRejectedValue(new Error('database bad')),
       } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
@@ -546,7 +546,7 @@ describe('user.service', () => {
 
     it('should return MissingUserError when query returns null', async () => {
       // Arrange
-      const mockUserId = new ObjectID().toHexString()
+      const mockUserId = new ObjectId().toHexString()
       const findSpy = jest.spyOn(UserModel, 'findById').mockReturnValueOnce({
         exec: jest.fn().mockResolvedValue(null),
       } as unknown as Query<IUserSchema | null, IUserSchema, unknown>)
