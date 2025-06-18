@@ -43,6 +43,7 @@ export default defineConfig(() => {
     server: {
       proxy: {
         '/api/v3': 'http://localhost:5001',
+        '/api/cloudflare': 'http://localhost:5001',
       },
     },
     plugins: [

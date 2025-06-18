@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -9,7 +10,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
-import { HttpError } from '~services/ApiService'
+import { ApiService, HttpError } from '~services/ApiService'
 
 import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'
@@ -44,6 +45,32 @@ datadogLogs.init({
 
 export const App = (): JSX.Element => {
   const isDev = import.meta.env.MODE === 'development'
+
+  useEffect(() => {
+    if (isDev) {
+      console.log(
+        'Running in development mode. Cloudflare challenge will be triggered every 10 seconds.',
+      )
+      // This is a workaround to trigger Cloudflare challenge in dev mode
+      // to test the Cloudflare challenge handling logic.
+      const interval = setInterval(async () => {
+        const res = await ApiService.get('/api/cloudflare/challenge', {
+          baseURL: '',
+        })
+        console.log('Cloudflare challenge triggered:', res.status)
+      }, 10 * 1000) // every 10 seconds
+      return () => {
+        clearInterval(interval)
+      }
+    } else {
+      console.log(
+        'Running in production mode. No Cloudflare challenge will be triggered.',
+      )
+      // In production, we do not need to trigger Cloudflare challenge.
+      // This is just a placeholder to avoid the useEffect warning.
+      return () => {}
+    }
+  }, [isDev])
 
   return (
     <>
