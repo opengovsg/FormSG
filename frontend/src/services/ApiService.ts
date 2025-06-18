@@ -83,7 +83,6 @@ export const transformAxiosError = (error: Error): ApiError => {
       )
     }
   }
-  console.log('error not matched anything')
   return error
 }
 
@@ -98,7 +97,6 @@ ApiService.interceptors.response.use(
   async (error: AxiosError) => {
     // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      console.log('rendering overlay for cf challenge')
       return await handleCloudflareChallengeError(error)
         .then((response) => response)
         .catch((error) => {

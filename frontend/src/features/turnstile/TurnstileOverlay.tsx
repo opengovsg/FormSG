@@ -1,16 +1,16 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import {
-  Box,
+  HStack,
   Modal,
   ModalCloseButton,
   ModalContent,
   ModalOverlay,
-  Skeleton,
   Stack,
   Text,
 } from '@chakra-ui/react'
 import { Turnstile } from '@marsidev/react-turnstile'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { HttpError } from '~services/ApiService'
 
 import { useEnv } from '~features/env/queries'
@@ -38,6 +38,7 @@ interface TurnstileOverlayProps {
   onError: () => void
   onClose: () => void
   onLoadingError: () => void
+  turnstileScriptId?: string
 }
 
 const TurnstileOverlay = ({
@@ -45,10 +46,13 @@ const TurnstileOverlay = ({
   onError,
   onClose,
   onLoadingError,
+  turnstileScriptId = 'turnstile-script-id',
 }: TurnstileOverlayProps) => {
   const {
     data: { turnstileSiteKey = isDev ? CF_DEV_PASS_SITEKEY : undefined } = {},
   } = useEnv()
+
+  const isMobile = useIsMobile()
 
   if (turnstileSiteKey === undefined) {
     onLoadingError()
@@ -56,32 +60,42 @@ const TurnstileOverlay = ({
   }
 
   return (
-    <Modal isOpen size="md" onClose={onClose}>
-      <ModalOverlay backgroundColor="rgba(128, 128, 128, 0.5)" />
+    <Modal isOpen onClose={onClose}>
+      <ModalOverlay bg="rgba(0, 0, 0, 0.65)" />
       <ModalContent
-        bg="white"
-        w="fit-content"
-        h="fit-content"
+        bgColor="#FBFCFD"
+        w={isMobile ? '100%' : 'fit-content'}
+        h={isMobile ? '100%' : 'fit-content'}
         mx="auto"
         my="auto"
         padding="1rem"
         borderRadius="0.25rem"
+        p="2rem"
       >
-        <Box display="flex" justifyContent="flex-end" w="100%">
-          <ModalCloseButton />
-        </Box>
-        <Skeleton isLoaded={!!turnstileSiteKey}>
-          <Stack py="0.5rem" spacing="0.5rem" alignItems="center">
-            <Text w="100%" fontSize="lg" fontWeight="bold">
-              Complete this challenge to continue
+        <Stack spacing="2rem" alignItems="center">
+          <HStack spacing="2rem" w="100%">
+            <Text
+              w="100%"
+              fontWeight="600"
+              fontSize="1.5rem"
+              textColor="#293044"
+            >
+              Complete this security verification to continue
             </Text>
-            <Turnstile
-              siteKey={turnstileSiteKey!}
-              onSuccess={onSuccess}
-              onError={onError}
-            />
-          </Stack>
-        </Skeleton>
+            <ModalCloseButton />
+          </HStack>
+          <Turnstile
+            siteKey={turnstileSiteKey!}
+            onSuccess={onSuccess}
+            onError={onError}
+            onTimeout={onClose}
+            scriptOptions={{
+              appendTo: 'body', // RATIONALE: Required so that it can be removed onLoadingError to retry load in subsequent overlay renders.
+              id: turnstileScriptId,
+              onError: onLoadingError,
+            }}
+          />
+        </Stack>
       </ModalContent>
     </Modal>
   )
@@ -92,6 +106,7 @@ const TurnstileOverlayContainer = ({
   onError,
   onClose,
   onLoadingError,
+  turnstileScriptId,
 }: TurnstileOverlayProps) => {
   return (
     // @ts-expect-error missing FC type in old version
@@ -101,6 +116,7 @@ const TurnstileOverlayContainer = ({
         onSuccess={onSuccess}
         onError={onError}
         onLoadingError={onLoadingError}
+        turnstileScriptId={turnstileScriptId}
       />
     </QueryClientProvider>
   )
