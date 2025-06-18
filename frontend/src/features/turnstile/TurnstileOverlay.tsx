@@ -66,8 +66,7 @@ const TurnstileOverlay = ({
         bgColor="#FBFCFD"
         w={isMobile ? '100%' : 'fit-content'}
         h={isMobile ? '100%' : 'fit-content'}
-        mx="auto"
-        my="auto"
+        margin="auto"
         padding="1rem"
         borderRadius="0.25rem"
         p="2rem"
@@ -82,7 +81,7 @@ const TurnstileOverlay = ({
             >
               Complete this security verification to continue
             </Text>
-            <ModalCloseButton />
+            <ModalCloseButton position="static" />
           </HStack>
           <Turnstile
             siteKey={turnstileSiteKey!}
