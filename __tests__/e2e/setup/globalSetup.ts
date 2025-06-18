@@ -27,9 +27,7 @@ async function globalSetup(): Promise<void> {
   }
 
   // The following is to make sure the database is clean before an test starts
-  await mongoose.connect(process.env.MONGO_URI, {
-    promiseLibrary: global.Promise,
-  })
+  await mongoose.connect(process.env.MONGO_URI)
   await mongoose.disconnect()
 }
 

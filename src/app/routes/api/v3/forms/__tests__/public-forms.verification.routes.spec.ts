@@ -584,7 +584,7 @@ describe('public-forms.verification.routes', () => {
     it('should return 400 when the hash data could not be found', async () => {
       // Arrange
       // Remove the email field and persist to db
-      await mockTransaction.fields[1].remove()
+      await mockTransaction.fields[1].deleteOne()
       await mockTransaction.save()
 
       const expectedResponse = {
