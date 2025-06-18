@@ -167,14 +167,14 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=18.12.1"`
+- `"node": ">=22.12.1"`
 - `"npm": ">=8.19.2"`
 - `"mongo": ">=4.0.0"`
 
 Run
 
 ```bash
-nvm install 18
+nvm install 22
 npm install
 pip install "localstack[full]"
 ```

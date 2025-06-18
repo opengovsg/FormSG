@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:hydrogen-alpine3.19 AS build
+FROM node:jod-alpine3.21 AS build
 
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
@@ -51,7 +51,7 @@ RUN --mount=type=secret,id=dd_api_key \
 RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:hydrogen-alpine3.19
+FROM node:jod-alpine3.21
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
@@ -73,7 +73,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 
 RUN apk add --no-cache \
     # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.19&repo=&arch=&maintainer=
-    chromium=124.0.6367.78-r0 \
+    chromium=136.0.7103.113-r0 \
     nss \
     freetype \
     freetype-dev \
