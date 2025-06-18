@@ -67,7 +67,11 @@ export const SmsCountsModal = ({
               <Text textStyle="body-2" mt="1.5rem">
                 If you require more than the free limit, additional usage will
                 incur costs. Please reach out to the FormSG support team by
-                filling out this <Link href={CONTACT_US}>form</Link>.
+                filling out this{' '}
+                <Link target="_blank" href={CONTACT_US}>
+                  form
+                </Link>
+                .
               </Text>
               <Badge
                 colorScheme="primary"
