@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import i18n from '~/i18n/setupI18nTests'
+
 import * as stories from './TransferOwnershipModal.stories'
 
 const { Default } = composeStories(stories)
@@ -50,7 +52,9 @@ describe('User transfers ownership of all owned forms', () => {
     // Act
     await act(async () => userEvent.type(input, newOwnerEmail))
     await act(async () => userEvent.tab())
-    expect(transferButton).toHaveTextContent('Transfer ownership')
+    expect(transferButton).toHaveTextContent(
+      i18n.t('features.user.transferOwnership.form.button'),
+    )
     expect(input).toHaveDisplayValue(newOwnerEmail)
     await act(async () => userEvent.click(transferButton))
 
