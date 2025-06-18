@@ -15,6 +15,7 @@ export const ContactSupportMessage = (): JSX.Element => {
           'features.adminForm.sidebar.fields.mobileNo.otpVerification.thresholdWarning',
         )}{' '}
         <Link
+          target="_blank"
           textStyle="caption-1"
           href={'https://go.gov.sg/form-support'}
           isExternal
