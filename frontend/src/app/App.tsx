@@ -12,6 +12,8 @@ import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
 import { ApiService, HttpError } from '~services/ApiService'
 
+import { TurnstileProvider } from '~features/turnstile/TurnstileProvider'
+
 import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'
 
@@ -98,11 +100,13 @@ export const App = (): JSX.Element => {
           <AppHelmet />
           <BrowserRouter>
             <ChakraProvider theme={theme} resetCSS>
-              <AuthProvider>
-                <GrowthBookProvider>
-                  <AppRouter />
-                </GrowthBookProvider>
-              </AuthProvider>
+              <TurnstileProvider>
+                <AuthProvider>
+                  <GrowthBookProvider>
+                    <AppRouter />
+                  </GrowthBookProvider>
+                </AuthProvider>
+              </TurnstileProvider>
             </ChakraProvider>
           </BrowserRouter>
         </QueryClientProvider>

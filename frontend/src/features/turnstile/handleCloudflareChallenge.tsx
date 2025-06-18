@@ -42,56 +42,7 @@ export const handleCloudflareChallengeError = async (
   error: AxiosError | null,
 ) => {
   const originalRequestConfigToReplay = error ? { ...error.config } : null
+  window.Turnstile?.handleError && window.Turnstile.handleError(error)
 
-  let overlay = document.getElementById(OVERLAY_ID)
-  if (!overlay) {
-    overlay = document.createElement('div')
-    overlay.id = OVERLAY_ID
-    document.body.insertBefore(overlay, document.body.firstChild)
-    const overlayReactRoot = createRoot(overlay)
-    return await new Promise((resolve, reject) => {
-      overlayReactRoot.render(
-        <TurnstileOverlay
-          turnstileScriptId={TURNSTILE_SCRIPT_ID}
-          onClose={() => {
-            reject(
-              new Error(
-                'You must complete the security verification to continue. Please try again.',
-              ),
-            )
-          }}
-          onSuccess={() => {
-            if (originalRequestConfigToReplay) {
-              resolve(ApiService.request(originalRequestConfigToReplay))
-            } else {
-              reject(new Error('Something went wrong. Please try again.'))
-            }
-          }}
-          onError={() => {
-            reject(
-              new Error(
-                'Your verification was unsuccessful due to security reasons. Please try again.',
-              ),
-            )
-          }}
-          onLoadingError={() => {
-            reject(
-              new Error(
-                'The security verification failed to load. Please try again.',
-              ),
-            )
-          }}
-        />,
-      )
-    }).finally(() => {
-      cleanupAndRemoveOverlay({
-        overlay,
-        turnstileScript: document.getElementById(TURNSTILE_SCRIPT_ID),
-        overlayReactRoot,
-      })
-    })
-  }
-  throw new Error(
-    'Your request was blocked due to security reasons. Please try again.',
-  )
+  return error
 }
