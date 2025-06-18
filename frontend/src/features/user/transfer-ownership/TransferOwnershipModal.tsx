@@ -5,6 +5,7 @@ import {
   UseFormReset,
   UseFormTrigger,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Button,
   ButtonGroup,
@@ -22,11 +23,7 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  CANNOT_TRANSFER_OWNERSHIP_TO_SELF,
-  INVALID_EMAIL_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useUserMutations } from '~features/user/mutations'
@@ -115,6 +112,8 @@ export const TransferOwnershipModal = ({
   isOpen,
   onClose,
 }: TransferOwnershipModalProps): JSX.Element => {
+  const { t } = useTranslation()
+
   const {
     reset,
     trigger,
@@ -142,16 +141,17 @@ export const TransferOwnershipModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Transfer all forms</ModalHeader>
+        <ModalHeader color="secondary.700">
+          {t('features.user.transferOwnership.header')}
+        </ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
           {page === 0 && (
             <form onSubmit={handleSubmit(onNext)}>
               <FormControl isInvalid={!!errors['email']}>
                 <FormLabel>
-                  Transfer ownership of all forms
+                  {t('features.user.transferOwnership.form.label')}
                   <Text textStyle="body-2" color="secondary.500">
-                    Share your secret key with this user for them to access
-                    response data
+                    {t('features.user.transferOwnership.form.description')}
                   </Text>
                 </FormLabel>
                 <Input
@@ -164,7 +164,10 @@ export const TransferOwnershipModal = ({
                         return INVALID_EMAIL_ERROR
                       }
                       return (
-                        !isOwnEmail(value) || CANNOT_TRANSFER_OWNERSHIP_TO_SELF
+                        !isOwnEmail(value) ||
+                        t(
+                          'constants.validationConstants.cannotTransferOwnershipToSelf',
+                        )
                       )
                     },
                   })}
@@ -174,10 +177,10 @@ export const TransferOwnershipModal = ({
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
                   <Button variant="link" onClick={resetModal}>
-                    Cancel
+                    {t('features.common.cancel')}
                   </Button>
                   <Button type="submit" isDisabled={!!errors['email']}>
-                    Transfer ownership
+                    {t('features.user.transferOwnership.form.button')}
                   </Button>
                 </ButtonGroup>
               </section>
@@ -186,20 +189,25 @@ export const TransferOwnershipModal = ({
           {page === 1 && (
             <section>
               <Text textStyle="body-2" color="secondary.500">
-                You are transferring all forms to{' '}
+                {t(
+                  'features.user.transferOwnership.confirmation.transferringTo',
+                )}{' '}
                 <Text as="span" color="danger.500" fontWeight="bold">
                   {email}
                 </Text>
-                . You will be removed as a collaborator and lose access to the
-                forms you previously owned.
+                {'. ' +
+                  t(
+                    'features.user.transferOwnership.confirmation.loseAccessWarning',
+                  ) +
+                  '.'}
               </Text>
               <section style={{ marginTop: '1rem', textAlign: 'right' }}>
                 <ButtonGroup spacing="6">
                   <Button variant="link" onClick={resetModal}>
-                    Cancel
+                    {t('features.common.cancel')}
                   </Button>
                   <Button colorScheme="danger" onClick={onConfirm}>
-                    Yes, transfer all forms
+                    {t('features.user.transferOwnership.confirmation.button')}
                   </Button>
                 </ButtonGroup>
               </section>

@@ -1,4 +1,5 @@
 import { RegisterOptions, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   FormControl,
   Modal,
@@ -14,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
+import { useWorkspaceTitleValidationRules } from '~utils/workspaceValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
@@ -43,6 +44,9 @@ export const CreateWorkspaceModal = ({
       title: '',
     },
   })
+
+  const { t } = useTranslation()
+
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -51,6 +55,7 @@ export const CreateWorkspaceModal = ({
   const isMobile = useIsMobile()
 
   const { createWorkspaceMutation } = useWorkspaceMutations()
+  const workspaceValidationRules = useWorkspaceTitleValidationRules()
 
   const handleCreateWorkspace = handleSubmit((data) => {
     createWorkspaceMutation.mutateAsync(data)
@@ -61,17 +66,21 @@ export const CreateWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Create folder</ModalHeader>
+        <ModalHeader>
+          {t('features.workspace.modals.workspace.create.createFolder')}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text textStyle="subhead-1">Folder name</Text>
+          <Text textStyle="subhead-1">
+            {t('features.workspace.modals.workspace.create.folderName')}
+          </Text>
           <FormControl isRequired isInvalid={!!errors.title}>
             <Input
               mt="0.75rem"
               autoFocus
               {...register(
                 'title',
-                WORKSPACE_TITLE_VALIDATION_RULES as RegisterOptions<
+                workspaceValidationRules as RegisterOptions<
                   CreateWorkspaceInputProps,
                   'title'
                 >,
@@ -95,10 +104,10 @@ export const CreateWorkspaceModal = ({
               colorScheme="secondary"
               isFullWidth={isMobile}
             >
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button onClick={handleCreateWorkspace} isFullWidth={isMobile}>
-              Create folder
+              {t('features.workspace.modals.workspace.create.createFolder')}
             </Button>
           </Stack>
         </ModalFooter>
