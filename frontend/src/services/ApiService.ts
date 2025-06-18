@@ -112,7 +112,6 @@ ApiService.interceptors.response.use(
     }
 
     const transformedError = transformAxiosError(error)
-    console.log('transformedError', transformedError)
     throw transformedError
   },
 )
