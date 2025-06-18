@@ -122,7 +122,7 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const formSchemaOptions: SchemaOptions = {
+const formSchemaOptions: SchemaOptions<IFormSchema> = {
   id: false,
   toJSON: {
     getters: true,
@@ -196,20 +196,22 @@ export const formPaymentsFieldSchema = {
   },
 }
 
-const whitelistedSubmitterIdNestedPath = {
-  isWhitelistEnabled: {
-    type: Boolean,
-    required: true,
-    default: false,
+const whitelistedSubmitterIdNestedPath = new Schema(
+  {
+    isWhitelistEnabled: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    encryptedWhitelistedSubmitterIds: {
+      type: Schema.Types.ObjectId,
+      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+      required: false,
+      default: undefined,
+    },
   },
-  encryptedWhitelistedSubmitterIds: {
-    type: Schema.Types.ObjectId,
-    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-    required: false,
-    default: undefined,
-  },
-  _id: { id: false },
-}
+  { _id: false },
+)
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {

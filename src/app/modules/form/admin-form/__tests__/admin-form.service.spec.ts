@@ -437,6 +437,7 @@ describe('admin-form.service', () => {
       responseMode: FormResponseMode.Encrypt,
       title: 'mock new title',
       publicKey: 'some public key',
+      emails: ['mockExample@example.com'],
     }
 
     const createMockForm = (expectedParams: OverrideProps) =>

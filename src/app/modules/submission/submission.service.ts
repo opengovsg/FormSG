@@ -1071,7 +1071,7 @@ export const copyPendingSubmissionToSubmissions = (
       return okAsync(submission)
     })
     .andThen((pendingSubmission) => {
-      const submissionContent = omit(pendingSubmission, [
+      const submissionContent = omit(pendingSubmission.toObject(), [
         '_id',
         'created',
         'lastModified',

@@ -1,7 +1,7 @@
 import {
   ClientSession,
   Document,
-  LeanDocument,
+  FlattenMaps,
   Model,
   ToObjectOptions,
 } from 'mongoose'
@@ -314,7 +314,7 @@ export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
   // Override types.
-  toJSON(options?: ToObjectOptions): LeanDocument<IPopulatedForm>
+  toJSON(options?: ToObjectOptions): FlattenMaps<IPopulatedForm>
 }
 
 export interface IEncryptedForm extends IForm {

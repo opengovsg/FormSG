@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
-import mongoose, { LeanDocument } from 'mongoose'
+import mongoose, { FlattenMaps } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
@@ -468,7 +468,7 @@ export const isMyInfoChildrenBirthRecords = (
  * @returns Either the MyInfoAttribute, or an array of MyInfoAttribute, or not found.
  */
 export const getMyInfoAttr = (
-  field: IFieldSchema | LeanDocument<IFieldSchema>,
+  field: IFieldSchema | FlattenMaps<IFieldSchema>,
 ): string | string[] | undefined => {
   // Need to explode compound field.
   if (field.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {

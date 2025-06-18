@@ -178,7 +178,7 @@ describe('analytics.service', () => {
       const expectedNumSubs = 10
       const submissionPromises = times(expectedNumSubs, () =>
         SubmissionModel.create({
-          form: mongoose.Types.ObjectId(),
+          form: new mongoose.Types.ObjectId(),
           myInfoFields: [],
           submissionType: SubmissionType.Email,
           responseHash: 'hash',

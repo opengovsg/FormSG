@@ -87,4 +87,5 @@ export const enSG: Common = {
     text: 'Edit form',
     ariaLabel: 'Click to edit the form',
   },
+  moreOptions: 'More options',
 }
