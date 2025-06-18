@@ -1,5 +1,5 @@
 import React from 'react'
-import { BiChevronDown, BiChevronUp } from 'react-icons/bi'
+import { BiChevronDown, BiChevronUp, BiSolidErrorCircle } from 'react-icons/bi'
 import {
   Box,
   chakra,
@@ -95,10 +95,8 @@ const HowToIdentify = ({
         as="span"
         color="primary.500"
         textDecorationLine="underline"
-        display="flex"
-        alignItems="center"
       >
-        How to identify {children}
+        How to identify
       </Text>
     )
   }
@@ -143,25 +141,42 @@ export const GovtMasthead = ({
           my={{ base: '0px', md: '2px' }}
         />
         <Flex alignItems="center" flexWrap="wrap">
-          <Text my="2px">A Singapore Government Agency Website&ensp;</Text>
-          <HowToIdentify
-            isOpen={isOpen}
-            onToggle={onToggle}
-            isMobile={isMobile}
-          >
+          <Box>
+            <Text as="span">
+              A Singapore Government Agency Website. Beware of government
+              impersonation scams.&ensp;
+            </Text>
+            <HowToIdentify
+              isOpen={isOpen}
+              onToggle={onToggle}
+              isMobile={isMobile}
+            >
+              <Icon
+                aria-hidden
+                as={isOpen ? BiChevronUp : BiChevronDown}
+                fontSize={{ base: '1rem', md: '1.25rem' }}
+              />
+            </HowToIdentify>
+          </Box>
+        </Flex>
+        {isMobile && (
+          <Flex align="center">
             <Icon
               aria-hidden
               as={isOpen ? BiChevronUp : BiChevronDown}
+              color="primary.500"
               fontSize={{ base: '1rem', md: '1.25rem' }}
+              mt="1px" // Adjust for vertical alignment
+              mb="-1px" // Adjust for vertical alignment
             />
-          </HowToIdentify>
-        </Flex>
+          </Flex>
+        )}
       </HeaderBar>
 
       <Collapse in={isOpen} animateOpacity>
         <Stack
           direction={{ base: 'column', md: 'row' }}
-          spacing={{ base: '1rem', md: '4.5rem', lg: '9.5rem' }}
+          spacing={{ base: '1rem' }}
           bg="neutral.200"
           px="2rem"
           py={{ base: '1.5rem', md: '2.25rem', lg: '2.75rem' }}
@@ -203,6 +218,15 @@ export const GovtMasthead = ({
                 ) or https:// as an added precaution.
                 <br></br>Share sensitive information only on official, secure
                 websites.
+              </Text>
+            </Box>
+          </GovtMastheadItem>
+          <GovtMastheadItem icon={BiSolidErrorCircle} header="Scam alert">
+            <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
+              <Text as="span">
+                Government officers will never ask you to send money or share
+                you details over the phone.{' '}
+                <b>When unsure, hang up and call Scamshield at 1799.</b>
               </Text>
             </Box>
           </GovtMastheadItem>
