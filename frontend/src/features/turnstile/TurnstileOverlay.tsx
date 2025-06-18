@@ -5,6 +5,7 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalOverlay,
+  Skeleton,
   Stack,
   Text,
 } from '@chakra-ui/react'
@@ -49,12 +50,14 @@ const TurnstileOverlay = ({
   turnstileScriptId = 'turnstile-script-id',
 }: TurnstileOverlayProps) => {
   const {
+    isLoading: isSitekeyLoading,
+    isError: isSitekeyError,
     data: { turnstileSiteKey = isDev ? CF_DEV_PASS_SITEKEY : undefined } = {},
   } = useEnv()
 
   const isMobile = useIsMobile()
 
-  if (turnstileSiteKey === undefined) {
+  if (isSitekeyError || (!isSitekeyLoading && turnstileSiteKey === undefined)) {
     onLoadingError()
     return
   }
@@ -71,30 +74,32 @@ const TurnstileOverlay = ({
         borderRadius="0.25rem"
         p="2rem"
       >
-        <Stack spacing="2rem" alignItems="center">
-          <HStack spacing="2rem" w="100%">
-            <Text
-              w="100%"
-              fontWeight="600"
-              fontSize="1.5rem"
-              textColor="#293044"
-            >
-              Complete this security verification to continue
-            </Text>
-            <ModalCloseButton position="static" />
-          </HStack>
-          <Turnstile
-            siteKey={turnstileSiteKey!}
-            onSuccess={onSuccess}
-            onError={onError}
-            onTimeout={onClose}
-            scriptOptions={{
-              appendTo: 'body', // RATIONALE: Required so that it can be removed onLoadingError to retry load in subsequent overlay renders.
-              id: turnstileScriptId,
-              onError: onLoadingError,
-            }}
-          />
-        </Stack>
+        <Skeleton isLoaded={!isSitekeyLoading}>
+          <Stack spacing="2rem" alignItems="center">
+            <HStack spacing="2rem" w="100%">
+              <Text
+                w="100%"
+                fontWeight="600"
+                fontSize="1.5rem"
+                textColor="#293044"
+              >
+                Complete this security verification to continue
+              </Text>
+              <ModalCloseButton position="static" />
+            </HStack>
+            <Turnstile
+              siteKey={turnstileSiteKey!}
+              onSuccess={onSuccess}
+              onError={onError}
+              onTimeout={onClose}
+              scriptOptions={{
+                appendTo: 'body', // RATIONALE: Required so that it can be removed onLoadingError to retry load in subsequent overlay renders.
+                id: turnstileScriptId,
+                onError: onLoadingError,
+              }}
+            />
+          </Stack>
+        </Skeleton>
       </ModalContent>
     </Modal>
   )
