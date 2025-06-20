@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
-import { Box, Flex, GridItem, GridProps, Image, Text } from '@chakra-ui/react'
+import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
-import { FormLogoState, StepData, WorkflowStatus } from '~shared/types'
+import { StepData, WorkflowStatus } from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -18,10 +18,7 @@ import {
   FooterGridArea,
   LoginGridArea,
 } from '~features/login/LoginPageTemplate'
-import {
-  PublicFormLogo,
-  useFormBannerLogo,
-} from '~features/public-form/components/FormLogo'
+import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -66,41 +63,9 @@ const StatusTrackerFormInfo = (): JSX.Element => {
   // trying to get logo to work
   const { form } = usePublicFormContext()
 
-  // const { data: { logoBucketUrl } = {} } = useEnv(
-  //   form?.startPage.logo.state === FormLogoState.Custom,
-  // )
-
-  // const showLogo = form?.startPage.logo.state !== FormLogoState.None
-
-  // const statusTrackerLogoProps = useFormBannerLogo({
-  //   logoBucketUrl: logoBucketUrl,
-  //   logo: form?.startPage.logo,
-  //   agency: form?.admin.agency,
-  //   colorTheme: form?.startPage.colorTheme,
-  //   showDefaultLogoIfNoLogo: true,
-  // })
-
   return (
     <Box w="100%">
       <Flex direction="row" alignItems="center" gap="0.5rem">
-        {/* {showLogo ? (
-          <Box
-            w="3rem"
-            h="3rem"
-            borderRadius="full"
-            overflow="hidden"
-            bg="white"
-          >
-            <Image
-              src={statusTrackerLogoProps.logoImgSrc}
-              alt={statusTrackerLogoProps.logoImgAlt}
-              objectFit="contain"
-              w="100%"
-              h="100%"
-              p="0.25rem"
-            />
-          </Box>
-        ) : null} */}
         <Text textStyle="body-2" color="#FFFFFF">
           {form?.title}
         </Text>
