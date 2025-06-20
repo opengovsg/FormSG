@@ -83,7 +83,7 @@ export const RowActionsDrawer = ({
     <Box display={{ md: 'none' }}>
       <IconButton
         variant="clear"
-        aria-label="More options"
+        aria-label={t('features.common.moreOptions')}
         icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
         onClick={onOpen}
       />

@@ -117,13 +117,18 @@ const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
  * @returns err(DatabaseError) if database query errors
  * @
  */
-export const getFormSubmissionsCount = (
-  formId: string,
-  dateRange: {
+export const getFormSubmissionsCount = ({
+  formId,
+  dateRange = {},
+  submissionType,
+}: {
+  formId: string
+  dateRange?: {
     startDate?: string
     endDate?: string
-  } = {},
-): ResultAsync<number, MalformedParametersError | DatabaseError> => {
+  }
+  submissionType?: SubmissionType
+}): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
     isMalformedDate(dateRange.startDate) ||
     isMalformedDate(dateRange.endDate)
@@ -134,6 +139,7 @@ export const getFormSubmissionsCount = (
   const countQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+    ...(submissionType ? { submissionType } : {}),
   }
 
   return ResultAsync.fromPromise(
@@ -1065,7 +1071,7 @@ export const copyPendingSubmissionToSubmissions = (
       return okAsync(submission)
     })
     .andThen((pendingSubmission) => {
-      const submissionContent = omit(pendingSubmission, [
+      const submissionContent = omit(pendingSubmission.toObject(), [
         '_id',
         'created',
         'lastModified',

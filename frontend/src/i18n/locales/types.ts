@@ -1,8 +1,11 @@
 import { RequiredDeep } from 'type-fest'
 
+import { Pagination } from './components'
+import { ValidationConstants } from './constants'
 import {
   App,
   Common,
+  Feedback,
   Fields,
   HeaderAndInstructions,
   LandingPage,
@@ -15,10 +18,12 @@ import {
   Settings,
   ThankYou,
   Toasts,
+  TransferOwnership,
+  WhatsNew,
   Workflow,
   Workspace,
 } from './features'
-import { FormValidation } from './utils'
+import { FormValidation, WorkspaceValidation } from './utils'
 
 interface Translation {
   translation: {
@@ -36,6 +41,7 @@ interface Translation {
         modals?: Modals
         toasts?: Toasts
         settings?: Settings
+        feedback?: Feedback
       }
       app?: App
       common?: Common
@@ -43,9 +49,20 @@ interface Translation {
       publicForm?: PublicForm
       login?: Login
       workspace?: Workspace
+      whatsNew?: WhatsNew
+      user?: {
+        transferOwnership: TransferOwnership
+      }
     }
     utils: {
       formValidation?: FormValidation
+      workspaceValidation?: WorkspaceValidation
+    }
+    components: {
+      pagination?: Pagination
+    }
+    constants: {
+      validationConstants?: ValidationConstants
     }
   }
 }
@@ -54,6 +71,8 @@ export interface FallbackTranslation extends Translation {
   translation: {
     features: RequiredDeep<Translation['translation']['features']>
     utils: RequiredDeep<Translation['translation']['utils']>
+    components: RequiredDeep<Translation['translation']['components']>
+    constants: RequiredDeep<Translation['translation']['constants']>
   }
 }
 

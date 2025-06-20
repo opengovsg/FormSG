@@ -1,0 +1,26 @@
+name: Deploy Virus Scanner GuardDuty to IaC OGP AWS environment
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - release-al2
+
+jobs:
+  deploy-scanner-guardduty:
+    name: Deploy Scanner Guardduty
+    uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
+    with:
+      checkoutBranch: 'release-al2'
+      gha-environment: 'release-al2'
+      environment: 'production'
+      provisionedConcurrency: 10
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

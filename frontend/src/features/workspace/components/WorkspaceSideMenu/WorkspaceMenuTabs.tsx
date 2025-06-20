@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
 import { Workspace, WorkspaceDto } from '~shared/types/workspace'
@@ -20,6 +21,7 @@ const WorkspaceTab = ({
   isDefault = false,
   ...props
 }: WorkspaceTabProps): JSX.Element => {
+  const { t } = useTranslation()
   const styles = isSelected
     ? {
         borderLeft: '2px',
@@ -41,7 +43,7 @@ const WorkspaceTab = ({
         textColor: 'primary.500',
       }}
       onClick={onClick}
-      aria-label={`${label} folder tab`}
+      aria-label={`${label} ${t('features.workspace.sideMenu.aria.menuTab')}`}
       {...styles}
       {...props}
     >

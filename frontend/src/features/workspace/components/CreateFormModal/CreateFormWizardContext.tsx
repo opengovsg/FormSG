@@ -15,7 +15,7 @@ export enum CreateFormFlowStates {
   EmailModeCreation = 'emailModeCreation',
 }
 
-export type CreateFormWizardInputProps = {
+export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
   // Email form props
@@ -55,7 +55,7 @@ export const useCreateFormWizard = (): CreateFormWizardContextReturn => {
   const context = useContext(CreateFormWizardContext)
   if (!context) {
     throw new Error(
-      t('features.workspace.modals.create.errors.useWizardWithinContext'),
+      t('features.workspace.modals.forms.create.errors.useWizardWithinContext'),
     )
   }
   return context

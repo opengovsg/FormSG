@@ -23,6 +23,12 @@ export const enSG = {
         'Something went wrong when creating your field. Please refresh and try again.',
     },
   },
+  emailModeMigration: {
+    success:
+      'Form successfully converted to storage mode. You can now activate your form.',
+    error:
+      'Something went wrong when converting the form to storage mode. Please refresh and try again.',
+  },
   respondentCopy: {
     successBefore: 'Respondents will',
     disabled: 'not ',

@@ -1,7 +1,5 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
-import { CallbackError, Mongoose, Schema } from 'mongoose'
-// https://stackoverflow.com/a/61679809
-import { MongoError } from 'mongoose/node_modules/mongodb'
+import { CallbackError, mongo as mongodb, Mongoose, Schema } from 'mongoose'
 import validator from 'validator'
 
 import {
@@ -13,6 +11,8 @@ import {
 } from '../../types'
 
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
+
+const { MongoError } = mongodb
 
 export const USER_SCHEMA_ID = 'User'
 
@@ -126,7 +126,8 @@ const compileUserModel = (db: Mongoose) => {
       if (err) {
         if (
           ['MongoError', 'MongoServerError'].includes(err.name) &&
-          (err as MongoError)?.code === 11000
+          err instanceof MongoError &&
+          err?.code === 11000
         ) {
           next(new Error('Account already exists with this email'))
         } else {

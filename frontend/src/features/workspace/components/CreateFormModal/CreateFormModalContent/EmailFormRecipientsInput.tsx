@@ -1,4 +1,5 @@
 import { Control, Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -21,6 +22,11 @@ import {
 } from '../CreateFormWizardContext'
 
 export const EmailFormRecipientsInput = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { placeholder } = t(
+    'features.workspace.modals.forms.create.emailFormRecipient',
+    { returnObjects: true },
+  )
   const { user, isLoading } = useUser()
   const { formMethods } = useCreateFormWizard()
 
@@ -59,7 +65,7 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         }
         render={({ field }) => (
           <TagInput
-            placeholder="Separate emails with a comma"
+            placeholder={placeholder}
             {...field}
             value={field.value as string[]}
             tagValidation={isEmail}

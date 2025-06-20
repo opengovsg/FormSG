@@ -122,7 +122,7 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const formSchemaOptions: SchemaOptions = {
+const formSchemaOptions: SchemaOptions<IFormSchema> = {
   id: false,
   toJSON: {
     getters: true,
@@ -196,20 +196,22 @@ export const formPaymentsFieldSchema = {
   },
 }
 
-const whitelistedSubmitterIdNestedPath = {
-  isWhitelistEnabled: {
-    type: Boolean,
-    required: true,
-    default: false,
+const whitelistedSubmitterIdNestedPath = new Schema(
+  {
+    isWhitelistEnabled: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    encryptedWhitelistedSubmitterIds: {
+      type: Schema.Types.ObjectId,
+      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+      required: false,
+      default: undefined,
+    },
   },
-  encryptedWhitelistedSubmitterIds: {
-    type: Schema.Types.ObjectId,
-    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-    required: false,
-    default: undefined,
-  },
-  _id: { id: false },
-}
+  { _id: false },
+)
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -277,6 +279,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       gstRegNo: { type: String, default: '', trim: true },
     },
   },
+
+  isForceConvertToStorageMode: {
+    type: Boolean,
+    required: false,
+  },
 })
 
 const EncryptedFormDocumentSchema =
@@ -341,7 +348,51 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     // is non-empty.
     required: [true, 'Emails field is required'],
   },
+  isForceConvertToStorageMode: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+EmailFormSchema.methods.replaceWithStorageModeFormWithSameId = async function ({
+  publicKey,
+}: {
+  publicKey: string
+}) {
+  const session = await mongoose.startSession()
+  return session
+    .withTransaction(async () => {
+      return this.__replaceWithStorageModeFormWithSameId({
+        publicKey,
+        session,
+      })
+    })
+    .finally(() => session.endSession())
+}
+
+EmailFormSchema.methods.__replaceWithStorageModeFormWithSameId =
+  async function ({
+    publicKey,
+    session,
+  }: {
+    publicKey: string
+    session?: ClientSession
+  }) {
+    const FormModel = mongoose.model(FORM_SCHEMA_ID)
+    const emailModeFormData = this.toObject()
+    const emailModeFormId = this._id
+
+    await this.deleteOne(session ? { session } : {})
+
+    const replacedStorageModeFormDoc = new FormModel({
+      ...emailModeFormData,
+      _id: emailModeFormId,
+      responseMode: FormResponseMode.Encrypt,
+      publicKey,
+    })
+    await replacedStorageModeFormDoc.save(session ? { session } : {})
+    return replacedStorageModeFormDoc
+  }
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   publicKey: {

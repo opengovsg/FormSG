@@ -88,7 +88,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         <Container maxW="45rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>
-              {t('features.workspace.modals.create.details.name.label')}
+              {t('features.workspace.modals.forms.create.details.name.label')}
             </FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Input
@@ -105,13 +105,15 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
               <FormFieldMessage>
-                {t('features.workspace.modals.create.details.name.message')}
+                {t(
+                  'features.workspace.modals.forms.create.details.name.message',
+                )}
               </FormFieldMessage>
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
             <FormLabel>
-              {t('features.workspace.modals.create.details.type.label')}
+              {t('features.workspace.modals.forms.create.details.type.label')}
             </FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Controller
@@ -128,7 +130,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 )}
                 rules={{
                   required: t(
-                    'features.workspace.modals.create.errors.responseMode.required',
+                    'features.workspace.modals.forms.create.errors.responseMode.required',
                   ),
                 }}
               />
@@ -136,7 +138,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
             {isSingpass && (
               <InlineMessage mt="2rem">
-                {t('features.workspace.modals.create.errors.noSingpassInMrf')}
+                {t(
+                  'features.workspace.modals.forms.create.errors.noSingpassInMrf',
+                )}
               </InlineMessage>
             )}
           </FormControl>
@@ -151,12 +155,12 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 isRequired={responseModeValue === FormResponseMode.Email}
                 useMarkdownForDescription
                 description={t(
-                  'features.workspace.modals.create.details.notifications.description',
+                  'features.workspace.modals.forms.create.details.notifications.description',
                   { GUIDE_PREVENT_EMAIL_BOUNCE },
                 )}
               >
                 {t(
-                  'features.workspace.modals.create.details.notifications.label',
+                  'features.workspace.modals.forms.create.details.notifications.label',
                 )}
               </FormLabel>
               <EmailFormRecipientsInput />
@@ -174,7 +178,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             )}
           >
             <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.create.details.create')}
+              {t('features.workspace.modals.forms.create.details.create')}
             </Text>
           </Button>
         </Container>

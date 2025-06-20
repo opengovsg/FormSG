@@ -1,4 +1,5 @@
 export {
+  type Feedback,
   type Fields,
   type HeaderAndInstructions,
   type Logic,
@@ -15,4 +16,6 @@ export { type Common } from './common'
 export { type LandingPage } from './landing-page'
 export { type Login } from './login'
 export { type PublicForm } from './public-form'
+export { type TransferOwnership } from './user'
+export { type WhatsNew } from './whats-new'
 export { type Workspace } from './workspace'

@@ -628,7 +628,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  if (respondentEmails) {
+  if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,
@@ -863,7 +863,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  if (respondentEmails) {
+  if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,

@@ -193,7 +193,7 @@ export const useDupeFormWizardContext = (
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
-    modalHeader: t('features.workspace.modals.create.title.duplicate'),
+    modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),
     onClose,
   }
 }

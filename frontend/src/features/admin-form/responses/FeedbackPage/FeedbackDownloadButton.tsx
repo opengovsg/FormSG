@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 
 import Button from '~components/Button'
@@ -16,13 +17,15 @@ export const FeedbackDownloadButton = ({
   handleClick,
   isMobile,
 }: FeedbackDownloadButtonProps) => {
+  const { t } = useTranslation()
+
   if (isMobile) {
     return (
       <IconButton
         isDisabled={isDisabled}
         isLoading={isLoading}
         onClick={handleClick}
-        aria-label="Export"
+        aria-label={t('features.adminForm.feedback.downloadButton.export')}
         icon={<BiDownload />}
         variant="outline"
         colorScheme="primary"
@@ -36,7 +39,7 @@ export const FeedbackDownloadButton = ({
       onClick={handleClick}
       leftIcon={<BiDownload fontSize="1.5rem" />}
     >
-      Export
+      {t('features.adminForm.feedback.downloadButton.export')}
     </Button>
   )
 }
