@@ -3,28 +3,33 @@ import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
 
-import { AppFooter } from '~/app/AppFooter'
-
 import { FCC } from '~typings/react'
 
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
-import { useEnv } from '~features/env/queries'
-import {
-  BackgroundBox,
-  BaseGridLayout,
-  // BaseGridLayout,
-  FooterGridArea,
-  LoginGridArea,
-} from '~features/login/LoginPageTemplate'
+import { BackgroundBox } from '~features/login/LoginPageTemplate'
 import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
+import { FormFooter } from '../FormFooter'
+
 import { useStatusTracker } from './queries'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
 import { TimelineRunSteps } from './TimelineRunSteps'
+
+// Grid area styling for the login form.
+export const TimelineGridArea: FCC = ({ children }) => (
+  <GridItem
+    gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
+    py="4rem"
+    display="flex"
+    alignItems={{ base: 'initial', lg: 'center' }}
+    justifyContent="center"
+    children={children}
+  />
+)
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
@@ -61,10 +66,12 @@ export const StatusTrackerBaseGridLayout = (props: GridProps) => (
 
 const StatusTrackerFormInfo = (): JSX.Element => {
   // trying to get logo to work
-  const { form } = usePublicFormContext()
+  const { captchaContainerId, form } = usePublicFormContext()
 
   return (
     <Box w="100%">
+      {/* Hiding recaptcha container here as id needs to be grabbed within publicFormProvider and hidden from form footer */}
+      <Box id={captchaContainerId} display="none" mt="2rem" />
       <Flex direction="row" alignItems="center" gap="0.5rem">
         <Text textStyle="body-2" color="#FFFFFF">
           {form?.title}
@@ -131,7 +138,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           <StatusTrackerFormInfoGridArea>
             <StatusTrackerFormInfo />
           </StatusTrackerFormInfoGridArea>
-          <LoginGridArea>
+          <TimelineGridArea>
             <Box mt={{ base: '1rem', lg: '2.33rem' }}>
               <Flex direction="column">
                 <PublicFormLogo />
@@ -141,21 +148,15 @@ export const StatusTrackerPage = (): JSX.Element => {
                 <TimelineRunSteps steps={stepData} />
               </Flex>
             </Box>
-          </LoginGridArea>
+          </TimelineGridArea>
         </StatusTrackerBaseGridLayout>
-        <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
-          <FooterGridArea>
-            <AppFooter
-              compactMonochromeLogos
-              variant="compact"
-              containerProps={{
-                px: 0,
-                bg: 'transparent',
-              }}
-            />
-          </FooterGridArea>
-        </BaseGridLayout>
+        {/* <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}> */}
+        <FormFooter />
+        {/* </BaseGridLayout> */}
       </BackgroundBox>
     </PublicFormProvider>
   )
+}
+const ShittyFooter = () => {
+  const { captchaContainerId, form } = usePublicFormContext()
 }
