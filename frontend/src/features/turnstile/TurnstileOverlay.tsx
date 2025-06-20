@@ -24,6 +24,15 @@ interface TurnstileOverlayProps extends TurnstileOverlayHandlingProps {
   isOpen: boolean
 }
 
+const TURNSTILE_SCRIPT_ID = 'turnstile-script-id'
+
+const removeTurnstileScript = () => {
+  const script = document.getElementById(TURNSTILE_SCRIPT_ID)
+  if (script) {
+    script.remove()
+  }
+}
+
 const TurnstileOverlay = ({
   isOpen,
   onSuccess,
@@ -76,8 +85,11 @@ const TurnstileOverlay = ({
                 onError={onError}
                 onTimeout={onClose}
                 scriptOptions={{
-                  appendTo: 'body', // RATIONALE: Required so that it can be removed onLoadingError to retry load in subsequent overlay renders.
-                  onError: onLoadingError,
+                  id: TURNSTILE_SCRIPT_ID,
+                  onError: () => {
+                    removeTurnstileScript() // RATIONALE: Required so as to retry load in subsequent overlay renders.
+                    onLoadingError()
+                  },
                 }}
               />
             )}
