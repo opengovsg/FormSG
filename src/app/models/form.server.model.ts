@@ -1122,10 +1122,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     function (fieldId: string, insertionIndex: number) {
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
-      const duplicatedField = omit(fieldToDuplicate, [
-        '_id',
-        'globalId',
-      ]) as FormFieldSchema
+
+      const formFieldsDocumentArray = this
+        .form_fields as Types.DocumentArray<IFieldSchema>
+      const duplicatedField = formFieldsDocumentArray.create(
+        omit(fieldToDuplicate.toObject(), ['_id', 'globalId']),
+      ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
       return this.save()
