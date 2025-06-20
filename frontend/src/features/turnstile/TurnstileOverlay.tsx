@@ -1,16 +1,13 @@
 import {
-  HStack,
   Modal,
+  ModalBody,
   ModalCloseButton,
   ModalContent,
+  ModalHeader,
   ModalOverlay,
-  Skeleton,
-  Stack,
-  Text,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import { Turnstile } from '@marsidev/react-turnstile'
-
-import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useEnv } from '~features/env/queries'
 
@@ -46,7 +43,11 @@ const TurnstileOverlay = ({
     data: { turnstileSiteKey } = {},
   } = useEnv()
 
-  const isMobile = useIsMobile()
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
 
   if (isSiteKeyError || (isSiteKeyLoading && turnstileSiteKey === undefined)) {
     onLoadingError()
@@ -54,47 +55,30 @@ const TurnstileOverlay = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay bg="rgba(0, 0, 0, 0.65)" />
-      <ModalContent
-        bgColor="#FBFCFD"
-        w={isMobile ? '100%' : 'fit-content'}
-        h={isMobile ? '100%' : 'fit-content'}
-        margin="auto"
-        padding="1rem"
-        borderRadius="0.25rem"
-        p="2rem"
-      >
-        <Skeleton isLoaded={!isSiteKeyLoading}>
-          <Stack spacing="2rem" alignItems="center">
-            <HStack spacing="2rem" w="100%">
-              <Text
-                w="100%"
-                fontWeight="600"
-                fontSize="1.5rem"
-                textColor="#293044"
-              >
-                Complete this security verification to continue
-              </Text>
-              <ModalCloseButton position="static" />
-            </HStack>
-            {turnstileSiteKey && (
-              <Turnstile
-                siteKey={turnstileSiteKey!}
-                onSuccess={onSuccess}
-                onError={onError}
-                onTimeout={onClose}
-                scriptOptions={{
-                  id: TURNSTILE_SCRIPT_ID,
-                  onError: () => {
-                    removeTurnstileScript() // RATIONALE: Required so as to retry load in subsequent overlay renders.
-                    onLoadingError()
-                  },
-                }}
-              />
-            )}
-          </Stack>
-        </Skeleton>
+    <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalCloseButton />
+        <ModalHeader>
+          Complete this security verification to continue
+        </ModalHeader>
+        <ModalBody py="2rem" display="flex" justifyContent="center">
+          {turnstileSiteKey && (
+            <Turnstile
+              siteKey={turnstileSiteKey!}
+              onSuccess={onSuccess}
+              onError={onError}
+              onTimeout={onClose}
+              scriptOptions={{
+                id: TURNSTILE_SCRIPT_ID,
+                onError: () => {
+                  removeTurnstileScript() // RATIONALE: Required so as to retry load in subsequent overlay renders.
+                  onLoadingError()
+                },
+              }}
+            />
+          )}
+        </ModalBody>
       </ModalContent>
     </Modal>
   )
