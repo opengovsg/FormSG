@@ -15,21 +15,21 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
+    isOpen: true,
     onSuccess: () => console.log('Success'),
     onError: () => console.log('Error'),
     onClose: () => console.log('Close'),
     onLoadingError: () => console.log('Loading Error'),
-    turnstileScriptId: 'turnstile-script-id',
   },
 }
 
 export const SmallMobile: Story = {
   args: {
+    isOpen: true,
     onSuccess: () => console.log('Success'),
     onError: () => console.log('Error'),
     onClose: () => console.log('Close'),
     onLoadingError: () => console.log('Loading Error'),
-    turnstileScriptId: 'turnstile-script-id',
   },
   parameters: {
     viewport: {
