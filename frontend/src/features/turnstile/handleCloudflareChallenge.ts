@@ -23,13 +23,17 @@ export const handleCloudflareChallengeError = async (
     return await new Promise((resolve, reject) => {
       TurnstileChallengeService.issueChallenge(originalRequestConfigToReplay, {
         onSuccess: () => {
+          console.log('success onSuccess')
           if (originalRequestConfigToReplay) {
+            console.log('success onSuccess 2')
             resolve(ApiService.request(originalRequestConfigToReplay))
           } else {
+            console.log('error onSuccess')
             reject(new Error('Something went wrong. Please try again.'))
           }
         },
         onError: () => {
+          console.log('error onError')
           reject(
             new Error(
               'Your verification was unsuccessful due to security reasons. Please try again.',
@@ -37,6 +41,7 @@ export const handleCloudflareChallengeError = async (
           )
         },
         onClose: () => {
+          console.log('error onClose')
           reject(
             new Error(
               'You must complete the security verification to continue. Please try again.',
@@ -44,6 +49,7 @@ export const handleCloudflareChallengeError = async (
           )
         },
         onLoadingError: () => {
+          console.log('error onLoadingError')
           reject(
             new Error(
               'The security verification failed to load. Please try again.',
