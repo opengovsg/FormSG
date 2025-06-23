@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ExecutionMode } from '@marsidev/react-turnstile'
 import { useIntervalWhen } from 'rooks'
 
 import { useScript } from '~hooks/useScript'
@@ -9,7 +10,7 @@ type TurnstileBaseConfig = {
   size?: 'normal' | 'compact'
   tabindex?: number
   language?: string
-  execution?: 'default' | 'execute'
+  execution?: ExecutionMode
   appearance?: 'always' | 'execute' | 'interaction-only'
 }
 
@@ -17,26 +18,6 @@ interface UseTurnstileProps extends TurnstileBaseConfig {
   // id of container to load Turnstile captcha in.
   containerID?: string
   enableUsage: boolean
-}
-
-type TurnstileConfig = TurnstileBaseConfig & {
-  callback?: (token: string) => void
-  'expired-callback'?: () => void
-  'error-callback'?: () => void
-}
-
-type TurnstileCallbacks = {
-  ready: (callback: () => void) => void
-  render: (containerID?: string, config?: TurnstileConfig) => string
-  reset: (widgetID: string | undefined) => void
-  execute: (widgetID: string) => void
-  getResponse: (widgetID: string) => string
-}
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileCallbacks
-  }
 }
 
 // todo: check usages
@@ -58,9 +39,9 @@ export const useTurnstile = ({
   useScript(
     'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
   )
-  const turnstile: TurnstileCallbacks | undefined = window.turnstile
+  const turnstile = window.turnstile
   const [hasLoaded, setHasLoaded] = useState(turnstile?.render ? true : false)
-  const [widgetID, setWidgetID] = useState<string>()
+  const [widgetID, setWidgetID] = useState<string | undefined>()
 
   const executionPromise = useRef<TurnstileExecutionCallback>({})
 
@@ -106,7 +87,7 @@ export const useTurnstile = ({
       }
       if (enableUsage) {
         const widget = turnstile?.render('#' + containerID, renderProps)
-        setWidgetID(widget)
+        setWidgetID(widget ?? undefined)
       }
     }
   }, [

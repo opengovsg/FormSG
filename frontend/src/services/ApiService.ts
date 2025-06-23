@@ -94,9 +94,16 @@ export const ApiService = axios.create({
 
 ApiService.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      return handleCloudflareChallengeError()
+      return await handleCloudflareChallengeError(error)
+        .then((response) => {
+          return response
+        })
+        .catch((error) => {
+          throw error
+        })
     }
 
     if (error.response?.status === 401) {
