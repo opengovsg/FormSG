@@ -55,10 +55,14 @@ const TurnstileOverlay = ({
         <ModalBody py="2rem" display="flex" justifyContent="center">
           {turnstileSiteKey ? (
             <Turnstile
+              options={{
+                execution: 'execute',
+              }}
               siteKey={turnstileSiteKey!}
               onSuccess={onSuccess}
               onError={onError}
-              onTimeout={onClose}
+              onTimeout={onError}
+              onUnsupported={onLoadingError}
               scriptOptions={{
                 id: TURNSTILE_SCRIPT_ID,
                 onError: () => {
