@@ -14,7 +14,9 @@ import {
   SmsType,
 } from './sms.types'
 
-const SMS_COUNT_SCHEMA_NAME = 'sms'
+const SMS_COUNT_SCHEMA_NAME = 'smsVerification'
+
+const v3StartDate = new Date('2025-06-30T16:00:00.000+00:00') // UTC time
 
 const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
   form: {
@@ -93,6 +95,7 @@ const compileSmsCountModel = (db: Mongoose) => {
     return this.countDocuments({
       form: formId,
       smsType: SmsType.Verification,
+      createdAt: { $gte: v3StartDate },
     })
       .read('secondary')
       .exec()
