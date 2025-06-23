@@ -37,7 +37,7 @@ export const enSG: Toasts = {
     successAfter: 'be able to receive a copy of their submission',
   },
   form: {
-    retrival: {
+    retrieval: {
       error: 'There was an error retrieving your form. Please try again later.',
     },
   },

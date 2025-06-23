@@ -10,7 +10,6 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
 import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'

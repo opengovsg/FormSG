@@ -6,7 +6,8 @@ export const enSG: ResponsesIndividualResponse = {
     ctaText: 'Unlock responses',
     label: 'Enter or upload Secret Key',
   },
-  downloadAttachmentsAsZip: 'Download {attachmentSize} attachment(s) as .zip',
+  downloadAttachmentsAsZip:
+    'Download {attachmentSize, plural, =1 {# attachment} other {# attachments}} as .zip',
   responseLinkLabel: 'Response link',
   paymentSection: {
     paymentStatusLabel: {

@@ -66,7 +66,6 @@ export const ConfirmationScreen = ({
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
           <Text>
-            {/* TODO(#8204) Maintain bold when extracting */}
             Separate zip files will be downloaded, <b>one for each response</b>.
             You can adjust the date range before proceeding.
             <br />

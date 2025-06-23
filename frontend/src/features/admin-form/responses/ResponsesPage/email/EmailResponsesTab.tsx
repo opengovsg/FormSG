@@ -25,9 +25,11 @@ export const EmailResponsesTab = (): JSX.Element => {
             <Text color="primary.500" as="span">
               {responsesCount?.toLocaleString() ?? '-'}
             </Text>
-            {t(
-              'features.adminForm.responses.responsesPage.emailResponsesTab.responsesToDate',
-            )}
+            {' ' +
+              t(
+                'features.adminForm.responses.responsesPage.emailResponsesTab.responsesToDate',
+                { responsesCount: responsesCount ?? 0 },
+              )}
           </Text>
         </Skeleton>
         <Text textStyle="body-1">

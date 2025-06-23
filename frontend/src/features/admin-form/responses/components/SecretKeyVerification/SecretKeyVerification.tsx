@@ -31,9 +31,11 @@ export const SecretKeyVerification = ({
               <Text color="primary.500" as="span">
                 {totalResponsesCount?.toLocaleString() ?? '-'}
               </Text>
-              {t(
-                'features.adminForm.responses.components.secretKeyVerification.responsesToDate',
-              )}
+              {' ' +
+                t(
+                  'features.adminForm.responses.components.secretKeyVerification.responsesToDate',
+                  { count: totalResponsesCount ?? 0 },
+                )}
             </Text>
           </Skeleton>
         ) : null}

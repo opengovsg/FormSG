@@ -19,7 +19,7 @@ export interface Toasts {
     successAfter: string
   }
   form: {
-    retrival: {
+    retrieval: {
       error: string
     }
   }

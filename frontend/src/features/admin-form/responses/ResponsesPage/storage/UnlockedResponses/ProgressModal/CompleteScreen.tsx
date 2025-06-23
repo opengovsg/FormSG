@@ -36,7 +36,6 @@ export const CompleteScreen = ({
   const isMobile = useIsMobile()
   const mdComponents = useMdComponents()
 
-  // TODO(#8204) Extract out text after removing simplur and maybe with ICU format
   const completionMessage = useMemo(() => {
     if (!downloadMetadata) return ''
     const { successCount, expectedCount } = downloadMetadata
@@ -59,7 +58,6 @@ export const CompleteScreen = ({
     ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
   }, [downloadMetadata, isWithAttachments])
 
-  // TODO(#8204) Extract out text after removing simplur and maybe with ICU format
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
 

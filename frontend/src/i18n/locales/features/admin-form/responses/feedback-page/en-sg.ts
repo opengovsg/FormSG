@@ -8,7 +8,8 @@ export const enSG: ResponsesFeedbackPage = {
     subtitle: 'Try using {link} to send out your forms!',
   },
   issue: {
-    issuesToDate: ' issue(s) to date',
+    tooltip: 'Feedback displayed here relates to form submission issues',
+    issuesToDate: '{count, plural, =1 {issue} other {issues}} to date',
     tableColumns: {
       issueHeader: 'Issue',
       contactHeader: 'Contact',
@@ -16,7 +17,7 @@ export const enSG: ResponsesFeedbackPage = {
   },
   review: {
     averageScore: 'Average Score',
-    reviewsToDate: ' review(s) to date',
+    reviewsToDate: '{count, plural, =1 {review} other {reviews}} to date',
     tableColumns: {
       feedbackHeader: 'Issue',
       ratingHeader: 'Contact',

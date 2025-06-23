@@ -8,6 +8,7 @@ export interface ResponsesFeedbackPage {
     subtitle: string
   }
   issue: {
+    tooltip: string
     issuesToDate: string
     tableColumns: {
       issueHeader: string

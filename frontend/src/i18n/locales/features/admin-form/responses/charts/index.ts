@@ -30,6 +30,7 @@ export interface ResponsesCharts {
   }
   components: {
     supportedFieldsInfoBox: {
+      supportedFields: string
       shortAnswer: string
       longAnswer: string
       radio: string

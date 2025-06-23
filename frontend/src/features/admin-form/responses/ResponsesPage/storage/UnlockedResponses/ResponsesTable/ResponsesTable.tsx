@@ -108,7 +108,6 @@ function NotApprovedBadge() {
   )
 }
 
-// TODO(#8204) Extract out text after moving into component to use the hook
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
@@ -133,7 +132,6 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-// TODO(#8204) Extract out text after moving into component to use the hook
 const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Email',
@@ -196,7 +194,6 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-// TODO(#8204) Extract out text after moving into component to use the hook
 const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',

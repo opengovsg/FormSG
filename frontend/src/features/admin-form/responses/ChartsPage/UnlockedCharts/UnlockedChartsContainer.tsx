@@ -151,9 +151,11 @@ export const UnlockedChartsContainer = () => {
             <Text as="span" color="primary.500">
               {filteredDecryptedData.length}
             </Text>
-            {t(
-              'features.adminForm.responses.charts.unlockedChartsContainer.responsesRetrieved',
-            )}
+            {' ' +
+              t(
+                'features.adminForm.responses.charts.unlockedChartsContainer.responsesRetrieved',
+                { responsesRetrieved: filteredDecryptedData.length },
+              )}
           </Text>
         </Flex>
         <DateRangePicker

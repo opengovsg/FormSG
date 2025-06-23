@@ -60,13 +60,12 @@ export const UnlockedResponses = (): JSX.Element => {
               <Text as="span" color="primary.500">
                 {countToUse?.toLocaleString()}
               </Text>{' '}
-              {submissionId
-                ? t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound',
-                  )
-                : t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-                  )}
+              {t(
+                submissionId
+                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
+                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+                { count: countToUse ?? 0 },
+              )}
             </Text>
           </Skeleton>
         </Stack>

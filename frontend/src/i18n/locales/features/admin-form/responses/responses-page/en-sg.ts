@@ -6,7 +6,8 @@ export const enSG: ResponsesResponsesPage = {
     subtitle: 'Try using {link} to send out your form links!',
   },
   emailResponsesTab: {
-    responsesToDate: ' response(s) to date',
+    responsesToDate:
+      '{responseCount, plural, =1 {response} other {responses}} to date',
     responsesNotStoredInEmailMode:
       'FormSG does not store responses in Email mode.',
   },
@@ -76,8 +77,9 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       unlockedResponses: {
-        resultsFound: 'result(s) found',
-        responsesToDate: 'response(s) to date',
+        resultsFound: '{count, plural, =1 {result} other {results}} found',
+        responsesToDate:
+          '{count, plural, =1 {response} other {responses}} to date',
       },
     },
     storageResponsesTab: {

@@ -25,7 +25,8 @@ export const enSG: ResponsesCharts = {
     },
   },
   unlockedChartsContainer: {
-    responsesRetrieved: ' response(s) retrieved',
+    responsesRetrieved:
+      '{responsesRetrieved, plural, =1 {response} other {responses}} retrieved',
     noChartsForDateRange: {
       title: 'No charts generated for this date range',
       subtitle:
@@ -34,6 +35,7 @@ export const enSG: ResponsesCharts = {
   },
   components: {
     supportedFieldsInfoBox: {
+      supportedFields: 'Supported fields',
       shortAnswer: 'Short answer',
       longAnswer: 'Long answer',
       radio: 'Radio',

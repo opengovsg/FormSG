@@ -37,7 +37,9 @@ export function ChartsSupportedFieldsInfoBox() {
         color="secondary.500"
         textTransform="uppercase"
       >
-        Supported fields
+        {t(
+          'features.adminForm.responses.charts.components.supportedFieldsInfoBox.supportedFields',
+        )}
       </Text>
       <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">
         <ListWithIcon icon={BiRename}>

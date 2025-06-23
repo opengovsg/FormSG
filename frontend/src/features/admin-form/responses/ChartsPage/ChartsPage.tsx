@@ -35,7 +35,7 @@ export const ChartsPage = (): JSX.Element => {
 
   if (!form) {
     toast({
-      description: t('features.adminForm.toasts.form.retrival.error'),
+      description: t('features.adminForm.toasts.form.retrieval.error'),
     })
     return <ResponsesPageSkeleton />
   }
