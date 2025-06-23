@@ -23,7 +23,6 @@ import { TimelineRunSteps } from './TimelineRunSteps'
 export const TimelineGridArea: FCC = ({ children }) => (
   <GridItem
     gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
-    py="4rem"
     display="flex"
     alignItems={{ base: 'initial', lg: 'center' }}
     justifyContent="center"
