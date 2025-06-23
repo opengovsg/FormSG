@@ -3,10 +3,13 @@ import { Flex, Stack, Text } from '@chakra-ui/react'
 
 type StepLabelProps = {
   stepNumber: number
+  stepName?: string | undefined
 }
 
-export const StepLabel = ({ stepNumber }: StepLabelProps) => {
+export const StepLabel = ({ stepNumber, stepName }: StepLabelProps) => {
   const { t } = useTranslation()
+  const stepLabel =
+    stepName ?? `${t('features.common.entities.step')} ${stepNumber + 1}`
   return (
     <Stack
       direction="row"
@@ -24,9 +27,7 @@ export const StepLabel = ({ stepNumber }: StepLabelProps) => {
         {stepNumber + 1}
       </Text>
       <Flex direction="row">
-        <Text>
-          {t('features.common.entities.step')} {stepNumber + 1}
-        </Text>
+        <Text>{stepLabel}</Text>
       </Flex>
     </Stack>
   )
