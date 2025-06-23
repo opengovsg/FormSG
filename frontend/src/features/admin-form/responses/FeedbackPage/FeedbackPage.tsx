@@ -214,13 +214,13 @@ export const FeedbackPage = (): JSX.Element => {
           {currentFeedbackType === FeedbackType.Issues ? (
             <GetIssueInformationComponent
               count={issueProps.count}
-              translations={translations.issueInformation}
+              translations={issueProps.translations}
             />
           ) : (
             <GetReviewInformationComponent
               average={reviewProps.average}
               count={reviewProps.count}
-              translations={translations.reviewInformation}
+              translations={reviewProps.translations}
             />
           )}
         </Box>

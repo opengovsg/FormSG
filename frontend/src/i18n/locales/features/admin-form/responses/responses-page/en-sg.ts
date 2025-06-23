@@ -7,7 +7,7 @@ export const enSG: ResponsesResponsesPage = {
   },
   emailResponsesTab: {
     responsesToDate:
-      '{responseCount, plural, =1 {response} other {responses}} to date',
+      '{responsesCount, plural, =1 {response} other {responses}} to date',
     responsesNotStoredInEmailMode:
       'FormSG does not store responses in Email mode.',
   },
