@@ -17,7 +17,6 @@ import {
   PublicForm,
   ResponsesCharts,
   ResponsesComponents,
-  ResponsesFeedbackPage,
   ResponsesIndividualResponse,
   ResponsesResponsesPage,
   Settings,
@@ -50,7 +49,6 @@ interface Translation {
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents
-          feedbackPage?: ResponsesFeedbackPage
           individualResponse?: ResponsesIndividualResponse
           responsesPage?: ResponsesResponsesPage
         }

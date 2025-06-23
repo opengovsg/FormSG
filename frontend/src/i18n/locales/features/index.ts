@@ -8,7 +8,6 @@ export {
   type Navbar,
   type ResponsesCharts,
   type ResponsesComponents,
-  type ResponsesFeedbackPage,
   type ResponsesIndividualResponse,
   type ResponsesResponsesPage,
   type Settings,
