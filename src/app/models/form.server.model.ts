@@ -562,19 +562,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       permissionList: {
         type: [
-          {
-            email: {
-              type: String,
-              trim: true,
-              required: true,
-              // Set email to lowercase for consistency
-              set: (v: string) => v.toLowerCase(),
+          new Schema(
+            {
+              email: {
+                type: String,
+                trim: true,
+                required: true,
+                // Set email to lowercase for consistency
+                set: (v: string) => v.toLowerCase(),
+              },
+              write: {
+                type: Boolean,
+                default: false,
+              },
             },
-            write: {
-              type: Boolean,
-              default: false,
-            },
-          },
+            { _id: false },
+          ),
         ],
         validate: {
           validator: (users: FormPermission[]) =>
@@ -1119,10 +1122,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     function (fieldId: string, insertionIndex: number) {
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
-      const duplicatedField = omit(fieldToDuplicate, [
-        '_id',
-        'globalId',
-      ]) as FormFieldSchema
+
+      const formFieldsDocumentArray = this
+        .form_fields as Types.DocumentArray<IFieldSchema>
+      const duplicatedField = formFieldsDocumentArray.create(
+        omit(fieldToDuplicate.toObject(), ['_id', 'globalId']),
+      ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
       return this.save()
