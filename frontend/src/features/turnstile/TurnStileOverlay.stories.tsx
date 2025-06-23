@@ -1,36 +1,14 @@
-import { QueryClient, QueryClientProvider } from 'react-query'
 import { Meta, StoryObj } from '@storybook/react'
-import { rest } from 'msw'
 
 import TurnstileOverlay from './TurnstileOverlay'
-
-const queryClient = new QueryClient()
 
 const DUMMY_INTERACTIVE_TURNSTILE_SITE_KEY = '3x00000000000000000000FF'
 
 const meta = {
   title: 'Features/TurnstileOverlay',
   component: TurnstileOverlay,
-  decorators: [
-    (Story) => (
-      // @ts-expect-error missing FC type in old version
-      <QueryClientProvider client={queryClient}>
-        <Story />
-      </QueryClientProvider>
-    ),
-  ],
   parameters: {
     layout: 'fullscreen',
-    msw: [
-      rest.get('/api/v3/client/env', (_req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            turnstileSiteKey: DUMMY_INTERACTIVE_TURNSTILE_SITE_KEY,
-          }),
-        )
-      }),
-    ],
   },
 } satisfies Meta<typeof TurnstileOverlay>
 
@@ -39,6 +17,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
+    turnstileSiteKey: DUMMY_INTERACTIVE_TURNSTILE_SITE_KEY,
     isOpen: true,
     onSuccess: () => console.log('Success'),
     onError: () => console.log('Error'),
@@ -49,6 +28,7 @@ export const Default: Story = {
 
 export const SmallMobile: Story = {
   args: {
+    turnstileSiteKey: DUMMY_INTERACTIVE_TURNSTILE_SITE_KEY,
     isOpen: true,
     onSuccess: () => console.log('Success'),
     onError: () => console.log('Error'),

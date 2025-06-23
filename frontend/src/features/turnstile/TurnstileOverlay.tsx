@@ -5,11 +5,10 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { Turnstile } from '@marsidev/react-turnstile'
-
-import { useEnv } from '~features/env/queries'
 
 export interface TurnstileOverlayHandlingProps {
   onSuccess: (response: string | null) => void
@@ -19,6 +18,7 @@ export interface TurnstileOverlayHandlingProps {
 }
 interface TurnstileOverlayProps extends TurnstileOverlayHandlingProps {
   isOpen: boolean
+  turnstileSiteKey: string | undefined
 }
 
 const TURNSTILE_SCRIPT_ID = 'turnstile-script-id'
@@ -36,23 +36,13 @@ const TurnstileOverlay = ({
   onError,
   onClose,
   onLoadingError,
+  turnstileSiteKey,
 }: TurnstileOverlayProps) => {
-  const {
-    isError: isSiteKeyError,
-    isLoading: isSiteKeyLoading,
-    data: { turnstileSiteKey } = {},
-  } = useEnv()
-
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'md',
   })
-
-  if (isSiteKeyError || (isSiteKeyLoading && turnstileSiteKey === undefined)) {
-    onLoadingError()
-    return
-  }
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
@@ -63,7 +53,7 @@ const TurnstileOverlay = ({
           Complete this security verification to continue
         </ModalHeader>
         <ModalBody py="2rem" display="flex" justifyContent="center">
-          {turnstileSiteKey && (
+          {turnstileSiteKey ? (
             <Turnstile
               siteKey={turnstileSiteKey!}
               onSuccess={onSuccess}
@@ -77,6 +67,8 @@ const TurnstileOverlay = ({
                 },
               }}
             />
+          ) : (
+            <Skeleton height="6.25rem" width="100%" />
           )}
         </ModalBody>
       </ModalContent>

@@ -19,7 +19,9 @@ export const handleCloudflareChallengeError = async (
 ) => {
   const originalRequestConfigToReplay = error ? { ...error.config } : null
 
-  if (!originalRequestConfigToReplay) {
+  console.log('originalRequestConfigToReplay:', originalRequestConfigToReplay)
+
+  if (originalRequestConfigToReplay) {
     return await new Promise((resolve, reject) => {
       TurnstileChallengeService.issueChallenge(originalRequestConfigToReplay, {
         onSuccess: () => {
@@ -67,5 +69,7 @@ export const handleCloudflareChallengeError = async (
       })
     })
   }
+
+  console.log('did not invoke cf challenge')
   return new Error('Something went wrong. Please try again.')
 }
