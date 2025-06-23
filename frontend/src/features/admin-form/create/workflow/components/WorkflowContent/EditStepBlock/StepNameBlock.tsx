@@ -94,7 +94,7 @@ export const StepNameBlock = ({
           {errors?.step_name ? (
             <FormErrorMessage>{errors.step_name.message}</FormErrorMessage>
           ) : customStepName ? (
-            <FormHelperText color="secondary.700">
+            <FormHelperText color="secondary.400">
               {30 - (customStepName?.length ?? 0)} characters left
             </FormHelperText>
           ) : null}
