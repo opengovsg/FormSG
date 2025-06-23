@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import {
   DateRangePicker,
@@ -16,6 +16,8 @@ import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 export const UnlockedResponses = (): JSX.Element => {
+  const { t } = useTranslation()
+
   const {
     currentPage,
     setCurrentPage,
@@ -33,14 +35,6 @@ export const UnlockedResponses = (): JSX.Element => {
   )
 
   const { dateRange, setDateRange } = useStorageResponsesContext()
-
-  const prettifiedResponsesCount = useMemo(
-    () =>
-      submissionId
-        ? simplur` ${[filteredCount ?? 0]}result[|s] found`
-        : simplur` ${[count ?? 0]}response[|s] to date`,
-    [submissionId, filteredCount, count],
-  )
 
   return (
     <Flex flexDir="column" h="100%">
@@ -65,8 +59,13 @@ export const UnlockedResponses = (): JSX.Element => {
             <Text textStyle="h4" mb="0.5rem">
               <Text as="span" color="primary.500">
                 {countToUse?.toLocaleString()}
-              </Text>
-              {prettifiedResponsesCount}
+              </Text>{' '}
+              {t(
+                submissionId
+                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
+                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+                { count: countToUse ?? 0 },
+              )}
             </Text>
           </Skeleton>
         </Stack>
