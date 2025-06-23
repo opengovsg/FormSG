@@ -55,9 +55,6 @@ const TurnstileOverlay = ({
         <ModalBody py="2rem" display="flex" justifyContent="center">
           {turnstileSiteKey ? (
             <Turnstile
-              options={{
-                execution: 'execute',
-              }}
               siteKey={turnstileSiteKey!}
               onSuccess={onSuccess}
               onError={onError}

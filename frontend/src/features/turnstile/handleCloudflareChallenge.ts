@@ -19,31 +19,23 @@ export const handleCloudflareChallengeError = async (
 ) => {
   const originalRequestConfigToReplay = error ? { ...error.config } : null
 
-  console.log('originalRequestConfigToReplay:', originalRequestConfigToReplay)
-
   if (originalRequestConfigToReplay) {
     return await new Promise((resolve, reject) => {
       TurnstileChallengeService.issueChallenge(originalRequestConfigToReplay, {
         onSuccess: () => {
-          console.log('success onSuccess')
           if (originalRequestConfigToReplay) {
-            console.log('success onSuccess 2')
             return ApiService.request(originalRequestConfigToReplay)
               .then((response) => {
-                console.log('response:', response)
                 resolve(response)
               })
               .catch((error) => {
-                console.log('error:', error)
                 reject(error)
               })
           } else {
-            console.log('error onSuccess')
             reject(new Error('Something went wrong. Please try again.'))
           }
         },
         onError: () => {
-          console.log('error onError')
           reject(
             new Error(
               'Your verification was unsuccessful due to security reasons. Please try again.',
@@ -51,7 +43,6 @@ export const handleCloudflareChallengeError = async (
           )
         },
         onClose: () => {
-          console.log('error onClose')
           reject(
             new Error(
               'You must complete the security verification to continue. Please try again.',
@@ -59,7 +50,6 @@ export const handleCloudflareChallengeError = async (
           )
         },
         onLoadingError: () => {
-          console.log('error onLoadingError')
           reject(
             new Error(
               'The security verification failed to load. Please try again.',
@@ -69,7 +59,5 @@ export const handleCloudflareChallengeError = async (
       })
     })
   }
-
-  console.log('did not invoke cf challenge')
   return new Error('Something went wrong. Please try again.')
 }

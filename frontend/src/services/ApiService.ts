@@ -97,17 +97,11 @@ ApiService.interceptors.response.use(
   async (error: AxiosError) => {
     // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
     if (error.response && checkIsCloudflareChallengeError(error.response)) {
-      console.log('handling cloudflare challenge')
       return await handleCloudflareChallengeError(error)
         .then((response) => {
-          console.log(
-            'success handled cloudflare challenge. response: ',
-            response,
-          )
           return response
         })
         .catch((error) => {
-          console.log('error handled cloudflare challenge')
           throw error
         })
     }

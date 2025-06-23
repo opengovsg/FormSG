@@ -21,11 +21,11 @@ export const TurnstileChallengeProvider = ({
 }: {
   children: React.ReactNode
 }) => {
-  const { data, isLoading, isLoadingError } = useEnv()
-
-  console.log('env:', data)
-  console.log('isLoading:', isLoading)
-  console.log('isError:', isLoadingError)
+  const {
+    data: { turnstileSiteKey } = { turnstileSiteKey: undefined },
+    isLoading: isTurnstileKeyLoading,
+    isError: isTurnstileKeyLoadingError,
+  } = useEnv()
 
   const [isChallengeOpen, setIsChallengeOpen] = useState(false)
   const [requestToReplay, setRequestToReplay] =
@@ -56,13 +56,21 @@ export const TurnstileChallengeProvider = ({
     TurnstileChallengeService.issueChallenge = issueChallenge
   }, [isChallengeOpen])
 
+  if (
+    (!turnstileSiteKey && !isTurnstileKeyLoading) ||
+    isTurnstileKeyLoadingError
+  ) {
+    turnstileOverlayHandlingProps?.onLoadingError()
+    return
+  }
+
   return (
     <TurnstileChallengeContext.Provider
       value={{ isChallengeOpen, requestToReplay }}
     >
       {turnstileOverlayHandlingProps && (
         <TurnstileOverlay
-          turnstileSiteKey={data?.turnstileSiteKey}
+          turnstileSiteKey={turnstileSiteKey}
           isOpen={isChallengeOpen}
           onSuccess={(response) => {
             turnstileOverlayHandlingProps.onSuccess(response)
