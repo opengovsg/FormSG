@@ -26,7 +26,15 @@ export const handleCloudflareChallengeError = async (
           console.log('success onSuccess')
           if (originalRequestConfigToReplay) {
             console.log('success onSuccess 2')
-            resolve(ApiService.request(originalRequestConfigToReplay))
+            return ApiService.request(originalRequestConfigToReplay)
+              .then((response) => {
+                console.log('response:', response)
+                resolve(response)
+              })
+              .catch((error) => {
+                console.log('error:', error)
+                reject(error)
+              })
           } else {
             console.log('error onSuccess')
             reject(new Error('Something went wrong. Please try again.'))

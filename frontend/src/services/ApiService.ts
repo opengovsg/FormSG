@@ -100,7 +100,10 @@ ApiService.interceptors.response.use(
       console.log('handling cloudflare challenge')
       return await handleCloudflareChallengeError(error)
         .then((response) => {
-          console.log('success handled cloudflare challenge')
+          console.log(
+            'success handled cloudflare challenge. response: ',
+            response,
+          )
           return response
         })
         .catch((error) => {
