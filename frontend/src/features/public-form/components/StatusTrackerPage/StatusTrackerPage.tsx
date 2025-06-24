@@ -26,10 +26,10 @@ import { TimelineRunSteps } from './TimelineRunSteps'
 // Grid area styling for the login form.
 export const TimelineGridArea: FCC = ({ children }) => (
   <GridItem
-    gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
+    gridColumn={{ lg: '7 / 12' }}
     py={{ base: '0rem', lg: '4rem' }}
     display="flex"
-    alignItems={{ base: 'initial', lg: 'center' }}
+    alignItems={{ base: 'initial', md: 'initial,', lg: 'center' }}
     justifyContent="center"
     children={children}
   />
@@ -148,7 +148,7 @@ export const StatusTrackerPage = (): JSX.Element => {
                 <Box transform="translateX(-1.5rem)">
                   <PublicFormLogo />
                 </Box>
-                <Text mb="2rem" textStyle="h4">
+                <Text mb="2rem" textStyle="h4" isTruncated>
                   Response ID: {data.responseId}
                 </Text>
                 <TimelineRunSteps steps={stepData} />
