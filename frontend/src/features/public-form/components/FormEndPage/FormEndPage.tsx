@@ -56,7 +56,7 @@ export const FormEndPage = ({
               buttonVariant={previousSubmissionId ? 'solid' : 'outline'}
             />
           )}
-          {form?.responseMode == FormResponseMode.Multirespondent &&
+          {form?.responseMode === FormResponseMode.Multirespondent &&
           form?.hasStatusTracker ? (
             <SubmitAnotherResponseButton
               endPage={endPageProps.endPage}

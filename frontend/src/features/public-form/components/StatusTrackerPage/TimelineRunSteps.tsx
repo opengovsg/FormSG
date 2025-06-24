@@ -1,10 +1,19 @@
 import { MdCheck, MdClose } from 'react-icons/md'
-import { Box, Circle, Divider, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import {
+  BackgroundProps,
+  Box,
+  Circle,
+  Divider,
+  Flex,
+  Icon,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { StepData, WorkflowStatus } from '~shared/types'
 
-const statusColor: Record<WorkflowStatus, string> = {
+const statusColor: Record<WorkflowStatus, BackgroundProps['bg']> = {
   [WorkflowStatus.PENDING]: '#E5E9F8', // grey
   [WorkflowStatus.COMPLETED]: '#05CC9A', // green
   [WorkflowStatus.APPROVED]: '#05CC9A',

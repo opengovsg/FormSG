@@ -55,7 +55,6 @@ export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
       lg: 'linear(to-r, primary.500 calc(41.6667% - 4px), transparent 0)', // match BackgroundBox
     }}
     mx={{ base: '-1.5rem', md: '-1.75rem', lg: '-2rem' }} // negative horizontal margin matching the container padding
-    // overflow="hidden"
   />
 )
 
@@ -159,7 +158,6 @@ export const StatusTrackerPage = (): JSX.Element => {
         </StatusTrackerBaseGridLayout>
         <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
           <FooterGridArea>
-            {/* <FormFooter /> */}
             <AppFooter
               compactMonochromeLogos
               variant="compact"

@@ -14,7 +14,7 @@ import Input from '~components/Input'
 import { CopyButton } from '~templates/CopyButton'
 
 type StatusTrackerLinkProps = {
-  formId: string | undefined
+  formId: string
   submissionId: string | undefined
 }
 

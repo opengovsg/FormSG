@@ -39,11 +39,6 @@ const getStatusTrackerSubmissionData: ControllerHandler<
         form: submissionData.form,
       }
 
-      logger.info({
-        message: `Testing BE API: ${submissionData}`,
-        meta: logMeta,
-      })
-
       // Return relevant data in response
       res.status(StatusCodes.OK).json(statusTrackerData)
     })
