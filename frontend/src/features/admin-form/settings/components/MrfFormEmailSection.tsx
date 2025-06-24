@@ -25,7 +25,6 @@ import { useUser } from '~features/user/queries'
 import { useMutateFormSettings } from '../mutations'
 
 import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
-import { StatusTrackerToggle } from './EmailNotificationsSection/StatusTrackerToggle'
 
 interface MrfEmailNotificationsFormProps {
   settings: MultirespondentFormSettings
@@ -280,13 +279,6 @@ const MrfEmailNotificationsForm = ({
           <FormControl isDisabled={isDisabled}>
             <Box mt={'1.5rem'}>
               <RespondentCopyToggle />
-            </Box>
-          </FormControl>
-        ) : null}
-        {isTest || user?.betaFlags?.statusTracker ? (
-          <FormControl isDisabled={isDisabled}>
-            <Box mt={'1.5rem'}>
-              <StatusTrackerToggle />
             </Box>
           </FormControl>
         ) : null}
