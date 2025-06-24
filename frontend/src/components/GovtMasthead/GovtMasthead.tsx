@@ -139,6 +139,7 @@ export const GovtMasthead = ({
           fontSize="1rem"
           mr={{ base: '0.25rem', lg: '0.5rem' }}
           my={{ base: '0px', md: '2px' }}
+          flexShrink={0}
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Box>
