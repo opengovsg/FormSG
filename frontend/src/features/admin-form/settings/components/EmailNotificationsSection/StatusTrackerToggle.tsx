@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Skeleton } from '@chakra-ui/react'
+import { Flex, Skeleton, Stack } from '@chakra-ui/react'
 
 import { FormSettings } from '~shared/types'
 
+import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -39,6 +40,9 @@ export const StatusTrackerToggle = (): JSX.Element => {
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
+      <Badge colorScheme="primary" variant="subtle" color="secondary.500">
+        Beta
+      </Badge>
       <Toggle
         isLoading={mutateMrfStatusTracker.isLoading}
         isChecked={hasStatusTracker}

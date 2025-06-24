@@ -18,6 +18,7 @@ export const SettingsGeneralPage = (): JSX.Element => {
   const { user } = useUser()
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const { data: settings } = useAdminFormSettings()
+
   return (
     <>
       <GeneralTabHeader />
