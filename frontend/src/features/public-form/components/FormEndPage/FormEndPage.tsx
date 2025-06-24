@@ -47,6 +47,7 @@ export const FormEndPage = ({
             {...endPageProps}
             colorTheme={colorTheme}
             isButtonHidden={!!previousSubmissionId}
+            form={form}
           />
           {isFeedbackSectionHidden ? null : (
             <FeedbackBlock

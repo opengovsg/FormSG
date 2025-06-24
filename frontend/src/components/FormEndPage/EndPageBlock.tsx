@@ -8,18 +8,15 @@ import {
   FormDto,
   FormResponseMode,
   Language,
+  PublicFormDto,
 } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmitAnotherResponseButton } from '~features/public-form/components/FormEndPage/SubmitAnotherResponseButton'
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { StatusTrackerLink } from './StatusTrackerLink'
 
@@ -30,6 +27,7 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
+  form: PublicFormDto | undefined
 }
 
 export const EndPageBlock = ({
@@ -39,10 +37,10 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
+  form,
 }: EndPageBlockProps): JSX.Element => {
   const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
-  const { form, formId } = usePublicFormContext()
 
   useEffect(() => {
     if (focusOnMount) {
@@ -114,7 +112,7 @@ export const EndPageBlock = ({
         form?.hasStatusTracker ? (
           <Box mt="2rem">
             <StatusTrackerLink
-              formId={formId}
+              formId={form?._id}
               submissionId={submissionData.id}
             />
           </Box>
