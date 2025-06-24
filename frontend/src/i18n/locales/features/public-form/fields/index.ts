@@ -53,9 +53,6 @@ export interface Fields {
   respondentEmail: {
     title: string
     info: string
-    respondentCopy: string
-    respondentCopyAndStatusTracker: string
-    statusTracker: string
   }
 }
 

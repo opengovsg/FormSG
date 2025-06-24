@@ -11,11 +11,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
 export const PublicRespondentEmailField = (): JSX.Element => {
   const { t } = useTranslation()
-  const { form } = usePublicFormContext()
 
   const baseRules = useOptionalAdminEmailValidationRules()
   const rules: RegisterOptions<
@@ -29,23 +26,6 @@ export const PublicRespondentEmailField = (): JSX.Element => {
         value.length <= 5 || 'Please enter a maximum of 5 emails',
     },
   }
-
-  const fieldTitle =
-    form?.hasRespondentCopy &&
-    'hasStatusTracker' in form &&
-    form?.hasStatusTracker
-      ? t(
-          'features.publicForm.components.fields.respondentEmail.respondentCopyAndStatusTracker',
-        )
-      : form?.hasRespondentCopy
-        ? t(
-            'features.publicForm.components.fields.respondentEmail.respondentCopy',
-          )
-        : form && 'hasStatusTracker' in form && form?.hasStatusTracker
-          ? t(
-              'features.publicForm.components.fields.respondentEmail.statusTracker',
-            )
-          : t('features.publicForm.components.fields.respondentEmail.title') // default
 
   const {
     control,
@@ -63,7 +43,9 @@ export const PublicRespondentEmailField = (): JSX.Element => {
         rules={rules}
         render={({ field }) => (
           <Box>
-            <FormLabel>{fieldTitle}</FormLabel>
+            <FormLabel>
+              {t('features.publicForm.components.fields.respondentEmail.title')}
+            </FormLabel>
             <TagInput
               {...field}
               value={field.value as string[]}

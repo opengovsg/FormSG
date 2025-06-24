@@ -62,10 +62,5 @@ export const enSG: Fields = {
   respondentEmail: {
     title: 'Send the following emails a copy of my responses upon submission',
     info: 'Separate multiple email addresses with a comma',
-    respondentCopy: 'Send the following emails a copy of my responses',
-    statusTracker:
-      'Send the following emails a status tracking link upon submission',
-    respondentCopyAndStatusTracker:
-      'Send the following emails a copy of my responses and a status tracking link upon submission',
   },
 }
