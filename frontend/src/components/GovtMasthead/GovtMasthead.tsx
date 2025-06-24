@@ -226,7 +226,7 @@ export const GovtMasthead = ({
             <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
               <Text as="span">
                 Government officers will never ask you to send money or share
-                you details over the phone.{' '}
+                your details over the phone.{' '}
                 <b>When unsure, hang up and call Scamshield at 1799.</b>
               </Text>
             </Box>
