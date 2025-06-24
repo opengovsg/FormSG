@@ -27,7 +27,9 @@ export const adminFormSettingsKeys = {
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
+export const useAdminFormSettings = <
+  T extends FormSettings,
+>(): UseQueryResult<T> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 

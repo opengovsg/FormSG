@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack } from '@chakra-ui/react'
 
-import { FormSettings } from '~shared/types'
+import { FormSettings, MultirespondentFormSettings } from '~shared/types'
 
 import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
@@ -13,19 +13,10 @@ import { useAdminFormSettings } from '../../queries'
 export const StatusTrackerToggle = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
-    useAdminFormSettings()
-
-  const getHasStatusTracker = (
-    settings: FormSettings | undefined,
-  ): boolean | undefined => {
-    if (settings && 'hasStatusTracker' in settings) {
-      return !!settings.hasStatusTracker
-    }
-    return false
-  }
+    useAdminFormSettings<MultirespondentFormSettings>()
 
   const hasStatusTracker = useMemo(
-    () => getHasStatusTracker(settings),
+    () => Boolean(settings?.hasStatusTracker),
     [settings],
   )
 
@@ -34,7 +25,7 @@ export const StatusTrackerToggle = (): JSX.Element => {
   const handleToggleStatusTracker = useCallback(() => {
     if (!settings || isLoadingSettings || mutateMrfStatusTracker.isLoading)
       return
-    const nextHasStatusTracker = !getHasStatusTracker(settings)
+    const nextHasStatusTracker = !settings?.hasStatusTracker
     return mutateMrfStatusTracker.mutate(nextHasStatusTracker)
   }, [isLoadingSettings, mutateMrfStatusTracker, settings])
 
