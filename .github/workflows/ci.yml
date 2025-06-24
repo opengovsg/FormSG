@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches-ignore: 
+    branches-ignore:
       - staging
       - staging-alt
       - staging-alt2
@@ -83,6 +83,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          fail-on-cache-miss: true
       - run: npm run build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -116,6 +117,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
@@ -149,6 +151,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          fail-on-cache-miss: true
       - run: npm run lint:frontend
 
   backend_test:
@@ -175,6 +178,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          fail-on-cache-miss: true
       - run: npm ci --prefix serverless/virus-scanner
       - run: npm ci --prefix serverless/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
@@ -214,5 +218,6 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          fail-on-cache-miss: true
       - run: npm run lint-ci
       - run: npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
