@@ -3,17 +3,21 @@ import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { StepData, WorkflowStatus } from '~shared/types'
 
+import { AppFooter } from '~/app/AppFooter'
+
 import { FCC } from '~typings/react'
 
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
-import { BackgroundBox } from '~features/login/LoginPageTemplate'
+import {
+  BackgroundBox,
+  BaseGridLayout,
+  FooterGridArea,
+} from '~features/login/LoginPageTemplate'
 import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
-
-import { FormFooter } from '../FormFooter'
 
 import { useStatusTracker } from './queries'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
@@ -150,13 +154,20 @@ export const StatusTrackerPage = (): JSX.Element => {
             </Box>
           </TimelineGridArea>
         </StatusTrackerBaseGridLayout>
-        {/* <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}> */}
-        <FormFooter />
-        {/* </BaseGridLayout> */}
+        <BaseGridLayout bg={{ base: 'primary.100', lg: 'transparent' }}>
+          <FooterGridArea>
+            {/* <FormFooter /> */}
+            <AppFooter
+              compactMonochromeLogos
+              variant="compact"
+              containerProps={{
+                px: 0,
+                bg: 'transparent',
+              }}
+            />
+          </FooterGridArea>
+        </BaseGridLayout>
       </BackgroundBox>
     </PublicFormProvider>
   )
-}
-const ShittyFooter = () => {
-  const { captchaContainerId, form } = usePublicFormContext()
 }
