@@ -6,7 +6,6 @@ import {
   Hr,
   Html,
   Img,
-  Link,
   Preview,
   Section,
   Text,
@@ -70,8 +69,6 @@ export const MrfWorkflowCompletionEmail = ({
 
   const responsesHeader = statusTracker && !respondentCopy ? `Track you response status for ${formTitle}` : `Responses for ${formTitle}`
 
-  const statusTrackerLink = `${appUrl}/${formId}/status/${responseId}`
-
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
       <Text style={{...primaryTextStyle, ...questionMargin}}>{qa.question}</Text>
@@ -101,15 +98,6 @@ export const MrfWorkflowCompletionEmail = ({
               <Heading style={{ ...headingTextStyle}}>
                 {responsesHeader}
               </Heading>
-              {statusTracker ? (
-                // update this to match all envs
-                <Link href={statusTrackerLink} style={{
-                  textDecoration: 'underline',
-                  color: "blue.500",
-                }}> 
-                You can check the status of your response at the link here
-                </Link>
-              ) : null}
             </Section>
             {respondentCopy === false ? null : (
               <>
