@@ -8,6 +8,8 @@ import {
   Stack,
 } from '@chakra-ui/react'
 
+import { getStatusTrackerPath } from '~shared/utils/urls'
+
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
@@ -22,7 +24,7 @@ export const StatusTrackerLink = ({
   formId,
   submissionId,
 }: StatusTrackerLinkProps): JSX.Element => {
-  const shareLink = `${window.location.origin}/${formId}/status/${submissionId}`
+  const shareLink = `${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`
   return (
     <FormControl isReadOnly>
       <Box>

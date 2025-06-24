@@ -14,7 +14,10 @@ import {
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
-import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
+import {
+  getMultirespondentSubmissionEditPath,
+  getStatusTrackerPath,
+} from '~shared/utils/urls'
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
@@ -219,7 +222,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                   isError={isError}
                 />
                 <Link
-                  href={`${window.location.origin}/${formId}/status/${submissionId}`}
+                  href={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
                   isExternal
                 >
                   <Box fontSize="1.25rem" display="flex" alignItems="center">
