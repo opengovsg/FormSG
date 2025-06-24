@@ -2,7 +2,7 @@ name: Playwright Tests
 
 on:
   push:
-    branches-ignore: 
+    branches-ignore:
       - staging
       - staging-alt
       - staging-alt2
@@ -100,6 +100,7 @@ jobs:
             frontend/.next
             shared/.next
           key: ${{ runner.os }}-build-${{ github.sha }}
+          fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
