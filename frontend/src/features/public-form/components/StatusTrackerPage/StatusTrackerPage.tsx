@@ -145,7 +145,7 @@ export const StatusTrackerPage = (): JSX.Element => {
             <Box mt={{ base: '1rem', lg: '2.33rem' }}>
               <Flex direction="column" align="flex-start">
                 {/* manually transforming horizontal positioning left because publicFormLogo has column layout */}
-                <Box transform="translateX(-1.5rem)">
+                <Box ml="-1.5rem">
                   <PublicFormLogo />
                 </Box>
                 <Text mb="2rem" textStyle="h4" isTruncated>
