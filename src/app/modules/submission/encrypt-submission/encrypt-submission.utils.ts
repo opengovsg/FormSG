@@ -136,8 +136,9 @@ const omitResponseKeys = (
   | EncryptFormFieldResponse => {
   // We want to omit the isVisible property, as all fields are visible in the encrypted submission, making it redundant
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { isVisible, ...rest } = response
-  return rest
+
+  // const { isVisible, ...rest } = response
+  return response
 }
 
 export const formatMyInfoStorageResponseData = (

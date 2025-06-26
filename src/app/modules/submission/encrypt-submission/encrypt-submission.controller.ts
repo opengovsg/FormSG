@@ -148,23 +148,7 @@ const submitEncryptModeForm = async (
 
   // This is because NRIC masking is done in the controller, but we parse the fields in the
   // middleware for encrypt forms
-  const parsedResponsesResult = ParsedResponsesObject.parseResponses(
-    form,
-    req.body.responses,
-  )
-
-  if (parsedResponsesResult.isErr()) {
-    logger.error({
-      message: 'Error processing responses',
-      meta: logMeta,
-      error: parsedResponsesResult.error,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Error parsing processing responses',
-    })
-  }
-
-  const parsedResponses: ParsedResponsesObject = parsedResponsesResult.value
+  const parsedResponses = new ParsedResponsesObject(req.body.responses)
 
   // Checks if user is SPCP-authenticated before allowing submission
   let userName
