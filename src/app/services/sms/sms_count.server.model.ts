@@ -62,7 +62,7 @@ const compileSmsCountModel = (db: Mongoose) => {
         updatedAt: false,
       },
       discriminatorKey: 'smsType',
-      collection: 'sms',
+      collection: SMS_COUNT_SCHEMA_NAME,
     },
   )
 

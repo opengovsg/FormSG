@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
 import {
   Modal,
   ModalBody,
@@ -33,7 +32,6 @@ export const SmsCountsModal = ({
   onClose,
 }: SmsCountsModalProps) => {
   const { t } = useTranslation()
-  const { formId } = useParams()
 
   const modalSize = useBreakpointValue({
     base: 'mobile',
