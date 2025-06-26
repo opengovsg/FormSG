@@ -1,7 +1,6 @@
 import { Body, Head, Html, Text, Link } from '@react-email/components'
 import { FormDeactivatedNotificationHtmlData } from '../../services/mail/mail.types'
-
-import { SUPPORT_FORM_LINK } from 'shared/constants'
+import { SUPPORT_FORM_LINK } from '../../../../shared/constants'
 
 export const FormDeactivatedNotification = ({
   formTitle,
