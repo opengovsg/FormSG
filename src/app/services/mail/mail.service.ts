@@ -502,7 +502,7 @@ export class MailService {
         },
       }
 
-      return this.#sendNodeMail(mail, { mailId: 'warning' }).mapErr((error) => {
+      return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr((error) => {
         // Add additional logging.
         logger.error({
           message: 'Error sending bounce notification email',

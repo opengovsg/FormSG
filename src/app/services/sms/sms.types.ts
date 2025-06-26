@@ -29,14 +29,12 @@ export type BouncedSubmissionSmsData = FormDeactivatedSmsData
 
 export type LogSmsParams = {
   smsData: FormOtpData
-  msgSrvcSid: string
   smsType: SmsType
   logType: LogType
 }
 
 export interface ISmsCount {
   // The Twilio SID used to send the SMS. Not to be confused with msgSrvcName.
-  msgSrvcSid: string
   logType: LogType
   smsType: SmsType
   createdAt?: Date
@@ -50,14 +48,11 @@ export interface IVerificationSmsCount extends ISmsCount {
     email: string
     userId: IUserSchema['_id']
   }
-  isOnboardedAccount: boolean
 }
 
 export interface IVerificationSmsCountSchema
   extends IVerificationSmsCount,
-    ISmsCountSchema {
-  isOnboardedAccount: boolean
-}
+    ISmsCountSchema
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']

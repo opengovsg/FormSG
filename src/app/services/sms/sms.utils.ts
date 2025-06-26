@@ -19,7 +19,7 @@ export const hasHitSmsThreshold = ({
     smsCount === Math.floor(smsConfig.smsVerificationLimit * smsThreshold.Half)
   )
     return smsThreshold.Half
-  else if (
+  if (
     smsCount ===
     Math.floor(smsConfig.smsVerificationLimit * smsThreshold.ThreeQuarters)
   )

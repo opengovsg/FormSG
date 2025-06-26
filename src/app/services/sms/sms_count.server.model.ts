@@ -48,10 +48,6 @@ const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({
 const compileSmsCountModel = (db: Mongoose) => {
   const SmsCountSchema = new Schema<ISmsCountSchema, ISmsCountModel>(
     {
-      msgSrvcSid: {
-        type: String,
-        required: true,
-      },
       logType: {
         type: String,
         enum: Object.values(LogType),
@@ -75,13 +71,11 @@ const compileSmsCountModel = (db: Mongoose) => {
 
   SmsCountSchema.statics.logSms = async function ({
     smsData,
-    msgSrvcSid,
     smsType,
     logType,
   }: LogSmsParams) {
     const schemaData: Omit<ISmsCount, '_id'> = {
       ...smsData,
-      msgSrvcSid,
       smsType,
       logType,
     }

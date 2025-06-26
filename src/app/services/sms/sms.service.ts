@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
+import getFormModel from '../../models/form.server.model'
 import {
   DatabaseError,
   PossibleDatabaseError,
@@ -15,6 +16,8 @@ import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
 const SmsCount = getSmsCountModel(mongoose)
+
+const FormModel = getFormModel(mongoose)
 
 /**
  * Retrieves the free sms count for a particular user
@@ -57,28 +60,47 @@ export const logSmsSend = (
     })
 
     return new DatabaseError()
-  }).andThen((ISmsCountSchema) => {
+  }).andThen((smsLog) => {
     return retrieveSmsCounts(formId).map((smsCount) => {
       const thresholdHit = hasHitSmsThreshold({ smsCount: smsCount })
-      if (thresholdHit) {
-        logger.info({
-          message: `Sms threshold has been hit`,
-          meta: {
-            action: 'logSmsSend',
-            ...logParams,
-            thresholdHit,
-          },
-        })
 
+      if (!thresholdHit) return okAsync(smsLog)
+
+      logger.info({
+        message: `Sms threshold has been hit`,
+        meta: {
+          action: 'logSmsSend',
+          ...logParams,
+          thresholdHit,
+        },
+      })
+
+      return ResultAsync.fromPromise(
+        FormModel.findById(formId).exec(),
+        (error) => {
+          logger.error({
+            message: 'Database error when retrieving form by id',
+            meta: {
+              action: 'logSmsSend',
+              ...logParams,
+              formId,
+              thresholdHit,
+            },
+            error,
+          })
+          return new DatabaseError()
+        },
+      ).andThen((retrievedForm) => {
         // send mail to form admin
         MailService.sendSmsThresholdWarningNotification({
           emailRecipients: [logParams.smsData.formAdmin.email],
-          formTitle: 'Test', // TODO: update this
+          formTitle: retrievedForm?.title ?? '',
           formId: logParams.smsData.form,
           smsThreshold: thresholdHit,
         })
-      }
-      return ISmsCountSchema
+
+        return okAsync(smsLog)
+      })
     })
   })
 }

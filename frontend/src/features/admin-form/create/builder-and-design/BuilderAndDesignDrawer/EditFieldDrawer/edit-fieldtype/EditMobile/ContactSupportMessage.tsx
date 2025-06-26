@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { IoMdCloseCircle } from 'react-icons/io'
 import { Flex, Icon, Text } from '@chakra-ui/react'
 
+import { SUPPORT_FORM_LINK } from '~shared/constants'
+
 import Link from '~components/Link'
 
 export const ContactSupportMessage = (): JSX.Element => {
@@ -17,7 +19,7 @@ export const ContactSupportMessage = (): JSX.Element => {
         <Link
           target="_blank"
           textStyle="caption-1"
-          href={'https://go.gov.sg/form-support'}
+          href={SUPPORT_FORM_LINK}
           isExternal
         >
           {t(

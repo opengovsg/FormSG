@@ -104,7 +104,6 @@ class PostmanSmsService {
         void SmsService.logSmsSend({
           smsData,
           smsType,
-          msgSrvcSid: 'test msgSrvcSid',
           logType: LogType.success,
         })
 
@@ -115,7 +114,6 @@ class PostmanSmsService {
         void SmsService.logSmsSend({
           smsData,
           smsType,
-          msgSrvcSid: 'test msgSrvcSid',
           logType: LogType.failure,
         })
 
@@ -159,7 +157,6 @@ class PostmanSmsService {
     }
 
     if (useMockPostmanSms) {
-      console.log(`local sms sent`)
       return MailService.sendLocalDevMail(
         '[Mock Postman SMS] Captured SMS',
         message,
