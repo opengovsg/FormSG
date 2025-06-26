@@ -32,9 +32,6 @@ const VerificationSmsCountSchema = new Schema<IVerificationSmsCountSchema>({
       required: true,
     },
   },
-  isOnboardedAccount: {
-    type: Boolean,
-  },
 })
 
 const AdminContactSmsCountSchema = new Schema<IAdminContactSmsCountSchema>({

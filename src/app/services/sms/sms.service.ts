@@ -61,7 +61,7 @@ export const logSmsSend = (
 
     return new DatabaseError()
   }).andThen((smsLog) => {
-    return retrieveSmsCounts(formId).map((smsCount) => {
+    return retrieveSmsCounts(formId).andThen((smsCount) => {
       const thresholdHit = hasHitSmsThreshold({ smsCount: smsCount })
 
       if (!thresholdHit) return okAsync(smsLog)

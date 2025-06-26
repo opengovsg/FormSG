@@ -52,7 +52,7 @@ export interface IVerificationSmsCount extends ISmsCount {
 
 export interface IVerificationSmsCountSchema
   extends IVerificationSmsCount,
-   ISmsCountSchema {}
+    ISmsCountSchema {}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
