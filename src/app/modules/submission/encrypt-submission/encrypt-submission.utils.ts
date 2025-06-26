@@ -137,6 +137,8 @@ const omitResponseKeys = (
   // We want to omit the isVisible property, as all fields are visible in the encrypted submission, making it redundant
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
+  // (2025-06-26) not omitting isVisible for storage mode to hide hidden fields in respondent copy
+  // why: https://github.com/opengovsg/FormSG/pull/8486/files
   // const { isVisible, ...rest } = response
   return response
 }
