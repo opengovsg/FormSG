@@ -51,7 +51,9 @@ export const SaveSecretKeyContent = ({
   isLoading: boolean
   useSaveSecretKeyHook?: typeof useSaveSecretKey
 }): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.workspace.modals.forms.create',
+  })
 
   const {
     isSubmitEnabled,
@@ -95,20 +97,14 @@ export const SaveSecretKeyContent = ({
             <UnorderedList mb="2.5rem" styleType="disc" spacing={2}>
               <ListItem>
                 <Text textStyle="body-1" color="secondary.500">
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble1',
-                  )}
+                  {t('secretKey.message.preamble1')}
                 </Text>
               </ListItem>
               <ListItem>
                 <Text textStyle="body-1" color="secondary.500">
-                  {t(
-                    'features.workspace.modals.create.secretKey.message.preamble2.prefix',
-                  )}
+                  {t('secretKey.message.preamble2.prefix')}
                   <Text color="danger.500" textStyle="subhead-1" as="span">
-                    {t(
-                      'features.workspace.modals.create.secretKey.message.preamble2.warning',
-                    )}
+                    {t('secretKey.message.preamble2.warning')}
                   </Text>
                 </Text>
               </ListItem>
@@ -117,7 +113,7 @@ export const SaveSecretKeyContent = ({
               <Tooltip
                 mt={0}
                 label={t(
-                  `features.workspace.modals.create.secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
+                  `secretKey.tooltip.${hasCopiedKey ? 'copied' : 'copyKey'}`,
                 )}
               >
                 <Code
@@ -150,12 +146,12 @@ export const SaveSecretKeyContent = ({
               </Tooltip>
               <ButtonGroup>
                 <Button onClick={handleDownloadKey}>
-                  {t('features.workspace.modals.create.secretKey.download')}
+                  {t('secretKey.download')}
                 </Button>
                 <IconButton
                   as="a"
                   icon={<BiMailSend />}
-                  aria-label="Email the secret key to someone"
+                  aria-label={t('secretKey.mailSecretKey.aria')}
                   href={mailToHref}
                   variant="outline"
                   onClick={handleTrackEmail}
@@ -166,12 +162,12 @@ export const SaveSecretKeyContent = ({
           {hasDownloadedKey && (
             <Box mt="1rem">
               <Checkbox
-                aria-label="Storage mode form acknowledgement"
+                aria-label={t('secretKey.declaration.aria')}
                 {...registerStorageAck('storageAck', {
                   required: true,
                 })}
               >
-                {t('features.workspace.modals.create.secretKey.declaration')}
+                {t('secretKey.declaration.text')}
               </Checkbox>
             </Box>
           )}
@@ -184,9 +180,7 @@ export const SaveSecretKeyContent = ({
             onClick={onSubmitClick}
             isFullWidth
           >
-            <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.create.secretKey.confirm')}
-            </Text>
+            <Text lineHeight="1.5rem">{t('secretKey.confirm')}</Text>
           </Button>
         </Container>
       </ModalBody>

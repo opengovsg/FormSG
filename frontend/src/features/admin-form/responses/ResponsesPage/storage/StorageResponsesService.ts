@@ -27,7 +27,7 @@ const generateDownloadUrl = (
 
   // Stringify all values in params.
   const uriEncodedParams = new URLSearchParams(mapValues(params, String))
-  return `${API_BASE_URL}/${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?${uriEncodedParams}`
+  return `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/submissions/download?${uriEncodedParams}`
 }
 
 export const getEncryptedResponsesStream = async (

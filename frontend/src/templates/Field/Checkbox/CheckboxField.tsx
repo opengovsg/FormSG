@@ -66,7 +66,8 @@ export const CheckboxField = ({
   const englishCheckboxOptions = schema.fieldOptions
   const selectedLanguage = i18n.language as Language
 
-  const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
+  const { register, getValues, control, trigger } =
+    useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
@@ -104,7 +105,7 @@ export const CheckboxField = ({
           name={checkboxInputName}
           control={control}
           rules={validationRules}
-          render={({ field: { ref, ...field } }) => (
+          render={({ field: { ref, onBlur, ...field } }) => (
             <CheckboxGroup {...field}>
               {fieldOptions.map((o, idx) => (
                 <Checkbox
@@ -117,6 +118,7 @@ export const CheckboxField = ({
                   // of the language of the form.
                   value={englishCheckboxOptions[idx]}
                   aria-label={o}
+                  onBlur={idx === 0 ? onBlur : undefined}
                   {...(idx === 0 ? { ref } : {})}
                   isHighContrast={isHighContrast}
                 >
@@ -143,6 +145,9 @@ export const CheckboxField = ({
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
                       {...(isHighContrast && { variant: 'highContrast' })}
+                      onChange={() => {
+                        trigger(othersInputName)
+                      }}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}

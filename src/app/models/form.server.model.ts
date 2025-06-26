@@ -122,7 +122,7 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const formSchemaOptions: SchemaOptions = {
+const formSchemaOptions: SchemaOptions<IFormSchema> = {
   id: false,
   toJSON: {
     getters: true,
@@ -196,20 +196,22 @@ export const formPaymentsFieldSchema = {
   },
 }
 
-const whitelistedSubmitterIdNestedPath = {
-  isWhitelistEnabled: {
-    type: Boolean,
-    required: true,
-    default: false,
+const whitelistedSubmitterIdNestedPath = new Schema(
+  {
+    isWhitelistEnabled: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    encryptedWhitelistedSubmitterIds: {
+      type: Schema.Types.ObjectId,
+      ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+      required: false,
+      default: undefined,
+    },
   },
-  encryptedWhitelistedSubmitterIds: {
-    type: Schema.Types.ObjectId,
-    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
-    required: false,
-    default: undefined,
-  },
-  _id: { id: false },
-}
+  { _id: false },
+)
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -560,19 +562,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       permissionList: {
         type: [
-          {
-            email: {
-              type: String,
-              trim: true,
-              required: true,
-              // Set email to lowercase for consistency
-              set: (v: string) => v.toLowerCase(),
+          new Schema(
+            {
+              email: {
+                type: String,
+                trim: true,
+                required: true,
+                // Set email to lowercase for consistency
+                set: (v: string) => v.toLowerCase(),
+              },
+              write: {
+                type: Boolean,
+                default: false,
+              },
             },
-            write: {
-              type: Boolean,
-              default: false,
-            },
-          },
+            { _id: false },
+          ),
         ],
         validate: {
           validator: (users: FormPermission[]) =>
@@ -1123,10 +1128,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     function (fieldId: string, insertionIndex: number) {
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
-      const duplicatedField = omit(fieldToDuplicate, [
-        '_id',
-        'globalId',
-      ]) as FormFieldSchema
+
+      const formFieldsDocumentArray = this
+        .form_fields as Types.DocumentArray<IFieldSchema>
+      const duplicatedField = formFieldsDocumentArray.create(
+        omit(fieldToDuplicate.toObject(), ['_id', 'globalId']),
+      ) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
       return this.save()

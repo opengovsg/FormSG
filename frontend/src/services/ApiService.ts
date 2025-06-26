@@ -8,6 +8,11 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
+import {
+  checkIsCloudflareChallengeError,
+  handleCloudflareChallengeError,
+} from '~features/turnstile/handleCloudflareChallenge'
+
 export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
   code: number
@@ -89,7 +94,18 @@ export const ApiService = axios.create({
 
 ApiService.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    // Handle Cloudflare issued challenge by rendering turnstile pre-clearance challenge
+    if (error.response && checkIsCloudflareChallengeError(error.response)) {
+      return await handleCloudflareChallengeError(error)
+        .then((response) => {
+          return response
+        })
+        .catch((error) => {
+          throw error
+        })
+    }
+
     if (error.response?.status === 401) {
       // Remove logged in state from localStorage
       localStorage.removeItem(LOGGED_IN_KEY)

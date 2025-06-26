@@ -9,7 +9,6 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -53,13 +52,19 @@ export const WorkspaceHeader = ({
   const headerText = useMemo(
     () =>
       hasActiveSearchOrFilter
-        ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
+        ? t('features.workspace.header.showingForms', {
+            displayedFormsCount,
+            hasActiveSearchOrFilter,
+            totalFormsCount,
+            activeWorkspace,
+          })
         : `${activeWorkspace.title}`,
     [
       displayedFormsCount,
       hasActiveSearchOrFilter,
       totalFormsCount,
       activeWorkspace,
+      t,
     ],
   )
 

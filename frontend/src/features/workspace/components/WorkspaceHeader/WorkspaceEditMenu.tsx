@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
 import {
   Box,
@@ -66,6 +67,11 @@ const WorkspaceEditDropdown = ({
   renameModal: UseDisclosureReturn
   deleteModal: UseDisclosureReturn
 }): JSX.Element => {
+  const { t } = useTranslation()
+  const { renameFolder, deleteFolder } = t(
+    'features.workspace.header.editMenu',
+    { returnObjects: true },
+  )
   return (
     <Menu placement="bottom-start">
       {({ isOpen }) => (
@@ -74,15 +80,15 @@ const WorkspaceEditDropdown = ({
             as={IconButton}
             _active={{ bg: 'secondary.100' }}
             isActive={isOpen}
-            aria-label="Edit folder"
+            aria-label={t('features.workspace.header.editMenu.aria.editFolder')}
             icon={<BiDotsHorizontalRounded />}
             variant="clear"
             colorScheme="secondary"
             ml="0.25rem"
           />
           <Menu.List>
-            <Menu.Item onClick={renameModal.onOpen}>Rename folder</Menu.Item>
-            <Menu.Item onClick={deleteModal.onOpen}>Delete folder</Menu.Item>
+            <Menu.Item onClick={renameModal.onOpen}>{renameFolder}</Menu.Item>
+            <Menu.Item onClick={deleteModal.onOpen}>{deleteFolder}</Menu.Item>
           </Menu.List>
         </>
       )}
@@ -97,6 +103,11 @@ const WorkspaceEditDrawer = ({
   renameModal: UseDisclosureReturn
   deleteModal: UseDisclosureReturn
 }): JSX.Element => {
+  const { t } = useTranslation()
+  const { renameFolder, deleteFolder } = t(
+    'features.workspace.header.editMenu',
+    { returnObjects: true },
+  )
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const buttonProps: Partial<ButtonProps> = useMemo(
@@ -113,7 +124,7 @@ const WorkspaceEditDrawer = ({
     <Box display={{ md: 'none' }}>
       <IconButton
         variant="clear"
-        aria-label="More options"
+        aria-label={t('features.common.moreOptions')}
         icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
         onClick={onOpen}
       />
@@ -129,10 +140,10 @@ const WorkspaceEditDrawer = ({
               colorScheme="secondary"
             >
               <Button onClick={renameModal.onOpen} {...buttonProps}>
-                Rename folder
+                {renameFolder}
               </Button>
               <Button onClick={deleteModal.onOpen} {...buttonProps}>
-                Delete folder
+                {deleteFolder}
               </Button>
             </ButtonGroup>
           </DrawerBody>

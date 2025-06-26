@@ -22,7 +22,9 @@ export const SaveSecretKeyScreen = ({
 }: {
   useSaveSecretKeyHook?: typeof useSaveSecretKey
 }): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.workspace.modals.forms.create',
+  })
 
   const {
     formMethods: {
@@ -51,7 +53,7 @@ export const SaveSecretKeyScreen = ({
 
   return (
     <SaveSecretKeyContent
-      contentTitle={t('features.workspace.modals.create.secretKey.title')}
+      contentTitle={t('secretKey.title')}
       registerStorageAck={
         // NOTE: Since CreateFormWizardInputProps has storageAck field, we can cast it to SaveSecretKeyFormInput.
         register as unknown as UseFormRegister<SaveSecretKeyFormInput>
