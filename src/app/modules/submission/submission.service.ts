@@ -1252,7 +1252,7 @@ export const getQuarantinePresignedPostData = (
                * - https://s3-ap-southeast-1.amazonaws.com/
                */
               url: result.presignedPostData.url.replace(
-                /^https:\/\/(s3-|s3\.)ap-southeast-1.amazonaws.com\//,
+                /^https:\/\/(s3-|s3\.)ap-southeast-1\.amazonaws\.com\//,
                 'https://upload.form.gov.sg/',
               ),
             },
