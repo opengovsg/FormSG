@@ -443,7 +443,7 @@ export const getS3PresignedPostData: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  return getQuarantinePresignedPostData(req.body)
+  return getQuarantinePresignedPostData(req.body, req.growthbook)
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',

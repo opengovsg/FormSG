@@ -1,4 +1,5 @@
 import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import { GrowthBook } from '@growthbook/growthbook'
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
@@ -1180,6 +1181,7 @@ export const validateAttachments = (
 
 export const getQuarantinePresignedPostData = (
   attachmentSizes: AttachmentSizeMapType[],
+  growthbook?: GrowthBook,
 ): ResultAsync<
   AttachmentPresignedPostDataMapType[],
   CreatePresignedPostError
@@ -1222,7 +1224,7 @@ export const getQuarantinePresignedPostData = (
       if (!mongoose.isValidObjectId(id))
         return errAsync(new InvalidFieldIdError())
 
-      return createPresignedPostDataPromise({
+      let results = createPresignedPostDataPromise({
         bucketName: AwsConfig.guarddutyQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
@@ -1231,6 +1233,34 @@ export const getQuarantinePresignedPostData = (
         id,
         presignedPostData,
       }))
+
+      if (growthbook?.isOn('use-s3-proxy')) {
+        logger.info({
+          message: 'rewriting S3 URLs to use S3 proxy',
+          meta: {
+            action: 'getQuarantinePresignedPostData',
+            featureFlag: 'use-s3-proxy',
+          },
+        })
+        results = results.map((result) => {
+          return {
+            id: result.id,
+            presignedPostData: {
+              ...result.presignedPostData,
+              /** Replace the path-based S3 URLs with the S3 proxy URL
+               * - https://s3.ap-southeast-1.amazonaws.com/
+               * - https://s3-ap-southeast-1.amazonaws.com/
+               */
+              url: result.presignedPostData.url.replace(
+                /^https:\/\/(s3-|s3\.)ap-southeast-1.amazonaws.com\//,
+                'https://upload.form.gov.sg/',
+              ),
+            },
+          }
+        })
+      }
+
+      return results
     }),
   )
 
