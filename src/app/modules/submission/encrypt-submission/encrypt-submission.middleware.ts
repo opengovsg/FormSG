@@ -54,7 +54,10 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { formatMyInfoStorageResponseData, omitResponseKeys } from './encrypt-submission.utils'
+import {
+  formatMyInfoStorageResponseData,
+  omitResponseKeys,
+} from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
