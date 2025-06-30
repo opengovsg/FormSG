@@ -54,7 +54,7 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
+import { formatMyInfoStorageResponseData, omitResponseKeys } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -512,15 +512,14 @@ export const encryptSubmission = async (
   }
 
   const strippedBodyResponses = req.body.responses.map((response) => {
-    const { isVisible, ...rest } = response
-    if (isAttachmentResponse(rest)) {
+    if (isAttachmentResponse(response)) {
       return {
-        ...rest,
+        ...response,
         filename: undefined,
         content: undefined, //Strip out attachment content
       }
     } else {
-      return rest
+      return omitResponseKeys(response)
     }
   })
 

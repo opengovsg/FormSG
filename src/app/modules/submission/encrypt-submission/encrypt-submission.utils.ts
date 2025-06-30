@@ -128,7 +128,7 @@ export const getPaymentIntentDescription = (
   }
 }
 
-const omitResponseKeys = (
+export const omitResponseKeys = (
   response: ProcessedFieldResponse,
 ):
   | ProcessedFieldResponse
@@ -136,11 +136,8 @@ const omitResponseKeys = (
   | EncryptFormFieldResponse => {
   // We want to omit the isVisible property, as all fields are visible in the encrypted submission, making it redundant
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-  // (2025-06-26) not omitting isVisible for storage mode to hide hidden fields in respondent copy
-  // why: https://github.com/opengovsg/FormSG/pull/8486/files
-  // const { isVisible, ...rest } = response
-  return response
+  const { isVisible, ...rest } = response
+  return rest
 }
 
 export const formatMyInfoStorageResponseData = (
@@ -148,9 +145,7 @@ export const formatMyInfoStorageResponseData = (
   hashedFields?: Set<MyInfoKey>,
 ) => {
   if (!hashedFields) {
-    return parsedResponses.flatMap((response: ProcessedFieldResponse) => {
-      return omitResponseKeys(response)
-    })
+    return parsedResponses
   } else {
     return parsedResponses.flatMap((response) => {
       if (isProcessedChildResponse(response)) {
@@ -163,7 +158,7 @@ export const formatMyInfoStorageResponseData = (
         // Obtain prefix for question based on whether it is verified by MyInfo.
         const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
         response.question = `${myInfoPrefix}${response.question}`
-        return omitResponseKeys(response)
+        return response
       }
     })
   }
