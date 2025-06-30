@@ -512,14 +512,15 @@ export const encryptSubmission = async (
   }
 
   const strippedBodyResponses = req.body.responses.map((response) => {
-    if (isAttachmentResponse(response)) {
+    const { isVisible, ...rest } = response
+    if (isAttachmentResponse(rest)) {
       return {
-        ...response,
+        ...rest,
         filename: undefined,
         content: undefined, //Strip out attachment content
       }
     } else {
-      return response
+      return rest
     }
   })
 
