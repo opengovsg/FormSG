@@ -5,8 +5,8 @@ export enum FilterOption {
   AllForms = 'All forms',
   OpenForms = 'Open forms',
   ClosedForms = 'Closed forms',
-  EmailForms = 'Email-mode forms',
-  StorageForms = 'Storage-mode forms',
+  EmailForms = 'Email mode forms',
+  StorageForms = 'Storage mode forms',
   MultiRespondentForms = 'Multi-respondent forms',
 }
 

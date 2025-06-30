@@ -17,7 +17,7 @@ import {
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { KILL_EMAIL_MODE_LINK } from '~shared/constants'
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -56,11 +56,13 @@ export const WorkspacePage = (): JSX.Element => {
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
 
-  const [emailModeForms, hasEmailModeForms] = useMemo(() => {
+  const [openEmailModeForms, hasOpenEmailModeForms] = useMemo(() => {
     const emailModeForms =
       !isDashboardLoading && dashboardForms
         ? dashboardForms.filter(
-            (form) => form.responseMode === FormResponseMode.Email,
+            (form) =>
+              form.responseMode === FormResponseMode.Email &&
+              form.status === FormStatus.Public,
           )
         : undefined
     return emailModeForms
@@ -183,17 +185,12 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
-            {hasEmailModeForms && (
+            {hasOpenEmailModeForms && (
               <InlineMessage>
                 <Text>
-                  <Link href="/dashboard?filter=email">
-                    {t(
-                      'features.workspace.workspacePage.emailRetirementNotice.description',
-                      {
-                        count: emailModeForms?.length || 0,
-                      },
-                    )}
-                  </Link>{' '}
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.description',
+                  )}{' '}
                   <Text as="span" fontWeight="bold">
                     {t(
                       'features.workspace.workspacePage.emailRetirementNotice.date',
@@ -204,6 +201,18 @@ export const WorkspacePage = (): JSX.Element => {
                       },
                     )}
                   </Text>
+                  {'. '}
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.beforeLink',
+                  )}
+                  <Link href="/dashboard?filter=email">
+                    {t(
+                      'features.workspace.workspacePage.emailRetirementNotice.link',
+                      {
+                        count: openEmailModeForms?.length || 0,
+                      },
+                    )}
+                  </Link>
                   {'. ' + emailRetirementNotice.additionalDescription + '.'}{' '}
                   <Link
                     display="inline"
@@ -212,6 +221,7 @@ export const WorkspacePage = (): JSX.Element => {
                   >
                     {emailRetirementNotice.learnMore}
                   </Link>
+                  {'.'}
                 </Text>
               </InlineMessage>
             )}

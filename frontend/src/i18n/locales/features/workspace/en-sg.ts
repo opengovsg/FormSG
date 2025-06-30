@@ -74,9 +74,10 @@ export const enSG: Workspace = {
   workspacePage: {
     defaultTitle: 'All forms',
     emailRetirementNotice: {
-      description:
-        'These {count, number} email mode forms will be set to CLOSED by',
+      description: 'All Email mode forms will be set to CLOSED by',
       date: '{retirementDate, date, long}',
+      beforeLink: 'You have ',
+      link: '{count, number} OPEN Email mode form(s)',
       additionalDescription:
         'You will be informed of the exact date separately',
       learnMore: 'Learn more here',
