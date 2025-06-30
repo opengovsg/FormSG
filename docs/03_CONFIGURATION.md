@@ -1,81 +1,17 @@
-# Deployment Setup
+# Configuration
 
-This document details what is needed to create an environment to run FormSG in AWS.
+This guide provides a comprehensive overview of FormSG's configuration options, environment variables, and deployment settings. It is intended to help system administrators and developers properly configure a FormSG instance for their specific environment.
 
-## Build and run your NodeJS app
+FormSG is designed to be highly configurable through environment variables, allowing for customization and adaptation to different deployment environments. Configuration is managed through:
 
-```bash
-npm install
-$ npm run build
-$ npm start
-```
+1. **GitHub Actions Secrets** - For deployment automation
+2. **AWS Systems Manager Parameter Store** - For environment-specific configuration
+3. **Environment Variables** - For application functionality and feature toggles
 
-## Deploying to AWS Elastic Beanstalk
+This document details all available configuration options, organized by category, to help you set up your FormSG instance correctly.
 
-Make sure you have created an AWS cloud environment as a prerequisite. Some of the services used are listed below:
 
-Infrastructure
-
-- AWS Elastic Beanstalk / EC2 for hosting and deployment
-- AWS Elastic File System for mounting files (i.e. SingPass/MyInfo private keys into the `/certs` directory)
-- AWS S3 for image and logo hosting, attachments for Storage Mode forms
-- AWS Systems Manager - Parameter Store, for holding environment variable configuration
-
-DevOps
-
-- Github Actions for running tests and builds
-- AWS Elastic Container Registry to host built Docker images
-
-Network
-
-- AWS VPC (with peering preferred) for managed database hosted by MongoDB Atlas
-- AWS NAT Gateway (for static IP whitelisting with SingPass)
-
-Database
-
-- MongoDB instance (we use Mongo Atlas)
-
-Emails
-
-- AWS Simple Email Service with SMTP integration for sending emails to login/send OTPs/form submissions/submission autoreplies
-
-SMS
-
-- Twilio for sending OTPs
-- AWS Secrets Manager (to manage user-provided or hosted Twilio credentials)
-
-Analytics and Monitoring
-
-- Google Analytics
-
-Spam protection
-
-- Google reCAPTCHA
-
-### Mounting Elastic File System into Docker container on Elastic Beanstalk
-
-Please see [Dockerrun.aws.json](../Dockerrun.aws.json). This file is required for SingPass/MyInfo/CorpPass functionality to be enabled.
-
-### Secrets Manager (Optional)
-
-FormSG supports storing of users' Twilio API credentials using AWS Secret Manager. There is currently no user interface for form administrators to upload their Twilio API credentials and this has to be done manually using the AWS console by developers.
-
-Firstly, name the secret with a unique secret name and store the secret value in the following format:
-
-```json
-{
-  "accountSid": "<redacted>",
-  "apiKey": "<redacted>",
-  "apiSecret": "<redacted>",
-  "messagingServiceSid": "<redacted>"
-}
-```
-
-Secondly, edit the form document belonging to that specific form adminstrator by adding a `msgSrvcName` key and setting it to the secret name you just stored.
-
-If no `msgSrvcName` is found in the form document, SMSes associated with that form will be sent out using and charged to the default Twilio API credentials.
-
-### Github Actions Secrets
+## Github Actions Secrets
 
 The following repository secrets are set in Github Actions:
 | Secret                  | Description                                          |
@@ -92,6 +28,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 | `APP_NAME`                  | Application name for the environment.                                             |
 | `DEPLOY_ENV`                | Deployment environment on elastic beanstalk.                                      |
 | `REACT_APP_FORMSG_SDK_MODE` | Determines the keys used in the formsg SDK. Set either `production` or `staging`. |
+
 
 ## Environment Variables
 
@@ -185,8 +122,8 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `IS_LOGIN_BANNER`        | If set, displays a banner message on the login page.                                                                                                                                                          |
 | `IS_GENERAL_MAINTENANCE` | If set, displays a banner message on all forms. Overrides `IS_SP_MAINTENANCE` and `IS_CP_MAINTENANCE`.                                                                                                        |
 | `MYINFO_BANNER_CONTENT`  | all public **MyInfo-enabled** forms                                                                                                                                                                           |
-| `IS_SP_MAINTENANCE`      | all public **SingPass-enabled** forms                                                                                                                                                                         |
-| `IS_CP_MAINTENANCE`      | all public **CorpPass-enabled** forms                                                                                                                                                                         |
+| `IS_SP_MAINTENANCE`      | all public **Singpass-enabled** forms                                                                                                                                                                         |
+| `IS_CP_MAINTENANCE`      | all public **Corppass-enabled** forms                                                                                                                                                                         |
 
 > Note that if more than one of the above environment variables are defined,
 > only one environment variable will be used to display the given values.
@@ -269,12 +206,15 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 | :------------------------ | ----------------------------- |
 | `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
-#### SMS with Twilio
+#### SMS
 
-The Mobile Number field supports form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones. All messages are sent using [Twilio](https://www.twilio.com/) messaging APIs.
+The Mobile Number field supports form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones.
+
+All messages are sent using [Postman](https://postman-v2.guides.gov.sg/).
 
 Note that verifying mobile numbers also requires the environment variables for [verified Emails/SMSes](#verified-emailssmses).
 
+<!-- TODO: update with Postman creds -->
 | Variable                       | Description              |
 | :----------------------------- | ------------------------ |
 | `TWILIO_ACCOUNT_SID`           | Twilio messaging ID.     |
@@ -282,17 +222,17 @@ Note that verifying mobile numbers also requires the environment variables for [
 | `TWILIO_API_SECRET`            | Twilio API Secret.       |
 | `TWILIO_MESSAGING_SERVICE_SID` | Messaging service ID.    |
 
-#### SingPass/CorpPass and MyInfo
+#### Singpass/Corppass and MyInfo
 
-Submissions can be authenticated via [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and
-[CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus) (Singapore's Digital Identity for Organizations). Forms can also be pre-filled using [MyInfo](https://www.singpass.gov.sg/myinfo/intro) after a citizen has successfully authenticated using SingPass.
+Submissions can be authenticated via [Singpass](https://www.singpass.gov.sg/singpass/common/aboutus) (Singapore's Digital Identity for Citizens) and
+[Corppass](https://www.corppass.gov.sg/corppass/common/aboutus) (Singapore's Digital Identity for Organizations). Forms can also be pre-filled using [MyInfo](https://www.singpass.gov.sg/myinfo/intro) after a citizen has successfully authenticated using Singpass.
 
-Note that MyInfo is currently not supported for storage mode forms and enabling SingPass/CorpPass on storage mode forms also requires [SingPass/CorpPass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
+Note that MyInfo is currently not supported for storage mode forms and enabling Singpass/Corppass on storage mode forms also requires [Singpass/Corppass for Storage Mode](#webhooks-and-singpasscorppass-for-storage-mode) to be enabled.
 
 | Variable                         | Description                                                                                                                                                                                     |
 | :------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPCP_COOKIE_MAX_AGE_PRESERVED`  | Duration of SingPass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                                    |
-| `SINGPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for SingPass authentication. Needed for MyInfo.                                                                                   |
+| `SPCP_COOKIE_MAX_AGE_PRESERVED`  | Duration of Singpass JWT before expiry in milliseconds. Defaults to 30 days.                                                                                                                    |
+| `SINGPASS_ESRVC_ID`              | e-service ID registered with National Digital Identity office for Singpass authentication. Needed for MyInfo.                                                                                   |
 | `SP_OIDC_NDI_DISCOVERY_ENDPOINT` | NDI's Singpass OIDC Discovery Endpoint                                                                                                                                                          |
 | `SP_OIDC_NDI_JWKS_ENDPOINT`      | NDI's Singpass OIDC JWKS Endpoint                                                                                                                                                               |
 | `SP_OIDC_RP_CLIENT_ID`           | The Relying Party's Singpass Client ID as registered with NDI                                                                                                                                   |
@@ -311,10 +251,10 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `MYINFO_CLIENT_ID`               | Client ID registered with MyInfo.                                                                                                                                                               |
 | `MYINFO_CLIENT_SECRET`           | Client secret registered with MyInfo.                                                                                                                                                           |
 | `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                                                  |
-| `IS_SP_MAINTENANCE`              | If set, displays a banner message on SingPass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
-| `IS_CP_MAINTENANCE`              | If set, displays a banner message on CorpPass forms.                                                                                                                                            |
+| `IS_SP_MAINTENANCE`              | If set, displays a banner message on Singpass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
+| `IS_CP_MAINTENANCE`              | If set, displays a banner message on Corppass forms.                                                                                                                                            |
 | `FILE_SYSTEM_ID`                 | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                            |
-| `CERT_PATH`                      | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to SingPass, CorpPass and MyInfo. |
+| `CERT_PATH`                      | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to Singpass, Corppass and MyInfo. |
 
 #### Verified Emails/SMSes
 
@@ -326,11 +266,11 @@ Note that verified SMSes also require [SMS with Twilio](#sms-with-twilio) to be 
 | :------------------------ | -------------------------------------------------------------- |
 | `VERIFICATION_SECRET_KEY` | The secret key for signing verified responses (email, mobile). |
 
-#### Webhooks and SingPass/CorpPass for Storage Mode
+#### Webhooks and Singpass/Corppass for Storage Mode
 
 Form admins can configure their Storage mode forms to POST encrypted form submissions to a REST API supplied by the form creator. The [FormSG SDK](https://github.com/opengovsg/formsg-javascript-sdk) can then be used to verify the signed posted data and decrypt the encrypted submission contained within.
 
-These environment variables also allow Storage mode forms to support authentication via SingPass or CorpPass. Note that this also requires [SingPass/CorpPass and MyInfo](#singpasscorppass-and-myinfo) to be enabled.
+These environment variables also allow Storage mode forms to support authentication via Singpass or Corppass. Note that this also requires [Singpass/Corppass and MyInfo](#singpasscorppass-and-myinfo) to be enabled.
 
 | Variable             | Description                                                           |
 | :------------------- | --------------------------------------------------------------------- |

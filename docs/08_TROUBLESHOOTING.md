@@ -1,4 +1,4 @@
-# Troubleshooting issues on local development
+# Troubleshooting
 
 A list of common issues that developers face and how to resolve them.
 
