@@ -17,6 +17,7 @@ import {
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { KILL_EMAIL_MODE_LINK } from '~shared/constants'
+import { FormResponseMode, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -54,6 +55,20 @@ export const WorkspacePage = (): JSX.Element => {
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+
+  const [openEmailModeForms, hasOpenEmailModeForms] = useMemo(() => {
+    const emailModeForms =
+      !isDashboardLoading && dashboardForms
+        ? dashboardForms.filter(
+            (form) =>
+              form.responseMode === FormResponseMode.Email &&
+              form.status === FormStatus.Public,
+          )
+        : undefined
+    return emailModeForms
+      ? [emailModeForms, emailModeForms.length > 0]
+      : [undefined, false]
+  }, [dashboardForms, isDashboardLoading])
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -170,27 +185,46 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
-            <InlineMessage>
-              <Text>
-                {emailRetirementNotice.description}{' '}
-                <Text as="span" fontWeight="bold">
+            {hasOpenEmailModeForms && (
+              <InlineMessage>
+                <Text>
                   {t(
-                    'features.workspace.workspacePage.emailRetirementNotice.date',
-                    {
-                      retirementDate: new Date(Date.UTC(2025, 5, 30, 3, 0, 0)),
-                    },
+                    'features.workspace.workspacePage.emailRetirementNotice.description',
+                  )}{' '}
+                  <Text as="span" fontWeight="bold">
+                    {t(
+                      'features.workspace.workspacePage.emailRetirementNotice.date',
+                      {
+                        retirementDate: new Date(
+                          Date.UTC(2025, 7, 31, 3, 0, 0),
+                        ),
+                      },
+                    )}
+                  </Text>
+                  {'. '}
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.beforeLink',
                   )}
+                  <Link href="/dashboard?filter=email">
+                    {t(
+                      'features.workspace.workspacePage.emailRetirementNotice.link',
+                      {
+                        count: openEmailModeForms?.length || 0,
+                      },
+                    )}
+                  </Link>
+                  {emailRetirementNotice.additionalDescription}{' '}
+                  <Link
+                    display="inline"
+                    href={KILL_EMAIL_MODE_LINK}
+                    target="_blank"
+                  >
+                    {emailRetirementNotice.learnMore}
+                  </Link>
+                  {'.'}
                 </Text>
-                {'. ' + emailRetirementNotice.additionalDescription + '.'}{' '}
-                <Link
-                  display="inline"
-                  href={KILL_EMAIL_MODE_LINK}
-                  target="_blank"
-                >
-                  {emailRetirementNotice.learnMore}
-                </Link>
-              </Text>
-            </InlineMessage>
+              </InlineMessage>
+            )}
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>
