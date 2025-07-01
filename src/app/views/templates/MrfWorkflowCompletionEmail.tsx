@@ -23,8 +23,6 @@ import {
   questionMargin,
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
-import { Environment } from '../../../types'
-import config from '../../config/config'
 
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
@@ -42,7 +40,6 @@ export type WorkflowEmailData = {
   formQuestionAnswers: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
   respondentCopy?: boolean | undefined
-  formId?: string
 }
 
 export const MrfWorkflowCompletionEmail = ({
@@ -51,13 +48,7 @@ export const MrfWorkflowCompletionEmail = ({
   formQuestionAnswers = [], 
   outcome,
   respondentCopy,
-  formId,
 }: WorkflowEmailData): JSX.Element => {
-  const appUrl =
-    process.env.NODE_ENV === Environment.Dev
-      ? config.app.feAppUrl
-      : config.app.appUrl
-  
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
   
