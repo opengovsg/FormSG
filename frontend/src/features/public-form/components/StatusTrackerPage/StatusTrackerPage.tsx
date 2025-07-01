@@ -38,7 +38,7 @@ export const TimelineGridArea: FCC = ({ children }) => (
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
-    mt={{ base: '1rem', lg: '7.125rem', md: '1.125rem' }}
+    mt={{ lg: '7.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 5' }}
     pl={{ base: '1.5rem', lg: '0%' }}
@@ -143,7 +143,7 @@ export const StatusTrackerPage = (): JSX.Element => {
           </StatusTrackerFormInfoGridArea>
           <TimelineGridArea>
             <Box
-              mt={{ base: '1rem', lg: '2.33rem' }}
+              mt={{ base: '1rem', lg: '2rem' }}
               mb={{ base: '2rem', md: '2rem' }}
             >
               <Flex direction="column" align="flex-start">
