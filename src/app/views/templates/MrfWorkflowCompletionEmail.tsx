@@ -90,11 +90,9 @@ export const MrfWorkflowCompletionEmail = ({
               </>
             )}
             <Hr style={{ margin: '40px 0' }} />
-            <Section style={{ marginBottom: '40px' }}>
             <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
                 Responses for {formTitle} 
               </Heading>
-            </Section>
             {respondentCopy === false ? null : (
               <>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
