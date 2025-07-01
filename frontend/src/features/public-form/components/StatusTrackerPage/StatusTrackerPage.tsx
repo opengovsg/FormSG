@@ -26,11 +26,11 @@ import { TimelineRunSteps } from './TimelineRunSteps'
 // Grid area styling for the login form.
 export const TimelineGridArea: FCC = ({ children }) => (
   <GridItem
-    gridColumn={{ md: '1 / 5', lg: '7 / 12' }}
+    gridColumn={{ md: '1 / 12', lg: '7 / 12' }}
     py={{ base: '0rem', lg: '4rem' }}
     display="flex"
     alignItems={{ base: 'initial', md: 'initial,', lg: 'center' }}
-    justifyContent="center"
+    justifyContent={{ lg: 'center' }}
     children={children}
   />
 )
