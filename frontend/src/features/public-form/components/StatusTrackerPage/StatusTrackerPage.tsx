@@ -142,7 +142,10 @@ export const StatusTrackerPage = (): JSX.Element => {
             <StatusTrackerFormInfo />
           </StatusTrackerFormInfoGridArea>
           <TimelineGridArea>
-            <Box mt={{ base: '1rem', lg: '2.33rem' }}>
+            <Box
+              mt={{ base: '1rem', lg: '2.33rem' }}
+              mb={{ base: '2rem', md: '2rem' }}
+            >
               <Flex direction="column" align="flex-start">
                 {/* manually transforming horizontal positioning left because publicFormLogo has column layout */}
                 <Box ml="-1.5rem">
