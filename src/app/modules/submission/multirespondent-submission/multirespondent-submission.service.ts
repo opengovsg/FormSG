@@ -455,6 +455,7 @@ const sendMrfRespondentCopyEmails = ({
     responseId: submissionId,
     formQuestionAnswers,
     attachments: attachments,
+    respondentCopy: form.hasRespondentCopy,
   }).orElse((error) => {
     logger.error({
       message: 'Failed to send respondent copy email',

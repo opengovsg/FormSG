@@ -998,6 +998,7 @@ export class MailService {
     responseId,
     formQuestionAnswers,
     attachments,
+    respondentCopy,
   }: {
     emails: string[]
     formId: string
@@ -1005,12 +1006,14 @@ export class MailService {
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
+    respondentCopy: boolean
   }) => {
     const htmlData = {
       formTitle,
+      formId,
       responseId: responseId.toString(),
       formQuestionAnswers,
-      respondentCopy: true,
+      respondentCopy: respondentCopy,
     }
 
     const generatedHtml = fromPromise(

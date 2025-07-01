@@ -10,6 +10,7 @@ export interface FormWorkflowStepBase {
   workflow_type: WorkflowType
   edit: FormFieldDto['_id'][]
   approval_field?: FormFieldDto['_id']
+  step_name?: string
 }
 
 export interface FormWorkflowStepStatic extends FormWorkflowStepBase {

@@ -25,6 +25,10 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
     approval_field: {
       type: Schema.Types.ObjectId,
     },
+    step_name: {
+      type: String,
+      required: false,
+    },
   },
   {
     discriminatorKey: 'workflow_type',

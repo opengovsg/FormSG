@@ -39,3 +39,10 @@ export const getMultirespondentSubmissionEditPath = (
   }
   return editPath
 }
+
+export const getStatusTrackerPath = (
+  formId: string,
+  submissionId: string | undefined,
+) => {
+  return `${formId}/status/${submissionId}`
+}

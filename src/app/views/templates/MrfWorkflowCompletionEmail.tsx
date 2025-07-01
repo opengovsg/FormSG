@@ -24,8 +24,6 @@ import {
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
 
-const respondentCopyHeading = 'Thank you for submitting this form'
-
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
   NOT_APPROVED = 'Not approved' 
@@ -54,9 +52,8 @@ export const MrfWorkflowCompletionEmail = ({
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
   
-  // if is respondent copy, replace header
   if (respondentCopy) {
-    headingText = respondentCopyHeading
+    headingText = 'Thank you for submitting this form'
   }
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
@@ -71,30 +68,34 @@ export const MrfWorkflowCompletionEmail = ({
       <Head /> 
       <Preview>{headingText}</Preview>
       <Body style={mainStyle}>
-          <Container style={containerStyle}>
-            <Section style={sectionStyle}>
-              <Img style={{height: '24px', marginBottom: '40px'}} src={FORMSG_LOGO_URL} alt="FormSG" />
-              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
-                {headingText}
-              </Heading>
-              {outcome && (
-                <>
-                  <Text style={{...outcomeTextStyle, ...questionMargin}}>Outcome</Text>
-                  <Text style={{...outcomeTextStyle, fontWeight: 400, ...answerMargin}}>{outcome}</Text>
-                </>
-              )}
-              <Hr style={{margin: '40px 0'}}/>
-              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
+        <Container style={containerStyle}>
+          <Section style={sectionStyle}>
+            <Img style={{ height: '24px', marginBottom: '40px' }} src={FORMSG_LOGO_URL} alt="FormSG" />
+            <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
+              {headingText}
+            </Heading>
+            {outcome && (
+              <>
+                <Text style={{ ...outcomeTextStyle, ...questionMargin }}>Outcome</Text>
+                <Text style={{ ...outcomeTextStyle, fontWeight: 400, ...answerMargin }}>{outcome}</Text>
+              </>
+            )}
+            <Hr style={{ margin: '40px 0' }} />
+            <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
                 Responses for {formTitle} 
               </Heading>
-              <Text style={{...primaryTextStyle, ...questionMargin}}>Response ID</Text>
-              <Text style={{...secondaryTextStyle, ...answerMargin}}>{responseId}</Text>
-              {formQuestionAnswers.map(renderQuestionAnswer)}
-              <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
-                For more details, please contact the respondent(s) or form administrator. 
-              </Text>
-            </Section> 
-          </Container>
+            {respondentCopy === false ? null : (
+              <>
+                <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
+                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{responseId}</Text>
+                {formQuestionAnswers.map(renderQuestionAnswer)}
+              </>
+              )}
+            <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
+              For more details, please contact the respondent(s) or form administrator.
+            </Text>
+          </Section>
+        </Container>
       </Body>
     </Html>
   )

@@ -1,10 +1,11 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiDownload } from 'react-icons/bi'
+import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
+  Link,
   Skeleton,
   Stack,
   StackDivider,
@@ -13,7 +14,10 @@ import {
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
-import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
+import {
+  getMultirespondentSubmissionEditPath,
+  getStatusTrackerPath,
+} from '~shared/utils/urls'
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
@@ -200,22 +204,32 @@ export const IndividualResponsePage = (): JSX.Element => {
                 isLoading={isLoading}
                 isError={isError}
               />
-              <StackRow
-                label={MRF_PENDING_RESPONSE_AT_LABEL}
-                value={
-                  workflowStatus === undefined ||
-                  workflowCurrentStepNumber === undefined ||
-                  workflowNumTotalSteps === undefined
-                    ? ''
-                    : getPendingResponseAtString({
-                        workflowStatus,
-                        workflowCurrentStepNumber,
-                        workflowNumTotalSteps,
-                      })
-                }
-                isLoading={isLoading}
-                isError={isError}
-              />
+              <Stack direction="row" align="center">
+                <StackRow
+                  label={MRF_PENDING_RESPONSE_AT_LABEL}
+                  value={
+                    workflowStatus === undefined ||
+                    workflowCurrentStepNumber === undefined ||
+                    workflowNumTotalSteps === undefined
+                      ? 'None'
+                      : getPendingResponseAtString({
+                          workflowStatus,
+                          workflowCurrentStepNumber,
+                          workflowNumTotalSteps,
+                        })
+                  }
+                  isLoading={isLoading}
+                  isError={isError}
+                />
+                <Link
+                  href={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+                  isExternal
+                >
+                  <Box fontSize="1.25rem" display="flex" alignItems="center">
+                    <BiLinkExternal />
+                  </Box>
+                </Link>
+              </Stack>
             </>
           ) : null}
           {attachmentDownloadUrls.size > 0 && (
