@@ -31,6 +31,7 @@ export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'publicKey',
   'workflow',
+  'hasStatusTracker',
 ] as const
 
 const FORM_SETTINGS_FIELDS = [
@@ -71,6 +72,7 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   'emails',
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',
+  'hasStatusTracker',
 ] as const
 
 // Fields that are necessary for decrypting the cipherTexts given peer's private key

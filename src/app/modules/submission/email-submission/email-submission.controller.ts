@@ -445,6 +445,7 @@ export const submitEmailModeForm: ControllerHandler<
             errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
           })
         }
+
         // Send email confirmations
         void SubmissionService.sendEmailConfirmations({
           form,

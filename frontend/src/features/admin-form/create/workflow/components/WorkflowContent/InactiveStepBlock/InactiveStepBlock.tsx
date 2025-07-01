@@ -171,7 +171,7 @@ export const InactiveStepBlock = ({
         aria-disabled={isPreventEdit}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
-          <StepLabel stepNumber={stepNumber} />
+          <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
             <Text textStyle="subhead-3">
