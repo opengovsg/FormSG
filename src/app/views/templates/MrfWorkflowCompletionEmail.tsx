@@ -67,7 +67,7 @@ export const MrfWorkflowCompletionEmail = ({
     headingText = 'Thank you for submitting this form'
   }
 
-  const responsesHeader = statusTracker && !respondentCopy ? `Track you response status for ${formTitle}` : `Responses for ${formTitle}`
+  const responsesHeader = statusTracker && !respondentCopy ? `Track your response status for ${formTitle}` : `Responses for ${formTitle}`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
