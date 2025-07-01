@@ -42,7 +42,6 @@ export type WorkflowEmailData = {
   formQuestionAnswers: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
   respondentCopy?: boolean | undefined
-  statusTracker?: boolean | undefined
   formId?: string
 }
 
@@ -52,7 +51,6 @@ export const MrfWorkflowCompletionEmail = ({
   formQuestionAnswers = [], 
   outcome,
   respondentCopy,
-  statusTracker,
   formId,
 }: WorkflowEmailData): JSX.Element => {
   const appUrl =
@@ -63,11 +61,9 @@ export const MrfWorkflowCompletionEmail = ({
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
   
-  if (respondentCopy || statusTracker) {
+  if (respondentCopy) {
     headingText = 'Thank you for submitting this form'
   }
-
-  const responsesHeader = statusTracker && !respondentCopy ? `Track your response status for ${formTitle}` : `Responses for ${formTitle}`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
@@ -95,8 +91,8 @@ export const MrfWorkflowCompletionEmail = ({
             )}
             <Hr style={{ margin: '40px 0' }} />
             <Section style={{ marginBottom: '40px' }}>
-              <Heading style={{ ...headingTextStyle}}>
-                {responsesHeader}
+            <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
+                Responses for {formTitle} 
               </Heading>
             </Section>
             {respondentCopy === false ? null : (

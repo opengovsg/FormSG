@@ -51,7 +51,7 @@ export const getStatusTrackerDataResponse = ({
   overrides?: PartialDeep<StatusTrackerData>
 } = {}) => {
   return rest.get<StatusTrackerData>(
-    '/api/v3/status-tracker/:submissionId',
+    '/api/v3/status/:submissionId',
     (req, res, ctx) => {
       if (delay === 'infinite') {
         return new Promise(() => {}) // simulate infinite delay
