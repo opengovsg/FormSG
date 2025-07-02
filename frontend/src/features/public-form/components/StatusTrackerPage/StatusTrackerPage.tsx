@@ -29,7 +29,7 @@ export const TimelineGridArea: FCC = ({ children }) => (
     gridColumn={{ md: '1 / 12', lg: '7 / 12' }}
     py={{ base: '0rem', lg: '4rem' }}
     display="flex"
-    alignItems={{ base: 'initial', md: 'initial,', lg: 'center' }}
+    alignItems={{ base: 'initial', md: 'initial', lg: 'center' }}
     justifyContent={{ lg: 'center' }}
     children={children}
   />
