@@ -54,7 +54,10 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
+import {
+  formatMyInfoStorageResponseData,
+  omitResponseKeys,
+} from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -519,7 +522,7 @@ export const encryptSubmission = async (
         content: undefined, //Strip out attachment content
       }
     } else {
-      return response
+      return omitResponseKeys(response)
     }
   })
 
