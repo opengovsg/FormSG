@@ -26,11 +26,11 @@ import { TimelineRunSteps } from './TimelineRunSteps'
 // Grid area styling for the login form.
 export const TimelineGridArea: FCC = ({ children }) => (
   <GridItem
-    gridColumn={{ lg: '7 / 12' }}
+    gridColumn={{ md: '1 / 12', lg: '7 / 12' }}
     py={{ base: '0rem', lg: '4rem' }}
     display="flex"
-    alignItems={{ base: 'initial', md: 'initial,', lg: 'center' }}
-    justifyContent="center"
+    alignItems={{ base: 'initial', md: 'initial', lg: 'center' }}
+    justifyContent={{ lg: 'center' }}
     children={children}
   />
 )
@@ -38,7 +38,7 @@ export const TimelineGridArea: FCC = ({ children }) => (
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints
 export const StatusTrackerFormInfoGridArea: FCC = ({ children }) => (
   <GridItem
-    mt={{ base: '1rem', lg: '7.125rem', md: '1.125rem' }}
+    mt={{ lg: '7.125rem' }}
     display={{ base: 'flex', md: 'flex' }}
     gridColumn={{ base: '1 / -1', md: '1 / 13', lg: '2 / 5' }}
     pl={{ base: '1.5rem', lg: '0%' }}
@@ -142,13 +142,16 @@ export const StatusTrackerPage = (): JSX.Element => {
             <StatusTrackerFormInfo />
           </StatusTrackerFormInfoGridArea>
           <TimelineGridArea>
-            <Box mt={{ base: '1rem', lg: '2.33rem' }}>
+            <Box
+              mt={{ base: '1rem', lg: '2rem' }}
+              mb={{ base: '2rem', md: '2rem' }}
+            >
               <Flex direction="column" align="flex-start">
                 {/* manually transforming horizontal positioning left because publicFormLogo has column layout */}
                 <Box ml="-1.5rem">
                   <PublicFormLogo />
                 </Box>
-                <Text mb="2rem" textStyle="h4" isTruncated>
+                <Text mb="2rem" textStyle="h4">
                   Response ID: {data.responseId}
                 </Text>
                 <TimelineRunSteps steps={stepData} />

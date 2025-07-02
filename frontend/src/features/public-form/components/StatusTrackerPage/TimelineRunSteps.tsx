@@ -87,7 +87,7 @@ const TimelineStep = ({
   isCurrentPendingStep,
 }: StepData) => {
   const submissionTimestamp = timestamp
-    ? format(new Date(timestamp), 'dd MMM yyyy, HH:mm:ss z')
+    ? format(new Date(timestamp), 'do MMM yyyy, h:mm:ss a')
     : timestamp
 
   const approvalText = isCurrentPendingStep
