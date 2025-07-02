@@ -180,7 +180,7 @@
     "@types/lodash": "^4.17.6",
     "@types/mongodb-uri": "^0.9.4",
     "@types/multer": "^1.4.11",
-    "@types/node": "^14.18.23",
+    "@types/node": "^24.0.10",
     "@types/nodemailer": "^6.4.16",
     "@types/opossum": "^8.1.7",
     "@types/promise-retry": "^1.1.6",

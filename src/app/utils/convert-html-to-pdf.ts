@@ -7,11 +7,11 @@ import config from '../config/config'
  * Utility function to generate a PDF from HTML.
  * Used to send autoreply emails, and to generate payment receipts
  * @param summaryHtml HTML to generate PDF from
- * @returns PDF buffer
+ * @returns PDF Uint8Array
  */
 export const generatePdfFromHtml = async (
   summaryHtml: string,
-): Promise<Buffer> => {
+): Promise<Uint8Array> => {
   return tracer.trace('generatePdfFromHtml', async () => {
     const browser = await puppeteer.launch({
       args: ['--no-sandbox'],
