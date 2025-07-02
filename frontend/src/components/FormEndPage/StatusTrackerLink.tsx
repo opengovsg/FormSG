@@ -32,7 +32,7 @@ export const StatusTrackerLink = ({
           isRequired
           description={'Track the status of your response through this link'}
         >
-          Status Tracking link
+          Status tracking link
         </FormLabel>
       </Box>
       <Skeleton isLoaded={!!formId}>
