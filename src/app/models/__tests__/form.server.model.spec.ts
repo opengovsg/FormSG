@@ -929,6 +929,7 @@ describe('Form Model', () => {
           stepsToNotify: [],
           emails: [],
           stepOneEmailNotificationFieldId: '',
+          hasStatusTracker: false,
         },
         FORM_DEFAULTS,
       )
@@ -2548,7 +2549,7 @@ describe('Form Model', () => {
         // Previous user should now be in permissionList with editor
         // permissions.
         expect(actual.toObject().permissionList).toEqual([
-          { email: populatedAdmin.email, write: true, _id: expect.anything() },
+          { email: populatedAdmin.email, write: true },
         ])
       })
     })

@@ -48,6 +48,7 @@ export const updateSettingsValidator = celebrate({
       Joi.string().valid(...Object.values(Language)),
     ),
     hasRespondentCopy: Joi.boolean(),
+    hasStatusTracker: Joi.boolean(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
@@ -93,6 +94,7 @@ export const createWorkflowStepValidator = celebrate({
       then: Joi.string().required(),
       otherwise: Joi.forbidden(),
     }),
+    step_name: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -121,6 +123,7 @@ export const updateWorkflowStepValidator = celebrate({
       then: Joi.string().required(),
       otherwise: Joi.forbidden(),
     }),
+    step_name: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),

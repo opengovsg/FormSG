@@ -82,6 +82,7 @@ const compileUserModel = (db: Mongoose) => {
         mfbVision: Boolean, // Previously used for MFB Vision private beta, not currently used
         multiLangTranslation: Boolean,
         respondentCopy: Boolean,
+        statusTracker: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags

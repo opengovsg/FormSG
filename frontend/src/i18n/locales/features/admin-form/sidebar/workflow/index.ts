@@ -128,4 +128,8 @@ export interface Workflow {
       suffix: string
     }
   }
+  stepName: {
+    label: string
+    description: string
+  }
 }

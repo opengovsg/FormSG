@@ -41,4 +41,10 @@ export const enSG: Toasts = {
       error: 'There was an error retrieving your form. Please try again later.',
     },
   },
+  statusTracker: {
+    successBefore: 'Respondents will',
+    disabled: 'not ',
+    successAfter:
+      'be able to receive a status tracking link of their submission',
+  },
 }

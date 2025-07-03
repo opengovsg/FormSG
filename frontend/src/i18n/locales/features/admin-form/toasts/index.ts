@@ -23,4 +23,9 @@ export interface Toasts {
       error: string
     }
   }
+  statusTracker: {
+    successBefore: string
+    disabled: string
+    successAfter: string
+  }
 }

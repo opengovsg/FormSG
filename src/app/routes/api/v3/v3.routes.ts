@@ -12,6 +12,7 @@ import { IntranetRouter } from './intranet'
 import { NotificationsRouter } from './notifications'
 import { PaymentsRouter } from './payments'
 import { SingpassOidcRouter } from './singpass'
+import { StatusTrackerRouter } from './status-tracker'
 import { UserRouter } from './user'
 
 export const V3Router = Router()
@@ -29,3 +30,4 @@ V3Router.use('/corppass', CorppassOidcRouter)
 V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
 V3Router.use('/intranet', IntranetRouter)
+V3Router.use('/status', StatusTrackerRouter)

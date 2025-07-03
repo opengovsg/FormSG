@@ -76,6 +76,8 @@ export interface Workspace {
     emailRetirementNotice: {
       description: string
       date: string
+      beforeLink: string
+      link: string
       additionalDescription: string
       learnMore: string
     }

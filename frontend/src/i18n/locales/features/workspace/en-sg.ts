@@ -74,11 +74,13 @@ export const enSG: Workspace = {
   workspacePage: {
     defaultTitle: 'All forms',
     emailRetirementNotice: {
-      description: 'Email mode forms will be retired on',
+      description: 'All Email mode forms will be set to CLOSED by',
       date: '{retirementDate, date, long}',
+      beforeLink: 'You currently have ',
+      link: '{count, number} OPEN Email mode form(s)',
       additionalDescription:
-        'Email functionalities will continue to be available in Storage mode',
-      learnMore: 'Learn what this means for you.',
+        ', and will be informed of the exact closure date separately.',
+      learnMore: 'Learn more here',
     },
   },
   sideMenu,

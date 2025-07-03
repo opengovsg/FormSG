@@ -120,6 +120,7 @@ export const EndPageContent = (): JSX.Element => {
                   timestamp: Date.now(),
                 }}
                 colorTheme={colorTheme ?? FormColorTheme.Blue}
+                form={form}
               />
             </Box>
           )}

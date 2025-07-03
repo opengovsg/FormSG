@@ -28,6 +28,7 @@ export const UserBase = z.object({
       mfbVision: z.boolean().optional(), // Previously used for MFB Vision private beta, not currently used
       multiLangTranslation: z.boolean().optional(),
       respondentCopy: z.boolean().optional(),
+      statusTracker: z.boolean().optional(),
     })
     .optional(),
   flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
