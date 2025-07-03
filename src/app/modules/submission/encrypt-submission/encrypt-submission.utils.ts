@@ -128,7 +128,7 @@ export const getPaymentIntentDescription = (
   }
 }
 
-const omitResponseKeys = (
+export const omitResponseKeys = (
   response: ProcessedFieldResponse,
 ):
   | ProcessedFieldResponse
@@ -145,9 +145,7 @@ export const formatMyInfoStorageResponseData = (
   hashedFields?: Set<MyInfoKey>,
 ) => {
   if (!hashedFields) {
-    return parsedResponses.flatMap((response: ProcessedFieldResponse) => {
-      return omitResponseKeys(response)
-    })
+    return parsedResponses
   } else {
     return parsedResponses.flatMap((response) => {
       if (isProcessedChildResponse(response)) {
@@ -160,7 +158,7 @@ export const formatMyInfoStorageResponseData = (
         // Obtain prefix for question based on whether it is verified by MyInfo.
         const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
         response.question = `${myInfoPrefix}${response.question}`
-        return omitResponseKeys(response)
+        return response
       }
     })
   }
