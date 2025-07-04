@@ -15,8 +15,7 @@ FormSG was originally designed for AWS (ECR, S3, SES, etc.), but many teams:
 - Have sovereignty or data residency requirements
 - Want to run in regulated or airgapped environments
 
-This section shows you how.
-
+This section shows you where to start.
 
 ## ⚠️ Important Disclaimer ⚠️
 > The FormSG team **will not be responsible for modifying, maintaining, or supporting custom deployments** or forks that replace default components (e.g., storage, email, authentication).
@@ -28,113 +27,76 @@ This section shows you how.
 >
 > **This guide exists to help you explore these options independently.**
 
-## Vendor-Agnostic Integrations Architecture
+## Modular Component Architecture
+The following architecture diagram illustrates the modular components that make up a FormSG deployment.
 
-Below is an overly simplified diagram of how a FormSG deployment looks like.
-
-<!-- TODO: tidy up. messy, possibly inaccurate -->
 ```mermaid
-graph TB
-    %% Core FormSG Components
-    subgraph FormSG["FormSG Application"]
-        Frontend["Frontend<br><small>React</small>"]
-        Backend["Backend<br><small>NodeJS, Express.js</small>"]
-    end
+architecture-beta
+    %% Core FormSG Component
+    service FormSG(server)[FormSG Application]
 
-    %% Replaceable Components with Alternatives
-    subgraph DatabaseSystem["Database"]
-        MongoDB["MongoDB Atlas<br><small>(or self-hosted MongoDB)</small>"]
-    end
+    %% Main Component Groups
+    group data_storage(cloud)[Data Storage]
+    group communications(cloud)[Communications]
+    group security(cloud)[Security and Verification]
+    group monitoring(cloud)[Monitoring]
+    group payment(cloud)[Payment]
+    group serverless(cloud)[Serverless]
 
-    subgraph FileStorage["File Storage"]
-        S3["AWS S3<br><small>(or MinIO, Azure Blob Storage)</small>"]
-    end
+    %% Services with their parent groups
+    service mongoDB(database)[MongoDB] in data_storage
+    service s3(disk)[S3 Storage] in data_storage
 
-    subgraph EmailService["Email Service"]
-        SES["AWS SES<br><small>(or SMTP Server, SendGrid, Mailgun)</small>"]
-    end
+    service ses(server)[Email Service] in communications
+    service postman(server)[SMS Service] in communications
 
-    subgraph SMSService["SMS Service"]
-        Postman["Postman<br><small>(or Twilio, MessageBird, Vonage)</small>"]
-    end
+    service reCaptcha(server)[CAPTCHA] in security
+    service singpass(server)[Identity] in security
 
-    subgraph Analytics["Analytics"]
-        GA["Google Analytics<br><small>(or Matomo, Plausible, self-hosted)</small>"]
-    end
+    service analytics(server)[Analytics] in monitoring
+    service datadog(server)[Monitoring] in monitoring
+    service cloudWatch(server)[Logs] in monitoring
 
-    subgraph SpamProtection["Spam Protection"]
-        ReCaptcha["Google reCAPTCHA<br><small>(or hCaptcha, self-hosted)</small>"]
-    end
+    service stripe(cloud)[Payment Processing] in payment
 
-    subgraph PaymentProcessing["Payment Processing"]
-        Stripe["Stripe<br><small>(or PayPal, local payment gateways)</small>"]
-    end
+    service virusScanner(internet)[Virus Scanner] in serverless
+    service paymentReconciliation(server)[Payment Reconciliation] in serverless
 
-    subgraph Authentication["Identity Verification"]
-        SingPass["SingPass/CorpPass<br><small>(or OAuth/OIDC, SAML)</small>"]
-    end
+   %% Junction points
+    junction data_junction
+    junction comms_junction
+    junction security_junction
+    junction monitoring_junction
+    junction payment_junction
+    junction serverless_junction
 
-    subgraph MonitoringSystem["Monitoring & Logging"]
-        Datadog["Datadog<br><small>(or Prometheus + Grafana, ELK Stack)</small>"]
-        CloudWatch["AWS CloudWatch<br><small>(or Fluentd, Logstash, Loki)</small>"]
-    end
+    %% Connections
+    FormSG:L -- R:data_junction
+    data_junction:L -- R:mongoDB
+    data_junction:T -- R:s3
 
-    subgraph ServerlessFunctions["Serverless Functions"]
-        VirusScanner["AWS Lambda Virus Scanner<br><small>(or ClamAV server, containerized scanner)</small>"]
-        PaymentReconciliation["Payment Reconciliation<br><small>(or scheduled task, cron job)</small>"]
-    end
+    FormSG:R -- L:comms_junction
+    comms_junction:R -- L:ses
+    comms_junction:T -- L:postman
 
-    %% Connections between components
-    Frontend <--> Backend
+    FormSG:T -- B:security_junction
+    security_junction:T -- R:reCaptcha
+    security_junction:T -- L:singpass
 
-    %% Database Connections
-    Backend <--> MongoDB
+    FormSG:B -- T:monitoring_junction
+    monitoring_junction:R -- L:analytics
+    monitoring_junction:R -- L:datadog
+    monitoring_junction:R -- L:cloudWatch
 
-    %% File Storage Connections
-    Backend <--> S3
+    %% FormSG:T -- B:stripe
+    %% payment_junction:T -- B:stripe
 
-    %% Email Connections
-    Backend --> SES
+    %% %% Serverless
+    s3:L -- R:virusScanner
 
-    %% SMS Connections
-    Backend --> Postman
-
-    %% Analytics Connections
-    Frontend --> GA
-
-    %% Spam Protection Connections
-    Frontend <--> ReCaptcha
-    Backend <--> ReCaptcha
-
-    %% Payment Processing Connections
-    Backend <--> Stripe
-    Frontend <--> Stripe
-
-    %% Authentication Connections
-    Backend <--> SingPass
-    Frontend --> SingPass
-
-    %% Monitoring & Logging Connections
-    Backend --> Datadog
-    Frontend --> Datadog
-    Backend --> CloudWatch
-
-    %% Serverless Function Connections
-    S3 --> VirusScanner
-    VirusScanner --> S3
-    PaymentReconciliation --> Stripe
-    PaymentReconciliation --> MongoDB
-
-    %% Style components
-    classDef coreSystem fill:#1E88E5,color:#FFFFFF
-    class FormSG coreSystem
-
-    classDef replaceable fill:#26A69A,color:#FFFFFF,stroke-dasharray: 5 5
-    class DatabaseSystem,FileStorage,EmailService,SMSService,Analytics,SpamProtection,PaymentProcessing,Authentication,MonitoringSystem,ServerlessFunctions replaceable
-
-    %% Add notes
-    ReplacementNote["`**Components in green boxes can be replaced with alternatives shown in parentheses**`"]
-    style ReplacementNote fill:none,stroke:none
+    %% %% Payment reconciliation connections
+    stripe:L -- R:paymentReconciliation
+    %% paymentReconciliation:T -- B:mongoDB
 ```
 
 The table below lists all the components used in FormSG and potential alternatives for custom deployments:
@@ -144,9 +106,9 @@ The table below lists all the components used in FormSG and potential alternativ
 | **Database** | MongoDB Atlas | Self-hosted MongoDB, MongoDB-compatible databases | Medium |
 | **File Storage** | AWS S3 | MinIO, Azure Blob Storage, Google Cloud Storage | Medium |
 | **Email Service** | AWS SES | SMTP Server, SendGrid, Mailgun, Postmark | Low |
-| **SMS Service** | Postman | Twilio, MessageBird, Vonage, local SMS gateways | Low |
+| **SMS Service** | Postman | Twilio, MessageBird, Vonage, local SMS gateways | Medium |
 | **Analytics** | Google Analytics | Matomo, Plausible, Self-hosted analytics solutions | Low |
-| **Spam Protection** | Google reCAPTCHA | hCaptcha, Self-hosted CAPTCHA solutions | Medium |
+| **Spam Protection** | Google reCAPTCHA | hCaptcha, Self-hosted CAPTCHA solutions | Low |
 | **Payment Processing** | Stripe | PayPal, Local payment gateways, Government payment systems | High |
 | **Identity Verification** | SingPass/CorpPass | OAuth/OIDC providers, SAML-based identity providers | High |
 | **Monitoring** | Datadog | Prometheus + Grafana, New Relic, AppDynamics | Medium |
@@ -154,8 +116,14 @@ The table below lists all the components used in FormSG and potential alternativ
 | **Virus Scanner** | AWS Lambda with ClamAV | Standalone ClamAV server, Containerized scanner, API-based scanning | High |
 | **Payment Reconciliation** | AWS Lambda function | Scheduled cron job, Containerized worker, Manual process | Medium |
 
+> *__Implementation Complexity Guide:__*
+> * **Low**: Configuration changes only; minimal code changes required; typically takes a few hours to implement and test
+> * **Medium**: Requires targeted code changes in specific modules; may involve creating adapters or wrappers; typically takes a few days to implement
+> * **High**: Requires substantial refactoring across multiple modules; may involve changing core logic; typically takes weeks of developer effort and careful testing
+
+Do note that the complexity measure is still a rough estimate.
+
 ### Database Alternatives
-<!-- taken from README -->
 
 #### Migrating from MongoDB to FerretDB
 [FerretDB](https://ferretdb.io) is an open source MongoDB alternative built on PostgreSQL. MongoDB can be swapped out of FormSG for FerretDB. In order for this to be done, certain changes to the code should be made as described below:
@@ -275,5 +243,3 @@ FormSG can be deployed in **on-premise** environments or **airgapped networks** 
 **Support Notice:**
 
 The FormSG team **does not provide installation or operational support** for airgapped or fully custom on-prem deployments. We can only share general pointers and this documentation.
-
-<!-- add other alternatives here... -->

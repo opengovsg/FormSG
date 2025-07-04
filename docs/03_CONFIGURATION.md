@@ -210,17 +210,19 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 The Mobile Number field supports form-fillers verifying their mobile numbers via a One-Time-Pin sent to their mobile phones.
 
-All messages are sent using [Postman](https://postman-v2.guides.gov.sg/).
+All messages are sent using [Postman](https://postman-v2.guides.gov.sg/), a government communications service developed by the Open Government Products team.
+This Postman service (not to be confused with the popular API client of the same name) is specifically designed for Singapore government agencies to send SMS messages to citizens and businesses. It provides campaign management, delivery tracking, and compliance with government communication standards.
 
 Note that verifying mobile numbers also requires the environment variables for [verified Emails/SMSes](#verified-emailssmses).
 
-<!-- TODO: update with Postman creds -->
-| Variable                       | Description              |
-| :----------------------------- | ------------------------ |
-| `TWILIO_ACCOUNT_SID`           | Twilio messaging ID.     |
-| `TWILIO_API_KEY`               | Twilio standard API Key. |
-| `TWILIO_API_SECRET`            | Twilio API Secret.       |
-| `TWILIO_MESSAGING_SERVICE_SID` | Messaging service ID.    |
+| Variable                              | Description                                                     |
+| :------------------------------------ | --------------------------------------------------------------- |
+| `POSTMAN_MOP_CAMPAIGN_ID`             | Campaign ID for MOP (Member of Public) SMS                      |
+| `POSTMAN_MOP_CAMPAIGN_API_KEY`        | API key for MOP campaign                                        |
+| `POSTMAN_INTERNAL_CAMPAIGN_ID`        | Campaign ID for internal SMS                                    |
+| `POSTMAN_INTERNAL_CAMPAIGN_API_KEY`   | API key for internal campaign                                   |
+| `POSTMAN_BASE_URL`                    | Base URL for Postman API (e.g., https://test.postman.gov.sg/api/v2) |
+| `USE_MOCK_POSTMAN_SMS`                | Boolean flag for development/testing                            |
 
 #### Singpass/Corppass and MyInfo
 
@@ -260,7 +262,7 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 
 The Mobile Number and Email fields support form-fillers verifying their contact details via a One-Time-Pin.
 
-Note that verified SMSes also require [SMS with Twilio](#sms-with-twilio) to be enabled.
+Note that verified SMSes also require [SMS](#sms) to be enabled.
 
 | Variable                  | Description                                                    |
 | :------------------------ | -------------------------------------------------------------- |

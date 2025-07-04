@@ -102,6 +102,56 @@ graph TB
     Backend -->|"9.Retrieves verified<br>attachment"| CleanBucket
 ```
 
+## GuardDuty Virus Scanning
+
+FormSG offers an alternative virus scanning implementation using AWS GuardDuty Malware Protection for enhanced security.
+
+```mermaid
+graph TB
+    %% Main Components
+    Backend["Backend<br><small>NodeJS, Express.js</small>"]
+    FormFiller["Form Filler<br><small>Uploads attachments</small>"]
+    FormAdmin["Form Admin<br><small>Downloads attachments</small>"]
+
+    %% AWS S3 Storage
+    subgraph S3Storage["AWS S3 Storage"]
+        QuarantineBucket["Quarantine Bucket<br><small>Protected by GuardDuty</small>"]
+        CleanBucket["Clean Bucket<br><small>Verified safe files</small>"]
+    end
+    FormSubmissions["MongoDB<br><small>Form Submissions</small>"]
+
+    %% GuardDuty Components
+    subgraph GuardDuty["AWS GuardDuty"]
+        MalwareProtection["Malware Protection<br><small>Automatic scanning</small>"]
+        TaggingSystem["S3 Object Tagging<br><small>Scan results</small>"]
+    end
+
+    %% Lambda Component
+    ScanChecker["GuardDuty Scan Checker<br><small>Lambda Function</small>"]
+
+    %% Relationships
+    FormFiller -->|"1.Submits form with<br>attachment"| Backend
+    Backend -->|"2.Uploads file to<br>quarantine"| QuarantineBucket
+
+    %% GuardDuty scanning process
+    QuarantineBucket -->|"3.Automatically scans<br>uploaded objects"| MalwareProtection
+    MalwareProtection -->|"4.Applies scan result tag"| TaggingSystem
+    TaggingSystem -->|"5.Tags object with<br>GuardDutyMalwareScanStatus"| QuarantineBucket
+
+    %% Lambda verification
+    Backend -->|"6.Initiates file<br>verification"| ScanChecker
+    ScanChecker -->|"7.Polls for<br>scan tag"| QuarantineBucket
+
+    %% Result handling
+    ScanChecker -->|"8a.If clean,<br>copies to clean bucket"| CleanBucket
+    ScanChecker -->|"8b.If infected,<br>logs threat"| QuarantineBucket
+
+    %% Submission and retrieval
+    Backend -->|"9.Stores encrypted<br>form data"| FormSubmissions
+    FormAdmin -->|"10.Requests<br>attachment"| Backend
+    Backend -->|"11.Retrieves verified<br>attachment"| CleanBucket
+```
+
 ## Code Organization
 
 ### Backend
