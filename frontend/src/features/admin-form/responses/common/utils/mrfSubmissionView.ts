@@ -23,7 +23,7 @@ export const getPendingResponseAtString = ({
     workflowStatus === WorkflowStatus.PENDING &&
     workflowCurrentStepNumber < workflowNumTotalSteps
   if (!isPending) {
-    return 'None'
+    return '-'
   }
 
   // The form is currently completed until step N.
