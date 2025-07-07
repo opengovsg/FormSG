@@ -77,9 +77,10 @@ export const SmsCountsModal = ({
                 color="secondary.500"
                 mt="2rem"
               >
-                {`${formatSmsCounts(smsCount)} ${t(
+                {t(
                   'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
-                )}`}
+                  { smsCount: formatSmsCounts(smsCount) },
+                )}
               </Badge>
             </>
           )}
