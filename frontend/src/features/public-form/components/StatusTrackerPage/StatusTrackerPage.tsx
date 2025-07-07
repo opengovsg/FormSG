@@ -101,6 +101,7 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { submittedSteps, workflow } = data
 
+  let isWorkFlowRejected = false
   const stepData: StepData[] = workflow.map((step, index) => {
     const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
@@ -116,6 +117,10 @@ export const StatusTrackerPage = (): JSX.Element => {
           : WorkflowStatus.COMPLETED
         : WorkflowStatus.PENDING
 
+    if (workflowStatus === WorkflowStatus.REJECTED) {
+      isWorkFlowRejected = true
+    }
+
     if (index < submittedSteps.length) {
       return {
         name: name,
@@ -124,12 +129,14 @@ export const StatusTrackerPage = (): JSX.Element => {
         workflowStatus: workflowStatus,
       }
     }
-
+    console.log(`isWorkFlowRejected: ${isWorkFlowRejected}`)
     return {
       name: name,
       stepNumber: stepNumber,
       workflowStatus: workflowStatus,
-      isCurrentPendingStep: index == submittedSteps.length,
+      ...(isWorkFlowRejected
+        ? {}
+        : { isCurrentPendingStep: index === submittedSteps.length }),
     }
   })
 
