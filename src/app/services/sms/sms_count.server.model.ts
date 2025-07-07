@@ -66,30 +66,27 @@ const compileSmsCountModel = (db: Mongoose) => {
     },
   )
 
-  SmsCountSchema.statics.logSms = async function ({
-    smsData,
-    smsType,
-    logType,
-  }: LogSmsParams) {
-    const schemaData: Omit<ISmsCount, '_id'> = {
-      ...smsData,
-      smsType,
-      logType,
-    }
+  SmsCountSchema.statics = {
+    async logSms({ smsData, smsType, logType }: LogSmsParams) {
+      const schemaData: Omit<ISmsCount, '_id'> = {
+        ...smsData,
+        smsType,
+        logType,
+      }
 
-    const smsCount: ISmsCountSchema = new this(schemaData)
+      const smsCount: ISmsCountSchema = new this(schemaData)
+      return smsCount.save()
+    },
 
-    return smsCount.save()
-  }
-
-  SmsCountSchema.statics.retrieveSmsCounts = async function (formId: string) {
-    return this.countDocuments({
-      form: formId,
-      smsType: SmsType.Verification,
-      createdAt: { $gte: v3StartDate },
-    })
-      .read('secondary')
-      .exec()
+    async retrieveSmsCounts(formId: string) {
+      return this.countDocuments({
+        form: formId,
+        smsType: SmsType.Verification,
+        createdAt: { $gte: v3StartDate },
+      })
+        .read('secondary')
+        .exec()
+    },
   }
 
   const SmsCountModel = db.model<ISmsCountSchema, ISmsCountModel>(
