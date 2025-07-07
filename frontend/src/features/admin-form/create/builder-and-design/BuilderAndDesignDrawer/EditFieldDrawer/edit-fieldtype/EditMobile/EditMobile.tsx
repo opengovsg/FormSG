@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl } from '@chakra-ui/react'
+import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { MobileFieldBase } from '~shared/types/field'
@@ -12,10 +12,16 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useSmsQuota } from '~features/admin-form/common/queries'
+
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
+
+import { ContactSupportMessage } from './ContactSupportMessage'
+import { SmsCountMessage } from './SmsCountMessage'
+import { SmsCountsModal } from './SmsCountsModal'
 
 const EDIT_MOBILE_KEYS = [
   'title',
@@ -38,6 +44,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     handleUpdateField,
     isLoading,
     handleCancel,
+    watch,
   } = useEditFieldForm<EditMobileInputs, MobileFieldBase>({
     field,
     transform: {
@@ -54,6 +61,11 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
       }),
     [],
   )
+
+  const showOTPText = watch('isVerifiable')
+
+  const { data: smsCount } = useSmsQuota()
+  const smsCountsDisclosure = useDisclosure()
 
   return (
     <>
@@ -101,7 +113,13 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
         <Box>
           <FormControl isReadOnly={isLoading}>
             <Toggle
-              {...register('isVerifiable')}
+              {...register('isVerifiable', {
+                onChange: (e) => {
+                  if (e.target.checked) {
+                    smsCountsDisclosure.onOpen()
+                  }
+                },
+              })}
               label={t(
                 'features.adminForm.sidebar.fields.email.otpVerification.title',
               )}
@@ -110,6 +128,12 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               )}
             />
           </FormControl>
+          {showOTPText && (
+            <Box>
+              <SmsCountMessage smsCount={smsCount} />
+              <ContactSupportMessage />
+            </Box>
+          )}
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}
@@ -118,6 +142,11 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           handleCancel={handleCancel}
         />
       </CreatePageDrawerContentContainer>
+      <SmsCountsModal
+        smsCount={smsCount}
+        isOpen={smsCountsDisclosure.isOpen}
+        onClose={smsCountsDisclosure.onClose}
+      />
     </>
   )
 }

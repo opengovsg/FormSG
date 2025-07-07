@@ -85,9 +85,11 @@ export const handleGetPublicForm: ControllerHandler<
     formId,
   }
 
-  const formResult = await getFormIfPublic(formId).andThen((form) =>
-    FormService.checkFormSubmissionLimitAndDeactivateForm(form),
-  )
+  const formResult = await getFormIfPublic(formId)
+    .andThen((form) =>
+      FormService.checkFormSubmissionLimitAndDeactivateForm(form),
+    )
+    .andThen((form) => FormService.checkFormSmsLimitAndDeactivateForm(form))
 
   // Early return if form is not public or any error occurred.
   if (formResult.isErr()) {

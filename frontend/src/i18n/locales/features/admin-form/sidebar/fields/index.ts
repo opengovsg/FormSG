@@ -95,9 +95,11 @@ export interface Fields {
     otpVerification: {
       title: string
       description: string
+      smsUsed: string
+      thresholdWarning: string
+      contact: string
     }
     allowInternationalNumber: string
-    smsCounts: string
   }
   date: {
     dateValidation: {

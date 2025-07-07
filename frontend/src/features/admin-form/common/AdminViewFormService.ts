@@ -6,6 +6,7 @@ import {
   FormPermissionsDto,
   PermissionsUpdateDto,
   PreviewFormViewDto,
+  SmsCountsDto,
 } from '~shared/types/form/form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
@@ -242,4 +243,10 @@ export const submitStorageModeFormPreviewWithFetch = async ({
     },
   )
   return processFetchResponse(response)
+}
+
+export const getSmsQuota = async (formId: string) => {
+  return ApiService.get<SmsCountsDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count`,
+  ).then(({ data }) => data)
 }
