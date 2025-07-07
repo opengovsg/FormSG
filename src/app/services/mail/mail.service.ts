@@ -27,6 +27,7 @@ import {
   EmailAddressVerificationOtp,
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
+import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -34,12 +35,15 @@ import MrfWorkflowCompletionEmail, {
 import MrfWorkflowEmail, {
   WorkflowEmailData,
 } from '../../views/templates/MrfWorkflowEmail'
+import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
+import { smsThreshold } from '../sms/sms.utils'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
+  FormDeactivatedNotificationHtmlData,
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
@@ -47,6 +51,7 @@ import {
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
+  SmsThresholdWarningNotificationHtmlData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 import {
@@ -504,6 +509,145 @@ export class MailService {
           meta: {
             action: 'sendBounceNotification',
             bounceType,
+            formTitle,
+            formId,
+          },
+          error,
+        })
+        return error
+      })
+    })
+  }
+
+  /**
+   * Sends a notification for critical bounce
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendFormDeactivatedNotification = ({
+    emailRecipients,
+    formTitle,
+    formId,
+  }: {
+    emailRecipients: string[]
+    formTitle: string
+    formId: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: FormDeactivatedNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      appName: this.#appName,
+    }
+
+    const generatedHtml = fromPromise(
+      render(FormDeactivatedNotification(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render FormDeactivatedNotification',
+          meta: {
+            action: 'sendFormDeactivatedNotification',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating form deactivated notification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: 'Form Deactivated due to exceeding free sms threshold',
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WarningNotification,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'warning' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending form deactivated notification email',
+          meta: {
+            action: 'sendFormDeactivatedNotification',
+            formTitle,
+            formId,
+          },
+          error,
+        })
+        return error
+      })
+    })
+  }
+
+  /**
+   * Sends a notification for sms threshold hit warning
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @throws error if mail fails, to be handled by the caller
+   */
+  sendSmsThresholdWarningNotification = ({
+    emailRecipients,
+    formTitle,
+    formId,
+    smsThreshold,
+  }: {
+    emailRecipients: string[]
+    formTitle: string
+    formId: string
+    smsThreshold: smsThreshold
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: SmsThresholdWarningNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      appName: this.#appName,
+      smsThreshold,
+    }
+
+    const generatedHtml = fromPromise(
+      render(SmsThresholdWarningNotification(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render SmsThresholdWarningNotification',
+          meta: {
+            action: 'sendSmsThresholdWarningNotification',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating sms threshold warning notification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: `[Alert] SMS usage for your form has reached ${smsThreshold * 100}% of the free limit`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'warning' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending sms threshold warning notification email',
+          meta: {
+            action: 'sendSmsThresholdWarningNotification',
             formTitle,
             formId,
           },

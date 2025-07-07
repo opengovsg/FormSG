@@ -1,0 +1,96 @@
+import { useTranslation } from 'react-i18next'
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react'
+
+import { SmsCountsDto } from '~shared/types/form'
+
+import { CONTACT_US } from '~constants/links'
+import { useIsMobile } from '~hooks/useIsMobile'
+import Badge from '~components/Badge'
+import Button from '~components/Button'
+import Link from '~components/Link'
+import Spinner from '~components/Spinner'
+
+import { formatSmsCounts } from './utils'
+
+type SmsCountsModalProps = {
+  smsCount?: SmsCountsDto
+  isOpen: boolean
+  onClose: () => void
+}
+export const SmsCountsModal = ({
+  smsCount,
+  isOpen,
+  onClose,
+}: SmsCountsModalProps) => {
+  const { t } = useTranslation()
+
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
+
+  const isMobile = useIsMobile()
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={modalSize}
+      closeOnEsc={false}
+      closeOnOverlayClick={false}
+    >
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Verified SMS Billing</ModalHeader>
+        <ModalBody>
+          {smsCount === undefined ? (
+            <Spinner fontSize="2rem" />
+          ) : (
+            <>
+              <Text textStyle="body-2">
+                This form is allocated a limited number of free SMS OTP
+                verifications. Once this limit is reached, the form will be
+                automatically closed to new responses.
+              </Text>
+              <Text textStyle="body-2" mt="1.5rem">
+                If you require more than the free limit, additional usage will
+                incur costs. Please reach out to the FormSG support team by
+                filling out this{' '}
+                <Link target="_blank" href={CONTACT_US}>
+                  form
+                </Link>
+                .
+              </Text>
+              <Badge
+                colorScheme="primary"
+                variant="subtle"
+                color="secondary.500"
+                mt="2rem"
+              >
+                {t(
+                  'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
+                  { smsCount: formatSmsCounts(smsCount) },
+                )}
+              </Badge>
+            </>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button isFullWidth={isMobile} onClick={onClose}>
+            Yes, I understand
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
