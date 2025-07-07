@@ -19,9 +19,12 @@ export const SmsCountMessage = ({
     <Flex mt="1rem" color={textColor}>
       <Icon as={BiMessage} mr="0.5rem" />
       <Skeleton isLoaded={!!smsCount}>
-        <Text textStyle="caption-1">{`${formatSmsCounts(smsCount)} ${t(
-          'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
-        )}`}</Text>
+        <Text textStyle="caption-1">
+          {t(
+            'features.adminForm.sidebar.fields.mobileNo.otpVerification.smsUsed',
+            { smsCount: formatSmsCounts(smsCount) },
+          )}
+        </Text>
       </Skeleton>
     </Flex>
   )
