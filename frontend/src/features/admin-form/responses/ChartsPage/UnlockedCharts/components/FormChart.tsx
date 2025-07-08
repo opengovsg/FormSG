@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Chart, { GoogleChartWrapperChartType } from 'react-google-charts'
+import { useTranslation } from 'react-i18next'
 import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import { Flex, Text, VStack } from '@chakra-ui/react'
 
@@ -127,7 +128,9 @@ export const FormChart = ({
   )
 }
 
-const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
+function RatingsAverageText({ data }: { data: [string, number][] }) {
+  const { t } = useTranslation()
+
   let mean = 0
   let count = 0
   data.forEach(([rating, ratingCount]) => {
@@ -139,9 +142,17 @@ const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
   })
 
   if (count === 0) {
-    return <Text textStyle="h4">Average: N/A</Text> // Handle division by zero and no valid ratings
+    return (
+      <Text textStyle="h4">
+        {t('features.common.average')}: {t('features.common.notApplicable')}
+      </Text>
+    ) // Handle division by zero and no valid ratings
   }
   mean = mean / count
   const roundedMean = Math.round(mean * 100) / 100 // Rounds to two decimal places
-  return <Text textStyle="h4">Average: {roundedMean}</Text>
+  return (
+    <Text textStyle="h4">
+      {t('features.common.average')}: {roundedMean}
+    </Text>
+  )
 }

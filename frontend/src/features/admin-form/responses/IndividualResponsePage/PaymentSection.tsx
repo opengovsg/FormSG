@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiCheck, BiInfoCircle } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { Box, Divider, Flex, Icon, Link, Text } from '@chakra-ui/react'
@@ -19,6 +20,8 @@ export const PaymentSection = ({
   payment,
   formId,
 }: PaymentSectionProps): JSX.Element | null => {
+  const { t } = useTranslation()
+
   if (!payment) return null
 
   const paymentDataMap = keyBy(
@@ -28,19 +31,45 @@ export const PaymentSection = ({
 
   const paymentTagProps =
     payment.status === PaymentStatus.Succeeded
-      ? { label: 'Success', colorScheme: 'success', rightIcon: BiCheck }
+      ? {
+          label: t('features.common.success'),
+          colorScheme: 'success',
+          rightIcon: BiCheck,
+        }
       : payment.status === PaymentStatus.PartiallyRefunded
-        ? { label: 'Partially refunded', colorScheme: 'secondary' }
+        ? {
+            label: t(
+              'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.partiallyRefunded',
+            ),
+            colorScheme: 'secondary',
+          }
         : payment.status === PaymentStatus.FullyRefunded
-          ? { label: 'Fully refunded', colorScheme: 'secondary' }
+          ? {
+              label: t(
+                'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.fullyRefunded',
+              ),
+              colorScheme: 'secondary',
+            }
           : payment.status === PaymentStatus.Disputed
-            ? { label: 'Disputed', colorScheme: 'warning' }
+            ? {
+                label: t(
+                  'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.disputed',
+                ),
+                colorScheme: 'warning',
+              }
             : undefined // The remaining options should never appear.
 
   const payoutTagProps =
     payment.payoutId || payment.payoutDate
-      ? { label: 'Success', colorScheme: 'success', rightIcon: BiCheck }
-      : { label: 'Pending', colorScheme: 'secondary' }
+      ? {
+          label: t('features.common.success'),
+          colorScheme: 'success',
+          rightIcon: BiCheck,
+        }
+      : {
+          label: t('features.common.pending'),
+          colorScheme: 'secondary',
+        }
 
   // Error: the payment is invalid and should not reach this state
   if (!paymentTagProps) return null
@@ -83,39 +112,44 @@ type PaymentDataHeaderProps = {
   rightIcon?: IconType
 }
 
-const PayoutDataHeader = ({
+function PayoutDataHeader({
   name,
   label,
   colorScheme,
   rightIcon,
-}: PaymentDataHeaderProps) => (
-  <Flex gap="1rem" align="center">
-    <Flex>
-      <Text textStyle="h2" as="h2" color="primary.500">
-        {name}
-      </Text>
+}: PaymentDataHeaderProps) {
+  const { t } = useTranslation()
 
-      <Tooltip
-        placement="top"
-        label="This is when money collected gets deposited into your bank account.
-        Depending on payment method, payouts happen 1 - 3 working days after a respondent makes payment."
+  return (
+    <Flex gap="1rem" align="center">
+      <Flex>
+        <Text textStyle="h2" as="h2" color="primary.500">
+          {name}
+        </Text>
+
+        <Tooltip
+          placement="top"
+          label={t(
+            'features.adminForm.responses.individualResponse.paymentSection.tooltipLabel',
+          )}
+        >
+          <Flex justify="center" align="center">
+            <Icon as={BiInfoCircle} fontSize="1.25rem" ml="0.5rem" />
+          </Flex>
+        </Tooltip>
+      </Flex>
+      <Badge
+        colorScheme={colorScheme}
+        display="flex"
+        variant="subtle"
+        alignItems="center"
       >
-        <Flex justify="center" align="center">
-          <Icon as={BiInfoCircle} fontSize="1.25rem" ml="0.5rem" />
-        </Flex>
-      </Tooltip>
+        {label}
+        {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
+      </Badge>
     </Flex>
-    <Badge
-      colorScheme={colorScheme}
-      display="flex"
-      variant="subtle"
-      alignItems="center"
-    >
-      {label}
-      {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
-    </Badge>
-  </Flex>
-)
+  )
+}
 
 const PaymentDataHeader = ({
   name,
@@ -146,19 +180,22 @@ type PaymentDataItemProps = {
   isUrl?: boolean
 }
 
-const PaymentDataItem = ({
+function PaymentDataItem({
   name,
   value,
   isMonospace,
   isUrl,
-}: PaymentDataItemProps): JSX.Element => {
+}: PaymentDataItemProps): JSX.Element {
+  const { t } = useTranslation()
   return (
     <Flex flexDir={{ base: 'column', md: 'row' }} gap="0.25rem">
       <Text textStyle="subhead-1">{name}:</Text>
       <Text textStyle={isMonospace ? 'monospace' : undefined}>
         {isUrl ? (
           <Link href={value} target="_blank">
-            Download as PDF
+            {t(
+              'features.adminForm.responses.individualResponse.paymentSection.paymentDataItemPdfDownloadLabel',
+            )}
           </Link>
         ) : (
           value

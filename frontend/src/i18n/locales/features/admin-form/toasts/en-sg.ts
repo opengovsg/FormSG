@@ -1,4 +1,6 @@
-export const enSG = {
+import { Toasts } from '.'
+
+export const enSG: Toasts = {
   field: {
     delete: {
       success: 'The {field} was deleted.',
@@ -33,6 +35,11 @@ export const enSG = {
     successBefore: 'Respondents will',
     disabled: 'not ',
     successAfter: 'be able to receive a copy of their submission',
+  },
+  form: {
+    retrieval: {
+      error: 'There was an error retrieving your form. Please try again later.',
+    },
   },
   statusTracker: {
     successBefore: 'Respondents will',
