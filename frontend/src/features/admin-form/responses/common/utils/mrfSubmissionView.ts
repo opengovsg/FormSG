@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '~shared/types'
+import { FormWorkflowDto, SubmittedStep, WorkflowStatus } from '~shared/types'
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
@@ -68,4 +68,26 @@ export const getStatusFromWorkflowStatus = (
       throw new Error('Invalid WorkflowStatus encountered.')
     }
   }
+}
+
+export type getWorkflowStatusFromFormResponseProps = {
+  index: number
+  workflow: FormWorkflowDto
+  submittedSteps: SubmittedStep[]
+}
+
+/** Gets a step's workflow status from workflow steps and MRF submmission steps */
+export const getWorkflowStatusFromFormResponse = ({
+  index,
+  workflow,
+  submittedSteps,
+}: getWorkflowStatusFromFormResponseProps): WorkflowStatus => {
+  const submittedStep = submittedSteps[index]
+  return index < submittedSteps.length
+    ? workflow[index].approval_field // if this step is an approval step
+      ? 'status' in submittedStep // if status is in submitted step
+        ? submittedStep.status
+        : WorkflowStatus.COMPLETED
+      : WorkflowStatus.COMPLETED
+    : WorkflowStatus.PENDING
 }
