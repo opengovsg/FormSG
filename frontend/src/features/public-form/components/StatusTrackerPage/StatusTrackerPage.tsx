@@ -10,6 +10,7 @@ import { FCC } from '~typings/react'
 import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { getWorkflowStatusFromFormResponse } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   BackgroundBox,
   BaseGridLayout,
@@ -101,20 +102,20 @@ export const StatusTrackerPage = (): JSX.Element => {
 
   const { submittedSteps, workflow } = data
 
+  let isWorkFlowRejected = false
   const stepData: StepData[] = workflow.map((step, index) => {
     const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
 
-    const submittedStep = submittedSteps[index]
+    const workflowStatus = getWorkflowStatusFromFormResponse({
+      index,
+      workflow,
+      submittedSteps,
+    })
 
-    const workflowStatus =
-      index < submittedSteps.length
-        ? workflow[index].approval_field // if this step is an approval step
-          ? 'status' in submittedStep // if status is in submitted step
-            ? submittedStep.status
-            : WorkflowStatus.COMPLETED
-          : WorkflowStatus.COMPLETED
-        : WorkflowStatus.PENDING
+    if (workflowStatus === WorkflowStatus.REJECTED) {
+      isWorkFlowRejected = true
+    }
 
     if (index < submittedSteps.length) {
       return {
@@ -129,7 +130,9 @@ export const StatusTrackerPage = (): JSX.Element => {
       name: name,
       stepNumber: stepNumber,
       workflowStatus: workflowStatus,
-      isCurrentPendingStep: index == submittedSteps.length,
+      ...(isWorkFlowRejected
+        ? {}
+        : { isCurrentPendingStep: index === submittedSteps.length }),
     }
   })
 

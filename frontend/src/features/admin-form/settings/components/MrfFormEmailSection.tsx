@@ -206,11 +206,12 @@ const MrfEmailNotificationsForm = ({
                 <MultiSelect
                   items={formWorkflowStepsWithStepNumber
                     .filter((step) => step.stepNumber > 1)
-                    .map(({ stepNumber, _id: value }) => ({
-                      label: t(
-                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
-                        { stepNumber },
-                      ),
+                    .map(({ step_name, stepNumber, _id: value }) => ({
+                      label:
+                        t(
+                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
+                          { stepNumber },
+                        ) + (step_name ? ` (${step_name})` : ''),
                       value,
                     }))}
                   values={values}

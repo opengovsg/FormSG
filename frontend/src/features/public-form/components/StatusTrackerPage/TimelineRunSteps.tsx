@@ -135,7 +135,11 @@ export const TimelineRunSteps = ({
           h="2rem"
           mx="1rem"
           my="1.5rem"
-          borderColor={statusColor[step.workflowStatus]}
+          borderColor={
+            step.workflowStatus === WorkflowStatus.REJECTED
+              ? statusColor[WorkflowStatus.PENDING]
+              : statusColor[step.workflowStatus]
+          }
           zIndex={1}
           mt="0rem"
           mb="0rem"
