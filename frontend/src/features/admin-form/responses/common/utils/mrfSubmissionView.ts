@@ -85,7 +85,7 @@ export const getWorkflowStatusFromFormResponse = ({
   const submittedStep = submittedSteps[index]
 
   // Steps that haven't been submitted must be PENDING
-  if (index < submittedSteps.length) {
+  if (index >= submittedSteps.length) {
     return WorkflowStatus.PENDING
   }
 
