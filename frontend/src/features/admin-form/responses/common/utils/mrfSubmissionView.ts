@@ -90,7 +90,11 @@ export const getWorkflowStatusFromFormResponse = ({
   }
 
   // Return the ApprovalStatus of approval steps (either APPROVED or REJECTED)
-  if (workflow[index].approval_field && 'status' in submittedStep) {
+  if (
+    workflow[index].approval_field &&
+    submittedStep !== undefined &&
+    'status' in submittedStep
+  ) {
     return submittedStep.status
   }
 
