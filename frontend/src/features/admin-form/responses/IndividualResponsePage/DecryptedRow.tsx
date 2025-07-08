@@ -90,7 +90,9 @@ const DecryptedAttachmentRow = ({
         {row.answer && (
           <Button
             variant="link"
-            aria-label={`${t('features.common.download')} ${t('features.common.file')}`}
+            aria-label={t(
+              'features.adminForm.responses.individualResponse.decryptedAttachment.aria',
+            )}
             isDisabled={downloadAttachmentMutation.isLoading}
             onClick={handleDownload}
             rightIcon={

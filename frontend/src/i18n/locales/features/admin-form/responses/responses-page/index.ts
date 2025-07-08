@@ -54,6 +54,7 @@ export interface ResponsesResponsesPage {
       }
       submissionSearchbarPlaceholder: string
       downloadButton: {
+        label: string
         navigateAwayPrompt: {
           title: string
           description: string

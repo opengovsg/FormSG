@@ -63,6 +63,7 @@ export const enSG: ResponsesResponsesPage = {
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
       downloadButton: {
+        label: 'Download options',
         navigateAwayPrompt: {
           title: 'Stop downloading responses?',
           description:

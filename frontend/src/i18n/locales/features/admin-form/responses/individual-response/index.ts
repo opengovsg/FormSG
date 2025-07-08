@@ -2,6 +2,8 @@ export * from './en-sg'
 
 export interface ResponsesIndividualResponse {
   backToList: string
+  nextSubmission: string
+  previousSubmission: string
   secretKeyVerification: {
     ctaText: string
     label: string
@@ -16,5 +18,8 @@ export interface ResponsesIndividualResponse {
     }
     tooltipLabel: string
     paymentDataItemPdfDownloadLabel: string
+  }
+  decryptedAttachment: {
+    aria: string
   }
 }

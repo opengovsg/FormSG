@@ -141,13 +141,17 @@ export const IndividualResponseNavbar = (): JSX.Element => {
           isDisabled={!prevSubmissionId || isAnyFetching}
           onClick={handleNavigatePrev}
           icon={<BiChevronLeft />}
-          aria-label={`${t('features.common.previous')} ${t('features.common.submission')}`}
+          aria-label={t(
+            'features.adminForm.responses.individualResponse.previousSubmission',
+          )}
         />
         <IconButton
           isDisabled={!nextSubmissionId || isAnyFetching}
           onClick={handleNavigateNext}
           icon={<BiChevronRight />}
-          aria-label={`${t('features.common.next')} ${t('features.common.submission')}`}
+          aria-label={t(
+            'features.adminForm.responses.individualResponse.nextSubmission',
+          )}
         />
       </ButtonGroup>
     </Grid>

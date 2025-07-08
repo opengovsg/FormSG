@@ -205,7 +205,9 @@ export const DownloadButton = (): JSX.Element => {
                 isDisabled={!downloadParams}
                 isLoading={handleExportCsvMutation.isLoading}
                 isActive={isOpen}
-                aria-label={`${t('features.common.download')} ${t('features.common.options')}`}
+                aria-label={t(
+                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                )}
                 rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
               >
                 {t('features.common.download')}
