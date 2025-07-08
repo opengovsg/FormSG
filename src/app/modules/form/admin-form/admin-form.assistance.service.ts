@@ -311,7 +311,7 @@ export const createFormFieldsUsingTextPrompt = ({
 > => {
   return generateAndsendTextPromptToModel({
     userPrompt,
-    formId: form.id,
+    formId: form._id,
   })
     .andThen((modelResponse) => {
       if (!modelResponse) {
@@ -496,7 +496,7 @@ export const createFormFieldsUsingVisionPrompt = ({
   | FieldNotFoundError
 > => {
   return generateAndSendVisionPromptToModel({
-    formId: form.id,
+    formId: form._id,
     imageDataUrls,
   })
     .andThen((modelResponse) => {
