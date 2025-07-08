@@ -82,16 +82,18 @@ export const getWorkflowStatusFromFormResponse = ({
   workflow,
   submittedSteps,
 }: getWorkflowStatusFromFormResponseProps): WorkflowStatus => {
+  const submittedStep = submittedSteps[index]
+
   // Steps that haven't been submitted must be PENDING
   if (index < submittedSteps.length) {
     return WorkflowStatus.PENDING
   }
-  
+
   // Return the ApprovalStatus of approval steps (either APPROVED or REJECTED)
   if (workflow[index].approval_field && 'status' in submittedStep) {
     return submittedStep.status
   }
-  
+
   // Otherwise, the step is COMPLETED
   return WorkflowStatus.COMPLETED
 }
