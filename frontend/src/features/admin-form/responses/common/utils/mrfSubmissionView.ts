@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '~shared/types'
+import { FormWorkflowDto, SubmittedStep, WorkflowStatus } from '~shared/types'
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
@@ -23,7 +23,7 @@ export const getPendingResponseAtString = ({
     workflowStatus === WorkflowStatus.PENDING &&
     workflowCurrentStepNumber < workflowNumTotalSteps
   if (!isPending) {
-    return 'None'
+    return '-'
   }
 
   // The form is currently completed until step N.
@@ -68,4 +68,36 @@ export const getStatusFromWorkflowStatus = (
       throw new Error('Invalid WorkflowStatus encountered.')
     }
   }
+}
+
+export type getWorkflowStatusFromFormResponseProps = {
+  index: number
+  workflow: FormWorkflowDto
+  submittedSteps: SubmittedStep[]
+}
+
+/** Gets a step's workflow status from workflow steps and MRF submmission steps */
+export const getWorkflowStatusFromFormResponse = ({
+  index,
+  workflow,
+  submittedSteps,
+}: getWorkflowStatusFromFormResponseProps): WorkflowStatus => {
+  const submittedStep = submittedSteps[index]
+
+  // Steps that haven't been submitted must be PENDING
+  if (index >= submittedSteps.length) {
+    return WorkflowStatus.PENDING
+  }
+
+  // Return the ApprovalStatus of approval steps (either APPROVED or REJECTED)
+  if (
+    workflow[index].approval_field &&
+    submittedStep !== undefined &&
+    'status' in submittedStep
+  ) {
+    return submittedStep.status
+  }
+
+  // Otherwise, the step is COMPLETED
+  return WorkflowStatus.COMPLETED
 }

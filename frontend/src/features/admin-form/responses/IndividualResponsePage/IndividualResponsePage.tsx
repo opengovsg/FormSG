@@ -211,7 +211,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                     workflowStatus === undefined ||
                     workflowCurrentStepNumber === undefined ||
                     workflowNumTotalSteps === undefined
-                      ? 'None'
+                      ? '-'
                       : getPendingResponseAtString({
                           workflowStatus,
                           workflowCurrentStepNumber,

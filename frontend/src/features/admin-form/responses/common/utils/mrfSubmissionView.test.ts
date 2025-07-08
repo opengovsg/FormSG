@@ -2,7 +2,7 @@ import { WorkflowStatus } from '~shared/types'
 
 import { getPendingResponseAtString } from './mrfSubmissionView'
 
-const noneString = 'None'
+const noneString = '-'
 
 describe('getPendingResponseAtString', () => {
   test('should return empty string when workflow status is approved', () => {
