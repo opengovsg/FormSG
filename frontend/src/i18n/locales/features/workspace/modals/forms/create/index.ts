@@ -1,5 +1,6 @@
 export * from './en-sg'
-export interface CreateModal {
+
+export interface CreateFormModal {
   title: {
     setup: string
     duplicate: string
@@ -22,10 +23,26 @@ export interface CreateModal {
       storage: {
         title: string
         subtitle: string
+        optionDescriptionItems: {
+          supportEmailSubmissions: string
+          supportSingpassMyinfo: string
+          supportWebhooks: string
+          sensitivity: string
+        }
       }
       mrf: {
         title: string
         subtitle: string
+        optionDescriptionItems: {
+          supportEmailSubmissions: string
+          supportApprovalWorkflow: string
+          sensitivity: string
+        }
+      }
+      email: {
+        description: string
+        link: string
+        continuedDescription: string
       }
     }
     notifications: {
@@ -48,12 +65,25 @@ export interface CreateModal {
       copied: string
     }
     download: string
-    declaration: string
+    declaration: {
+      text: string
+      aria: string
+    }
     confirm: string
     email: {
       filename: string
       subject: string
       body: string
     }
+    warning: {
+      beforeUnload: string
+      popState: string
+    }
+    mailSecretKey: {
+      aria: string
+    }
+  }
+  emailFormRecipient: {
+    placeholder: string
   }
 }

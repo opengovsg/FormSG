@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
 import simplur from 'simplur'
@@ -147,12 +148,20 @@ export const DownloadButton = (): JSX.Element => {
     setDownloadMetadata({ isCanceled: true })
   }, [resetDownload])
 
+  const { t } = useTranslation()
+
   return (
     <>
       <NavigationPrompt
-        title="Stop downloading responses?"
-        description="You are currently downloading form responses. The download will be aborted if you leave this page."
-        confirmButtonText="Yes, leave this page"
+        title={t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.title',
+        )}
+        description={t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.description',
+        )}
+        confirmButtonText={t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.confirmButtonText',
+        )}
         when={handleExportCsvMutation.isLoading}
       />
       {dateRangeResponsesCount !== undefined && (
@@ -176,9 +185,14 @@ export const DownloadButton = (): JSX.Element => {
           downloadMetadata={downloadMetadata}
         >
           <Text mb="1rem">
-            <b>{dateRangeResponsesCount.toLocaleString()}</b> responses are
-            being processed. Navigating away from this page will stop the
-            download.
+            {t(
+              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
+              {
+                dateRangeResponsesCount: (
+                  <b>{dateRangeResponsesCount.toLocaleString()}</b>
+                ),
+              },
+            )}
           </Text>
         </ProgressModal>
       )}
@@ -191,17 +205,23 @@ export const DownloadButton = (): JSX.Element => {
                 isDisabled={!downloadParams}
                 isLoading={handleExportCsvMutation.isLoading}
                 isActive={isOpen}
-                aria-label="Download options"
+                aria-label={t(
+                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                )}
                 rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
               >
-                Download
+                {t('features.common.download')}
               </MenuButton>
               <Menu.List>
                 <Menu.Item onClick={handleExportCsvNoAttachments}>
-                  CSV only
+                  {t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem.csvOnly',
+                  )}
                 </Menu.Item>
                 <Menu.Item onClick={onDownloadModalOpen}>
-                  CSV with attachments
+                  {t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem.csvWithAttachments',
+                  )}
                 </Menu.Item>
               </Menu.List>
             </>

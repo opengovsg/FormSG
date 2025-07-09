@@ -1,7 +1,7 @@
 name: Deploy Virus Scanner GuardDuty to new OGP AWS production account
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
 on:
   push:
     branches:
-      - uat 
+      - uat
 
 jobs:
   deploy-scanner-guardduty:

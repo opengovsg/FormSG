@@ -455,6 +455,7 @@ const sendMrfRespondentCopyEmails = ({
     responseId: submissionId,
     formQuestionAnswers,
     attachments: attachments,
+    respondentCopy: form.hasRespondentCopy,
   }).orElse((error) => {
     logger.error({
       message: 'Failed to send respondent copy email',
@@ -626,7 +627,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  if (respondentEmails) {
+  if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,
@@ -861,7 +862,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  if (respondentEmails) {
+  if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,

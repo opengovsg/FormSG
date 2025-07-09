@@ -2,6 +2,8 @@ import { WorkflowStatus } from '~shared/types'
 
 import { getPendingResponseAtString } from './mrfSubmissionView'
 
+const noneString = '-'
+
 describe('getPendingResponseAtString', () => {
   test('should return empty string when workflow status is approved', () => {
     const result = getPendingResponseAtString({
@@ -9,7 +11,7 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 1,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('')
+    expect(result).toBe(noneString)
   })
 
   test('should return empty string when workflow status is rejected', () => {
@@ -18,7 +20,7 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 1,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('')
+    expect(result).toBe(noneString)
   })
 
   test('should return empty string when workflow status is completed', () => {
@@ -27,7 +29,7 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 1,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('')
+    expect(result).toBe(noneString)
   })
 
   test('should return empty string when workflowCurrentStepNumber === workflowNumTotalSteps', () => {
@@ -36,7 +38,7 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 2,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('')
+    expect(result).toBe(noneString)
   })
 
   test('should return empty string when workflowCurrentStepNumber > workflowNumTotalSteps', () => {
@@ -45,7 +47,7 @@ describe('getPendingResponseAtString', () => {
       workflowCurrentStepNumber: 3,
       workflowNumTotalSteps: 2,
     })
-    expect(result).toBe('')
+    expect(result).toBe(noneString)
   })
 
   test('should return correct workflowCurrentStepNumber of workflowNumTotalSteps string when workflow status is pending and workflowCurrentStepNumber < workflowNumTotalSteps', () => {

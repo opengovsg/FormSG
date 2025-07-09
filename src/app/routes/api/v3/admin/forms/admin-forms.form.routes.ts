@@ -133,6 +133,11 @@ AdminFormsFormRouter.post(
   AdminFormController.handleTransferAllFormsOwnership,
 )
 
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/convert-to-storage',
+  AdminFormController.handleConvertEmailToStorageMode,
+)
+
 /**
  * Specific form field REST APIs
  */
@@ -294,3 +299,17 @@ AdminFormsFormRouter.route('/feedback/:feedbackId([a-fA-F0-9]{24})')
    * @returns 500 if database error occurs
    */
   .patch(AdminFeedbackController.handleUpdateAdminFeedback)
+
+/**
+ * Retrieves the sms counts used by a form's administrator and the sms verification quota
+ * @security session
+ *
+ * @returns 200 with the free sms counts and the quota
+ * @returns 401 when user does not exist in session
+ * @returns 404 when the formId is not found in the database
+ * @returns 500 when a database error occurs during retrieval
+ */
+AdminFormsFormRouter.get(
+  '/:formId([a-fA-F0-9]{24})/verified-sms/count',
+  AdminFormController.handleGetSmsCountForFormAdmin,
+)

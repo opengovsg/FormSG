@@ -166,11 +166,112 @@ describe('submission.service', () => {
       await Promise.all(subPromises)
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
 
       // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return correct all form counts when not providing submission type', async () => {
+      // Arrange
+      const encryptSubmissionCount = 4
+      const emailSubmissionCount = 2
+      const multirespondentSubmissionCount = 3
+
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = times(emailSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Email,
+          form: MOCK_FORM_ID,
+          responseHash: 'hash',
+          responseSalt: 'salt',
+          created: new Date('2019-01-01'),
+          recipientEmails: [],
+        }),
+      )
+      const subMultirespondentPromise = times(
+        multirespondentSubmissionCount,
+        () =>
+          Submission.create({
+            submissionType: SubmissionType.Multirespondent,
+            form: MOCK_FORM_ID,
+            workflowStep: 0,
+            version: 1,
+            encryptedContent: 'some random encrypted content',
+            encryptedSubmissionSecretKey:
+              'some random encrypted submission secret key',
+            submissionPublicKey: 'some random submission public key',
+          }),
+      )
+      await Promise.all([
+        ...subEncryptPromise,
+        ...subEmailPromise,
+        ...subMultirespondentPromise,
+      ])
+
+      const expectedSubmissionCount =
+        encryptSubmissionCount +
+        emailSubmissionCount +
+        multirespondentSubmissionCount
+
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
+
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
+    })
+
+    it('should return correct form counts when submission type is provided', async () => {
+      // Arrange
+      const expectedSubmissionCount = 4
+      const subEncryptPromise = times(expectedSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = Submission.create({
+        submissionType: SubmissionType.Email,
+        form: MOCK_FORM_ID,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        created: new Date('2019-01-01'),
+        recipientEmails: [],
+      })
+      const subMultirespondentPromise = Submission.create({
+        submissionType: SubmissionType.Multirespondent,
+        form: MOCK_FORM_ID,
+        workflowStep: 0,
+        version: 1,
+        encryptedContent: 'some random encrypted content',
+        encryptedSubmissionSecretKey:
+          'some random encrypted submission secret key',
+        submissionPublicKey: 'some random submission public key',
+      })
+      await Promise.all([
+        ...subEncryptPromise,
+        subEmailPromise,
+        subMultirespondentPromise,
+      ])
+
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        submissionType: SubmissionType.Encrypt,
+      })
+
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
@@ -217,10 +318,10 @@ describe('submission.service', () => {
       ])
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        { startDate: '2019-01-01', endDate: '2019-01-01' },
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: { startDate: '2019-01-01', endDate: '2019-01-01' },
+      })
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -245,10 +346,10 @@ describe('submission.service', () => {
 
       // Act
       const queryDateRange = { startDate: '2020-01-01', endDate: '2020-01-01' }
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        queryDateRange,
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: queryDateRange,
+      })
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({
@@ -265,10 +366,13 @@ describe('submission.service', () => {
 
     it('should return MalformedParametersError when date range provided is malformed', async () => {
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-        { startDate: 'some malformed start date', endDate: '2020-01-01' },
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        dateRange: {
+          startDate: 'some malformed start date',
+          endDate: '2020-01-01',
+        },
+      })
 
       // Assert
       expect(countSpy).not.toHaveBeenCalled()
@@ -288,9 +392,9 @@ describe('submission.service', () => {
       )
 
       // Act
-      const actualResult = await SubmissionService.getFormSubmissionsCount(
-        MOCK_FORM_ID.toHexString(),
-      )
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+      })
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({

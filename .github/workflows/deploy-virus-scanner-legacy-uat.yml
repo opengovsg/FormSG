@@ -1,7 +1,7 @@
 name: Deploy Legacy Virus Scanner to new OGP AWS production account
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -15,7 +15,6 @@ on:
   # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
   schedule:
     - cron: '0 16 * * *'
-
 
 jobs:
   deploy-scanner:

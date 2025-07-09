@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   ModalBody,
   ModalFooter,
@@ -22,20 +23,30 @@ export const ProgressModalContent = ({
   onCancel,
 }: ProgressModalContentProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
 
   return (
     <>
-      <ModalHeader color="secondary.700">Downloading...</ModalHeader>
+      <ModalHeader color="secondary.700">
+        {t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.content.title',
+        )}
+      </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500" textStyle="body-2">
         {children}
         <Text textStyle="subhead-1" mb="0.5rem">
-          {downloadPercentage}% completed
+          {downloadPercentage}
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.content.percentCompleted',
+          )}
         </Text>
         <Progress size="xl" value={downloadPercentage} hasStripe isAnimated />
       </ModalBody>
       <ModalFooter>
         <Button colorScheme="danger" onClick={onCancel} isFullWidth={isMobile}>
-          Stop download
+          {t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.content.stopDownload',
+          )}
         </Button>
       </ModalFooter>
     </>

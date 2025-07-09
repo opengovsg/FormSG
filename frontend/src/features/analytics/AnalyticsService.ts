@@ -201,3 +201,16 @@ export const trackClickSecretKeyMailTo = (formTitle: string) => {
     form_title: formTitle,
   })
 }
+
+/**
+ * Logs clicking on mailto link to share form secret key with collaborators for email mode form that has been converted to storage mode form.
+ */
+export const trackClickSecretKeyMailToEmailToStorageConvertedForm = (
+  formId: string,
+) => {
+  GA().gtag('event', 'email_mode', {
+    event_action:
+      'Secret key mailto clicked for email to storage converted form',
+    form_id: formId,
+  })
+}

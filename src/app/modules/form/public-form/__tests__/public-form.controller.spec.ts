@@ -162,6 +162,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_NIL_AUTH_FORM),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_NIL_AUTH_FORM),
+        )
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -195,6 +198,10 @@ describe('public-form.controller', () => {
           okAsync(MOCK_SP_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SP_AUTH_FORM),
+        )
+
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
 
@@ -237,6 +244,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_CP_AUTH_FORM),
+        )
         jest
           .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
           .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
@@ -275,6 +285,9 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
@@ -336,6 +349,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
         MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
           okAsync(MOCK_ACCESS_TOKEN),
         )
@@ -385,6 +401,9 @@ describe('public-form.controller', () => {
 
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValue(
+          okAsync(MOCK_MYINFO_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValue(
           okAsync(MOCK_MYINFO_FORM),
         )
 
@@ -625,6 +644,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_FORM),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SP_FORM),
+        )
         jest
           .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
           .mockReturnValueOnce(errAsync(new MissingJwtError()))
@@ -655,6 +677,9 @@ describe('public-form.controller', () => {
           okAsync(MOCK_CP_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_CP_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_FORM),
         )
         jest
@@ -707,6 +732,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
         MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
           okAsync(MOCK_ACCESS_TOKEN),
         )
@@ -754,6 +782,9 @@ describe('public-form.controller', () => {
           okAsync(MOCK_SP_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SP_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_FORM),
         )
         jest
@@ -929,6 +960,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_NIL_AUTH_FORM),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_NIL_AUTH_FORM),
+        )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(false)
 
         // Act
@@ -964,6 +998,9 @@ describe('public-form.controller', () => {
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_SP_AUTH_FORM),
         )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SP_AUTH_FORM),
+        )
 
         // Act
         await PublicFormController.handleGetPublicForm(
@@ -997,6 +1034,9 @@ describe('public-form.controller', () => {
           okAsync(MOCK_CP_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_CP_AUTH_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_CP_AUTH_FORM),
         )
 
@@ -1036,6 +1076,9 @@ describe('public-form.controller', () => {
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
           okAsync(MOCK_MYINFO_AUTH_FORM),
         )
         MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)

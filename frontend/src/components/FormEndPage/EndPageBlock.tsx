@@ -3,14 +3,22 @@ import { useTranslation } from 'react-i18next'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto, Language } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormDto,
+  FormResponseMode,
+  Language,
+  PublicFormDto,
+} from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
+import { SubmitAnotherResponseButton } from '~features/public-form/components/FormEndPage/SubmitAnotherResponseButton'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
+
+import { StatusTrackerLink } from './StatusTrackerLink'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -19,6 +27,7 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
+  form: PublicFormDto | undefined
 }
 
 export const EndPageBlock = ({
@@ -28,9 +37,11 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
+  form,
 }: EndPageBlockProps): JSX.Element => {
   const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (focusOnMount) {
       focusRef.current?.focus()
@@ -87,7 +98,7 @@ export const EndPageBlock = ({
           </Box>
         ) : null}
       </Box>
-      <Box mt="2rem">
+      <Box mt="1rem">
         <Box>
           <Text textColor="secondary.300" textStyle="caption-2">
             Response ID: {submissionData.id}
@@ -96,18 +107,25 @@ export const EndPageBlock = ({
             {submissionTimestamp}
           </Text>
         </Box>
-        <Box mt="2.25rem">
-          {isButtonHidden || (
-            <Button
-              as="a"
-              href={endPage.buttonLink || window.location.href}
-              variant="solid"
-              colorScheme={`theme-${colorTheme}`}
-            >
-              {endPage.buttonText || 'Submit another response'}
-            </Button>
-          )}
-        </Box>
+
+        {form?.responseMode == FormResponseMode.Multirespondent &&
+        form?.hasStatusTracker ? (
+          <Box mt="2rem">
+            <StatusTrackerLink
+              formId={form?._id}
+              submissionId={submissionData.id}
+            />
+          </Box>
+        ) : (
+          <Box mt="2.25rem">
+            {isButtonHidden || (
+              <SubmitAnotherResponseButton
+                endPage={endPage}
+                colorTheme={colorTheme}
+              />
+            )}
+          </Box>
+        )}
       </Box>
     </>
   )

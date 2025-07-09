@@ -150,6 +150,12 @@ const loadExpressApp = async (connection: Connection) => {
 
   const server = http.createServer(app)
 
+  // To make sure that it is always more than ALB's default 60 seconds client timeout
+  // https://adamcrowder.net/posts/node-express-api-and-aws-alb-502/
+  server.keepAliveTimeout = 65 * 1000 // 65 seconds
+  // Limit the amount of time the parser will wait to receive the complete HTTP headers
+  // https://github.com/nodejs/node/issues/27363#issuecomment-2807796956
+  server.headersTimeout = 66 * 1000 // 66 seconds
   return server
 }
 

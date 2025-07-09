@@ -35,6 +35,7 @@ import getFormModel, {
   getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
 import {
+  FormLogicSchema,
   IEncryptedForm,
   IFieldSchema,
   IFormDocument,
@@ -109,6 +110,7 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
+  noSmsLimit: false,
 }
 
 const ENCRYPT_MODE_SETTINGS_DEFAULTS = {
@@ -928,6 +930,7 @@ describe('Form Model', () => {
           stepsToNotify: [],
           emails: [],
           stepOneEmailNotificationFieldId: '',
+          hasStatusTracker: false,
         },
         FORM_DEFAULTS,
       )
@@ -1003,9 +1006,56 @@ describe('Form Model', () => {
 
     describe('Email form schema', () => {
       const EMAIL_FORM_DEFAULTS = merge(
-        { responseMode: 'email' },
+        { responseMode: 'email', isForceConvertToStorageMode: false },
         FORM_DEFAULTS,
       )
+
+      it('should replace with valid storage mode form with identical settings', async () => {
+        // Arrange
+        const emailFormToReplace = new EmailForm({
+          ...MOCK_EMAIL_FORM_PARAMS,
+          isForceConvertToStorageMode: true,
+        })
+        const MOCK_PUBLIC_KEY = 'mockPublicKey'
+        emailFormToReplace.authType = FormAuthType.SGID
+        emailFormToReplace.isSingleSubmission = true
+        emailFormToReplace.form_fields = [
+          generateDefaultField(BasicField.Date),
+          generateDefaultField(BasicField.Mobile),
+        ]
+        emailFormToReplace.form_logics = [
+          {
+            _id: new ObjectId(),
+            logicType: LogicType.ShowFields,
+          },
+        ] as FormLogicSchema[]
+
+        const emailForm = await emailFormToReplace.save()
+
+        // Act
+        await emailForm.__replaceWithStorageModeFormWithSameId({
+          publicKey: MOCK_PUBLIC_KEY,
+        })
+
+        // Assert
+        const newStorageModeForm = await Form.findById(emailForm._id)
+        // Check that id is retained
+        expect(newStorageModeForm?._id).toEqual(emailForm._id)
+        // Check that responseMode and publicKey are updated to the correct values
+        expect(newStorageModeForm?.responseMode).toEqual(
+          FormResponseMode.Encrypt,
+        )
+        expect(newStorageModeForm?.publicKey).toEqual(MOCK_PUBLIC_KEY)
+        // Check that all other form settings (such as form fields and logic) remain unchanged
+        const pastSettings = omit(emailFormToReplace.toObject(), [
+          '__v',
+          'created',
+          'lastModified',
+          'responseMode',
+          'isForceConvertToStorageMode',
+        ])
+        expect(newStorageModeForm).toMatchObject(pastSettings)
+      })
 
       it('should create and save successfully', async () => {
         // Arrange + Act
@@ -2500,7 +2550,7 @@ describe('Form Model', () => {
         // Previous user should now be in permissionList with editor
         // permissions.
         expect(actual.toObject().permissionList).toEqual([
-          { email: populatedAdmin.email, write: true, _id: expect.anything() },
+          { email: populatedAdmin.email, write: true },
         ])
       })
     })

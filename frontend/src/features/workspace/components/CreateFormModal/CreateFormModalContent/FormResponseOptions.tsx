@@ -53,9 +53,12 @@ export const FormResponseOptions = forwardRef<
   'button'
 >(({ value, onChange, isSingpass, handleEmailButtonPress }, ref) => {
   const { t } = useTranslation()
-  const { storage, mrf } = t('features.workspace.modals.create.details.type', {
-    returnObjects: true,
-  })
+  const { storage, mrf } = t(
+    'features.workspace.modals.forms.create.details.type',
+    {
+      returnObjects: true,
+    },
+  )
   return (
     <>
       <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
@@ -70,11 +73,11 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports email submissions' },
-              { text: 'Supports Singpass & Myinfo' },
-              { text: 'Supports webhooks for integrations' },
+              { text: storage.optionDescriptionItems.supportEmailSubmissions },
+              { text: storage.optionDescriptionItems.supportSingpassMyinfo },
+              { text: storage.optionDescriptionItems.supportWebhooks },
               {
-                text: 'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
+                text: storage.optionDescriptionItems.sensitivity,
                 badge: 'new',
               },
             ]}
@@ -93,12 +96,11 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: 'Supports email submissions' },
-              { text: 'Supports approval workflows' },
+              { text: mrf.optionDescriptionItems.supportEmailSubmissions },
               {
-                text: 'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
-                badge: 'new',
+                text: mrf.optionDescriptionItems.supportApprovalWorkflow,
               },
+              { text: mrf.optionDescriptionItems.sensitivity, badge: 'new' },
             ]}
           />
         </Tile>

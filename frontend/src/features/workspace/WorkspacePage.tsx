@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Drawer,
@@ -16,6 +17,7 @@ import {
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { KILL_EMAIL_MODE_LINK } from '~shared/constants'
+import { FormResponseMode, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -37,6 +39,11 @@ import { useDashboard, useWorkspace } from './queries'
 import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { defaultTitle, emailRetirementNotice } = t(
+    'features.workspace.workspacePage',
+    { returnObjects: true },
+  )
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
   const siteBannerContentGB = useFeatureValue('site-banner-content', '')
@@ -48,6 +55,20 @@ export const WorkspacePage = (): JSX.Element => {
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+
+  const [openEmailModeForms, hasOpenEmailModeForms] = useMemo(() => {
+    const emailModeForms =
+      !isDashboardLoading && dashboardForms
+        ? dashboardForms.filter(
+            (form) =>
+              form.responseMode === FormResponseMode.Email &&
+              form.status === FormStatus.Public,
+          )
+        : undefined
+    return emailModeForms
+      ? [emailModeForms, emailModeForms.length > 0]
+      : [undefined, false]
+  }, [dashboardForms, isDashboardLoading])
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -68,11 +89,11 @@ export const WorkspacePage = (): JSX.Element => {
   const DEFAULT_WORKSPACE = useMemo(() => {
     return {
       _id: '',
-      title: 'All forms',
+      title: defaultTitle,
       formIds: dashboardForms ? dashboardForms.map(({ _id }) => _id) : [],
       admin: user?._id,
     }
-  }, [dashboardForms, user]) as Workspace
+  }, [dashboardForms, user, defaultTitle]) as Workspace
 
   if (isWorkspaceLoading || isDashboardLoading) return <></>
 
@@ -164,23 +185,46 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
-            <InlineMessage>
-              <Text>
-                Email mode forms will be retired on{' '}
-                <Text as="span" fontWeight="bold">
-                  30 June 2025
+            {hasOpenEmailModeForms && (
+              <InlineMessage>
+                <Text>
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.description',
+                  )}{' '}
+                  <Text as="span" fontWeight="bold">
+                    {t(
+                      'features.workspace.workspacePage.emailRetirementNotice.date',
+                      {
+                        retirementDate: new Date(
+                          Date.UTC(2025, 7, 31, 3, 0, 0),
+                        ),
+                      },
+                    )}
+                  </Text>
+                  {'. '}
+                  {t(
+                    'features.workspace.workspacePage.emailRetirementNotice.beforeLink',
+                  )}
+                  <Link href="/dashboard?filter=email">
+                    {t(
+                      'features.workspace.workspacePage.emailRetirementNotice.link',
+                      {
+                        count: openEmailModeForms?.length || 0,
+                      },
+                    )}
+                  </Link>
+                  {emailRetirementNotice.additionalDescription}{' '}
+                  <Link
+                    display="inline"
+                    href={KILL_EMAIL_MODE_LINK}
+                    target="_blank"
+                  >
+                    {emailRetirementNotice.learnMore}
+                  </Link>
+                  {'.'}
                 </Text>
-                . Email functionalities will continue to be available in Storage
-                mode.{' '}
-                <Link
-                  display="inline"
-                  href={KILL_EMAIL_MODE_LINK}
-                  target="_blank"
-                >
-                  Learn what this means for you.
-                </Link>
-              </Text>
-            </InlineMessage>
+              </InlineMessage>
+            )}
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>

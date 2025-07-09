@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalContent,
@@ -76,6 +77,8 @@ export const DownloadWithAttachmentModal = ({
     return onDownload()
   }, [onDownload])
 
+  const { t } = useTranslation()
+
   return (
     <Modal
       isOpen={isOpen}
@@ -103,9 +106,10 @@ export const DownloadWithAttachmentModal = ({
               onCancel={onCancel}
             >
               <Text mb="1rem">
-                Up to <b>{responsesCount.toLocaleString()}</b> files are being
-                downloaded into your destination folder. Navigating away from
-                this page will stop the download.
+                {t(
+                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
+                  { responsesCount: <b>{responsesCount.toLocaleString()}</b> },
+                )}
               </Text>
             </ProgressModalContent>
           )}

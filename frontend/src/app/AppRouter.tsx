@@ -22,6 +22,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
+  STATUS_TRACKER_SUBROUTE,
   TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
@@ -64,6 +65,9 @@ const PrivacyPolicyPage = loadable(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = loadable(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = loadable(() => import('~features/admin-form/preview'))
 const TemplateFormPage = loadable(() => import('~features/admin-form/template'))
+const StatusTrackerPage = loadable(
+  () => import('~features/public-form/components/StatusTrackerPage'),
+)
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<Box bg="neutral.100" css={fillHeightCss} w="100vw" />}>
@@ -151,6 +155,14 @@ export const AppRouter = (): JSX.Element => {
             element={
               <ParamIdValidator
                 element={<PublicElement element={<PublicFormPage />} />}
+              />
+            }
+          />
+          <Route
+            path={STATUS_TRACKER_SUBROUTE}
+            element={
+              <ParamIdValidator
+                element={<PublicElement element={<StatusTrackerPage />} />}
               />
             }
           />

@@ -21,6 +21,7 @@ import {
   IMultirespondentFormModel,
   IPopulatedForm,
 } from '../../../types'
+import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
   getEmailFormModel,
@@ -29,6 +30,8 @@ import getFormModel, {
 } from '../../models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
+import MailService from '../../services/mail/mail.service'
+import * as SmsService from '../../services/sms/sms.service'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -40,6 +43,7 @@ import {
 } from '../core/core.errors'
 import { IntranetService } from '../intranet/intranet.service'
 import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
+import * as SubmissionService from '../submission/submission.service'
 
 import {
   FormDeletedError,
@@ -47,6 +51,10 @@ import {
   FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from './form.errors'
+import {
+  getSubmissionType,
+  hasVerifiableMobileFieldformFields,
+} from './form.utils'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -247,38 +255,38 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
   // returning form without any actions.
   if (submissionLimit === null) return okAsync(form)
 
-  return ResultAsync.fromPromise(
-    SubmissionModel.countDocuments({
-      form: formId,
-    }).exec(),
-    (error) => {
+  return SubmissionService.getFormSubmissionsCount({
+    formId,
+    submissionType: getSubmissionType(form.responseMode), // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
+  })
+    .mapErr((error) => {
       logger.error({
         message: 'Error while counting submissions for form',
         meta: logMeta,
         error,
       })
       return transformMongoError(error)
-    },
-  ).andThen((currentCount) => {
-    // Limit has not been hit yet, passthrough.
-    if (currentCount < submissionLimit) return okAsync(form)
-
-    logger.info({
-      message: 'Form reached maximum submission count, deactivating.',
-      meta: logMeta,
     })
+    .andThen((currentCount) => {
+      // Limit has not been hit yet, passthrough.
+      if (currentCount < submissionLimit) return okAsync(form)
 
-    // Map success case back into error to display to client as form has been
-    // deactivated.
-    return deactivateForm(formId).andThen(() =>
-      errAsync(
-        new PrivateFormError(
-          'Submission made after form submission limit was reached',
-          form.title,
+      logger.info({
+        message: 'Form reached maximum submission count, deactivating.',
+        meta: logMeta,
+      })
+
+      // Map success case back into error to display to client as form has been
+      // deactivated.
+      return deactivateForm(formId).andThen(() =>
+        errAsync(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
         ),
-      ),
-    )
-  })
+      )
+    })
 }
 
 export const checkHasRespondentNotWhitelistedFailure = (
@@ -676,4 +684,68 @@ export const createSampleSubmissionResponses = (
     sampleData[field._id] = answer
   })
   return sampleData
+}
+
+/**
+ * Method to check whether a form has reached sms threshold, and deactivate the form if necessary
+ * @param form the form to check
+ * @returns ok(form) if submission is allowed because the form sms limits has not reached limits
+ * @returns err(PossibleDatabaseError) if an error occurred while querying the database for the specified form
+ * @returns err(FormNotFoundError) if the form has exceeded the submission limits but could not be found and deactivated
+ * @returns err(PrivateFormError) if the count of the form has been exceeded and the form has been deactivated
+ */
+export const checkFormSmsLimitAndDeactivateForm = (
+  form: IPopulatedForm,
+): ResultAsync<
+  IPopulatedForm,
+  PossibleDatabaseError | PrivateFormError | FormNotFoundError
+> => {
+  const formId = String(form._id)
+  const logMeta = {
+    action: 'checkFormSmsLimitAndDeactivateForm',
+    formId: formId,
+  }
+
+  if (!hasVerifiableMobileFieldformFields(form.form_fields) || form.noSmsLimit)
+    return okAsync(form)
+
+  return SmsService.retrieveSmsCounts(formId)
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while counting sms threshold for form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    })
+    .andThen((currentCount) => {
+      if (currentCount < smsConfig.smsVerificationLimit) return okAsync(form)
+
+      logger.info({
+        message: 'Form reached maximum sms threshold, deactivating.',
+        meta: logMeta,
+      })
+
+      return deactivateForm(formId).andThen(() => {
+        void MailService.sendFormDeactivatedNotification({
+          emailRecipients: form.admin.email
+            ? [form.admin.email, ...form.permissionList.map((x) => x.email)]
+            : [],
+          formTitle: form.title,
+          formId,
+        }).mapErr((error) =>
+          logger.error({
+            message: 'Failed to send form deactivated notification email',
+            meta: logMeta,
+            error,
+          }),
+        )
+        return errAsync(
+          new PrivateFormError(
+            'Sms Verification made after form submission limit was reached',
+            form.title,
+          ),
+        )
+      })
+    })
 }

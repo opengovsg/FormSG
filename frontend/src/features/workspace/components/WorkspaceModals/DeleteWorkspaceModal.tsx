@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -38,6 +39,7 @@ export const DeleteWorkspaceModal = ({
     md: 'md',
   })
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
 
   const { deleteWorkspaceMutation } = useWorkspaceMutations()
 
@@ -55,19 +57,26 @@ export const DeleteWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Delete folder</ModalHeader>
+        <ModalHeader>
+          {t('features.workspace.modals.workspace.delete.title')}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {activeWorkspace.formIds.length > 0 ? (
             <Text textStyle="body-2" color="secondary.500">
-              Remove {activeWorkspace.formIds.length} form(s) from&nbsp;
-              {activeWorkspace.title} and delete the folder? This action cannot
-              be undone
+              {t(
+                'features.workspace.modals.workspace.delete.confirmation.removeForms',
+                {
+                  formsInActiveWorkspace: activeWorkspace.formIds.length,
+                  activeWorkspaceTitle: activeWorkspace.title,
+                },
+              )}
             </Text>
           ) : (
             <Text textStyle="body-2" color="secondary.500">
-              Are you sure you want to delete this folder? This action cannot be
-              undone.
+              {t(
+                'features.workspace.modals.workspace.delete.confirmation.removeWorkspace',
+              )}
             </Text>
           )}
         </ModalBody>
@@ -86,14 +95,14 @@ export const DeleteWorkspaceModal = ({
               colorScheme="secondary"
               isFullWidth={isMobile}
             >
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button
               onClick={handleDeleteWorkspace}
               colorScheme="danger"
               isFullWidth={isMobile}
             >
-              Yes, delete folder
+              {t('features.workspace.modals.workspace.delete.confirmDeletion')}
             </Button>
           </Stack>
         </ModalFooter>

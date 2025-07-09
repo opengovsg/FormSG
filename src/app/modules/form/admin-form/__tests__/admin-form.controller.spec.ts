@@ -74,6 +74,7 @@ import {
   FormSettings,
   FormStatus,
   LogicDto,
+  SubmissionType,
 } from '../../../../../../shared/types'
 import * as CryptoUtil from '../../../../../../shared/utils/crypto'
 import ParsedResponsesObject from '../../../submission/ParsedResponsesObject.class'
@@ -1719,9 +1720,12 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), {
-        startDate: undefined,
-        endDate: undefined,
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: {
+          startDate: undefined,
+          endDate: undefined,
+        },
       })
       expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(expectedSubmissionCount)
@@ -1770,9 +1774,79 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), expectedDateRange)
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: expectedDateRange,
+      })
       expect(mockRes.status).not.toHaveBeenCalled()
       expect(mockRes.json).toHaveBeenCalledWith(expectedSubmissionCount)
+    })
+
+    it('should pass the correct submission type to query for based on given form response mode', async () => {
+      const mockReqWithQuery = merge({}, MOCK_REQ)
+      const mockRes = expressHandler.mockResponse()
+
+      const MOCK_STORAGE_MODE_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Encrypt,
+      } as IPopulatedForm
+      const MOCK_EMAIL_MODE_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Email,
+      } as IPopulatedForm
+      const MOCK_MULTI_RESPONDENT_FORM = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Multirespondent,
+      } as IPopulatedForm
+
+      // Mock return count
+      const expectedSubmissionCount = 12
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+        .mockReturnValueOnce(okAsync(MOCK_USER as IPopulatedUser))
+      MockAuthService.getFormAfterPermissionChecks
+        .mockReturnValueOnce(okAsync(MOCK_STORAGE_MODE_FORM as IPopulatedForm))
+        .mockReturnValueOnce(okAsync(MOCK_EMAIL_MODE_FORM as IPopulatedForm)) // Email mode form
+        .mockReturnValueOnce(
+          okAsync(MOCK_MULTI_RESPONDENT_FORM as IPopulatedForm),
+        )
+      MockSubmissionService.getFormSubmissionsCount
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+        .mockReturnValueOnce(okAsync(expectedSubmissionCount))
+
+      // Act - Invoke 3 times to test each form response mode
+      for (let i = 0; i < 3; i++) {
+        await AdminFormController.countFormSubmissions(
+          mockReqWithQuery,
+          mockRes,
+          jest.fn(),
+        )
+      }
+      // Assert
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(1, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Encrypt,
+        dateRange: {},
+      })
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(2, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Email,
+        dateRange: {},
+      })
+      expect(
+        MockSubmissionService.getFormSubmissionsCount,
+      ).toHaveBeenNthCalledWith(3, {
+        formId: String(MOCK_FORM._id),
+        submissionType: SubmissionType.Multirespondent,
+        dateRange: {},
+      })
     })
 
     it('should return 403 when ForbiddenFormError is returned when verifying user permissions', async () => {
@@ -2041,9 +2115,12 @@ describe('admin-form.controller', () => {
       )
       expect(
         MockSubmissionService.getFormSubmissionsCount,
-      ).toHaveBeenCalledWith(String(MOCK_FORM._id), {
-        startDate: undefined,
-        endDate: undefined,
+      ).toHaveBeenCalledWith({
+        formId: String(MOCK_FORM._id),
+        dateRange: {
+          startDate: undefined,
+          endDate: undefined,
+        },
       })
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -10667,6 +10744,120 @@ describe('admin-form.controller', () => {
         message: expectedErrorString,
       })
       expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleConvertEmailToStorageMode', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      responseMode: FormResponseMode.Email,
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+      body: {
+        publicKey: 'some public key',
+      },
+    })
+
+    it('should return 200 ok when form is email mode', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Mock various services to return expected results
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEmailForm),
+      )
+      MockAdminFormService.convertEmailToStorageMode.mockReturnValueOnce(
+        okAsync(MOCK_FORM as IPopulatedEncryptedForm),
+      )
+
+      // Act
+      await AdminFormController.handleConvertEmailToStorageMode(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
+        {
+          user: MOCK_USER,
+          formId: MOCK_FORM_ID,
+          level: PermissionLevel.Write,
+        },
+      )
+      expect(
+        MockAdminFormService.convertEmailToStorageMode,
+      ).toHaveBeenCalledWith({
+        form: MOCK_FORM,
+        publicKey: MOCK_REQ.body.publicKey,
+      })
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
+    it('should return 422 when form is not in email mode', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      // Mock form to be in non-email mode
+      const nonEmailModeForm = {
+        ...MOCK_FORM,
+        responseMode: FormResponseMode.Encrypt,
+      }
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(nonEmailModeForm),
+      )
+      MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+        err(
+          new ResponseModeError(
+            [FormResponseMode.Email],
+            FormResponseMode.Encrypt,
+          ),
+        ),
+      )
+
+      // Act
+      await AdminFormController.handleConvertEmailToStorageMode(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.UNPROCESSABLE_ENTITY,
+      )
+      expect(
+        MockAdminFormService.convertEmailToStorageMode,
+      ).not.toHaveBeenCalled()
     })
   })
 })

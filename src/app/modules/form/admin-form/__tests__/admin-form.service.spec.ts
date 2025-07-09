@@ -437,6 +437,7 @@ describe('admin-form.service', () => {
       responseMode: FormResponseMode.Encrypt,
       title: 'mock new title',
       publicKey: 'some public key',
+      emails: ['mockExample@example.com'],
     }
 
     const createMockForm = (expectedParams: OverrideProps) =>
@@ -1579,6 +1580,55 @@ describe('admin-form.service', () => {
       actualResult2.mapErr((err) => {
         expect(err).toBeInstanceOf(MalformedParametersError)
       })
+    })
+
+    it('should not allow set form to public when form is email mode and isForceConvertToStorageMode is true', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        status: FormStatus.Public,
+      }
+      const emailForm = merge({}, MOCK_EMAIL_FORM, {
+        responseMode: FormResponseMode.Email,
+        isForceConvertToStorageMode: true,
+      })
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        emailForm,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBeTrue()
+      actualResult.mapErr((err) => {
+        expect(err).toBeInstanceOf(MalformedParametersError)
+      })
+    })
+
+    it('should allow set form to public when form is storage mode even when isForceConvertToStorageMode is true', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        status: FormStatus.Public,
+      }
+      const storageForm = merge({}, MOCK_ENCRYPT_FORM, {
+        isForceConvertToStorageMode: true,
+      })
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        storageForm,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toBeTrue()
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        storageForm._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
   })
 

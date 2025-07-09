@@ -37,7 +37,6 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
 
-import Badge from '~components/Badge'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
 
@@ -253,14 +252,6 @@ const MagicFormBuilderCreateFormPrompt = ({
     <>
       <ModalHeader display="flex" alignItems="center">
         <Text textStyle="h2">Create fields with AI</Text>
-        <Badge
-          colorScheme="primary"
-          variant="subtle"
-          color="secondary.500"
-          ml="0.5rem"
-        >
-          Beta
-        </Badge>
       </ModalHeader>
       <ModalBody>
         <>

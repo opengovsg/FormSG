@@ -1,12 +1,8 @@
-import { CreateModal } from './create'
+import { Header } from './header'
+import { Modals } from './modals'
+import { SideMenu } from './side-menu'
 
 export * from './en-sg'
-
-interface Modal {
-  title: string
-  description: string
-  confirm: string
-}
 
 export interface Workspace {
   common: {
@@ -40,10 +36,6 @@ export interface Workspace {
     share: string
     admins: string
     move: string
-  }
-  modals: {
-    create: CreateModal
-    delete: Modal
   }
   skeleton: {
     title: string
@@ -79,4 +71,18 @@ export interface Workspace {
       }
     }
   }
+  workspacePage: {
+    defaultTitle: string
+    emailRetirementNotice: {
+      description: string
+      date: string
+      beforeLink: string
+      link: string
+      additionalDescription: string
+      learnMore: string
+    }
+  }
+  sideMenu: SideMenu
+  header: Header
+  modals: Modals
 }

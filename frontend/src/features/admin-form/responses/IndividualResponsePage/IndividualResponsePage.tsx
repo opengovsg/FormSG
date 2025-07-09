@@ -1,19 +1,22 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiDownload } from 'react-icons/bi'
+import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
+  Link,
   Skeleton,
   Stack,
   StackDivider,
   Text,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
-import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
+import {
+  getMultirespondentSubmissionEditPath,
+  getStatusTrackerPath,
+} from '~shared/utils/urls'
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
@@ -141,8 +144,12 @@ export const IndividualResponsePage = (): JSX.Element => {
     return (
       <SecretKeyVerification
         heroSvg={<FormActivationSvg />}
-        ctaText="Unlock responses"
-        label="Enter or upload Secret Key"
+        ctaText={t(
+          'features.adminForm.responses.individualResponse.secretKeyVerification.ctaText',
+        )}
+        label={t(
+          'features.adminForm.responses.individualResponse.secretKeyVerification.label',
+        )}
       />
     )
 
@@ -200,22 +207,32 @@ export const IndividualResponsePage = (): JSX.Element => {
                 isLoading={isLoading}
                 isError={isError}
               />
-              <StackRow
-                label={MRF_PENDING_RESPONSE_AT_LABEL}
-                value={
-                  workflowStatus === undefined ||
-                  workflowCurrentStepNumber === undefined ||
-                  workflowNumTotalSteps === undefined
-                    ? ''
-                    : getPendingResponseAtString({
-                        workflowStatus,
-                        workflowCurrentStepNumber,
-                        workflowNumTotalSteps,
-                      })
-                }
-                isLoading={isLoading}
-                isError={isError}
-              />
+              <Stack direction="row" align="center">
+                <StackRow
+                  label={MRF_PENDING_RESPONSE_AT_LABEL}
+                  value={
+                    workflowStatus === undefined ||
+                    workflowCurrentStepNumber === undefined ||
+                    workflowNumTotalSteps === undefined
+                      ? '-'
+                      : getPendingResponseAtString({
+                          workflowStatus,
+                          workflowCurrentStepNumber,
+                          workflowNumTotalSteps,
+                        })
+                  }
+                  isLoading={isLoading}
+                  isError={isError}
+                />
+                <Link
+                  href={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+                  isExternal
+                >
+                  <Box fontSize="1.25rem" display="flex" alignItems="center">
+                    <BiLinkExternal />
+                  </Box>
+                </Link>
+              </Stack>
             </>
           ) : null}
           {attachmentDownloadUrls.size > 0 && (
@@ -228,7 +245,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                 textStyle="subhead-1"
                 py={{ base: '0', md: '0.25rem' }}
               >
-                Attachments:
+                {t('features.common.attachments')}:
               </Text>
               <Skeleton isLoaded={!isLoading && !isError}>
                 <Button
@@ -243,7 +260,10 @@ export const IndividualResponsePage = (): JSX.Element => {
                     )
                   }
                 >
-                  {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
+                  {t(
+                    'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
+                    { attachmentSize: attachmentDownloadUrls.size },
+                  )}
                 </Button>
               </Skeleton>
             </Stack>
@@ -251,7 +271,9 @@ export const IndividualResponsePage = (): JSX.Element => {
           {form?.responseMode === FormResponseMode.Multirespondent &&
             user?.betaFlags?.mrfAdminSubmissionKey && (
               <StackRow
-                label="Response link"
+                label={t(
+                  'features.adminForm.responses.individualResponse.responseLinkLabel',
+                )}
                 value={responseLinkWithKey}
                 isLoading={isLoading}
                 isError={isError}

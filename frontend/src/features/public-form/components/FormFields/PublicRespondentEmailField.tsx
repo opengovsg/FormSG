@@ -1,6 +1,6 @@
 import { Controller, RegisterOptions, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl, FormLabel, Text } from '@chakra-ui/react'
+import { Box, FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -8,6 +8,7 @@ import { RESPONDENT_EMAIL_FIELD_ID } from '~shared/constants'
 
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
 export const PublicRespondentEmailField = (): JSX.Element => {

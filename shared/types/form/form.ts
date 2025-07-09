@@ -188,7 +188,7 @@ export interface FormBase {
   isListed: boolean
 
   esrvcId?: string
-
+  noSmsLimit?: boolean
   /**
    * LEGACY: Was previously used for sending with the correct Twilio.
    * @deprecated Twilio support is removed and replaced with postman-sms.
@@ -210,6 +210,7 @@ export interface FormBase {
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
+  isForceConvertToStorageMode?: boolean
 }
 
 export interface WhitelistedSubmitterIds {
@@ -238,6 +239,7 @@ export interface MultirespondentFormBase extends FormBase {
   emails: string[]
   stepsToNotify: FormWorkflowStepDto['_id'][]
   stepOneEmailNotificationFieldId?: string
+  hasStatusTracker: boolean
 }
 
 /**
@@ -362,6 +364,11 @@ export type PublicFormViewDto = {
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
+
+export type SmsCountsDto = {
+  quota: number
+  smsCounts: number
+}
 
 export type AdminFormViewDto = {
   form: AdminFormDto

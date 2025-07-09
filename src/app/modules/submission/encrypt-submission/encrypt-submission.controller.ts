@@ -728,7 +728,7 @@ const _createSubmission = async ({
         )
       }
       submission = await EncryptSubmission.saveIfSubmitterIdIsUnique(
-        form.id,
+        form._id,
         submissionContent.submitterId,
         submissionContent,
       )

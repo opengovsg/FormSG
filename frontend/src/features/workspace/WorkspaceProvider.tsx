@@ -1,11 +1,19 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import { useSearchParams } from 'react-router-dom'
 import fuzzysort from 'fuzzysort'
 
-import { FormId, FormStatus } from '~shared/types'
+import { FormId, FormResponseMode, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { useDashboard, useWorkspace } from './queries'
-import { FilterOption } from './types'
+import { FilterOption, filterOptionMap, filterOptionReverseMap } from './types'
 import { WorkspaceContext } from './WorkspaceContext'
 
 interface WorkspaceProviderProps {
@@ -21,6 +29,7 @@ export const WorkspaceProvider = ({
   setCurrentWorkspace,
   children,
 }: WorkspaceProviderProps): JSX.Element => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const { data: dashboardForms, isLoading: dashboardIsLoading } = useDashboard()
 
   const { data: workspaces, isLoading: workspaceIsLoading } = useWorkspace()
@@ -29,7 +38,8 @@ export const WorkspaceProvider = ({
 
   const [activeSearch, setActiveSearch] = useState<string>('')
   const [activeFilter, setActiveFilter] = useState<FilterOption>(
-    FilterOption.AllForms,
+    filterOptionMap[searchParams.get('filter') ?? 'none'] ??
+      FilterOption.AllForms,
   )
 
   const activeWorkspace = useMemo(
@@ -71,6 +81,21 @@ export const WorkspaceProvider = ({
           (form) => form.status === FormStatus.Private,
         )
         break
+      case FilterOption.EmailForms:
+        displayedForms = displayedForms.filter(
+          (form) => form.responseMode === FormResponseMode.Email,
+        )
+        break
+      case FilterOption.StorageForms:
+        displayedForms = displayedForms.filter(
+          (form) => form.responseMode === FormResponseMode.Encrypt,
+        )
+        break
+      case FilterOption.MultiRespondentForms:
+        displayedForms = displayedForms.filter(
+          (form) => form.responseMode === FormResponseMode.Multirespondent,
+        )
+        break
       default:
         break
     }
@@ -108,6 +133,16 @@ export const WorkspaceProvider = ({
     },
     [workspaces],
   )
+
+  // Update the URL search params based on the current workspace state
+  useEffect(() => {
+    // Update the URL search params when the filter changes
+    const newSearchParams: Record<string, string> = {}
+    if (activeFilter !== FilterOption.AllForms) {
+      newSearchParams.filter = filterOptionReverseMap[activeFilter] || 'none'
+    }
+    setSearchParams(newSearchParams)
+  }, [activeFilter, setSearchParams])
 
   return (
     <WorkspaceContext.Provider

@@ -22,6 +22,7 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 import { ApprovalsBlock } from './ApprovalsBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
+import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   /** Sets default values of inputs if this is provided */
@@ -71,6 +72,10 @@ export const EditStepBlock = ({
       inputs.approval_field = undefined
     }
 
+    if (inputs.step_name === '') {
+      inputs.step_name = undefined
+    }
+
     if (isFirstStepByStepNumber(stepNumber)) {
       if (inputs.field) {
         return onSubmit({
@@ -93,6 +98,7 @@ export const EditStepBlock = ({
       workflow_type: inputs.workflow_type,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
+      step_name: inputs.step_name,
     }
 
     switch (inputs.workflow_type) {
@@ -145,9 +151,13 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <StepLabel stepNumber={stepNumber} />
-      </Box>
+      {user?.betaFlags?.statusTracker ? (
+        <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
+      ) : (
+        <Box px={{ base: '1.5rem', md: '2rem' }}>
+          <StepLabel stepNumber={stepNumber} />
+        </Box>
+      )}
       <Divider />
       <RespondentBlock
         user={user}

@@ -14,6 +14,8 @@ import {
 } from '../../modules/core/core.errors'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
+import * as SmsService from '../sms/sms.service'
+import { LogType } from '../sms/sms.types'
 
 import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
 import {
@@ -29,6 +31,7 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const Form = getFormModel(mongoose)
+
 class PostmanSmsService {
   /**
    * Send SMS using Postman API to Member of public
@@ -92,9 +95,30 @@ class PostmanSmsService {
 
         return new SmsSendError()
       },
-    ).andThen(() => {
-      return okAsync(true as const)
-    })
+    )
+      .andThen(() => {
+        return okAsync(true as const)
+      })
+      .map((result) => {
+        // Fire log sms success promise without waiting.
+        void SmsService.logSmsSend({
+          smsData,
+          smsType,
+          logType: LogType.success,
+        })
+
+        return result
+      })
+      .mapErr((error) => {
+        // Fire log sms failure promise without waiting.
+        void SmsService.logSmsSend({
+          smsData,
+          smsType,
+          logType: LogType.failure,
+        })
+
+        return error
+      })
   }
 
   /**
