@@ -16,4 +16,5 @@ export const featureFlags = {
   guardduty: 'guardduty' as const,
   respondentCopy: 'respondent-copy' as const,
   statusTracker: 'status-tracker' as const,
+  designDrawerFormTitle: 'design-drawer-form-title' as const,
 }
