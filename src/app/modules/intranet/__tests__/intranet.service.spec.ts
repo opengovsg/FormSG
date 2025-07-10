@@ -22,5 +22,19 @@ describe('IntranetService', () => {
 
       expect(result).toBe(false)
     })
+
+    it('should return true when IP matches an intranet CIDR entry', () => {
+      const ipInCidr = '192.168.0.5'
+      const result = IntranetService.isIntranetIp(ipInCidr)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false when IP does not match any intranet CIDR entry', () => {
+      const ipNotInCidr = '192.168.1.23'
+      const result = IntranetService.isIntranetIp(ipNotInCidr)
+
+      expect(result).toBe(false)
+    })
   })
 })
