@@ -36,5 +36,19 @@ describe('IntranetService', () => {
 
       expect(result).toBe(false)
     })
+
+    it('should return true when IPv6 matches an intranet CIDR entry', () => {
+      const ipInCidr = '2025:1234:5678:90ab:cdef:800:0:3'
+      const result = IntranetService.isIntranetIp(ipInCidr)
+
+      expect(result).toBe(true)
+    })
+
+    it('should return false when IPv6 does not match any intranet CIDR entry', () => {
+      const ipNotInCidr = '1337:1234:5678:90ab:cdef:800:0:2025'
+      const result = IntranetService.isIntranetIp(ipNotInCidr)
+
+      expect(result).toBe(false)
+    })
   })
 })
