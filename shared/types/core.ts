@@ -36,5 +36,4 @@ export type ClientEnvVars = {
   adminFeedbackFieldThreshold: number
   adminFeedbackDisplayFrequency: number
   growthbookClientKey: string
-  designDrawerFormTitle: boolean
 }
