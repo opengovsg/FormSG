@@ -85,8 +85,11 @@ export const updateAdminFeedback = ({
 
   return ResultAsync.fromPromise(
     AdminFeedbackModel.updateOne(
-      { _id: feedbackId, userId: userId },
-      updateObj,
+      { _id: { $eq: feedbackId }, userId: { $eq: userId } },
+      Object.entries(updateObj).reduce((acc, [key, value]) => {
+        acc[key] = { $eq: value };
+        return acc;
+      }, {}),
     ),
     (error) => {
       logger.error({
