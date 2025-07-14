@@ -249,7 +249,6 @@ const createResponsesArray = (
   const transformedResponses = formFields
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
     .filter((output): output is FieldResponse => output !== null)
-
   return validateResponses(transformedResponses)
 }
 
