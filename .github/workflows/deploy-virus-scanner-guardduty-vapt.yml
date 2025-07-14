@@ -21,6 +21,6 @@ jobs:
       checkoutBranch: 'vapt'
       gha-environment: 'vapt'
       environment: 'vapt'
-      provisionedConcurrency: 0
+      provisionedConcurrency: 1
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
