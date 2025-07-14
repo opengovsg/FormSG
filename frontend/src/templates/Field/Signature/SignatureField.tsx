@@ -35,12 +35,12 @@ export const SignatureField = ({
 
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
-  const handleClearSignature = async () => {
-    signatureRef.current?.clear()
-    setShowSignaturePlaceholder(true)
-  }
+  // const handleClearSignature = async () => {
+  //   signatureRef.current?.clear()
+  //   setShowSignaturePlaceholder(true)
+  // }
 
-  const signatureRef = useRef<SignatureCanvas>(null)
+  // const signatureRef = useRef<SignatureCanvas>(null)
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -77,11 +77,13 @@ export const SignatureField = ({
       }
     }
   }
+
   useEffect(() => {
     const canvas = pfCanvasRef.current
     if (!canvas) return
 
     const handlePointerDown = (e: PointerEvent) => {
+      setShowSignaturePlaceholder(false)
       setIsDrawing(true)
       const newStroke: [number, number, number][] = [
         [e.offsetX, e.offsetY, e.pressure || 0.5],
@@ -122,8 +124,9 @@ export const SignatureField = ({
       canvas.removeEventListener('pointerup', handlePointerUp)
     }
   }, [isDrawing, pfStrokes])
+
   const handleClearPerfectFreehandSignature = async () => {
-    signatureRef.current?.clear()
+    // signatureRef.current?.clear()
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
     const ctx = pfCanvasRef.current?.getContext('2d')
@@ -142,7 +145,6 @@ export const SignatureField = ({
       >
         {schema.title}
       </FormLabel>
-      {/** Postal Code */}
       <FormControl
         isRequired={schema.required}
         isDisabled={schema.disabled}
@@ -150,9 +152,6 @@ export const SignatureField = ({
         id={`${schema._id}-signature`}
         // isInvalid={!!addressSubFieldErrors?.postalCode}
       >
-        {/* <FormLabel isRequired isHighContrast={isHighContrast}>
-          Draw / Text
-        </FormLabel> */}
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">
           {/* <FormLabel>
                   Throttle 0, minDis: 1, veloFilterWeight: 0.3
@@ -173,7 +172,7 @@ export const SignatureField = ({
                     Draw
                   </Button> */}
             <Stack>
-              <Box
+              {/* <Box
                 background="white"
                 width="502px"
                 height="202px"
@@ -215,7 +214,7 @@ export const SignatureField = ({
                     console.log(JSON.stringify(sigData))
                   }}
                 />
-              </Box>
+              </Box> */}
               {/* perfect freehand component */}
               <Box
                 background="white"
@@ -225,6 +224,18 @@ export const SignatureField = ({
                 borderColor="neutral.400"
                 borderRadius="0.25rem"
               >
+                {showSignaturePlaceholder && (
+                  <Box
+                    width="502px"
+                    height="202px"
+                    justifyItems="center"
+                    alignContent="center"
+                    position="absolute"
+                    pointerEvents="none"
+                  >
+                    <Text color="#A0A4AD">Sign here</Text>
+                  </Box>
+                )}
                 <canvas
                   ref={pfCanvasRef}
                   width={500}
@@ -237,7 +248,7 @@ export const SignatureField = ({
           <Box alignSelf="end" marginTop="0.5rem">
             <Button
               onClick={() => {
-                handleClearSignature()
+                // handleClearSignature()
                 handleClearPerfectFreehandSignature()
               }}
               isLoading={isSubmitting}
