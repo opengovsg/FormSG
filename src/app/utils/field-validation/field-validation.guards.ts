@@ -16,6 +16,7 @@ import {
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
+  ProcessedSignatureResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
@@ -66,8 +67,33 @@ export const isProcessedAddressResponse = (
   )
 }
 
+export const isProcessedSignatureResponse = (
+  response: ProcessedFieldResponse,
+): response is ProcessedSignatureResponse => {
+  return (
+    response.fieldType === BasicField.Signature &&
+    'answerArray' in response &&
+    isSignatureVectorArray(response.answerArray)
+  )
+}
+
 const isStringArray = (arr: unknown): arr is string[] =>
   Array.isArray(arr) && arr.every((item) => typeof item === 'string')
+
+const isSignatureVectorArray = (
+  arr: unknown,
+): arr is [number, number, number][][] =>
+  Array.isArray(arr) &&
+  arr.every(
+    (subArray) =>
+      Array.isArray(subArray) &&
+      subArray.every(
+        (innerArray) =>
+          Array.isArray(innerArray) &&
+          innerArray.length === 3 &&
+          innerArray.every((num) => typeof num === 'number'),
+      ),
+  )
 
 // Check that the row contains a single array of only string (including empty string)
 export const isTableRow = (row: unknown): row is TableRow =>

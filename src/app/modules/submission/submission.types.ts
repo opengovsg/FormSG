@@ -7,6 +7,7 @@ import {
   CheckboxResponse,
   ChildBirthRecordsResponse,
   MyInfoChildAttributes,
+  SignatureResponse,
   TableResponse,
 } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
@@ -71,6 +72,7 @@ export type ProcessedChildrenResponse = ChildBirthRecordsResponse &
     childIdx?: number
   }
 export type ProcessedAddressResponse = AddressResponse & ProcessedResponse
+export type ProcessedSignatureResponse = SignatureResponse & ProcessedResponse
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected

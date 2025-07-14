@@ -9,6 +9,7 @@ import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
+  ProcessedSignatureResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
@@ -79,6 +80,7 @@ import {
   constructSectionValidator,
   constructSectionValidatorV3,
 } from './validators/sectionValidator'
+import { constructSignatureValidator } from './validators/signatureValidator'
 import {
   constructTableValidator,
   constructTableValidatorV3,
@@ -191,6 +193,15 @@ export const constructOptionalAddressFieldValidator = (
 ): ResponseValidator<ProcessedAddressResponse> => {
   if (formField.fieldType === BasicField.Address) {
     return constructOptionalAddressValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructSignatureFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedSignatureResponse> => {
+  if (formField.fieldType === BasicField.Signature) {
+    return constructSignatureValidator(formField)
   }
   return () => left('Unsupported field type')
 }

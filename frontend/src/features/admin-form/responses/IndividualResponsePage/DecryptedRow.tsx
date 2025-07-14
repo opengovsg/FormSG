@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
@@ -123,6 +123,61 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   )
 }
 
+function convertStringArrayToNumberTripleArray(input: string[][]): number[][] {
+  return input.map((subArray) =>
+    subArray.map((item) => {
+      console.log(item)
+      // Parse the item (which is a string) as a JSON array
+      return JSON.parse(item)
+    }),
+  )
+}
+
+const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
+  // const vectorArray = convertStringArrayToNumberTripleArray(
+  //   row.answerArray as string[][],
+  // )
+  console.log(row.answerArray)
+
+  // const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  // const canvas = canvasRef.current
+  // if (canvas && vectorArray.length > 0) {
+  //   const ctx = canvas.getContext('2d')
+  //   if (ctx) {
+  //     ctx.clearRect(0, 0, canvas.width, canvas.height) // Clear previous drawings
+
+  //     // Set canvas size (you may want to adjust this)
+  //     canvas.width = 500 // Set canvas width
+  //     canvas.height = 300 // Set canvas height
+
+  //     ctx.beginPath()
+
+  //     // Draw the vector points
+  //     vectorArray.forEach((stroke) => {
+  //       stroke.forEach(([x, y], index) => {
+  //         if (index === 0) {
+  //           ctx.moveTo(x, y) // Move to the starting point
+  //         } else {
+  //           ctx.lineTo(x, y) // Draw lines to the subsequent points
+  //         }
+  //       })
+  //     })
+
+  //     ctx.strokeStyle = 'black' // Set the stroke color
+  //     ctx.lineWidth = 2 // Set the stroke width
+  //     ctx.stroke() // Render the stroke
+  //   }
+  // }
+  // console.log(row.answerArray)
+  return (
+    <Stack>
+      <DecryptedQuestionLabel row={row} />
+      {/* <canvas ref={canvasRef} /> */}
+      <Text>{row.answerArray}</Text>
+    </Stack>
+  )
+}
+
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
     switch (row.fieldType) {
@@ -139,6 +194,8 @@ export const DecryptedRow = memo(
         return <DecryptedTableRow row={row} />
       case BasicField.Address:
         return <DecryptedAddressRow row={row} />
+      case BasicField.Signature:
+        return <DecryptedSignatureRow row={row} />
       default:
         return (
           <Stack>

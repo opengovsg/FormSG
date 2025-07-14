@@ -35,6 +35,7 @@ import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
+  isProcessedSignatureResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -81,6 +82,7 @@ import {
   ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
+  ProcessedSignatureResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
@@ -211,6 +213,23 @@ export const getAnswerForAddress = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: handleAddressResponseDisplay(response.answerArray).join(', '),
+  }
+}
+
+/**
+ * Creates a response for signature with its answer formatted from the answerArray
+ */
+export const getAnswerForSignature = (
+  response: ProcessedSignatureResponse,
+): ResponseFormattedForEmail => {
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: JSON.stringify(response.answerArray), // TODO: fix string
   }
 }
 
@@ -468,6 +487,9 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   } else if (isProcessedAddressResponse(response)) {
     const address = getAnswerForAddress(response)
     return [getFormattedFunction(address, hashedFields)]
+  } else if (isProcessedSignatureResponse(response)) {
+    const signature = getAnswerForSignature(response)
+    return [getFormattedFunction(signature, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -635,6 +657,8 @@ export class SubmissionEmailObj {
    * Getter function to return formData which is used to send responses to admin
    */
   get formData(): EmailAdminDataField[] {
+    console.log(`parsedResponses`)
+    console.log(this.parsedResponses)
     return this.parsedResponses.flatMap((response) =>
       createFormattedDataForOneField(
         response,

@@ -32,6 +32,7 @@ import {
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
   constructOptionalAddressFieldValidator,
+  constructSignatureFieldValidator,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
@@ -41,6 +42,7 @@ import {
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
+  isProcessedSignatureResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
 } from './field-validation.guards'
@@ -309,6 +311,9 @@ export const validateField = (
         response,
       )
     }
+  } else if (isProcessedSignatureResponse(response)) {
+    const validator = constructSignatureFieldValidator(formField)
+    return validateResponseWithValidator(validator, formId, formField, response)
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
     return err(new ValidateFieldError('Response has invalid shape'))

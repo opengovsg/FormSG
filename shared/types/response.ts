@@ -134,7 +134,7 @@ export type UenResponse = z.infer<typeof UenResponse>
 
 export const SignatureResponse = ResponseBase.extend({
   fieldType: z.literal(BasicField.Signature),
-  answer: z.array(z.array(z.array(z.number()))),
+  answerArray: z.array(z.array(z.array(z.number()))),
 })
 
 export type SignatureResponse = z.infer<typeof SignatureResponse>
