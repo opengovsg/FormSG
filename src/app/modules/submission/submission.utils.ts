@@ -548,7 +548,6 @@ export const getFilteredResponses = (
 ): Result<FilteredResponse[], ConflictError> => {
   const responseModeFilter = getResponseModeFilter(isEncryptedMode)
   const formFieldModeFilter = getFormFieldModeFilter(isEncryptedMode)
-
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
   }

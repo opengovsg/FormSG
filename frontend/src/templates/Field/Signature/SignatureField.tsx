@@ -117,7 +117,8 @@ export const SignatureField = ({
 
     const handlePointerUp = () => {
       setIsDrawing(false)
-      setValue(`${schema._id}-signature`, { type: 'draw', value: pfStrokes })
+      console.log(`${schema._id}`)
+      setValue(`${schema._id}`, { type: 'draw', value: pfStrokes })
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown)
@@ -155,7 +156,7 @@ export const SignatureField = ({
         isRequired={schema.required}
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        id={`${schema._id}.signature`}
+        id={`${schema._id}`}
         // isInvalid={!!addressSubFieldErrors?.postalCode}
       >
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">
