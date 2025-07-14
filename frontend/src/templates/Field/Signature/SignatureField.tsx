@@ -17,13 +17,15 @@ export interface SignatureFieldProps extends BaseFieldProps {
 }
 
 export type SignatureFieldInput = FieldInput<SignatureFieldValues>
-export type SignatureFieldValues = {
-  type: 'draw'
-  value: string
-} & {
-  type: 'text' // TODO: unused, kept as example of extension
-  value: string
-}
+export type SignatureFieldValues =
+  | {
+      type: 'draw'
+      value: [number, number, number][][]
+    }
+  | {
+      type: 'text' // TODO: unused, kept as example of extension
+      value: string
+    }
 
 export const SignatureField = ({
   schema,
@@ -31,6 +33,8 @@ export const SignatureField = ({
   isHighContrast,
 }: SignatureFieldProps): JSX.Element => {
   const formContext = useFormContext<SignatureFieldInput>()
+  const { setValue } = formContext
+
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
 
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
@@ -49,6 +53,7 @@ export const SignatureField = ({
     [number, number, number][]
   >([])
   const [isDrawing, setIsDrawing] = useState(false)
+
   const drawAllStrokes = () => {
     const canvas = pfCanvasRef.current
     if (!canvas) return
@@ -112,6 +117,7 @@ export const SignatureField = ({
 
     const handlePointerUp = () => {
       setIsDrawing(false)
+      setValue(`${schema._id}-signature`, { type: 'draw', value: pfStrokes })
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown)
@@ -149,7 +155,7 @@ export const SignatureField = ({
         isRequired={schema.required}
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        id={`${schema._id}-signature`}
+        id={`${schema._id}.signature`}
         // isInvalid={!!addressSubFieldErrors?.postalCode}
       >
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">

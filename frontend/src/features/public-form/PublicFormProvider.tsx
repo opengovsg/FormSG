@@ -598,7 +598,7 @@ export const PublicFormProvider = ({
         respondentEmails: respondentEmails,
         selectedFormLanguage: selectedLanguage,
       }
-
+      // console.log(formData)
       const logMeta = {
         action: 'handleSubmitForm',
         useFetchForSubmissions,
