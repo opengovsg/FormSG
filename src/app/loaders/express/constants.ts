@@ -38,6 +38,7 @@ export const CSP_CORE_DIRECTIVES = {
   ],
   connectSrc: [
     "'self'",
+    'https://vapt.form.gov.sg', // temporary for VAPT since we're using an alias for GBBP
     'https://www.google-analytics.com/',
     'https://ssl.google-analytics.com/',
     'https://*.browser-intake-datadoghq.com',
