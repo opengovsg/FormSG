@@ -17,15 +17,14 @@ export interface SignatureFieldProps extends BaseFieldProps {
 }
 
 export type SignatureFieldInput = FieldInput<SignatureFieldValues>
-export type SignatureFieldValues =
-  | {
-      type: 'draw'
-      value: [number, number, number][][]
-    }
-  | {
-      type: 'text' // TODO: unused, kept as example of extension
-      value: string
-    }
+export type SignatureFieldValues = {
+  type: 'draw'
+  value: [number, number, number][][]
+}
+// | {
+//     type: 'text' // TODO: unused, kept as example of extension
+//     value: string
+//   }
 
 export const SignatureField = ({
   schema,
@@ -117,7 +116,6 @@ export const SignatureField = ({
 
     const handlePointerUp = () => {
       setIsDrawing(false)
-      console.log(`${schema._id}`)
       setValue(`${schema._id}`, { type: 'draw', value: pfStrokes })
     }
 

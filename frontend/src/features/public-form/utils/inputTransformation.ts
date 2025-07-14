@@ -27,6 +27,7 @@ import {
   FieldResponse,
   HeaderResponse,
   RadioResponse,
+  SignatureResponse,
   TableResponse,
   TableRow,
 } from '~shared/types/response'
@@ -34,6 +35,7 @@ import { removeAt } from '~shared/utils/immutable-array-fns'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
+import { SignatureFieldValues } from '~templates/Field/Signature/SignatureField'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
   AddressCompoundFieldSchema,
@@ -51,6 +53,7 @@ import {
   RadioFieldSchema,
   RadioFieldValues,
   SectionFieldSchema,
+  SignatureFieldSchema,
   SingleAnswerOutput,
   TableFieldSchema,
   TableFieldValues,
@@ -209,6 +212,20 @@ const transformToSectionOutput = (
   }
 }
 
+const transformToSignatureOutput = (
+  schema: SignatureFieldSchema,
+  input?: SignatureFieldValues,
+): SignatureResponse => {
+  let answer: [number, number, number][][] = []
+  if (input !== undefined) {
+    answer = input.value
+  }
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answer,
+  }
+}
+
 const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
   input?: ChildrenCompoundFieldValues | ChildrenCompoundFieldResponsesV3,
@@ -342,8 +359,10 @@ export const transformInputsToOutputs = (
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Signature:
-      // // TODO: FRM-2029 unimplemented
-      return null
+      return transformToSignatureOutput(
+        field,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
+      )
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustiveCheck: never = field
