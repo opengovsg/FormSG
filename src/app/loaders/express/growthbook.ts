@@ -10,8 +10,12 @@ import { createLoggerWithLabel } from '../../config/logger'
 const logger = createLoggerWithLabel(module)
 
 const growthbookMiddleware: RequestHandler = async (req, res, next) => {
+  // `${config.isDev ? GROWTHBOOK_DEV_PROXY : config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
+  // This resolves to gbbp.form.gov.sg on vapt env, but due to the CF zerotrust setup, we no longer have control of the
+  // gbbp domain, thus rerouting to vapt serve growthbook
+  const apiHostOverride = `https://vapt.form.gov.sg${GROWTHBOOK_API_HOST_PATH}`
   req.growthbook = new GrowthBook({
-    apiHost: `${config.isDev ? GROWTHBOOK_DEV_PROXY : config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
+    apiHost: apiHostOverride,
     clientKey: growthbookConfig.growthbookClientKey,
     enableDevMode: config.isDev,
   })
@@ -20,7 +24,7 @@ const growthbookMiddleware: RequestHandler = async (req, res, next) => {
     message: 'GrowthBook initialized',
     meta: {
       action: 'growthbookMiddleware',
-      apiHost: `${config.isDev ? GROWTHBOOK_DEV_PROXY : config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
+      apiHost: apiHostOverride,
       clientKey: growthbookConfig.growthbookClientKey,
       enableDevMode: config.isDev,
     },
