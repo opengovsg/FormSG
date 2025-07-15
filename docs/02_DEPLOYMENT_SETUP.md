@@ -47,6 +47,3 @@ See what alternatives you can use in [build your own infra](./05_BYOI.md) sectio
 ### Spam protection
 
 - Google reCAPTCHA
-
-### Mounting Elastic File System into Docker container on Elastic Beanstalk
-Please see [Dockerrun.aws.json](../Dockerrun.aws.json). This file is required for SingPass/MyInfo/CorpPass functionality to be enabled.
