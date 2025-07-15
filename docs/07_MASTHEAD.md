@@ -30,6 +30,14 @@ If you fork or deploy FormSG:
 ## How to Remove the Masthead
 
 In the source code:
-- Check the React layout components for `GovtMasthead` references <!-- should be <GovtMasthead /> only? -->
+- Check the React layout components for `GovtMasthead` references
 - Remove or replace them with your own banner
 - Audit CSS and static assets for `.gov.sg` logos
+- Remove the VDP report button
+```typescript
+// frontend/src/constants/links.ts
+{
+    label: 'Report vulnerability',
+    href: REPORT_VULNERABILITY,
+  },
+```

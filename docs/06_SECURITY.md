@@ -9,11 +9,7 @@ to security on FormSG.
   the corresponding user record for verification when user submits OTP
 - Login sessions for public servants using OTPs are maintained
   using session cookies
-- There are two types of forms: email mode and storage mode. In email mode,
-  all form submissions are routed directly to specified e-mail recipients. In
-  storage mode, submissions are encrypted end-to-end.
-- SingPass/CorpPass-related security certificates and corresponding private
-  keys are held in EFS, encrypted at rest with AWS' master key
+- All forms are in storage mode, where submissions are encrypted end-to-end.
 - Communications with SingPass/CorpPass/MyInfo are signed with digital
   signatures both ways, with SingPass/CorpPass payloads encrypted using
   FormSG's public key
