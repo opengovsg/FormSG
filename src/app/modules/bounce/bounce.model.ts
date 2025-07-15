@@ -64,6 +64,9 @@ const BounceSchema = new Schema<IBounceSchema, IBounceModel>({
           type: String,
           enum: Object.values(BounceType),
         },
+        bounceSubType: {
+          type: String,
+        },
         _id: false,
       },
     ],
@@ -105,6 +108,7 @@ BounceSchema.statics.fromSnsNotification = function (
         email,
         hasBounced: true,
         bounceType: snsInfo.bounce.bounceType,
+        bounceSubType: snsInfo.bounce.bounceSubType,
       }
     } else {
       return { email, hasBounced: false }
@@ -153,6 +157,7 @@ BounceSchema.method<IBounceSchema>(
           email,
           hasBounced: true,
           bounceType: snsInfo.bounce.bounceType,
+          bounceSubType: snsInfo.bounce.bounceSubType,
         }
       } else if (
         hasEmailBeenDelivered(snsInfo, email) ||
