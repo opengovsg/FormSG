@@ -35,20 +35,12 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 These are configured by creating groups of environment variables formatted like `.env` files in the Parameter
 Store of AWS Service Manager. These groups have names formatted as `<environment>-<category>`.
 
-The environment for each group is user-defined, and should be specified in the Elastic Beanstalk configuration
-as the environment variable `SSM_PREFIX`.
-The specific environment is user-defined, and should be specified in the Elastic Beanstalk configuration
-as the environment variable `SSM_ENV_SITE_NAME`. This variable is optional.
-
-The list of categories can be inferred by looking at the file `.ebextensions/env-file-creation.config`.
-
 ### Core Features
 
 #### AWS Systems Manager
 
 | Variable            | Description                                                                                                                                                                         |
 | :------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SSM_PREFIX`        | String prefix (typically the environment type) for AWS SSM parameter names to create a .env file for FormSG. (`staging`, `prod`, `uat`)                                             |
 | `SECRET_ENV`        | String (typically the environment type) to be used in building of AWS Secrets Manager keys in different environments.                                                               |
 | `SSM_ENV_SITE_NAME` | String (the specific environment site name) to be used in building of AWS Secrets Manager keys in different environments. (`staging`, `staging-alt`, `staging-alt2`, `prod`, `uat`) |
 
@@ -197,14 +189,6 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 | :---------------------- | -------------------------- |
 | `GOOGLE_CAPTCHA`        | Google Captcha private key |
 | `GOOGLE_CAPTCHA_PUBLIC` | Google Captcha public key. |
-
-#### Google Analytics
-
-[Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
-
-| Variable                  | Description                   |
-| :------------------------ | ----------------------------- |
-| `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### SMS
 
