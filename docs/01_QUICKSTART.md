@@ -7,7 +7,7 @@ This Quickstart helps you **get FormSG running locally** using Docker Compose.
 Make sure you have:
 
 - [Docker and docker-compose](https://docs.docker.com/get-docker/)
-- Node.js (v18 LTS recommended, check `.nvmrc`)
+- Node.js (v22 LTS recommended, check `.nvmrc`)
 - npm or pnpm
 - (Recommended) [node version manager](https://github.com/nvm-sh/nvm)
 
