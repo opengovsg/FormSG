@@ -1,4 +1,5 @@
 import { memo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
@@ -20,10 +21,11 @@ type DecryptedRowProps = DecryptedRowBaseProps & {
   attachmentDecryptionKey: string
 }
 
-const DecryptedQuestionLabel = ({ row }: DecryptedRowBaseProps) => {
+function DecryptedQuestionLabel({ row }: DecryptedRowBaseProps) {
+  const { t } = useTranslation()
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
-      {`${row.signature ? '[verified] ' : ''}${row.question}`}
+      {`${row.signature ? `[${t('features.common.verified')}] ` : ''}${row.question}`}
     </FormLabel>
   )
 }
@@ -67,6 +69,8 @@ const DecryptedAttachmentRow = ({
   row,
   attachmentDecryptionKey,
 }: DecryptedRowProps) => {
+  const { t } = useTranslation()
+
   const { downloadAttachmentMutation } = useMutateDownloadAttachments()
 
   const handleDownload = useCallback(() => {
@@ -82,11 +86,13 @@ const DecryptedAttachmentRow = ({
     <Stack>
       <DecryptedQuestionLabel row={row} />
       <Text textStyle="body-1">
-        Filename:{' '}
+        {t('features.common.filename')}:{' '}
         {row.answer && (
           <Button
             variant="link"
-            aria-label="Download file"
+            aria-label={t(
+              'features.adminForm.responses.individualResponse.decryptedAttachment.aria',
+            )}
             isDisabled={downloadAttachmentMutation.isLoading}
             onClick={handleDownload}
             rightIcon={

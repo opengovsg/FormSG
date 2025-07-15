@@ -18,6 +18,11 @@ export interface Toasts {
     disabled: string
     successAfter: string
   }
+  form: {
+    retrieval: {
+      error: string
+    }
+  }
   statusTracker: {
     successBefore: string
     disabled: string

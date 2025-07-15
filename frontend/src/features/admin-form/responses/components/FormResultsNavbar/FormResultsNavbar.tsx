@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
@@ -36,6 +37,9 @@ export const FormResultsNavbar = (): JSX.Element => {
   const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
   const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const shouldShowCharts = isFormEncryptMode && isChartsEnabled
+
+  const { t } = useTranslation()
+
   return (
     <Flex
       sx={noPrintCss}
@@ -64,27 +68,27 @@ export const FormResultsNavbar = (): JSX.Element => {
           to={RESULTS_RESPONSES_SUBROUTE}
           isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
         >
-          Responses
+          {t('features.common.responses')}
         </NavigationTab>
         <NavigationTab
           to={RESULTS_FEEDBACK_SUBROUTE}
           isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
         >
-          Feedback
+          {t('features.common.feedback')}
         </NavigationTab>
         {shouldShowCharts ? (
           <NavigationTab
             to={RESULTS_CHARTS_SUBROUTE}
             isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
           >
-            Charts
+            {t('features.common.charts')}
             <Badge
               colorScheme="primary"
               variant="subtle"
               color="secondary.500"
               ml="0.5rem"
             >
-              Beta
+              {t('features.common.beta')}
             </Badge>
           </NavigationTab>
         ) : null}

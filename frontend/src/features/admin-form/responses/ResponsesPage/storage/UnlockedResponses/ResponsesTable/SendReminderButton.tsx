@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiBell, BiCheck } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
@@ -13,6 +14,8 @@ export const SendReminderButton = ({
 }: {
   submissionId: string
 }) => {
+  const { t } = useTranslation()
+
   const { formId = '' } = useParams()
 
   const { sendReminderForResponseMutation } = useFormRemindersMutations()
@@ -35,7 +38,11 @@ export const SendReminderButton = ({
   return !isSent ? (
     <Button
       isLoading={isLoadingSubmissionData}
-      loadingText={isLoadingSubmissionData ? 'Loading' : 'Sending'}
+      loadingText={
+        isLoadingSubmissionData
+          ? t('features.common.loading')
+          : t('features.common.sending')
+      }
       m="0"
       p="0"
       variant="clear"
@@ -56,11 +63,19 @@ export const SendReminderButton = ({
         setIsSent(true)
       }}
     >
-      <Text textStyle="subhead-2">Send reminder</Text>
+      <Text textStyle="subhead-2">
+        {t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.sendReminder',
+        )}
+      </Text>
     </Button>
   ) : (
     <Button variant="clear" m="0" p="0" leftIcon={<BiCheck />} isDisabled>
-      <Text textStyle="subhead-2">Reminder sent</Text>
+      <Text textStyle="subhead-2">
+        {t(
+          'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
+        )}
+      </Text>
     </Button>
   )
 }

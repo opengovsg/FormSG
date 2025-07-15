@@ -1,5 +1,5 @@
+import { useTranslation } from 'react-i18next'
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import SecretKeyVerificationInput from '~components/SecretKeyVerificationInput'
 
@@ -19,6 +19,8 @@ export const SecretKeyVerification = ({
   const { setSecretKey, formPublicKey, isLoading, totalResponsesCount } =
     useStorageResponsesContext()
 
+  const { t } = useTranslation()
+
   return (
     <Container p={0} maxW="42.5rem">
       <Stack spacing="2rem">
@@ -29,7 +31,11 @@ export const SecretKeyVerification = ({
               <Text color="primary.500" as="span">
                 {totalResponsesCount?.toLocaleString() ?? '-'}
               </Text>
-              {simplur` ${[totalResponsesCount ?? 0]}response[|s] to date`}
+              {' ' +
+                t(
+                  'features.adminForm.responses.components.secretKeyVerification.responsesToDate',
+                  { count: totalResponsesCount ?? 0 },
+                )}
             </Text>
           </Skeleton>
         ) : null}
@@ -37,7 +43,9 @@ export const SecretKeyVerification = ({
           publicKey={formPublicKey}
           setSecretKey={setSecretKey}
           isLoading={isLoading}
-          description="Your Secret Key was downloaded when you created your form"
+          description={t(
+            'features.adminForm.responses.components.secretKeyVerification.secretKeyVerificationInputDescription',
+          )}
           isButtonFullWidth={false}
           showGuideLink={true}
           buttonText={ctaText}

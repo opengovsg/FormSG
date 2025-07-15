@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BiAlignLeft,
   BiCaretDownSquare,
@@ -26,20 +27,62 @@ const ListWithIcon = ({
   </GridItem>
 )
 
-export const ChartsSupportedFieldsInfoBox = () => (
-  <Box pt="1.5rem">
-    <Text textStyle="subhead-3" color="secondary.500" textTransform="uppercase">
-      Supported fields
-    </Text>
-    <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">
-      <ListWithIcon icon={BiRename}>Short answer</ListWithIcon>
-      <ListWithIcon icon={BiAlignLeft}>Long answer</ListWithIcon>
-      <ListWithIcon icon={BiRadioCircleMarked}>Radio</ListWithIcon>
-      <ListWithIcon icon={BiSelectMultiple}>Checkbox</ListWithIcon>
-      <ListWithIcon icon={BiCaretDownSquare}>Dropdown</ListWithIcon>
-      <ListWithIcon icon={BiFlag}>Country Region</ListWithIcon>
-      <ListWithIcon icon={BiToggleLeft}>Yes / No</ListWithIcon>
-      <ListWithIcon icon={BiStar}>Rating</ListWithIcon>
-    </Grid>
-  </Box>
-)
+export function ChartsSupportedFieldsInfoBox() {
+  const { t } = useTranslation()
+
+  return (
+    <Box pt="1.5rem">
+      <Text
+        textStyle="subhead-3"
+        color="secondary.500"
+        textTransform="uppercase"
+      >
+        {t(
+          'features.adminForm.responses.charts.components.supportedFieldsInfoBox.supportedFields',
+        )}
+      </Text>
+      <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">
+        <ListWithIcon icon={BiRename}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.shortAnswer',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiAlignLeft}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.longAnswer',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiRadioCircleMarked}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.radio',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiSelectMultiple}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.checkbox',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiCaretDownSquare}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.dropdown',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiFlag}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.countryRegion',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiToggleLeft}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.yesOrNo',
+          )}
+        </ListWithIcon>
+        <ListWithIcon icon={BiStar}>
+          {t(
+            'features.adminForm.responses.charts.components.supportedFieldsInfoBox.rating',
+          )}
+        </ListWithIcon>
+      </Grid>
+    </Box>
+  )
+}
