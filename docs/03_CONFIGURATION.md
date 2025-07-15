@@ -141,8 +141,9 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `IMAGE_S3_BUCKET`                    | Name of S3 bucket for image field uploads.                                                                                          |
 | `STATIC_ASSETS_S3_BUCKET`            | Name of S3 bucket for static assets.                                                                                                |
 | `LOGO_S3_BUCKET`                     | Name of S3 bucket for form logo uploads.                                                                                            |
-| `VIRUS_SCANNER_QUARANTINE_S3_BUCKET` | Name of S3 bucket for quarantined files.                                                                                            |
-| `VIRUS_SCANNER_CLEAN_S3_BUCKET`      | Name of S3 bucket for clean files.                                                                                                  |
+| `GUARDDUTY_QUARANTINE_S3_BUCKET`     | Name of S3 bucket for quarantined files.                                                                                            |
+| `GUARDDUTY_CLEAN_S3_BUCKET`          | Name of S3 bucket for clean files.                                                                                                  |
+| `GUARDDUTY_LAMBDA_FUNCTION_NAME`     | Name of AWS Lambda function for GuardDuty malware scanning.                                                                         |
 | `ATTACHMENT_S3_BUCKET`               | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP`        | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
@@ -232,15 +233,13 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint.                    |
 | `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                                            |
 | `MYINFO_CLIENT_CONFIG`           | Configures [MyInfoGovClient](https://github.com/opengovsg/myinfo-gov-client). Set this to either`stg` or `prod` to fetch MyInfo data from the corresponding endpoints.                          |
-| `MYINFO_FORMSG_KEY_PATH`         | Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.                                                                                 |
-| `MYINFO_CERT_PATH`               | Path to MyInfo's public certificate, which is used to verify their signature.                                                                                                                   |
+| `MYINFO_FORMSG_KEY`              | Filepath to MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.                                                                                 |
+| `MYINFO_CERT`                    | Path to MyInfo's public certificate, which is used to verify their signature.                                                                                                                   |
 | `MYINFO_CLIENT_ID`               | Client ID registered with MyInfo.                                                                                                                                                               |
 | `MYINFO_CLIENT_SECRET`           | Client secret registered with MyInfo.                                                                                                                                                           |
 | `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                                                  |
 | `IS_SP_MAINTENANCE`              | If set, displays a banner message on Singpass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                                             |
 | `IS_CP_MAINTENANCE`              | If set, displays a banner message on Corppass forms.                                                                                                                                            |
-| `FILE_SYSTEM_ID`                 | The id of the AWS Elastic File System (EFS) file system to mount onto the instances.                                                                                                            |
-| `CERT_PATH`                      | The specific directory within the network file system that is to be mounted. This directory is expected to contain the public certs and private keys relevant to Singpass, Corppass and MyInfo. |
 
 #### Verified Emails/SMSes
 
