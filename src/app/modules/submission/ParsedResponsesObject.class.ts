@@ -177,9 +177,6 @@ export default class ParsedResponsesObject {
         processingResponse,
       )
       if (validateFieldResult.isErr()) {
-        console.log('here i am')
-        console.log(formField)
-        console.log(processingResponse)
         return err(validateFieldResult.error)
       }
       processedResponses.push(processingResponse)

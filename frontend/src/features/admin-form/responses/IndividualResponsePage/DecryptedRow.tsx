@@ -1,7 +1,7 @@
-import { memo, useCallback, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
-import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
@@ -123,57 +123,57 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   )
 }
 
-function convertStringArrayToNumberTripleArray(input: string[][]): number[][] {
-  return input.map((subArray) =>
-    subArray.map((item) => {
-      console.log(item)
-      // Parse the item (which is a string) as a JSON array
-      return JSON.parse(item)
-    }),
-  )
-}
-
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
-  // const vectorArray = convertStringArrayToNumberTripleArray(
-  //   row.answerArray as string[][],
-  // )
-  console.log(row.answerArray)
+  const x = JSON.stringify(row.answerArray) // TODO: save output as a string instead of string array
+  const vectorArray: [number, number, number][][] = JSON.parse(x)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  // const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  // const canvas = canvasRef.current
-  // if (canvas && vectorArray.length > 0) {
-  //   const ctx = canvas.getContext('2d')
-  //   if (ctx) {
-  //     ctx.clearRect(0, 0, canvas.width, canvas.height) // Clear previous drawings
+  useEffect(() => { //TODO: dangerously using useEffect?
+    const canvas = canvasRef.current
+    if (canvas && vectorArray.length > 0) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height) // Clear previous drawings
 
-  //     // Set canvas size (you may want to adjust this)
-  //     canvas.width = 500 // Set canvas width
-  //     canvas.height = 300 // Set canvas height
+        // Set canvas size (you may want to adjust this)
+        canvas.width = 500 // Set canvas width
+        canvas.height = 300 // Set canvas height
 
-  //     ctx.beginPath()
+        ctx.beginPath()
+        let count = 0
+        // Draw the vector points
+        vectorArray.forEach((stroke) => {
+          stroke.forEach(([x, y], index) => {
+            console.log(`count: ${count}`)
+            count += 1
+            if (index === 0) {
+              ctx.moveTo(x, y) // Move to the starting point
+            } else {
+              ctx.lineTo(x, y) // Draw lines to the subsequent points
+            }
+          })
+        })
 
-  //     // Draw the vector points
-  //     vectorArray.forEach((stroke) => {
-  //       stroke.forEach(([x, y], index) => {
-  //         if (index === 0) {
-  //           ctx.moveTo(x, y) // Move to the starting point
-  //         } else {
-  //           ctx.lineTo(x, y) // Draw lines to the subsequent points
-  //         }
-  //       })
-  //     })
+        ctx.strokeStyle = 'black' // Set the stroke color
+        ctx.lineWidth = 2 // Set the stroke width
+        ctx.stroke() // Render the stroke
+      }
+    }
+  }, [vectorArray])
 
-  //     ctx.strokeStyle = 'black' // Set the stroke color
-  //     ctx.lineWidth = 2 // Set the stroke width
-  //     ctx.stroke() // Render the stroke
-  //   }
-  // }
-  // console.log(row.answerArray)
   return (
     <Stack>
       <DecryptedQuestionLabel row={row} />
-      {/* <canvas ref={canvasRef} /> */}
-      <Text>{row.answerArray}</Text>
+      <Box
+        background="white"
+        width="502px"
+        height="202px"
+        border="1px solid"
+        borderColor="neutral.400"
+        borderRadius="0.25rem"
+      >
+        <canvas ref={canvasRef} />
+      </Box>
     </Stack>
   )
 }
