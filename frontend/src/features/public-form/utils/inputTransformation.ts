@@ -32,6 +32,7 @@ import {
   TableRow,
 } from '~shared/types/response'
 import { removeAt } from '~shared/utils/immutable-array-fns'
+import { convertToSignatureStringOutput } from '~shared/utils/signature'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
@@ -216,13 +217,13 @@ const transformToSignatureOutput = (
   schema: SignatureFieldSchema,
   input?: SignatureFieldValues,
 ): SignatureResponse => {
-  let answerArray: [number, number, number][][] = []
+  let answer: string = ''
   if (input !== undefined) {
-    answerArray = input.value
+    answer = convertToSignatureStringOutput(input.value)
   }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
+    answer,
   }
 }
 

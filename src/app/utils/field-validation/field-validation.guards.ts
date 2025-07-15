@@ -8,6 +8,7 @@ import {
   GenericStringAnswerResponseFieldV3,
   TableRow,
 } from '../../../../shared/types'
+import { convertToSignatureVectoryArray } from '../../../../shared/utils/signature'
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
@@ -72,8 +73,8 @@ export const isProcessedSignatureResponse = (
 ): response is ProcessedSignatureResponse => {
   return (
     response.fieldType === BasicField.Signature &&
-    'answerArray' in response &&
-    isSignatureVectorArray(response.answerArray)
+    'answer' in response &&
+    isSignatureVectorArray(response.answer)
   )
 }
 
@@ -81,19 +82,32 @@ const isStringArray = (arr: unknown): arr is string[] =>
   Array.isArray(arr) && arr.every((item) => typeof item === 'string')
 
 const isSignatureVectorArray = (
-  arr: unknown,
-): arr is [number, number, number][][] =>
-  Array.isArray(arr) &&
-  arr.every(
-    (subArray) =>
-      Array.isArray(subArray) &&
-      subArray.every(
-        (innerArray) =>
-          Array.isArray(innerArray) &&
-          innerArray.length === 3 &&
-          innerArray.every((num) => typeof num === 'number'),
-      ),
-  )
+  input: unknown,
+): input is [number, number, number][][] => {
+  if (typeof input !== 'string') {
+    return false
+  }
+
+  try {
+    const parsed = convertToSignatureVectoryArray(input)
+
+    return (
+      Array.isArray(parsed) &&
+      parsed.every(
+        (subArray) =>
+          Array.isArray(subArray) &&
+          subArray.every(
+            (innerArray) =>
+              Array.isArray(innerArray) &&
+              innerArray.length === 3 &&
+              innerArray.every((num) => typeof num === 'number'),
+          ),
+      )
+    )
+  } catch {
+    return false
+  }
+}
 
 // Check that the row contains a single array of only string (including empty string)
 export const isTableRow = (row: unknown): row is TableRow =>

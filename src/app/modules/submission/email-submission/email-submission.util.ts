@@ -219,19 +219,19 @@ export const getAnswerForAddress = (
 /**
  * Creates a response for signature with its answer formatted from the answerArray
  */
-export const getAnswerForSignature = (
-  response: ProcessedSignatureResponse,
-): ResponseFormattedForEmail => {
-  return {
-    _id: response._id,
-    fieldType: response.fieldType,
-    question: response.question,
-    myInfo: response.myInfo,
-    isVisible: response.isVisible,
-    isUserVerified: response.isUserVerified,
-    answer: JSON.stringify(response.answerArray), // TODO: fix string
-  }
-}
+// export const getAnswerForSignature = (
+//   response: ProcessedSignatureResponse,
+// ): ResponseFormattedForEmail => {
+//   return {
+//     _id: response._id,
+//     fieldType: response.fieldType,
+//     question: response.question,
+//     myInfo: response.myInfo,
+//     isVisible: response.isVisible,
+//     isUserVerified: response.isUserVerified,
+//     answer: response.answer, // TODO: fix string
+//   }
+// }
 
 /**
  *  Formats the response for sending to the submitter (autoReplyData),
@@ -487,9 +487,6 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   } else if (isProcessedAddressResponse(response)) {
     const address = getAnswerForAddress(response)
     return [getFormattedFunction(address, hashedFields)]
-  } else if (isProcessedSignatureResponse(response)) {
-    const signature = getAnswerForSignature(response)
-    return [getFormattedFunction(signature, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
