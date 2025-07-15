@@ -5,6 +5,7 @@ import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
+import { convertToSignatureVectoryArray } from '~shared/utils/signature'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -124,11 +125,16 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 }
 
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
-  const x = JSON.stringify(row.answerArray) // TODO: save output as a string instead of string array
-  const vectorArray: [number, number, number][][] = JSON.parse(x)
+  const signatureString: string = row.answer ?? ''
+  console.log(signatureString)
+  console.log(row.answerArray)
+  const vectorArray: [number, number, number][][] =
+    convertToSignatureVectoryArray(signatureString)
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  useEffect(() => { //TODO: dangerously using useEffect?
+  useEffect(() => {
+    //TODO: dangerously using useEffect?
     const canvas = canvasRef.current
     if (canvas && vectorArray.length > 0) {
       const ctx = canvas.getContext('2d')
