@@ -22,22 +22,23 @@ export const SignatureField = ({
   isHighContrast,
 }: SignatureFieldProps): JSX.Element => {
   const formContext = useFormContext<SignatureFieldInput>()
-  const { setValue } = formContext
-
+  const { getValues, setValue } = formContext
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
-
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
-  // const handleClearSignature = async () => {
-  //   signatureRef.current?.clear()
-  //   setShowSignaturePlaceholder(true)
-  // }
+  // if it has pre-existing data
+  const vectorArray: [number, number, number][][] = getValues(`${schema._id}`)
+    ? getValues(`${schema._id}.value`)
+    : []
 
-  // const signatureRef = useRef<SignatureCanvas>(null)
+  const x = getValues(`${schema._id}.value`)
+  console.log(`${x}`)
+  console.log(typeof x)
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
-  const [pfStrokes, setPfStrokes] = useState<[number, number, number][][]>([])
+  const [pfStrokes, setPfStrokes] =
+    useState<[number, number, number][][]>(vectorArray)
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
   >([])
@@ -75,6 +76,11 @@ export const SignatureField = ({
   useEffect(() => {
     const canvas = pfCanvasRef.current
     if (!canvas) return
+
+    if (vectorArray.length > 0) {
+      drawAllStrokes()
+      setShowSignaturePlaceholder(false)
+    }
 
     const handlePointerDown = (e: PointerEvent) => {
       setShowSignaturePlaceholder(false)
@@ -148,68 +154,8 @@ export const SignatureField = ({
         // isInvalid={!!addressSubFieldErrors?.postalCode}
       >
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">
-          {/* <FormLabel>
-                  Throttle 0, minDis: 1, veloFilterWeight: 0.3
-                </FormLabel> */}
           <Flex direction="row" gap={2} justify="space-between" width="100%">
-            {/* <Input
-                    {...field}
-                    aria-label={`${schema.questionNumber}. Draw??`}
-                    placeholder="HAHAHAH"
-                    isHighContrast={isHighContrast}
-                  />
-                  <Button
-                    onClick={handleVerifyAddress}
-                    isLoading={isSubmitting}
-                    isDisabled={isButtonDisabled}
-                    isHighContrast={isHighContrast}
-                  >
-                    Draw
-                  </Button> */}
             <Stack>
-              {/* <Box
-                background="white"
-                width="502px"
-                height="202px"
-                border="1px solid"
-                borderColor="neutral.400"
-                borderRadius="0.25rem"
-              >
-                {showSignaturePlaceholder && (
-                  <Box
-                    width="502px"
-                    height="202px"
-                    justifyItems="center"
-                    alignContent="center"
-                    position="absolute"
-                    pointerEvents="none"
-                  >
-                    <Text color="#A0A4AD">Sign here</Text>
-                  </Box>
-                )}
-                <SignatureCanvas
-                  ref={signatureRef}
-                  penColor="black"
-                  canvasProps={{
-                    width: 500,
-                    height: 200,
-                    className: 'sigCanvas',
-                  }}
-                  throttle={0}
-                  minDistance={3}
-                  velocityFilterWeight={0.7}
-                  minWidth={2}
-                  maxWidth={3}
-                  onBegin={() => {
-                    setShowSignaturePlaceholder(false)
-                  }}
-                  onEnd={() => {
-                    // const sigDataUrl = signatureRef.current?.toDataURL()
-                    const sigData = signatureRef.current?.toData() ?? []
-                    console.log(JSON.stringify(sigData))
-                  }}
-                />
-              </Box> */}
               {/* perfect freehand component */}
               <Box
                 background="white"
@@ -218,6 +164,8 @@ export const SignatureField = ({
                 border="1px solid"
                 borderColor="neutral.400"
                 borderRadius="0.25rem"
+                cursor={schema.disabled ? 'not-allowed' : 'auto'}
+                opacity={schema.disabled ? 0.6 : 1} // optional: visual dim
               >
                 {showSignaturePlaceholder && (
                   <Box
@@ -231,12 +179,32 @@ export const SignatureField = ({
                     <Text color="#A0A4AD">Sign here</Text>
                   </Box>
                 )}
-                <canvas
-                  ref={pfCanvasRef}
-                  width={500}
-                  height={200}
-                  style={{ touchAction: 'none' }}
-                />
+                <Box
+                  pointerEvents={schema.disabled ? 'none' : 'auto'} // 👈 this blocks canvas interaction
+                  width="100%"
+                  height="100%"
+                >
+                  <canvas
+                    ref={pfCanvasRef}
+                    width={500}
+                    height={200}
+                    style={{ touchAction: 'none' }}
+                  />
+                </Box>
+                {/* Overlay for disabled state */}
+                {/* {schema.disabled && (
+                  <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    width="100%"
+                    height="100%"
+                    backgroundColor="gray.500"
+                    zIndex={1}
+                    pointerEvents="auto"
+                    cursor="not-allowed"
+                  />
+                )} */}
               </Box>
             </Stack>
           </Flex>
@@ -248,6 +216,7 @@ export const SignatureField = ({
               }}
               isLoading={isSubmitting}
               isHighContrast={isHighContrast}
+              isDisabled={schema.disabled}
             >
               Clear
             </Button>

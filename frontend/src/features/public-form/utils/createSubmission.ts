@@ -402,7 +402,7 @@ const createResponsesV3 = (
           | undefined
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
-          answer: input ? convertToSignatureStringOutput(input.value) : input,
+          answer: input ? convertToSignatureStringOutput(input.value) : input, //TODO: update when signatures is extended to other types
         } as FieldResponseV3
         break
       }

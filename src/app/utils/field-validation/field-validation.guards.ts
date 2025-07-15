@@ -8,7 +8,7 @@ import {
   GenericStringAnswerResponseFieldV3,
   TableRow,
 } from '../../../../shared/types'
-import { convertToSignatureVectoryArray } from '../../../../shared/utils/signature'
+import { convertToSignatureVectorArray } from '../../../../shared/utils/signature'
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
@@ -89,7 +89,7 @@ const isSignatureVectorArray = (
   }
 
   try {
-    const parsed = convertToSignatureVectoryArray(input)
+    const parsed = convertToSignatureVectorArray(input)
 
     return (
       Array.isArray(parsed) &&

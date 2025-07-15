@@ -12,7 +12,7 @@ import {
   FormFieldDto,
   SignatureFieldResponseV3,
 } from '~shared/types'
-import { convertToSignatureVectoryArray } from '~shared/utils/signature'
+import { convertToSignatureVectorArray } from '~shared/utils/signature'
 import {
   CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
@@ -141,9 +141,14 @@ export const processDecryptedContentV3 = async (
         }
       }
       if (response.fieldType === BasicField.Signature) {
-        // const answer = convertToSignatureVectoryArray(response.answer)
+        // const answer = convertToSignatureVectorArray(response.answer)
+        // const answer = {
+        //   type: 'draw',
+        //   value: convertToSignatureVectorArray(response.answer),
+        // }
         return {
           ...pickBaseOutputFromSchema(ff),
+          // answer: answer,
           answer: response.answer,
         }
       }

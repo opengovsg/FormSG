@@ -4,7 +4,13 @@ import {
 } from '@opengovsg/formsg-sdk/dist/types'
 import { decode as decodeBase64 } from '@stablelib/base64'
 
-import { FieldResponsesV3, MultirespondentSubmissionDto } from '~shared/types'
+import {
+  BasicField,
+  FieldResponsesV3,
+  FieldResponseV3,
+  MultirespondentSubmissionDto,
+} from '~shared/types'
+import { convertToSignatureVectorArray } from '~shared/utils/signature'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -38,10 +44,32 @@ export const decryptSubmission = ({
   )
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 
+  // Add back signature typing for consistency
+  const decryptedResponses: FieldResponsesV3 = Object.keys(
+    decryptedContent.responses,
+  ).reduce((acc, id) => {
+    const response = decryptedContent.responses[id]
+
+    if (response.fieldType === BasicField.Signature) {
+      acc[id] = {
+        ...response,
+        answer: {
+          type: 'draw',
+          value: convertToSignatureVectorArray(response.answer),
+        },
+      } as FieldResponseV3
+    } else {
+      acc[id] = response as FieldResponseV3
+    }
+
+    return acc
+  }, {} as FieldResponsesV3) // Initialize as FieldResponsesV3
+
   // Add metadata for display.
   return {
     ...rest,
-    responses: decryptedContent.responses as FieldResponsesV3,
+    // responses: decryptedContent.responses as FieldResponsesV3,
+    responses: decryptedResponses as FieldResponsesV3,
     submissionSecretKey: secretKey,
   }
 }

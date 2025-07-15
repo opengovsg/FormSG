@@ -4,7 +4,7 @@ export const convertToSignatureStringOutput = (
   return JSON.stringify(input)
 }
 
-export const convertToSignatureVectoryArray = (
+export const convertToSignatureVectorArray = (
   input: string,
 ): [number, number, number][][] => {
   return JSON.parse(input)
