@@ -10,6 +10,7 @@ import {
   ChildrenCompoundFieldResponsesV3,
   FieldResponseAnswerMapV3,
   RadioFieldResponsesV3,
+  SignatureFieldResponseV3,
   TableFieldResponsesV3,
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
@@ -36,7 +37,6 @@ import { convertToSignatureStringOutput } from '~shared/utils/signature'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
-import { SignatureFieldValues } from '~templates/Field/Signature/SignatureField'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
   AddressCompoundFieldSchema,
@@ -55,6 +55,7 @@ import {
   RadioFieldValues,
   SectionFieldSchema,
   SignatureFieldSchema,
+  SignatureFieldValues,
   SingleAnswerOutput,
   TableFieldSchema,
   TableFieldValues,
@@ -215,7 +216,7 @@ const transformToSectionOutput = (
 
 const transformToSignatureOutput = (
   schema: SignatureFieldSchema,
-  input?: SignatureFieldValues,
+  input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
   let answer: string = ''
   if (input !== undefined) {

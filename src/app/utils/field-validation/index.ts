@@ -390,6 +390,8 @@ const isResponsePresentOnHiddenFieldV3 = ({
             (value) => value === '',
           ),
       )
+    case BasicField.Signature:
+      return ok(response.answer !== '')
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldErrorV3('Response has invalid shape'))
@@ -469,6 +471,7 @@ const isValidationRequiredV3 = ({
           response.answer.child.length > 0 ||
           response.answer.childFields.length > 0,
       )
+    case BasicField.Signature:
     case BasicField.Address: {
       const answerObjectDefined = !!response.answer
       return ok(answerObjectDefined) // address will require validation required or optional

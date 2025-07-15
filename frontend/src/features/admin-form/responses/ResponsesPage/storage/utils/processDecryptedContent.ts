@@ -10,7 +10,9 @@ import {
   BasicField,
   FieldResponse,
   FormFieldDto,
+  SignatureFieldResponseV3,
 } from '~shared/types'
+import { convertToSignatureVectoryArray } from '~shared/utils/signature'
 import {
   CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
@@ -136,6 +138,13 @@ export const processDecryptedContentV3 = async (
         return {
           ...pickBaseOutputFromSchema(ff),
           answer: answer.answer,
+        }
+      }
+      if (response.fieldType === BasicField.Signature) {
+        // const answer = convertToSignatureVectoryArray(response.answer)
+        return {
+          ...pickBaseOutputFromSchema(ff),
+          answer: response.answer,
         }
       }
       return transformInputsToOutputs(ff, response.answer)

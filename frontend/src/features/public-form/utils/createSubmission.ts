@@ -16,6 +16,7 @@ import {
   SubmissionAttachment,
   SubmissionAttachmentsMap,
 } from '~shared/types/submission'
+import { convertToSignatureStringOutput } from '~shared/utils/signature'
 
 import fileArrayBuffer from '~/utils/fileArrayBuffer'
 
@@ -395,7 +396,16 @@ const createResponsesV3 = (
         }
         break
       }
-      case BasicField.Signature: // TODO: FRM-2029 unsure of output type yet
+      case BasicField.Signature: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input ? convertToSignatureStringOutput(input.value) : input,
+        } as FieldResponseV3
+        break
+      }
       case BasicField.Section:
       case BasicField.Image:
       case BasicField.Statement: {

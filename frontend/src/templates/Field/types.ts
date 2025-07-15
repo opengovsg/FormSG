@@ -76,6 +76,7 @@ export type SingleAnswerFieldInput = FieldInput<SingleAnswerValue>
 export type VerifiableFieldInput = FieldInput<VerifiableFieldValues>
 export type ChildrenCompoundFieldInputs =
   FieldInput<ChildrenCompoundFieldValues>
+export type SignatureFieldInput = FieldInput<SignatureFieldValues>
 
 export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.Number
@@ -106,7 +107,9 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
                 ? ChildrenCompoundFieldValues
                 : F extends BasicField.Address
                   ? AddressCompoundFieldValues
-                  : never
+                  : F extends BasicField.Signature
+                    ? SignatureFieldValues
+                    : never
 
 // Input values, what each field contains
 export type SingleAnswerValue = string
@@ -154,6 +157,15 @@ export type ChildrenCompoundFieldValues = {
 export type AddressCompoundFieldValues = {
   addressSubFields: AddressAttributes
 }
+
+export type SignatureFieldValues = {
+  type: 'draw'
+  value: [number, number, number][][]
+}
+// | {
+//     type: 'text' // TODO: unused, kept as example of extension
+//     value: string
+//   }
 
 // Various schemas used by different fields
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>

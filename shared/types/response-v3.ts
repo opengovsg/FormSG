@@ -32,6 +32,7 @@ export type GenericStringAnswerFieldResponseV3 =
   | UenResponseV3
   | DateResponseV3
   | CountryRegionResponseV3
+  | SignatureResponseV3
 
 export type HeaderResponseV3 = FieldResponseFactoryV3<BasicField.Section>
 export type EmailResponseV3 = FieldResponseFactoryV3<BasicField.Email>
@@ -44,6 +45,7 @@ export type LongTextResponseV3 = FieldResponseFactoryV3<BasicField.LongText>
 export type DropdownResponseV3 = FieldResponseFactoryV3<BasicField.Dropdown>
 export type CountryRegionResponseV3 =
   FieldResponseFactoryV3<BasicField.CountryRegion>
+export type SignatureResponseV3 = FieldResponseFactoryV3<BasicField.Signature>
 export type YesNoResponseV3 = FieldResponseFactoryV3<BasicField.YesNo>
 export type CheckboxResponseV3 = FieldResponseFactoryV3<BasicField.Checkbox>
 export type RadioResponseV3 = FieldResponseFactoryV3<BasicField.Radio>
@@ -85,7 +87,9 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                   ? ChildrenCompoundFieldResponsesV3
                   : F extends BasicField.Address
                     ? AddressCompoundFieldResponseV3
-                    : never
+                    : F extends BasicField.Address
+                      ? SignatureFieldResponseV3
+                      : never
 
 export type GenericStringAnswerResponseFieldTypeV3 =
   | NumberResponseV3['fieldType']
@@ -133,4 +137,9 @@ export type AttachmentFieldResponseV3 = {
 
 export type AddressCompoundFieldResponseV3 = {
   addressSubFields: AddressAttributes
+}
+
+export type SignatureFieldResponseV3 = {
+  type: 'draw'
+  value: [number, number, number][][]
 }

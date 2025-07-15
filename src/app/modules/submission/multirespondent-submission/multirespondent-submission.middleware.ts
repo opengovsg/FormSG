@@ -669,7 +669,6 @@ export const encryptSubmission = async (
   const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
-
   const attachmentsMap: Record<string, Buffer> = {}
 
   const strippedAttachmentResponses: Record<

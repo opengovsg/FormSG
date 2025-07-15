@@ -9,22 +9,12 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
-import { FieldInput, SignatureFieldSchema } from '../types'
+import { FieldInput, SignatureFieldInput, SignatureFieldSchema } from '../types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
   disableRequiredValidation?: boolean
 }
-
-export type SignatureFieldInput = FieldInput<SignatureFieldValues>
-export type SignatureFieldValues = {
-  type: 'draw'
-  value: [number, number, number][][]
-}
-// | {
-//     type: 'text' // TODO: unused, kept as example of extension
-//     value: string
-//   }
 
 export const SignatureField = ({
   schema,

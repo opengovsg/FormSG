@@ -126,8 +126,6 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const signatureString: string = row.answer ?? ''
-  console.log(signatureString)
-  console.log(row.answerArray)
   const vectorArray: [number, number, number][][] =
     convertToSignatureVectoryArray(signatureString)
 
@@ -150,7 +148,6 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
         // Draw the vector points
         vectorArray.forEach((stroke) => {
           stroke.forEach(([x, y], index) => {
-            console.log(`count: ${count}`)
             count += 1
             if (index === 0) {
               ctx.moveTo(x, y) // Move to the starting point
