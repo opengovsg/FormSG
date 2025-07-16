@@ -47,7 +47,12 @@ describe('Bounce Model', () => {
       const params = {
         formId: new ObjectId(),
         bounces: [
-          { email: MOCK_EMAIL, hasBounced: true, bounceType: 'Permanent' },
+          {
+            email: MOCK_EMAIL,
+            hasBounced: true,
+            bounceType: 'Permanent',
+            bounceSubType: 'Suppressed',
+          },
         ],
         expireAt: new Date(Date.now()),
         hasAutoEmailed: true,

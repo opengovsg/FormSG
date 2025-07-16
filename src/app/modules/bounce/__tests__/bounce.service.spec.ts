@@ -23,7 +23,11 @@ import {
 import { DatabaseError } from '../../core/core.errors'
 import { UserWithContactNumber } from '../../user/user.types'
 
-import { makeBounceNotification, MOCK_SNS_BODY } from './bounce-test-helpers'
+import {
+  makeBounceNotification,
+  makeDeliveryNotification,
+  MOCK_SNS_BODY,
+} from './bounce-test-helpers'
 
 jest.mock('sns-validator')
 const MockedSNSMessageValidator = jest.mocked(SNSMessageValidator)
@@ -165,7 +169,7 @@ describe('BounceService', () => {
     ]
     beforeEach(() => jest.resetAllMocks())
 
-    it('should log email confirmations to short-term logs', async () => {
+    it('should log confirmation email bounces to short-term logs', async () => {
       const formId = new ObjectId()
       const submissionId = new ObjectId()
       const notification = makeBounceNotification({
@@ -174,15 +178,22 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
+        bounceSubType: 'General',
         emailType: EmailType.EmailConfirmation,
       })
       BounceService.logEmailNotification(notification)
       expect(mockLogger.info).not.toHaveBeenCalled()
       expect(mockLogger.warn).not.toHaveBeenCalled()
-      expect(mockShortTermLogger.info).toHaveBeenCalledWith(notification)
+      expect(mockShortTermLogger.info).toHaveBeenCalledWith({
+        message: 'Email bounced',
+        meta: {
+          action: 'logEmailNotification',
+          ...notification,
+        },
+      })
     })
 
-    it('should log admin responses to regular logs', async () => {
+    it('should log admin response email bounces to regular logs', async () => {
       const formId = new ObjectId()
       const submissionId = new ObjectId()
       const notification = makeBounceNotification({
@@ -191,11 +202,12 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
+        bounceSubType: 'General',
         emailType: EmailType.AdminResponse,
       })
       BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
-        message: 'Email notification',
+        message: 'Email bounced',
         meta: {
           action: 'logEmailNotification',
           ...notification,
@@ -205,7 +217,7 @@ describe('BounceService', () => {
       expect(mockShortTermLogger.info).not.toHaveBeenCalled()
     })
 
-    it('should log login OTPs to regular logs', async () => {
+    it('should log login OTP email bounces to regular logs', async () => {
       const formId = new ObjectId()
       const submissionId = new ObjectId()
       const notification = makeBounceNotification({
@@ -214,11 +226,12 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
+        bounceSubType: 'General',
         emailType: EmailType.LoginOtp,
       })
       BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
-        message: 'Email notification',
+        message: 'Email bounced',
         meta: {
           action: 'logEmailNotification',
           ...notification,
@@ -228,7 +241,7 @@ describe('BounceService', () => {
       expect(mockShortTermLogger.info).not.toHaveBeenCalled()
     })
 
-    it('should log admin notifications to regular logs', async () => {
+    it('should log admin notification email bounces to regular logs', async () => {
       const formId = new ObjectId()
       const submissionId = new ObjectId()
       const notification = makeBounceNotification({
@@ -237,11 +250,12 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
+        bounceSubType: 'General',
         emailType: EmailType.AdminBounce,
       })
       BounceService.logEmailNotification(notification)
       expect(mockLogger.info).toHaveBeenCalledWith({
-        message: 'Email notification',
+        message: 'Email bounced',
         meta: {
           action: 'logEmailNotification',
           ...notification,
@@ -251,7 +265,29 @@ describe('BounceService', () => {
       expect(mockShortTermLogger.info).not.toHaveBeenCalled()
     })
 
-    it('should log verification OTPs to short-term logs', async () => {
+    it('should log admin notification email deliveries to regular logs', async () => {
+      const formId = new ObjectId()
+      const submissionId = new ObjectId()
+      const notification = makeDeliveryNotification({
+        formId,
+        submissionId,
+        recipientList: MOCK_RECIPIENT_LIST,
+        deliveredList: MOCK_RECIPIENT_LIST,
+        emailType: EmailType.AdminBounce,
+      })
+      BounceService.logEmailNotification(notification)
+      expect(mockLogger.info).toHaveBeenCalledWith({
+        message: 'Email delivered',
+        meta: {
+          action: 'logEmailNotification',
+          ...notification,
+        },
+      })
+      expect(mockLogger.warn).not.toHaveBeenCalled()
+      expect(mockShortTermLogger.info).not.toHaveBeenCalled()
+    })
+
+    it('should log verification OTP email bounces to short-term logs', async () => {
       const formId = new ObjectId()
       const submissionId = new ObjectId()
       const notification = makeBounceNotification({
@@ -260,12 +296,41 @@ describe('BounceService', () => {
         recipientList: MOCK_RECIPIENT_LIST,
         bouncedList: MOCK_RECIPIENT_LIST,
         bounceType: BounceType.Transient,
+        bounceSubType: 'General',
         emailType: EmailType.VerificationOtp,
       })
       BounceService.logEmailNotification(notification)
       expect(mockLogger.info).not.toHaveBeenCalled()
       expect(mockLogger.warn).not.toHaveBeenCalled()
-      expect(mockShortTermLogger.info).toHaveBeenCalledWith(notification)
+      expect(mockShortTermLogger.info).toHaveBeenCalledWith({
+        message: 'Email bounced',
+        meta: {
+          action: 'logEmailNotification',
+          ...notification,
+        },
+      })
+    })
+
+    it('should log verification OTP email deliveries to short-term logs', async () => {
+      const formId = new ObjectId()
+      const submissionId = new ObjectId()
+      const notification = makeDeliveryNotification({
+        formId,
+        submissionId,
+        recipientList: MOCK_RECIPIENT_LIST,
+        deliveredList: MOCK_RECIPIENT_LIST,
+        emailType: EmailType.VerificationOtp,
+      })
+      BounceService.logEmailNotification(notification)
+      expect(mockLogger.info).not.toHaveBeenCalled()
+      expect(mockLogger.warn).not.toHaveBeenCalled()
+      expect(mockShortTermLogger.info).toHaveBeenCalledWith({
+        message: 'Email delivered',
+        meta: {
+          action: 'logEmailNotification',
+          ...notification,
+        },
+      })
     })
   })
 
