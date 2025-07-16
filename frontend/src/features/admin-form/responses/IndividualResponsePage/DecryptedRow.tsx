@@ -130,7 +130,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   useEffect(() => {
     const vectorArray: [number, number, number][][] = row.answerArray
       ? convertToSignatureVectorArray(row.answerArray[1] as string)
-      : []
+      : row.answer.value
 
     const canvas = canvasRef.current
     if (canvas && vectorArray.length > 0) {

@@ -49,19 +49,7 @@ export const decryptSubmission = ({
     decryptedContent.responses,
   ).reduce((acc, id) => {
     const response = decryptedContent.responses[id]
-
-    if (response.fieldType === BasicField.Signature) {
-      acc[id] = {
-        ...response,
-        answer: {
-          type: 'draw',
-          value: convertToSignatureVectorArray(response.answer),
-        },
-      } as FieldResponseV3
-    } else {
-      acc[id] = response as FieldResponseV3
-    }
-
+    acc[id] = response as FieldResponseV3
     return acc
   }, {} as FieldResponsesV3) // Initialize as FieldResponsesV3
 
@@ -69,7 +57,7 @@ export const decryptSubmission = ({
   return {
     ...rest,
     // responses: decryptedContent.responses as FieldResponsesV3,
-    responses: decryptedResponses as FieldResponsesV3,
+    responses: decryptedContent.responses as FieldResponsesV3,
     submissionSecretKey: secretKey,
   }
 }

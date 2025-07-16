@@ -29,6 +29,7 @@ export const isFieldResponseV3Equal = (
     case BasicField.Checkbox:
     case BasicField.Children:
     case BasicField.Address:
+    case BasicField.Signature:
       return _.isEqual(l.answer, r.answer)
     case BasicField.Attachment: {
       const lAnswer = l.answer as ParsedClearAttachmentResponseV3['answer']

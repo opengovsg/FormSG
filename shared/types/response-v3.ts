@@ -19,6 +19,7 @@ export type FieldResponseV3 =
   | MobileResponseV3
   | GenericStringAnswerFieldResponseV3
   | AddressResponseV3
+  | SignatureResponseV3
 
 export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
@@ -32,7 +33,6 @@ export type GenericStringAnswerFieldResponseV3 =
   | UenResponseV3
   | DateResponseV3
   | CountryRegionResponseV3
-  | SignatureResponseV3
 
 export type HeaderResponseV3 = FieldResponseFactoryV3<BasicField.Section>
 export type EmailResponseV3 = FieldResponseFactoryV3<BasicField.Email>
@@ -87,7 +87,7 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                   ? ChildrenCompoundFieldResponsesV3
                   : F extends BasicField.Address
                     ? AddressCompoundFieldResponseV3
-                    : F extends BasicField.Address
+                    : F extends BasicField.Signature
                       ? SignatureFieldResponseV3
                       : never
 

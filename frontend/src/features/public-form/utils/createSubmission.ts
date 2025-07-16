@@ -400,9 +400,12 @@ const createResponsesV3 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
+        // const signatureString = input?.value
+        //   ? convertToSignatureStringOutput(input.value)
+        //   : ''
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
-          answer: input ? convertToSignatureStringOutput(input.value) : input, //TODO: update when signatures is extended to other types
+          answer: input,
         } as FieldResponseV3
         break
       }

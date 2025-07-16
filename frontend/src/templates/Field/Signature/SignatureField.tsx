@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
-import SignatureCanvas from 'react-signature-canvas'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -26,14 +25,11 @@ export const SignatureField = ({
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
-  // if it has pre-existing data
-  const vectorArray: [number, number, number][][] = getValues(`${schema._id}`)
-    ? getValues(`${schema._id}.value`)
-    : []
-
-  const x = getValues(`${schema._id}.value`)
-  console.log(`${x}`)
-  console.log(typeof x)
+  let vectorArray: [number, number, number][][] = []
+  const preExistingSignature = getValues(`${schema._id}`)
+  if (preExistingSignature) {
+    vectorArray = preExistingSignature.value
+  }
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
