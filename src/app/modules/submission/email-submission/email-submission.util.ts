@@ -611,6 +611,7 @@ const getAutoReplyFormattedResponse = (
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
+      fieldType: response.fieldType,
     }
   }
   return undefined
@@ -635,7 +636,7 @@ export class SubmissionEmailObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const splitAddressData = splitAddressResponse(this.parsedResponses)
+    const splitAddressData = formatDataCollationResponse(this.parsedResponses)
     const dataCollationFormattedData = splitAddressData.flatMap((response) =>
       createFormattedDataForOneField(
         response,
@@ -684,7 +685,9 @@ export class SubmissionEmailObj {
   }
 }
 
-const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
+const formatDataCollationResponse = (
+  parsedResponses: ProcessedFieldResponse[],
+) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {
     const response = parsedResponses[i]
@@ -699,6 +702,17 @@ const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
           question: `${response.question} - ${answerKey[index]}`,
           answer: answer,
         })
+      })
+    } else if (
+      //TODO: fix JSON response
+      response.fieldType === BasicField.Signature &&
+      isProcessedSignatureResponse(response)
+    ) {
+      responses.push({
+        _id: `${response._id}`,
+        fieldType: response.fieldType,
+        question: `${response.question}`,
+        answerArray: [`${response._id}`],
       })
     } else {
       responses.push(response)
