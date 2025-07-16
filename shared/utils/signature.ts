@@ -44,3 +44,7 @@ export const convertToSignatureDataUrl = (
   const base64 = Buffer.from(svg).toString('base64')
   return `data:image/svg+xml;base64,${base64}`
 }
+
+export const isDataUrl = (data: string) : boolean => {
+  return typeof data === 'string' && data.startsWith('data:image/')
+}

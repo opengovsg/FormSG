@@ -12,6 +12,7 @@ import {
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
+import { convertToSignatureDataUrl } from '../../../../../shared/utils/signature'
 import {
   FormFieldSchema,
   IPopulatedForm,
@@ -311,6 +312,12 @@ export const getQuestionTitleAnswerString = ({
 
         answer = selectedAnswers.toString()
         break
+      case BasicField.Signature:
+        questionAnswerPair.push({
+          question: `[signature] ${questionTitle}`,
+          answer: convertToSignatureDataUrl(response.answer.value), // stripping type since we only need value to render
+        })
+        continue
       case BasicField.Children:
         if (!response.answer.childFields || !response.answer.child) {
           continue
