@@ -68,6 +68,8 @@ export const generateLoginOtpHtml = (htmlData: {
 export const generateSubmissionToAdminHtml = (
   htmlData: SubmissionToAdminHtmlData,
 ): ResultAsync<string, MailGenerationError> => {
+  // inject signature image data into formData for display
+  console.log(htmlData)
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-email.server.view.html`
 
   logger.info({

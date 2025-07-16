@@ -7,6 +7,10 @@ import {
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
 import {
+  convertToSignatureDataUrl,
+  convertToSignatureVectorArray,
+} from '../../../../../shared/utils/signature'
+import {
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
@@ -89,6 +93,7 @@ import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
+  SIGNATURE_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
@@ -122,6 +127,8 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
       return TABLE_PREFIX
     case BasicField.Attachment:
       return ATTACHMENT_PREFIX
+    case BasicField.Signature:
+      return SIGNATURE_PREFIX
     default:
       return ''
   }
@@ -222,6 +229,16 @@ export const getAnswerForAddress = (
 export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
+  let signatureAnswer: string
+  switch (response.answerArray[0]) {
+    case 'draw':
+      signatureAnswer = convertToSignatureDataUrl(
+        convertToSignatureVectorArray(response.answerArray[1]),
+      )
+      break
+    default:
+      signatureAnswer = ''
+  }
   return {
     _id: response._id,
     fieldType: response.fieldType,
@@ -229,7 +246,7 @@ export const getAnswerForSignature = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: response.answerArray[1], // TODO: fix string
+    answer: signatureAnswer, // '{type}, {vectorarray}'
   }
 }
 
