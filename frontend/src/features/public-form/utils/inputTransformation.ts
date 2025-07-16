@@ -218,13 +218,13 @@ const transformToSignatureOutput = (
   schema: SignatureFieldSchema,
   input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
-  let answer: string = ''
+  let answerArray: string[] = []
   if (input !== undefined) {
-    answer = convertToSignatureStringOutput(input.value)
+    answerArray = [input.type, convertToSignatureStringOutput(input.value)]
   }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer,
+    answerArray,
   }
 }
 

@@ -125,14 +125,13 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 }
 
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
-  const signatureString: string = row.answer ?? ''
-  const vectorArray: [number, number, number][][] =
-    convertToSignatureVectorArray(signatureString)
-
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
-    //TODO: dangerously using useEffect?
+    const vectorArray: [number, number, number][][] = row.answerArray
+      ? convertToSignatureVectorArray(row.answerArray[1] as string)
+      : []
+
     const canvas = canvasRef.current
     if (canvas && vectorArray.length > 0) {
       const ctx = canvas.getContext('2d')
@@ -162,7 +161,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
         ctx.stroke() // Render the stroke
       }
     }
-  }, [vectorArray])
+  }, [row.answerArray])
 
   return (
     <Stack>

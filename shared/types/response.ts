@@ -132,8 +132,9 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
-export const SignatureResponse = SingleAnswerResponse.extend({
+export const SignatureResponse = MultiAnswerResponse.extend({
   fieldType: z.literal(BasicField.Signature),
+  answerArray: z.array(z.string()) as unknown as z.Schema<string[]>,
 })
 
 export type SignatureResponse = z.infer<typeof SignatureResponse>

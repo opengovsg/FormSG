@@ -73,41 +73,41 @@ export const isProcessedSignatureResponse = (
 ): response is ProcessedSignatureResponse => {
   return (
     response.fieldType === BasicField.Signature &&
-    'answer' in response &&
-    isSignatureVectorArray(response.answer)
+    'answerArray' in response &&
+    isStringArray(response.answerArray)
   )
 }
 
 const isStringArray = (arr: unknown): arr is string[] =>
   Array.isArray(arr) && arr.every((item) => typeof item === 'string')
 
-const isSignatureVectorArray = (
-  input: unknown,
-): input is [number, number, number][][] => {
-  if (typeof input !== 'string') {
-    return false
-  }
+// const isSignatureVectorArray = (
+//   input: unknown,
+// ): input is [number, number, number][][] => {
+//   if (typeof input !== 'string') {
+//     return false
+//   }
 
-  try {
-    const parsed = convertToSignatureVectorArray(input)
+//   try {
+//     const parsed = convertToSignatureVectorArray(input)
 
-    return (
-      Array.isArray(parsed) &&
-      parsed.every(
-        (subArray) =>
-          Array.isArray(subArray) &&
-          subArray.every(
-            (innerArray) =>
-              Array.isArray(innerArray) &&
-              innerArray.length === 3 &&
-              innerArray.every((num) => typeof num === 'number'),
-          ),
-      )
-    )
-  } catch {
-    return false
-  }
-}
+//     return (
+//       Array.isArray(parsed) &&
+//       parsed.every(
+//         (subArray) =>
+//           Array.isArray(subArray) &&
+//           subArray.every(
+//             (innerArray) =>
+//               Array.isArray(innerArray) &&
+//               innerArray.length === 3 &&
+//               innerArray.every((num) => typeof num === 'number'),
+//           ),
+//       )
+//     )
+//   } catch {
+//     return false
+//   }
+// }
 
 // Check that the row contains a single array of only string (including empty string)
 export const isTableRow = (row: unknown): row is TableRow =>
