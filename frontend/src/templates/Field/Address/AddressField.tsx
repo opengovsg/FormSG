@@ -112,11 +112,11 @@ export const AddressCompoundField = ({
         if (!result.success) {
           setError(`${schema._id}.addressSubFields.blockNumber`, {
             type: 'manual',
-            message: t('invalidPostalCode'),
+            message: t('validPostalCodeNoAddress'),
           })
           setError(`${schema._id}.addressSubFields.streetName`, {
             type: 'manual',
-            message: t('invalidPostalCode'),
+            message: t('validPostalCodeNoAddress'),
           })
           setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
           setValue(`${schema._id}.addressSubFields.streetName`, '')

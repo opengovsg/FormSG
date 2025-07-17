@@ -155,6 +155,7 @@ interface AddressFieldValidation {
   invalidPostalCode: string
   invalidBlockUnit: string
   invalidLevelUnit: string
+  validPostalCodeNoAddress: string
 }
 
 const addressFieldValidation: AddressFieldValidation = {
@@ -162,6 +163,8 @@ const addressFieldValidation: AddressFieldValidation = {
   invalidPostalCode: 'Please enter a valid postal code',
   invalidBlockUnit: 'Please use numbers and letters only',
   invalidLevelUnit: 'Please include both level and unit number',
+  validPostalCodeNoAddress:
+    'Address cannot be found. Please fill in details manually',
 }
 
 export type FieldValidation = BaseValidation &

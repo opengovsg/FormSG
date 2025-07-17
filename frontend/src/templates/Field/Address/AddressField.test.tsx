@@ -84,7 +84,7 @@ describe('validation required', () => {
 
     await user.click(verifyButton)
     const error = screen.getAllByText(
-      fieldValidationTranslation.invalidPostalCode,
+      fieldValidationTranslation.validPostalCodeNoAddress,
     )
     expect(error).toHaveLength(2)
   })
