@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next'
 import { isValid, parse } from 'date-fns'
 import { TFunction } from 'i18next'
 import { identity } from 'lodash'
-import simplur from 'simplur'
 import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
@@ -255,7 +254,16 @@ export const useRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
 export const useAttachmentValidationRules: ValidationRuleFn<
   AttachmentFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return useBaseValidationRules(schema, disableRequiredValidation)
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+  return {
+    validate: (value?: File) => {
+      if (disableRequiredValidation || !schema.required) return true
+      const errorMessage = t ? t('required') : REQUIRED_ERROR
+      return !!value || errorMessage
+    },
+  }
 }
 
 export const useHomeNoValidationRules = (
