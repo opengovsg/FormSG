@@ -86,7 +86,8 @@ const useDecryptionWorkers = ({
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isFasterDownloadsFeatureOn = useFeatureIsOn('faster-downloads')
-  const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
+  // const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
+  const isFasterDownloadsEnabled = false
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -183,9 +184,11 @@ const useDecryptionWorkers = ({
             (read = async (result) => {
               if (result.done) return
               try {
+                console.log('here i am 3')
                 // round-robin scheduling
                 const { workerApi } =
                   workerPool[receivedRecordCount % numWorkers]
+                console.log('here i am 4')
                 const decryptResult = await workerApi.decryptIntoCsv(
                   {
                     line: result.value,
@@ -552,7 +555,6 @@ const useDecryptionWorkers = ({
       }
 
       const downloadStartTime = performance.now()
-
       return new Promise<DownloadResult>((resolve, reject) => {
         readAndQueueTask()
           .catch((err) => {
