@@ -1,4 +1,4 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
+import { left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedSignatureResponse } from 'src/app/modules/submission/submission.types'
@@ -17,7 +17,7 @@ type SignatureValidatorConstructor = (
 ) => SignatureValidator
 
 const signatureAnswerValidator: SignatureValidator = (response) => {
-  const { answer } = response
+  // const { answer } = response
 
   // TODO: add proper validators
   return right(response)
