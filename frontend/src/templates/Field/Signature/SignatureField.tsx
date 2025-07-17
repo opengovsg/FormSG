@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
@@ -33,6 +33,8 @@ export const SignatureField = ({
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
+
   const [pfStrokes, setPfStrokes] =
     useState<[number, number, number][][]>(vectorArray)
   const [currentStroke, setCurrentStroke] = useState<
@@ -40,7 +42,7 @@ export const SignatureField = ({
   >([])
   const [isDrawing, setIsDrawing] = useState(false)
 
-  const drawAllStrokes = () => {
+  const drawAllStrokes = useCallback(() => {
     const canvas = pfCanvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -67,8 +69,37 @@ export const SignatureField = ({
         ctx.fill()
       }
     }
-  }
+  }, [pfStrokes])
 
+  // resize canvase
+  useEffect(() => {
+    const canvas = pfCanvasRef.current
+    const container = boxRef.current
+    if (!canvas || !container) return
+
+    const resizeCanvas = () => {
+      const { width, height } = container.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+
+      // Set the internal canvas resolution based on device pixel ratio
+      canvas.width = width * dpr
+      canvas.height = height * dpr
+
+      // Scale the drawing context so everything is rendered crisply
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.scale(dpr, dpr)
+      }
+
+      drawAllStrokes()
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+    return () => window.removeEventListener('resize', resizeCanvas)
+  }, [drawAllStrokes])
+
+  // draw signature
   useEffect(() => {
     const canvas = pfCanvasRef.current
     if (!canvas) return
@@ -120,14 +151,25 @@ export const SignatureField = ({
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', handlePointerUp)
     }
-  }, [isDrawing, pfStrokes])
+  }, [
+    drawAllStrokes,
+    isDrawing,
+    pfStrokes,
+    schema._id,
+    setValue,
+    vectorArray.length,
+  ])
 
   const handleClearPerfectFreehandSignature = async () => {
     // signatureRef.current?.clear()
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    const ctx = pfCanvasRef.current?.getContext('2d')
-    if (ctx) ctx.clearRect(0, 0, 500, 200)
+    setValue(`${schema._id}`, { type: 'draw', value: [] })
+    const canvas = pfCanvasRef.current
+    const ctx = canvas?.getContext('2d')
+    if (ctx && canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
   }
 
   return (
@@ -151,28 +193,34 @@ export const SignatureField = ({
       >
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">
           <Flex direction="row" gap={2} justify="space-between" width="100%">
-            <Stack>
+            <Stack width="100%">
               {/* perfect freehand component */}
               <Box
-                background="white"
-                width="502px"
-                height="202px"
-                border="1px solid"
-                borderColor="neutral.400"
+                ref={boxRef}
+                background="#F9F9F9"
+                width="100%"
+                maxWidth="100%"
+                height="178px"
+                border={isDrawing ? '2px solid' : '1px solid'}
                 borderRadius="0.25rem"
                 cursor={schema.disabled ? 'not-allowed' : 'auto'}
-                opacity={schema.disabled ? 0.6 : 1} // optional: visual dim
+                borderColor={isDrawing ? '#445fcd' : 'neutral.400'}
+                position="relative"
+                overflow="hidden"
               >
                 {showSignaturePlaceholder && (
                   <Box
-                    width="502px"
-                    height="202px"
+                    width="100%"
+                    maxWidth="100%"
+                    height="178px"
+                    top={0}
+                    left={0}
                     justifyItems="center"
                     alignContent="center"
                     position="absolute"
                     pointerEvents="none"
                   >
-                    <Text color="#A0A4AD">Sign here</Text>
+                    <Text color="#A0A4AD">Draw your signature here</Text>
                   </Box>
                 )}
                 <Box
@@ -182,25 +230,14 @@ export const SignatureField = ({
                 >
                   <canvas
                     ref={pfCanvasRef}
-                    width={500}
-                    height={200}
-                    style={{ touchAction: 'none' }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'block',
+                      touchAction: 'none',
+                    }}
                   />
                 </Box>
-                {/* Overlay for disabled state */}
-                {/* {schema.disabled && (
-                  <Box
-                    position="absolute"
-                    top={0}
-                    left={0}
-                    width="100%"
-                    height="100%"
-                    backgroundColor="gray.500"
-                    zIndex={1}
-                    pointerEvents="auto"
-                    cursor="not-allowed"
-                  />
-                )} */}
               </Box>
             </Stack>
           </Flex>
