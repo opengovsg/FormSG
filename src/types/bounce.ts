@@ -10,6 +10,7 @@ export type ISingleBounce =
       email: string
       hasBounced: true
       bounceType: BounceType
+      bounceSubType: string
     }
   | {
       email: string

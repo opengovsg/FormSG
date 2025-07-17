@@ -64,6 +64,7 @@ export const makeBounceNotification = ({
   recipientList,
   bouncedList,
   bounceType,
+  bounceSubType,
   emailType,
 }: {
   formId?: ObjectId
@@ -71,6 +72,7 @@ export const makeBounceNotification = ({
   recipientList?: string[]
   bouncedList?: string[]
   bounceType?: BounceType
+  bounceSubType?: string
   emailType?: EmailType
 } = {}): IBounceNotification => {
   formId ??= new ObjectId()
@@ -89,6 +91,7 @@ export const makeBounceNotification = ({
     {
       bounce: {
         bounceType,
+        bounceSubType,
         bouncedRecipients: bouncedList.map((emailAddress) => ({
           emailAddress,
         })),
