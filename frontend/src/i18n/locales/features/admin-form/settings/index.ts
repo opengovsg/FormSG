@@ -1,5 +1,6 @@
 import { EmailNotifications } from './email-notifications'
 import { General } from './general'
+import { Payments } from './payments'
 import { Webhooks } from './webhooks'
 
 export * from './en-sg'
@@ -13,5 +14,5 @@ export interface Settings {
   singpass: HasTitle
   emailNotifications: EmailNotifications
   webhooks: Webhooks
-  payments: HasTitle
+  payments: Payments
 }
