@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import Button from '~components/Button'
 
@@ -15,6 +16,9 @@ export const StripeConnectButton = ({
 }: {
   connectState: StripeConnectButtonStates
 }): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.payments.stripeConnectBtn',
+  })
   const { linkStripeAccountMutation, unlinkStripeAccountMutation } =
     useMutateStripeAccount()
 
@@ -41,7 +45,7 @@ export const StripeConnectButton = ({
         onClick={onLinkAccountClick}
         colorScheme="primary"
       >
-        Connect my Stripe account
+        {t('connect')}
       </Button>
     )
   } else {
@@ -51,7 +55,7 @@ export const StripeConnectButton = ({
         onClick={onUnlinkAccountClick}
         isLoading={unlinkStripeAccountMutation.isLoading}
       >
-        Disconnect Stripe
+        {t('disconnect')}
       </Button>
     )
   }
