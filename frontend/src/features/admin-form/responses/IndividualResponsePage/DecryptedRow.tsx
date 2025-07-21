@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from '~shared/types'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
@@ -14,7 +15,6 @@ import Spinner from '~components/Spinner'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
-import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse

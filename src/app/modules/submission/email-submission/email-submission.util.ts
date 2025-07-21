@@ -611,7 +611,7 @@ const getAutoReplyFormattedResponse = (
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
-      fieldType: response.fieldType,
+      // fieldType: response.fieldType,
     }
   }
   return undefined
