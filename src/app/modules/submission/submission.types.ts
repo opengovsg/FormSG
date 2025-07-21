@@ -92,6 +92,7 @@ export type ProcessedFieldResponse =
   | ProcessedAttachmentResponse
   | ProcessedChildrenResponse
   | ProcessedAddressResponse
+  | ProcessedSignatureResponse
 
 /**
  * Virus scanner types
