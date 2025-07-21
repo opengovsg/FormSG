@@ -125,11 +125,11 @@ export class MyInfoServiceClass {
       singpassEserviceId: spcpMyInfoConfig.spEsrvcId,
       clientPrivateKey: retrieveFileContent({
         preIacFilePath: spcpMyInfoConfig.myInfoKeyPath,
-        postIacBase64EncodedString: spcpMyInfoConfig.myInfoKey,
+        postIacFileContentString: spcpMyInfoConfig.myInfoKey,
       }),
       myInfoPublicKey: retrieveFileContent({
         preIacFilePath: spcpMyInfoConfig.myInfoCertPath,
-        postIacBase64EncodedString: spcpMyInfoConfig.myInfoCert,
+        postIacFileContentString: spcpMyInfoConfig.myInfoCert,
       }),
       clientId: spcpMyInfoConfig.myInfoClientId,
       clientSecret: spcpMyInfoConfig.myInfoClientSecret,
