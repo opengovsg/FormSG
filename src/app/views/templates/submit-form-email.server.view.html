@@ -26,7 +26,7 @@
           <td>
           <% if (fieldTuple.fieldType === 'signature') { %>
             <% fieldTuple.answerTemplate.forEach(function(answer) { %>
-              <img src="<%= answer %>" alt="Signature" style="max-height: 100px;" /><br />
+              <img src="<%= answer %>" alt="Signature" style="max-width: 300px; border: 1px red solid;" /><br />
             <% }) %>
           <% } else { %>
             <% fieldTuple.answerTemplate.forEach(function(answer) { %>
