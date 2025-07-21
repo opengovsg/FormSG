@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
@@ -126,6 +126,7 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
     const vectorArray: [number, number, number][][] = row.answerArray
@@ -133,34 +134,55 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
       : row.answer.value
 
     const canvas = canvasRef.current
-    if (canvas && vectorArray.length > 0) {
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height) // Clear previous drawings
+    if (!canvas || vectorArray.length === 0) return
 
-        // Set canvas size (you may want to adjust this)
-        canvas.width = 500 // Set canvas width
-        canvas.height = 300 // Set canvas height
+    // Step 1: Compute bounding box of all x and y points
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
+    vectorArray.forEach((stroke) => {
+      stroke.forEach(([x, y]) => {
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+      })
+    })
 
-        ctx.beginPath()
-        let count = 0
-        // Draw the vector points
-        vectorArray.forEach((stroke) => {
-          stroke.forEach(([x, y], index) => {
-            count += 1
-            if (index === 0) {
-              ctx.moveTo(x, y) // Move to the starting point
-            } else {
-              ctx.lineTo(x, y) // Draw lines to the subsequent points
-            }
-          })
-        })
+    const strokeWidth = 2
+    const padding = 10
+    const width = maxX - minX
+    const height = maxY - minY
+    const canvasWidth = width + padding * 2
+    const canvasHeight = height + padding * 2
 
-        ctx.strokeStyle = 'black' // Set the stroke color
-        ctx.lineWidth = 2 // Set the stroke width
-        ctx.stroke() // Render the stroke
-      }
-    }
+    // Step 2: Resize canvas
+    canvas.width = width + padding * 2
+    canvas.height = height + padding * 2
+    setCanvasSize({ width: canvasWidth, height: canvasHeight })
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Step 3: Draw centered strokes inside trimmed canvas
+    ctx.beginPath()
+    vectorArray.forEach((stroke) => {
+      stroke.forEach(([x, y], index) => {
+        const normX = x - minX + padding
+        const normY = y - minY + padding
+        if (index === 0) {
+          ctx.moveTo(normX, normY)
+        } else {
+          ctx.lineTo(normX, normY)
+        }
+      })
+    })
+
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = strokeWidth
+    ctx.stroke()
   }, [row.answerArray])
 
   return (
@@ -168,8 +190,8 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
       <DecryptedQuestionLabel row={row} />
       <Box
         background="white"
-        width="502px"
-        height="202px"
+        width={`${canvasSize.width}px`}
+        height={`${canvasSize.height}px`}
         border="1px solid"
         borderColor="neutral.400"
         borderRadius="0.25rem"
