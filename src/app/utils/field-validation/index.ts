@@ -391,7 +391,7 @@ const isResponsePresentOnHiddenFieldV3 = ({
           ),
       )
     case BasicField.Signature:
-      return ok(response.answer !== '')
+      return ok(response.answer.value.length > 0)
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldErrorV3('Response has invalid shape'))

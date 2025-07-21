@@ -14,6 +14,7 @@ import Spinner from '~components/Spinner'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
+import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -131,7 +132,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   useEffect(() => {
     const vectorArray: [number, number, number][][] = row.answerArray
       ? convertToSignatureVectorArray(row.answerArray[1] as string)
-      : row.answer.value
+      : []
 
     const canvas = canvasRef.current
     if (!canvas || vectorArray.length === 0) return
@@ -204,7 +205,9 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
-    switch (row.fieldType) {
+    switch (
+      row.fieldType as FieldType | 'signature' //TODO: remove once sdk is updated
+    ) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
       case BasicField.Attachment:
@@ -218,7 +221,7 @@ export const DecryptedRow = memo(
         return <DecryptedTableRow row={row} />
       case BasicField.Address:
         return <DecryptedAddressRow row={row} />
-      case BasicField.Signature:
+      case 'signature':
         return <DecryptedSignatureRow row={row} />
       default:
         return (
