@@ -248,7 +248,6 @@ export const SignatureField = ({
                 handleClearPerfectFreehandSignature()
               }}
               isLoading={isSubmitting}
-              isHighContrast={isHighContrast}
               isDisabled={schema.disabled}
             >
               Clear

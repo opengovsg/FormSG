@@ -172,7 +172,6 @@ export const AddressCompoundField = ({
                     onClick={handleVerifyAddress}
                     isLoading={isSubmitting}
                     isDisabled={isButtonDisabled}
-                    isHighContrast={isHighContrast}
                   >
                     Find address
                   </Button>
