@@ -10,11 +10,11 @@ This document covers **legal and compliance requirements** you must follow when 
 
 FormSG is open source, but **you must not use the official Singapore Government masthead or any associated branding** in deployments outside authorized Singapore Government contexts.
 
-<figure><img src="assets/image.png" alt="Singapore government masthead."><figcaption><p>Singapore government masthead.</p></figcaption></figure>
+<figure><img src="assets/masthead.png" alt="Singapore government masthead."><figcaption><p>Singapore government masthead.</p></figcaption></figure>
 
 What you can do is **remove it completely,** or replace it with your agency branding. Here's an example of an alternative masthead
 
-<figure><img src="assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="assets/masthead-alt.png" alt=""><figcaption></figcaption></figure>
 
 #### Starting Removal Checklist
 
