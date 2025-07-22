@@ -101,3 +101,53 @@ export const getSignatureFileName = ({
 }): string => {
   return `Signature_Captured_${fieldId}${timestamp ? `_${timestamp}` : ''}.svg`
 }
+
+export const convertToSignatureSvgString = (
+  vectorArray: [number, number, number][][],
+  targetWidth = 500,
+  targetHeight = 300,
+  padding = 10,
+): string => {
+  if (vectorArray.length === 0) return ''
+
+  const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray) // shrink the whitespace around signature
+  const boxWidth = maxX - minX || 1
+  const boxHeight = maxY - minY || 1
+
+  const scaleX = (targetWidth - 2 * padding) / boxWidth
+  const scaleY = (targetHeight - 2 * padding) / boxHeight
+  const scale = Math.min(scaleX, scaleY)
+
+  const scaledWidth = boxWidth * scale + 2 * padding
+  const scaledHeight = boxHeight * scale + 2 * padding
+
+  const paths = vectorArray.map((stroke) => {
+    if (stroke.length === 0) return ''
+    const d = stroke
+      .map(([x, y]) => {
+        const normX = (x - minX) * scale + padding
+        const normY = (y - minY) * scale + padding
+        return `${normX.toFixed(2)} ${normY.toFixed(2)}`
+      })
+      .join(' L ')
+    return `<path
+      d="M ${d}"
+      stroke="black"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+    />`
+  })
+
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="${scaledWidth}" height="${scaledHeight}"
+         viewBox="0 0 ${scaledWidth} ${scaledHeight}">
+      <rect width="100%" height="100%" fill="white" />
+      ${paths.join('\n')}
+    </svg>
+  `.trim()
+
+  return svg
+}

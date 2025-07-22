@@ -2,6 +2,13 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
+import {
+  convertToSignatureSvgBuffer,
+  convertToSignatureSvgString,
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '~shared/utils/signature'
+
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -165,7 +172,7 @@ async function decryptIntoCsv(
               : submissionSecretKey
 
         let questionCount = 0
-
+        const extraAttachments: { filename: string; blob: Blob }[] = []
         decryptedSubmission.forEach((field) => {
           // Populate question number
           if (field.fieldType !== 'section') {
@@ -178,13 +185,36 @@ async function decryptIntoCsv(
               filename: field.answer,
             })
           }
+
+          // Create and populate signature attachments TODO: fix errors here
+          if (field.fieldType === 'signature') {
+            console.log(`found signature field`)
+            const signatureString = field.answerArray
+              ? field.answerArray[1]
+              : field.answer
+                ? field.answer.value
+                : ''
+
+            const signatureSvgBuffer = convertToSignatureSvgString(
+              convertToSignatureVectorArray(signatureString),
+            )
+            console.log(signatureSvgBuffer)
+            const svgBlob = new Blob([signatureSvgBuffer], {
+              type: 'image/svg+xml',
+            })
+            console.log(`${svgBlob}`)
+            const filename = getSignatureFileName({ fieldId: field._id })
+
+            extraAttachments.push({ filename: filename, blob: svgBlob })
+          }
         })
-        //TODO: maybe add signatures image here?
+
         try {
           downloadBlob = await queue.add(() =>
             downloadAndDecryptAttachmentsAsZip(
               attachmentDownloadUrls,
               attachmentDecryptionKey,
+              extraAttachments,
             ),
           )
           csvRecord.setStatus(
