@@ -87,7 +87,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
         //TODO: update this to use BasicField
         const filename = getSignatureFileName({
           fieldId: content._id,
-          timestamp: formatSgDate(created),
+          // timestamp: formatSgDate(created),
         })
         content.answerArray = [filename]
       }

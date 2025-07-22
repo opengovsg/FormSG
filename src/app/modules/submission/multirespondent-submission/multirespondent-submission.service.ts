@@ -1,6 +1,7 @@
 import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
 
 import {
   BasicField,
@@ -12,6 +13,10 @@ import {
   SubmittedStep,
   WorkflowStatus,
 } from '../../../../../shared/types'
+import {
+  convertToSignatureSvgBuffer,
+  getSignatureFileName,
+} from '../../../../../shared/utils/signature'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
   Environment,
@@ -385,6 +390,27 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+        // rasterize signature svgs to include in email attachments
+        const signatureAttachments: Mail.Attachment[] = []
+        for (const [fieldId, response] of Object.entries(responses)) {
+          if (response.fieldType !== BasicField.Signature) continue
+          const signatureData = convertToSignatureSvgBuffer(
+            response.answer.value,
+          )
+          signatureAttachments.push({
+            content: signatureData,
+            filename: getSignatureFileName({
+              fieldId: fieldId,
+            }),
+            contentType: 'image/svg+xml',
+          })
+        }
+
+        const emailAttachments = [
+          ...(attachments ?? []),
+          ...signatureAttachments,
+        ]
+
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
@@ -393,7 +419,7 @@ const sendMrfOutcomeEmails = ({
             responseId: submissionId,
             isRejected,
             formQuestionAnswers,
-            attachments: attachments,
+            attachments: emailAttachments,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
@@ -413,7 +439,7 @@ const sendMrfOutcomeEmails = ({
           formTitle: form.title,
           responseId: submissionId,
           formQuestionAnswers,
-          attachments: attachments,
+          attachments: emailAttachments,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',
