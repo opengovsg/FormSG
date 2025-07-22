@@ -188,7 +188,6 @@ async function decryptIntoCsv(
 
           // Create and populate signature attachments TODO: fix errors here
           if (field.fieldType === 'signature') {
-            console.log(`found signature field`)
             const signatureString = field.answerArray
               ? field.answerArray[1]
               : field.answer
@@ -198,11 +197,10 @@ async function decryptIntoCsv(
             const signatureSvgBuffer = convertToSignatureSvgString(
               convertToSignatureVectorArray(signatureString),
             )
-            console.log(signatureSvgBuffer)
             const svgBlob = new Blob([signatureSvgBuffer], {
               type: 'image/svg+xml',
             })
-            console.log(`${svgBlob}`)
+
             const filename = getSignatureFileName({ fieldId: field._id })
 
             extraAttachments.push({ filename: filename, blob: svgBlob })
