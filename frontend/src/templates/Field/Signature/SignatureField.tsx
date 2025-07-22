@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
+import { createSignatureValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
-import { FieldInput, SignatureFieldInput, SignatureFieldSchema } from '../types'
+import { SignatureFieldInput, SignatureFieldSchema } from '../types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
@@ -24,6 +25,16 @@ export const SignatureField = ({
   const { getValues, setValue } = formContext
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
+  const signatureErrors = errors?.[schema._id]
+
+  const signatureValidationRules = useMemo(
+    () => createSignatureValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
+  )
+
+  useEffect(() => {
+    formContext.register(schema._id, signatureValidationRules)
+  }, [formContext, schema._id, signatureValidationRules])
 
   let vectorArray: [number, number, number][][] = []
   const preExistingSignature = getValues(`${schema._id}`)
@@ -139,7 +150,11 @@ export const SignatureField = ({
 
     const handlePointerUp = () => {
       setIsDrawing(false)
-      setValue(`${schema._id}`, { type: 'draw', value: pfStrokes })
+      setValue(
+        `${schema._id}`,
+        { type: 'draw', value: pfStrokes },
+        { shouldValidate: true },
+      )
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown)
@@ -189,7 +204,7 @@ export const SignatureField = ({
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
         id={`${schema._id}`}
-        // isInvalid={!!addressSubFieldErrors?.postalCode}
+        isInvalid={!!signatureErrors}
       >
         <Stack direction="column" gap={0.5} marginBottom="1.5rem">
           <Flex direction="row" gap={2} justify="space-between" width="100%">
@@ -201,10 +216,22 @@ export const SignatureField = ({
                 width="100%"
                 maxWidth="100%"
                 height="178px"
-                border={isDrawing ? '2px solid' : '1px solid'}
+                border={
+                  signatureErrors
+                    ? '1px solid'
+                    : isDrawing
+                      ? '2px solid'
+                      : '1px solid'
+                }
                 borderRadius="0.25rem"
                 cursor={schema.disabled ? 'not-allowed' : 'auto'}
-                borderColor={isDrawing ? '#445fcd' : 'neutral.400'}
+                borderColor={
+                  signatureErrors
+                    ? 'red.600'
+                    : isDrawing
+                      ? '#445fcd'
+                      : 'neutral.400'
+                }
                 position="relative"
                 overflow="hidden"
               >
@@ -253,7 +280,7 @@ export const SignatureField = ({
               Clear
             </Button>
           </Box>
-          <FormErrorMessage>{errors.draw?.message}</FormErrorMessage>
+          <FormErrorMessage>{signatureErrors?.message}</FormErrorMessage>
         </Stack>
       </FormControl>
     </Box>
