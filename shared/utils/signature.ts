@@ -21,7 +21,7 @@ type BoundingBox = {
   maxY: number
 }
 
-const getBoundingBox = (
+export const getBoundingBox = (
   vectorArray: [number, number, number][][],
 ): BoundingBox => {
   let minX = Infinity,
@@ -39,13 +39,13 @@ const getBoundingBox = (
   return { minX, minY, maxX, maxY }
 }
 
-export const convertToSignatureDataUrl = (
+export const convertToSignatureSvgBuffer = (
   vectorArray: [number, number, number][][],
   targetWidth = 500,
   targetHeight = 300,
   padding = 10,
-): string => {
-  if (vectorArray.length === 0) return ''
+): Buffer => {
+  if (vectorArray.length === 0) return Buffer.alloc(0)
 
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray) // shrink the whitespace around signature
   const boxWidth = maxX - minX || 1
@@ -86,8 +86,10 @@ export const convertToSignatureDataUrl = (
     </svg>
   `.trim()
 
-  const base64 = Buffer.from(svg).toString('base64')
-  return `data:image/svg+xml;base64,${base64}`
+  // const base64 = Buffer.from(svg).toString('base64')
+  // return `data:image/svg+xml;base64,${base64}`
+  const base64 = Buffer.from(svg)
+  return base64
 }
 
 export const getSignatureFileName = ({
@@ -95,7 +97,7 @@ export const getSignatureFileName = ({
   timestamp,
 }: {
   fieldId: string
-  timestamp: string
+  timestamp?: string
 }): string => {
-  return `Signature_Captured_${fieldId}_${timestamp}.png`
+  return `Signature_Captured_${fieldId}${timestamp ? `_${timestamp}` : ''}.svg`
 }

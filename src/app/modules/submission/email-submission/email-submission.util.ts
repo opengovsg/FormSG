@@ -6,10 +6,8 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import {
-  convertToSignatureDataUrl,
-  convertToSignatureVectorArray,
-} from '../../../../../shared/utils/signature'
+import { formatSgDate } from '../../../../../shared/utils/dates'
+import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -233,9 +231,7 @@ export const getAnswerForSignature = (
   let signatureAnswer: string
   switch (response.answerArray[0]) {
     case 'draw':
-      signatureAnswer = convertToSignatureDataUrl(
-        convertToSignatureVectorArray(response.answerArray[1]),
-      )
+      signatureAnswer = getSignatureFileName({ fieldId: response._id })
       break
     default:
       signatureAnswer = ''
@@ -247,7 +243,7 @@ export const getAnswerForSignature = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: signatureAnswer, // '{type}, {vectorarray}'
+    answer: signatureAnswer,
   }
 }
 
@@ -712,7 +708,7 @@ const formatDataCollationResponse = (
         _id: `${response._id}`,
         fieldType: response.fieldType,
         question: `${response.question}`,
-        answer: `Signature_Captured.png`,
+        answer: getSignatureFileName({ fieldId: response._id }),
       } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)

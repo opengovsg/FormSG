@@ -3,9 +3,11 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
+import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
 
 import {
+  BasicField,
   DateString,
   ErrorCode,
   ErrorDto,
@@ -15,6 +17,12 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
+import { formatSgDate } from '../../../../../shared/utils/dates'
+import {
+  convertToSignatureSvgBuffer,
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '../../../../../shared/utils/signature'
 import {
   IAttachmentInfo,
   IEncryptedForm,
@@ -800,6 +808,22 @@ const _createSubmission = async ({
     answer: item.answer,
   }))
 
+  // extract signatures & create a .png for email attachments
+  const signatureAttachments: Mail.Attachment[] = []
+  emailFields.forEach((field) => {
+    if (field.fieldType !== BasicField.Signature) return
+    const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
+    const signatureData = convertToSignatureSvgBuffer(vectorArray)
+    signatureAttachments.push({
+      content: signatureData,
+      filename: getSignatureFileName({
+        fieldId: field._id,
+        timestamp: formatSgDate(createdTime.toISOString()),
+      }),
+      contentType: 'image/svg+xml',
+    })
+  })
+
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -816,7 +840,7 @@ const _createSubmission = async ({
         created: createdTime,
         id: submission.id,
       },
-      attachments: unencryptedAttachments,
+      attachments: [...(unencryptedAttachments ?? []), ...signatureAttachments],
       formData: emailData.formData,
       dataCollationData,
     })

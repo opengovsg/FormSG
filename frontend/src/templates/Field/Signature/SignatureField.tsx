@@ -271,7 +271,6 @@ export const SignatureField = ({
           <Box alignSelf="end" marginTop="0.5rem">
             <Button
               onClick={() => {
-                // handleClearSignature()
                 handleClearPerfectFreehandSignature()
               }}
               isLoading={isSubmitting}
