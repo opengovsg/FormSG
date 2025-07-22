@@ -11,7 +11,6 @@ import {
 } from '../../../../../shared/types'
 import {
   FieldResponse,
-  IAttachmentInfo,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,

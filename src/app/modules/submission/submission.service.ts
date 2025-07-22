@@ -23,7 +23,6 @@ import {
 } from '../../../../shared/types'
 import {
   EmailRespondentConfirmationField,
-  IAttachmentInfo,
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,

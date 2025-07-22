@@ -12,10 +12,7 @@ import {
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
-import {
-  convertToSignatureSvgBuffer,
-  getSignatureFileName,
-} from '../../../../../shared/utils/signature'
+import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   FormFieldSchema,
   IPopulatedForm,

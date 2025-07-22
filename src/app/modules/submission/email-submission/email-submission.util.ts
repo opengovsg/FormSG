@@ -6,7 +6,6 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import { formatSgDate } from '../../../../../shared/utils/dates'
 import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
