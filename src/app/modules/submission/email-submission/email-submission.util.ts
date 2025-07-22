@@ -87,6 +87,7 @@ import {
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSignatureResponse,
+  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
@@ -704,7 +705,6 @@ const formatDataCollationResponse = (
         })
       })
     } else if (
-      //TODO: fix JSON response
       response.fieldType === BasicField.Signature &&
       isProcessedSignatureResponse(response)
     ) {
@@ -712,8 +712,8 @@ const formatDataCollationResponse = (
         _id: `${response._id}`,
         fieldType: response.fieldType,
         question: `${response.question}`,
-        answerArray: [`${response._id}`],
-      })
+        answer: `Signature_Captured.png`,
+      } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)
     }

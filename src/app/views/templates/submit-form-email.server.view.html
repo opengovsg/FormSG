@@ -24,15 +24,17 @@
         <tr style="border-top: 1px solid #eee">
           <td width="40%"><strong><%= fieldTuple.question %></strong></td>
           <td>
-          <% if (fieldTuple.fieldType === 'signature') { %>
-            <% fieldTuple.answerTemplate.forEach(function(answer) { %>
-              <img src="<%= answer %>" alt="Signature" style="max-width: 300px; border: 1px red solid;" /><br />
-            <% }) %>
-          <% } else { %>
-            <% fieldTuple.answerTemplate.forEach(function(answer) { %>
-              <%= answer %><br />
-            <% }) %>
-          <% } %>
+            <% if (fieldTuple.fieldType === 'signature') { %> <%
+            fieldTuple.answerTemplate.forEach(function(answer) { %>
+            <img
+              src="<%= answer %>"
+              alt="Signature"
+              style="max-width: 300px"
+            /><br />
+            <% }) %> <% } else { %> <%
+            fieldTuple.answerTemplate.forEach(function(answer) { %> <%= answer
+            %><br />
+            <% }) %> <% } %>
           </td>
         </tr>
         <% }) %>
