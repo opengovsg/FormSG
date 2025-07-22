@@ -824,6 +824,10 @@ const _createSubmission = async ({
     })
   })
 
+  const attachments = [
+    ...(unencryptedAttachments ?? []),
+    ...signatureAttachments,
+  ]
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -840,7 +844,7 @@ const _createSubmission = async ({
         created: createdTime,
         id: submission.id,
       },
-      attachments: [...(unencryptedAttachments ?? []), ...signatureAttachments],
+      attachments: attachments,
       formData: emailData.formData,
       dataCollationData,
     })
@@ -870,7 +874,7 @@ const _createSubmission = async ({
     submission,
     responses,
     emailData,
-    unencryptedAttachments,
+    attachments,
     respondentEmails,
   )
 }

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
 
 import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
@@ -146,7 +147,7 @@ export const performEncryptPostSubmissionActions = (
   submission: IEncryptedSubmissionSchema,
   responses: FieldResponse[],
   emailData?: SubmissionEmailObj,
-  attachments?: IAttachmentInfo[],
+  attachments?: Mail.Attachment[],
   respondentEmails?: string[],
 ): ResultAsync<
   true,
