@@ -11,6 +11,8 @@ import Button from '~components/Button'
 import Link from '~components/Link'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
+import { useTranslation } from 'react-i18next'
+
 
 export interface AdminForbiddenErrorPageProps {
   message?: string
@@ -22,6 +24,8 @@ export const AdminForbiddenErrorPage = ({
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
+  const { t } = useTranslation()
+
 
   return (
     <>
@@ -57,13 +61,13 @@ export const AdminForbiddenErrorPage = ({
               textAlign="center"
             >
               <Text as="h2" textStyle="h2">
-                You do not have access to this page.
+                t('features["admin-form"].adminForbiddenErrorPage.title')
               </Text>
               <Text textStyle="body-1">
                 {isAuthenticated
                   ? message
-                  : message ??
-                    'Log in, or contact the owner of the form for more information.'}
+                  : message ??  t('features["admin-form"].adminForbiddenErrorPage.message')}
+            
               </Text>
             </Stack>
             <Stack
@@ -74,7 +78,8 @@ export const AdminForbiddenErrorPage = ({
               justify="center"
             >
               <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
-                Back
+                {t('features["admin-form"].adminForbiddenErrorPage.button.text.back')}
+            
               </Button>
 
               <Link
@@ -82,7 +87,9 @@ export const AdminForbiddenErrorPage = ({
                 as={ReactLink}
                 to={isAuthenticated ? DASHBOARD_ROUTE : LOGIN_ROUTE}
               >
-                {isAuthenticated ? 'Go to dashboard' : 'Log in'}
+                {isAuthenticated 
+                ? t('features["admin-form"].adminForbiddenErrorPage.button.text.goToDashboard')
+                : t('features["admin-form"].adminForbiddenErrorPage.button.text.login')}
               </Link>
             </Stack>
           </Stack>

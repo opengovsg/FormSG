@@ -24,4 +24,16 @@ export const enSG = {
   toasts,
   settings,
   feedback,
+
+  adminForbiddenErrorPage: {
+    title: 'You do not have access to this page.',
+    message: 'Log in, or contact the owner of the form for more information.',
+    button: {
+      text: {
+        back: 'Back',
+        goToDashboard: 'Go to dashboard',
+        login: 'Log in',
+      },
+    },
+  },
 }

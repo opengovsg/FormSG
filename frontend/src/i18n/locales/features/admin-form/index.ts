@@ -16,3 +16,16 @@ export {
   type Workflow,
 } from './sidebar'
 export { type Toasts } from './toasts'
+
+export interface AdminForbiddenErrorPage {
+  title: string
+  message: string
+  button: {
+    text: {
+      back: string
+      goToDashboard: string
+      login: string
+    }
+  }
+}
+
