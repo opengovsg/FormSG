@@ -291,7 +291,7 @@ export const DesignInput = (): JSX.Element | null => {
           </FormControl>
         </Radio.RadioGroup>
       </FormControl>
-      {showDesignDrawerFormTitle && <FormDetailsSection />}
+
       <FormControl
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!isEmpty(errors.colorTheme)}
@@ -337,6 +337,8 @@ export const DesignInput = (): JSX.Element | null => {
         </Radio.RadioGroup>
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
+
+      {showDesignDrawerFormTitle && <FormDetailsSection />}
 
       <FormControl
         isReadOnly={startPageMutation.isLoading}
