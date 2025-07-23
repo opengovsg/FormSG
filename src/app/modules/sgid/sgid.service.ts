@@ -58,7 +58,7 @@ export class SgidServiceClass {
   }: ISgidVarsSchema) {
     this.privateKey = retrieveFileContent({
       preIacFilePath: privateKeyPath,
-      postIacBase64EncodedString: privateKey,
+      postIacFileContentString: privateKey,
     })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
@@ -70,7 +70,7 @@ export class SgidServiceClass {
     })
     this.publicKey = retrieveFileContent({
       preIacFilePath: publicKeyPath,
-      postIacBase64EncodedString: publicKey,
+      postIacFileContentString: publicKey,
     })
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge

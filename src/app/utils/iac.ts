@@ -15,18 +15,18 @@ const isIacMigrated = config.iacMigration.isMigrated
  *
  * Relies on convict validation to ensure that the arguments are not null based on the NODE_ENV.
  * @param preIacFilePath - The path to the file in the pre-IaC environment.
- * @param postIacBase64EncodedString - The base64 encoded string of the file in the IaC environment. Files are Base64 encoded since SSM parameters support only string values and do not support binary data.
+ * @param postIacFileContentString - The string contents of the file in the IaC environment. To use, extract out the string content in each pre-IaC file and paste them as value in the SSM param store.
  * @returns The content of the file.
  */
 export const retrieveFileContent = ({
   preIacFilePath,
-  postIacBase64EncodedString,
+  postIacFileContentString,
 }: {
   preIacFilePath: string
-  postIacBase64EncodedString: string
+  postIacFileContentString: string
 }): string => {
   if (isIacMigrated) {
-    return Buffer.from(postIacBase64EncodedString, 'base64').toString('utf-8')
+    return postIacFileContentString
   }
   return fs.readFileSync(preIacFilePath).toString()
 }
