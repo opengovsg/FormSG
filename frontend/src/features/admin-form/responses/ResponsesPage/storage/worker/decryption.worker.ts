@@ -189,7 +189,7 @@ async function decryptIntoCsv(
           // Create and populate signature attachments 
           // TODO: fix toString when sdk is published
           if (field.fieldType.toString() === 'signature') {
-            const signatureString = Array.isArray(field.answerArray) &&
+            const signatureString: string = Array.isArray(field.answerArray) &&
               field.answerArray.every((item) => typeof item === 'string')
               ? field.answerArray[1] ?? ''
               : ''

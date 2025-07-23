@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { BasicField } from '~shared/types'
+import { featureFlags } from '~shared/constants'
+import { useUser } from '~features/user/queries'
 import {
   BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
@@ -13,10 +17,6 @@ import { DraggableBasicFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
-import { useUser } from '~features/user/queries'
-import { BasicField } from '~shared/types'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-import { featureFlags } from '~shared/constants'
 
 export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { user } = useUser()
@@ -40,9 +40,11 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 const shouldDisableField = isLoading
 
                 // TODO: remove when signature field is out of beta
-                if (fieldType === BasicField.Signature && (!user?.betaFlags?.signatureField || !isSignatureFieldEnabled))
-                  return null
-                
+                if (
+                  fieldType === BasicField.Signature &&
+                  !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
+                ) return null
+
                 return (
                   <DraggableBasicFieldListOption
                     index={originalIndex}
