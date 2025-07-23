@@ -13,9 +13,16 @@ import { DraggableBasicFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
+import { useUser } from '~features/user/queries'
+import { BasicField } from '~shared/types'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { featureFlags } from '~shared/constants'
 
 export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
+  const { user } = useUser()
   const { isLoading } = useCreateTabForm()
+
+  const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
 
   const filteredCreateBasicFields = filterFieldsBySearchValue(
     searchValue,
@@ -31,6 +38,11 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
             <FieldSection label="Basic">
               {filteredCreateBasicFields.map(({ fieldType, originalIndex }) => {
                 const shouldDisableField = isLoading
+
+                // TODO: remove when signature field is out of beta
+                if (fieldType === BasicField.Signature && (!user?.betaFlags?.signatureField || !isSignatureFieldEnabled))
+                  return null
+                
                 return (
                   <DraggableBasicFieldListOption
                     index={originalIndex}

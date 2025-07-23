@@ -341,7 +341,6 @@ export const createSignatureValidationRules: ValidationRuleFn<
   return {
     validate: {
       required: (val?: SignatureFieldValues) => {
-        console.log('Validating signature:', val)
         if (disableRequiredValidation || !schema.required) return true
 
         const strokes = val?.value

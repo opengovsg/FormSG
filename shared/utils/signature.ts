@@ -151,3 +151,26 @@ export const convertToSignatureSvgString = (
 
   return svg
 }
+
+// export const getBoundingBoxCenter = (
+//   strokes: [number, number, number][][],
+// ): { x: number; y: number } => {
+//   let minX = Infinity
+//   let minY = Infinity
+//   let maxX = -Infinity
+//   let maxY = -Infinity
+
+//   for (const stroke of strokes) {
+//     for (const [x, y] of stroke) {
+//       minX = Math.min(minX, x)
+//       minY = Math.min(minY, y)
+//       maxX = Math.max(maxX, x)
+//       maxY = Math.max(maxY, y)
+//     }
+//   }
+
+//   return {
+//     x: (minX + maxX) / 2,
+//     y: (minY + maxY) / 2,
+//   }
+// }
