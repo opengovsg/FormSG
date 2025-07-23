@@ -32,7 +32,7 @@ export class AuthSgidServiceClass {
   }: ISgidVarsSchema) {
     this.privateKey = retrieveFileContent({
       preIacFilePath: privateKeyPath,
-      postIacBase64EncodedString: privateKey,
+      postIacFileContentString: privateKey,
     })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.

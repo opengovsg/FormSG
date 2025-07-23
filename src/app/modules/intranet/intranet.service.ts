@@ -31,7 +31,7 @@ class IntranetServiceClass {
     try {
       const intranetIpList = retrieveFileContent({
         preIacFilePath: intranetConfig.intranetIpListPath,
-        postIacBase64EncodedString: intranetConfig.intranetIpList,
+        postIacFileContentString: intranetConfig.intranetIpList,
       })
         .split('\n')
         .filter((line) => !line.startsWith('#') && line.trim() !== '')
