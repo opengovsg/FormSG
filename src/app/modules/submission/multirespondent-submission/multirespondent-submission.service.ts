@@ -392,18 +392,20 @@ const sendMrfOutcomeEmails = ({
 
         // rasterize signature svgs to include in email attachments
         const signatureAttachments: Mail.Attachment[] = []
-        for (const [fieldId, response] of Object.entries(responses)) {
-          if (response.fieldType !== BasicField.Signature) continue
-          const signatureData = convertToSignatureSvgBuffer(
-            response.answer.value,
-          )
-          signatureAttachments.push({
-            content: signatureData,
-            filename: getSignatureFileName({
-              fieldId: fieldId,
-            }),
-            contentType: 'image/svg+xml',
-          })
+        if (responses) {
+          for (const [fieldId, response] of Object.entries(responses)) {
+            if (response.fieldType !== BasicField.Signature) continue
+            const signatureData = convertToSignatureSvgBuffer(
+              response.answer.value,
+            )
+            signatureAttachments.push({
+              content: signatureData,
+              filename: getSignatureFileName({
+                fieldId: fieldId,
+              }),
+              contentType: 'image/svg+xml',
+            })
+          }
         }
 
         const emailAttachments = [
