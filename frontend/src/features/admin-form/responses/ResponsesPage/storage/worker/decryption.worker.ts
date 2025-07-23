@@ -186,13 +186,19 @@ async function decryptIntoCsv(
             })
           }
 
-          // Create and populate signature attachments 
+          // Create and populate signature attachments
           // TODO: fix toString when sdk is published
           if (field.fieldType.toString() === 'signature') {
-            const signatureString: string = Array.isArray(field.answerArray) &&
-              field.answerArray.every((item) => typeof item === 'string')
-              ? field.answerArray[1] ?? ''
-              : ''
+            let signatureString = ''
+
+            if (isStringArray(field.answerArray)) {
+              signatureString = field.answerArray[1] ?? ''
+            }
+            // const signatureString: string =
+            //   isStringArray(field.answerArray) &&
+            //   field.answerArray.every((item) => typeof item === 'string')
+            //     ? field.answerArray[1] ?? ''
+            //     : ''
 
             const signatureSvgBuffer = convertToSignatureSvgString(
               convertToSignatureVectorArray(signatureString),
@@ -255,3 +261,7 @@ const exports = {
 expose(exports)
 
 export type DecryptionWorkerApi = typeof exports
+
+const isStringArray = (value: unknown): value is string[] => {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string')
+}

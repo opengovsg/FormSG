@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
-import { Droppable } from '@hello-pangea/dnd'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { Droppable } from '@hello-pangea/dnd'
 
-import { BasicField } from '~shared/types'
 import { featureFlags } from '~shared/constants'
-import { useUser } from '~features/user/queries'
+import { BasicField } from '~shared/types'
+
 import {
   BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableBasicFieldListOption } from '../FieldListOption'
