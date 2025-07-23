@@ -170,7 +170,7 @@ async function decryptIntoCsv(
                 !submission.mrfVersion
               ? secretKey
               : submissionSecretKey
-
+        console.log(JSON.stringify(decryptedSubmission))
         let questionCount = 0
         const extraAttachments: { filename: string; blob: Blob }[] = []
         decryptedSubmission.forEach((field) => {
@@ -186,13 +186,13 @@ async function decryptIntoCsv(
             })
           }
 
-          // Create and populate signature attachments TODO: fix errors here
-          if (field.fieldType === 'signature') {
-            const signatureString = field.answerArray
-              ? field.answerArray[1]
-              : field.answer
-                ? field.answer.value
-                : ''
+          // Create and populate signature attachments 
+          // TODO: fix toString when sdk is published
+          if (field.fieldType.toString() === 'signature') {
+            const signatureString = Array.isArray(field.answerArray) &&
+              field.answerArray.every((item) => typeof item === 'string')
+              ? field.answerArray[1] ?? ''
+              : ''
 
             const signatureSvgBuffer = convertToSignatureSvgString(
               convertToSignatureVectorArray(signatureString),
