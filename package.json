@@ -1,6 +1,14 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
+  "workspaces": [
+    "frontend",
+    "shared",
+    "serverless/virus-scanner",
+    "serverless/virus-scanner-guardduty",
+    "functions/form-payment-reconciliation",
+    "react-email-p,review"
+  ],
   "version": "6.217.0",
   "homepage": "https://form.gov.sg",
   "authors": [
@@ -24,7 +32,6 @@
     ]
   },
   "scripts": {
-    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:backend:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
@@ -51,9 +58,7 @@
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky",
     "pre-commit": "lint-staged",
-    "storybook": "npm run --prefix frontend storybook",
-    "postinstall:frontend": "npm --prefix frontend install",
-    "postinstall:shared": "npm --prefix shared install"
+    "storybook": "npm run --prefix frontend storybook"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",

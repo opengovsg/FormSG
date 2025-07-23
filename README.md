@@ -82,7 +82,7 @@ nvm use
 To install the relevant npm packages (frontend, backend and virus-scanner), run the following in the root direcory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install
+npm install
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
@@ -239,7 +239,7 @@ Please contact FormSG (support@form.gov.sg) for any details.
 ### Migrating from MongoDB to FerretDB
 [FerretDB](https://ferretdb.io) is an open source MongoDB alternative built on PostgreSQL. MongoDB can be swapped out of FormSG for FerretDB. In order for this to be done, certain changes to the code should be made as described below:
 
-- Add postgres to the list of services in the `docker.compose` file e.g. 
+- Add postgres to the list of services in the `docker.compose` file e.g.
   ```  pg:
     image: postgres:15.3-alpine3.18
     environment:
@@ -251,7 +251,7 @@ Please contact FormSG (support@form.gov.sg) for any details.
     ports:
       - '5432:5432'
 - In the same file, change the "database" image from MongoDB to FerretDB and update the database section to include the lines below:
-    ``` 
+    ```
      image: ghcr.io/ferretdb/ferretdb:1.17.0
      environment:
        - FERRETDB_TELEMETRY=disable
@@ -261,19 +261,19 @@ Please contact FormSG (support@form.gov.sg) for any details.
      depends_on:
        - pg
 - Lastly, add the *pgdata* volume
-    ``` 
+    ```
         volumes:
             mongodb_data:
                 driver: local
             pgdata:
-- FerretDB currently has some limitations and [certain database features are not supported](https://docs.ferretdb.io/reference/supported-commands/), these include TTL, database transactions and some aggregration pipelines which are all features used by FormSG. 
+- FerretDB currently has some limitations and [certain database features are not supported](https://docs.ferretdb.io/reference/supported-commands/), these include TTL, database transactions and some aggregration pipelines which are all features used by FormSG.
 
     The following changes can be made to mitigate the limitations of FerretDB:
-    
+
     - Add the *autoRemove: 'interval'* property to the initializing of the session object in the `session.ts` file.
     - Remove the unsupported [aggregration pipeline stages](https://docs.ferretdb.io/reference/supported-commands/#aggregation-pipeline-stages) e.g. *lookup* and *project*, in the `submission.server.model.ts` file.
     - Replace the *findOneAndUpdate* code block in the `user.server.model.ts` file with code similar to the one below:
-        ```  
+        ```
          const user = await this.exists({ email: upsertParams.email })
          if (!user) {
           await this.create(upsertParams)
@@ -329,12 +329,12 @@ Refer to this [guide](https://www.couchbase.com/blog/migrate-mongodb-mongoose-co
 
 FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based.
 
-Contributions have also been made by:  
-[@RyanAngJY](https://github.com/RyanAngJY)  
-[@jeantanzy](https://github.com/jeantanzy)  
-[@pregnantboy](https://github.com/pregnantboy)  
-[@namnguyen08](https://github.com/namnguyen08)  
-[@zioul123](https://github.com/zioul123)  
-[@JoelWee](https://github.com/JoelWee)  
-[@limli](https://github.com/limli)  
+Contributions have also been made by:
+[@RyanAngJY](https://github.com/RyanAngJY)
+[@jeantanzy](https://github.com/jeantanzy)
+[@pregnantboy](https://github.com/pregnantboy)
+[@namnguyen08](https://github.com/namnguyen08)
+[@zioul123](https://github.com/zioul123)
+[@JoelWee](https://github.com/JoelWee)
+[@limli](https://github.com/limli)
 [@tankevan](https://github.com/tankevan)
