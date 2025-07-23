@@ -3215,7 +3215,7 @@ export const handleUpdateStartPage = [
   celebrate({
     [Segments.BODY]: {
       paragraph: Joi.string().allow('').optional(),
-      estTimeTaken: Joi.number().min(1).max(1000).required(),
+      estTimeTaken: Joi.number().min(1).max(1000).optional(),
       colorTheme: Joi.string()
         .valid(...Object.values(FormColorTheme))
         .required(),
