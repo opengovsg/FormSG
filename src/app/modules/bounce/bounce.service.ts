@@ -266,14 +266,22 @@ export const logEmailNotification = (
   // form fillers' information for too long, and everything else goes into the
   // main log group.
   const emailType = extractHeader(notification, EMAIL_HEADERS.emailType)
+  const isBounce = isBounceNotification(notification)
+  const message = isBounce ? 'Email bounced' : 'Email delivered'
   if (
     emailType === EmailType.EmailConfirmation ||
     emailType === EmailType.VerificationOtp
   ) {
-    shortTermLogger.info(notification)
+    shortTermLogger.info({
+      message,
+      meta: {
+        action: 'logEmailNotification',
+        ...notification,
+      },
+    })
   } else {
     logger.info({
-      message: 'Email notification',
+      message,
       meta: {
         action: 'logEmailNotification',
         ...notification,

@@ -212,7 +212,7 @@ async function decryptIntoCsv(
             downloadAndDecryptAttachmentsAsZip(
               attachmentDownloadUrls,
               attachmentDecryptionKey,
-              extraAttachments,
+              // extraAttachments,
             ),
           )
           csvRecord.setStatus(

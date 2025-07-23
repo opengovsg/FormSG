@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.214.0",
+  "version": "6.218.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -78,7 +78,7 @@
     "bson": "^5.5.0",
     "busboy": "^1.6.0",
     "celebrate": "^15.0.3",
-    "compression": "~1.7.2",
+    "compression": "~1.8.1",
     "connect-datadog": "0.0.9",
     "connect-mongo": "^5.1.0",
     "convict": "^6.2.4",
@@ -94,7 +94,7 @@
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
     "express-request-id": "^1.4.1",
-    "express-session": "^1.18.0",
+    "express-session": "^1.18.2",
     "express-winston": "^4.2.0",
     "file-saver": "^2.0.5",
     "fp-ts": "^2.16.9",
@@ -106,6 +106,7 @@
     "http-status-codes": "^2.3.0",
     "intl-tel-input": "~12.4.0",
     "ip": "^1.1.9",
+    "ip-address": "^10.0.1",
     "jose": "^5.9.6",
     "jsdom": "^25.0.1",
     "json-stringify-safe": "^5.0.1",
@@ -208,7 +209,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-typesafe": "^0.5.2",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.4",
     "htmlhint": "^1.1.4",
     "husky": "^9.1.6",
     "jest": "^29.5.0",
