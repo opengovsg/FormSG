@@ -7,7 +7,7 @@
     "serverless/virus-scanner",
     "serverless/virus-scanner-guardduty",
     "functions/form-payment-reconciliation",
-    "react-email-p,review"
+    "react-email-preview"
   ],
   "version": "6.217.0",
   "homepage": "https://form.gov.sg",
