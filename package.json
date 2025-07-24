@@ -39,7 +39,7 @@
     "copyfiles:backend": "copyfiles -u 1 src/**/*.html dist/backend/src",
     "clean": "rimraf dist/",
     "start": "node -r dotenv/config src/app/server.js",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client,virus-scanner\" -c  \"yellow.bold,green.bold,blue.bold\" \"docker-compose up --build\" \"npm run dev:frontend\" \"npm --prefix serverless/virus-scanner run dev\"",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client,virus-scanner\" -c  \"yellow.bold,green.bold,blue.bold\" \"docker-compose up\" \"npm run dev:frontend\" \"npm --prefix serverless/virus-scanner run dev\"",
     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "dev:virus-scanner": "concurrently -k -p \"[{name}]\" -n \"api,virus-scanner\" -c  \"yellow.bold,blue.bold\" \"docker-compose up\" \"npm --prefix serverless/virus-scanner run dev\"",
     "dev:virus-scanner-guardduty": "concurrently -k -p \"[{name}]\" -n \"api,virus-scanner-guardduty\" -c  \"yellow.bold,blue.bold\" \"docker-compose up\" \"npm --prefix serverless/virus-scanner-guardduty run dev\"",
