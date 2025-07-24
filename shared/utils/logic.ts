@@ -1,4 +1,3 @@
-import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants'
 import {
   BasicField,
   FormDto,
@@ -409,10 +408,7 @@ const isConditionFulfilled = (
           }
         } else {
           // (4) Client-side handling
-          if (
-            currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE &&
-            !!currentValue.othersInput
-          ) {
+          if (currentValue.othersInput) {
             return true
           }
         }
