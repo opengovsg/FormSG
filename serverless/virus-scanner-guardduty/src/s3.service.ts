@@ -1,8 +1,8 @@
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   S3Client,
   Tag,
 } from '@aws-sdk/client-s3'
@@ -12,7 +12,6 @@ import { retry } from 'ts-retry-promise'
 import {
   DeleteS3FileParams,
   GetS3FileStreamParams,
-  GetS3FileStreamResult,
   GUARD_DUTY_MALWARE_SCAN_TAG,
   MoveS3FileParams,
 } from './types'
@@ -39,57 +38,6 @@ export class S3Service {
       this.s3Client = new S3Client({
         region: 'ap-southeast-1',
       })
-    }
-  }
-
-  async getS3FileStreamWithVersionId({
-    bucketName,
-    objectKey,
-  }: GetS3FileStreamParams): Promise<GetS3FileStreamResult> {
-    this.logger.info(
-      {
-        bucketName,
-        objectKey,
-      },
-      'Getting document from s3',
-    )
-
-    try {
-      const { Body: body, VersionId: versionId } = await this.s3Client.send(
-        new GetObjectCommand({
-          Key: objectKey,
-          Bucket: bucketName,
-        }),
-      )
-
-      if (!body) {
-        throw new Error('Body is empty')
-      }
-
-      if (!versionId) {
-        throw new Error('VersionId is empty')
-      }
-
-      this.logger.info(
-        {
-          bucketName,
-          objectKey,
-        },
-        'Retrieved document from s3',
-      )
-
-      return { body, versionId } as GetS3FileStreamResult
-    } catch (err) {
-      this.logger.error(
-        {
-          bucketName,
-          objectKey,
-          err,
-        },
-        'Failed to get object from s3',
-      )
-
-      throw err
     }
   }
 
@@ -270,6 +218,66 @@ export class S3Service {
         })
         throw e
       }
+    }
+  }
+
+  /**
+   * Gets the version ID metadata without loading file content into lambda memory.
+   * RATIONALE: This aims to reduce the memory usage and hence reduce the memory requirement for the lambda function, saving monetary cost.
+   * In the event that the object is empty, an error is thrown.
+   * @param params GetS3FileStreamParams
+   * @returns Promise<{ versionId: string }>
+   */
+  async getS3ObjectVersionId({
+    bucketName,
+    objectKey,
+  }: GetS3FileStreamParams): Promise<string> {
+    this.logger.info(
+      {
+        bucketName,
+        objectKey,
+      },
+      'Getting object version ID from s3',
+    )
+
+    try {
+      const { VersionId: versionId, ContentLength } = await this.s3Client.send(
+        new HeadObjectCommand({
+          Key: objectKey,
+          Bucket: bucketName,
+        }),
+      )
+
+      if (!versionId) {
+        throw new Error('VersionId is empty')
+      }
+
+      if (!ContentLength || ContentLength === 0) {
+        throw new Error('Object is empty')
+      }
+
+      this.logger.info(
+        {
+          bucketName,
+          objectKey,
+          versionId,
+          contentLength: ContentLength,
+        },
+        'Retrieved object version ID from s3',
+      )
+
+      return versionId
+    } catch (err) {
+      this.logger.error(
+        {
+          bucketName,
+          objectKey,
+          err,
+        },
+        'Failed to get object version ID from s3',
+      )
+
+      throw err
     }
   }
 }

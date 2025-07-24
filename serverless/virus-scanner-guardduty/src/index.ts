@@ -59,9 +59,9 @@ export const handler = async (
   // Retrieve from S3
   const s3Client = new S3Service(config.isTestOrDev, logger)
 
-  let s3ReadableStream
+  let versionId: string
   try {
-    s3ReadableStream = await s3Client.getS3FileStreamWithVersionId({
+    versionId = await s3Client.getS3ObjectVersionId({
       bucketName: quarantineBucket,
       objectKey: quarantineFileKey,
     })
@@ -79,10 +79,6 @@ export const handler = async (
       }),
     }
   }
-
-  // Scan file
-
-  const { versionId } = s3ReadableStream
 
   let tagResult
   try {

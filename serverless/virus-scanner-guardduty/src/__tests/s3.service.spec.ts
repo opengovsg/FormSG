@@ -106,22 +106,19 @@ describe('S3Service', () => {
       )
     })
   })
-  describe('getS3FileStreamWithVersionId', () => {
-    it('should return file stream with version id', async () => {
+  describe('getS3ObjectVersionId', () => {
+    it('should return version id', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
 
       // Act
-      const result = await mockS3Service.getS3FileStreamWithVersionId({
+      const versionIdResult = await mockS3Service.getS3ObjectVersionId({
         bucketName: 'bucketName',
         objectKey: 'objectKey',
       })
 
       // Assert
-      expect(result).toEqual({
-        body: 'mockBody',
-        versionId: 'mockObjectVersionId',
-      })
+      expect(versionIdResult).toEqual('mockObjectVersionId')
     })
 
     it('should throw error and log if body is empty', async () => {
@@ -134,7 +131,7 @@ describe('S3Service', () => {
 
       // Act + assert
       await expect(
-        mockS3Service.getS3FileStreamWithVersionId({
+        mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
@@ -161,7 +158,7 @@ describe('S3Service', () => {
 
       // Act + assert
       await expect(
-        mockS3Service.getS3FileStreamWithVersionId({
+        mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
