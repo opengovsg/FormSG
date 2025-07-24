@@ -14,7 +14,7 @@ export const generatePdfFromHtml = async (
 ): Promise<Uint8Array> => {
   return tracer.trace('generatePdfFromHtml', async () => {
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox'],
+      args: ['--no-sandbox', '--disable-gpu'],
       headless: true,
       executablePath: config.chromiumBin,
     })
