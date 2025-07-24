@@ -144,7 +144,7 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
           err: new Error('Body is empty'),
         }),
-        'Failed to get object from s3',
+        'Failed to get object version ID from s3',
       )
     })
 
@@ -171,7 +171,7 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
           err: new Error('VersionId is empty'),
         }),
-        'Failed to get object from s3',
+        'Failed to get object version ID from s3',
       )
     })
   })

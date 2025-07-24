@@ -253,7 +253,7 @@ export class S3Service {
       }
 
       if (!ContentLength || ContentLength === 0) {
-        throw new Error('Object is empty')
+        throw new Error('Body is empty')
       }
 
       this.logger.info(

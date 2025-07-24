@@ -67,14 +67,14 @@ export const handler = async (
     })
   } catch (err) {
     logger.warn({
-      message: 'File not found',
+      message: 'File not found or its content is empty',
       err,
       quarantineFileKey,
     })
     return {
       statusCode: StatusCodes.NOT_FOUND,
       body: JSON.stringify({
-        message: 'File not found',
+        message: 'File not found or its content is empty',
         fileKey: quarantineFileKey,
       }),
     }
