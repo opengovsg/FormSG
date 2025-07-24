@@ -8,7 +8,7 @@ import { S3Service } from '../s3.service'
 const VersionId = 'mockObjectVersionId'
 // Mock S3Client
 let getResult = {
-  Body: 'mockBody',
+  ContentLength: 100,
   VersionId,
 }
 jest.mock('@aws-sdk/client-s3', () => {
@@ -26,7 +26,7 @@ jest.mock('@aws-sdk/client-s3', () => {
     DeleteObjectCommand: jest.fn().mockImplementation(() => {
       return
     }),
-    GetObjectCommand: jest.fn().mockImplementation(() => {
+    HeadObjectCommand: jest.fn().mockImplementation(() => {
       return getResult
     }),
   }
@@ -125,7 +125,7 @@ describe('S3Service', () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
-        Body: '',
+        ContentLength: 0,
         VersionId: 'mockObjectVersionId',
       }
 
@@ -152,7 +152,7 @@ describe('S3Service', () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
-        Body: 'mockBody',
+        ContentLength: 100,
         VersionId: '',
       }
 
