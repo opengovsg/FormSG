@@ -408,7 +408,7 @@ const isConditionFulfilled = (
           }
         } else {
           // (4) Client-side handling
-          if (currentValue.value === undefined && currentValue.othersInput) {
+          if (currentValue.value === undefined && !!currentValue.othersInput) {
             return true
           }
         }

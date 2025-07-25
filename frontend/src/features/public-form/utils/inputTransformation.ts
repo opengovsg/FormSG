@@ -179,6 +179,8 @@ const transformToRadioOutput = (
   schema: RadioFieldSchema,
   input?: RadioFieldValues | RadioFieldResponsesV3,
 ): RadioResponse => {
+  console.log(`radio field values`)
+  console.log(input)
   let answer = ''
   if (input !== undefined) {
     if ('value' in input) {
