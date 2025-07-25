@@ -50,6 +50,20 @@ export const getSgidAuthUrl = async (): Promise<GetSgidAuthUrlResponseDto> => {
   ).then(({ data }) => data)
 }
 
+/**
+ * Gets the SSO authentication endpoint URL
+ * @returns SSO login redirect url
+ * @throws Error on non 2xx response
+ */
+export const getSsoAuthUrl = async ({ landingUrl }: { landingUrl: string }) => {
+  return ApiService.post<{ redirectUrl: string }>(
+    `${AUTH_ENDPOINT}/sso/authurl`,
+    {
+      landingUrl,
+    },
+  ).then(({ data }) => data)
+}
+
 export const logout = async (): Promise<void> => {
   // Remove logged in state from localStorage
   localStorage.removeItem(LOGGED_IN_KEY)

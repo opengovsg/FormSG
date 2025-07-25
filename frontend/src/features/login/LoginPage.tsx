@@ -18,8 +18,9 @@ import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
+import { SsoLoginButton } from './components/SsoLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck } from './queries'
+import { useIsIntranetCheck, useIsOgpIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
@@ -28,6 +29,7 @@ export type LoginOtpData = {
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: isIntranetIp } = useIsIntranetCheck()
+  const { data: isOgpIp } = useIsOgpIpCheck()
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -99,6 +101,13 @@ export const LoginPage = (): JSX.Element => {
             <>
               <OrDivider />
               <SgidLoginButton />
+            </>
+          )}
+          {/* Only show OGP login button if user is on ogp intranet */}
+          {!isOgpIp && (
+            <>
+              <OrDivider />
+              <SsoLoginButton />
             </>
           )}
         </Stack>
