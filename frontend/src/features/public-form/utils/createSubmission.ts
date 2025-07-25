@@ -208,16 +208,11 @@ export const createClearSubmissionWithVirusScanningFormDataV3 = (
   // TODO: Move validation to before response array creation so it can be used for encryption v2-3
   createResponsesArray(formFields, formInputs)
 
-  console.log(`formInput`)
-  console.log(formInputs)
   const responses = createResponsesV3(
     formFields,
     formInputs,
     fieldIdToQuarantineKeyMap,
   )
-
-  console.log(`response: `)
-  console.log(responses)
 
   const attachments = getAttachmentsMap(formFields, formInputs)
 
