@@ -134,11 +134,6 @@ export const FieldFactory = memo(
             {...rest}
           />
         )
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _exhaustiveCheck: never = field
-        throw new Error(`Unsupported field type: ${_exhaustiveCheck}`)
-      }
     }
   },
   (prevProps, nextProps) =>

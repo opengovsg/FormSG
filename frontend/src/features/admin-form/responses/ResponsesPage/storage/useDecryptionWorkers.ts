@@ -86,8 +86,7 @@ const useDecryptionWorkers = ({
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isFasterDownloadsFeatureOn = useFeatureIsOn('faster-downloads')
-  // const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
-  const isFasterDownloadsEnabled = false //TODO: remove
+  const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
 
   useEffect(() => {
     return () => killWorkers(workers)

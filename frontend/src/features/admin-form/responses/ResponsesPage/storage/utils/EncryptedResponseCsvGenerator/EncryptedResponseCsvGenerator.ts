@@ -4,8 +4,6 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
-import { BasicField } from '~shared/types'
-import { formatSgDate } from '~shared/utils/dates'
 import { getSignatureFileName } from '~shared/utils/signature'
 
 import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
@@ -86,7 +84,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       if (content.fieldType.toString() === 'signature') {
         const filename = getSignatureFileName({
           fieldId: content._id,
-          // timestamp: formatSgDate(created),
+          // timestamp: formatSgDate(created), // incase we want to add timestamp to filename in future
         })
         content.answerArray = [filename]
       }

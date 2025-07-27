@@ -105,6 +105,7 @@ export const processDecryptedContent = (
 ): VerifiedFormField[] => {
   const { responses: displayedContent, verified } = decrypted
   // Convert decrypted content into displayable object.
+
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
