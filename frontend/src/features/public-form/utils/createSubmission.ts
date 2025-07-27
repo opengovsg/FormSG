@@ -272,6 +272,7 @@ const createResponsesV3 = (
       case BasicField.Uen:
       case BasicField.Date:
       case BasicField.CountryRegion:
+      case BasicField.Signature:
       case BasicField.YesNo: {
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
@@ -394,19 +395,6 @@ const createResponsesV3 = (
             answer: { othersInput: input.othersInput },
           }
         }
-        break
-      }
-      case BasicField.Signature: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        // const signatureString = input?.value
-        //   ? convertToSignatureStringOutput(input.value)
-        //   : ''
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
         break
       }
       case BasicField.Section:
