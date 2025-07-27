@@ -43,11 +43,12 @@ import {
   BiUser,
   BiUserVoice,
 } from 'react-icons/bi'
-import { FaFileSignature } from 'react-icons/fa'
 import { SlLocationPin } from 'react-icons/sl'
 import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
+
+import { SignatureIcon } from '~assets/icons'
 
 export type BuilderSidebarFieldMeta = {
   label: string
@@ -288,7 +289,7 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
   [BasicField.Signature]: {
     label: 'Signature',
-    icon: FaFileSignature,
+    icon: SignatureIcon,
     isSubmitted: true,
     searchAliases: ['sign', 'signature', 'draw'],
   },
