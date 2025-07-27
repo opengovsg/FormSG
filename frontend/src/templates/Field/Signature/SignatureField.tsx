@@ -212,7 +212,7 @@ export const SignatureField = ({
               {/* perfect freehand component */}
               <Box
                 ref={boxRef}
-                background="#F9F9F9"
+                background="neutral.100"
                 width="100%"
                 maxWidth="100%"
                 height="178px"
