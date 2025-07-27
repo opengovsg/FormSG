@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
@@ -41,11 +40,11 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 const shouldDisableField = isLoading
 
                 // TODO: remove when signature field is out of beta
-                // if (
-                //   fieldType === BasicField.Signature &&
-                //   !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
-                // )
-                //   return null
+                if (
+                  fieldType === BasicField.Signature &&
+                  !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
+                )
+                  return null
 
                 return (
                   <DraggableBasicFieldListOption
