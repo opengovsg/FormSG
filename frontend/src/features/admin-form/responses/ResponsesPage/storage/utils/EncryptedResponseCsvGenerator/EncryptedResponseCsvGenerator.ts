@@ -84,7 +84,6 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       if (content.fieldType.toString() === 'signature') {
         const filename = getSignatureFileName({
           fieldId: content._id,
-          // timestamp: formatSgDate(created), // incase we want to add timestamp to filename in future
         })
         content.answerArray = [filename]
       }

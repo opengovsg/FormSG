@@ -24,8 +24,6 @@ import {
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
 
-import { isDataUrl } from '../../../../shared/utils/signature'
-
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
   NOT_APPROVED = 'Not approved' 
@@ -61,15 +59,7 @@ export const MrfWorkflowCompletionEmail = ({
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
       <Text style={{ ...primaryTextStyle, ...questionMargin }}>{qa.question}</Text>
-      {
-        isDataUrl(qa.answer) ? (
-          <Img
-              src={qa.answer}
-              style={{ maxHeight: 100 }}
-              alt="Signature"
-            />) :
-        (<Text style={{ ...secondaryTextStyle, ...answerMargin }}>{qa.answer}</Text>)
-      }
+      <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{qa.answer}</Text>
     </>
   )
 

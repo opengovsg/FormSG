@@ -17,7 +17,6 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
-import { formatSgDate } from '../../../../../shared/utils/dates'
 import {
   convertToSignatureSvgBuffer,
   convertToSignatureVectorArray,
@@ -818,13 +817,12 @@ const _createSubmission = async ({
       content: signatureData,
       filename: getSignatureFileName({
         fieldId: field._id,
-        timestamp: formatSgDate(createdTime.toISOString()),
       }),
       contentType: 'image/svg+xml',
     })
   })
 
-  const attachments = [
+  const emailAttachments = [
     ...(unencryptedAttachments ?? []),
     ...signatureAttachments,
   ]
@@ -844,7 +842,7 @@ const _createSubmission = async ({
         created: createdTime,
         id: submission.id,
       },
-      attachments: attachments,
+      attachments: emailAttachments,
       formData: emailData.formData,
       dataCollationData,
     })
@@ -874,7 +872,7 @@ const _createSubmission = async ({
     submission,
     responses,
     emailData,
-    attachments,
+    emailAttachments,
     respondentEmails,
   )
 }

@@ -1035,8 +1035,7 @@ export class MailService {
       responseId: responseId.toString(),
       formQuestionAnswers,
     }
-    console.log(`htmlData`)
-    console.log(htmlData)
+
     const generatedHtml = fromPromise(
       render(MrfWorkflowCompletionEmail(htmlData)),
       (e) => {
