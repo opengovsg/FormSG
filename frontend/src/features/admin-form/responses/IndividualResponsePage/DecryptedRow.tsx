@@ -3,10 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
+import getStroke from 'perfect-freehand'
 
 import { BasicField } from '~shared/types'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
-import { convertToSignatureVectorArray } from '~shared/utils/signature'
+import {
+  convertToSignatureVectorArray,
+  getBoundingBox,
+} from '~shared/utils/signature'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -138,20 +142,8 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     if (!canvas || vectorArray.length === 0) return
 
     // Step 1: Compute bounding box of all x and y points
-    let minX = Infinity,
-      minY = Infinity,
-      maxX = -Infinity,
-      maxY = -Infinity
-    vectorArray.forEach((stroke) => {
-      stroke.forEach(([x, y]) => {
-        if (x < minX) minX = x
-        if (y < minY) minY = y
-        if (x > maxX) maxX = x
-        if (y > maxY) maxY = y
-      })
-    })
+    const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
 
-    const strokeWidth = 2
     const padding = 10
     const width = maxX - minX
     const height = maxY - minY
@@ -159,8 +151,8 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     const canvasHeight = height + padding * 2
 
     // Step 2: Resize canvas
-    canvas.width = width + padding * 2
-    canvas.height = height + padding * 2
+    canvas.width = canvasWidth
+    canvas.height = canvasHeight
     setCanvasSize({ width: canvasWidth, height: canvasHeight })
 
     const ctx = canvas.getContext('2d')
@@ -168,22 +160,15 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     // Step 3: Draw centered strokes inside trimmed canvas
-    ctx.beginPath()
     vectorArray.forEach((stroke) => {
-      stroke.forEach(([x, y], index) => {
-        const normX = x - minX + padding
-        const normY = y - minY + padding
-        if (index === 0) {
-          ctx.moveTo(normX, normY)
-        } else {
-          ctx.lineTo(normX, normY)
-        }
-      })
+      const normalizedStroke = stroke.map(([x, y, pressure]) => [
+        x - minX + padding,
+        y - minY + padding,
+        pressure,
+      ])
+      const pathData = getStroke(normalizedStroke)
+      drawStroke(ctx, pathData)
     })
-
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = strokeWidth
-    ctx.stroke()
   }, [row.answerArray])
 
   return (
@@ -236,3 +221,22 @@ export const DecryptedRow = memo(
     }
   },
 )
+
+// TODO: think about moving this elsewhere
+const drawStroke = (
+  ctx: CanvasRenderingContext2D,
+  points: number[][],
+): void => {
+  if (points.length < 2) return
+
+  ctx.beginPath()
+  ctx.moveTo(points[0][0], points[0][1])
+
+  for (let i = 1; i < points.length; i++) {
+    const [x, y] = points[i]
+    ctx.lineTo(x, y)
+  }
+
+  ctx.closePath()
+  ctx.fill()
+}
