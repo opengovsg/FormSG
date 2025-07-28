@@ -71,15 +71,15 @@ describe('handler', () => {
       }),
     )
   })
-  it('should return 404 and log if file not found', async () => {
+
+  it('should return 404 if versionId not found', async () => {
     // Arrange
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
-    // Mock rejection of getS3FileStreamWithVersionId
-    MockS3Service.prototype.getS3FileStreamWithVersionId = jest
+    MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockRejectedValueOnce(new Error('File not found'))
+      .mockRejectedValueOnce(new Error('VersionId is empty'))
 
     // Act
     const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
@@ -87,13 +87,46 @@ describe('handler', () => {
     // Assert
     expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
     expect(result.body).toBe(
-      JSON.stringify({ message: 'File not found', fileKey: mockUUID }),
+      JSON.stringify({
+        message: 'File not found or its content is empty',
+        fileKey: mockUUID,
+      }),
     )
     expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
     expect(mockLoggerWarn).toHaveBeenCalledWith(
       expect.objectContaining({
-        message: 'File not found',
-        err: new Error('File not found'),
+        message: 'File not found or its content is empty',
+        err: new Error('VersionId is empty'),
+        quarantineFileKey: mockUUID,
+      }),
+    )
+  })
+
+  it('should return 404 if body content length is empty', async () => {
+    // Arrange
+    const mockUUID = crypto.randomUUID()
+    const mockEvent = { key: mockUUID }
+
+    MockS3Service.prototype.getS3ObjectVersionId = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('Body is empty'))
+
+    // Act
+    const result = await handler(mockEvent as unknown as APIGatewayProxyEvent)
+
+    // Assert
+    expect(result.statusCode).toBe(StatusCodes.NOT_FOUND)
+    expect(result.body).toBe(
+      JSON.stringify({
+        message: 'File not found or its content is empty',
+        fileKey: mockUUID,
+      }),
+    )
+    expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'File not found or its content is empty',
+        err: new Error('Body is empty'),
         quarantineFileKey: mockUUID,
       }),
     )
@@ -104,9 +137,9 @@ describe('handler', () => {
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
-    MockS3Service.prototype.getS3FileStreamWithVersionId = jest
+    MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockResolvedValueOnce({ body: 'mockBody', versionId: 'mockVersionId' })
+      .mockResolvedValueOnce('mockVersionId')
 
     MockS3Service.prototype.deleteS3File = jest.fn().mockResolvedValueOnce('ok')
 
@@ -143,9 +176,9 @@ describe('handler', () => {
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
-    MockS3Service.prototype.getS3FileStreamWithVersionId = jest
+    MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockResolvedValueOnce({ body: 'mockBody', versionId: 'mockVersionId' })
+      .mockResolvedValueOnce('mockVersionId')
 
     MockS3Service.prototype.getS3ObjectScanTag = jest
       .fn()
@@ -178,9 +211,9 @@ describe('handler', () => {
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
-    MockS3Service.prototype.getS3FileStreamWithVersionId = jest
+    MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockResolvedValueOnce({ body: 'mockBody', versionId: 'mockVersionId' })
+      .mockResolvedValueOnce('mockVersionId')
 
     MockS3Service.prototype.moveS3File = jest.fn().mockResolvedValueOnce('ok')
 
@@ -216,9 +249,9 @@ describe('handler', () => {
     const mockUUID = crypto.randomUUID()
     const mockEvent = { key: mockUUID }
 
-    MockS3Service.prototype.getS3FileStreamWithVersionId = jest
+    MockS3Service.prototype.getS3ObjectVersionId = jest
       .fn()
-      .mockResolvedValueOnce({ body: 'mockBody', versionId: 'mockVersionId' })
+      .mockResolvedValueOnce('mockVersionId')
 
     MockS3Service.prototype.moveS3File = jest
       .fn()
