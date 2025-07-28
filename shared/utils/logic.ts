@@ -1,4 +1,3 @@
-import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants'
 import {
   BasicField,
   FormDto,
@@ -391,7 +390,7 @@ const isConditionFulfilled = (
        *     starting with "Others: ".
        *     If not, continue the usual string-based check with (3).
        * (4) If conditionValues includes "Others", check for the value being
-       *     special radio value and the othersInput subfield having a value.
+       *     undefined and the othersInput subfield having a value (XOR).
        *     If not, continue the usual string-based check with (3).
        * (2) + (5) Use Number equality for decimals
        * (3) + (6) Use String equality for everything else
@@ -409,10 +408,7 @@ const isConditionFulfilled = (
           }
         } else {
           // (4) Client-side handling
-          if (
-            currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE &&
-            !!currentValue.othersInput
-          ) {
+          if (currentValue.value === undefined && !!currentValue.othersInput) {
             return true
           }
         }
