@@ -15,7 +15,7 @@ const parserMiddlewares = () => {
   const preMiddlewareProcesses = [convertSnsMessageType]
 
   const bodyParserCompatibility: RequestHandler = (req, res, next) => {
-    req.body = req.body || {}
+    req.body = req.body ?? {}
     return next()
   }
 
