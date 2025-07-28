@@ -1,3 +1,4 @@
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants'
 import {
   BasicField,
   FormDto,
@@ -408,7 +409,14 @@ const isConditionFulfilled = (
           }
         } else {
           // (4) Client-side handling
-          if (currentValue.value === undefined && !!currentValue.othersInput) {
+          // This function is used by (1) FE to display visible fields and (2) BE for logic validation.
+          // For BE validation, we strip currentValue.value away and reintroduce it (above in the same function)
+          // so we also check and validate if .value is undefined
+          if (
+            (currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE ||
+              currentValue.value === undefined) &&
+            !!currentValue.othersInput
+          ) {
             return true
           }
         }
