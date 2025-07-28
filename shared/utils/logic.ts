@@ -411,7 +411,7 @@ const isConditionFulfilled = (
           // (4) Client-side handling
           // This function is used by (1) FE to display visible fields and (2) BE for logic validation.
           // For BE validation, we strip currentValue.value away and reintroduce it (above in the same function)
-          // so we also check and validate if .value is undefined
+          // so we also check and validate if .value is undefined (https://github.com/opengovsg/FormSG/pull/8568)
           if (
             (currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE ||
               currentValue.value === undefined) &&
