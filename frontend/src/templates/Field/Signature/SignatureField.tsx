@@ -215,7 +215,7 @@ export const SignatureField = ({
                 background="neutral.100"
                 width="100%"
                 maxWidth="100%"
-                height="178px"
+                height="11.125rem"
                 border={
                   signatureErrors
                     ? '1px solid'
@@ -234,12 +234,15 @@ export const SignatureField = ({
                 }
                 position="relative"
                 overflow="hidden"
+                _hover={{
+                  background: schema.disabled ? 'neutral.100' : 'primary.100',
+                }}
               >
                 {showSignaturePlaceholder && (
                   <Box
                     width="100%"
                     maxWidth="100%"
-                    height="178px"
+                    height="11.125rem"
                     top={0}
                     left={0}
                     justifyItems="center"
