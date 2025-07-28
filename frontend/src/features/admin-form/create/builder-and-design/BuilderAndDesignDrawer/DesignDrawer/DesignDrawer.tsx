@@ -343,7 +343,6 @@ export const DesignInput = (): JSX.Element | null => {
           name="estTimeTaken"
           control={control}
           rules={{
-            required: 'This field is required', //TODO: why is this field required? Seems a bit strange esp if we don't provide an initial value?
             min: { value: 1, message: 'Cannot be less than 1' },
             max: { value: 1000, message: 'Cannot be more than 1000' },
           }}

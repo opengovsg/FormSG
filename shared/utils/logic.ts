@@ -391,7 +391,7 @@ const isConditionFulfilled = (
        *     starting with "Others: ".
        *     If not, continue the usual string-based check with (3).
        * (4) If conditionValues includes "Others", check for the value being
-       *     special radio value and the othersInput subfield having a value.
+       *     undefined and the othersInput subfield having a value (XOR).
        *     If not, continue the usual string-based check with (3).
        * (2) + (5) Use Number equality for decimals
        * (3) + (6) Use String equality for everything else
@@ -409,8 +409,12 @@ const isConditionFulfilled = (
           }
         } else {
           // (4) Client-side handling
+          // This function is used by (1) FE to display visible fields and (2) BE for logic validation.
+          // For BE validation, we strip currentValue.value away and reintroduce it (above in the same function)
+          // so we also check and validate if .value is undefined (https://github.com/opengovsg/FormSG/pull/8568)
           if (
-            currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE &&
+            (currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE ||
+              currentValue.value === undefined) &&
             !!currentValue.othersInput
           ) {
             return true
