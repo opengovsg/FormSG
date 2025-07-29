@@ -1,7 +1,7 @@
 import { KeyboardEventHandler, useCallback } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
-import { get, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 
 import { useFormTitleValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -27,7 +27,9 @@ export const FormDetailsSection = (): JSX.Element => {
 interface FormTitleInputProps {
   initialTitle: string
 }
-const FormTitleInput = ({ initialTitle }: FormTitleInputProps): JSX.Element => {
+export const FormTitleInput = ({
+  initialTitle,
+}: FormTitleInputProps): JSX.Element => {
   const {
     control,
     handleSubmit,

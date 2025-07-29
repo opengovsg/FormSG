@@ -14,6 +14,16 @@ const parserMiddlewares = () => {
   // processes that must be done before any other middlewares
   const preMiddlewareProcesses = [convertSnsMessageType]
 
+  const bodyParserCompatibility: RequestHandler = (req, res, next) => {
+    req.body = req.body ?? {}
+    return next()
+  }
+
+  /**
+   * Restore v1 body-parser compatibility as this is a breaking change in v2.
+   * See https://github.com/expressjs/body-parser/commit/6cbc279dc875ba1801e9ee5849f3f64e5b42f6e1
+   *
+   */
   const bodyParserUrlMiddleWare = bodyParser.urlencoded({
     extended: true,
     limit: '100mb',
@@ -32,6 +42,7 @@ const parserMiddlewares = () => {
 
   return [
     ...preMiddlewareProcesses,
+    bodyParserCompatibility,
     bodyParserUrlMiddleWare,
     bodyParserJsonMiddleware,
   ]

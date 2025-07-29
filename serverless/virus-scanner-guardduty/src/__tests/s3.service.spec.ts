@@ -8,7 +8,7 @@ import { S3Service } from '../s3.service'
 const VersionId = 'mockObjectVersionId'
 // Mock S3Client
 let getResult = {
-  Body: 'mockBody',
+  ContentLength: 100,
   VersionId,
 }
 jest.mock('@aws-sdk/client-s3', () => {
@@ -26,7 +26,7 @@ jest.mock('@aws-sdk/client-s3', () => {
     DeleteObjectCommand: jest.fn().mockImplementation(() => {
       return
     }),
-    GetObjectCommand: jest.fn().mockImplementation(() => {
+    HeadObjectCommand: jest.fn().mockImplementation(() => {
       return getResult
     }),
   }
@@ -106,35 +106,32 @@ describe('S3Service', () => {
       )
     })
   })
-  describe('getS3FileStreamWithVersionId', () => {
-    it('should return file stream with version id', async () => {
+  describe('getS3ObjectVersionId', () => {
+    it('should return version id', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
 
       // Act
-      const result = await mockS3Service.getS3FileStreamWithVersionId({
+      const versionIdResult = await mockS3Service.getS3ObjectVersionId({
         bucketName: 'bucketName',
         objectKey: 'objectKey',
       })
 
       // Assert
-      expect(result).toEqual({
-        body: 'mockBody',
-        versionId: 'mockObjectVersionId',
-      })
+      expect(versionIdResult).toEqual('mockObjectVersionId')
     })
 
     it('should throw error and log if body is empty', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
-        Body: '',
+        ContentLength: 0,
         VersionId: 'mockObjectVersionId',
       }
 
       // Act + assert
       await expect(
-        mockS3Service.getS3FileStreamWithVersionId({
+        mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
@@ -147,7 +144,7 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
           err: new Error('Body is empty'),
         }),
-        'Failed to get object from s3',
+        'Failed to get object version ID from s3',
       )
     })
 
@@ -155,13 +152,13 @@ describe('S3Service', () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
-        Body: 'mockBody',
+        ContentLength: 100,
         VersionId: '',
       }
 
       // Act + assert
       await expect(
-        mockS3Service.getS3FileStreamWithVersionId({
+        mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
@@ -174,7 +171,7 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
           err: new Error('VersionId is empty'),
         }),
-        'Failed to get object from s3',
+        'Failed to get object version ID from s3',
       )
     })
   })

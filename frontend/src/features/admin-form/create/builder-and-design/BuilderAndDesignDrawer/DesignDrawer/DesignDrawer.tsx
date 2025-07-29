@@ -18,8 +18,10 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
+import { featureFlags } from '~shared/constants'
 import { FormColorTheme, FormLogoState, FormStartPage } from '~shared/types'
 
 import { useToast } from '~hooks/useToast'
@@ -30,6 +32,7 @@ import Radio from '~components/Radio'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { FormDetailsSection } from '~features/admin-form/settings/components/FormDetailsSection'
 import { useEnv } from '~features/env/queries'
 import { getTitleBg } from '~features/public-form/components/FormStartPage/useFormHeader'
 
@@ -206,6 +209,10 @@ export const DesignInput = (): JSX.Element | null => {
     },
   )
 
+  const showDesignDrawerFormTitle = useFeatureIsOn(
+    featureFlags.designDrawerFormTitle,
+  )
+
   const handleClick = useCallback(async () => {
     handleUpdateDesign().catch((error) => {
       toast({ description: error.message })
@@ -330,6 +337,8 @@ export const DesignInput = (): JSX.Element | null => {
         </Radio.RadioGroup>
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
+
+      {showDesignDrawerFormTitle && <FormDetailsSection />}
 
       <FormControl
         isReadOnly={startPageMutation.isLoading}

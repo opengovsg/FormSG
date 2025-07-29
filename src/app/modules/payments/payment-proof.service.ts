@@ -46,7 +46,7 @@ export const checkStripeReceiptIsReady = (
  */
 export const _storePaymentProofInS3 = (
   payment: ICompletedPaymentSchema,
-  pdfBuffer: Buffer,
+  pdfBuffer: Uint8Array,
 ): ResultAsync<true, PaymentProofUploadS3Error> => {
   const objectPath = getPaymentProofS3ObjectPath(payment)
 
@@ -65,7 +65,7 @@ export const _storePaymentProofInS3 = (
       .upload({
         Bucket: AwsConfig.paymentProofS3Bucket,
         Key: objectPath,
-        Body: Buffer.from(pdfBuffer),
+        Body: pdfBuffer,
       })
       .promise(),
     (error) => {
@@ -180,7 +180,7 @@ const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
   receiptUrl: string,
-): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
+): ResultAsync<Uint8Array, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
     return errAsync(new StripeFetchError('Receipt url not ready'))
   }
