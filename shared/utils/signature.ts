@@ -1,3 +1,8 @@
+export const signatureStrokeSize = 8
+export const signatureStrokeThinning = 0.5
+export const signatureStrokeSmoothing = 0.5
+export const signatureStrokeStreamline = 0.5
+
 export const convertToSignatureStringOutput = (
   input: [number, number, number][][],
 ): string => {

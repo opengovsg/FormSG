@@ -10,6 +10,10 @@ import { handleAddressResponseDisplay } from '~shared/utils/address'
 import {
   convertToSignatureVectorArray,
   getBoundingBox,
+  signatureStrokeSize,
+  signatureStrokeSmoothing,
+  signatureStrokeStreamline,
+  signatureStrokeThinning,
 } from '~shared/utils/signature'
 
 import Button from '~components/Button'
@@ -166,7 +170,12 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
         y - minY + padding,
         pressure,
       ])
-      const pathData = getStroke(normalizedStroke)
+      const pathData = getStroke(normalizedStroke, {
+        size: signatureStrokeSize,
+        thinning: signatureStrokeThinning,
+        smoothing: signatureStrokeSmoothing,
+        streamline: signatureStrokeStreamline,
+      })
       drawStroke(ctx, pathData)
     })
   }, [row.answerArray])

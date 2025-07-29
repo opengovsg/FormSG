@@ -3,6 +3,13 @@ import { useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
+import {
+  signatureStrokeSize,
+  signatureStrokeSmoothing,
+  signatureStrokeStreamline,
+  signatureStrokeThinning,
+} from '~shared/utils/signature'
+
 import { createSignatureValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -64,10 +71,10 @@ export const SignatureField = ({
 
     for (const strokePoints of pfStrokes) {
       const stroke = getStroke(strokePoints, {
-        size: 8,
-        thinning: 0.5,
-        smoothing: 0.5,
-        streamline: 0.5,
+        size: signatureStrokeSize,
+        thinning: signatureStrokeThinning,
+        smoothing: signatureStrokeSmoothing,
+        streamline: signatureStrokeStreamline,
       })
 
       ctx.beginPath()
