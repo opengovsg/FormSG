@@ -10,10 +10,6 @@ export const convertToSignatureVectorArray = (
   return JSON.parse(input)
 }
 
-export const isDataUrl = (data: string): boolean => {
-  return typeof data === 'string' && data.startsWith('data:image/')
-}
-
 type BoundingBox = {
   minX: number
   minY: number

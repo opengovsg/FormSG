@@ -260,6 +260,7 @@ export const SignatureField = ({
                 >
                   <canvas
                     ref={pfCanvasRef}
+                    aria-label={`Signature field ${schema._id}`}
                     style={{
                       width: '100%',
                       height: '100%',

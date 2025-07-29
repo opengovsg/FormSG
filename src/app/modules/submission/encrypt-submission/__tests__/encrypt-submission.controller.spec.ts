@@ -1454,6 +1454,7 @@ describe('encrypt-submission.controller', () => {
     it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
       // Arrange
       const mockFormId = new ObjectId()
+      const signatureFieldId = new ObjectId()
       const mockForm = {
         _id: mockFormId,
         title: 'Test Form',
@@ -1469,6 +1470,13 @@ describe('encrypt-submission.controller', () => {
           question: '[MyInfo] Test Question',
           answer: 'Test Answer',
           fieldType: 'text',
+          isVisible: true,
+        },
+        {
+          _id: signatureFieldId,
+          question: 'Signature Question',
+          answerArray: ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]'],
+          fieldType: 'signature',
           isVisible: true,
         },
       ]
@@ -1504,6 +1512,10 @@ describe('encrypt-submission.controller', () => {
             expect.objectContaining({
               question: 'Test Question',
               answer: 'Test Answer',
+            }),
+            expect.objectContaining({
+              question: '[signature] Signature Question',
+              answer: `Signature_Captured_${signatureFieldId}.svg`,
             }),
           ]),
         }),

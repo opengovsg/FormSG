@@ -18,7 +18,7 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-type EditSignatureProps = EditFieldProps<SignatureFieldBase>
+export type EditSignatureProps = EditFieldProps<SignatureFieldBase>
 
 type EditSignatureInputs = Pick<
   SignatureFieldBase,
