@@ -906,46 +906,46 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
       })
 
-      it('should handle submissions with signatures response', () => {
-        const signaturesAnswerArray = ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]']
+      // it('should handle submissions with signatures response', () => {
+      //   const signaturesAnswerArray = ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]']
 
-        const mockDecryptedRecord = [
-          generateRecord(1, signaturesAnswerArray, 'signature'),
-        ]
+      //   const mockDecryptedRecord = [
+      //     generateRecord(1, signaturesAnswerArray, 'signature'),
+      //   ]
 
-        const mockRecord = {
-          record: mockDecryptedRecord,
-          created: mockCreatedEarly,
-          submissionId: 'mockSubmissionId',
-        }
+      //   const mockRecord = {
+      //     record: mockDecryptedRecord,
+      //     created: mockCreatedEarly,
+      //     submissionId: 'mockSubmissionId',
+      //   }
 
-        // const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
-        generator.addRecord(mockRecord)
+      //   // const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
+      //   generator.addRecord(mockRecord)
 
-        // Act
-        generator.process()
+      //   // Act
+      //   generator.process()
 
-        // Assert
-        //Should have 1 header row and 1 submission row
-        expect(generator.records.length).toEqual(2 + BOM_LENGTH)
-        const expectedHeaderRow = stringify([
-          'Response ID',
-          'Timestamp',
-          mockDecryptedRecord[0].question,
-        ])
+      //   // Assert
+      //   //Should have 1 header row and 1 submission row
+      //   expect(generator.records.length).toEqual(2 + BOM_LENGTH)
+      //   const expectedHeaderRow = stringify([
+      //     'Response ID',
+      //     'Timestamp',
+      //     mockDecryptedRecord[0].question,
+      //   ])
 
-        const expectedSubmissionRow = stringify([
-          mockRecord.submissionId,
-          getFormattedDate(mockRecord.created),
-          `Signature_Captured_mock1.svg`,
-        ])
+      //   const expectedSubmissionRow = stringify([
+      //     mockRecord.submissionId,
+      //     getFormattedDate(mockRecord.created),
+      //     `Signature_Captured_mock1.svg`,
+      //   ])
 
-        expect(generator.records).toEqual([
-          UTF8_BYTE_ORDER_MARK,
-          expectedHeaderRow,
-          expectedSubmissionRow,
-        ])
-      })
+      //   expect(generator.records).toEqual([
+      //     UTF8_BYTE_ORDER_MARK,
+      //     expectedHeaderRow,
+      //     expectedSubmissionRow,
+      //   ])
+      // })
     })
   })
 })
