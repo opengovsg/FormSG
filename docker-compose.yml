@@ -136,6 +136,9 @@ services:
       - DOWNLOAD_FORM_WHITELIST_RATE_LIMIT
       - UPLOAD_FORM_WHITELIST_RATE_LIMIT
       - KILL_EMAIL_MODE_FEEDBACK_FORMID=67b2b52264eeaf439cfb4f28
+      - SSO_DISCOVERY_URL
+      - SSO_CLIENT_ID
+      - SSO_CLIENT_SECRET
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1

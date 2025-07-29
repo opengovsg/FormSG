@@ -1,19 +1,26 @@
 import { StatusCodes } from 'http-status-codes'
-import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
+import { ErrorDto, GetSsoAuthUrlResponseDto } from 'shared/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
+import * as UserService from '../../user/user.service'
+import * as AuthService from '../auth.service'
+import { SessionUser } from '../auth.types'
+import { mapRouteError } from '../auth.utils'
 
-import { SSO_CODE_VERIFIER_COOKIE_NAME } from './auth-sso.constants'
-import { AuthSsoService, SSO_LOGIN_OAUTH_STATE } from './auth-sso.service'
+import {
+  SSO_CODE_VERIFIER_COOKIE_NAME,
+  SSO_NONCE_NAME,
+} from './auth-sso.constants'
+import { AuthSsoService } from './auth-sso.service'
 
 const logger = createLoggerWithLabel(module)
 
 export const login: ControllerHandler<
   unknown,
-  ErrorDto | GetSgidAuthUrlResponseDto
+  ErrorDto | GetSsoAuthUrlResponseDto
 > = async (req, res) => {
   const logMeta = {
     action: 'login',
@@ -21,11 +28,11 @@ export const login: ControllerHandler<
   }
 
   return AuthSsoService.createRedirectUrl()
-    .map(({ redirectUrl, codeVerifier }) =>
+    .map(({ redirectUrl, codeVerifier, nonce }) =>
       res
         .status(StatusCodes.OK)
         .cookie(SSO_CODE_VERIFIER_COOKIE_NAME, codeVerifier)
-        .cookie('state', SSO_LOGIN_OAUTH_STATE)
+        .cookie(SSO_NONCE_NAME, nonce)
         .send({ redirectUrl }),
     )
     .mapErr((error) => {
@@ -57,57 +64,81 @@ export const handleLoginCallback: ControllerHandler<
   unknown,
   { code: string; state: string; iss: string }
 > = async (req, res) => {
-  const { code, state, iss } = req.query // can trust on FE query
+  const { code, state } = req.query // can trust on FE query
   const codeVerifier = req.cookies[SSO_CODE_VERIFIER_COOKIE_NAME]
+  const nonce = req.cookies[SSO_NONCE_NAME]
   res.clearCookie(SSO_CODE_VERIFIER_COOKIE_NAME)
+  res.clearCookie(SSO_NONCE_NAME)
 
   const logMeta = {
-    action: 'handleLoginCallback',
+    action: 'handleSsoLoginCallback',
     code,
     state,
     ...createReqMeta(req),
   }
 
-  // state checkers
-  {
-    if (!code || state !== SSO_LOGIN_OAUTH_STATE) {
-      logger.error({
-        message:
-          'Error logging in with SSO: code not provided or state is incorrect.',
-        meta: logMeta,
-      })
+  if (!code) {
+    logger.error({
+      message: 'Error logging in with SSO: code not provided.',
+      meta: logMeta,
+    })
 
-      const status = StatusCodes.BAD_REQUEST
-      res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
-      return
-    }
-    if (!codeVerifier) {
-      logger.error({
-        message: 'Error logging in via sgID: code verifier cookie is empty',
-        meta: logMeta,
-      })
+    const status = StatusCodes.BAD_REQUEST
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
+  }
+  if (!codeVerifier) {
+    logger.error({
+      message: 'Error logging in via sso: code verifier cookie is empty',
+      meta: logMeta,
+    })
 
-      const status = StatusCodes.BAD_REQUEST
-      res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
-      return
-    }
-    if (!req.session) {
-      logger.error({
-        message: 'Error logging in user; req.session is undefined',
-        meta: logMeta,
-      })
+    const status = StatusCodes.BAD_REQUEST
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
+  }
+  if (!req.session) {
+    logger.error({
+      message: 'Error logging in user; req.session is undefined',
+      meta: logMeta,
+    })
 
-      const status = StatusCodes.INTERNAL_SERVER_ERROR
-      res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
-      return
-    }
+    const status = StatusCodes.INTERNAL_SERVER_ERROR
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
   }
 
-  AuthSsoService.retrieveAccessToken(codeVerifier, state, req.originalUrl)
-    .andThen((tokens) => {
-      return AuthSsoService.retrieveUserInfo(tokens)
+  const coreErrorMessage = 'Failed to log in via SSO. Please try again later.'
+  AuthSsoService.retrieveAccessToken(codeVerifier, nonce, req.originalUrl)
+    .andThen((tokens) => AuthSsoService.retrieveUserInfo(tokens))
+    .andThen((userInfo) => {
+      const userEmail = userInfo.email.toLowerCase()
+      return AuthService.validateEmailDomain(userEmail).andThen((agency) =>
+        UserService.retrieveUser(userEmail, agency._id),
+      )
     })
-    .map((userInfo) => {
-      console.log('HEYY!', { userInfo })
+    .map((user) => {
+      // Add user info to session.
+      const { _id } = user.toObject() as SessionUser
+      req.session.user = { _id }
+      logger.info({
+        message: `Successfully logged in user ${user._id}`,
+        meta: logMeta,
+      })
+      return res.redirect(
+        resolveRedirectionUrl(`/login?status=${StatusCodes.OK}`),
+      )
+    })
+    .mapErr((error) => {
+      const message = 'Error occurred when trying to log in via SSO'
+      logger.warn({
+        message,
+        meta: logMeta,
+        error,
+      })
+
+      const { statusCode } = mapRouteError(error, coreErrorMessage)
+
+      return res.status(statusCode).json({ message })
     })
 }

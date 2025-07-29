@@ -55,12 +55,9 @@ export const getSgidAuthUrl = async (): Promise<GetSgidAuthUrlResponseDto> => {
  * @returns SSO login redirect url
  * @throws Error on non 2xx response
  */
-export const getSsoAuthUrl = async ({ landingUrl }: { landingUrl: string }) => {
-  return ApiService.post<{ redirectUrl: string }>(
-    `${AUTH_ENDPOINT}/sso/authurl`,
-    {
-      landingUrl,
-    },
+export const getSsoAuthUrl = async () => {
+  return ApiService.get<{ redirectUrl: string }>(
+    `${AUTH_ENDPOINT}/sso/login`,
   ).then(({ data }) => data)
 }
 

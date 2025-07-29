@@ -11,8 +11,6 @@ AuthSsoRouter.get('/login', AuthSsoController.login)
  * Sets the returned profiles in req.session.sso
  * @route POST /api/v3/auth/sso/login/callback
  *
- * The frontend should query the available profiles through GET /api/v3/auth/sso/profiles
- *
  * @return 200 with redirect to frontend /login/callback if there are no errors
  * @return 400 when code or state is not provided, or state is incorrect
  * @return 500 when processing the code verifier cookie fails, or when an unknown error occurs

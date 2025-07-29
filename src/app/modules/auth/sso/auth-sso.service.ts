@@ -2,11 +2,12 @@ import { okAsync, ResultAsync } from 'neverthrow'
 import { getValidatedIdTokenClaims } from 'oauth4webapi'
 import * as oidcClient from 'openid-client'
 
-import { isDev } from 'src/app/config/config'
-import { sso } from 'src/app/config/features/sso.config'
 import { ISsoVarsSchema } from 'src/types'
 
+import { isDev } from '../../../config/config'
+import { sso } from '../../../config/features/sso.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { resolveRedirectionUrl } from '../../../utils/urls'
 
 import { SsoCreateRedirectUrlError } from './auth-sso.error'
 
@@ -16,7 +17,11 @@ export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
 export class AuthSsoServiceClass {
   private clientConfigPromise: Promise<oidcClient.Configuration>
 
-  constructor({ discoveryUrl, clientId, clientSecret }: ISsoVarsSchema) {
+  constructor({
+    discoveryUrl: _discoveryUrl,
+    clientId,
+    clientSecret,
+  }: ISsoVarsSchema) {
     const clientAuth: oidcClient.ClientAuth | undefined = clientSecret
       ? oidcClient.ClientSecretPost(clientSecret)
       : undefined
@@ -29,13 +34,26 @@ export class AuthSsoServiceClass {
       clientDiscoveryRequestOptions.execute = [oidcClient.allowInsecureRequests]
     }
 
-    this.clientConfigPromise = oidcClient.discovery(
-      discoveryUrl,
-      clientId,
-      undefined, // clientMetadata,
-      clientAuth,
-      clientDiscoveryRequestOptions,
-    )
+    const oidcServer = new URL(_discoveryUrl)
+    this.clientConfigPromise = oidcClient
+      .discovery(
+        oidcServer,
+        clientId,
+        undefined, // clientMetadata,
+        clientAuth,
+        clientDiscoveryRequestOptions,
+      )
+      .catch((error) => {
+        logger.error({
+          meta: {
+            action: 'AuthSsoServiceClass.constructor',
+            error,
+          },
+          message: 'Error while discovering SSO client configuration',
+          error,
+        })
+        throw new SsoCreateRedirectUrlError()
+      })
   }
 
   getClientConfigResult(): ResultAsync<
@@ -59,7 +77,7 @@ export class AuthSsoServiceClass {
    * @returns The redirectUrl and the associated code verifier
    */
   createRedirectUrl(): ResultAsync<
-    { redirectUrl: string; codeVerifier: string },
+    { redirectUrl: string; codeVerifier: string; nonce: string },
     SsoCreateRedirectUrlError
   > {
     const logMeta = {
@@ -71,7 +89,7 @@ export class AuthSsoServiceClass {
       meta: logMeta,
     })
 
-    const codeVerifier: string = oidcClient.randomPKCECodeVerifier()
+    const codeVerifier = oidcClient.randomPKCECodeVerifier()
 
     const codeChallengeResult = ResultAsync.fromPromise(
       oidcClient.calculatePKCECodeChallenge(codeVerifier),
@@ -88,8 +106,6 @@ export class AuthSsoServiceClass {
       this.getClientConfigResult(),
       codeChallengeResult,
     ]).andThen(([clientConfig, codeChallenge]) => {
-      const codeVerifier: string = oidcClient.randomPKCECodeVerifier()
-
       const nonce = oidcClient.randomNonce()
 
       const params: Record<string, string> = {
@@ -107,26 +123,32 @@ export class AuthSsoServiceClass {
         clientConfig,
         params,
       )
-      return okAsync({ redirectUrl: redirectTo.toString(), codeVerifier })
+
+      return okAsync({
+        redirectUrl: redirectTo.toString(),
+        codeVerifier,
+        nonce,
+      })
     })
   }
 
   retrieveAccessToken(
     codeVerifier: string,
-    state: string,
+    nonce: string,
     currentUrl: string,
   ): ResultAsync<oidcClient.TokenEndpointResponse, SsoCreateRedirectUrlError> {
     const logMeta = {
       action: 'retrieveAccessToken',
     }
+
     return this.getClientConfigResult().andThen((clientConfig) => {
       return ResultAsync.fromPromise(
         oidcClient.authorizationCodeGrant(
           clientConfig,
-          new URL(currentUrl),
+          new URL(resolveRedirectionUrl(currentUrl)),
           {
             pkceCodeVerifier: codeVerifier,
-            expectedState: state,
+            expectedState: nonce,
             idTokenExpected: true,
           },
           {},
@@ -135,7 +157,7 @@ export class AuthSsoServiceClass {
         (error) => {
           logger.error({
             message: 'Error while retrieving access token from SSO',
-            meta: logMeta,
+            meta: { ...logMeta, error },
             error,
           })
           return new SsoCreateRedirectUrlError()
@@ -146,7 +168,7 @@ export class AuthSsoServiceClass {
 
   retrieveUserInfo(
     tokens: oidcClient.TokenEndpointResponse,
-  ): ResultAsync<oidcClient.UserInfoResponse, SsoCreateRedirectUrlError> {
+  ): ResultAsync<{ sub: string; email: string }, SsoCreateRedirectUrlError> {
     const logMeta = {
       action: 'retrieveUserInfo',
     }
@@ -174,10 +196,10 @@ export class AuthSsoServiceClass {
       ).map((userInfo) => {
         logger.info({
           message: `Successfully retrieved user info from SSO`,
-          meta: logMeta,
+          meta: { ...logMeta, userInfo },
         })
 
-        return userInfo
+        return userInfo as { sub: string; email: string }
       })
     })
   }

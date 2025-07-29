@@ -6,16 +6,14 @@ import { resetToApplicationDefaultForUndefinedSsmValues } from '../schema'
 
 convict.addFormat(url)
 
-const HOUR_IN_MILLIS = 1000 * 60 * 60
-const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
-
-export const optionalValuesFromSsm: Path<ISsoVarsSchema>[] = ['hostname']
+export const optionalValuesFromSsm: Path<ISsoVarsSchema>[] = [] //['hostname']
 
 export const ssoVarsSchema: Schema<ISsoVarsSchema> = {
   discoveryUrl: {
     doc: 'The discovery URL for the SSO service',
     format: String,
-    default: 'http://localhost:5354/api/oidc/.well-known/openid-configuration',
+    default:
+      'https://sso.open.gov.sg/api/oidc/.well-known/openid-configuration',
     env: 'SSO_DISCOVERY_URL',
   },
   clientId: {

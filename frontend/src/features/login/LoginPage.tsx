@@ -5,6 +5,7 @@ import { Stack } from '@chakra-ui/react'
 import { StatusCodes } from 'http-status-codes'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
@@ -42,7 +43,12 @@ export const LoginPage = (): JSX.Element => {
   const toastMessage = useMemo(() => {
     switch (statusCode) {
       case null:
+        return
       case StatusCodes.OK.toString():
+        {
+          window.location.assign(DASHBOARD_ROUTE)
+          setIsAuthenticated(true)
+        }
         return
       case StatusCodes.UNAUTHORIZED.toString():
         return t('features.login.LoginPage.expiredSgIdSession')
@@ -104,7 +110,7 @@ export const LoginPage = (): JSX.Element => {
             </>
           )}
           {/* Only show OGP login button if user is on ogp intranet */}
-          {!isOgpIp && (
+          {isOgpIp || (
             <>
               <OrDivider />
               <SsoLoginButton />

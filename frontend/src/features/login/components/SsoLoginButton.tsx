@@ -1,5 +1,5 @@
 import { useMutation } from 'react-query'
-import { Divider, Flex, HStack, Stack, Text } from '@chakra-ui/react'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 
 import { getSsoAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
@@ -13,11 +13,6 @@ export const SsoLoginButton = (): JSX.Element | null => {
 
   return (
     <>
-      <HStack spacing="2.5rem">
-        <Divider />
-        <Text textStyle="caption-2">or</Text>
-        <Divider />
-      </HStack>
       <Stack gap="0.75rem">
         <Button
           colorScheme="neutral"
