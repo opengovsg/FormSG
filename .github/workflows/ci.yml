@@ -51,9 +51,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - name: Cache Node modules
@@ -72,9 +72,9 @@ jobs:
           fetch-depth: 0
       - run: mkdir -p build-output/
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
@@ -106,9 +106,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
@@ -140,9 +140,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
@@ -167,9 +167,9 @@ jobs:
         with:
           name: build-output
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
@@ -207,9 +207,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules

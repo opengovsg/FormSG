@@ -109,7 +109,7 @@ export const generateBounceNotificationHtml = (
 
 export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
-): ResultAsync<Buffer, MailGenerationError> => {
+): ResultAsync<Uint8Array, MailGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
 
   logger.info({

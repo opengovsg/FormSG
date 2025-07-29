@@ -7,6 +7,18 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
 [![Build Status](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml/badge.svg)](https://github.com/opengovsg/FormSG/actions/workflows/deploy-eb.yml)
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-opengovsg%2FFormSG-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/opengovsg/FormSG)
+
+## 📚 Documentation
+
+For comprehensive self-hosting guides, configuration references, and deployment instructions, visit our **[FormSG Self-Hosting Guide](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg)**.
+
+The GitBook documentation is actively maintained and provides:
+- Deployment guides for AWS and other platforms
+- Configuration reference for all environment variables
+- Component customization guides
+- Legal and compliance requirements
+- Evaluation frameworks for decision makers
 
 ## Table of Contents
 
@@ -32,11 +44,6 @@
 - [MongoDB Scripts](#mongodb-scripts)
 - [Support](#support)
 - [Database Alternatives](#database-alternatives)
-  - [Migrating from MongoDB to FerretDB](#migrating-from-mongodb-to-ferretdb)
-  - [Migrating from Mongoose ODM to Prisma ORM](#migrating-from-mongoose-odm-to-prisma-orm)
-    - [Replacing MongoDB with CockroachDB](#replacing-mongodb-with-cockroachdb)
-    - [Other Prisma supported DBs](#other-prisma-supported-dbs)
-  - [Other potential DB migrations](#other-potential-db-migrations)
 - [Acknowledgements](#acknowledgements)
 
 ## Contributing
@@ -103,9 +110,9 @@ npm run dev
 
 After the Docker image has finished building, the following local applications can be accessed:
 
-- React application can be accessed at [localhost:5173](localhost:5173)
-- The backend API server can be accessed at [localhost:5001](localhost:5001)
-- The development mail server can be accessed at [localhost:1080](localhost:1080)
+- React application can be accessed at [http://localhost:5173](http://localhost:5173)
+- The backend API server can be accessed at [http://localhost:5001](http://localhost:5001)
+- The development mail server can be accessed at [http://localhost:1080](http://localhost:1080)
 
 ### Adding dependencies
 
@@ -123,7 +130,7 @@ As frontend project is currently not using Docker, no other steps are required.
 
 ### Accessing email locally
 
-We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [localhost:1080](localhost:1080) when the Docker container runs.
+We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [http://localhost:1080](http://localhost:1080) when the Docker container runs.
 
 ### Login using mockpass locally
 
@@ -145,8 +152,8 @@ The following is the order of priority:
 - Dockerfile
 
 FormSG requires some environment variables to function.
-More information about the required environment variables are in
-[DEPLOYMENT_SETUP.md](/docs/DEPLOYMENT_SETUP.md).
+More information about the required environment variables are in the
+[Configuration Reference](docs/configuration-reference.md).
 
 We provide a [`.env.example`](./.env.example) file with the secrets blanked out. You can copy and
 paste the variables described into a self-created `.env` file, replacing the
@@ -154,7 +161,7 @@ required values with your own.
 
 ### Trouble-shooting
 
-You can consult [TROUBLESHOOTING.md](/docs/TROUBLESHOOTING.md) for common issues that developers face and how to resolve them.
+For troubleshooting common development issues, refer to the [Self-Hosting Guide](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg) or create an issue in the repository.
 
 ## Testing
 
@@ -167,14 +174,16 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=18.12.1"`
+- `"node": ">=22.12.1"`
 - `"npm": ">=8.19.2"`
 - `"mongo": ">=4.0.0"`
+- Python 3.7+ (for LocalStack)
 
 Run
 
 ```bash
-nvm install 18
+nvm install
+nvm use
 npm install
 pip install "localstack[full]"
 ```
@@ -192,10 +201,10 @@ npm run test
 
 will build the backend and run our backend unit tests. The tests are located at [`__tests__/unit/backend`](./__tests__/unit/backend).
 
-If the backend is already built, you can run
+For CI testing (optimized for continuous integration), you can run
 
 ```bash
-npm run test-ci
+npm run test:backend:ci
 ```
 
 Frontend tests are located at [`frontend/__tests__`](./frontend/__tests__). They can be run with
@@ -224,11 +233,7 @@ This project is tested with [BrowserStack](https://www.browserstack.com/open-sou
 
 ## Architecture
 
-The architecture overview is [here](docs/ARCHITECTURE.md).
-
-## MongoDB Scripts
-
-Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
+The architecture overview is available in the [Self-Hosting Guide](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg).
 
 ## Support
 
@@ -236,105 +241,22 @@ Please contact FormSG (support@form.gov.sg) for any details.
 
 ## Database Alternatives
 
-### Migrating from MongoDB to FerretDB
-[FerretDB](https://ferretdb.io) is an open source MongoDB alternative built on PostgreSQL. MongoDB can be swapped out of FormSG for FerretDB. In order for this to be done, certain changes to the code should be made as described below:
+FormSG uses MongoDB with Mongoose ODM. While the application can potentially be adapted to work with other databases, this requires significant code changes and is not officially supported.
 
-- Add postgres to the list of services in the `docker.compose` file e.g. 
-  ```  pg:
-    image: postgres:15.3-alpine3.18
-    environment:
-      - POSTGRES_USER=<pguser>
-      - POSTGRES_PASSWORD=<pgpassword>
-      - POSTGRES_DB=<pgdbname>
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
-- In the same file, change the "database" image from MongoDB to FerretDB and update the database section to include the lines below:
-    ``` 
-     image: ghcr.io/ferretdb/ferretdb:1.17.0
-     environment:
-       - FERRETDB_TELEMETRY=disable
-       - FERRETDB_POSTGRESQL_URL=postgres://pg:5432/formsg?user=<pguser>&password=<pgpassword>
-     ports:
-       - '8080:8080'
-     depends_on:
-       - pg
-- Lastly, add the *pgdata* volume
-    ``` 
-        volumes:
-            mongodb_data:
-                driver: local
-            pgdata:
-- FerretDB currently has some limitations and [certain database features are not supported](https://docs.ferretdb.io/reference/supported-commands/), these include TTL, database transactions and some aggregration pipelines which are all features used by FormSG. 
+For detailed guidance on database migration options (including FerretDB, Prisma ORM, CockroachDB, and other alternatives), refer to the [Self-Hosting Guide](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg).
 
-    The following changes can be made to mitigate the limitations of FerretDB:
-    
-    - Add the *autoRemove: 'interval'* property to the initializing of the session object in the `session.ts` file.
-    - Remove the unsupported [aggregration pipeline stages](https://docs.ferretdb.io/reference/supported-commands/#aggregation-pipeline-stages) e.g. *lookup* and *project*, in the `submission.server.model.ts` file.
-    - Replace the *findOneAndUpdate* code block in the `user.server.model.ts` file with code similar to the one below:
-        ```  
-         const user = await this.exists({ email: upsertParams.email })
-         if (!user) {
-          await this.create(upsertParams)
-        }
-        return this.findOne({
-          email: upsertParams.email,
-        }).populate({...
-### Migrating from Mongoose ODM to Prisma ORM
-
-FormSG uses Mongoose as the Object-Document Mapping (ODM) to MongoDB. This means that our code is strongly coupled with MongoDB as Mongoose solely supports it.
-
-In order to use a different database with FormSG you will have to first migrate from Mongoose to other object modelling libraries. One of which is Prisma.
-
-Prisma is an Object-Relational Mapping (ORM) library that can also be used as the object model for MongoDB. Prisma is compatible with various other relational databases like Cockroach DB.
-
-Follow this [guide](https://www.prisma.io/docs/guides/migrate-to-prisma/migrate-from-mongoose#overview-of-the-migration-process) by Prisma to migrate from Mongoose.
-
-The guide has 4 primary steps:
-
-1. Install Prisma CLI
-2. Introspect the current MongoDB for the data model
-   1. For this section, Prisma’s introspection should be able to create prisma models that will replace your `server.model.ts` for each collection
-   2. Additionally, as Prisma is relational, you could add relations between the various documents. One good relation to add will be `form` many to one `user` on the `[form.email](http://form.email)` field.
-3. Install Prisma Client
-4. Replace Mongoose Queries with Prisma Client
-   1. This step will likely take the most refactoring efforts
-   2. This will include most files in `formsg/src` ending with `service.ts`
-   3. Including test files ending with `service.spec.ts`
-
-#### Replacing MongoDB with CockroachDB
-
-Thereafter, you could set up CockroachDB which is a distributed SQL DB. Follow the quick start guide by [CockroachDB](https://www.cockroachlabs.com/docs/cockroachcloud/quickstart) to create a CockroachDB Serverless cluster.
-
-To replace the local development instance, you can follow this [guide](https://www.cockroachlabs.com/docs/stable/start-a-local-cluster-in-docker-mac). As FormSG uses Docker for local development, you will have to replace the `mongoDB` container from `docker-compose.yml` to the `cockroachDB` version.
-
-Then connect to [CockroachDB](https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project/relational-databases/connect-your-database-typescript-postgresql) by changing the DB url in `.env` to the one from your CockroachDB `DATABASE_URL="YOUR_COCKROACH_DB_URL"`.
-
-For local development, if the DB is replaced as above, you should not need to modify the ports as it will still be hosted on `localhost:27017`.
-
-#### Other Prisma supported DBs
-
-MongoDB can be replaced with other various relational databases supported by Prisma in this [list](https://www.prisma.io/docs/reference/database-reference/supported-databases).
-
-### Other potential DB migrations
-
-It is also possible to migrate from Mongoose to [Ottoman](https://ottomanjs.com/), which is another ODM.
-
-The process will be simpler than migrating to Prisma, but Ottoman is more restrictive and can only be used together with Couchbase, which is also a noSQL DB like MongoDB.
-
-Refer to this [guide](https://www.couchbase.com/blog/migrate-mongodb-mongoose-couchbase-ottoman/) to migrate from Mongoose to Ottoman and then replace MongoDB with Couchbase.
+**Note**: Database migrations involve complex changes to the codebase and may require ongoing maintenance. Consider the trade-offs carefully before proceeding.
 
 ## Acknowledgements
 
 FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based.
 
-Contributions have also been made by:  
-[@RyanAngJY](https://github.com/RyanAngJY)  
-[@jeantanzy](https://github.com/jeantanzy)  
-[@pregnantboy](https://github.com/pregnantboy)  
-[@namnguyen08](https://github.com/namnguyen08)  
-[@zioul123](https://github.com/zioul123)  
-[@JoelWee](https://github.com/JoelWee)  
-[@limli](https://github.com/limli)  
+Contributions have also been made by:
+[@RyanAngJY](https://github.com/RyanAngJY)
+[@jeantanzy](https://github.com/jeantanzy)
+[@pregnantboy](https://github.com/pregnantboy)
+[@namnguyen08](https://github.com/namnguyen08)
+[@zioul123](https://github.com/zioul123)
+[@JoelWee](https://github.com/JoelWee)
+[@limli](https://github.com/limli)
 [@tankevan](https://github.com/tankevan)
