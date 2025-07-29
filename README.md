@@ -173,8 +173,9 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=18"` (v18.20.2 as specified in .nvmrc)
-- `"npm": ">=8"`
+- `"node": ">=22.12.1"`
+- `"npm": ">=8.19.2"`
+- `"mongo": ">=4.0.0"`
 - Python 3.7+ (for LocalStack)
 
 Run

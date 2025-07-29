@@ -25,10 +25,12 @@ jobs:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
         with:
-          node-version: 18
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright Browsers
@@ -80,10 +82,12 @@ jobs:
       DD_TAGS: layer:e2e
       SHARD_COUNT: 4
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
         with:
-          node-version: 18
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
         with:
