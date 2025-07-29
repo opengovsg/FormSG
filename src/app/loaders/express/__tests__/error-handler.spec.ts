@@ -29,7 +29,7 @@ describe('error-handler.loader', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toContain('Unexpected token')
+      expect(response.text).toContain('"message":"Expected \':\'')
     })
   })
 })

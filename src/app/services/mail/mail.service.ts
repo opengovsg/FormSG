@@ -808,7 +808,7 @@ export class MailService {
       }
       attachmentsWithAutoreplyPdf.push({
         filename: 'response.pdf',
-        content: pdfBufferResult.value,
+        content: Buffer.copyBytesFrom(pdfBufferResult.value),
       })
     }
 
