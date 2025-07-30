@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { featureFlags } from '~shared/constants'
@@ -37,6 +37,13 @@ export const LoginPage = (): JSX.Element => {
   const { data: isOgpIp } = useIsOgpIpCheck()
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
   const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
+  const enableIntranetSgidLogin = useFeatureValue(
+    'enable-intranet-sgid-login',
+    false,
+  )
+
+  // Only show sgID login button if user is not on intranet
+  const showSgidLoginButton = !isIntranetIp || enableIntranetSgidLogin
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -117,8 +124,7 @@ export const LoginPage = (): JSX.Element => {
             </>
           )}
           <LoginForm onSubmit={handleSendOtp} />
-          {/* Only show sgID login button if user is not on intranet */}
-          {!isIntranetIp && (
+          {!showSgidLoginButton && (
             <>
               <OrDivider />
               <SgidLoginButton />
