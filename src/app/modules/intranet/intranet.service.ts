@@ -17,6 +17,7 @@ class IntranetServiceClass {
    * List of IP addresses associated with intranet
    */
   intranetIps: (ipAddress.Address4 | ipAddress.Address6)[]
+  ogpIps: (ipAddress.Address4 | ipAddress.Address6)[]
 
   constructor(intranetConfig: IIntranet) {
     this.ogpIps = []
@@ -26,14 +27,14 @@ class IntranetServiceClass {
       this.intranetIps = []
       return
     }
-    try {
-      const intranetIpList = retrieveFileContent({
+
+    const intranetIpList = IntranetServiceClass.safelySplitIp(
+      retrieveFileContent({
         preIacFilePath: intranetConfig.intranetIpListPath,
         postIacFileContentString: intranetConfig.intranetIpList,
-      })
-        .split('\n')
-        .filter((line) => !line.startsWith('#') && line.trim() !== '')
-
+      }),
+    )
+    try {
       this.intranetIps = intranetIpList
         .map((ip) => {
           const parsedIp = IntranetServiceClass.parseIp(ip.trim())
@@ -59,6 +60,34 @@ class IntranetServiceClass {
       })
       this.intranetIps = []
     }
+
+    const ogpList = IntranetServiceClass.safelySplitIp(intranetConfig.ogpIpList)
+    try {
+      this.ogpIps = ogpList
+        .map((ip) => {
+          const parsedIp = IntranetServiceClass.parseIp(ip.trim())
+          if (!parsedIp) {
+            logger.warn({
+              message: `Invalid IP address in OGP IP list: ${ip}`,
+              meta: {
+                action: 'IntranetService',
+              },
+            })
+          }
+          return parsedIp
+        })
+        .filter(
+          (ip): ip is ipAddress.Address4 | ipAddress.Address6 => ip !== null,
+        )
+    } catch {
+      logger.warn({
+        message: 'Could not read file containing OGP IPs',
+        meta: {
+          action: 'IntranetService',
+        },
+      })
+      this.ogpIps = []
+    }
   }
 
   /**
@@ -80,6 +109,22 @@ class IntranetServiceClass {
   }
 
   /**
+   * Checks whether the given IP address is an OGP IP.
+   * @param ip IP address to check
+   * @returns Whether the IP address originated from OGP's IP
+   */
+  isOgpIp(ip: string): boolean {
+    const parsedIp = IntranetServiceClass.parseIp(ip)
+    if (!parsedIp) {
+      return false
+    }
+
+    const ogpIpMatches = this.ogpIps.map((ogpIp) => parsedIp.isInSubnet(ogpIp))
+
+    return ogpIpMatches.includes(true)
+  }
+
+  /**
    * Parses the given IP address string into an Address4 or Address6 object.
    * If the IP address is invalid, returns null.
    * @param ip IP address string to parse
@@ -92,6 +137,19 @@ class IntranetServiceClass {
       return new ipAddress.Address6(ip)
     } else {
       return null
+    }
+  }
+
+  static safelySplitIp = (
+    ips: string,
+    defaultValue: string[] = [],
+  ): string[] => {
+    try {
+      return ips
+        .split('\n')
+        .filter((line) => !line.startsWith('#') && line.trim() !== '')
+    } catch {
+      return defaultValue
     }
   }
 }
