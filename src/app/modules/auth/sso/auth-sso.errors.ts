@@ -10,3 +10,9 @@ export class SsoDiscoveryError extends ApplicationError {
     super(message, undefined, ErrorCodes.SSO_DISCOVERY)
   }
 }
+
+export class SsoNotWhitelistedError extends ApplicationError {
+  constructor(message = 'User is not whitelisted for SSO login') {
+    super(message, undefined, ErrorCodes.SSO_NOT_WHITELISTED)
+  }
+}

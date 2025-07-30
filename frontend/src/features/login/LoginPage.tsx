@@ -50,8 +50,10 @@ export const LoginPage = (): JSX.Element => {
           setIsAuthenticated(true)
         }
         return
+      case StatusCodes.FORBIDDEN.toString():
+        return t('features.login.LoginPage.forbidden')
       case StatusCodes.UNAUTHORIZED.toString():
-        return t('features.login.LoginPage.expiredSgIdSession')
+        return t('features.login.LoginPage.expiredSession')
       default:
         return t('features.common.errors.generic')
     }

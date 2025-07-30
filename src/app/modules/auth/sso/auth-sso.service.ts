@@ -7,9 +7,9 @@ import { ISsoVarsSchema } from 'src/types'
 import { isDev } from '../../../config/config'
 import { sso } from '../../../config/features/sso.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { resolveAppUrl } from '../../../utils/urls'
+import { resolveRedirectionUrl } from '../../../utils/urls'
 
-import { SsoCreateRedirectUrlError } from './auth-sso.error'
+import { SsoCreateRedirectUrlError } from './auth-sso.errors'
 
 const logger = createLoggerWithLabel(module)
 export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
@@ -145,7 +145,7 @@ export class AuthSsoServiceClass {
       return ResultAsync.fromPromise(
         oidcClient.authorizationCodeGrant(
           clientConfig,
-          new URL(resolveAppUrl(currentUrl)),
+          new URL(resolveRedirectionUrl(currentUrl)),
           {
             pkceCodeVerifier: codeVerifier,
             expectedState: nonce,

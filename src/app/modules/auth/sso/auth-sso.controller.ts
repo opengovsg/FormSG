@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { errAsync } from 'neverthrow'
 import { ErrorDto, GetSsoAuthUrlResponseDto } from 'shared/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -8,12 +9,14 @@ import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
-import { mapRouteError } from '../auth.utils'
+import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
 
 import {
   SSO_CODE_VERIFIER_COOKIE_NAME,
   SSO_NONCE_NAME,
+  SSO_USER_DOMAIN_WHITELIST,
 } from './auth-sso.constants'
+import { SsoNotWhitelistedError } from './auth-sso.errors'
 import { AuthSsoService } from './auth-sso.service'
 
 const logger = createLoggerWithLabel(module)
@@ -113,6 +116,15 @@ export const handleLoginCallback: ControllerHandler<
     .andThen((tokens) => AuthSsoService.retrieveUserInfo(tokens))
     .andThen((userInfo) => {
       const userEmail = userInfo.email.toLowerCase()
+      if (!isEmailInDomainWhitelist(userEmail, SSO_USER_DOMAIN_WHITELIST)) {
+        logger.error({
+          message: 'Error logging in user; email is not in domain whitelist',
+          meta: logMeta,
+        })
+
+        return errAsync(new SsoNotWhitelistedError())
+      }
+
       return AuthService.validateEmailDomain(userEmail).andThen((agency) =>
         UserService.retrieveUser(userEmail, agency._id),
       )
@@ -139,6 +151,6 @@ export const handleLoginCallback: ControllerHandler<
 
       const { statusCode } = mapRouteError(error, coreErrorMessage)
 
-      return res.status(statusCode).json({ message })
+      return res.redirect(resolveRedirectionUrl(`/login?status=${statusCode}`))
     })
 }

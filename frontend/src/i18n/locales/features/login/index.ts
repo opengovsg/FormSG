@@ -26,7 +26,8 @@ export interface Login {
   LoginPage: {
     slogan: string
     banner: string
-    expiredSgIdSession: string
+    forbidden: string
+    expiredSession: string
   }
   SelectProfilePage: {
     accountSelection: string
