@@ -110,7 +110,7 @@ export const LoginPage = (): JSX.Element => {
             </>
           )}
           {/* Only show OGP login button if user is on ogp intranet */}
-          {isOgpIp || (
+          {isOgpIp && (
             <>
               <OrDivider />
               <SsoLoginButton />
