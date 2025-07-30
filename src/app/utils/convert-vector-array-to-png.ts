@@ -1,14 +1,22 @@
 import { CanvasRenderingContext2D, createCanvas } from 'canvas'
 import getStroke from 'perfect-freehand'
-import fs from 'fs'
-import { getBoundingBox, signatureOutputPaddingDefault, signatureOutputStrokeFillStyle, signatureStrokeSize, signatureStrokeSmoothing, signatureStrokeStreamline, signatureStrokeThinning } from '../../../shared/utils/signature'
+
+import {
+  getBoundingBox,
+  signatureOutputPaddingDefault,
+  signatureOutputStrokeFillStyle,
+  signatureStrokeSize,
+  signatureStrokeSmoothing,
+  signatureStrokeStreamline,
+  signatureStrokeThinning,
+} from '../../../shared/utils/signature'
 
 export const convertToSignaturePngBuffer = (
-    vectorArray: [number, number, number][][],
-    padding = signatureOutputPaddingDefault,
+  vectorArray: [number, number, number][][],
+  padding = signatureOutputPaddingDefault,
 ): Buffer => {
   if (vectorArray.length === 0) return Buffer.alloc(0)
-    
+
   // Calculate bounding box
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
   const boxWidth = maxX - minX || 1
@@ -28,15 +36,15 @@ export const convertToSignaturePngBuffer = (
   for (const stroke of vectorArray) {
     if (stroke.length === 0) continue
     const normalizedStroke = stroke.map(([x, y, pressure]) => [
-    x - minX + padding,
-    y - minY + padding,
-    pressure,
+      x - minX + padding,
+      y - minY + padding,
+      pressure,
     ])
     const pathData = getStroke(normalizedStroke, {
-    size: signatureStrokeSize,
-    thinning: signatureStrokeThinning,
-    smoothing: signatureStrokeSmoothing,
-    streamline: signatureStrokeStreamline,
+      size: signatureStrokeSize,
+      thinning: signatureStrokeThinning,
+      smoothing: signatureStrokeSmoothing,
+      streamline: signatureStrokeStreamline,
     })
 
     ctx.fillStyle = signatureOutputStrokeFillStyle

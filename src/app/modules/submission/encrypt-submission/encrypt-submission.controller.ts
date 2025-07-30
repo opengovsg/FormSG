@@ -43,6 +43,7 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -97,7 +98,6 @@ import {
   getPaymentIntentDescription,
   getStripePaymentMethod,
 } from './encrypt-submission.utils'
-import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

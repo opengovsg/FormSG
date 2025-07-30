@@ -13,9 +13,7 @@ import {
   SubmittedStep,
   WorkflowStatus,
 } from '../../../../../shared/types'
-import {
-  getSignatureFileName,
-} from '../../../../../shared/utils/signature'
+import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
   Environment,
@@ -33,6 +31,7 @@ import {
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import { MailSendError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
+import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -58,7 +57,6 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
-import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)

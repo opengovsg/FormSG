@@ -44,7 +44,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 //   fieldType === BasicField.Signature &&
                 //   !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
                 // )
-              // return null
+                // return null
 
                 return (
                   <DraggableBasicFieldListOption
