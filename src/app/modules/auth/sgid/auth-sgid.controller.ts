@@ -3,11 +3,9 @@ import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
 import { SgidProfilesDto } from 'shared/types/auth'
 
 import { resolveRedirectionUrl } from '../../../../app/utils/urls'
-import { GrowthbookFeature } from '../../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
-import { IntranetService } from '../../intranet/intranet.service'
 import { SGID_CODE_VERIFIER_COOKIE_NAME } from '../../sgid/sgid.constants'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
@@ -64,17 +62,6 @@ export const handleLoginCallback: ControllerHandler<
   { code: string; state: string; forwarded?: string }
 > = async (req, res) => {
   const { code, state } = req.query
-
-  // Check if the request needs to be forwarded to the intranet
-  const forward =
-    !IntranetService.isIntranetIp(req.ip) &&
-    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
-    req.query?.forwarded !== 'true'
-  if (forward) {
-    const searchParams = new URLSearchParams(req.query)
-    searchParams.append('forwarded', 'true')
-    return res.redirect(`?${searchParams.toString()}`)
-  }
 
   const codeVerifier = req.cookies[SGID_CODE_VERIFIER_COOKIE_NAME]
   res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)

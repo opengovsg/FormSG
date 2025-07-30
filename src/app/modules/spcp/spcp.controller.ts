@@ -2,12 +2,10 @@ import { StatusCodes } from 'http-status-codes'
 
 import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
-import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { IntranetService } from '../intranet/intranet.service'
 
 import { getOidcService } from './spcp.oidc.service'
 
@@ -95,17 +93,6 @@ export const handleSpcpOidcLogin: (
     })
     res.cookie('isLoginError', true)
     return res.redirect(destination)
-  }
-
-  // Check if the request needs to be forwarded to the intranet
-  const forward =
-    !IntranetService.isIntranetIp(req.ip) &&
-    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
-    req.query?.forwarded !== 'true'
-  if (forward) {
-    const searchParams = new URLSearchParams(req.query)
-    searchParams.append('forwarded', 'true')
-    return res.redirect(`?${searchParams.toString()}`)
   }
 
   return BillingService.recordLoginByForm(form)

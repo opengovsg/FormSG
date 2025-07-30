@@ -3,12 +3,11 @@ import { StatusCodes } from 'http-status-codes'
 
 import { Environment } from '../../../types'
 import config from '../../config/config'
-import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
+import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { IntranetService } from '../intranet/intranet.service'
 
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -152,17 +151,6 @@ export const loginToMyInfo: ControllerHandler<
 
   let redirectDestination = redirectDestinationRaw
 
-  // Check if the request needs to be forwarded to the intranet
-  const forward =
-    !IntranetService.isIntranetIp(req.ip) &&
-    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
-    req.query?.forwarded !== 'true'
-  if (forward) {
-    const searchParams = new URLSearchParams(req.query)
-    searchParams.append('forwarded', 'true')
-    return res.redirect(`?${searchParams.toString()}`)
-  }
-
   if (encodedQuery) {
     try {
       redirectDestination = `${redirectDestinationRaw}?${Buffer.from(
@@ -216,6 +204,7 @@ export const loginToMyInfo: ControllerHandler<
  * MyInfo data.
  */
 export const handleMyInfoLogin = [
+  authCallbackForwardingMiddleware,
   validateMyInfoLogin,
   loginToMyInfo,
 ] as ControllerHandler[]

@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
+import { authCallbackForwardingMiddleware } from '../../../../modules/auth/auth.middlewares'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'
 import { spcpOidcLoginParamsMiddleware } from '../../../../modules/spcp/spcp.middlewares'
 import { retrieveJsonContent } from '../../../../utils/iac'
@@ -36,6 +37,7 @@ CorppassOidcRouter.get('/.well-known/jwks.json', (_req, res) => {
  */
 CorppassOidcRouter.get(
   '/login',
+  authCallbackForwardingMiddleware,
   spcpOidcLoginParamsMiddleware,
   SpcpController.handleSpcpOidcLogin(FormAuthType.CP),
 )
