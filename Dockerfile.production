@@ -6,7 +6,7 @@ FROM node:jod-alpine3.21 AS build
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
     apk --no-cache add --virtual native-deps \
-    g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl && \
+    g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl \
     build-base cairo-dev pango-dev giflib-dev libjpeg-turbo-dev librsvg-dev && \
     npm install --quiet node-gyp -g
 WORKDIR /build
