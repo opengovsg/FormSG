@@ -3,12 +3,11 @@ import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
 import {
-  convertToSignatureSvgBuffer,
-  convertToSignatureSvgString,
   convertToSignatureVectorArray,
   getSignatureFileName,
 } from '~shared/utils/signature'
 
+import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -172,7 +171,11 @@ async function decryptIntoCsv(
               : submissionSecretKey
 
         let questionCount = 0
-        const extraAttachments: { filename: string; blob: Blob }[] = []
+        // const extraAttachments: { filename: string; blob: Blob }[] = []
+        const extraAttachments: {
+          filename: string
+          blob: Blob
+        }[] = []
         decryptedSubmission.forEach((field) => {
           // Populate question number
           if (field.fieldType !== 'section') {
@@ -187,21 +190,21 @@ async function decryptIntoCsv(
           }
 
           // Create and populate signature attachments TODO: fix toString when sdk is published
-          if (field.fieldType.toString() === 'signature') {
-            let signatureString = ''
-
-            if (isStringArray(field.answerArray)) {
-              signatureString = field.answerArray[1] ?? ''
-            }
-
+          if (
+            field.fieldType.toString() === 'signature' &&
+            isStringArray(field.answerArray)
+          ) {
             const signatureSvgBuffer = convertToSignatureSvgString(
-              convertToSignatureVectorArray(signatureString),
+              convertToSignatureVectorArray(field.answerArray[1]),
             )
             const svgBlob = new Blob([signatureSvgBuffer], {
               type: 'image/svg+xml',
             })
 
-            const filename = getSignatureFileName({ fieldId: field._id })
+            const filename = getSignatureFileName({
+              fieldId: field._id,
+              svg: true,
+            })
 
             extraAttachments.push({ filename: filename, blob: svgBlob })
           }

@@ -10,12 +10,14 @@ import { handleAddressResponseDisplay } from '~shared/utils/address'
 import {
   convertToSignatureVectorArray,
   getBoundingBox,
+  signatureOutputPaddingDefault,
   signatureStrokeSize,
   signatureStrokeSmoothing,
   signatureStrokeStreamline,
   signatureStrokeThinning,
 } from '~shared/utils/signature'
 
+import { drawStroke } from '~utils/convertSignatureOutput'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
@@ -148,7 +150,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     // Step 1: Compute bounding box of all x and y points
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
 
-    const padding = 10
+    const padding = signatureOutputPaddingDefault
     const width = maxX - minX
     const height = maxY - minY
     const canvasWidth = width + padding * 2
@@ -230,22 +232,3 @@ export const DecryptedRow = memo(
     }
   },
 )
-
-// TODO: think about moving this elsewhere
-const drawStroke = (
-  ctx: CanvasRenderingContext2D,
-  points: number[][],
-): void => {
-  if (points.length < 2) return
-
-  ctx.beginPath()
-  ctx.moveTo(points[0][0], points[0][1])
-
-  for (let i = 1; i < points.length; i++) {
-    const [x, y] = points[i]
-    ctx.lineTo(x, y)
-  }
-
-  ctx.closePath()
-  ctx.fill()
-}

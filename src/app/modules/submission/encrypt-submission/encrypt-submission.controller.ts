@@ -18,7 +18,6 @@ import {
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
 import {
-  convertToSignatureSvgBuffer,
   convertToSignatureVectorArray,
   getSignatureFileName,
 } from '../../../../../shared/utils/signature'
@@ -98,6 +97,7 @@ import {
   getPaymentIntentDescription,
   getStripePaymentMethod,
 } from './encrypt-submission.utils'
+import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -810,16 +810,17 @@ const _createSubmission = async ({
   // extract signatures & create a .png for email attachments
   const signatureAttachments: Mail.Attachment[] = []
   emailFields.forEach((field) => {
-    if (field.fieldType !== BasicField.Signature) return
-    const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
-    const signatureData = convertToSignatureSvgBuffer(vectorArray)
-    signatureAttachments.push({
-      content: signatureData,
-      filename: getSignatureFileName({
-        fieldId: field._id,
-      }),
-      contentType: 'image/svg+xml',
-    })
+    if (field.fieldType === BasicField.Signature) {
+      const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
+      const signatureData = convertToSignaturePngBuffer(vectorArray)
+      signatureAttachments.push({
+        content: signatureData,
+        filename: getSignatureFileName({
+          fieldId: field._id,
+        }),
+        contentType: 'image/png',
+      })
+    }
   })
 
   const emailAttachments = [

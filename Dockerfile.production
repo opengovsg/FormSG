@@ -7,6 +7,12 @@ FROM node:jod-alpine3.21 AS build
 RUN apk update && apk upgrade && \
     apk --no-cache add --virtual native-deps \
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl && \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    giflib-dev \
+    libjpeg-turbo-dev \
+    librsvg-dev && \
     npm install --quiet node-gyp -g
 WORKDIR /build
 
@@ -80,7 +86,12 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    tini
+    tini \
+    cairo \
+    pango \
+    giflib \
+    libjpeg-turbo \
+    librsvg
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true

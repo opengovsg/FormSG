@@ -14,7 +14,6 @@ import {
   WorkflowStatus,
 } from '../../../../../shared/types'
 import {
-  convertToSignatureSvgBuffer,
   getSignatureFileName,
 } from '../../../../../shared/utils/signature'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
@@ -59,6 +58,7 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
+import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -395,7 +395,7 @@ const sendMrfOutcomeEmails = ({
         if (responses) {
           for (const [fieldId, response] of Object.entries(responses)) {
             if (response.fieldType !== BasicField.Signature) continue
-            const signatureData = convertToSignatureSvgBuffer(
+            const signatureData = convertToSignaturePngBuffer(
               response.answer.value,
             )
             signatureAttachments.push({
@@ -403,7 +403,7 @@ const sendMrfOutcomeEmails = ({
               filename: getSignatureFileName({
                 fieldId: fieldId,
               }),
-              contentType: 'image/svg+xml',
+              contentType: 'image/png',
             })
           }
         }
