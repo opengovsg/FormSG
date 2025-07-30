@@ -4,9 +4,11 @@ import { StatusCodes } from 'http-status-codes'
 import { FormAuthType } from '../../../../shared/types'
 import { Environment } from '../../../types'
 import config from '../../config/config'
+import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
+import { IntranetService } from '../intranet/intranet.service'
 
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
@@ -22,7 +24,7 @@ export const handleLogin: ControllerHandler<
   ParamsDictionary,
   unknown,
   unknown,
-  { code: string; state: string }
+  { code: string; state: string; forwarded?: string }
 > = async (req, res) => {
   const { code, state } = req.query
   const meta = { action: 'handleLogin', code, state }
@@ -39,6 +41,17 @@ export const handleLogin: ControllerHandler<
   }
 
   const { formId, rememberMe, decodedQuery } = parsedState.value
+
+  // Check if the request needs to be forwarded to the intranet
+  const forward =
+    !IntranetService.isIntranetIp(req.ip) &&
+    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
+    req.query?.forwarded !== 'true'
+  if (forward) {
+    const searchParams = new URLSearchParams(req.query)
+    searchParams.append('forwarded', 'true')
+    return res.redirect(`?${searchParams.toString()}`)
+  }
 
   // For local dev, we need to specify the frontend app URL as this is different from the backend's app URL
   const redirectTargetRaw =

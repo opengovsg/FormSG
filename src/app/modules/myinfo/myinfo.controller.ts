@@ -3,10 +3,12 @@ import { StatusCodes } from 'http-status-codes'
 
 import { Environment } from '../../../types'
 import config from '../../config/config'
+import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
+import { IntranetService } from '../intranet/intranet.service'
 
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -107,11 +109,12 @@ const validateMyInfoLogin = celebrate({
 })
 
 type MyInfoLoginQueryParams =
-  | { code: string; state: string }
+  | { code: string; state: string; forwarded?: string }
   | {
       error: string
       'error-description'?: string
       state: string
+      forwarded?: string
     }
 
 /**
@@ -148,6 +151,17 @@ export const loginToMyInfo: ControllerHandler<
       : `/${formId}`
 
   let redirectDestination = redirectDestinationRaw
+
+  // Check if the request needs to be forwarded to the intranet
+  const forward =
+    !IntranetService.isIntranetIp(req.ip) &&
+    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
+    req.query?.forwarded !== 'true'
+  if (forward) {
+    const searchParams = new URLSearchParams(req.query)
+    searchParams.append('forwarded', 'true')
+    return res.redirect(`?${searchParams.toString()}`)
+  }
 
   if (encodedQuery) {
     try {

@@ -2,6 +2,10 @@ import convict, { Schema } from 'convict'
 
 import { isTest } from '../config'
 
+export enum GrowthbookFeature {
+  ENABLE_AUTH_CALLBACK_FORWARDING = 'enable-auth-callback-forwarding',
+}
+
 export interface IGrowthbook {
   growthbookClientKey: string
 }
