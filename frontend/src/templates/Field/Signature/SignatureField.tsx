@@ -183,7 +183,6 @@ export const SignatureField = ({
   ])
 
   const handleClearPerfectFreehandSignature = async () => {
-    // signatureRef.current?.clear()
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
     setValue(`${schema._id}`, { type: 'draw', value: [] })
@@ -219,7 +218,7 @@ export const SignatureField = ({
               {/* perfect freehand component */}
               <Box
                 ref={boxRef}
-                background="neutral.100"
+                background={schema.disabled ? 'neutral.200' : 'neutral.100'}
                 width="100%"
                 maxWidth="100%"
                 height="11.125rem"
@@ -242,7 +241,7 @@ export const SignatureField = ({
                 position="relative"
                 overflow="hidden"
                 _hover={{
-                  background: schema.disabled ? 'neutral.100' : 'primary.100',
+                  background: schema.disabled ? 'neutral.200' : 'primary.100',
                 }}
               >
                 {showSignaturePlaceholder && (
