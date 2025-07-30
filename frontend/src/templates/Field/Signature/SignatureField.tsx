@@ -245,19 +245,19 @@ export const SignatureField = ({
                 }}
               >
                 {showSignaturePlaceholder && (
-                  <Box
+                  <Flex
                     width="100%"
                     maxWidth="100%"
                     height="11.125rem"
                     top={0}
                     left={0}
-                    justifyItems="center"
-                    alignContent="center"
                     position="absolute"
                     pointerEvents="none"
+                    align="center"
+                    justify="center"
                   >
                     <Text color="#A0A4AD">Draw your signature here</Text>
-                  </Box>
+                  </Flex>
                 )}
                 <Box
                   pointerEvents={schema.disabled ? 'none' : 'auto'} // 👈 this blocks canvas interaction
