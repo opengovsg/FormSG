@@ -97,25 +97,17 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
+  const showOrDivider = !isIntranetIp || isOgpIp
   return (
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
           <LoginForm onSubmit={handleSendOtp} />
+          {showOrDivider && <OrDivider />}
           {/* Only show sgID login button if user is not on intranet */}
-          {!isIntranetIp && (
-            <>
-              <OrDivider />
-              <SgidLoginButton />
-            </>
-          )}
+          {!isIntranetIp && <SgidLoginButton />}
           {/* Only show OGP login button if user is on ogp intranet */}
-          {isOgpIp && (
-            <>
-              <OrDivider />
-              <SsoLoginButton />
-            </>
-          )}
+          {isOgpIp && <SsoLoginButton />}
         </Stack>
       ) : (
         <OtpForm
