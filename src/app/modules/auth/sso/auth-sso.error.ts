@@ -5,3 +5,8 @@ export class SsoCreateRedirectUrlError extends ApplicationError {
     super(message, undefined, ErrorCodes.SSO_CREATE_REDIRECT_URL)
   }
 }
+export class SsoDiscoveryError extends ApplicationError {
+  constructor(message = 'Error while discovering SSO configuration') {
+    super(message, undefined, ErrorCodes.SSO_DISCOVERY)
+  }
+}
