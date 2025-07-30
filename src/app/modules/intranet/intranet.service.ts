@@ -19,10 +19,8 @@ class IntranetServiceClass {
   intranetIps: (ipAddress.Address4 | ipAddress.Address6)[]
 
   constructor(intranetConfig: IIntranet) {
-    // In future if crucial intranet-specific functionality is implemented,
-    // e.g. intranet-only forms, then this try-catch should be removed so that
-    // an error is thrown if the intranet IP list file does not exist.
-    // For now, the functionality is not crucial, so we can default to an empty array.
+    this.ogpIps = []
+
     // TODO: (IaC Migration) Remove this double check after IaC migration is fully completed
     if (!intranetConfig.intranetIpList && !intranetConfig.intranetIpListPath) {
       this.intranetIps = []
