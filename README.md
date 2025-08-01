@@ -174,7 +174,7 @@ The team uses macOS for development.
 
 Make you sure have the following node version & package manager on your machine:
 
-- `"node": ">=22.12.1"`
+- `"node": ">=22.12.0"`
 - `"npm": ">=8.19.2"`
 - `"mongo": ">=4.0.0"`
 - Python 3.7+ (for LocalStack)
