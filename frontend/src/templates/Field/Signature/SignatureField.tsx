@@ -89,7 +89,7 @@ export const SignatureField = ({
     }
   }, [pfStrokes])
 
-  // resize canvase
+  // resize canvas
   useEffect(() => {
     const canvas = pfCanvasRef.current
     const container = boxRef.current

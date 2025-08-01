@@ -171,7 +171,6 @@ async function decryptIntoCsv(
               : submissionSecretKey
 
         let questionCount = 0
-        // const extraAttachments: { filename: string; blob: Blob }[] = []
         const extraAttachments: {
           filename: string
           blob: Blob
