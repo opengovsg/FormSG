@@ -244,9 +244,12 @@ const ChildrenBody = ({
   // useCallback to re-compute names because for some reason watch doesn't
   // work on this nested field in react-hook-form.
   const allSelectedNames = useCallback((): string[] => {
+    const child = getValues(`${schema._id}.child`)
     // Really important to note that sometimes react-hook-form stores our "array"
     // as a object with key=index and values=array entry.
-    return Object.values(getValues(`${schema._id}.child`)).map((arr) => arr[0])
+    const childValues = child ? Object.values(child) : []
+    const childNames = childValues.map((arr) => arr[0])
+    return childNames
   }, [getValues, schema._id])
 
   // useCallback to re-compute names, again because of buggy allSelectedNames
