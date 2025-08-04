@@ -27,6 +27,7 @@ export type LoginOtpData = {
   email: string
 }
 
+const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: isIntranetIp } = useIsIntranetCheck()
@@ -99,17 +100,25 @@ export const LoginPage = (): JSX.Element => {
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
   }
 
-  const showOrDivider = !isIntranetIp || isOgpIp
   return (
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
-          <LoginForm onSubmit={handleSendOtp} />
-          {showOrDivider && <OrDivider />}
-          {/* Only show sgID login button if user is not on intranet */}
-          {!isIntranetIp && <SgidLoginButton />}
           {/* Only show OGP login button if user is on ogp intranet */}
-          {isOgpIp && <SsoLoginButton />}
+          {(isOgpIp || isDev) && (
+            <>
+              <SsoLoginButton />
+              <OrDivider />
+            </>
+          )}
+          <LoginForm onSubmit={handleSendOtp} />
+          {/* Only show sgID login button if user is not on intranet */}
+          {!isIntranetIp && (
+            <>
+              <OrDivider />
+              <SgidLoginButton />
+            </>
+          )}
         </Stack>
       ) : (
         <OtpForm
