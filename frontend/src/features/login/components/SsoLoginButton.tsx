@@ -28,7 +28,7 @@ export const SsoLoginButton = (): JSX.Element | null => {
           <KeystoneFullLogoSvgr height="1.25rem" />
         </Flex>
       </Button>
-      <Text>For whitelisted government users only</Text>
+      <Text>For OGP users only</Text>
     </VStack>
   )
 }
