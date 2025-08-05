@@ -1,10 +1,20 @@
+import { useState } from 'react'
 import { useMutation } from 'react-query'
 import { Flex, Text, VStack } from '@chakra-ui/react'
+import { delay } from 'lodash'
 
 import { getSsoAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
 
 export const SsoLoginButton = (): JSX.Element | null => {
+  const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+
+  const handleSsoLogin = () => {
+    setRetryDelayWindow(true)
+    delay(setRetryDelayWindow, 3000, false)
+    return ssoLoginMutation.mutate()
+  }
+
   const ssoLoginMutation = useMutation(getSsoAuthUrl, {
     onSuccess: ({ redirectUrl }) => {
       window.location.assign(redirectUrl)
@@ -15,10 +25,10 @@ export const SsoLoginButton = (): JSX.Element | null => {
     <VStack alignItems="start">
       <Button
         isFullWidth
-        isLoading={ssoLoginMutation.isLoading}
+        isLoading={ssoLoginMutation.isLoading || isRetryDelayWindow}
         type="submit"
         color="primary"
-        onClick={() => ssoLoginMutation.mutate()}
+        onClick={handleSsoLogin}
         variant="outline"
         aria-label="Log in with SSO"
       >
