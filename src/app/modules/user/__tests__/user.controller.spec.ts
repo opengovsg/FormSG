@@ -380,10 +380,13 @@ describe('user.controller', () => {
         agency: {},
         email: 'mockEmail',
         _id: VALID_SESSION_USER_ID,
-      }
+        toJSON() {
+          return this
+        },
+      } as unknown as IPopulatedUser
 
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
-        okAsync(mockPopulatedUser as IPopulatedUser),
+        okAsync(mockPopulatedUser),
       )
 
       // Act
