@@ -1,7 +1,6 @@
 import { useMutation } from 'react-query'
 import { Flex, Text, VStack } from '@chakra-ui/react'
 
-import { KeystoneFullLogoSvgr } from '~assets/svgrs/keystone/KeystoneFullLogoSvgr'
 import { getSsoAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
 
