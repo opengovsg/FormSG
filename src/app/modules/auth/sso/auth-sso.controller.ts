@@ -138,7 +138,7 @@ export const handleLoginCallback: ControllerHandler<
         meta: logMeta,
       })
       return res.redirect(
-        resolveRedirectionUrl(`/login?status=${StatusCodes.OK}`),
+        resolveRedirectionUrl(`/login/sso?status=${StatusCodes.OK}`),
       )
     })
     .mapErr((error) => {
@@ -151,6 +151,8 @@ export const handleLoginCallback: ControllerHandler<
 
       const { statusCode } = mapRouteError(error, coreErrorMessage)
 
-      return res.redirect(resolveRedirectionUrl(`/login?status=${statusCode}`))
+      return res.redirect(
+        resolveRedirectionUrl(`/login/sso?status=${statusCode}`),
+      )
     })
 }
