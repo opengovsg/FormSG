@@ -37,6 +37,7 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import { filterValidFieldTypeProperties } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { EditFieldProps } from './types'
@@ -161,6 +162,10 @@ export const useEditFieldForm = <
         updatedFormField,
       )
     }
+
+    updatedFormField = filterValidFieldTypeProperties(
+      updatedFormField,
+    ) as FieldShape
 
     // if field to be updated is MyInfo, enable admin feedback
     if (isMyInfo(updatedFormField)) setIsAdminFeedbackEligible(true)

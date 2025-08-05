@@ -1,9 +1,13 @@
+import { pick } from 'lodash'
+
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   AllowedMyInfoFieldOption,
   AttachmentSize,
   BasicField,
+  FieldBase,
   FieldCreateDto,
+  FormField,
   MyInfoAttribute,
   MyInfoField,
   RatingShape,
@@ -312,4 +316,142 @@ export const getMyInfoFieldCreationMeta = (
       throw new Error(`MyInfo type is not implemented: ${exception}`)
     }
   }
+}
+
+/**
+ * Gets valid properties for a given BasicField field type
+ */
+const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
+  const baseProperties = [
+    'fieldType',
+    'title',
+    'description',
+    'required',
+    'disabled',
+    'titleTranslations',
+    'descriptionTranslations',
+    'globalId',
+  ]
+
+  const fieldTypeProperties = {
+    [BasicField.Section]: baseProperties,
+    [BasicField.Statement]: baseProperties,
+    [BasicField.Email]: [
+      ...baseProperties,
+      'isVerifiable',
+      'hasAllowedEmailDomains',
+      'allowedEmailDomains',
+      'autoReplyOptions',
+    ],
+    [BasicField.Mobile]: [
+      ...baseProperties,
+      'isVerifiable',
+      'allowIntlNumbers',
+    ],
+    [BasicField.HomeNo]: [...baseProperties, 'allowIntlNumbers', 'myInfo'],
+    [BasicField.Number]: [
+      ...baseProperties,
+      'ValidationOptions',
+      'ValidationOptions.selectedValidation',
+      'ValidationOptions.LengthValidationOptions',
+      'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
+      'ValidationOptions.LengthValidationOptions.customVal',
+      'ValidationOptions.RangeValidationOptions',
+      'ValidationOptions.RangeValidationOptions.customMin',
+      'ValidationOptions.RangeValidationOptions.customMax',
+    ],
+    [BasicField.Decimal]: [
+      ...baseProperties,
+      'validateByValue',
+      'ValidationOptions',
+      'ValidationOptions.customMin',
+      'ValidationOptions.customMax',
+    ],
+    [BasicField.Image]: [
+      ...baseProperties,
+      'fileMd5Hash',
+      'name',
+      'url',
+      'size',
+    ],
+    [BasicField.ShortText]: [
+      ...baseProperties,
+      'ValidationOptions',
+      'ValidationOptions.selectedValidation',
+      'ValidationOptions.customVal',
+      'allowPrefill',
+      'lockPrefill',
+    ],
+    [BasicField.LongText]: [
+      ...baseProperties,
+      'ValidationOptions',
+      'ValidationOptions.selectedValidation',
+      'ValidationOptions.customVal',
+    ],
+    [BasicField.Dropdown]: [
+      ...baseProperties,
+      'fieldOptions',
+      'fieldOptionsTranslations',
+    ],
+    [BasicField.CountryRegion]: [...baseProperties, 'fieldOptions', 'myInfo'],
+    [BasicField.YesNo]: [...baseProperties, 'myInfo'],
+    [BasicField.Checkbox]: [
+      ...baseProperties,
+      'fieldOptions',
+      'fieldOptionsTranslations',
+      'othersRadioButton',
+      'ValidationOptions',
+      'ValidationOptions.customMin',
+      'ValidationOptions.customMax',
+      'validateByValue',
+    ],
+    [BasicField.Radio]: [
+      ...baseProperties,
+      'fieldOptions',
+      'fieldOptionsTranslations',
+      'othersRadioButton',
+    ],
+    [BasicField.Attachment]: [...baseProperties, 'attachmentSize'],
+    [BasicField.Date]: [
+      ...baseProperties,
+      'dateValidation',
+      'dateValidation.customMaxDate',
+      'dateValidation.customMinDate',
+      'dateValidation.selectedDateValidation',
+    ],
+    [BasicField.Rating]: [
+      ...baseProperties,
+      'ratingOptions',
+      'ratingOptions.shape',
+      'ratingOptions.steps',
+    ],
+    [BasicField.Nric]: [...baseProperties, 'myInfo'],
+    [BasicField.Table]: [
+      ...baseProperties,
+      'columns',
+      'minimumRows',
+      'addMoreRows',
+      'maximumRows',
+    ],
+    [BasicField.Uen]: [...baseProperties, 'myInfo'],
+    [BasicField.Children]: [
+      ...baseProperties,
+      'childrenSubFields',
+      'allowMultiple',
+    ],
+    [BasicField.Address]: [...baseProperties, 'addressSubFields'],
+  }
+
+  return fieldTypeProperties[fieldType] || baseProperties
+}
+
+/**
+ * Filters an field object to only include properties valid for its field type.
+ */
+export const filterValidFieldTypeProperties = (field: FormField): FieldBase => {
+  const validPropertyKeyPaths = getValidPropertiesForFieldType(field.fieldType)
+
+  const filteredField = pick(field, validPropertyKeyPaths) as FieldBase
+
+  return filteredField as FieldBase
 }

@@ -1,4 +1,4 @@
-import { isEqual, pick } from 'lodash'
+import { isEqual, merge } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
@@ -63,9 +63,10 @@ const getChangedFieldValues = ({
 }): FormFieldDto => {
   const newFieldMeta = getFieldCreationMeta(fieldTypeToChangeTo)
 
+  const changedFieldValues = merge(newFieldMeta, existingFieldValues)
+
   return {
-    ...newFieldMeta,
-    ...existingFieldValues,
+    ...changedFieldValues,
     fieldType: fieldTypeToChangeTo,
     _id,
   } as FormFieldDto
