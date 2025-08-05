@@ -24,11 +24,10 @@ export const SsoLoginButton = (): JSX.Element | null => {
         aria-label="Log in with SSO"
       >
         <Flex align="center" flexDirection="row" aria-hidden>
-          <Text color="primary.500">Log in with </Text>
-          <KeystoneFullLogoSvgr height="1.25rem" />
+          <Text color="primary.500">Log in with OGP SSO</Text>
         </Flex>
       </Button>
-      <Text>For OGP users only</Text>
+      <Text>For OGP officers only</Text>
     </VStack>
   )
 }

@@ -1,3 +1,4 @@
+import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync } from 'neverthrow'
 import { ErrorDto, GetSsoAuthUrlResponseDto } from 'shared/types'
@@ -8,7 +9,6 @@ import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-import { SessionUser } from '../auth.types'
 import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
 
 import {
@@ -131,8 +131,8 @@ export const handleLoginCallback: ControllerHandler<
     })
     .map((user) => {
       // Add user info to session.
-      const { _id } = user.toObject() as SessionUser
-      req.session.user = { _id }
+      const { _id } = user.toObject() as AuthedSessionData['user']
+      req.session.user = { _id, grantSource: 'sso' }
       logger.info({
         message: `Successfully logged in user ${user._id}`,
         meta: logMeta,
