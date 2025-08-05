@@ -8,12 +8,22 @@ export const signatureOutputBoxHeightDefault = 500
 export const signatureOutputPaddingDefault = 10
 export const signatureOutputStrokeFillStyle = 'black'
 
+/**
+ *  converts a vectorArray to a string output
+ * @param input - signature vector array
+ * @returns JSON stringified vector array
+ */
 export const convertToSignatureStringOutput = (
   input: [number, number, number][][],
 ): string => {
   return JSON.stringify(input)
 }
 
+/**
+ * converts a vectorArray to a string output
+ * @param input - JSON stringified vector array
+ * @returns signature vector array
+ */
 export const convertToSignatureVectorArray = (
   input: string,
 ): [number, number, number][][] => {
@@ -27,6 +37,11 @@ type BoundingBox = {
   maxY: number
 }
 
+/**
+ * returns a boundingBox containing the inputted signatureArray, removing whitespace around the input
+ * @param vectorArray - signature vector array
+ * @returns BoundingBox with min/max for X and Y coordinates
+ */
 export const getBoundingBox = (
   vectorArray: [number, number, number][][],
 ): BoundingBox => {

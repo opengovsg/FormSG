@@ -9,6 +9,9 @@ import {
   signatureStrokeThinning,
 } from '~shared/utils/signature'
 
+const DEFAULT_BOX_HEIGHT = 1
+const DEFAULT_BOX_WIDTH = 1
+
 export const drawStroke = (
   ctx: CanvasRenderingContext2D,
   points: number[][],
@@ -32,8 +35,8 @@ export const convertToSignatureSvgString = (
   if (vectorArray.length === 0) return ''
 
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || 1
-  const boxHeight = maxY - minY || 1
+  const boxWidth = maxX - minX || DEFAULT_BOX_HEIGHT
+  const boxHeight = maxY - minY || DEFAULT_BOX_WIDTH
 
   const canvasWidth = boxWidth + 2 * padding
   const canvasHeight = boxHeight + 2 * padding
