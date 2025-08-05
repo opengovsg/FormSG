@@ -17,7 +17,7 @@ type SignatureValidatorConstructor = (
 ) => SignatureValidator
 
 const signatureAnswerValidator: SignatureValidator = (response) => {
-  // TODO: add proper validators
+  // TODO: add proper validators signature field v1.1
   return right(response)
 }
 

@@ -8,6 +8,9 @@ export const signatureOutputBoxHeightDefault = 500
 export const signatureOutputPaddingDefault = 10
 export const signatureOutputStrokeFillStyle = 'black'
 
+export const boxHeightDefault = 1
+export const boxWidthDefault = 1
+
 /**
  *  converts a vectorArray to a string output
  * @param input - signature vector array

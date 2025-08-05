@@ -2,6 +2,8 @@ import { CanvasRenderingContext2D, createCanvas } from 'canvas'
 import getStroke from 'perfect-freehand'
 
 import {
+  boxHeightDefault,
+  boxWidthDefault,
   getBoundingBox,
   signatureOutputPaddingDefault,
   signatureOutputStrokeFillStyle,
@@ -19,8 +21,8 @@ export const convertToSignaturePngBuffer = (
 
   // Calculate bounding box
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || 1
-  const boxHeight = maxY - minY || 1
+  const boxWidth = maxX - minX || boxWidthDefault
+  const boxHeight = maxY - minY || boxHeightDefault
 
   // Canvas size includes padding on all sides
   const canvasWidth = boxWidth + 2 * padding
@@ -55,7 +57,6 @@ export const convertToSignaturePngBuffer = (
   return canvas.toBuffer('image/png')
 }
 
-// duplicated function from signature.ts since BE uses canvas from BE package
 const drawStroke = (ctx: CanvasRenderingContext2D, stroke: number[][]) => {
   if (!stroke.length) return
   ctx.beginPath()

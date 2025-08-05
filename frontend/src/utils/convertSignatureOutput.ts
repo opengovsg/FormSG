@@ -1,6 +1,8 @@
 import getStroke from 'perfect-freehand'
 
 import {
+  boxHeightDefault,
+  boxWidthDefault,
   getBoundingBox,
   signatureOutputPaddingDefault,
   signatureStrokeSize,
@@ -8,9 +10,6 @@ import {
   signatureStrokeStreamline,
   signatureStrokeThinning,
 } from '~shared/utils/signature'
-
-const DEFAULT_BOX_HEIGHT = 1
-const DEFAULT_BOX_WIDTH = 1
 
 export const drawStroke = (
   ctx: CanvasRenderingContext2D,
@@ -35,8 +34,8 @@ export const convertToSignatureSvgString = (
   if (vectorArray.length === 0) return ''
 
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || DEFAULT_BOX_HEIGHT
-  const boxHeight = maxY - minY || DEFAULT_BOX_WIDTH
+  const boxWidth = maxX - minX || boxWidthDefault
+  const boxHeight = maxY - minY || boxHeightDefault
 
   const canvasWidth = boxWidth + 2 * padding
   const canvasHeight = boxHeight + 2 * padding
