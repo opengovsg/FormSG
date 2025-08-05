@@ -88,7 +88,7 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   }, [formWorkflow, field._id])
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>
           {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}

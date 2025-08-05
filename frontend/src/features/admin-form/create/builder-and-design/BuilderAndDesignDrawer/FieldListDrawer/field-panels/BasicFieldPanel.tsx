@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 

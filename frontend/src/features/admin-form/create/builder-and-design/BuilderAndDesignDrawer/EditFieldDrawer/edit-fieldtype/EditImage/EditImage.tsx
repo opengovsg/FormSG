@@ -159,7 +159,7 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
   )
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl
         isRequired
         isReadOnly={isLoading || isSubmitting}

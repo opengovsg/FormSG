@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
+import { t } from 'i18next'
 import { extend, pick } from 'lodash'
 
 import { AddressCompoundFieldBase } from '~shared/types/field'
@@ -28,15 +29,10 @@ export const EditAddress = ({ field }: EditAddressProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    getValues,
     buttonText,
     handleUpdateField,
-    watch,
-    control,
-    clearErrors,
     isLoading,
     handleCancel,
-    setValue,
   } = useEditFieldForm<EditAddressInputs, AddressCompoundFieldBase>({
     field,
     transform: {
@@ -53,9 +49,11 @@ export const EditAddress = ({ field }: EditAddressProps): JSX.Element => {
     [],
   )
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>

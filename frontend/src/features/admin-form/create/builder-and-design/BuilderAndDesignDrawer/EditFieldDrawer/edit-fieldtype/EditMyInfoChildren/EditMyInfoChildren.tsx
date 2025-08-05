@@ -7,7 +7,6 @@ import { MyInfoChildAttributes } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import { Toggle } from '~components/Toggle/Toggle'
 

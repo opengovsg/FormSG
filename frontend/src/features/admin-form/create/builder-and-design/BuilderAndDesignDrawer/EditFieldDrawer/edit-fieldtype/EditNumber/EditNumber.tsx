@@ -296,7 +296,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
   }, [clearErrors, setValue, watchedSelectedValidation])
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>
           {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}

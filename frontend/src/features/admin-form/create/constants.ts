@@ -54,6 +54,7 @@ export type BuilderSidebarFieldMeta = {
   // Is this fieldType included in submissions?
   isSubmitted: boolean
   searchAliases?: string[]
+  isUsed?: boolean // Used to mark field type as deprecated / not currently being used. For example, Children basic field is not being used but still kept in the codebase for legacy reasons.
 }
 
 // !!! Do not use this to reference field titles for MyInfo fields. !!!
@@ -266,6 +267,7 @@ export const BASICFIELD_TO_DRAWER_META: {
     label: 'Children',
     icon: BiGroup,
     isSubmitted: true,
+    isUsed: false, // For legacy reasons, Children basic field is not being used
   },
 
   [BasicField.Address]: {

@@ -156,7 +156,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     !field.autoReplyOptions.hasAutoReply
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>
           {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}

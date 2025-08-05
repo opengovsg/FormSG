@@ -69,7 +69,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
 
   return (
     <>
-      <CreatePageDrawerContentContainer>
+      <CreatePageDrawerContentContainer isFieldTypeChangeable>
         <FormControl
           isRequired
           isReadOnly={isLoading}

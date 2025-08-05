@@ -1,8 +1,10 @@
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { BasicField, FieldCreateDto, FormFieldDto } from '~shared/types/field'
+
+import { getFieldCreationMeta } from './utils/fieldCreation'
 
 export enum FieldBuilderState {
   CreatingField,
@@ -28,6 +30,7 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
+  changeFieldType: (fieldTypeToChangeTo: BasicField) => void
   setToInactive: (holding?: boolean) => void
   stateData:
     | FieldBuilderCreateEditStateData
@@ -40,6 +43,32 @@ export type FieldBuilderStore = {
     | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
+}
+
+/*
+ * Used to generate the required new field properties when changing between basic field types.
+ * Note that the new field values includes all current values including properties not required by the new field type.
+ * This allows us to retain user-defined values for subsequent field type changes.
+ * For example, suppose a user-defined options for radio field type and then changes the field type to short text,
+ * the user-defined options is retained so if the user changes to checkbox next, the options will be retained and applied to the checkbox field.
+ */
+const getChangedFieldValues = ({
+  existingFieldValues,
+  fieldTypeToChangeTo,
+  _id,
+}: {
+  existingFieldValues: FieldCreateDto | FormFieldDto
+  fieldTypeToChangeTo: BasicField
+  _id?: string
+}): FormFieldDto => {
+  const newFieldMeta = getFieldCreationMeta(fieldTypeToChangeTo)
+
+  return {
+    ...newFieldMeta,
+    ...existingFieldValues,
+    fieldType: fieldTypeToChangeTo,
+    _id,
+  } as FormFieldDto
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>()(
@@ -95,6 +124,36 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
         set({ stateData })
       }
     },
+    changeFieldType: (fieldTypeToChangeTo) => {
+      const current = get()
+
+      if (current.stateData.state === FieldBuilderState.CreatingField) {
+        const changedField = getChangedFieldValues({
+          existingFieldValues: current.stateData.field,
+          fieldTypeToChangeTo,
+        })
+
+        set({
+          stateData: {
+            state: FieldBuilderState.CreatingField,
+            field: changedField,
+            insertionIndex: current.stateData.insertionIndex,
+          },
+        })
+      } else if (current.stateData.state === FieldBuilderState.EditingField) {
+        const changedField = getChangedFieldValues({
+          existingFieldValues: current.stateData.field,
+          fieldTypeToChangeTo,
+          _id: current.stateData.field._id,
+        })
+        set({
+          stateData: {
+            state: FieldBuilderState.EditingField,
+            field: changedField,
+          },
+        })
+      }
+    },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
         state: FieldBuilderState.Inactive,
@@ -107,6 +166,18 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
     },
   })),
 )
+
+export const fieldTypeSelector = (
+  state: FieldBuilderStore,
+): BasicField | undefined => {
+  if (
+    state.stateData.state === FieldBuilderState.CreatingField ||
+    state.stateData.state === FieldBuilderState.EditingField
+  ) {
+    return state.stateData.field.fieldType
+  }
+  return undefined
+}
 
 export const stateDataSelector = (
   state: FieldBuilderStore,
@@ -127,3 +198,7 @@ export const updateEditStateSelector = (
 export const setToInactiveSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['setToInactive'] => state.setToInactive
+
+export const changeFieldTypeSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['changeFieldType'] => state.changeFieldType

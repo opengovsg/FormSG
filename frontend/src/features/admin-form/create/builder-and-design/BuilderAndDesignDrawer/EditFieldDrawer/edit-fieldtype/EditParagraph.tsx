@@ -50,7 +50,7 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   )
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl
         isRequired
         isReadOnly={isLoading}

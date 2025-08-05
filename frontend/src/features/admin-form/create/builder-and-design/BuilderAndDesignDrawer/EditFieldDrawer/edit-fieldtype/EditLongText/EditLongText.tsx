@@ -134,7 +134,7 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
   )
 
   return (
-    <CreatePageDrawerContentContainer>
+    <CreatePageDrawerContentContainer isFieldTypeChangeable>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
         <FormLabel>
           {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
