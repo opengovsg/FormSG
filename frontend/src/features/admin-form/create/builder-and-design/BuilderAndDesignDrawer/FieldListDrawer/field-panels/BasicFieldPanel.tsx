@@ -40,11 +40,11 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 const shouldDisableField = isLoading
 
                 // TODO: remove when signature field is out of beta
-                // if (
-                //   fieldType === BasicField.Signature &&
-                //   !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
-                // )
-                // return null
+                if (
+                  fieldType === BasicField.Signature &&
+                  !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
+                )
+                return null
 
                 return (
                   <DraggableBasicFieldListOption
