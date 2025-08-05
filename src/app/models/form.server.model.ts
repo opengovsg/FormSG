@@ -1093,7 +1093,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const formFieldsDocumentArray = this
         .form_fields as Types.DocumentArray<IFieldSchema>
       const fieldIndex = this.form_fields.findIndex(
-        (f: { _id: string }) => String(f._id) === fieldId,
+        (f: { _id: string }) => f._id.toString() === fieldId.toString(),
       )
       const fieldToUpdateFound = fieldIndex !== -1
       if (!fieldToUpdateFound) return Promise.resolve(null)

@@ -2668,7 +2668,7 @@ describe('Form Model', () => {
         })
       })
 
-      it('should return updated form when successfully updating form field', async () => {
+      it('should return updated form when successfully updating form field without changing field type', async () => {
         // Arrange
         const originalFormFields = (
           form.form_fields as Types.DocumentArray<IFieldSchema>
@@ -2707,7 +2707,50 @@ describe('Form Model', () => {
         expect(actual).toBeNull()
       })
 
-      it('should return validation error if field type of new field does not match the field to update', async () => {
+      it('should successfully update form field and ignore extra properties not in field type schema', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[0], // Checkbox field
+          title: 'updated checkbox',
+          // Add extra property that doesn't exist in CheckboxFieldBase
+          extraProperty: 'this should not be saved',
+          autoReplyOptions: {
+            hasAutoReply: true,
+            autoReplySubject: 'auto reply subject',
+            autoReplySender: 'auto reply sender',
+            autoReplyMessage: 'auto reply message',
+            includeFormSummary: true,
+          },
+          validateByValue: true,
+          fieldOptions: ['option 1', 'option 2'],
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // Updated field should only contain valid checkbox properties
+        expect(updatedFields[0].title).toEqual('updated checkbox')
+        expect(updatedFields[0].fieldOptions).toEqual(['option 1', 'option 2'])
+        expect(updatedFields[0].validateByValue).toEqual(true)
+        // Does not save extra properties not in field type schema
+        expect('extraProperty' in updatedFields[0]).toBeFalse()
+        expect(updatedFields[0].autoReplyOptions).toBeUndefined()
+        // Second and third fields should remain unchanged
+        expect(updatedFields[1]).toEqual(originalFormFields[1])
+        expect(updatedFields[2]).toEqual(originalFormFields[2])
+      })
+
+      it('should successfully update form field when changing field type from HomeNo to Mobile', async () => {
         // Arrange
         const originalFormFields = (
           form.form_fields as Types.DocumentArray<IFieldSchema>
@@ -2721,14 +2764,148 @@ describe('Form Model', () => {
         }
 
         // Act
-        const actual = await form
-          .updateFormFieldById(newField._id, newField)
-          .catch((err) => err)
+        const actual = await form.updateFormFieldById(newField._id, newField)
 
         // Assert
-        expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
-        expect(actual.message).toEqual(
-          expect.stringContaining('Changing form field type is not allowed'),
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // First and third fields should remain unchanged
+        expect(updatedFields[0]).toEqual(originalFormFields[0])
+        expect(updatedFields[2]).toEqual(originalFormFields[2])
+
+        // Second field should be updated with new field type and properties
+        expect(updatedFields[1].fieldType).toEqual(BasicField.Mobile)
+        expect(updatedFields[1].title).toEqual('another mock title')
+        expect(updatedFields[1]._id).toEqual(newField._id)
+      })
+
+      it('should successfully update form field when changing field type from Email to ShortText', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[2], // Email field
+          // Updating field type from Email to ShortText.
+          fieldType: BasicField.ShortText,
+          title: 'short text field',
+          description: 'new description',
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // First and second fields should remain unchanged
+        expect(updatedFields[0]).toEqual(originalFormFields[0])
+        expect(updatedFields[1]).toEqual(originalFormFields[1])
+
+        // Third field should be updated with new field type and properties
+        expect(updatedFields[2].fieldType).toEqual(BasicField.ShortText)
+        expect(updatedFields[2].title).toEqual('short text field')
+        expect(updatedFields[2].description).toEqual('new description')
+        expect(updatedFields[2]._id).toEqual(newField._id)
+      })
+
+      it('should successfully update form field when changing field type from Checkbox to Radio', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[0], // Checkbox field
+          // Updating field type from Checkbox to Radio.
+          fieldType: BasicField.Radio,
+          title: 'radio field',
+          fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // Second and third fields should remain unchanged
+        expect(updatedFields[1]).toEqual(originalFormFields[1])
+        expect(updatedFields[2]).toEqual(originalFormFields[2])
+
+        // First field should be updated with new field type and properties
+        expect(updatedFields[0].fieldType).toEqual(BasicField.Radio)
+        expect(updatedFields[0].title).toEqual('radio field')
+        expect(updatedFields[0].fieldOptions).toEqual([
+          'Option 1',
+          'Option 2',
+          'Option 3',
+        ])
+        expect(updatedFields[0]._id).toEqual(newField._id)
+      })
+
+      it('should maintain field order when changing field type', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[1], // HomeNo field at index 1
+          fieldType: BasicField.Number,
+          title: 'number field',
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // Field order should be maintained
+        expect(updatedFields[0].fieldType).toEqual(BasicField.Checkbox)
+        expect(updatedFields[1].fieldType).toEqual(BasicField.Number)
+        expect(updatedFields[2].fieldType).toEqual(BasicField.Email)
+      })
+
+      it('should preserve field ID when changing field type', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+        const originalFieldId = originalFormFields[1]._id
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[1],
+          fieldType: BasicField.LongText,
+          title: 'long text field',
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // Field ID should be preserved
+        expect(updatedFields[1]._id.toString()).toEqual(
+          originalFieldId.toString(),
         )
       })
 
@@ -2752,6 +2929,83 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+
+      it('should return CastError if boolean cast fails when changing field type', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[1],
+          fieldType: BasicField.Email,
+          // Invalid value for email field.
+          isVerifiable: 'some string, but this should be boolean',
+        }
+
+        // Act
+        let actual: mongoose.Error.CastError
+        try {
+          await form.updateFormFieldById(newField._id, newField)
+          throw new Error('Expected error but got success')
+        } catch (err) {
+          actual = err as mongoose.Error.CastError
+        }
+
+        // Assert
+        expect(actual).toBeInstanceOf(mongoose.Error.CastError)
+        expect(actual.message).toBe(
+          'Cast to Boolean failed for value "some string, but this should be boolean" (type string) at path "isVerifiable" because of "CastError"',
+        )
+        expect(actual.path).toBe('isVerifiable')
+        expect(actual.kind).toBe('Boolean')
+      })
+
+      it('should handle field type change with complex field properties', async () => {
+        // Arrange
+        const originalFormFields = (
+          form.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        const newField: FormFieldDto = {
+          ...originalFormFields[1],
+          fieldType: BasicField.Checkbox,
+          title: 'checkbox field',
+          fieldOptions: ['Option A', 'Option B', 'Option C'],
+          othersRadioButton: true,
+          required: false,
+          disabled: true,
+          ValidationOptions: {
+            customMax: 3,
+            customMin: 2,
+          },
+        }
+
+        // Act
+        const actual = await form.updateFormFieldById(newField._id, newField)
+
+        // Assert
+        expect(actual).not.toBeNull()
+        const updatedFields = (
+          actual?.form_fields as Types.DocumentArray<IFieldSchema>
+        ).toObject()
+
+        // Field should be updated with new type and properties
+        expect(updatedFields[1].fieldType).toEqual(BasicField.Checkbox)
+        expect(updatedFields[1].title).toEqual('checkbox field')
+        expect(updatedFields[1].fieldOptions).toEqual([
+          'Option A',
+          'Option B',
+          'Option C',
+        ])
+        expect(updatedFields[1].othersRadioButton).toEqual(true)
+        expect(updatedFields[1].required).toEqual(false)
+        expect(updatedFields[1].disabled).toEqual(true)
+        expect(updatedFields[1].ValidationOptions).toEqual({
+          customMax: 3,
+          customMin: 2,
+        })
       })
     })
 
