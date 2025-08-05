@@ -535,8 +535,9 @@ const addBasicField = async (
       }
     // Fall through to set "Options".
     case BasicField.Dropdown:
+      // Wait for the textarea to be available and fill it with options
       await page
-        .getByLabel('Options')
+        .getByRole('textbox', { name: 'Options' })
         .first()
         .fill(field.fieldOptions.join('\n'))
       break
