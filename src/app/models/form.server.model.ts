@@ -1088,8 +1088,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const fieldToUpdate = getFormFieldById(this.form_fields, fieldId)
     if (!fieldToUpdate) return Promise.resolve(null)
 
-    if (fieldToUpdate.fieldType !== newField.fieldType) {
-      this.invalidate('form_fields', 'Changing form field type is not allowed')
+    const isFieldTypeChange = fieldToUpdate.fieldType !== newField.fieldType
+    if (isFieldTypeChange) {
+      const formFieldsDocumentArray = this
+        .form_fields as Types.DocumentArray<IFieldSchema>
+      const fieldIndex = this.form_fields.findIndex(
+        (f: { _id: string }) => String(f._id) === fieldId,
+      )
+      const fieldToUpdateFound = fieldIndex !== -1
+      if (!fieldToUpdateFound) return Promise.resolve(null)
+
+      // Creates a new field with only the properties that are valid for the changed target field type
+      const newFieldWithChangedTypeProperties = formFieldsDocumentArray.create(
+        newField,
+      ) as FormFieldSchema
+      // This is required so that the field type schema discriminator is updated.
+      this.form_fields.splice(fieldIndex, 1, newFieldWithChangedTypeProperties)
     } else {
       fieldToUpdate.set(newField)
     }
