@@ -202,7 +202,7 @@ async function decryptIntoCsv(
 
             const filename = getSignatureFileName({
               fieldId: field._id,
-              svg: true,
+              isSvg: true,
             })
 
             extraAttachments.push({ filename: filename, blob: svgBlob })

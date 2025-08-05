@@ -63,11 +63,11 @@ export const getBoundingBox = (
 export const getSignatureFileName = ({
   fieldId,
   timestamp,
-  svg = false,
+  isSvg = false,
 }: {
   fieldId: string
   timestamp?: string // incase we want to add timestamp in the future
-  svg?: boolean
+  isSvg?: boolean
 }): string => {
-  return `Signature_Captured_${fieldId}${timestamp ? `_${timestamp}` : ''}.${svg ? 'svg' : 'png'}`
+  return `Signature_Captured_${fieldId}${timestamp ? `_${timestamp}` : ''}.${isSvg ? 'svg' : 'png'}`
 }
