@@ -347,6 +347,7 @@ const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
       ...baseProperties,
       'isVerifiable',
       'allowIntlNumbers',
+      'myInfo',
     ],
     [BasicField.HomeNo]: [...baseProperties, 'allowIntlNumbers', 'myInfo'],
     [BasicField.Number]: [
@@ -381,6 +382,7 @@ const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
       'ValidationOptions.customVal',
       'allowPrefill',
       'lockPrefill',
+      'myInfo',
     ],
     [BasicField.LongText]: [
       ...baseProperties,
@@ -392,6 +394,7 @@ const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
       ...baseProperties,
       'fieldOptions',
       'fieldOptionsTranslations',
+      'myInfo',
     ],
     [BasicField.CountryRegion]: [...baseProperties, 'fieldOptions', 'myInfo'],
     [BasicField.YesNo]: [...baseProperties, 'myInfo'],
@@ -418,6 +421,7 @@ const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
       'dateValidation.customMaxDate',
       'dateValidation.customMinDate',
       'dateValidation.selectedDateValidation',
+      'myInfo',
     ],
     [BasicField.Rating]: [
       ...baseProperties,
@@ -450,8 +454,6 @@ const getValidPropertiesForFieldType = (fieldType: BasicField): string[] => {
  */
 export const filterValidFieldTypeProperties = (field: FormField): FieldBase => {
   const validPropertyKeyPaths = getValidPropertiesForFieldType(field.fieldType)
-
   const filteredField = pick(field, validPropertyKeyPaths) as FieldBase
-
   return filteredField as FieldBase
 }
