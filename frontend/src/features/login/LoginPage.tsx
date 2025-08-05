@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
+
+import { featureFlags } from '~shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -32,6 +35,8 @@ export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: isIntranetIp } = useIsIntranetCheck()
   const { data: isOgpIp } = useIsOgpIpCheck()
+  const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
+  const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -105,7 +110,7 @@ export const LoginPage = (): JSX.Element => {
       {!email ? (
         <Stack spacing="2rem">
           {/* Only show OGP login button if user is on ogp intranet */}
-          {(isOgpIp || isDev) && (
+          {shouldShowSsoLogin && (
             <>
               <SsoLoginButton />
               <OrDivider />
