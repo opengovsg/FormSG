@@ -1098,7 +1098,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const fieldToUpdateFound = fieldIndex !== -1
       if (!fieldToUpdateFound) return Promise.resolve(null)
 
-      // Creates a new field with only the properties that are valid for the changed target field type
       const newFieldWithChangedTypeProperties = formFieldsDocumentArray.create(
         newField,
       ) as FormFieldSchema
