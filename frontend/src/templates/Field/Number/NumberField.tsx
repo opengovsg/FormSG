@@ -1,9 +1,8 @@
-import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormColorTheme } from '~shared/types'
 
-import { createNumberValidationRules } from '~utils/fieldValidation'
+import { useNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -20,11 +19,10 @@ export const NumberField = ({
   colorTheme = FormColorTheme.Blue,
   isHighContrast,
 }: NumberFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createNumberValidationRules(schema, disableRequiredValidation),
-    [disableRequiredValidation, schema],
+  const validationRules = useNumberValidationRules(
+    schema,
+    disableRequiredValidation,
   )
-
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (

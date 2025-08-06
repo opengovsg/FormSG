@@ -12,7 +12,7 @@ import {
   isDateOutOfRange,
   loadDateFromNormalizedDate,
 } from '~utils/date'
-import { createDateValidationRules } from '~utils/fieldValidation'
+import { useDateValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -33,9 +33,9 @@ export const DateField = ({
   isHighContrast,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createDateValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useDateValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const isDateUnavailable = useCallback(

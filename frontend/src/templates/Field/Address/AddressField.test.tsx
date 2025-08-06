@@ -3,14 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 
+import { enSG as fieldValidationTranslation } from '~/i18n/locales/utils/field-validation/en-sg'
 import { verifyAddress } from '~/services/OneMapService'
 
-import {
-  INVALID_BLOCK_UNIT_ERROR,
-  INVALID_NON_NUMERICAL_ERROR,
-  REQUIRED_ERROR,
-  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
-} from '~constants/validation'
+import { REQUIRED_ERROR } from '~constants/validation'
 
 import * as stories from './AddressField.stories'
 
@@ -60,7 +56,9 @@ describe('validation required', () => {
     const submitButton = screen.getByText('Submit')
 
     await user.click(submitButton)
-    const error = screen.queryByText(INVALID_NON_NUMERICAL_ERROR)
+    const error = screen.queryByText(
+      fieldValidationTranslation.invalidNonNumerical,
+    )
     expect(error).not.toBeNull()
   })
 
@@ -70,7 +68,9 @@ describe('validation required', () => {
     const submitButton = screen.getByText('Submit')
 
     await user.click(submitButton)
-    const error = screen.queryByText(INVALID_BLOCK_UNIT_ERROR)
+    const error = screen.queryByText(
+      fieldValidationTranslation.invalidBlockUnit,
+    )
     expect(error).not.toBeNull()
   })
 
@@ -83,7 +83,9 @@ describe('validation required', () => {
     const verifyButton = screen.getByRole('button', { name: /Find Address/i })
 
     await user.click(verifyButton)
-    const error = screen.getAllByText(VALID_POSTAL_CODE_NO_ADDRESS_ERROR)
+    const error = screen.getAllByText(
+      fieldValidationTranslation.validPostalCodeNoAddress,
+    )
     expect(error).toHaveLength(2)
   })
 })

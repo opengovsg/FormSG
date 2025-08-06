@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, Language } from '~shared/types'
 
-import { createDropdownValidationRules } from '~utils/fieldValidation'
+import { useDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { ComboboxItem } from '~components/Dropdown/types'
 
@@ -27,9 +27,7 @@ export const DropdownField = ({
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
-  const rules = useMemo(() => {
-    return createDropdownValidationRules(schema, disableRequiredValidation)
-  }, [schema, disableRequiredValidation])
+  const rules = useDropdownValidationRules(schema, disableRequiredValidation)
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

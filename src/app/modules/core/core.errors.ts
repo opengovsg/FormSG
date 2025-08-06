@@ -146,6 +146,11 @@ export enum ErrorCodes {
   SGID_VERIFY_JWT = 110405,
   SGID_INVALID_JWT = 110406,
   SGID_MISSING_JWT = 110407,
+
+  // [110500 - 110599] Sso Errors (/modules/sso)
+  SSO_CREATE_REDIRECT_URL = 110500,
+  SSO_DISCOVERY = 110501,
+  SSO_NOT_WHITELISTED = 110502,
   // End of Auth Errors --------------------------------------------------------
 
   // [12xxxx] Database Errors (/modules/core) ----------------------------------

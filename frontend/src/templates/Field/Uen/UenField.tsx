@@ -1,10 +1,9 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { createUenValidationRules } from '~utils/fieldValidation'
+import { useUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -20,9 +19,9 @@ export const UenField = ({
   disableRequiredValidation,
   isHighContrast,
 }: UenFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createUenValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useUenValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
