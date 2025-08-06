@@ -4,7 +4,7 @@ import * as jose from 'jose'
 import { JWTVerifyResult } from 'jose'
 import jwkToPem from 'jwk-to-pem'
 import { omit } from 'lodash'
-import { BaseClient } from 'openid-client'
+import { BaseClient } from 'openid-client-legacy'
 
 import * as SpcpOidcClientClass from '../spcp.oidc.client'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
@@ -48,7 +48,7 @@ import {
   TEST_SP_RP_SECRET_JWKS,
 } from './spcp.test.constants'
 
-jest.mock('openid-client')
+jest.mock('openid-client-legacy')
 jest.mock('axios')
 
 describe('SpOidcClient', () => {

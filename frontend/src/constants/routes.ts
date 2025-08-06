@@ -2,6 +2,7 @@ export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
+export const SSO_LOGIN_HOLDING_ROUTE = '/login/sso'
 export const TEMP_LOGIN_ROUTE = '/login-temp'
 export const LOGIN_CALLBACK_ROUTE = '/login/select-profile'
 

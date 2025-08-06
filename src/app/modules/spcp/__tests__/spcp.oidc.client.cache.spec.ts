@@ -4,7 +4,7 @@ import fs from 'fs'
 import jwkToPem, { EC } from 'jwk-to-pem'
 import { omit } from 'lodash'
 import NodeCache from 'node-cache'
-import { BaseClient, Issuer } from 'openid-client'
+import { BaseClient, Issuer } from 'openid-client-legacy'
 
 import * as SpcpOidcBaseClientCacheClass from '../spcp.oidc.client.cache'
 import { SpcpOidcBaseClientCache } from '../spcp.oidc.client.cache'
@@ -18,7 +18,7 @@ import {
 } from '../spcp.oidc.client.types'
 import * as SpOidcUtils from '../spcp.oidc.util'
 
-jest.mock('openid-client')
+jest.mock('openid-client-legacy')
 jest.mock('axios')
 
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(

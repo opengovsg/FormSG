@@ -2,9 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
+import { featureFlags } from '~shared/constants'
+
 import { LOGGED_IN_KEY } from '~constants/localStorage'
+import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
@@ -18,16 +22,21 @@ import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
+import { SsoLoginButton } from './components/SsoLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck } from './queries'
+import { useIsIntranetCheck, useIsOgpIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
 }
 
+const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: isIntranetIp } = useIsIntranetCheck()
+  const { data: isOgpIp } = useIsOgpIpCheck()
+  const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
+  const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -40,10 +49,17 @@ export const LoginPage = (): JSX.Element => {
   const toastMessage = useMemo(() => {
     switch (statusCode) {
       case null:
-      case StatusCodes.OK.toString():
         return
+      case StatusCodes.OK.toString():
+        {
+          window.location.assign(DASHBOARD_ROUTE)
+          setIsAuthenticated(true)
+        }
+        return
+      case StatusCodes.FORBIDDEN.toString():
+        return t('features.login.LoginPage.forbidden')
       case StatusCodes.UNAUTHORIZED.toString():
-        return t('features.login.LoginPage.expiredSgIdSession')
+        return t('features.login.LoginPage.expiredSession')
       default:
         return t('features.common.errors.generic')
     }
@@ -93,6 +109,13 @@ export const LoginPage = (): JSX.Element => {
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
+          {/* Only show OGP login button if user is on ogp intranet */}
+          {shouldShowSsoLogin && (
+            <>
+              <SsoLoginButton />
+              <OrDivider />
+            </>
+          )}
           <LoginForm onSubmit={handleSendOtp} />
           {/* Only show sgID login button if user is not on intranet */}
           {!isIntranetIp && (
