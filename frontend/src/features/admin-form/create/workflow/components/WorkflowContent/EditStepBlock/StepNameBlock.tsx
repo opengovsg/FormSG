@@ -87,6 +87,7 @@ export const StepNameBlock = ({
               render={({ field }) => (
                 <Input
                   // utilizing placeholder to mimic default step name
+                  {...field}
                   placeholder={displayStepName}
                   _placeholder={{ color: 'secondary.700' }}
                   _focus={{
