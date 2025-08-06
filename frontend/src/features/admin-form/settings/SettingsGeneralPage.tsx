@@ -31,14 +31,6 @@ export const SettingsGeneralPage = (): JSX.Element => {
       <FormIssueNotificationToggle />
       <Divider my="2.5rem" />
       <FormDetailsSection />
-      {isTest ||
-      (user?.betaFlags?.statusTracker &&
-        settings?.responseMode === FormResponseMode.Multirespondent) ? (
-        <>
-          <Divider my="2.5rem" />
-          <StatusTrackerToggle />
-        </>
-      ) : null}
     </>
   )
 }
