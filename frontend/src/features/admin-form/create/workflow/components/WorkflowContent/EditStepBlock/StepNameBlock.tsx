@@ -23,6 +23,7 @@ type StepNameProps = {
 }
 
 const STEP_NAME = 'step_name'
+const MAX_CHAR = 50
 
 export const StepNameBlock = ({
   stepNumber,
@@ -78,8 +79,8 @@ export const StepNameBlock = ({
               name={STEP_NAME}
               rules={{
                 maxLength: {
-                  value: 30,
-                  message: 'Please keep the step name under 30 characters',
+                  value: MAX_CHAR,
+                  message: 'Please keep the step name under 50 characters',
                 },
               }}
               render={({ field }) => (
@@ -98,7 +99,7 @@ export const StepNameBlock = ({
               <FormErrorMessage>{errors.step_name.message}</FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                {30 - (customStepName?.length ?? 0)} characters left
+                {MAX_CHAR - (customStepName?.length ?? 0)} characters left
               </FormHelperText>
             ) : null}
           </FormControl>
