@@ -10,7 +10,7 @@ import { MB } from '~shared/constants/file'
 import { FormColorTheme } from '~shared/types'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
-import { createAttachmentValidationRules } from '~utils/fieldValidation'
+import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
 
@@ -34,9 +34,9 @@ export const AttachmentField = ({
   isHighContrast,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
-  const validationRules = useMemo(
-    () => createAttachmentValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useAttachmentValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const { clearErrors, setError, control } =

@@ -9,7 +9,7 @@ import {
   SignJWT,
 } from 'jose'
 import jwkToPem from 'jwk-to-pem'
-import { BaseClient, TokenSet } from 'openid-client'
+import { BaseClient, TokenSet } from 'openid-client-legacy'
 import { ulid } from 'ulid'
 import { URLSearchParams } from 'url'
 

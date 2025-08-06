@@ -17,3 +17,16 @@ export const handleGetIsIntranetCheck: ControllerHandler<never, boolean> = (
   const isIntranet = IntranetService.isIntranetIp(ip)
   return res.status(StatusCodes.OK).json(isIntranet)
 }
+
+/**
+ * Handler for GET /intranet/is-ogp-check endpoint.
+ * @returns whether the given IP address is an OGP IP
+ */
+export const handleGetIsOgpCheck: ControllerHandler<never, boolean> = (
+  req,
+  res,
+) => {
+  const ip = getRequestIp(req)
+  const isOgp = IntranetService.isOgpIp(ip)
+  return res.status(StatusCodes.OK).json(isOgp)
+}

@@ -5,7 +5,7 @@ import { CountryRegion } from '~shared/constants/countryRegion'
 import { FormColorTheme } from '~shared/types'
 import { CountryRegionFieldBase, FormFieldWithId } from '~shared/types/field'
 
-import { createCountryRegionValidationRules } from '~utils/fieldValidation'
+import { useCountryRegionValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -40,12 +40,10 @@ export const CountryRegionField = ({
     }
   }, [schema])
 
-  const rules = useMemo(() => {
-    return createCountryRegionValidationRules(
-      schemaWithFieldOptions,
-      disableRequiredValidation,
-    )
-  }, [schemaWithFieldOptions, disableRequiredValidation])
+  const rules = useCountryRegionValidationRules(
+    schemaWithFieldOptions,
+    disableRequiredValidation,
+  )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

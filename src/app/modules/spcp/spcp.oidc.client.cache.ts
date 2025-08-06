@@ -2,7 +2,7 @@ import axios from 'axios'
 import { createPublicKey } from 'crypto'
 import jwkToPem from 'jwk-to-pem'
 import NodeCache from 'node-cache'
-import { BaseClient, Issuer } from 'openid-client'
+import { BaseClient, Issuer } from 'openid-client-legacy'
 import { timeout, TimeoutError } from 'promise-timeout'
 
 import { createLoggerWithLabel } from '../../config/logger'

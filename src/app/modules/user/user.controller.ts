@@ -197,7 +197,12 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
   }
 
   return getPopulatedUserById(sessionUserId)
-    .map((retrievedUser) => res.json(retrievedUser))
+    .map((retrievedUser) => {
+      const grantSource =
+        req.session?.user?.grantSource === 'sso' ? 'sso' : undefined
+      const jsonOutput = { ...retrievedUser.toJSON(), grantSource }
+      return res.json(jsonOutput)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred whilst retrieving user',

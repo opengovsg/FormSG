@@ -57,6 +57,7 @@ export const UserDto = UserBase.extend({
   created: DateString,
   lastAccessed: DateString.optional(),
   updatedAt: DateString,
+  grantSource: z.enum(['sso', 'otp']).optional(),
 })
 export type UserDto = z.infer<typeof UserDto>
 
@@ -81,6 +82,10 @@ export type SendOtpResponseDto = {
 }
 
 export type GetSgidAuthUrlResponseDto = {
+  redirectUrl: string
+}
+
+export type GetSsoAuthUrlResponseDto = {
   redirectUrl: string
 }
 

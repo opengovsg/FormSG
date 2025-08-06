@@ -172,6 +172,12 @@ export interface ISgidVarsSchema {
   jwtSecret: string
 }
 
+export interface ISsoVarsSchema {
+  discoveryUrl: string
+  clientId: string
+  clientSecret: string
+}
+
 export interface IOptionalVarsSchema {
   appConfig: AppConfig
   formsgSdkMode: PackageMode
