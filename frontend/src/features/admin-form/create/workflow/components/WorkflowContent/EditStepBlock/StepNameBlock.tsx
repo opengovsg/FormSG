@@ -34,6 +34,7 @@ export const StepNameBlock = ({
     formState: { errors },
     control,
     watch,
+    trigger,
   } = formMethods
 
   const customStepName = watch(STEP_NAME)
@@ -91,15 +92,20 @@ export const StepNameBlock = ({
                   _focus={{
                     _placeholder: { color: 'transparent' },
                   }}
-                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e)
+                    trigger(STEP_NAME)
+                  }}
                 />
               )}
             />
             {errors?.step_name ? (
-              <FormErrorMessage>{errors.step_name.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.step_name.message} ({customStepName?.length}/{MAX_CHAR})
+              </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                {MAX_CHAR - (customStepName?.length ?? 0)} characters left
+                ({MAX_CHAR - (customStepName?.length ?? 0)}/{MAX_CHAR})
               </FormHelperText>
             ) : null}
           </FormControl>
