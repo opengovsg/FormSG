@@ -18,7 +18,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useIsPrint } from '~hooks/useIsPrint'
 import {
   createBaseValidationRules,
-  createDropdownValidationRules,
+  useDropdownValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import { ComboboxItem } from '~components/Dropdown/types'
@@ -95,10 +95,7 @@ const DropdownColumnCell = ({
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { i18n } = useTranslation()
   const { control } = useFormContext<TableFieldInputs>()
-  const rules = useMemo(
-    () => createDropdownValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
-  )
+  const rules = useDropdownValidationRules(schema, disableRequiredValidation)
 
   const selectedLanguage = i18n.language as Language
 

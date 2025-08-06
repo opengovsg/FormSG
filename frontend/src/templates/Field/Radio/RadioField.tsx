@@ -7,7 +7,7 @@ import { get } from 'lodash'
 import { FormColorTheme, Language } from '~shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
-import { createRadioValidationRules } from '~utils/fieldValidation'
+import { useRadioValidationRules } from '~utils/fieldValidation'
 import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio, { OthersInput } from '~components/Radio'
@@ -49,9 +49,9 @@ export const RadioField = ({
     [schema._id],
   )
 
-  const validationRules = useMemo(
-    () => createRadioValidationRules(schema, disableRequiredValidation),
-    [disableRequiredValidation, schema],
+  const validationRules = useRadioValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const englishRadioOptions = schema.fieldOptions

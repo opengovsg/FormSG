@@ -1,10 +1,9 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { createNricValidationRules } from '~utils/fieldValidation'
+import { useNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -20,9 +19,9 @@ export const NricField = ({
   disableRequiredValidation,
   isHighContrast,
 }: NricFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createNricValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useNricValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()

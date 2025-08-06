@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   Controller,
   ControllerRenderProps,
@@ -8,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Language } from '~shared/types'
 
-import { createEmailValidationRules } from '~utils/fieldValidation'
+import { useEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
 
 import { EmailFieldSchema, VerifiableFieldInput } from '../types'
@@ -39,18 +38,16 @@ export const EmailFieldInput = ({
   isHighContrast,
 }: EmailFieldInputProps): JSX.Element => {
   const { t } = useTranslation()
+  // TODO: decide how to combine with field-validations en-sg.ts
   const validationErrorMessages = t(
     'features.publicForm.components.fields.email.validation',
     { allowObjects: true },
   )
-  const validationRules = useMemo(
-    () =>
-      createEmailValidationRules(
-        schema,
-        disableRequiredValidation,
-        validationErrorMessages,
-      ),
-    [schema, disableRequiredValidation, validationErrorMessages],
+
+  const validationRules = useEmailValidationRules(
+    schema,
+    disableRequiredValidation,
+    validationErrorMessages,
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()
