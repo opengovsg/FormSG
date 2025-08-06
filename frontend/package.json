@@ -15,7 +15,7 @@
     "@hello-pangea/dnd": "^16.6.0",
     "@loadable/component": "^5.16.4",
     "@marsidev/react-turnstile": "^1.1.0",
-    "@opengovsg/formsg-sdk": "^0.13.0",
+    "@opengovsg/formsg-sdk": "^0.14.0",
     "@stablelib/base64": "^1.0.1",
     "@stripe/react-stripe-js": "^1.15.0",
     "@stripe/stripe-js": "^1.44.1",
