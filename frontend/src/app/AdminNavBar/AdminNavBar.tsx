@@ -28,6 +28,7 @@ import { DASHBOARD_ROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useToast } from '~hooks/useToast'
 import { logout } from '~services/AuthService'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
@@ -144,6 +145,7 @@ export interface AdminNavBarProps {
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading, removeQuery } = useUser()
   const { updateLastSeenFlagMutation } = useUserMutations()
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
@@ -228,7 +230,14 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     if (emergencyContactKey) {
       localStorage.removeItem(emergencyContactKey)
     }
-  }, [emergencyContactKey, removeQuery])
+    if (user?.grantSource === 'sso') {
+      toast({
+        title: 'You have been logged out of FormSG.',
+        description: 'To log out from SSO, visit https://sso.open.gov.sg',
+        status: 'success',
+      })
+    }
+  }, [emergencyContactKey, removeQuery, toast, user])
 
   const { t } = useTranslation()
 

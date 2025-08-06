@@ -42,7 +42,7 @@ export const TempLoginPage = (): JSX.Element => {
       case StatusCodes.OK.toString():
         return
       case StatusCodes.UNAUTHORIZED.toString():
-        return t('features.login.LoginPage.expiredSgIdSession')
+        return t('features.login.LoginPage.expiredSession')
       default:
         return t('features.common.errors.generic')
     }
