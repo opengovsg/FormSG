@@ -41,7 +41,7 @@ RUN apk update && apk upgrade && \
     libjpeg-turbo-dev \
     librsvg-dev && \
     apk add --no-cache \
-    cairo pango giflib libjpeg-turbo librsvg && \
+    cairo pango librsvg && \
     npm install --quiet node-gyp -g && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1] --break-system-packages

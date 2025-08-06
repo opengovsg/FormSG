@@ -84,8 +84,6 @@ RUN apk add --no-cache \
     tini \
     cairo \
     pango \
-    giflib \
-    libjpeg-turbo \
     librsvg
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
