@@ -906,7 +906,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
       })
 
-      it.only('should handle submissions with signatures response', () => {
+      it('should handle submissions with signatures response', () => {
         const signaturesAnswerArray = ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]']
 
         const mockDecryptedRecord = [
@@ -919,7 +919,6 @@ describe('EncryptedResponseCsvGenerator', () => {
           submissionId: 'mockSubmissionId',
         }
 
-        const expectedUnprocessed = [generateExpectedUnprocessed(mockRecord)]
         generator.addRecord(mockRecord)
 
         // Act
