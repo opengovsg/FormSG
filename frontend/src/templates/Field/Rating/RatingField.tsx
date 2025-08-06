@@ -8,7 +8,7 @@ import { get } from 'lodash'
 import { FormColorTheme } from '~shared/types'
 import { RatingShape } from '~shared/types/field'
 
-import { createRatingValidationRules } from '~utils/fieldValidation'
+import { useRatingValidationRules } from '~utils/fieldValidation'
 import Rating from '~components/Field/Rating'
 import { RatingProps } from '~components/Field/Rating/Rating'
 
@@ -34,9 +34,9 @@ export const RatingField = ({
   colorTheme = FormColorTheme.Blue,
   isHighContrast,
 }: RatingFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createRatingValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+  const validationRules = useRatingValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const ratingVariant: RatingProps['variant'] = useMemo(() => {

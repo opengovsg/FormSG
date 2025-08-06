@@ -1,10 +1,9 @@
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { createTextValidationRules } from '~utils/fieldValidation'
+import { useTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
 import { PrefillMap } from '../../../features/public-form/components/FormFields/FormFields'
@@ -23,9 +22,9 @@ export const ShortTextField = ({
   isHighContrast,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createTextValidationRules(schema, disableRequiredValidation),
-    [disableRequiredValidation, schema],
+  const validationRules = useTextValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

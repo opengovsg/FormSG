@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import { baseMobileValidationFn } from '~utils/fieldValidation'
@@ -69,7 +70,14 @@ export const VerifiableMobileField = ({
   schema,
   ...props
 }: VerifiableMobileFieldProps) => {
-  const validateInputForVfn = baseMobileValidationFn(schema)
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'utils.fieldValidation',
+  })
+  const validateInputForVfn = useMemo(
+    () => baseMobileValidationFn(schema, t),
+    [schema, t],
+  )
+
   return (
     <VerifiableFieldProvider
       schema={schema}

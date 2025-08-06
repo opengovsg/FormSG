@@ -2,15 +2,17 @@
  * This utility file creates validation rules for `react-hook-form` according
  * to the field schema.
  */
+import { useMemo } from 'react'
 import {
   FieldValues,
   Path,
   RegisterOptions,
   UseFormGetValues,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { isValid, parse } from 'date-fns'
+import { TFunction } from 'i18next'
 import { identity } from 'lodash'
-import simplur from 'simplur'
 import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
@@ -56,16 +58,7 @@ import { isUenValid } from '~shared/utils/uen-validation'
 
 import { Fields } from '~/i18n/locales/features/public-form/fields'
 
-import {
-  INVALID_BLOCK_UNIT_ERROR,
-  INVALID_COUNTRY_REGION_OPTION_ERROR,
-  INVALID_DROPDOWN_OPTION_ERROR,
-  INVALID_EMAIL_ERROR,
-  INVALID_LEVEL_UNIT_ERROR,
-  INVALID_NON_NUMERICAL_ERROR,
-  INVALID_POSTAL_CODE_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import {
   AddressCompoundFieldInput,
   CheckboxFieldValues,
@@ -114,11 +107,19 @@ type ValidationRuleFnUnitAndLevelNo<T extends FieldBase = FieldBase> = (
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ) => RegisterOptions
 
+const I18N_KEY_PREFIX = 'utils.fieldValidation'
+
 const requiredSingleAnswerValidationFn =
-  (schema: Pick<FieldBase, 'required'>, disableRequiredValidation?: boolean) =>
+  (
+    schema: Pick<FieldBase, 'required'>,
+    disableRequiredValidation?: boolean,
+    t?: TFunction,
+  ) =>
   (value?: SingleAnswerValue) => {
     if (disableRequiredValidation || !schema.required) return true
-    return !!value?.trim() || REQUIRED_ERROR
+    // TODO: migrate REQUIRED_ERROR to point to 'required' instead of 'This field is required'
+    const errorMessage = t ? t('required') : REQUIRED_ERROR
+    return !!value?.trim() || errorMessage
   }
 
 /**
@@ -126,34 +127,42 @@ const requiredSingleAnswerValidationFn =
  * @param schema verifiable field schema
  * @returns base verifiable fields' validation rules
  */
-const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
+const useBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
   VerifiableFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: (value?: VerifiableFieldValues) => {
-        return requiredSingleAnswerValidationFn(
-          schema,
-          disableRequiredValidation,
-        )(value?.value)
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: (value?: VerifiableFieldValues) => {
+          return requiredSingleAnswerValidationFn(
+            schema,
+            disableRequiredValidation,
+            t,
+          )(value?.value)
+        },
+        hasSignature: (val?: VerifiableFieldValues) => {
+          if (!schema.isVerifiable) return true
+          // Either signature is filled, or both fields have no input.
+          if (!!val?.signature || (!val?.value && !val?.signature)) {
+            return true
+          }
+          if (schema.fieldType === BasicField.Mobile) {
+            return t('pleaseVerifyMobile')
+          }
+          if (schema.fieldType === BasicField.Email) {
+            return t('pleaseVerifyEmail')
+          }
+        },
       },
-      hasSignature: (val?: VerifiableFieldValues) => {
-        if (!schema.isVerifiable) return true
-        // Either signature is filled, or both fields have no input.
-        if (!!val?.signature || (!val?.value && !val?.signature)) {
-          return true
-        }
-        if (schema.fieldType === BasicField.Mobile) {
-          return 'Please verify your mobile number'
-        }
-        if (schema.fieldType === BasicField.Email) {
-          return 'Please verify your email address'
-        }
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
+// TODO: remove after useBaseValidationRules is used instead. keeping this for backward compatibility. this is being used in 52 other occurences at the moment.
 export const createBaseValidationRules = <
   TFieldValues extends FieldValues = FieldValues,
   TFieldName extends Path<TFieldValues> = never,
@@ -169,547 +178,709 @@ export const createBaseValidationRules = <
   }
 }
 
-export const createDropdownValidationRules: ValidationRuleFn<
-  DropdownFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return createDropdownValidationRulesWithCustomErrorMessage(
-    INVALID_DROPDOWN_OPTION_ERROR,
-  )(schema, disableRequiredValidation)
-}
+// Hook version using i18n
+const useBaseValidationRules = <
+  TFieldValues extends FieldValues = FieldValues,
+  TFieldName extends Path<TFieldValues> = never,
+>(
+  schema: Pick<FieldBase, 'required'>,
+  disableRequiredValidation?: boolean,
+): RegisterOptions<TFieldValues, TFieldName> => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-export const createCountryRegionValidationRules: ValidationRuleFn<
-  DropdownFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return createDropdownValidationRulesWithCustomErrorMessage(
-    INVALID_COUNTRY_REGION_OPTION_ERROR,
-  )(schema, disableRequiredValidation)
-}
-
-export const createDropdownValidationRulesWithCustomErrorMessage: (
-  errorMessage: string,
-) => ValidationRuleFn<DropdownFieldBase> =
-  (errorMessage) =>
-  (schema, disableRequiredValidation): RegisterOptions => {
+  return useMemo(() => {
     return {
       validate: {
         required: requiredSingleAnswerValidationFn(
           schema,
           disableRequiredValidation,
+          t,
         ),
-        validOptions: (value: string) => {
-          if (!value) return
-          return schema.fieldOptions.includes(value) || errorMessage
-        },
       },
     }
-  }
+  }, [schema, disableRequiredValidation, t])
+}
 
-export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
+export const useDropdownValidationRules: ValidationRuleFn<DropdownFieldBase> = (
   schema,
   disableRequiredValidation,
 ): RegisterOptions => {
-  return createBaseValidationRules(schema, disableRequiredValidation)
+  return createDropdownValidationRulesWithCustomErrorMessage(
+    'invalidDropdownOption',
+  )(schema, disableRequiredValidation)
 }
 
-export const createAttachmentValidationRules: ValidationRuleFn<
+export const useCountryRegionValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return createDropdownValidationRulesWithCustomErrorMessage(
+    'invalidCountryRegion',
+  )(schema, disableRequiredValidation)
+}
+
+const createDropdownValidationRulesWithCustomErrorMessage: (
+  errorKey: 'invalidDropdownOption' | 'invalidCountryRegion',
+) => ValidationRuleFn<DropdownFieldBase> =
+  (errorKey) =>
+  (schema, disableRequiredValidation): RegisterOptions => {
+    const { t } = useTranslation('translation', {
+      keyPrefix: I18N_KEY_PREFIX,
+    })
+
+    return useMemo(() => {
+      return {
+        validate: {
+          required: requiredSingleAnswerValidationFn(
+            schema,
+            disableRequiredValidation,
+            t,
+          ),
+          validOptions: (value: string) => {
+            if (!value) return true
+            return schema.fieldOptions.includes(value) || t(errorKey)
+          },
+        },
+      }
+    }, [schema, disableRequiredValidation, t])
+  }
+
+export const useRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
+  schema,
+  disableRequiredValidation,
+): RegisterOptions => {
+  return useBaseValidationRules(schema, disableRequiredValidation)
+}
+
+export const useAttachmentValidationRules: ValidationRuleFn<
   AttachmentFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
   return {
     validate: (value?: File) => {
       if (disableRequiredValidation || !schema.required) return true
-      return !!value || REQUIRED_ERROR
+      const errorMessage = t ? t('required') : REQUIRED_ERROR
+      return !!value || errorMessage
     },
   }
 }
 
-export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useHomeNoValidationRules = (
+  schema: HomenoFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validHomeNo: (val?: string) => {
-        if (!val) return true
-        return isHomePhoneNumber(val) || 'Please enter a valid landline number'
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validHomeNo: (val?: string) => {
+          if (!val) return true
+          return isHomePhoneNumber(val) || t('validHomeNo')
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createPostalCodeValidationRules: ValidationRuleFn<
+export const usePostalCodeValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validOnlyNumbers: (value: string) => {
-        if (value === '') return true
-        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validOnlyNumbers: (value: string) => {
+          if (value === '') return true
+          return validateNoNonNumerical(value) || t('invalidNonNumerical')
+        },
+        validPostalCode: (value: string) => {
+          if (value === '') return true
+          return validatePostalCode(value) || t('invalidPostalCode')
+        },
       },
-      validPostalCode: (value: string) => {
-        if (value === '') return true
-        return validatePostalCode(value) || INVALID_POSTAL_CODE_ERROR
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createBlockNumberValidationRules: ValidationRuleFn<
+export const useBlockNumberValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validBlock: (value: string) => {
-        if (value === '') return true
-        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validBlock: (value: string) => {
+          if (value === '') return true
+          return validateNoSpecialCharacters(value) || t('invalidBlockUnit')
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createStreetNameValidationRules: ValidationRuleFn<
+export const useStreetNameValidationRules: ValidationRuleFn<
   AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-    },
-  }
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+export const useLevelNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   AddressCompoundFieldBase
 > = (
   schema,
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
-  return {
-    validate: {
-      validLevel: (value: string) => {
-        if (value === '') return true
-        return validateNoNonNumerical(value) || INVALID_NON_NUMERICAL_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        validLevel: (value: string) => {
+          if (value === '') return true
+          return validateNoNonNumerical(value) || t('invalidNonNumerical')
+        },
+        validInput: () => {
+          if (!getValues) return true
+          const levelNo = getValues(
+            `${schema._id}.addressSubFields.levelNumber`,
+          )
+          const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+          return validateLevelUnit(levelNo, unitNo) || t('invalidLevelUnit')
+        },
       },
-      validInput: () => {
-        if (!getValues) return true
-        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
-        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
-        return validateLevelUnit(levelNo, unitNo) || INVALID_LEVEL_UNIT_ERROR
-      },
-    },
-  }
+    }
+  }, [schema, getValues, t])
 }
 
-export const createUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
+export const useUnitNumberValidationRules: ValidationRuleFnUnitAndLevelNo<
   AddressCompoundFieldBase
 > = (
   schema,
   getValues: UseFormGetValues<AddressCompoundFieldInput>,
 ): RegisterOptions => {
-  return {
-    validate: {
-      validUnit: (value: string) => {
-        if (value === '') return true
-        return validateNoSpecialCharacters(value) || INVALID_BLOCK_UNIT_ERROR
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        validUnit: (value: string) => {
+          if (value === '') return true
+          return validateNoSpecialCharacters(value) || t('invalidBlockUnit')
+        },
+        validInput: () => {
+          if (!getValues) return true
+          const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
+          const levelNo = getValues(
+            `${schema._id}.addressSubFields.levelNumber`,
+          )
+          return validateLevelUnit(unitNo, levelNo) || t('invalidLevelUnit')
+        },
       },
-      validInput: () => {
-        if (!getValues) return true
-        const unitNo = getValues(`${schema._id}.addressSubFields.unitNumber`)
-        const levelNo = getValues(`${schema._id}.addressSubFields.levelNumber`)
-        return validateLevelUnit(unitNo, levelNo) || INVALID_LEVEL_UNIT_ERROR
-      },
-    },
-  }
+    }
+  }, [schema, getValues, t])
 }
 
-export const createSignatureValidationRules: ValidationRuleFn<
-  SignatureFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: (val?: SignatureFieldValues) => {
-        if (disableRequiredValidation || !schema.required) return true
-
-        const strokes = val?.value
-        const hasValidStroke = Array.isArray(strokes) && strokes.length > 0
-        return hasValidStroke ? true : REQUIRED_ERROR
-      },
-    },
-  }
-}
-
-export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
+export const useMobileValidationRules: ValidationRuleFnEmailAndMobile<
   MobileFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      baseValidations: (val?: VerifiableFieldValues) => {
-        return baseMobileValidationFn(schema)(val?.value)
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  const baseVfnRules = useBaseVfnFieldValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
+  return useMemo(() => {
+    return {
+      validate: {
+        baseValidations: (val?: VerifiableFieldValues) => {
+          return baseMobileValidationFn(schema, t)(val?.value)
+        },
+        ...baseVfnRules.validate,
       },
-      ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
-        .validate,
-    },
-  }
+    }
+  }, [baseVfnRules.validate, schema, t])
 }
 
-export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useNumberValidationRules = (
+  schema: NumberFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  const { selectedValidation } = schema.ValidationOptions
-  const { selectedLengthValidation, customVal } =
-    schema.ValidationOptions.LengthValidationOptions
-  const { customMin, customMax } =
-    schema.ValidationOptions.RangeValidationOptions
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validNumberLength: (val: string) => {
-        if (
-          selectedValidation !== NumberSelectedValidation.Length ||
-          !val ||
-          !customVal
-        )
-          return true
+  return useMemo(() => {
+    const { selectedValidation } = schema.ValidationOptions
+    const { selectedLengthValidation, customVal } =
+      schema.ValidationOptions.LengthValidationOptions
+    const { customMin, customMax } =
+      schema.ValidationOptions.RangeValidationOptions
 
-        const currLen = val.trim().length
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validNumberLength: (val: string) => {
+          if (
+            selectedValidation !== NumberSelectedValidation.Length ||
+            !val ||
+            !customVal
+          )
+            return true
 
-        switch (selectedLengthValidation) {
-          case NumberSelectedLengthValidation.Exact:
-            return (
-              currLen === customVal ||
-              simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-          case NumberSelectedLengthValidation.Min:
-            return (
-              currLen >= customVal ||
-              simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-          case NumberSelectedLengthValidation.Max:
-            return (
-              currLen <= customVal ||
-              simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
-            )
-        }
+          const currLen = val.trim().length
+
+          switch (selectedLengthValidation) {
+            case NumberSelectedLengthValidation.Exact:
+              return (
+                currLen === customVal ||
+                t('exactDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case NumberSelectedLengthValidation.Min:
+              return (
+                currLen >= customVal ||
+                t('minDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case NumberSelectedLengthValidation.Max:
+              return (
+                currLen <= customVal ||
+                t('maxDigits', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+          }
+        },
+        validNumberRange: (val: string) => {
+          if (selectedValidation !== NumberSelectedValidation.Range || !val)
+            return true
+
+          const numVal = parseInt(val)
+          if (Number.isNaN(numVal)) {
+            return t('validNumber')
+          }
+
+          const hasMinimum = customMin !== null
+          const hasMaximum = customMax !== null
+          const satisfiesMinimum = !hasMinimum || customMin <= numVal
+          const satisfiesMaximum = !hasMaximum || numVal <= customMax
+          const isInRange = satisfiesMinimum && satisfiesMaximum
+
+          if (isInRange) {
+            return true
+          } else if (hasMinimum && hasMaximum) {
+            return t('numbersRange', {
+              min: customMin,
+              max: customMax,
+            })
+          } else if (hasMinimum) {
+            return t('numberMinimum', { min: customMin })
+          } else if (hasMaximum) {
+            return t('numberMaximum', { max: customMax })
+          }
+        },
       },
-      validNumberRange: (val: string) => {
-        if (selectedValidation !== NumberSelectedValidation.Range || !val)
-          return true
-
-        const numVal = parseInt(val)
-        if (Number.isNaN(numVal)) {
-          return 'Please enter a valid number'
-        }
-
-        const hasMinimum = customMin !== null
-        const hasMaximum = customMax !== null
-        const satisfiesMinimum = !hasMinimum || customMin <= numVal
-        const satisfiesMaximum = !hasMaximum || numVal <= customMax
-        const isInRange = satisfiesMinimum && satisfiesMaximum
-
-        if (isInRange) {
-          return true
-        } else if (hasMinimum && hasMaximum) {
-          return `Please enter a number between ${customMin} and ${customMax}`
-        } else if (hasMinimum) {
-          return `Please enter a number that is at least ${customMin}`
-        } else if (hasMaximum) {
-          return `Please enter a number that is at most ${customMax}`
-        }
-      },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createDecimalValidationRules: ValidationRuleFn<
-  DecimalFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validDecimal: (val: string) => {
-        const {
-          ValidationOptions: { customMax, customMin },
-          validateByValue,
-        } = schema
-        if (!val) return true
-
-        const numVal = Number(val)
-        if (isNaN(numVal)) {
-          return 'Please enter a valid decimal'
-        }
-
-        // Validate leading zeros
-        if (/^0[0-9]/.test(val)) {
-          return 'Please enter a valid decimal without leading zeros'
-        }
-
-        if (!validateByValue) return true
-
-        if (
-          customMin !== null &&
-          customMax !== null &&
-          (numVal < customMin || numVal > customMax)
-        ) {
-          return `Please enter a decimal between ${formatNumberToLocaleString(
-            customMin,
-          )} and ${formatNumberToLocaleString(customMax)} (inclusive)`
-        }
-        if (customMin !== null && numVal < customMin) {
-          return `Please enter a decimal greater than or equal to ${formatNumberToLocaleString(
-            customMin,
-          )}`
-        }
-        if (customMax !== null && numVal > customMax) {
-          return `Please enter a decimal less than or equal to ${formatNumberToLocaleString(
-            customMax,
-          )}`
-        }
-
-        return true
-      },
-    },
-  }
-}
-
-export const createTextValidationRules: ValidationRuleFn<
-  ShortTextFieldBase | LongTextFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  const { selectedValidation, customVal } = schema.ValidationOptions
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validText: (val?: string) => {
-        if (!val || !customVal) return true
-
-        const currLen = val.trim().length
-
-        switch (selectedValidation) {
-          case TextSelectedValidation.Exact:
-            return (
-              currLen === customVal ||
-              simplur`Please enter ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Minimum:
-            return (
-              currLen >= customVal ||
-              simplur`Please enter at least ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-          case TextSelectedValidation.Maximum:
-            return (
-              currLen <= customVal ||
-              simplur`Please enter at most ${customVal} character[|s] (${currLen}/${customVal})`
-            )
-        }
-      },
-    },
-  }
-}
-
-export const createUenValidationRules: ValidationRuleFn<UenFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useDecimalValidationRules = (
+  schema: DecimalFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validUen: (val?: string) => {
-        if (!val) return true
-        return isUenValid(val) || 'Please enter a valid UEN'
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    const {
+      ValidationOptions: { customMax, customMin },
+      validateByValue,
+    } = schema
+
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validDecimal: (val: string) => {
+          if (!val) return true
+
+          const numVal = Number(val)
+          if (isNaN(numVal)) {
+            return t('validDecimal')
+          }
+
+          // Validate leading zeros
+          if (/^0[0-9]/.test(val)) {
+            return t('validDecimalNoLeadingZeros')
+          }
+
+          if (!validateByValue) return true
+
+          if (
+            customMin !== null &&
+            customMax !== null &&
+            (numVal < customMin || numVal > customMax)
+          ) {
+            return t('decimalRange', {
+              min: formatNumberToLocaleString(customMin),
+              max: formatNumberToLocaleString(customMax),
+            })
+          }
+          if (customMin !== null && numVal < customMin) {
+            return t('decimalMinimum', {
+              min: formatNumberToLocaleString(customMin),
+            })
+          }
+          if (customMax !== null && numVal > customMax) {
+            return t('decimalMaximum', {
+              max: formatNumberToLocaleString(customMax),
+            })
+          }
+
+          return true
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
-  schema,
-  disableRequiredValidation,
+export const useTextValidationRules = (
+  schema: ShortTextFieldBase | LongTextFieldBase,
+  disableRequiredValidation?: boolean,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validNric: (val?: string) => {
-        if (!val) return true
-        return (
-          isNricValid(val) ||
-          isMFinSeriesValid(val) ||
-          'Please enter a valid NRIC/FIN'
-        )
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    const { selectedValidation, customVal } = schema.ValidationOptions
+
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validText: (val?: string) => {
+          if (!val || !customVal) return true
+
+          const currLen = val.trim().length
+
+          switch (selectedValidation) {
+            case TextSelectedValidation.Exact:
+              return (
+                currLen === customVal ||
+                t('exactCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case TextSelectedValidation.Minimum:
+              return (
+                currLen >= customVal ||
+                t('minCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+            case TextSelectedValidation.Maximum:
+              return (
+                currLen <= customVal ||
+                t('maxCharacters', {
+                  current: currLen,
+                  threshold: customVal,
+                })
+              )
+          }
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
-export const createCheckboxValidationRules: ValidationRuleFn<
-  CheckboxFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
-  return {
-    validate: {
-      required: (val?: CheckboxFieldValues['value']) => {
-        if (disableRequiredValidation || !schema.required) return true
-        if (!val) return REQUIRED_ERROR
-        // Trim strings before checking for emptiness
-        return val.map((v) => v.trim()).some(identity) || REQUIRED_ERROR
+export const useUenValidationRules = (
+  schema: UenFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validUen: (val?: string) => {
+          if (!val) return true
+          return isUenValid(val) || t('validUen')
+        },
       },
-      validOptions: (val?: CheckboxFieldValues['value']) => {
-        const {
-          ValidationOptions: { customMin, customMax },
-          validateByValue,
-        } = schema
-        if (!val || val.length === 0 || !validateByValue) return true
+    }
+  }, [schema, disableRequiredValidation, t])
+}
 
-        if (
-          customMin &&
-          customMax &&
-          customMin === customMax &&
-          val.length !== customMin
-        ) {
-          return simplur`Please select exactly ${customMin} option[|s] (${val.length}/${customMin})`
-        }
+export const useNricValidationRules = (
+  schema: NricFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
 
-        if (customMin && val.length < customMin) {
-          return simplur`Please select at least ${customMin} option[|s] (${val.length}/${customMin})`
-        }
-
-        if (customMax && val.length > customMax) {
-          return simplur`Please select at most ${customMax} option[|s] (${val.length}/${customMax})`
-        }
-
-        return true
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validNric: (val?: string) => {
+          if (!val) return true
+          return isNricValid(val) || isMFinSeriesValid(val) || t('validNric')
+        },
       },
-    },
-  }
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
+export const useCheckboxValidationRules = (
+  schema: CheckboxFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    const {
+      ValidationOptions: { customMin, customMax },
+      validateByValue,
+    } = schema
+
+    return {
+      validate: {
+        required: (val?: CheckboxFieldValues['value']) => {
+          if (disableRequiredValidation || !schema.required) return true
+          if (!val) return t('required')
+          // Trim strings before checking for emptiness
+          return val.map((v) => v.trim()).some(identity) || t('required')
+        },
+        validOptions: (val?: CheckboxFieldValues['value']) => {
+          if (!val || val.length === 0 || !validateByValue) return true
+
+          if (
+            customMin &&
+            customMax &&
+            customMin === customMax &&
+            val.length !== customMin
+          ) {
+            return t('exactOptions', {
+              current: val.length,
+              threshold: customMin,
+            })
+          }
+
+          if (customMin && val.length < customMin) {
+            return t('minOptions', {
+              current: val.length,
+              threshold: customMin,
+            })
+          }
+
+          if (customMax && val.length > customMax) {
+            return t('maxOptions', {
+              current: val.length,
+              threshold: customMax,
+            })
+          }
+
+          return true
+        },
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
 }
 
 const parseDate = (val: string) => {
   return parse(val, DATE_PARSE_FORMAT, new Date())
 }
 
-export const createDateValidationRules: ValidationRuleFn<DateFieldBase> = (
+export const useDateValidationRules = (
+  schema: DateFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        validDate: (val) => {
+          if (!val) return true
+          if (val === DATE_PARSE_FORMAT.toLowerCase()) {
+            return t('required')
+          }
+          return isValid(parseDate(val)) || t('validDate')
+        },
+        noFuture: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.NoFuture
+          ) {
+            return true
+          }
+          return !isDateAfterToday(parseDate(val)) || t('noFutureDate')
+        },
+        noPast: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.NoPast
+          ) {
+            return true
+          }
+          return !isDateBeforeToday(parseDate(val)) || t('noPastDate')
+        },
+        range: (val) => {
+          if (
+            !val ||
+            schema.dateValidation.selectedDateValidation !==
+              DateSelectedValidation.Custom
+          ) {
+            return true
+          }
+
+          const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
+          return (
+            !isDateOutOfRange(
+              parseDate(val),
+              loadDateFromNormalizedDate(customMinDate),
+              loadDateFromNormalizedDate(customMaxDate),
+            ) || t('dateOutOfRange')
+          )
+        },
+        invalidDays: (val) =>
+          !val ||
+          !schema.invalidDays ||
+          !schema.invalidDays.length ||
+          !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
+          t('invalidDay'),
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
+export const useRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
   schema,
   disableRequiredValidation,
 ): RegisterOptions => {
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(
-        schema,
-        disableRequiredValidation,
-      ),
-      validDate: (val) => {
-        if (!val) return true
-        if (val === DATE_PARSE_FORMAT.toLowerCase()) {
-          return REQUIRED_ERROR
-        }
-        return isValid(parseDate(val)) || 'Please enter a valid date'
-      },
-      noFuture: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.NoFuture
-        ) {
-          return true
-        }
-        return (
-          !isDateAfterToday(parseDate(val)) ||
-          'Only dates today or before are allowed'
-        )
-      },
-      noPast: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.NoPast
-        ) {
-          return true
-        }
-        return (
-          !isDateBeforeToday(parseDate(val)) ||
-          'Only dates today or after are allowed'
-        )
-      },
-      range: (val) => {
-        if (
-          !val ||
-          schema.dateValidation.selectedDateValidation !==
-            DateSelectedValidation.Custom
-        ) {
-          return true
-        }
-
-        const { customMinDate, customMaxDate } = schema.dateValidation ?? {}
-        return (
-          !isDateOutOfRange(
-            parseDate(val),
-            loadDateFromNormalizedDate(customMinDate),
-            loadDateFromNormalizedDate(customMaxDate),
-          ) || 'Selected date is not within the allowed date range'
-        )
-      },
-      invalidDays: (val) =>
-        !val ||
-        !schema.invalidDays ||
-        !schema.invalidDays.length ||
-        !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
-        'This date is not allowed by the form admin',
-    },
-  }
+  return useBaseValidationRules(schema, disableRequiredValidation)
 }
 
-export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
-  schema,
-  disableRequiredValidation,
-): RegisterOptions => {
-  return createBaseValidationRules(schema, disableRequiredValidation)
-}
-
-export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
+export const useEmailValidationRules: ValidationRuleFnEmailAndMobile<
   EmailFieldBase
 > = (
   schema,
   disableRequiredValidation,
   validationErrorMessages,
 ): RegisterOptions => {
-  return {
-    validate: {
-      baseValidations: (val?: VerifiableFieldValues) => {
-        return baseEmailValidationFn({ schema, validationErrorMessages })(
-          val?.value,
-        )
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  const baseVfnRules = useBaseVfnFieldValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
+  return useMemo(() => {
+    return {
+      validate: {
+        baseValidations: (val?: VerifiableFieldValues) => {
+          return baseEmailValidationFn({
+            schema,
+            t,
+            validationErrorMessages,
+          })(val?.value)
+        },
+        ...baseVfnRules.validate,
       },
-      ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
-        .validate,
-    },
-  }
+    }
+  }, [baseVfnRules.validate, schema, t, validationErrorMessages])
 }
 
 /**
@@ -719,9 +890,11 @@ export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
 export const baseEmailValidationFn =
   ({
     schema,
+    t,
     validationErrorMessages = { domainDisallowed: 'Domain disallowed' },
   }: {
     schema: MinimumFieldValidationProps<EmailFieldBase>
+    t?: TFunction
     validationErrorMessages?: EmailValidationErrorMessages
   }) =>
   (inputValue?: string) => {
@@ -730,7 +903,8 @@ export const baseEmailValidationFn =
     const trimmedInputValue = inputValue.trim()
 
     // Valid email check
-    if (!validator.isEmail(trimmedInputValue)) return INVALID_EMAIL_ERROR
+    if (!validator.isEmail(trimmedInputValue))
+      return t ? t('invalidEmail') : INVALID_EMAIL_ERROR
 
     // Valid domain check
     const allowedDomains = new Set(schema.allowedEmailDomains)
@@ -746,14 +920,12 @@ export const baseEmailValidationFn =
   }
 
 export const baseMobileValidationFn =
-  (_schema: MinimumFieldValidationProps<MobileFieldBase>) =>
-  (inputValue?: string) => {
+  (_schema: MinimumFieldValidationProps<MobileFieldBase>, t: TFunction) =>
+  (inputValue?: string): true | string => {
     if (!inputValue) return true
 
     // Valid mobile check
-    return (
-      isMobilePhoneNumber(inputValue) || 'Please enter a valid mobile number'
-    )
+    return isMobilePhoneNumber(inputValue) || (t('validMobile') as string)
   }
 
 export const createChildrenValidationRules: ValidationRuleFn<
