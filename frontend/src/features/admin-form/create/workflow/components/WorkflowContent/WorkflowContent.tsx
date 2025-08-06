@@ -12,7 +12,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
 
   if (isLoading) return null
-
+  console.log({ formWorkflow })
   return (
     <Stack color="secondary.500" spacing="2.75rem">
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
@@ -21,7 +21,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
-      <WorkflowCompletionMessageBlock />
+      {formWorkflow?.length == 0 ? null : <WorkflowCompletionMessageBlock />}
     </Stack>
   )
 }
