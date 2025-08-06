@@ -90,10 +90,14 @@ const StackRow = ({
         {statusTrackerUrl ? (
           <>
             <Stack direction={'row'}>
-              <Link target="_blank" href={statusTrackerUrl}>
-                {statusTrackerUrl}
-              </Link>{' '}
-              <Link href={statusTrackerUrl} isExternal>
+              <Link
+                target="_blank"
+                href={statusTrackerUrl}
+                display="inline-flex"
+                wordBreak="break-word"
+                gap="0.25rem"
+              >
+                {statusTrackerUrl}{' '}
                 <Box fontSize="1.25rem" display="flex" alignItems="center">
                   <BiLinkExternal />
                 </Box>
