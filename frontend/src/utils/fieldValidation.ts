@@ -940,3 +940,19 @@ export const createChildrenValidationRules: ValidationRuleFn<
     },
   }
 }
+
+export const createSignatureValidationRules: ValidationRuleFn<
+  SignatureFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: (val?: SignatureFieldValues) => {
+        if (disableRequiredValidation || !schema.required) return true
+
+        const strokes = val?.value
+        const hasValidStroke = Array.isArray(strokes) && strokes.length > 0
+        return hasValidStroke ? true : REQUIRED_ERROR
+      },
+    },
+  }
+}
