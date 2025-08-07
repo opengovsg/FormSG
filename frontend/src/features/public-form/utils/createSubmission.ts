@@ -16,7 +16,6 @@ import {
   SubmissionAttachment,
   SubmissionAttachmentsMap,
 } from '~shared/types/submission'
-import { convertToSignatureStringOutput } from '~shared/utils/signature'
 
 import fileArrayBuffer from '~/utils/fileArrayBuffer'
 

@@ -8,6 +8,7 @@ import {
   GenericStringAnswerResponseFieldV3,
   TableRow,
 } from '../../../../shared/types'
+import { isStringArray } from '../../../../shared/utils/is-string-array'
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
@@ -76,9 +77,6 @@ export const isProcessedSignatureResponse = (
     isStringArray(response.answerArray)
   )
 }
-
-const isStringArray = (arr: unknown): arr is string[] =>
-  Array.isArray(arr) && arr.every((item) => typeof item === 'string')
 
 // Check that the row contains a single array of only string (including empty string)
 export const isTableRow = (row: unknown): row is TableRow =>

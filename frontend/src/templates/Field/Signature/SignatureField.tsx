@@ -23,6 +23,8 @@ export interface SignatureFieldProps extends BaseFieldProps {
   disableRequiredValidation?: boolean
 }
 
+const strokePressureDefault = 0.5
+
 export const SignatureField = ({
   schema,
   disableRequiredValidation,
@@ -131,7 +133,7 @@ export const SignatureField = ({
       setShowSignaturePlaceholder(false)
       setIsDrawing(true)
       const newStroke: [number, number, number][] = [
-        [e.offsetX, e.offsetY, e.pressure || 0.5],
+        [e.offsetX, e.offsetY, e.pressure || strokePressureDefault],
       ]
       setCurrentStroke(newStroke)
       setPfStrokes((prev) => [...prev, newStroke])
@@ -140,7 +142,7 @@ export const SignatureField = ({
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDrawing) return
       setCurrentStroke((prev) => {
-        const newPoint = [e.offsetX, e.offsetY, e.pressure || 0.5] as [
+        const newPoint = [e.offsetX, e.offsetY, e.pressure || strokePressureDefault] as [
           number,
           number,
           number,

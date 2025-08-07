@@ -2,6 +2,8 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
+import { BasicField } from '~shared/types'
+import { isStringArray } from '~shared/utils/is-string-array'
 import {
   convertToSignatureVectorArray,
   getSignatureFileName,
@@ -188,9 +190,8 @@ async function decryptIntoCsv(
             })
           }
 
-          // Create and populate signature attachments TODO: fix toString when sdk is published
           if (
-            field.fieldType.toString() === 'signature' &&
+            field.fieldType === BasicField.Signature &&
             isStringArray(field.answerArray)
           ) {
             const signatureSvgBuffer = convertToSignatureSvgString(
@@ -257,8 +258,3 @@ const exports = {
 expose(exports)
 
 export type DecryptionWorkerApi = typeof exports
-
-//TODO: move this to a util file?
-const isStringArray = (value: unknown): value is string[] => {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string')
-}

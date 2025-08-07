@@ -3,8 +3,6 @@ export const signatureStrokeThinning = 0.5
 export const signatureStrokeSmoothing = 0.5
 export const signatureStrokeStreamline = 0.5
 
-export const signatureOutputBoxWidthDefault = 500
-export const signatureOutputBoxHeightDefault = 500
 export const signatureOutputPaddingDefault = 10
 export const signatureOutputStrokeFillStyle = 'black'
 
@@ -72,5 +70,12 @@ export const getSignatureFileName = ({
   timestamp?: string // incase we want to add timestamp in the future
   isSvg?: boolean
 }): string => {
-  return `Signature_Captured_${fieldId}${timestamp ? `_${timestamp}` : ''}.${isSvg ? 'svg' : 'png'}`
+  const fileName = [
+    'Signature_Captured',
+    fieldId,
+    timestamp ? `_${timestamp}` : '',
+  ].join('')
+
+  const fileExtension = isSvg ? 'svg' : 'png'
+  return `${fileName}.${fileExtension}`
 }

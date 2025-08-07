@@ -39,7 +39,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
               {filteredCreateBasicFields.map(({ fieldType, originalIndex }) => {
                 const shouldDisableField = isLoading
 
-                // TODO: remove when signature field is out of beta
+                // TODO: FRM-2054 remove when signature field is out of beta
                 if (
                   fieldType === BasicField.Signature &&
                   !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)

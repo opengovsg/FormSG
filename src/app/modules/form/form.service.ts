@@ -650,7 +650,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
         fieldType: field.fieldType,
       }
     }
-    case BasicField.Signature: // TODO: FRM-2029 implement signature field sample data
+    case BasicField.Signature:
     case BasicField.Section:
     case BasicField.Statement:
     case BasicField.Image:

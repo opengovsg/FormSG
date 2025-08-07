@@ -202,7 +202,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
     switch (
-      row.fieldType as FieldType | 'signature' //TODO: remove once sdk is updated
+      row.fieldType as FieldType
     ) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
@@ -217,7 +217,7 @@ export const DecryptedRow = memo(
         return <DecryptedTableRow row={row} />
       case BasicField.Address:
         return <DecryptedAddressRow row={row} />
-      case 'signature':
+      case BasicField.Signature:
         return <DecryptedSignatureRow row={row} />
       default:
         return (

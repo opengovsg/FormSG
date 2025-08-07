@@ -162,10 +162,6 @@ export type SignatureFieldValues = {
   type: 'draw'
   value: [number, number, number][][]
 }
-// | {
-//     type: 'text' // TODO: unused, kept as example of extension
-//     value: string
-//   }
 
 // Various schemas used by different fields
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>
