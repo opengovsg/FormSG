@@ -1,5 +1,6 @@
 import { CanvasRenderingContext2D, createCanvas } from 'canvas'
 import getStroke from 'perfect-freehand'
+import { SignatureVectorArray } from 'shared/types'
 
 import {
   boxHeightDefault,
@@ -14,7 +15,7 @@ import {
 } from '../../../shared/utils/signature'
 
 export const convertToSignaturePngBuffer = (
-  vectorArray: [number, number, number][][],
+  vectorArray: SignatureVectorArray,
   padding = signatureOutputPaddingDefault,
 ): Buffer => {
   if (vectorArray.length === 0) return Buffer.alloc(0)

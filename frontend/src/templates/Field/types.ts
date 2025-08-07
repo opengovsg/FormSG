@@ -35,6 +35,7 @@ import {
   SectionFieldBase,
   ShortTextFieldBase,
   SignatureFieldBase,
+  SignatureVectorArray,
   StatementFieldBase,
   TableFieldBase,
   UenFieldBase,
@@ -160,7 +161,7 @@ export type AddressCompoundFieldValues = {
 
 export type SignatureFieldValues = {
   type: 'draw'
-  value: [number, number, number][][]
+  value: SignatureVectorArray
 }
 
 // Various schemas used by different fields

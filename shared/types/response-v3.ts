@@ -3,6 +3,7 @@ import {
   BasicField,
   FormFieldDto,
   MyInfoChildAttributes,
+  SignatureVectorArray,
 } from './field'
 
 export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
@@ -140,6 +141,6 @@ export type AddressCompoundFieldResponseV3 = {
 }
 
 export type SignatureFieldResponseV3 = {
-  type: 'draw' //TODO: update when signatures have more than 1 type
-  value: [number, number, number][][]
+  type: 'draw'
+  value: SignatureVectorArray
 }

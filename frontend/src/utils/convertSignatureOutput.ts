@@ -1,5 +1,6 @@
 import getStroke from 'perfect-freehand'
 
+import { SignatureVectorArray } from '~shared/types'
 import {
   boxHeightDefault,
   boxWidthDefault,
@@ -28,7 +29,7 @@ export const drawStroke = (
 }
 
 export const convertToSignatureSvgString = (
-  vectorArray: [number, number, number][][],
+  vectorArray: SignatureVectorArray,
   padding = signatureOutputPaddingDefault,
 ): string => {
   if (vectorArray.length === 0) return ''

@@ -17,6 +17,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { SignatureFieldInput, SignatureFieldSchema } from '../types'
+import { SignatureVectorArray } from '~shared/types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
@@ -45,7 +46,7 @@ export const SignatureField = ({
     formContext.register(schema._id, signatureValidationRules)
   }, [formContext, schema._id, signatureValidationRules])
 
-  let vectorArray: [number, number, number][][] = []
+  let vectorArray: SignatureVectorArray = []
   const preExistingSignature = getValues(`${schema._id}`)
   if (preExistingSignature) {
     vectorArray = preExistingSignature.value
@@ -56,7 +57,7 @@ export const SignatureField = ({
   const boxRef = useRef<HTMLDivElement>(null)
 
   const [pfStrokes, setPfStrokes] =
-    useState<[number, number, number][][]>(vectorArray)
+    useState<SignatureVectorArray>(vectorArray)
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
   >([])
@@ -262,7 +263,7 @@ export const SignatureField = ({
                   </Flex>
                 )}
                 <Box
-                  pointerEvents={schema.disabled ? 'none' : 'auto'} // 👈 this blocks canvas interaction
+                  pointerEvents={schema.disabled ? 'none' : 'auto'} // disable canvas interaction
                   width="100%"
                   height="100%"
                 >

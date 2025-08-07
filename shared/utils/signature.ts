@@ -1,3 +1,5 @@
+import { SignatureVectorArray } from '../types'
+
 export const signatureStrokeSize = 8
 export const signatureStrokeThinning = 0.5
 export const signatureStrokeSmoothing = 0.5
@@ -15,7 +17,7 @@ export const boxWidthDefault = 1
  * @returns JSON stringified vector array
  */
 export const convertToSignatureStringOutput = (
-  input: [number, number, number][][],
+  input: SignatureVectorArray,
 ): string => {
   return JSON.stringify(input)
 }
@@ -27,7 +29,7 @@ export const convertToSignatureStringOutput = (
  */
 export const convertToSignatureVectorArray = (
   input: string,
-): [number, number, number][][] => {
+): SignatureVectorArray => {
   return JSON.parse(input)
 }
 
@@ -44,7 +46,7 @@ type BoundingBox = {
  * @returns BoundingBox with min/max for X and Y coordinates
  */
 export const getBoundingBox = (
-  vectorArray: [number, number, number][][],
+  vectorArray: SignatureVectorArray,
 ): BoundingBox => {
   let minX = Infinity,
     minY = Infinity,

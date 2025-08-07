@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField } from '~shared/types'
+import { BasicField, SignatureVectorArray } from '~shared/types'
 
 import Button from '~components/Button'
 
@@ -23,7 +23,7 @@ const baseSchema: SignatureFieldSchema = {
   _id: 'random-signature-id',
 }
 
-const fakeSignature: [number, number, number][][] = [
+const fakeSignature: SignatureVectorArray = [
   [
     [10, 20, 0.5],
     [12, 22, 0.6],
