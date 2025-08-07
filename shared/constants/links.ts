@@ -12,3 +12,6 @@ export const GROWTHBOOK_DEV_PROXY =
   'https://proxy-growthbook-stg.formsg.workers.dev'
 export const KILL_EMAIL_MODE_LINK =
   'https://go.gov.sg/formsg-email-mode-phase-out'
+
+export const STATUS_TRACKER_PREVIEW_LINK =
+  'https://go.gov.sg/mrf-preview-status-tracking'
