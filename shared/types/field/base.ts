@@ -24,6 +24,7 @@ export enum BasicField {
   Uen = 'uen',
   Children = 'children',
   Address = 'address',
+  Signature = 'signature',
 }
 
 /**

@@ -2,6 +2,7 @@ import {
   AddressResponse,
   CheckboxResponse,
   ChildBirthRecordsResponse,
+  SignatureResponse,
   TableResponse,
 } from '../../../shared/types'
 import {
@@ -23,6 +24,7 @@ export type SingleAnswerFieldResponse =
       | IAttachmentResponse
       | ChildBirthRecordsResponse
       | AddressResponse
+      | SignatureResponse
     >
   | Exclude<
       ParsedClearFormFieldResponse,
@@ -31,6 +33,7 @@ export type SingleAnswerFieldResponse =
       | IAttachmentResponse
       | ChildBirthRecordsResponse
       | AddressResponse
+      | SignatureResponse
     >
 
 export type FieldResponse =

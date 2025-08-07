@@ -58,8 +58,8 @@ export const MrfWorkflowCompletionEmail = ({
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
-      <Text style={{...primaryTextStyle, ...questionMargin}}>{qa.question}</Text>
-      <Text style={{...secondaryTextStyle, ...answerMargin}}>{qa.answer}</Text>
+      <Text style={{ ...primaryTextStyle, ...questionMargin }}>{qa.question}</Text>
+      <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{qa.answer}</Text>
     </>
   )
 

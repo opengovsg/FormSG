@@ -6,6 +6,7 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
+import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -35,6 +36,7 @@ import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
+  isProcessedSignatureResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -81,12 +83,15 @@ import {
   ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
+  ProcessedSignatureResponse,
+  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
+  SIGNATURE_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
@@ -120,6 +125,8 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
       return TABLE_PREFIX
     case BasicField.Attachment:
       return ATTACHMENT_PREFIX
+    case BasicField.Signature:
+      return SIGNATURE_PREFIX
     default:
       return ''
   }
@@ -211,6 +218,31 @@ export const getAnswerForAddress = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: handleAddressResponseDisplay(response.answerArray).join(', '),
+  }
+}
+
+/**
+ * Creates a response for signature with its answer formatted from the answerArray
+ */
+export const getAnswerForSignature = (
+  response: ProcessedSignatureResponse,
+): ResponseFormattedForEmail => {
+  let signatureAnswer: string
+  switch (response.answerArray[0]) {
+    case 'draw':
+      signatureAnswer = getSignatureFileName({ fieldId: response._id })
+      break
+    default:
+      signatureAnswer = ''
+  }
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: signatureAnswer,
   }
 }
 
@@ -468,6 +500,9 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   } else if (isProcessedAddressResponse(response)) {
     const address = getAnswerForAddress(response)
     return [getFormattedFunction(address, hashedFields)]
+  } else if (isProcessedSignatureResponse(response)) {
+    const signature = getAnswerForSignature(response)
+    return [getFormattedFunction(signature, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -572,6 +607,7 @@ const getAutoReplyFormattedResponse = (
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
+      // fieldType: response.fieldType,
     }
   }
   return undefined
@@ -596,7 +632,7 @@ export class SubmissionEmailObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const splitAddressData = splitAddressResponse(this.parsedResponses)
+    const splitAddressData = formatDataCollationResponse(this.parsedResponses)
     const dataCollationFormattedData = splitAddressData.flatMap((response) =>
       createFormattedDataForOneField(
         response,
@@ -645,7 +681,9 @@ export class SubmissionEmailObj {
   }
 }
 
-const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
+const formatDataCollationResponse = (
+  parsedResponses: ProcessedFieldResponse[],
+) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {
     const response = parsedResponses[i]
@@ -661,6 +699,16 @@ const splitAddressResponse = (parsedResponses: ProcessedFieldResponse[]) => {
           answer: answer,
         })
       })
+    } else if (
+      response.fieldType === BasicField.Signature &&
+      isProcessedSignatureResponse(response)
+    ) {
+      responses.push({
+        _id: `${response._id}`,
+        fieldType: response.fieldType,
+        question: `${response.question}`,
+        answer: getSignatureFileName({ fieldId: response._id }),
+      } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)
     }

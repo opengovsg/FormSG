@@ -218,6 +218,12 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         ...baseMeta,
       }
     }
+    case BasicField.Signature: {
+      return {
+        fieldType,
+        ...baseMeta,
+      }
+    }
   }
 }
 

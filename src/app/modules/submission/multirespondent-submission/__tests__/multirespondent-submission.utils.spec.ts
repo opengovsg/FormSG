@@ -17,6 +17,7 @@ import {
   LongTextResponseV3,
   NumberResponseV3,
   ShortTextResponseV3,
+  SignatureFieldResponseV3,
   SubmissionType,
   TableResponseV3,
   WorkflowStatus,
@@ -32,6 +33,7 @@ import {
   INumberFieldSchema,
   IPopulatedForm,
   IShortTextFieldSchema,
+  ISignatureFieldSchema,
   ITableFieldSchema,
   MultirespondentSubmissionData,
 } from 'src/types'
@@ -425,6 +427,35 @@ describe('multirespondent-submission.utils', () => {
         {
           question: 'Address',
           answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
+        },
+      ])
+    })
+
+    it('should handle signature fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
+        } as ISignatureFieldSchema,
+      ]
+
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Signature,
+          answer: {
+            type: 'draw',
+            value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
+          } as SignatureFieldResponseV3,
+        },
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        {
+          question: '[signature] Signature',
+          answer: 'Signature_Captured_1.png',
         },
       ])
     })

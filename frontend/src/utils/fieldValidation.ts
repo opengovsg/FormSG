@@ -38,6 +38,7 @@ import {
   RadioFieldBase,
   RatingFieldBase,
   ShortTextFieldBase,
+  SignatureFieldBase,
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
@@ -61,6 +62,7 @@ import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import {
   AddressCompoundFieldInput,
   CheckboxFieldValues,
+  SignatureFieldValues,
   SingleAnswerValue,
   VerifiableFieldValues,
 } from '~templates/Field/types'
@@ -934,6 +936,22 @@ export const createChildrenValidationRules: ValidationRuleFn<
       required: (value: string) => {
         if (disableRequiredValidation || !schema.required) return true
         if (!value || !value.trim()) return REQUIRED_ERROR
+      },
+    },
+  }
+}
+
+export const createSignatureValidationRules: ValidationRuleFn<
+  SignatureFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: (val?: SignatureFieldValues) => {
+        if (disableRequiredValidation || !schema.required) return true
+
+        const strokes = val?.value
+        const hasValidStroke = Array.isArray(strokes) && strokes.length > 0
+        return hasValidStroke ? true : REQUIRED_ERROR
       },
     },
   }

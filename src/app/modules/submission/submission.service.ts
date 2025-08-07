@@ -8,6 +8,7 @@ import omit from 'lodash/omit'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
@@ -22,7 +23,6 @@ import {
 } from '../../../../shared/types'
 import {
   EmailRespondentConfirmationField,
-  IAttachmentInfo,
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,
@@ -597,7 +597,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form: IPopulatedForm
   submission: S
   responsesData?: EmailRespondentConfirmationField[]
-  attachments?: IAttachmentInfo[]
+  attachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
