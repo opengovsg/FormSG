@@ -73,7 +73,7 @@ export const getSignatureFileName = ({
   isSvg?: boolean
 }): string => {
   const fileName = [
-    'Signature_Captured',
+    'Signature_Captured_',
     fieldId,
     timestamp ? `_${timestamp}` : '',
   ].join('')
