@@ -6,6 +6,7 @@ import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 import getStroke from 'perfect-freehand'
 
 import { BasicField } from '~shared/types'
+import { SignatureVectorArray } from '~shared/types/field'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
 import {
   convertToSignatureVectorArray,
@@ -25,8 +26,6 @@ import Spinner from '~components/Spinner'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
-
-import { SignatureVectorArray } from '~shared/types/field'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -203,9 +202,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
-    switch (
-      row.fieldType as FieldType
-    ) {
+    switch (row.fieldType as FieldType) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
       case BasicField.Attachment:

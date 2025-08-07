@@ -3,6 +3,7 @@ import { useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
+import { SignatureVectorArray } from '~shared/types'
 import {
   signatureStrokeSize,
   signatureStrokeSmoothing,
@@ -17,7 +18,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { SignatureFieldInput, SignatureFieldSchema } from '../types'
-import { SignatureVectorArray } from '~shared/types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
@@ -56,8 +56,7 @@ export const SignatureField = ({
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const [pfStrokes, setPfStrokes] =
-    useState<SignatureVectorArray>(vectorArray)
+  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(vectorArray)
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
   >([])
@@ -143,11 +142,11 @@ export const SignatureField = ({
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDrawing) return
       setCurrentStroke((prev) => {
-        const newPoint = [e.offsetX, e.offsetY, e.pressure || strokePressureDefault] as [
-          number,
-          number,
-          number,
-        ]
+        const newPoint = [
+          e.offsetX,
+          e.offsetY,
+          e.pressure || strokePressureDefault,
+        ] as [number, number, number]
         const updated = [...prev, newPoint]
         setPfStrokes((prev) => [
           ...prev.slice(0, -1),
