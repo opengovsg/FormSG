@@ -1,6 +1,6 @@
 // hands-clapping icon taken from  https://phosphoricons.com/.
 
-export const SignatureIcon = (): JSX.Element => {
+export const SignatureIcon = (props: React.SVGProps<SVGSVGElement>): JSX.Element => {
   return (
     <svg
       width="24"
@@ -8,6 +8,7 @@ export const SignatureIcon = (): JSX.Element => {
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         fill-rule="evenodd"
