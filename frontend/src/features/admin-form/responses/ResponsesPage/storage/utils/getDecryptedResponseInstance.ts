@@ -29,7 +29,8 @@ export const getDecryptedResponseInstance = (
     return new TableResponse(fieldRecordData)
   } else if (
     isArrayResponse(fieldRecordData) &&
-    fieldRecordData.fieldType === BasicField.Checkbox
+    (fieldRecordData.fieldType === BasicField.Checkbox ||
+      fieldRecordData.fieldType === BasicField.Signature)
   ) {
     return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {

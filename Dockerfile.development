@@ -14,6 +14,7 @@ RUN apk update && apk upgrade && \
     # Build dependencies for node_modules
     apk add --virtual native-deps \
     # Python version must be specified starting in alpine3.12
+    py3-pip \
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl \
     # Runtime dependencies
     # Note that each alpine version supports a specific version of chromium
@@ -33,7 +34,14 @@ RUN apk update && apk upgrade && \
     # Localstack - these are necessary in order to initialise local S3 buckets
     # jq is a package for easily parsing Localstack health endpoint's JSON output
     jq \
-    py-pip && \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    giflib-dev \
+    libjpeg-turbo-dev \
+    librsvg-dev && \
+    apk add --no-cache \
+    cairo pango librsvg && \
     npm install --quiet node-gyp -g && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1] --break-system-packages

@@ -1,11 +1,24 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
-import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
+import getStroke from 'perfect-freehand'
 
 import { BasicField } from '~shared/types'
+import { SignatureVectorArray } from '~shared/types/field'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
+import {
+  convertToSignatureVectorArray,
+  getBoundingBox,
+  signatureOutputPaddingDefault,
+  signatureStrokeSize,
+  signatureStrokeSmoothing,
+  signatureStrokeStreamline,
+  signatureStrokeThinning,
+} from '~shared/utils/signature'
 
+import { drawStroke } from '~utils/convertSignatureOutput'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
@@ -123,9 +136,73 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   )
 }
 
+const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    const vectorArray: SignatureVectorArray = row.answerArray
+      ? convertToSignatureVectorArray(row.answerArray[1] as string)
+      : []
+
+    const canvas = canvasRef.current
+    if (!canvas || vectorArray.length === 0) return
+
+    // Step 1: Compute bounding box of all x and y points
+    const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
+
+    const padding = signatureOutputPaddingDefault
+    const width = maxX - minX
+    const height = maxY - minY
+    const canvasWidth = width + padding * 2
+    const canvasHeight = height + padding * 2
+
+    // Step 2: Resize canvas
+    canvas.width = canvasWidth
+    canvas.height = canvasHeight
+    setCanvasSize({ width: canvasWidth, height: canvasHeight })
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // Step 3: Draw centered strokes inside trimmed canvas
+    vectorArray.forEach((stroke) => {
+      const normalizedStroke = stroke.map(([x, y, pressure]) => [
+        x - minX + padding,
+        y - minY + padding,
+        pressure,
+      ])
+      const pathData = getStroke(normalizedStroke, {
+        size: signatureStrokeSize,
+        thinning: signatureStrokeThinning,
+        smoothing: signatureStrokeSmoothing,
+        streamline: signatureStrokeStreamline,
+      })
+      drawStroke(ctx, pathData)
+    })
+  }, [row.answerArray])
+
+  return (
+    <Stack>
+      <DecryptedQuestionLabel row={row} />
+      <Box
+        background="white"
+        width={`${canvasSize.width}px`}
+        height={`${canvasSize.height}px`}
+        border="1px solid"
+        borderColor="neutral.400"
+        borderRadius="0.25rem"
+      >
+        <canvas ref={canvasRef} />
+      </Box>
+    </Stack>
+  )
+}
+
 export const DecryptedRow = memo(
   ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
-    switch (row.fieldType) {
+    switch (row.fieldType as FieldType) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
       case BasicField.Attachment:
@@ -139,6 +216,8 @@ export const DecryptedRow = memo(
         return <DecryptedTableRow row={row} />
       case BasicField.Address:
         return <DecryptedAddressRow row={row} />
+      case BasicField.Signature:
+        return <DecryptedSignatureRow row={row} />
       default:
         return (
           <Stack>

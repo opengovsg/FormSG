@@ -48,6 +48,8 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
+import { SignatureIcon } from '~assets/icons'
+
 export type BuilderSidebarFieldMeta = {
   label: string
   icon: As
@@ -284,6 +286,12 @@ export const BASICFIELD_TO_DRAWER_META: {
       'road',
       'venue',
     ],
+  },
+  [BasicField.Signature]: {
+    label: 'Signature',
+    icon: SignatureIcon,
+    isSubmitted: true,
+    searchAliases: ['sign', 'signature', 'draw'],
   },
 }
 

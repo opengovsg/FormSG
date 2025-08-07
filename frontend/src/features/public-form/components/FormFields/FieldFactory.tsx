@@ -24,6 +24,7 @@ import {
   RatingField,
   SectionField,
   ShortTextField,
+  SignatureField,
   TableField,
   UenField,
   YesNoField,
@@ -123,6 +124,8 @@ export const FieldFactory = memo(
         return <TableField schema={field} {...rest} />
       case BasicField.Address:
         return <AddressCompoundField schema={field} {...rest} />
+      case BasicField.Signature:
+        return <SignatureField schema={field} {...rest} />
       case BasicField.Children:
         return (
           <ChildrenCompoundField

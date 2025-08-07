@@ -18,6 +18,10 @@ export const downloadAndDecryptAttachment = async (
 export const downloadAndDecryptAttachmentsAsZip = async (
   attachmentDownloadUrls: AttachmentsDownloadMap,
   secretKey: string,
+  extraAttachments?: {
+    filename: string
+    blob: Blob
+  }[],
 ) => {
   const zip = new JSZip()
   const downloadPromises = []
@@ -35,6 +39,13 @@ export const downloadAndDecryptAttachmentsAsZip = async (
       ),
     )
   }
+
+  if (extraAttachments?.length) {
+    for (const attachment of extraAttachments) {
+      zip.file(attachment.filename, attachment.blob)
+    }
+  }
+
   await Promise.all(downloadPromises)
   return await zip.generateAsync({ type: 'blob' })
 }

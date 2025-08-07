@@ -2,6 +2,14 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
+import { BasicField } from '~shared/types'
+import { isStringArray } from '~shared/utils/is-string-array'
+import {
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '~shared/utils/signature'
+
+import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -165,7 +173,10 @@ async function decryptIntoCsv(
               : submissionSecretKey
 
         let questionCount = 0
-
+        const extraAttachments: {
+          filename: string
+          blob: Blob
+        }[] = []
         decryptedSubmission.forEach((field) => {
           // Populate question number
           if (field.fieldType !== 'section') {
@@ -178,6 +189,25 @@ async function decryptIntoCsv(
               filename: field.answer,
             })
           }
+
+          if (
+            field.fieldType === BasicField.Signature &&
+            isStringArray(field.answerArray)
+          ) {
+            const signatureSvgBuffer = convertToSignatureSvgString(
+              convertToSignatureVectorArray(field.answerArray[1]),
+            )
+            const svgBlob = new Blob([signatureSvgBuffer], {
+              type: 'image/svg+xml',
+            })
+
+            const filename = getSignatureFileName({
+              fieldId: field._id,
+              isSvg: true,
+            })
+
+            extraAttachments.push({ filename: filename, blob: svgBlob })
+          }
         })
 
         try {
@@ -185,6 +215,7 @@ async function decryptIntoCsv(
             downloadAndDecryptAttachmentsAsZip(
               attachmentDownloadUrls,
               attachmentDecryptionKey,
+              extraAttachments,
             ),
           )
           csvRecord.setStatus(

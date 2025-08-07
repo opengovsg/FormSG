@@ -3,6 +3,7 @@ import {
   BasicField,
   FormFieldDto,
   MyInfoChildAttributes,
+  SignatureVectorArray,
 } from './field'
 
 export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
@@ -19,6 +20,7 @@ export type FieldResponseV3 =
   | MobileResponseV3
   | GenericStringAnswerFieldResponseV3
   | AddressResponseV3
+  | SignatureResponseV3
 
 export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
@@ -44,6 +46,7 @@ export type LongTextResponseV3 = FieldResponseFactoryV3<BasicField.LongText>
 export type DropdownResponseV3 = FieldResponseFactoryV3<BasicField.Dropdown>
 export type CountryRegionResponseV3 =
   FieldResponseFactoryV3<BasicField.CountryRegion>
+export type SignatureResponseV3 = FieldResponseFactoryV3<BasicField.Signature>
 export type YesNoResponseV3 = FieldResponseFactoryV3<BasicField.YesNo>
 export type CheckboxResponseV3 = FieldResponseFactoryV3<BasicField.Checkbox>
 export type RadioResponseV3 = FieldResponseFactoryV3<BasicField.Radio>
@@ -85,7 +88,9 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                   ? ChildrenCompoundFieldResponsesV3
                   : F extends BasicField.Address
                     ? AddressCompoundFieldResponseV3
-                    : never
+                    : F extends BasicField.Signature
+                      ? SignatureFieldResponseV3
+                      : never
 
 export type GenericStringAnswerResponseFieldTypeV3 =
   | NumberResponseV3['fieldType']
@@ -133,4 +138,9 @@ export type AttachmentFieldResponseV3 = {
 
 export type AddressCompoundFieldResponseV3 = {
   addressSubFields: AddressAttributes
+}
+
+export type SignatureFieldResponseV3 = {
+  type: 'draw'
+  value: SignatureVectorArray
 }

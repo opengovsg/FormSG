@@ -21,6 +21,7 @@ import type { StatementFieldBase } from './statementField'
 import type { TableFieldBase, TableFieldDto } from './tableField'
 import type { UenFieldBase } from './uenField'
 import type { YesNoFieldBase } from './yesNoField'
+import type { SignatureFieldBase } from './signatureField'
 import type { SetRequired } from 'type-fest'
 
 export * from './addressField'
@@ -49,6 +50,7 @@ export * from './uenField'
 export * from './utils'
 export * from './yesNoField'
 export * from './childrenCompoundField'
+export * from './signatureField'
 
 export type FormField =
   | AddressCompoundFieldBase
@@ -73,6 +75,7 @@ export type FormField =
   | TableFieldBase
   | UenFieldBase
   | YesNoFieldBase
+  | SignatureFieldBase
   | ChildrenCompoundFieldBase
 
 // These types are extended through using MyInfoableFieldBase

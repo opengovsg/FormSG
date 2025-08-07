@@ -46,6 +46,7 @@ import {
   EditRadio,
   EditRating,
   EditShortText,
+  EditSignature,
   EditTable,
   EditUen,
   EditYesNo,
@@ -170,6 +171,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditImage {...props} field={field} />
       case BasicField.Address:
         return <EditAddress {...props} field={field} />
+      case BasicField.Signature:
+        return <EditSignature {...props} field={field} />
       default:
         return <div>TODO: Insert field options here</div>
     }
