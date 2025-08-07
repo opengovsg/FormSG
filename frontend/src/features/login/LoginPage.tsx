@@ -37,13 +37,10 @@ export const LoginPage = (): JSX.Element => {
   const { data: isOgpIp } = useIsOgpIpCheck()
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
   const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
-  const enableIntranetSgidLogin = useFeatureValue(
-    'enable-intranet-sgid-login',
-    false,
+  const enableIntranetSgidLogin = useFeatureIsOn(
+    featureFlags.enableIntranetSgidLogin,
   )
-
-  // Only show sgID login button if user is not on intranet
-  const showSgidLoginButton = !isIntranetIp || enableIntranetSgidLogin
+  const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -124,7 +121,7 @@ export const LoginPage = (): JSX.Element => {
             </>
           )}
           <LoginForm onSubmit={handleSendOtp} />
-          {!showSgidLoginButton && (
+          {!shouldShowSgidLogin && (
             <>
               <OrDivider />
               <SgidLoginButton />
