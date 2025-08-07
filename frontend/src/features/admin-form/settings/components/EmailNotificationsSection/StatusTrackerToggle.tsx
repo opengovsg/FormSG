@@ -9,7 +9,7 @@ import { MultirespondentFormSettings } from '~shared/types'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
-import { useAdminFormSettings } from '../../queriegits'
+import { useAdminFormSettings } from '../../queries'
 
 export const StatusTrackerToggle = (): JSX.Element => {
   const { t } = useTranslation()
