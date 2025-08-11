@@ -15,7 +15,7 @@ export const WorkflowContent = (): JSX.Element | null => {
 
   if (isLoading) return null
   return (
-    <Stack color="secondary.500" spacing="2.75rem">
+    <Stack color="secondary.500" spacing="2.75rem" mt="1.5rem">
       {/* <HeaderBlock /> */}
       <Box
         bg="white"
