@@ -65,11 +65,7 @@ export const StepNameBlock = ({
             isRequired={false}
             isInvalid={!!errors[STEP_NAME]}
           >
-            <FormLabel
-              isRequired
-              style={textStyles.h4}
-              textStyle={'subhead-1'}
-            >
+            <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
             <Controller
@@ -102,7 +98,7 @@ export const StepNameBlock = ({
               </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                  {(customStepName?.length ?? 0/MAX_CHAR)}
+                {`(${customStepName?.length ?? 0}/${MAX_CHAR})`}
               </FormHelperText>
             ) : null}
           </FormControl>
