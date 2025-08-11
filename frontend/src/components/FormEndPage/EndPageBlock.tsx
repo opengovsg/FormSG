@@ -28,6 +28,7 @@ export interface EndPageBlockProps {
   focusOnMount?: boolean
   isButtonHidden?: boolean
   form: PublicFormDto | undefined
+  isPreview?: boolean
 }
 
 export const EndPageBlock = ({
@@ -38,6 +39,7 @@ export const EndPageBlock = ({
   focusOnMount,
   isButtonHidden,
   form,
+  isPreview,
 }: EndPageBlockProps): JSX.Element => {
   const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
@@ -126,6 +128,16 @@ export const EndPageBlock = ({
             )}
           </Box>
         )}
+
+        {/* For MRF status tracking preview */}
+        {form?.responseMode == FormResponseMode.Multirespondent &&
+          form?.hasStatusTracker && isPreview ? 
+            (<Box mt="2.25rem">
+              <SubmitAnotherResponseButton
+                endPage={endPage}
+                colorTheme={colorTheme}
+              />
+            </Box>) : null }
       </Box>
     </>
   )
