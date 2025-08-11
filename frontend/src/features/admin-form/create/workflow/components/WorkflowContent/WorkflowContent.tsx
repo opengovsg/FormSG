@@ -1,4 +1,4 @@
-import { Box, Divider, Stack } from '@chakra-ui/react'
+import { Text, Box, Divider, Stack } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
@@ -14,18 +14,24 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
 
   if (isLoading) return null
-  console.log({ formWorkflow })
   return (
     <Stack color="secondary.500" spacing="2.75rem">
+      {/* <HeaderBlock /> */}
       <Box
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
         borderRadius="4px"
         padding="1.5rem"
-        mt={{ base: '1.5rem', md: '2rem' }}
       >
+        <Stack gap={"1.5rem"}>
+          <Text as="h2" textStyle="h2">
+            Workflow
+        </Text>
+        <Divider/>
         <StatusTrackerToggle />
+        </Stack>
+
       </Box>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
