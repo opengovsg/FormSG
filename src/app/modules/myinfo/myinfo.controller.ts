@@ -108,11 +108,12 @@ const validateMyInfoLogin = celebrate({
 })
 
 type MyInfoLoginQueryParams =
-  | { code: string; state: string }
+  | { code: string; state: string; forwarded?: string }
   | {
       error: string
       'error-description'?: string
       state: string
+      forwarded?: string
     }
 
 /**

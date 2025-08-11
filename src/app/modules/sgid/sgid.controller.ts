@@ -22,7 +22,7 @@ export const handleLogin: ControllerHandler<
   ParamsDictionary,
   unknown,
   unknown,
-  { code: string; state: string }
+  { code: string; state: string; forwarded?: string }
 > = async (req, res) => {
   const { code, state } = req.query
   const meta = { action: 'handleLogin', code, state }
