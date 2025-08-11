@@ -1,7 +1,7 @@
 import { KeyObject } from 'crypto'
 import { JWK, JWTPayload, JWTVerifyResult } from 'jose'
 import { Options } from 'node-cache'
-import { BaseClient } from 'openid-client'
+import { BaseClient } from 'openid-client-legacy'
 
 type PublicJwk = Partial<JWK> & Required<Pick<JWK, 'use' | 'kid'>>
 

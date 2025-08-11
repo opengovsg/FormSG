@@ -32,6 +32,7 @@ import {
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
   constructOptionalAddressFieldValidator,
+  constructSignatureFieldValidator,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
@@ -41,6 +42,7 @@ import {
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
+  isProcessedSignatureResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
 } from './field-validation.guards'
@@ -309,6 +311,9 @@ export const validateField = (
         response,
       )
     }
+  } else if (isProcessedSignatureResponse(response)) {
+    const validator = constructSignatureFieldValidator(formField)
+    return validateResponseWithValidator(validator, formId, formField, response)
   } else {
     logInvalidAnswer(formId, formField, 'Invalid response shape')
     return err(new ValidateFieldError('Response has invalid shape'))
@@ -385,6 +390,8 @@ const isResponsePresentOnHiddenFieldV3 = ({
             (value) => value === '',
           ),
       )
+    case BasicField.Signature:
+      return ok(response.answer.value.length > 0)
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldErrorV3('Response has invalid shape'))
@@ -464,6 +471,7 @@ const isValidationRequiredV3 = ({
           response.answer.child.length > 0 ||
           response.answer.childFields.length > 0,
       )
+    case BasicField.Signature:
     case BasicField.Address: {
       const answerObjectDefined = !!response.answer
       return ok(answerObjectDefined) // address will require validation required or optional

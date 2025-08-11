@@ -83,6 +83,7 @@ const compileUserModel = (db: Mongoose) => {
         multiLangTranslation: Boolean,
         respondentCopy: Boolean,
         statusTracker: Boolean,
+        signatureField: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags

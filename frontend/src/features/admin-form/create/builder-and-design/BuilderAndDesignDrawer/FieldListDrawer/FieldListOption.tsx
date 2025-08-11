@@ -184,6 +184,12 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
             <Text noOfLines={1}>Use for approvals</Text>
           </Badge>
         ) : null}
+        {/* TODO: FRM-2054 remove when signature field is out of beta */}
+        {fieldType === BasicField.Signature ? (
+          <Badge colorScheme="primary" variant="subtle" color="secondary.500">
+            Beta
+          </Badge>
+        ) : null}
       </FieldListOption>
     )
   },

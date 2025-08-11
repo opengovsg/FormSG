@@ -10,6 +10,7 @@ import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import * as UserErrors from '../user/user.errors'
 
+import * as AuthSsoErrors from './sso/auth-sso.errors'
 import * as AuthErrors from './auth.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -26,6 +27,11 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
     case AuthErrors.InvalidDomainError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    case AuthSsoErrors.SsoNotWhitelistedError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
     case UserErrors.MissingUserError:
@@ -104,4 +110,12 @@ export const getUserIdFromSession = (
 
 export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
   return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
+}
+
+export const isEmailInDomainWhitelist = (
+  email: string,
+  domainWhitelist: string[],
+): boolean => {
+  const emailDomain = email.split('@')[1]
+  return domainWhitelist.includes(emailDomain)
 }

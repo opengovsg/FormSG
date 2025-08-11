@@ -29,6 +29,7 @@ export const UserBase = z.object({
       multiLangTranslation: z.boolean().optional(),
       respondentCopy: z.boolean().optional(),
       statusTracker: z.boolean().optional(),
+      signatureField: z.boolean().optional(),
     })
     .optional(),
   flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
@@ -57,6 +58,7 @@ export const UserDto = UserBase.extend({
   created: DateString,
   lastAccessed: DateString.optional(),
   updatedAt: DateString,
+  grantSource: z.enum(['sso', 'otp']).optional(),
 })
 export type UserDto = z.infer<typeof UserDto>
 
@@ -81,6 +83,10 @@ export type SendOtpResponseDto = {
 }
 
 export type GetSgidAuthUrlResponseDto = {
+  redirectUrl: string
+}
+
+export type GetSsoAuthUrlResponseDto = {
   redirectUrl: string
 }
 

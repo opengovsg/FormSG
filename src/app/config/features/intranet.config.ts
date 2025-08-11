@@ -8,6 +8,7 @@ import {
 export interface IIntranet {
   intranetIpList: string
   intranetIpListPath: string
+  ogpIpList: string
 }
 
 const intranetSchema: Schema<IIntranet> = {
@@ -22,6 +23,12 @@ const intranetSchema: Schema<IIntranet> = {
     format: validateNonIacStringParam,
     default: '',
     env: 'INTRANET_IP_LIST_PATH',
+  },
+  ogpIpList: {
+    doc: 'Path to file containing list of OGP IP addresses, separated by newlines',
+    format: validateNonIacStringParam,
+    default: '',
+    env: 'OGP_IP_LIST',
   },
 }
 

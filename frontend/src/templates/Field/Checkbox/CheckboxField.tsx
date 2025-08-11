@@ -12,7 +12,7 @@ import {
 import { FormColorTheme, Language } from '~shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
-import { createCheckboxValidationRules } from '~utils/fieldValidation'
+import { useCheckboxValidationRules } from '~utils/fieldValidation'
 import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import Checkbox from '~components/Checkbox'
 import { CheckboxProps } from '~components/Checkbox/Checkbox'
@@ -58,9 +58,9 @@ export const CheckboxField = ({
     [schema._id],
   )
 
-  const validationRules = useMemo(
-    () => createCheckboxValidationRules(schema, disableRequiredValidation),
-    [disableRequiredValidation, schema],
+  const validationRules = useCheckboxValidationRules(
+    schema,
+    disableRequiredValidation,
   )
 
   const englishCheckboxOptions = schema.fieldOptions

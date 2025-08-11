@@ -4,6 +4,9 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import { BasicField } from '~shared/types'
+import { getSignatureFileName } from '~shared/utils/signature'
+
 import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
@@ -76,6 +79,14 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
           fieldRecords.push(fieldRecord)
         })
         return //skip to next record in fieldRecords
+      }
+
+      // Populate signature fieldname
+      if (content.fieldType === BasicField.Signature) {
+        const filename = getSignatureFileName({
+          fieldId: content._id,
+        })
+        content.answerArray = [filename]
       }
 
       const fieldRecord = getDecryptedResponseInstance(content)

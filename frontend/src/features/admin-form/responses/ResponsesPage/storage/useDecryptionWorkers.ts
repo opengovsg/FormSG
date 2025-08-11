@@ -552,7 +552,6 @@ const useDecryptionWorkers = ({
       }
 
       const downloadStartTime = performance.now()
-
       return new Promise<DownloadResult>((resolve, reject) => {
         readAndQueueTask()
           .catch((err) => {

@@ -22,6 +22,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
+  SSO_LOGIN_HOLDING_ROUTE,
   STATUS_TRACKER_SUBROUTE,
   TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
@@ -42,6 +43,7 @@ import {
 import { ChartsPage } from '~features/admin-form/responses/ChartsPage/ChartsPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { SelectProfilePage } from '~features/login'
+import { SsoHoldingPage } from '~features/login/SsoHoldingPage'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
@@ -102,6 +104,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={SSO_LOGIN_HOLDING_ROUTE}
+          element={<PublicElement strict element={<SsoHoldingPage />} />}
         />
         <Route
           path={TEMP_LOGIN_ROUTE}

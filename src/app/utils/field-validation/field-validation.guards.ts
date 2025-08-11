@@ -8,6 +8,7 @@ import {
   GenericStringAnswerResponseFieldV3,
   TableRow,
 } from '../../../../shared/types'
+import { isStringArray } from '../../../../shared/utils/is-string-array'
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
@@ -16,6 +17,7 @@ import {
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
+  ProcessedSignatureResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
@@ -66,8 +68,15 @@ export const isProcessedAddressResponse = (
   )
 }
 
-const isStringArray = (arr: unknown): arr is string[] =>
-  Array.isArray(arr) && arr.every((item) => typeof item === 'string')
+export const isProcessedSignatureResponse = (
+  response: ProcessedFieldResponse,
+): response is ProcessedSignatureResponse => {
+  return (
+    response.fieldType === BasicField.Signature &&
+    'answerArray' in response &&
+    isStringArray(response.answerArray)
+  )
+}
 
 // Check that the row contains a single array of only string (including empty string)
 export const isTableRow = (row: unknown): row is TableRow =>
