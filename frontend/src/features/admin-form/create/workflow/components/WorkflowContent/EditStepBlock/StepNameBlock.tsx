@@ -105,7 +105,7 @@ export const StepNameBlock = ({
               </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                ({(customStepName?.length ?? 0)}/{MAX_CHAR})
+                ({customStepName?.length ?? 0}/{MAX_CHAR})
               </FormHelperText>
             ) : null}
           </FormControl>

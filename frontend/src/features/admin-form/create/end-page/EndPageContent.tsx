@@ -113,15 +113,15 @@ export const EndPageContent = (): JSX.Element => {
               bg={backgroundColor}
             >
               <EndPageBlock
-                  formTitle={form?.title}
-                  endPage={endPageContent}
-                  submissionData={{
-                    id: form?._id ?? 'Submission ID',
-                    timestamp: Date.now(),
-                  }}
-                  colorTheme={colorTheme ?? FormColorTheme.Blue}
-                  form={form}
-                  isPreview={true}
+                formTitle={form?.title}
+                endPage={endPageContent}
+                submissionData={{
+                  id: form?._id ?? 'Submission ID',
+                  timestamp: Date.now(),
+                }}
+                colorTheme={colorTheme ?? FormColorTheme.Blue}
+                form={form}
+                isPreview={true}
               />
             </Box>
           )}

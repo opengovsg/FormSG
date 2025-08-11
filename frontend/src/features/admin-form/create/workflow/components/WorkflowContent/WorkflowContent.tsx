@@ -1,4 +1,4 @@
-import { Text, Box, Divider, Stack } from '@chakra-ui/react'
+import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
@@ -24,14 +24,13 @@ export const WorkflowContent = (): JSX.Element | null => {
         borderRadius="4px"
         padding="1.5rem"
       >
-        <Stack gap={"1.5rem"}>
+        <Stack gap={'1.5rem'}>
           <Text as="h2" textStyle="h2">
             Workflow
-        </Text>
-        <Divider/>
-        <StatusTrackerToggle />
+          </Text>
+          <Divider />
+          <StatusTrackerToggle />
         </Stack>
-
       </Box>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (

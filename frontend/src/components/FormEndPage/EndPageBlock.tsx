@@ -131,13 +131,15 @@ export const EndPageBlock = ({
 
         {/* For MRF status tracking preview */}
         {form?.responseMode == FormResponseMode.Multirespondent &&
-          form?.hasStatusTracker && isPreview ? 
-            (<Box mt="2.25rem">
-              <SubmitAnotherResponseButton
-                endPage={endPage}
-                colorTheme={colorTheme}
-              />
-            </Box>) : null }
+        form?.hasStatusTracker &&
+        isPreview ? (
+          <Box mt="2.25rem">
+            <SubmitAnotherResponseButton
+              endPage={endPage}
+              colorTheme={colorTheme}
+            />
+          </Box>
+        ) : null}
       </Box>
     </>
   )
