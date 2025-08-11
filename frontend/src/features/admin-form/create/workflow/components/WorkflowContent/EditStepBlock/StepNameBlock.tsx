@@ -86,7 +86,6 @@ export const StepNameBlock = ({
               }}
               render={({ field }) => (
                 <Input
-                  // utilizing placeholder to mimic default step name
                   {...field}
                   placeholder={displayStepName}
                   _placeholder={{ color: 'secondary.700' }}
@@ -106,7 +105,7 @@ export const StepNameBlock = ({
               </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                ({MAX_CHAR - (customStepName?.length ?? 0)}/{MAX_CHAR})
+                ({(customStepName?.length ?? 0)}/{MAX_CHAR})
               </FormHelperText>
             ) : null}
           </FormControl>
