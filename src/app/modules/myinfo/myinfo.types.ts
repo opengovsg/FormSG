@@ -54,7 +54,6 @@ export enum MyInfoAuthCodeCookieState {
 export type MyInfoAuthCodeSuccessPayload = {
   authCode: string
   state: MyInfoAuthCodeCookieState.Success
-  forwarded?: string
 }
 
 export type MyInfoAuthCodeCookiePayload =
