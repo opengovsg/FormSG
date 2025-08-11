@@ -130,6 +130,5 @@ export interface Workflow {
   }
   stepName: {
     label: string
-    description: string
   }
 }

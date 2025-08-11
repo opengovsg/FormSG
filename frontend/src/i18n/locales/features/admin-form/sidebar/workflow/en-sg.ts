@@ -155,6 +155,5 @@ export const enSG: Workflow = {
   },
   stepName: {
     label: 'Step name',
-    description: 'Respondents will see it only if Status Tracking is enabled.',
   },
 }

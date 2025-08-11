@@ -69,9 +69,6 @@ export const StepNameBlock = ({
               isRequired
               style={textStyles.h4}
               textStyle={'subhead-1'}
-              description={t(
-                'features.adminForm.sidebar.workflow.stepName.description',
-              )}
             >
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
@@ -105,7 +102,7 @@ export const StepNameBlock = ({
               </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                ({customStepName?.length ?? 0}/{MAX_CHAR})
+                  {(customStepName?.length ?? 0/MAX_CHAR)}
               </FormHelperText>
             ) : null}
           </FormControl>
