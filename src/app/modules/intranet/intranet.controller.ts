@@ -30,3 +30,16 @@ export const handleGetIsOgpCheck: ControllerHandler<never, boolean> = (
   const isOgp = IntranetService.isOgpIp(ip)
   return res.status(StatusCodes.OK).json(isOgp)
 }
+
+/**
+ * Handler for GET /intranet/is-proxy-check endpoint.
+ * @returns whether the given IP address is a proxy IP
+ */
+export const handleGetIsProxyCheck: ControllerHandler<never, boolean> = (
+  req,
+  res,
+) => {
+  const ip = getRequestIp(req)
+  const isProxy = IntranetService.isProxyIp(ip)
+  return res.status(StatusCodes.OK).json(isProxy)
+}
