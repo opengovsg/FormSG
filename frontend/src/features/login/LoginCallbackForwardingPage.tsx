@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Divider, Flex, Stack } from '@chakra-ui/react'
+import { Flex, Stack } from '@chakra-ui/react'
 
 import { LOGIN_ROUTE } from '~constants/routes'
+import Spinner from '~components/Spinner'
 
 export const LoginCallbackForwardingPage = (): JSX.Element => {
   const [params] = useSearchParams()
@@ -9,17 +11,22 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
   const route = params.get('route')
   const forwarded = params.get('forwarded')
 
-  if (forwarded && route) {
-    // Send to the actual callback route
-    const params = new URLSearchParams({
-      forwarded: 'true',
-    })
-    window.location.replace(`${route}&${params.toString()}`)
-  } else {
-    // User doesn't have a valid callback, should reattempt to login
-    // TODO: fix this redirect if the callback is invalid
-    window.location.replace(route ?? LOGIN_ROUTE)
-  }
+  useEffect(() => {
+    let redirectUrl = route ?? LOGIN_ROUTE
+    if (forwarded && route) {
+      // Send to the actual callback route
+      const params = new URLSearchParams({
+        forwarded: 'true',
+      })
+
+      redirectUrl = `${route}&${params.toString()}`
+    }
+    const redirectTimeout = setTimeout(() => {
+      window.location.replace(redirectUrl)
+    }, 1000)
+
+    return () => clearTimeout(redirectTimeout)
+  }, [route, forwarded])
 
   return (
     <Flex flex={1} justify="center" align="center" background="primary.100">
@@ -31,9 +38,11 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
         borderColor="neutral.200"
         gap="1rem"
         background="white"
-        divider={<Divider />}
+        direction="row"
+        // divider={<Divider />}
       >
-        :)
+        <Spinner />
+        <p>Authenticating...</p>
       </Stack>
     </Flex>
   )
