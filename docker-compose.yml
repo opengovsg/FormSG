@@ -45,6 +45,7 @@ services:
       - INTRANET_IP_LIST_PATH=./__tests__/setup/mock-intranet-ips.txt
       - INTRANET_IP_LIST=127.0.0.1
       - OGP_IP_LIST=127.0.0.1
+      - PROXY_IP_LIST=127.0.0.1
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
       # Test credentials from reCAPTCHA docs

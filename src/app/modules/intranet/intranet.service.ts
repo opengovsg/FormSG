@@ -18,9 +18,11 @@ class IntranetServiceClass {
    */
   intranetIps: (ipAddress.Address4 | ipAddress.Address6)[]
   ogpIps: (ipAddress.Address4 | ipAddress.Address6)[]
+  proxyIps: (ipAddress.Address4 | ipAddress.Address6)[]
 
   constructor(intranetConfig: IIntranet) {
     this.ogpIps = []
+    this.proxyIps = []
 
     // TODO: (IaC Migration) Remove this double check after IaC migration is fully completed
     if (!intranetConfig.intranetIpList && !intranetConfig.intranetIpListPath) {
@@ -88,6 +90,36 @@ class IntranetServiceClass {
       })
       this.ogpIps = []
     }
+
+    const proxyList = IntranetServiceClass.safelySplitIp(
+      intranetConfig.proxyIpList,
+    )
+    try {
+      this.proxyIps = proxyList
+        .map((ip) => {
+          const parsedIp = IntranetServiceClass.parseIp(ip.trim())
+          if (!parsedIp) {
+            logger.warn({
+              message: `Invalid IP address in OGP IP list: ${ip}`,
+              meta: {
+                action: 'IntranetService',
+              },
+            })
+          }
+          return parsedIp
+        })
+        .filter(
+          (ip): ip is ipAddress.Address4 | ipAddress.Address6 => ip !== null,
+        )
+    } catch {
+      logger.warn({
+        message: 'Could not read file containing Proxy IPs',
+        meta: {
+          action: 'IntranetService',
+        },
+      })
+      this.proxyIps = []
+    }
   }
 
   /**
@@ -122,6 +154,24 @@ class IntranetServiceClass {
     const ogpIpMatches = this.ogpIps.map((ogpIp) => parsedIp.isInSubnet(ogpIp))
 
     return ogpIpMatches.includes(true)
+  }
+
+  /**
+   * Checks whether the given IP address is a proxied IP.
+   * @param ip IP address to check
+   * @returns Whether the IP address originated from known proxy IP
+   */
+  isProxyIp(ip: string): boolean {
+    const parsedIp = IntranetServiceClass.parseIp(ip)
+    if (!parsedIp) {
+      return false
+    }
+
+    const proxyIpMatches = this.proxyIps.map((proxyIp) =>
+      parsedIp.isInSubnet(proxyIp),
+    )
+
+    return proxyIpMatches.includes(true)
   }
 
   /**

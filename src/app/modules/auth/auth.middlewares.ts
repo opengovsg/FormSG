@@ -288,9 +288,9 @@ export const authCallbackForwardingMiddleware: ControllerHandler<
   unknown,
   { forwarded?: string }
 > = (req, res, next) => {
-  // Check if the request needs to be forwarded to the intranet
+  // Check if the request needs to be forwarded from the proxy to the intranet
   const forward =
-    !IntranetService.isIntranetIp(req.ip) &&
+    IntranetService.isProxyIp(req.ip) &&
     req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
     req.query?.forwarded !== 'true'
   if (forward) {
