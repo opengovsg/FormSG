@@ -294,9 +294,10 @@ export const authCallbackForwardingMiddleware: ControllerHandler<
     req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
     req.query?.forwarded !== 'true'
   if (forward) {
-    const searchParams = new URLSearchParams(req.query)
+    const searchParams = new URLSearchParams({})
     searchParams.append('forwarded', 'true')
-    return res.redirect(`?${searchParams.toString()}`)
+    searchParams.append('route', req.originalUrl)
+    return res.redirect(`/login/forward?${searchParams.toString()}`)
   }
   return next()
 }
