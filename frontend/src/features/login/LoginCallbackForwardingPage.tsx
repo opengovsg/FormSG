@@ -8,6 +8,15 @@ import Spinner from '~components/Spinner'
 
 import { useIsProxyIpCheck } from '~features/login/queries'
 
+export const ALLOWED_CALLBACK_FORWARDING_ROUTES = [
+  '/sgid/login',
+  '/mi/login',
+  '/api/v3/singpass/login',
+  '/api/v3/corppass/login',
+  '/api/v3/auth/sgid/login/callback',
+  '/api/v3/auth/sso/login/callback',
+]
+
 export const LoginCallbackForwardingPage = (): JSX.Element => {
   const [params] = useSearchParams()
 
@@ -27,7 +36,12 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
 
   useEffect(() => {
     let redirectUrl = route ?? LOGIN_ROUTE
-    if (forwarded && route) {
+
+    const allowedRoute = ALLOWED_CALLBACK_FORWARDING_ROUTES.find(
+      (allowedRoute) => route?.startsWith(allowedRoute),
+    )
+
+    if (forwarded && route && allowedRoute) {
       // Send to the actual callback route
       const params = new URLSearchParams({
         forwarded: 'true',
