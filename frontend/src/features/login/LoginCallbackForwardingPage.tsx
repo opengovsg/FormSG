@@ -1,20 +1,27 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Flex, Stack } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { LOGIN_ROUTE } from '~constants/routes'
 import Spinner from '~components/Spinner'
 
 import { useIsProxyIpCheck } from '~features/login/queries'
 
-const PROXY_REDIRECT_TIMEOUT = 5000
-const DEFAULT_REDIRECT_TIMEOUT = 1000
-
 export const LoginCallbackForwardingPage = (): JSX.Element => {
   const [params] = useSearchParams()
 
   const route = params.get('route')
   const forwarded = params.get('forwarded')
+
+  const callbackForwardingDefaultTimeout = useFeatureValue(
+    'callback-forwarding-default-timeout',
+    1000,
+  )
+  const callbackForwardingProxyTimeout = useFeatureValue(
+    'callback-forwarding-proxy-timeout',
+    10000,
+  )
 
   const isProxy = useIsProxyIpCheck()
 
@@ -32,11 +39,19 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
       () => {
         window.location.replace(redirectUrl)
       },
-      isProxy ? PROXY_REDIRECT_TIMEOUT : DEFAULT_REDIRECT_TIMEOUT,
+      isProxy.data
+        ? callbackForwardingProxyTimeout
+        : callbackForwardingDefaultTimeout,
     )
 
     return () => clearTimeout(redirectTimeout)
-  }, [route, forwarded, isProxy])
+  }, [
+    route,
+    forwarded,
+    isProxy,
+    callbackForwardingProxyTimeout,
+    callbackForwardingDefaultTimeout,
+  ])
 
   return (
     <Flex flex={1} justify="center" align="center" background="primary.100">
