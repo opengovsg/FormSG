@@ -12,6 +12,7 @@ import {
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
+import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   FormFieldSchema,
   IPopulatedForm,
@@ -311,6 +312,12 @@ export const getQuestionTitleAnswerString = ({
 
         answer = selectedAnswers.toString()
         break
+      case BasicField.Signature:
+        questionAnswerPair.push({
+          question: `[signature] ${questionTitle}`,
+          answer: getSignatureFileName({ fieldId: formField._id }),
+        })
+        continue
       case BasicField.Children:
         if (!response.answer.childFields || !response.answer.child) {
           continue

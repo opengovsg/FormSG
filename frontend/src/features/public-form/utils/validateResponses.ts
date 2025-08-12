@@ -19,6 +19,7 @@ import {
   RadioResponse,
   RatingResponse,
   ShortTextResponse,
+  SignatureResponse,
   TableResponse,
   UenResponse,
   YesNoResponse,
@@ -92,6 +93,8 @@ export const validateResponses = (responses: unknown): FieldResponse[] => {
         return ChildBirthRecordsResponse.parse(response)
       case BasicField.Address:
         return AddressResponse.parse(response)
+      case BasicField.Signature:
+        return SignatureResponse.parse(response)
       default:
         throw new Error(
           `Invalid fieldType provided for response validation: ${response.fieldType}`,

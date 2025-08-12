@@ -3,9 +3,11 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
+import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
 
 import {
+  BasicField,
   DateString,
   ErrorCode,
   ErrorDto,
@@ -15,6 +17,10 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
+import {
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '../../../../../shared/utils/signature'
 import {
   IAttachmentInfo,
   IEncryptedForm,
@@ -37,6 +43,7 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -800,6 +807,26 @@ const _createSubmission = async ({
     answer: item.answer,
   }))
 
+  // extract signatures & create a .png for email attachments
+  const signatureAttachments: Mail.Attachment[] = []
+  emailFields.forEach((field) => {
+    if (field.fieldType === BasicField.Signature) {
+      const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
+      const signatureData = convertToSignaturePngBuffer(vectorArray)
+      signatureAttachments.push({
+        content: signatureData,
+        filename: getSignatureFileName({
+          fieldId: field._id,
+        }),
+        contentType: 'image/png',
+      })
+    }
+  })
+
+  const emailAttachments = [
+    ...(unencryptedAttachments ?? []),
+    ...signatureAttachments,
+  ]
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -816,7 +843,7 @@ const _createSubmission = async ({
         created: createdTime,
         id: submission.id,
       },
-      attachments: unencryptedAttachments,
+      attachments: emailAttachments,
       formData: emailData.formData,
       dataCollationData,
     })
@@ -846,7 +873,7 @@ const _createSubmission = async ({
     submission,
     responses,
     emailData,
-    unencryptedAttachments,
+    emailAttachments,
     respondentEmails,
   )
 }

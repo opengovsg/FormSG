@@ -10,6 +10,7 @@ import {
   ChildrenCompoundFieldResponsesV3,
   FieldResponseAnswerMapV3,
   RadioFieldResponsesV3,
+  SignatureFieldResponseV3,
   TableFieldResponsesV3,
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
@@ -27,10 +28,12 @@ import {
   FieldResponse,
   HeaderResponse,
   RadioResponse,
+  SignatureResponse,
   TableResponse,
   TableRow,
 } from '~shared/types/response'
 import { removeAt } from '~shared/utils/immutable-array-fns'
+import { convertToSignatureStringOutput } from '~shared/utils/signature'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
@@ -51,6 +54,8 @@ import {
   RadioFieldSchema,
   RadioFieldValues,
   SectionFieldSchema,
+  SignatureFieldSchema,
+  SignatureFieldValues,
   SingleAnswerOutput,
   TableFieldSchema,
   TableFieldValues,
@@ -209,6 +214,20 @@ const transformToSectionOutput = (
   }
 }
 
+const transformToSignatureOutput = (
+  schema: SignatureFieldSchema,
+  input?: SignatureFieldValues | SignatureFieldResponseV3,
+): SignatureResponse => {
+  let answerArray: string[] = []
+  if (input !== undefined) {
+    answerArray = [input.type, convertToSignatureStringOutput(input.value)]
+  }
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answerArray,
+  }
+}
+
 const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
   input?: ChildrenCompoundFieldValues | ChildrenCompoundFieldResponsesV3,
@@ -341,5 +360,15 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
+    case BasicField.Signature:
+      return transformToSignatureOutput(
+        field,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
+      )
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustiveCheck: never = field
+      throw new Error(`Unsupported field type: ${_exhaustiveCheck}`)
+    }
   }
 }

@@ -249,7 +249,6 @@ const createResponsesArray = (
   const transformedResponses = formFields
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
     .filter((output): output is FieldResponse => output !== null)
-
   return validateResponses(transformedResponses)
 }
 
@@ -272,6 +271,7 @@ const createResponsesV3 = (
       case BasicField.Uen:
       case BasicField.Date:
       case BasicField.CountryRegion:
+      case BasicField.Signature:
       case BasicField.YesNo: {
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
