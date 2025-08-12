@@ -71,10 +71,8 @@ jobs:
         project:
           [
             'chromium-login',
-            'chromium-email-submission',
             'chromium-encrypt-submission',
             'firefox-login',
-            'firefox-email-submission',
             'firefox-encrypt-submission',
           ]
     env:
