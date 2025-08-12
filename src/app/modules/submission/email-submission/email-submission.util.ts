@@ -6,7 +6,7 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import { getSignatureFileName } from '../../../../../shared/utils/signature'
+import { convertToSignatureSvgDataURI, convertToSignatureVectorArray, getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -227,14 +227,15 @@ export const getAnswerForAddress = (
 export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
-  let signatureAnswer: string
-  switch (response.answerArray[0]) {
-    case 'draw':
-      signatureAnswer = getSignatureFileName({ fieldId: response._id })
-      break
-    default:
-      signatureAnswer = ''
-  }
+  // let signatureAnswer: string
+  // switch (response.answerArray[0]) {
+  //   case 'draw':
+  //     signatureAnswer = getSignatureFileName({ fieldId: response._id })
+  //     break
+  //   default:
+  //     signatureAnswer = ''
+  // }
+  const signatureAnswer = convertToSignatureSvgDataURI(convertToSignatureVectorArray(response.answerArray[1]))
   return {
     _id: response._id,
     fieldType: response.fieldType,
@@ -607,7 +608,7 @@ const getAutoReplyFormattedResponse = (
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
-      // fieldType: response.fieldType,
+      fieldType: response.fieldType,
     }
   }
   return undefined

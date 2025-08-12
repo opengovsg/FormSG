@@ -121,6 +121,8 @@ export const generateAutoreplyPdf = (
       cwd: process.cwd(),
     },
   })
+  console.log(`renderData`)
+  console.log(JSON.stringify(renderData))
 
   return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
     return ResultAsync.fromPromise(

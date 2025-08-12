@@ -182,7 +182,10 @@ export const performEncryptPostSubmissionActions = (
             }
           })
         : []
-
+      console.log(`emailData`)
+      console.log(JSON.stringify(emailData)) // still have fieldType
+      console.log(`autoReplyData`)
+      console.log(JSON.stringify(emailData?.autoReplyData)) // still have fieldType
       return sendEmailConfirmations({
         form,
         submission,
