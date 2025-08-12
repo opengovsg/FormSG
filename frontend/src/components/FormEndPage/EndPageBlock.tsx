@@ -116,6 +116,7 @@ export const EndPageBlock = ({
             <StatusTrackerLink
               formId={form?._id}
               submissionId={submissionData.id}
+              isPreview={isPreview}
             />
           </Box>
         ) : (
