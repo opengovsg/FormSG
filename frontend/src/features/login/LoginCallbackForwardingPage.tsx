@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Flex, Stack } from '@chakra-ui/react'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { LOGIN_ROUTE } from '~constants/routes'
@@ -67,7 +67,7 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
         // divider={<Divider />}
       >
         <Spinner />
-        <p>Authenticating...</p>
+        <Text>Verifying your identity...</Text>
       </Stack>
     </Flex>
   )
