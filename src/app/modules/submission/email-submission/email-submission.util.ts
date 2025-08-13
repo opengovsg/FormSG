@@ -711,7 +711,7 @@ const formatDataCollationResponse = (
         _id: `${response._id}`,
         fieldType: response.fieldType,
         question: `${response.question}`,
-        answer: getSignatureFileName({ fieldId: response._id }),
+        answer: getSignatureFileName({ fieldId: response._id, responseId: 'TODO' }), //TODO: fix responseId
       } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)

@@ -400,6 +400,7 @@ const sendMrfOutcomeEmails = ({
               content: signatureData,
               filename: getSignatureFileName({
                 fieldId: fieldId,
+                responseId: submissionId,
               }),
               contentType: 'image/png',
             })

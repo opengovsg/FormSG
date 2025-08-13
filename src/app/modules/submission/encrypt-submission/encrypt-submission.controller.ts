@@ -817,6 +817,7 @@ const _createSubmission = async ({
         content: signatureData,
         filename: getSignatureFileName({
           fieldId: field._id,
+          responseId: submissionId,
         }),
         contentType: 'image/png',
       })

@@ -304,10 +304,10 @@ export class MailService {
     // For signature fields, replace vector array with file name for email display
     for (const item of formSummaryRenderData.formData) {
       if (item.fieldType === BasicField.Signature) {
-        console.log(`signature field found`)
         item.answerTemplate = [
           getSignatureFileName({
             fieldId: item._id ?? '',
+            responseId: submission.id,
           }),
         ]
       }
@@ -714,10 +714,10 @@ export class MailService {
         // For signature fields, replace vector array with file name for email display
     for (const item of formData) {
       if (item.fieldType === BasicField.Signature) {
-        console.log(`signature field found`)
         item.answerTemplate = [
           getSignatureFileName({
             fieldId: item._id ?? '',
+            responseId: submission.id,
           }),
         ]
       }
