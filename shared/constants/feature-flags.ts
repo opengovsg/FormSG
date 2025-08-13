@@ -19,4 +19,5 @@ export const featureFlags = {
   designDrawerFormTitle: 'design-drawer-form-title' as const,
   signatureField: 'signature-field' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
+  enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
 }

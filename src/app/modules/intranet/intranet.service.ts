@@ -18,9 +18,11 @@ class IntranetServiceClass {
    */
   intranetIps: (ipAddress.Address4 | ipAddress.Address6)[]
   ogpIps: (ipAddress.Address4 | ipAddress.Address6)[]
+  rbiIps: (ipAddress.Address4 | ipAddress.Address6)[]
 
   constructor(intranetConfig: IIntranet) {
     this.ogpIps = []
+    this.rbiIps = []
 
     // TODO: (IaC Migration) Remove this double check after IaC migration is fully completed
     if (!intranetConfig.intranetIpList && !intranetConfig.intranetIpListPath) {
@@ -88,6 +90,36 @@ class IntranetServiceClass {
       })
       this.ogpIps = []
     }
+
+    const rbiIpList = IntranetServiceClass.safelySplitIp(
+      intranetConfig.rbiIpList,
+    )
+    try {
+      this.rbiIps = rbiIpList
+        .map((ip) => {
+          const parsedIp = IntranetServiceClass.parseIp(ip.trim())
+          if (!parsedIp) {
+            logger.warn({
+              message: `Invalid IP address in RBI proxy IP list: ${ip}`,
+              meta: {
+                action: 'IntranetService',
+              },
+            })
+          }
+          return parsedIp
+        })
+        .filter(
+          (ip): ip is ipAddress.Address4 | ipAddress.Address6 => ip !== null,
+        )
+    } catch {
+      logger.warn({
+        message: 'Could not read file containing RBI proxy IPs',
+        meta: {
+          action: 'IntranetService',
+        },
+      })
+      this.rbiIps = []
+    }
   }
 
   /**
@@ -122,6 +154,22 @@ class IntranetServiceClass {
     const ogpIpMatches = this.ogpIps.map((ogpIp) => parsedIp.isInSubnet(ogpIp))
 
     return ogpIpMatches.includes(true)
+  }
+
+  /**
+   * Checks whether the given IP address is a Remote Browser Isolation proxy IP.
+   * @param ip IP address to check
+   * @returns Whether the IP address originated from a known Remote Browser Isolation proxy IP
+   */
+  isRbiIp(ip: string): boolean {
+    const parsedIp = IntranetServiceClass.parseIp(ip)
+    if (!parsedIp) {
+      return false
+    }
+
+    const rbiIpMatches = this.rbiIps.map((rbiIp) => parsedIp.isInSubnet(rbiIp))
+
+    return rbiIpMatches.includes(true)
   }
 
   /**

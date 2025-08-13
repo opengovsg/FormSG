@@ -22,7 +22,7 @@ export const handleSpcpOidcLogin: (
   unknown,
   unknown,
   unknown,
-  { state: string; code: string }
+  { state: string; code: string; forwarded?: string }
 > = (authType) => async (req, res) => {
   const { state, code } = req.query
   const logMeta = {

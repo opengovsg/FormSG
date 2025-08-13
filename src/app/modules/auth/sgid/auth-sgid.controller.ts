@@ -59,9 +59,10 @@ export const handleLoginCallback: ControllerHandler<
   unknown,
   ErrorDto | undefined,
   unknown,
-  { code: string; state: string }
+  { code: string; state: string; forwarded?: string }
 > = async (req, res) => {
   const { code, state } = req.query
+
   const codeVerifier = req.cookies[SGID_CODE_VERIFIER_COOKIE_NAME]
   res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
 
