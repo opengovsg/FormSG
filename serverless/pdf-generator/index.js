@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer-core')
 const { execSync } = require('child_process')
 
+const chromePath = '/usr/bin/google-chrome-stable'
+
 exports.handler = async () => {
   const dummyHtml = '<h1>Hello World</h1>'
   const pdfBuffer = await generatePdfFromHtml(dummyHtml)
@@ -17,8 +19,6 @@ exports.handler = async () => {
  */
 const checkChrome = () => {
   try {
-    const chromePath =
-      '/var/task/chrome/linux-141.0.7354.0/chrome-linux64/chrome'
     console.log('Checking Chrome executable...')
 
     // Check if file exists
@@ -56,9 +56,14 @@ const generatePdfFromHtml = async (summaryHtml) => {
         dumpio: true,
         product: 'chrome',
         headless: true,
-        executablePath: '/usr/bin/google-chrome',
-        args: ['--no-sandbox', '--disable-gpu'],
-        timeout: 30000, // 30 second timeout
+        executablePath: chromePath,
+        args: [
+          '--headless',
+          '--in-process-gpu',
+          '--no-sandbox',
+          '--disable-gpu',
+        ],
+        timeout: 60000, // 60 second timeout
       })
       .catch((error) => {
         console.error('Chrome launch failed:', error)
