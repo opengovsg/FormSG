@@ -24,8 +24,20 @@ import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import { BuilderAndDesignContext } from './BuilderAndDesignContext'
 import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
+  BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
+  BASIC_FIELDS_DATES_AND_NUMBER,
+  BASIC_FIELDS_FREE_TEXT,
+  BASIC_FIELDS_OPTIONS,
   BASIC_FIELDS_ORDERED,
+  BASIC_FIELDS_OTHERS,
+  BASIC_FIELDS_PERSONAL,
+  CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID,
+  CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID,
+  CREATE_FIELD_DATES_AND_NUMBER_DROP_ID,
   CREATE_FIELD_DROP_ID,
+  CREATE_FIELD_FREE_TEXT_DROP_ID,
+  CREATE_FIELD_OTHERS_DROP_ID,
+  CREATE_FIELD_PERSONAL_DROP_ID,
   CREATE_MYINFO_CHILDREN_DROP_ID,
   CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
@@ -99,6 +111,49 @@ export const BuilderAndDesignTab = (): JSX.Element => {
         case CREATE_FIELD_DROP_ID: {
           return setToCreating(
             getFieldCreationMeta(BASIC_FIELDS_ORDERED[source.index]),
+            destination.index,
+          )
+        }
+        
+        // TODO: FRM-2071 Refactor when categories experiment is completed
+        case CREATE_FIELD_FREE_TEXT_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_FREE_TEXT[source.index]),
+            destination.index,
+          )
+        }
+          
+        case CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_OPTIONS[source.index]),
+            destination.index,
+          )
+        }
+
+        case CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS[source.index]),
+            destination.index,
+          )
+        }
+          
+        case CREATE_FIELD_DATES_AND_NUMBER_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_DATES_AND_NUMBER[source.index]),
+            destination.index,
+          )
+        }
+          
+        case CREATE_FIELD_PERSONAL_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_PERSONAL[source.index]),
+            destination.index,
+          )
+        }
+          
+        case CREATE_FIELD_OTHERS_DROP_ID: {
+          return setToCreating(
+            getFieldCreationMeta(BASIC_FIELDS_OTHERS[source.index]),
             destination.index,
           )
         }
