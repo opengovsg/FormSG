@@ -6,7 +6,7 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import { convertToSignatureSvgDataURI, convertToSignatureVectorArray, getSignatureFileName } from '../../../../../shared/utils/signature'
+import { convertToSignatureVectorArray, getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -97,6 +97,7 @@ import {
 } from './email-submission.constants'
 import { SubmissionHashError } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
+import { convertToSignaturePngDataURI } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 
@@ -235,7 +236,7 @@ export const getAnswerForSignature = (
   //   default:
   //     signatureAnswer = ''
   // }
-  const signatureAnswer = convertToSignatureSvgDataURI(convertToSignatureVectorArray(response.answerArray[1]))
+  const signatureAnswer = convertToSignaturePngDataURI(convertToSignatureVectorArray(response.answerArray[1]))
   return {
     _id: response._id,
     fieldType: response.fieldType,
@@ -587,6 +588,7 @@ const getFormFormattedResponse = (
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
   return {
+    _id: response._id,
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
     answer,

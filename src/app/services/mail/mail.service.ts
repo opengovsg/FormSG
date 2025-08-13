@@ -301,7 +301,7 @@ export class MailService {
     console.log(`responsesData`) 
     console.log(JSON.stringify(formSummaryRenderData.formData))
   
-    // For signature fields, replace vector array with file name
+    // For signature fields, replace vector array with file name for email display
     for (const item of formSummaryRenderData.formData) {
       if (item.fieldType === BasicField.Signature) {
         console.log(`signature field found`)
@@ -711,6 +711,17 @@ export class MailService {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
+        // For signature fields, replace vector array with file name for email display
+    for (const item of formData) {
+      if (item.fieldType === BasicField.Signature) {
+        console.log(`signature field found`)
+        item.answerTemplate = [
+          getSignatureFileName({
+            fieldId: item._id ?? '',
+          }),
+        ]
+      }
+    }
     // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
     const htmlData: SubmissionToAdminHtmlData = {
