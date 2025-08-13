@@ -33,6 +33,7 @@ import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_STATUS_TRACKING_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
@@ -69,11 +70,13 @@ const StackRow = ({
   value,
   isLoading,
   isError,
+  statusTrackerUrl,
 }: {
   label: string
   value: string
   isLoading: boolean
   isError: boolean
+  statusTrackerUrl?: string
 }) => {
   return (
     <Stack
@@ -83,7 +86,28 @@ const StackRow = ({
       <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
         {label}:
       </Text>
-      <Skeleton isLoaded={!isLoading && !isError}>{value}</Skeleton>
+      <Skeleton isLoaded={!isLoading && !isError}>
+        {statusTrackerUrl ? (
+          <>
+            <Stack direction={'row'}>
+              <Link
+                target="_blank"
+                href={statusTrackerUrl}
+                display="inline-flex"
+                wordBreak="break-word"
+                gap="0.25rem"
+              >
+                {statusTrackerUrl}{' '}
+                <Box fontSize="1.25rem" display="flex" alignItems="center">
+                  <BiLinkExternal />
+                </Box>
+              </Link>
+            </Stack>
+          </>
+        ) : (
+          value
+        )}
+      </Skeleton>
     </Stack>
   )
 }
@@ -207,32 +231,29 @@ export const IndividualResponsePage = (): JSX.Element => {
                 isLoading={isLoading}
                 isError={isError}
               />
-              <Stack direction="row" align="center">
-                <StackRow
-                  label={MRF_PENDING_RESPONSE_AT_LABEL}
-                  value={
-                    workflowStatus === undefined ||
-                    workflowCurrentStepNumber === undefined ||
-                    workflowNumTotalSteps === undefined
-                      ? '-'
-                      : getPendingResponseAtString({
-                          workflowStatus,
-                          workflowCurrentStepNumber,
-                          workflowNumTotalSteps,
-                        })
-                  }
-                  isLoading={isLoading}
-                  isError={isError}
-                />
-                <Link
-                  href={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
-                  isExternal
-                >
-                  <Box fontSize="1.25rem" display="flex" alignItems="center">
-                    <BiLinkExternal />
-                  </Box>
-                </Link>
-              </Stack>
+              <StackRow
+                label={MRF_PENDING_RESPONSE_AT_LABEL}
+                value={
+                  workflowStatus === undefined ||
+                  workflowCurrentStepNumber === undefined ||
+                  workflowNumTotalSteps === undefined
+                    ? '-'
+                    : getPendingResponseAtString({
+                        workflowStatus,
+                        workflowCurrentStepNumber,
+                        workflowNumTotalSteps,
+                      })
+                }
+                isLoading={isLoading}
+                isError={isError}
+              />
+              <StackRow
+                label={MRF_STATUS_TRACKING_LABEL}
+                value={''}
+                statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+                isLoading={isLoading}
+                isError={isError}
+              />
             </>
           ) : null}
           {attachmentDownloadUrls.size > 0 && (

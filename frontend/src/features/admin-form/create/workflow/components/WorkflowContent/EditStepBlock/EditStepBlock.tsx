@@ -151,13 +151,7 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {user?.betaFlags?.statusTracker ? (
-        <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
-      ) : (
-        <Box px={{ base: '1.5rem', md: '2rem' }}>
-          <StepLabel stepNumber={stepNumber} />
-        </Box>
-      )}
+      <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
       <Divider />
       <RespondentBlock
         user={user}

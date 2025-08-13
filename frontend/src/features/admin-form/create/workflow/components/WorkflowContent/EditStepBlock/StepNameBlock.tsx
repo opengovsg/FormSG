@@ -23,6 +23,7 @@ type StepNameProps = {
 }
 
 const STEP_NAME = 'step_name'
+const MAX_CHAR = 50
 
 export const StepNameBlock = ({
   stepNumber,
@@ -33,6 +34,7 @@ export const StepNameBlock = ({
     formState: { errors },
     control,
     watch,
+    trigger,
   } = formMethods
 
   const customStepName = watch(STEP_NAME)
@@ -63,14 +65,7 @@ export const StepNameBlock = ({
             isRequired={false}
             isInvalid={!!errors[STEP_NAME]}
           >
-            <FormLabel
-              isRequired
-              style={textStyles.h4}
-              textStyle={'subhead-1'}
-              description={t(
-                'features.adminForm.sidebar.workflow.stepName.description',
-              )}
-            >
+            <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
             <Controller
@@ -78,27 +73,32 @@ export const StepNameBlock = ({
               name={STEP_NAME}
               rules={{
                 maxLength: {
-                  value: 30,
-                  message: 'Please keep the step name under 30 characters',
+                  value: MAX_CHAR,
+                  message: `Please keep the step name under ${MAX_CHAR} characters`,
                 },
               }}
               render={({ field }) => (
                 <Input
-                  // utilizing placeholder to mimic default step name
+                  {...field}
                   placeholder={displayStepName}
                   _placeholder={{ color: 'secondary.700' }}
                   _focus={{
                     _placeholder: { color: 'transparent' },
                   }}
-                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e)
+                    trigger(STEP_NAME)
+                  }}
                 />
               )}
             />
             {errors?.step_name ? (
-              <FormErrorMessage>{errors.step_name.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.step_name.message} ({customStepName?.length}/{MAX_CHAR})
+              </FormErrorMessage>
             ) : customStepName ? (
               <FormHelperText color="secondary.400">
-                {30 - (customStepName?.length ?? 0)} characters left
+                {`(${customStepName?.length ?? 0}/${MAX_CHAR})`}
               </FormHelperText>
             ) : null}
           </FormControl>

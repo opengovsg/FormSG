@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Flex, Skeleton, Stack } from '@chakra-ui/react'
+import { BiLinkExternal } from 'react-icons/bi'
+import { Icon, Link, Skeleton, Text } from '@chakra-ui/react'
 
-import { FormSettings, MultirespondentFormSettings } from '~shared/types'
+import { STATUS_TRACKER_PREVIEW_LINK } from '~shared/constants'
+import { MultirespondentFormSettings } from '~shared/types'
 
-import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -22,6 +23,22 @@ export const StatusTrackerToggle = (): JSX.Element => {
 
   const { mutateMrfStatusTracker } = useMutateFormSettings()
 
+  const ToggleDescription = () => {
+    return (
+      <Text textStyle="body-2" color="secondary.400">
+        {t(
+          'features.adminForm.settings.emailNotifications.section.regular.statusTrackerDescription',
+        )}{' '}
+        <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
+          here
+        </Link>{' '}
+        <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
+          <Icon as={BiLinkExternal} verticalAlign="middle" />
+        </Link>
+      </Text>
+    )
+  }
+
   const handleToggleStatusTracker = useCallback(() => {
     if (!settings || isLoadingSettings || mutateMrfStatusTracker.isLoading)
       return
@@ -31,9 +48,6 @@ export const StatusTrackerToggle = (): JSX.Element => {
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
-      <Badge colorScheme="primary" variant="subtle" color="secondary.500">
-        Beta
-      </Badge>
       <Toggle
         isLoading={mutateMrfStatusTracker.isLoading}
         isChecked={hasStatusTracker}
@@ -42,6 +56,7 @@ export const StatusTrackerToggle = (): JSX.Element => {
         )}
         onChange={() => handleToggleStatusTracker()}
       />
+      <ToggleDescription />
     </Skeleton>
   )
 }

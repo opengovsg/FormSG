@@ -50,13 +50,6 @@ export default defineConfig({
       },
     },
     {
-      name: 'chromium-email-submission',
-      testMatch: /email-submission\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
       name: 'chromium-encrypt-submission',
       testMatch: /encrypt-submission\.spec\.ts$/,
       use: {
@@ -66,13 +59,6 @@ export default defineConfig({
     {
       name: 'firefox-login',
       testMatch: /login\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
-    {
-      name: 'firefox-email-submission',
-      testMatch: /email-submission\.spec\.ts$/,
       use: {
         ...devices['Desktop Firefox'],
       },

@@ -8,6 +8,7 @@ import {
   Stack,
 } from '@chakra-ui/react'
 
+import { STATUS_TRACKER_PREVIEW_LINK } from '~shared/constants'
 import { getStatusTrackerPath } from '~shared/utils/urls'
 
 import FormLabel from '~components/FormControl/FormLabel'
@@ -18,13 +19,18 @@ import { CopyButton } from '~templates/CopyButton'
 type StatusTrackerLinkProps = {
   formId: string
   submissionId: string | undefined
+  isPreview?: boolean
 }
 
 export const StatusTrackerLink = ({
   formId,
   submissionId,
+  isPreview,
 }: StatusTrackerLinkProps): JSX.Element => {
-  const shareLink = `${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`
+  const statusTrackerLink = isPreview
+    ? STATUS_TRACKER_PREVIEW_LINK
+    : `${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`
+
   return (
     <FormControl isReadOnly>
       <Box>
@@ -42,14 +48,14 @@ export const StatusTrackerLink = ({
               // The link will always change in Chromatic so this should be ignored.
               data-chromatic="ignore"
               isReadOnly
-              value={shareLink}
+              value={statusTrackerLink}
               hasInputRightElement={Boolean(formId)}
             />
             {formId ? (
               <InputRightElement>
                 <CopyButton
                   colorScheme="secondary"
-                  stringToCopy={shareLink}
+                  stringToCopy={statusTrackerLink}
                   aria-label="Copy respondent form link"
                 />
               </InputRightElement>
@@ -58,7 +64,7 @@ export const StatusTrackerLink = ({
           <IconButton
             as="a"
             icon={<BiLinkExternal fontSize="1.5rem" />}
-            href={shareLink}
+            href={statusTrackerLink}
             target="_blank"
             rel="noopener"
             aria-label="Open link in new tab"
