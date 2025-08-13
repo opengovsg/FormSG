@@ -84,6 +84,8 @@ export const RbiProxyForwardingPage = (): JSX.Element => {
       } catch {
         console.error('The RBI forwarding route is not a valid URL.')
       }
+    } else {
+      console.error('The RBI forwarding route is not allowed.')
     }
 
     // Redirect the user to the appropriate URL after a delay
