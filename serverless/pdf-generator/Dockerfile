@@ -1,18 +1,30 @@
 FROM public.ecr.aws/lambda/nodejs:22
 
-# Install required dependencies for Firefox
+# Install required dependencies for Chrome See: https://github.com/amazonlinux/amazon-linux-2023/discussions/417 and https://github.com/awesome-fc/puppeteer-fc-starter-kit/blob/master/lib/usr/lib/x86_64-linux-gnu/libnspr4.so
 RUN dnf update -y && \
     dnf install -y \
     xz \
     tar \
     gzip \
     unzip \
+    nss \ 
+    libXcomposite \
+    libXdamage \
+    libXrandr \
+    libxkbcommon \
+    pango \
+    alsa-lib \
+    atk \
+    at-spi2-atk \
+    cups-libs \
+    libdrm \
+    mesa-libgbm \
     && dnf clean all
 
 COPY package.json package-lock.json ${LAMBDA_TASK_ROOT} 
 
 RUN npm install 
-RUN npx @puppeteer/browsers install firefox@stable_141.0.3
+RUN npx @puppeteer/browsers install chrome@latest
 
 COPY index.js ${LAMBDA_TASK_ROOT} 
 

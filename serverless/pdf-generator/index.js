@@ -19,8 +19,8 @@ exports.handler = async () => {
  */
 const generatePdfFromHtml = async (summaryHtml) => {
   const browser = await puppeteer.launch({
-    product: 'firefox',
-    executablePath: '/var/task/firefox/linux-stable_141.0.3/firefox',
+    product: 'chrome',
+    executablePath: '/var/task/chrome/linux-141.0.7354.0/chrome-linux64/chrome',
     headless: true,
     args: ['--no-sandbox', '--disable-gpu'],
   })
@@ -39,3 +39,5 @@ const generatePdfFromHtml = async (summaryHtml) => {
   await browser.close()
   return pdfBuffer
 }
+
+generatePdfFromHtml()
