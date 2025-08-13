@@ -22,7 +22,7 @@ const statusColor: Record<WorkflowStatus, BackgroundProps['bg']> = {
 
 const statusTextMap: Record<WorkflowStatus, string | undefined> = {
   [WorkflowStatus.APPROVED]: 'Approved',
-  [WorkflowStatus.REJECTED]: 'Not Approved',
+  [WorkflowStatus.REJECTED]: 'Not approved',
   [WorkflowStatus.PENDING]: undefined,
   [WorkflowStatus.COMPLETED]: undefined,
 }

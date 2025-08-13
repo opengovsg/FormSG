@@ -121,6 +121,7 @@ export const EndPageContent = (): JSX.Element => {
                 }}
                 colorTheme={colorTheme ?? FormColorTheme.Blue}
                 form={form}
+                isPreview={true}
               />
             </Box>
           )}

@@ -34,6 +34,7 @@ export interface EmailNotifications extends HasTitle {
       info: string
       description: string
       statusTrackerInfo: string
+      statusTrackerDescription: string
     }
   }
 }
