@@ -606,6 +606,7 @@ const getAutoReplyFormattedResponse = (
   // Auto reply email will contain only visible fields
   if (isVisible !== false) {
     return {
+      _id: response._id,
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
       fieldType: response.fieldType,

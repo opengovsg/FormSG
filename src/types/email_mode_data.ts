@@ -1,6 +1,7 @@
 import { BasicField } from '../../shared/types'
 
 export type EmailRespondentConfirmationField = {
+  _id?: string
   question: string
   answerTemplate: string[]
   fieldType?: BasicField
