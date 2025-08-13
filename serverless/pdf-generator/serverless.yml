@@ -1,0 +1,22 @@
+service: pdf-generator
+frameworkVersion: ~4.18.0
+
+provider:
+  name: aws
+  region: ap-southeast-1
+  stage: ${opt:stage}
+  ecr:
+    images:
+      pdf-generator:
+        path: ./
+        platform: linux/amd64
+
+functions:
+  pdf-generator:
+    image:
+      name: pdf-generator
+    description: 'Generates PDF files for FormSG (eg, payment invoice, autoreply PDFs etc)'
+    # max timeout per invocation
+    timeout: 30
+    memorySize: 1024
+    provisionedConcurrency: ${param:provisionedConcurrency}
