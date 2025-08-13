@@ -38,7 +38,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
-      {formWorkflow?.length ? <WorkflowCompletionMessageBlock /> : null }
+      {formWorkflow?.length ? <WorkflowCompletionMessageBlock /> : null}
     </Stack>
   )
 }
