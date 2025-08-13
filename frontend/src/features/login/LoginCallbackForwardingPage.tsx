@@ -32,7 +32,7 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
     10000,
   )
 
-  const isProxy = useIsProxyIpCheck()
+  const { data: isOnProxy } = useIsProxyIpCheck()
 
   useEffect(() => {
     let redirectUrl = route ?? LOGIN_ROUTE
@@ -53,7 +53,7 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
       () => {
         window.location.replace(redirectUrl)
       },
-      isProxy.data
+      isOnProxy
         ? callbackForwardingProxyTimeout
         : callbackForwardingDefaultTimeout,
     )
@@ -62,7 +62,7 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
   }, [
     route,
     forwarded,
-    isProxy,
+    isOnProxy,
     callbackForwardingProxyTimeout,
     callbackForwardingDefaultTimeout,
   ])
@@ -78,7 +78,6 @@ export const LoginCallbackForwardingPage = (): JSX.Element => {
         gap="1rem"
         background="white"
         direction="row"
-        // divider={<Divider />}
       >
         <Spinner />
         <Text>Verifying your identity...</Text>

@@ -100,7 +100,7 @@ class IntranetServiceClass {
           const parsedIp = IntranetServiceClass.parseIp(ip.trim())
           if (!parsedIp) {
             logger.warn({
-              message: `Invalid IP address in OGP IP list: ${ip}`,
+              message: `Invalid IP address in proxy IP list: ${ip}`,
               meta: {
                 action: 'IntranetService',
               },

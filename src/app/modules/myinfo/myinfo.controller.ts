@@ -204,7 +204,6 @@ export const loginToMyInfo: ControllerHandler<
  * MyInfo data.
  */
 export const handleMyInfoLogin = [
-  authCallbackForwardingMiddleware,
   validateMyInfoLogin,
   loginToMyInfo,
 ] as ControllerHandler[]
