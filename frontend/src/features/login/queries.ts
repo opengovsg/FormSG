@@ -9,13 +9,13 @@ import { ApiService } from '~services/ApiService'
 export const SGID_PROFILES_ENDPOINT = '/auth/sgid/profiles'
 export const INTRANET_CHECK_ENDPOINT = '/intranet/is-intranet-check'
 export const OGP_IP_CHECK_ENDPOINT = '/intranet/is-ogp-check'
-export const PROXY_IP_CHECK_ENDPOINT = '/intranet/is-proxy-check'
+export const RBI_IP_CHECK_ENDPOINT = '/intranet/is-rbi-check'
 
 const loginKeys = {
   sgidProfiles: ['sgidProfiles'] as const,
   intranetCheck: ['intranetCheck'] as const,
   ogpIpCheck: ['ogpIpCheck'] as const,
-  proxyIpCheck: ['proxyIpCheck'] as const,
+  rbiIpCheck: ['rbiIpCheck'] as const,
 }
 
 export const useSgidProfiles = (): UseQueryResult<
@@ -43,9 +43,9 @@ export const useIsOgpIpCheck = (): UseQueryResult<boolean, ApiError> => {
     return data
   })
 }
-export const useIsProxyIpCheck = (): UseQueryResult<boolean, ApiError> => {
-  return useQuery<boolean, ApiError>(loginKeys.proxyIpCheck, async () => {
-    const { data } = await ApiService.get(PROXY_IP_CHECK_ENDPOINT)
+export const useIsRbiIpCheck = (): UseQueryResult<boolean, ApiError> => {
+  return useQuery<boolean, ApiError>(loginKeys.rbiIpCheck, async () => {
+    const { data } = await ApiService.get(RBI_IP_CHECK_ENDPOINT)
     return data
   })
 }

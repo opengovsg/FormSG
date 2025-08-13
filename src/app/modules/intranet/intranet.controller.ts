@@ -32,14 +32,14 @@ export const handleGetIsOgpCheck: ControllerHandler<never, boolean> = (
 }
 
 /**
- * Handler for GET /intranet/is-proxy-check endpoint.
- * @returns whether the given IP address is a proxy IP
+ * Handler for GET /intranet/is-rbi-check endpoint.
+ * @returns whether the given IP address is a Remote Browser Isolation proxy IP
  */
-export const handleGetIsProxyCheck: ControllerHandler<never, boolean> = (
+export const handleGetIsRbiCheck: ControllerHandler<never, boolean> = (
   req,
   res,
 ) => {
   const ip = getRequestIp(req)
-  const isProxy = IntranetService.isProxyIp(ip)
-  return res.status(StatusCodes.OK).json(isProxy)
+  const isRbiProxy = IntranetService.isRbiIp(ip)
+  return res.status(StatusCodes.OK).json(isRbiProxy)
 }

@@ -111,7 +111,7 @@
         { "name": "UPLOAD_FORM_WHITELIST_RATE_LIMIT", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/UPLOAD_FORM_WHITELIST_RATE_LIMIT" },
         { "name": "KILL_EMAIL_MODE_FEEDBACK_FORMID", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/KILL_EMAIL_MODE_FEEDBACK_FORMID" },
         { "name": "OGP_IP_LIST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/OGP_IP_LIST" },
-        { "name": "PROXY_IP_LIST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PROXY_IP_LIST" },
+        { "name": "RBI_IP_LIST", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/RBI_IP_LIST" },
         { "name": "SSO_CLIENT_ID", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SSO_CLIENT_ID" }, 
         { "name": "SSO_CLIENT_SECRET", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SSO_CLIENT_SECRET" }, 
         { "name": "SSO_DISCOVERY_URL", "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SSO_DISCOVERY_URL" }, 

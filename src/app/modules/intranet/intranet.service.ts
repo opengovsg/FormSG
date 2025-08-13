@@ -18,11 +18,11 @@ class IntranetServiceClass {
    */
   intranetIps: (ipAddress.Address4 | ipAddress.Address6)[]
   ogpIps: (ipAddress.Address4 | ipAddress.Address6)[]
-  proxyIps: (ipAddress.Address4 | ipAddress.Address6)[]
+  rbiIps: (ipAddress.Address4 | ipAddress.Address6)[]
 
   constructor(intranetConfig: IIntranet) {
     this.ogpIps = []
-    this.proxyIps = []
+    this.rbiIps = []
 
     // TODO: (IaC Migration) Remove this double check after IaC migration is fully completed
     if (!intranetConfig.intranetIpList && !intranetConfig.intranetIpListPath) {
@@ -91,16 +91,16 @@ class IntranetServiceClass {
       this.ogpIps = []
     }
 
-    const proxyList = IntranetServiceClass.safelySplitIp(
-      intranetConfig.proxyIpList,
+    const rbiIpList = IntranetServiceClass.safelySplitIp(
+      intranetConfig.rbiIpList,
     )
     try {
-      this.proxyIps = proxyList
+      this.rbiIps = rbiIpList
         .map((ip) => {
           const parsedIp = IntranetServiceClass.parseIp(ip.trim())
           if (!parsedIp) {
             logger.warn({
-              message: `Invalid IP address in proxy IP list: ${ip}`,
+              message: `Invalid IP address in RBI proxy IP list: ${ip}`,
               meta: {
                 action: 'IntranetService',
               },
@@ -113,12 +113,12 @@ class IntranetServiceClass {
         )
     } catch {
       logger.warn({
-        message: 'Could not read file containing Proxy IPs',
+        message: 'Could not read file containing RBI proxy IPs',
         meta: {
           action: 'IntranetService',
         },
       })
-      this.proxyIps = []
+      this.rbiIps = []
     }
   }
 
@@ -157,21 +157,19 @@ class IntranetServiceClass {
   }
 
   /**
-   * Checks whether the given IP address is a proxied IP.
+   * Checks whether the given IP address is a Remote Browser Isolation proxy IP.
    * @param ip IP address to check
-   * @returns Whether the IP address originated from known proxy IP
+   * @returns Whether the IP address originated from a known Remote Browser Isolation proxy IP
    */
-  isProxyIp(ip: string): boolean {
+  isRbiIp(ip: string): boolean {
     const parsedIp = IntranetServiceClass.parseIp(ip)
     if (!parsedIp) {
       return false
     }
 
-    const proxyIpMatches = this.proxyIps.map((proxyIp) =>
-      parsedIp.isInSubnet(proxyIp),
-    )
+    const rbiIpMatches = this.rbiIps.map((rbiIp) => parsedIp.isInSubnet(rbiIp))
 
-    return proxyIpMatches.includes(true)
+    return rbiIpMatches.includes(true)
   }
 
   /**

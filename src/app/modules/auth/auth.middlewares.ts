@@ -288,12 +288,19 @@ export const authCallbackForwardingMiddleware: ControllerHandler<
   unknown,
   { forwarded?: string }
 > = (req, res, next) => {
-  // Check if the request needs to be forwarded from the proxy to the intranet
+  // Check if the request needs to be forwarded from the Remote Browser Isolation proxy to the user's browser.
   const forward =
-    IntranetService.isProxyIp(req.ip) &&
+    IntranetService.isRbiIp(req.ip) &&
     req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
     req.query?.forwarded !== 'true'
   if (forward) {
+    logger.info({
+      message: 'Forwarded auth callback request',
+      meta: {
+        action: 'authCallbackForwardingMiddleware',
+        path: req.path,
+      },
+    })
     const searchParams = new URLSearchParams({})
     searchParams.append('forwarded', 'true')
     searchParams.append('route', req.originalUrl)

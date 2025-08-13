@@ -5,7 +5,6 @@ import { Environment } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
-import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
