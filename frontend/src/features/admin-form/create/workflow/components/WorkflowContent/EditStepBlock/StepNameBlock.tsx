@@ -74,7 +74,7 @@ export const StepNameBlock = ({
               rules={{
                 maxLength: {
                   value: MAX_CHAR,
-                  message: 'Please keep the step name under 50 characters',
+                  message: `Please keep the step name under ${MAX_CHAR} characters`,
                 },
               }}
               render={({ field }) => (

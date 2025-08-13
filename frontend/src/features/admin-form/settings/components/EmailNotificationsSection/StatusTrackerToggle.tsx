@@ -29,7 +29,6 @@ export const StatusTrackerToggle = (): JSX.Element => {
         {t(
           'features.adminForm.settings.emailNotifications.section.regular.statusTrackerDescription',
         )}{' '}
-        {/* TODO: update with status tracking preview link here */}
         <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
           here
         </Link>{' '}
