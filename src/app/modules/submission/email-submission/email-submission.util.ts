@@ -6,7 +6,10 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import { convertToSignatureVectorArray, getSignatureFileName } from '../../../../../shared/utils/signature'
+import {
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -32,6 +35,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
+import { convertToSignaturePngDataURI } from '../../../utils/convert-vector-array-to-png'
 import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,
@@ -97,7 +101,6 @@ import {
 } from './email-submission.constants'
 import { SubmissionHashError } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
-import { convertToSignaturePngDataURI } from '../../../utils/convert-vector-array-to-png'
 
 const logger = createLoggerWithLabel(module)
 
@@ -236,7 +239,9 @@ export const getAnswerForSignature = (
   //   default:
   //     signatureAnswer = ''
   // }
-  const signatureAnswer = convertToSignaturePngDataURI(convertToSignatureVectorArray(response.answerArray[1]))
+  const signatureAnswer = convertToSignaturePngDataURI(
+    convertToSignatureVectorArray(response.answerArray[1]),
+  )
   return {
     _id: response._id,
     fieldType: response.fieldType,
@@ -711,7 +716,10 @@ const formatDataCollationResponse = (
         _id: `${response._id}`,
         fieldType: response.fieldType,
         question: `${response.question}`,
-        answer: getSignatureFileName({ fieldId: response._id, responseId: 'TODO' }), //TODO: fix responseId
+        answer: getSignatureFileName({
+          fieldId: response._id,
+          responseId: 'TODO',
+        }), //TODO: fix responseId
       } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)

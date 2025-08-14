@@ -52,11 +52,12 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
     BASIC_FIELDS_OPTIONS,
     BASICFIELD_TO_DRAWER_META,
   )
-  const filteredCreateBasicContentAndDescriptionFields = filterFieldsBySearchValue(
-    searchValue,
-    BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
-    BASICFIELD_TO_DRAWER_META,
-  )
+  const filteredCreateBasicContentAndDescriptionFields =
+    filterFieldsBySearchValue(
+      searchValue,
+      BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
+      BASICFIELD_TO_DRAWER_META,
+    )
   const filteredCreateBasicDatesAndNumberFields = filterFieldsBySearchValue(
     searchValue,
     BASIC_FIELDS_DATES_AND_NUMBER,
@@ -74,9 +75,8 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 
   // TODO: FRM-2054 remove when signature field is out of beta
-  return !(user?.betaFlags?.signatureField && isSignatureFieldEnabled) ?
-      (
-      <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
+  return !(user?.betaFlags?.signatureField && isSignatureFieldEnabled) ? (
+    <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
       {(provided) => (
         <Box ref={provided.innerRef} {...provided.droppableProps}>
           <FieldSection>
@@ -97,36 +97,40 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
           </FieldSection>
         </Box>
       )}
+    </Droppable>
+  ) : (
+    <>
+      <Droppable isDropDisabled droppableId={CREATE_FIELD_FREE_TEXT_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            {/* <FieldSection> */}
+            <FieldSection label="Free text">
+              {filteredCreateBasicFreeTextFields.map(
+                ({ fieldType, originalIndex }) => (
+                  <DraggableBasicFieldListOption
+                    index={originalIndex}
+                    isDisabled={isLoading}
+                    key={originalIndex}
+                    fieldType={fieldType}
+                  />
+                ),
+              )}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+            {/* </FieldSection> */}
+          </Box>
+        )}
       </Droppable>
-    )
-    : (
-      <>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_FREE_TEXT_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              {/* <FieldSection> */}
-                <FieldSection label="Free text">
-                  {filteredCreateBasicFreeTextFields.map(({ fieldType, originalIndex }) => (
-                      <DraggableBasicFieldListOption
-                        index={originalIndex}
-                        isDisabled={isLoading}
-                        key={originalIndex}
-                        fieldType={fieldType}
-                      />
-                    )
-                  )}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
-              {/* </FieldSection> */}
-            </Box>
-          )}
-        </Droppable>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection>
-                <FieldSection label="Options">
-                  {filteredCreateBasicOptionsFields.map(({ fieldType, originalIndex }) => {
+      <Droppable
+        isDropDisabled
+        droppableId={CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID}
+      >
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection>
+              <FieldSection label="Options">
+                {filteredCreateBasicOptionsFields.map(
+                  ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
                     return (
                       <DraggableBasicFieldListOption
@@ -136,19 +140,24 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                         fieldType={fieldType}
                       />
                     )
-                  })}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
+                  },
+                )}
               </FieldSection>
-            </Box>
-          )}
-        </Droppable>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection>
-                <FieldSection label="Content and descriptions">
-                  {filteredCreateBasicContentAndDescriptionFields.map(({ fieldType, originalIndex }) => {
+              <Box display="none">{provided.placeholder}</Box>
+            </FieldSection>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable
+        isDropDisabled
+        droppableId={CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID}
+      >
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection>
+              <FieldSection label="Content and descriptions">
+                {filteredCreateBasicContentAndDescriptionFields.map(
+                  ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
                     return (
                       <DraggableBasicFieldListOption
@@ -158,19 +167,24 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                         fieldType={fieldType}
                       />
                     )
-                  })}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
+                  },
+                )}
               </FieldSection>
-            </Box>
-          )}
-        </Droppable>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_DATES_AND_NUMBER_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection>
-                <FieldSection label="Dates and number">
-                  {filteredCreateBasicDatesAndNumberFields.map(({ fieldType, originalIndex }) => {
+              <Box display="none">{provided.placeholder}</Box>
+            </FieldSection>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable
+        isDropDisabled
+        droppableId={CREATE_FIELD_DATES_AND_NUMBER_DROP_ID}
+      >
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection>
+              <FieldSection label="Dates and number">
+                {filteredCreateBasicDatesAndNumberFields.map(
+                  ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
                     return (
                       <DraggableBasicFieldListOption
@@ -180,19 +194,21 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                         fieldType={fieldType}
                       />
                     )
-                  })}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
+                  },
+                )}
               </FieldSection>
-            </Box>
-          )}
-        </Droppable>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_PERSONAL_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection>
-                <FieldSection label="Personal">
-                  {filteredCreateBasicPersonalFields.map(({ fieldType, originalIndex }) => {
+              <Box display="none">{provided.placeholder}</Box>
+            </FieldSection>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_FIELD_PERSONAL_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection>
+              <FieldSection label="Personal">
+                {filteredCreateBasicPersonalFields.map(
+                  ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
                     return (
                       <DraggableBasicFieldListOption
@@ -202,19 +218,21 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                         fieldType={fieldType}
                       />
                     )
-                  })}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
+                  },
+                )}
               </FieldSection>
-            </Box>
-          )}
-        </Droppable>
-        <Droppable isDropDisabled droppableId={CREATE_FIELD_OTHERS_DROP_ID}>
-          {(provided) => (
-            <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection>
-                <FieldSection label="Others">
-                  {filteredCreateBasicOthersFields.map(({ fieldType, originalIndex }) => {
+              <Box display="none">{provided.placeholder}</Box>
+            </FieldSection>
+          </Box>
+        )}
+      </Droppable>
+      <Droppable isDropDisabled droppableId={CREATE_FIELD_OTHERS_DROP_ID}>
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection>
+              <FieldSection label="Others">
+                {filteredCreateBasicOthersFields.map(
+                  ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
                     return (
                       <DraggableBasicFieldListOption
@@ -224,13 +242,14 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                         fieldType={fieldType}
                       />
                     )
-                  })}
-                </FieldSection>
-                <Box display="none">{provided.placeholder}</Box>
+                  },
+                )}
               </FieldSection>
-            </Box>
-          )}
-        </Droppable>
-      </>
-    )
+              <Box display="none">{provided.placeholder}</Box>
+            </FieldSection>
+          </Box>
+        )}
+      </Droppable>
+    </>
+  )
 }

@@ -315,7 +315,10 @@ export const getQuestionTitleAnswerString = ({
       case BasicField.Signature:
         questionAnswerPair.push({
           question: `[signature] ${questionTitle}`,
-          answer: getSignatureFileName({ fieldId: formField._id, responseId: 'TODO'}), //TODO: fix responseId
+          answer: getSignatureFileName({
+            fieldId: formField._id,
+            responseId: 'TODO',
+          }), //TODO: fix responseId
         })
         continue
       case BasicField.Children:

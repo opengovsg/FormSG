@@ -7,8 +7,13 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { BasicField, FormResponseMode, PaymentChannel } from '../../../../shared/types'
+import {
+  BasicField,
+  FormResponseMode,
+  PaymentChannel,
+} from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
+import { getSignatureFileName } from '../../../../shared/utils/signature'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
@@ -64,7 +69,6 @@ import {
   generateSubmissionToAdminHtml,
   isToFieldValid,
 } from './mail.utils'
-import { getSignatureFileName } from '../../../../shared/utils/signature'
 
 const logger = createLoggerWithLabel(module)
 
@@ -298,9 +302,9 @@ export class MailService {
     const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
     const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
 
-    console.log(`responsesData`) 
+    console.log(`responsesData`)
     console.log(JSON.stringify(formSummaryRenderData.formData))
-  
+
     // For signature fields, replace vector array with file name for email display
     for (const item of formSummaryRenderData.formData) {
       if (item.fieldType === BasicField.Signature) {
@@ -313,9 +317,9 @@ export class MailService {
       }
     }
 
-    console.log(`responsesData after`) 
+    console.log(`responsesData after`)
     console.log(JSON.stringify(formSummaryRenderData.formData))
-    
+
     const templateData = {
       submissionId: submission.id,
       autoReplyBody,
@@ -711,7 +715,7 @@ export class MailService {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
-        // For signature fields, replace vector array with file name for email display
+    // For signature fields, replace vector array with file name for email display
     for (const item of formData) {
       if (item.fieldType === BasicField.Signature) {
         item.answerTemplate = [

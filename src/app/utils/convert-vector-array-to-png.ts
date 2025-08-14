@@ -70,7 +70,7 @@ const drawStroke = (ctx: CanvasRenderingContext2D, stroke: number[][]) => {
 }
 
 export const convertToSignaturePngDataURI = (
-    vectorArray: SignatureVectorArray,
+  vectorArray: SignatureVectorArray,
 ): string => {
   const pngBuffer: Buffer = convertToSignaturePngBuffer(vectorArray)
 
