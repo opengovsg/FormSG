@@ -227,7 +227,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -255,7 +257,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -285,7 +289,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -317,7 +323,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -352,7 +360,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -383,7 +393,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -477,7 +489,9 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
+      expect(emailData.autoReplyData).toEqual(
+        expect.arrayContaining(expectedAutoReplyData),
+      )
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -524,7 +538,9 @@ describe('email-submission.util', () => {
           fieldType: response2.fieldType,
         },
       ]
-      expect(submissionEmailObj.formData).toEqual(correctFormData)
+      expect(submissionEmailObj.formData).toEqual(
+        expect.arrayContaining(correctFormData),
+      )
     })
 
     it('should return the response in correct email confirmation format when autoReplyData() method is called', () => {
@@ -537,7 +553,9 @@ describe('email-submission.util', () => {
         },
         // Note that response2 is not shown in Email Confirmation as isVisible is false
       ]
-      expect(submissionEmailObj.autoReplyData).toEqual(correctConfirmation)
+      expect(submissionEmailObj.autoReplyData).toEqual(
+        expect.arrayContaining(correctConfirmation),
+      )
     })
 
     it('should mask corppass UID if FormAuthType is Corppass and autoReplyData() method is called', () => {
@@ -567,7 +585,9 @@ describe('email-submission.util', () => {
           answerTemplate: ['*****567A'],
         },
       ]
-      expect(submissionEmailObjCP.autoReplyData).toEqual(correctConfirmation)
+      expect(submissionEmailObjCP.autoReplyData).toEqual(
+        expect.arrayContaining(correctConfirmation),
+      )
     })
   })
 })

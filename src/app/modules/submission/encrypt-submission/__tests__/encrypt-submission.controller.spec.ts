@@ -1330,7 +1330,10 @@ describe('encrypt-submission.controller', () => {
 
       // Assert
       expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][2]).toEqual(
-        emailData,
+        expect.objectContaining({
+          ...emailData,
+          submissionId: expect.stringMatching(/^[a-f0-9]{24}$/),
+        }),
       )
     })
   })
@@ -1518,7 +1521,7 @@ describe('encrypt-submission.controller', () => {
             expect.objectContaining({
               _id: signatureFieldId,
               question: '[signature] Signature Question',
-              answer: expect.stringMatching(/^data:image/),
+              answer: `signature captured - responseID\\([a-f0-9]{24}\\) - fieldID(${signatureFieldId})`,
             }),
           ]),
         }),

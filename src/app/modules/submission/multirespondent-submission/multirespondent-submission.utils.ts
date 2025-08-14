@@ -320,6 +320,7 @@ export const getQuestionTitleAnswerString = ({
           answer: getSignatureFileName({
             fieldId: formField._id,
             responseId: submissionId,
+            isSvg: true,
           }),
         })
         continue
