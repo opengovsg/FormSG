@@ -5,6 +5,7 @@ export const LOGIN_ROUTE = '/login'
 export const SSO_LOGIN_HOLDING_ROUTE = '/login/sso'
 export const TEMP_LOGIN_ROUTE = '/login-temp'
 export const LOGIN_CALLBACK_ROUTE = '/login/select-profile'
+export const LOGIN_CALLBACK_FORWARDING_ROUTE = '/login/forward'
 
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'

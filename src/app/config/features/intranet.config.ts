@@ -9,6 +9,7 @@ export interface IIntranet {
   intranetIpList: string
   intranetIpListPath: string
   ogpIpList: string
+  rbiIpList: string
 }
 
 const intranetSchema: Schema<IIntranet> = {
@@ -29,6 +30,12 @@ const intranetSchema: Schema<IIntranet> = {
     format: validateNonIacStringParam,
     default: '',
     env: 'OGP_IP_LIST',
+  },
+  rbiIpList: {
+    doc: 'Path to file containing list of RBI IP addresses, separated by newlines',
+    format: validateNonIacStringParam,
+    default: '',
+    env: 'RBI_IP_LIST',
   },
 }
 

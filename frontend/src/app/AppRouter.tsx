@@ -15,6 +15,7 @@ import {
   EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
+  LOGIN_CALLBACK_FORWARDING_ROUTE,
   LOGIN_CALLBACK_ROUTE,
   LOGIN_ROUTE,
   PAYMENT_PAGE_SUBROUTE,
@@ -42,6 +43,7 @@ import {
 } from '~features/admin-form/responses'
 import { ChartsPage } from '~features/admin-form/responses/ChartsPage/ChartsPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
+import { RbiProxyForwardingPage } from '~features/compatibility/RbiProxyForwardingPage'
 import { SelectProfilePage } from '~features/login'
 import { SsoHoldingPage } from '~features/login/SsoHoldingPage'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
@@ -116,6 +118,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_CALLBACK_ROUTE}
           element={<PublicElement strict element={<SelectProfilePage />} />}
+        />
+        <Route
+          path={LOGIN_CALLBACK_FORWARDING_ROUTE}
+          element={<PublicElement element={<RbiProxyForwardingPage />} />}
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}

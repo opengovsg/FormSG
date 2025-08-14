@@ -1,5 +1,7 @@
 import { Router } from 'express'
 
+import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
+
 import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
 import {
   handleMyInfoLogin,
@@ -19,4 +21,8 @@ MyInfoRouter.get('/redirect', handleRedirectURLRequest)
  * Serves redirects from MyInfo after user has given consent to provide
  * their MyInfo data.
  */
-MyInfoRouter.get(MYINFO_REDIRECT_PATH, handleMyInfoLogin)
+MyInfoRouter.get(
+  MYINFO_REDIRECT_PATH,
+  authCallbackForwardingMiddleware,
+  handleMyInfoLogin,
+)

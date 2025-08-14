@@ -1,10 +1,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 
+import { GrowthbookFeature } from '../../config/features/growthbook.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { IntranetService } from '../intranet/intranet.service'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
 import * as UserService from '../user/user.service'
 
@@ -278,3 +281,30 @@ export const authenticateApiKeyAndPlatform = [
   authenticateApiKey,
   isPlatformApiUser,
 ] as ControllerHandler[]
+
+export const authCallbackForwardingMiddleware: ControllerHandler<
+  ParamsDictionary,
+  unknown,
+  unknown,
+  { forwarded?: string }
+> = (req, res, next) => {
+  // Check if the request needs to be forwarded from the Remote Browser Isolation proxy to the user's browser.
+  const forward =
+    IntranetService.isRbiIp(req.ip) &&
+    req.growthbook?.isOn(GrowthbookFeature.ENABLE_AUTH_CALLBACK_FORWARDING) &&
+    req.query?.forwarded !== 'true'
+  if (forward) {
+    logger.info({
+      message: 'Forwarded auth callback request',
+      meta: {
+        action: 'authCallbackForwardingMiddleware',
+        path: req.path,
+      },
+    })
+    const searchParams = new URLSearchParams({})
+    searchParams.append('forwarded', 'true')
+    searchParams.append('route', req.originalUrl)
+    return res.redirect(`/login/forward?${searchParams.toString()}`)
+  }
+  return next()
+}
