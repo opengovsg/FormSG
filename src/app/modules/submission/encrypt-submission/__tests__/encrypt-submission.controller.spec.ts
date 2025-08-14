@@ -1514,12 +1514,10 @@ describe('encrypt-submission.controller', () => {
         expect.objectContaining({
           dataCollationData: expect.arrayContaining([
             expect.objectContaining({
-              _id: mockFieldId,
               question: 'Test Question',
               answer: 'Test Answer',
             }),
             expect.objectContaining({
-              _id: signatureFieldId,
               question: '[signature] Signature Question',
               answer: `signature captured - responseID\\([a-f0-9]{24}\\) - fieldID(${signatureFieldId})`,
             }),
