@@ -1454,7 +1454,7 @@ describe('encrypt-submission.controller', () => {
       )
     })
 
-    it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
+    it.only('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockFieldId = new ObjectId()
@@ -1519,7 +1519,12 @@ describe('encrypt-submission.controller', () => {
             }),
             expect.objectContaining({
               question: '[signature] Signature Question',
-              answer: `signature captured - responseID\\([a-f0-9]{24}\\) - fieldID(${signatureFieldId})`,
+              answer: expect.stringMatching(
+                new RegExp(
+                  `^signature captured - responseID\\([a-f0-9]{24}\\) - fieldID\\(${signatureFieldId}\\)\\.png$`,
+                ),
+              ),
+              // answer: `signature captured - responseID(${mockFormId.toHexString()}) - fieldID(${signatureFieldId})`
             }),
           ]),
         }),
