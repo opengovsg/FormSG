@@ -6,7 +6,7 @@ provider:
   runtime: nodejs22.x
   region: ap-southeast-1
   deploymentBucket:
-    name: pdf-gen-sparticuz
+    name: pdf-gen-lambda-code-zip # proivsioned by Pulumi in formsg-infra
   iam:
     role:
       statements:

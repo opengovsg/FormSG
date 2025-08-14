@@ -4,9 +4,9 @@
   "description": "<!-- title: 'AWS NodeJS Example' description: 'This template demonstrates how to deploy a simple NodeJS function running on AWS Lambda using the Serverless Framework.' layout: Doc framework: v4 platform: AWS language: nodeJS priority: 1 authorLink: 'https://github.com/serverless' authorName: 'Serverless, Inc.' authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4' -->",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1", 
-    "build": "zip -r pdf-gen-sparticuz.zip index.js package.json package-lock.json fonts/", 
-    "deploy": "npm run build && serverless deploy" 
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -f pdf-gen-sparticuz.zip && zip -r pdf-gen-sparticuz.zip index.js package.json package-lock.json fonts/",
+    "deploy": "npm run build && serverless deploy"
   },
   "author": "",
   "license": "ISC",
