@@ -626,7 +626,7 @@ export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<MyInfoKey>
   authType: FormAuthType
-  submissionId: string
+  submissionId?: string
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
@@ -637,7 +637,7 @@ export class SubmissionEmailObj {
     this.parsedResponses = parsedResponses
     this.hashedFields = hashedFields
     this.authType = authType
-    this.submissionId = submissionId ?? '' // TODO: remove when email mode code is deprecated
+    this.submissionId = submissionId
   }
 
   /**
@@ -698,7 +698,7 @@ export class SubmissionEmailObj {
 
 const formatDataCollationResponse = (
   parsedResponses: ProcessedFieldResponse[],
-  submissionId: string,
+  submissionId?: string,
 ) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {

@@ -72,12 +72,13 @@ export const getSignatureFileName = ({
   isSvg = false,
 }: {
   fieldId: string
-  responseId: string
+  responseId: string | undefined
   isSvg?: boolean
 }): string => {
+  const responseIdString = responseId ?? ''
   const fileName = [
     `signature captured`,
-    `responseID(${responseId})`,
+    `responseID(${responseIdString})`,
     `fieldID(${fieldId})`,
   ].join(' - ')
 

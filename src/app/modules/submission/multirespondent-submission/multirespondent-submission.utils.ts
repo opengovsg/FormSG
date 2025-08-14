@@ -204,9 +204,11 @@ export const validateMrfFieldResponses = ({
 export const getQuestionTitleAnswerString = ({
   formFields,
   responses,
+  submissionId,
 }: {
   formFields: FormFieldSchema[]
   responses: FieldResponsesV3
+  submissionId?: string
 }): QuestionAnswer[] => {
   const questionAnswerPair = []
   if (!formFields || !responses) {
@@ -317,8 +319,8 @@ export const getQuestionTitleAnswerString = ({
           question: `[signature] ${questionTitle}`,
           answer: getSignatureFileName({
             fieldId: formField._id,
-            responseId: 'TODO',
-          }), //TODO: fix responseId
+            responseId: submissionId,
+          }),
         })
         continue
       case BasicField.Children:
