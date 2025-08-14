@@ -51,6 +51,9 @@ export type AwsConfig = {
   guarddutyCleanS3Bucket: string
   guarddutyLambda: Lambda
   guarddutyLambdaFunctionName: string
+  // pdfGeneratorLambda
+  pdfGeneratorLambda: Lambda
+  pdfGeneratorLambdaFunctionName: string
 }
 
 export type MailConfig = {
@@ -203,6 +206,8 @@ export interface IOptionalVarsSchema {
     guarddutyCleanS3Bucket: string
     guarddutyLambdaFunctionName: string
     guarddutyLambdaEndpoint: string
+    pdfGeneratorLambdaFunctionName: string
+    pdfGeneratorLambdaEndpoint: string
   }
   mail: {
     from: string

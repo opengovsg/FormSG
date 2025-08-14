@@ -134,12 +134,27 @@ const guarddutyLambda = new Lambda({
     : undefined),
 })
 
+const pdfGeneratorLambda = new Lambda({
+  region: basicVars.awsConfig.region,
+  // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
+  // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
+  // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+  ...(isDevOrTest || basicVars.awsConfig.guarddutyLambdaEndpoint
+    ? {
+        endpoint:
+          basicVars.awsConfig.pdfGeneratorLambdaEndpoint ||
+          'http://host.docker.internal:9998',
+      }
+    : undefined),
+})
+
 const awsConfig: AwsConfig = {
   ...s3BucketUrlVars,
   ...basicVars.awsConfig,
   s3,
   virusScannerLambda,
   guarddutyLambda,
+  pdfGeneratorLambda,
 }
 
 let dbUri: string | undefined
