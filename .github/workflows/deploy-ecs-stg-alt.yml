@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - stg-alt
-      - feat/stg-alt-setup
 
 jobs:
   deploy:
