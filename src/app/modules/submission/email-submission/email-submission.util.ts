@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
-import { BasicField, FormAuthType, SubmissionId } from '../../../../../shared/types'
+import { BasicField, FormAuthType } from '../../../../../shared/types'
 import {
   answerKey,
   handleAddressResponseDisplay,
