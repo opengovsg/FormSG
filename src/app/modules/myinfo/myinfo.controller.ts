@@ -92,6 +92,7 @@ const validateMyInfoLogin = celebrate({
       .keys({
         code: Joi.string().required(),
         state: Joi.string().required(),
+        forwarded: Joi.string().optional(),
       })
       // MyInfo sends several other params which are not necessary for Form
       .unknown(true),
@@ -100,6 +101,7 @@ const validateMyInfoLogin = celebrate({
         'error-description': Joi.string(),
         error: Joi.string().required(),
         state: Joi.string().required(),
+        forwarded: Joi.string().optional(),
       })
       // Allow other params in case MyInfo adds them in future
       .unknown(true),
