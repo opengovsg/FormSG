@@ -1,0 +1,11 @@
+service: pdf-gen-sparticuz
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-southeast-1
+
+functions:
+  pdf-gen-sparticuz:
+    handler: index.handler
