@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
-import { BasicField, FormAuthType } from '../../../../../shared/types'
+import { BasicField, FormAuthType, SubmissionId } from '../../../../../shared/types'
 import {
   answerKey,
   handleAddressResponseDisplay,
@@ -626,22 +626,28 @@ export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<MyInfoKey>
   authType: FormAuthType
+  submissionId: string
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
     hashedFields: Set<MyInfoKey> = new Set<MyInfoKey>(),
     authType: FormAuthType,
+    submissionId?: string,
   ) {
     this.parsedResponses = parsedResponses
     this.hashedFields = hashedFields
     this.authType = authType
+    this.submissionId = submissionId ?? '' // TODO: remove when email mode code is deprecated
   }
 
   /**
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const splitAddressData = formatDataCollationResponse(this.parsedResponses)
+    const splitAddressData = formatDataCollationResponse(
+      this.parsedResponses,
+      this.submissionId,
+    )
     const dataCollationFormattedData = splitAddressData.flatMap((response) =>
       createFormattedDataForOneField(
         response,
@@ -692,6 +698,7 @@ export class SubmissionEmailObj {
 
 const formatDataCollationResponse = (
   parsedResponses: ProcessedFieldResponse[],
+  submissionId: string,
 ) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {
@@ -718,8 +725,8 @@ const formatDataCollationResponse = (
         question: `${response.question}`,
         answer: getSignatureFileName({
           fieldId: response._id,
-          responseId: 'TODO',
-        }), //TODO: fix responseId
+          responseId: submissionId,
+        }),
       } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)

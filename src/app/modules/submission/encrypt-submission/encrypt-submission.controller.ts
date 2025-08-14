@@ -796,6 +796,7 @@ const _createSubmission = async ({
     emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
+    submissionId,
   )
 
   // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
