@@ -61,6 +61,10 @@ jobs:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
 
+      - name: Install node dependencies
+        working-directory: ./serverless/pdf-gen-sparticuz
+        run: npm ci
+
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/pdf-gen-sparticuz
         env:
