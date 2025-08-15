@@ -19,7 +19,6 @@ jobs:
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
       checkoutBranch: 'uat'
-      gha-environment: 'uat'
       environment: 'uat'
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

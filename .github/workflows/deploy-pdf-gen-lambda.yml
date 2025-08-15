@@ -11,13 +11,22 @@ on:
         description: 'Branch to checkout code from'
         required: true
         type: string
+      aws-region:
+        description: 'AWS region to use'
+        required: false
+        default: 'ap-southeast-1'
+        type: string
+    secrets: 
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
+        required: true
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  pdf-gen-lambda:
+  deploy-pdf-gen-lambda:
     name: Deploy PDF Generator Lambda using Severless Framework
     runs-on: ubuntu-latest
 
@@ -45,8 +54,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.3.1
         with:
-          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.cicd-role }}
+          aws-region: ${{ inputs.aws-region }}
 
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/pdf-gen-sparticuz

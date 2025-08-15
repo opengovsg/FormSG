@@ -1,6 +1,7 @@
 import tracer from 'dd-trace'
 import { err, ok, ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
+
 import config, { aws as AwsConfig, isDevOrTest } from '../config/config'
 import { createLoggerWithLabel } from '../config/logger'
 
