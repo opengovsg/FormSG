@@ -182,6 +182,7 @@ export const performEncryptPostSubmissionActions = (
             }
           })
         : []
+
       return sendEmailConfirmations({
         form,
         submission,

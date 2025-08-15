@@ -85,8 +85,6 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       if (content.fieldType === BasicField.Signature) {
         const filename = getSignatureFileName({
           fieldId: content._id,
-          responseId: otherSubmissionProperties.submissionId,
-          isSvg: true,
         })
         content.answerArray = [filename]
       }

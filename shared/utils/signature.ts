@@ -63,24 +63,20 @@ export const getBoundingBox = (
   return { minX, minY, maxX, maxY }
 }
 
-/**
- * Standardized signature file name used for response outputs that does not render signature image
- */
 export const getSignatureFileName = ({
   fieldId,
-  responseId,
+  timestamp,
   isSvg = false,
 }: {
   fieldId: string
-  responseId: string | undefined
+  timestamp?: string // incase we want to add timestamp in the future
   isSvg?: boolean
 }): string => {
-  const responseIdString = responseId ?? ''
   const fileName = [
-    `signature captured`,
-    `responseID(${responseIdString})`,
-    `fieldID(${fieldId})`,
-  ].join(' - ')
+    'Signature_Captured_',
+    fieldId,
+    timestamp ? `_${timestamp}` : '',
+  ].join('')
 
   const fileExtension = isSvg ? 'svg' : 'png'
   return `${fileName}.${fileExtension}`

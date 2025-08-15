@@ -203,7 +203,6 @@ async function decryptIntoCsv(
 
             const filename = getSignatureFileName({
               fieldId: field._id,
-              responseId: submission._id,
               isSvg: true,
             })
 

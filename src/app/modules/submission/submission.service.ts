@@ -608,7 +608,6 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   if (recipientData.length === 0) {
     return okAsync(true)
   }
-
   const sentEmailsPromise = MailService.sendAutoReplyEmails({
     form,
     submission,

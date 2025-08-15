@@ -796,7 +796,6 @@ const _createSubmission = async ({
     emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
-    submissionId,
   )
 
   // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
@@ -818,7 +817,6 @@ const _createSubmission = async ({
         content: signatureData,
         filename: getSignatureFileName({
           fieldId: field._id,
-          responseId: submissionId,
         }),
         contentType: 'image/png',
       })

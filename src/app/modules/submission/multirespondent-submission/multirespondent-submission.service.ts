@@ -386,7 +386,6 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionTitleAnswerString({
           formFields: form.form_fields,
           responses,
-          submissionId,
         })
 
         // rasterize signature svgs to include in email attachments
@@ -401,7 +400,6 @@ const sendMrfOutcomeEmails = ({
               content: signatureData,
               filename: getSignatureFileName({
                 fieldId: fieldId,
-                responseId: submissionId,
               }),
               contentType: 'image/png',
             })
@@ -474,7 +472,6 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
-    submissionId,
   })
 
   return MailService.sendMrfRespondentCopyEmail({

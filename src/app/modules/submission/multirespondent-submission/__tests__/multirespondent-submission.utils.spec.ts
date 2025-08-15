@@ -432,7 +432,6 @@ describe('multirespondent-submission.utils', () => {
     })
 
     it('should handle signature fields correctly', () => {
-      const submissionId = new ObjectId().toHexString()
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
@@ -451,16 +450,12 @@ describe('multirespondent-submission.utils', () => {
         },
       }
 
-      const result = getQuestionTitleAnswerString({
-        formFields,
-        responses,
-        submissionId,
-      })
+      const result = getQuestionTitleAnswerString({ formFields, responses })
 
       expect(result).toEqual([
         {
           question: '[signature] Signature',
-          answer: `signature captured - responseID(${submissionId}) - fieldID(1).svg`,
+          answer: 'Signature_Captured_1.png',
         },
       ])
     })

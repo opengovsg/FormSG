@@ -593,7 +593,6 @@ const getFormFormattedResponse = (
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
   return {
-    _id: response._id,
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
     answer,
@@ -613,10 +612,8 @@ const getAutoReplyFormattedResponse = (
   // Auto reply email will contain only visible fields
   if (isVisible !== false) {
     return {
-      _id: response._id,
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
-      fieldType: response.fieldType,
     }
   }
   return undefined
@@ -632,22 +629,17 @@ export class SubmissionEmailObj {
     parsedResponses: ProcessedFieldResponse[],
     hashedFields: Set<MyInfoKey> = new Set<MyInfoKey>(),
     authType: FormAuthType,
-    submissionId?: string,
   ) {
     this.parsedResponses = parsedResponses
     this.hashedFields = hashedFields
     this.authType = authType
-    this.submissionId = submissionId
   }
 
   /**
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
-    const splitAddressData = formatDataCollationResponse(
-      this.parsedResponses,
-      this.submissionId,
-    )
+    const splitAddressData = formatDataCollationResponse(this.parsedResponses)
     const dataCollationFormattedData = splitAddressData.flatMap((response) =>
       createFormattedDataForOneField(
         response,
@@ -725,7 +717,6 @@ const formatDataCollationResponse = (
         question: `${response.question}`,
         answer: getSignatureFileName({
           fieldId: response._id,
-          responseId: submissionId,
         }),
       } as unknown as ProcessedSingleAnswerResponse)
     } else {

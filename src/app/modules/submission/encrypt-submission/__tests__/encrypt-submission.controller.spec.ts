@@ -1331,8 +1331,7 @@ describe('encrypt-submission.controller', () => {
       // Assert
       expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][2]).toEqual(
         expect.objectContaining({
-          ...emailData,
-          submissionId: expect.stringMatching(/^[a-f0-9]{24}$/),
+          emailData,
         }),
       )
     })
@@ -1454,10 +1453,9 @@ describe('encrypt-submission.controller', () => {
       )
     })
 
-    it.only('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
+    it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
       // Arrange
       const mockFormId = new ObjectId()
-      const mockFieldId = new ObjectId()
       const signatureFieldId = new ObjectId()
       const mockForm = {
         _id: mockFormId,
@@ -1470,7 +1468,7 @@ describe('encrypt-submission.controller', () => {
 
       const mockResponses = [
         {
-          _id: mockFieldId,
+          _id: new ObjectId(),
           question: '[MyInfo] Test Question',
           answer: 'Test Answer',
           fieldType: 'text',
@@ -1519,12 +1517,7 @@ describe('encrypt-submission.controller', () => {
             }),
             expect.objectContaining({
               question: '[signature] Signature Question',
-              answer: expect.stringMatching(
-                new RegExp(
-                  `^signature captured - responseID\\([a-f0-9]{24}\\) - fieldID\\(${signatureFieldId}\\)\\.png$`,
-                ),
-              ),
-              // answer: `signature captured - responseID(${mockFormId.toHexString()}) - fieldID(${signatureFieldId})`
+              answer:`Signature_Captured_${signatureFieldId}.png`,
             }),
           ]),
         }),
