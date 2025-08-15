@@ -1,22 +1,22 @@
 import tracer from 'dd-trace'
 import { err, ok, ResultAsync } from 'neverthrow'
-import { isDevOrTest } from '../config/config'
-
-import config, { aws as AwsConfig } from '../config/config'
-import { createLoggerWithLabel } from '../config/logger'
 import puppeteer from 'puppeteer-core'
+import config, { aws as AwsConfig, isDevOrTest } from '../config/config'
+import { createLoggerWithLabel } from '../config/logger'
 
 const logger = createLoggerWithLabel(module)
 
-const generatePdfFromHtmlLocally = async (summaryHtml: string): Promise<Buffer> => {
+const generatePdfFromHtmlLocally = async (
+  summaryHtml: string,
+): Promise<Buffer> => {
   const browser = await puppeteer.launch({
     args: [
       '--no-sandbox',
       '--disable-gpu', // See https://github.com/puppeteer/puppeteer/issues/11640#issuecomment-2361858540
     ],
     headless: true,
-      executablePath: config.chromiumBin,
-    })
+    executablePath: config.chromiumBin,
+  })
   const page = await browser.newPage()
   await page.setContent(summaryHtml, {
     waitUntil: 'networkidle0',
@@ -49,14 +49,17 @@ const generatePdfFromHtmlLambda = (
     AwsConfig.pdfGeneratorLambda.invoke({
       FunctionName: AwsConfig.pdfGeneratorLambdaFunctionName,
       Payload: JSON.stringify({ html: summaryHtml }),
-    }), (error) => {
+    }),
+    (error) => {
       logger.error({
         message: 'Error when invoking pdf generator lambda',
         meta: logMeta,
         error,
       })
       return new Error('Error when invoking pdf generator lambda')
-    }).andThen((data) => {
+    },
+  )
+    .andThen((data) => {
       if (!data.Payload) {
         return err(new Error('No payload from pdf generator lambda'))
       }
@@ -68,7 +71,8 @@ const generatePdfFromHtmlLambda = (
 
       const pdfBuffer = Buffer.from(response.body, 'base64')
       return ok(pdfBuffer)
-    }).mapErr(error => {
+    })
+    .mapErr((error) => {
       logger.error({
         message: 'Error generating pdf from html using lambda',
         meta: logMeta,

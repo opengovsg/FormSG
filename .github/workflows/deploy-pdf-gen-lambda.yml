@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   pdf-gen-lambda:
-    name: pdf gen lambda
+    name: Deploy PDF Generator Lambda using Severless Framework
     runs-on: ubuntu-latest
 
     steps:

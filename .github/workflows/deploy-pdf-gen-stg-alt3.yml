@@ -14,8 +14,8 @@ on:
       - stg-alt3
 
 jobs:
-  deploy-scanner-guardduty:
-    name: Deploy Scanner GuardDuty
+  deploy-pdf-gen-lambda:
+    name: Deploy PDF Generator Lambda
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
       checkoutBranch: 'stg-alt3'
