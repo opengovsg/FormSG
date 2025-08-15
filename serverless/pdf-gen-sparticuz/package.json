@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -f pdf-gen-sparticuz.zip && rm -rf node_modules && rm -f index.js*",
     "build": "npm install && esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=index.js",
-    "build-zip": "npm run build && npm run clean && npm run ci --omit=dev && zip -r pdf-gen-sparticuz.zip index.js* node_modules/ fonts/",
+    "build-zip": "npm run build && npm run clean && npm ci --omit=dev && zip -r pdf-gen-sparticuz.zip index.js* node_modules/ fonts/",
     "deploy": "npm run build-zip && serverless deploy --stage ${ENV:-'staging'}"
   },
   "author": "",
