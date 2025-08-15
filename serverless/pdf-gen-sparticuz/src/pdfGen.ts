@@ -1,6 +1,6 @@
 import { PdfLoadingError, PdfGenerationError, PuppeteerChromiumError } from "./errors";
-import chromium from "@sparticuz/chromium";
 import puppeteer, { Browser, Page } from "puppeteer-core";
+const chromium = require("@sparticuz/chromium"); // NOTE: need to use require to avoid loading issues. 
 
 /**
  * Loads HTML content into a Puppeteer page
