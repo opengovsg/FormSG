@@ -18,6 +18,7 @@ jobs:
     name: Deploy PDF Generator Lambda
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
+      gha-environment: 'stg-alt3'
       checkoutBranch: 'stg-alt3'
       environment: 'stg-alt3'
     secrets:

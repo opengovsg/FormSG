@@ -3,6 +3,10 @@ name: Deploy PDF Generator Lambda
 on:
   workflow_call:
     inputs:
+      gha-environment:
+        description: 'GitHub Actions environment'
+        required: true
+        type: string
       environment:
         description: 'Deployment environment'
         required: true
@@ -29,7 +33,7 @@ jobs:
   deploy-pdf-gen-lambda:
     name: Deploy PDF Generator Lambda using Severless Framework
     runs-on: ubuntu-latest
-
+    environment: ${{ inputs.gha-environment }}
     steps:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4
@@ -52,7 +56,7 @@ jobs:
             ${{ runner.OS }}-node-
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.3.1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
