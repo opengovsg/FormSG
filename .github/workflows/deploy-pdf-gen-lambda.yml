@@ -1,0 +1,55 @@
+name: Deploy PDF Generator Lambda 
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      checkoutBranch:
+        description: 'Branch to checkout code from'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  pdf-gen-lambda:
+    name: pdf gen lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch source code into runner environment
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkoutBranch }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-pdf-gen-${{ hashFiles('./serverless/pdf-gen-sparticuz/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-pdf-gen-
+            ${{ runner.OS }}-node-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.3.1
+        with:
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Deploy with Serverless Framework
+        working-directory: ./serverless/pdf-gen-sparticuz
+        env:
+          ENV: ${{ inputs.environment }}
+        run: npm run deploy

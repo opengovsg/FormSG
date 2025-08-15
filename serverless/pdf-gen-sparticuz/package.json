@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -f pdf-gen-sparticuz.zip && npm install && zip -r pdf-gen-sparticuz.zip index.js package.json package-lock.json fonts/ node_modules/",
-    "deploy": "npm run build && serverless deploy"
+    "deploy": "npm run build && serverless deploy --stage ${ENV:-'staging'}" 
   },
   "author": "",
   "license": "ISC",

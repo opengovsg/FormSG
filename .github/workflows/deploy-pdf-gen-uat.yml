@@ -1,0 +1,25 @@
+name: Deploy PDF Generator Lambda to uat
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - uat
+
+jobs:
+  deploy-scanner-guardduty:
+    name: Deploy Scanner GuardDuty
+    uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
+    with:
+      checkoutBranch: 'uat'
+      gha-environment: 'uat'
+      environment: 'uat'
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
