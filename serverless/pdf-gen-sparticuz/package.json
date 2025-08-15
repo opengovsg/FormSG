@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -f pdf-gen-sparticuz.zip && rm -rf node_modules && rm -f index.js*",
-    "build": "npm ci --omit=dev && esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=index.js", 
-    "postbuild": "rm -f index.js*", 
+    "build": "npm ci --omit=dev && esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=index.js",
+    "postbuild": "rm -f index.js*",
     "build-zip": "npm run clean && npm run build && zip -r pdf-gen-sparticuz.zip index.js* node_modules/ fonts/ && npm run postbuild",
     "deploy": "npm run build-zip && serverless deploy --stage ${ENV:-'staging'}"
   },
@@ -20,6 +20,6 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",
     "esbuild": "^0.25.9",
-    "serverless": "^4.18.0"
+    "serverless": "^3.40.0"
   }
 }
