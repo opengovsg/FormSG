@@ -99,9 +99,9 @@ export const generatePdfFromHtml = async (
 
   const localStopwatch = startStopwatch()
   const localResult = generatePdfFromHtmlLocally(summaryHtml).then(result => {
-    const latency = localStopwatch.stop()
+    const latencyMs = localStopwatch.stop()
     submitPdfGenerationLatencyMetric({
-      latency,
+      latencyMs,
       isLocal: true,
     })
     return result 
@@ -112,9 +112,9 @@ export const generatePdfFromHtml = async (
   if (!isDevOrTest) {
     const lambdaStopwatch = startStopwatch()
     const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(result => {
-      const latency = lambdaStopwatch.stop()
+      const latencyMs = lambdaStopwatch.stop()
       submitPdfGenerationLatencyMetric({
-        latency,
+        latencyMs,
         isLocal: false,
       })
       return result
