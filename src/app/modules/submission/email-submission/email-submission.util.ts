@@ -241,7 +241,6 @@ export const getAnswerForSignature = (
     default:
       signatureAnswer = ''
   }
-
   return {
     _id: response._id,
     fieldType: response.fieldType,
@@ -632,7 +631,6 @@ const getAutoReplyFormattedResponse = (
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
-      fieldType: response.fieldType,
       ...(response.fieldType === BasicField.Signature && {
         answer: response.answer,
       }), // add signature answer for PDF generation

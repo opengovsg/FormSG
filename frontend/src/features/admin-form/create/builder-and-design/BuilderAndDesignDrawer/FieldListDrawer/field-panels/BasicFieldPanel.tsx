@@ -103,18 +103,20 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       <Droppable isDropDisabled droppableId={CREATE_FIELD_FREE_TEXT_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Free text">
-              {filteredCreateBasicFreeTextFields.map(
-                ({ fieldType, originalIndex }) => (
-                  <DraggableBasicFieldListOption
-                    index={originalIndex}
-                    isDisabled={isLoading}
-                    key={originalIndex}
-                    fieldType={fieldType}
-                  />
-                ),
-              )}
-            </FieldSection>
+            {filteredCreateBasicFreeTextFields.length > 0 && (
+              <FieldSection label="Free text">
+                {filteredCreateBasicFreeTextFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableBasicFieldListOption
+                      index={originalIndex}
+                      isDisabled={isLoading}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+            )}
             <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
@@ -125,7 +127,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       >
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
+            {filteredCreateBasicFreeTextFields.length > 0 && (
               <FieldSection label="Options">
                 {filteredCreateBasicOptionsFields.map(
                   ({ fieldType, originalIndex }) => {
@@ -141,8 +143,8 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   },
                 )}
               </FieldSection>
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
+            )}
+            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
@@ -152,7 +154,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       >
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
+            {filteredCreateBasicContentAndDescriptionFields.length > 0 && (
               <FieldSection label="Content and descriptions">
                 {filteredCreateBasicContentAndDescriptionFields.map(
                   ({ fieldType, originalIndex }) => {
@@ -168,8 +170,8 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   },
                 )}
               </FieldSection>
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
+            )}
+            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
@@ -179,7 +181,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       >
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
+            {filteredCreateBasicDatesAndNumberFields.length > 0 && (
               <FieldSection label="Dates and number">
                 {filteredCreateBasicDatesAndNumberFields.map(
                   ({ fieldType, originalIndex }) => {
@@ -195,15 +197,15 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   },
                 )}
               </FieldSection>
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
+            )}
+            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
       <Droppable isDropDisabled droppableId={CREATE_FIELD_PERSONAL_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
+            {filteredCreateBasicPersonalFields.length > 0 && (
               <FieldSection label="Personal">
                 {filteredCreateBasicPersonalFields.map(
                   ({ fieldType, originalIndex }) => {
@@ -219,15 +221,15 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   },
                 )}
               </FieldSection>
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
+            )}
+            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
       <Droppable isDropDisabled droppableId={CREATE_FIELD_OTHERS_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection>
+            {filteredCreateBasicOthersFields.length > 0 && (
               <FieldSection label="Others">
                 {filteredCreateBasicOthersFields.map(
                   ({ fieldType, originalIndex }) => {
@@ -243,8 +245,8 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                   },
                 )}
               </FieldSection>
-              <Box display="none">{provided.placeholder}</Box>
-            </FieldSection>
+            )}
+            <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
       </Droppable>
