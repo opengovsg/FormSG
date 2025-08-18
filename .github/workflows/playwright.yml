@@ -4,7 +4,6 @@ on:
   push:
     branches-ignore:
       - staging
-      - staging-alt
       - staging-alt2
       - stg-alt
       - stg-alt3
@@ -13,7 +12,6 @@ on:
     types: [opened, reopened]
     branches-ignore:
       - staging
-      - staging-alt
       - staging-alt2
       - stg-alt
       - stg-alt3
