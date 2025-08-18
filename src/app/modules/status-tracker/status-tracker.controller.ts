@@ -1,8 +1,12 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
-import { StatusTrackerData } from 'shared/types'
 
+import { StatusTrackerData } from '../../../../shared/types'
+import {
+  StatusTrackerWorkflowDto,
+  WorkflowType,
+} from '../../../../shared/types/form/workflow'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -32,15 +36,25 @@ const getStatusTrackerSubmissionData: ControllerHandler<
   return okAsync(submissionId)
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
-      // strip nextStepRecipientEmails
+      // strip emails from submitted steps and workflow
       const strippedSubmittedSteps = submissionData.submittedSteps?.map(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ({ nextStepRecipientEmails, ...rest }) => rest,
       )
 
+      const strippedWorkflow: StatusTrackerWorkflowDto =
+        submissionData.workflow.map((step) => {
+          if (step.workflow_type === WorkflowType.Static) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { emails, ...rest } = step
+            return rest
+          }
+          return step
+        })
+
       const statusTrackerData: StatusTrackerData = {
         submittedSteps: strippedSubmittedSteps,
-        workflow: submissionData.workflow,
+        workflow: strippedWorkflow,
         responseId: submissionData.id,
         form: submissionData.form,
       }

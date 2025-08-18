@@ -7,7 +7,12 @@ import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
-import { FormWorkflowDto, LogicDto, ProductItem } from './form'
+import {
+  FormWorkflowDto,
+  LogicDto,
+  ProductItem,
+  StatusTrackerWorkflowDto,
+} from './form'
 import { ErrorCode } from './errorCodes'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
@@ -358,7 +363,7 @@ export type PaymentSubmissionData = {
 
 export type StatusTrackerData = {
   submittedSteps: SubmittedStep[] | undefined
-  workflow: FormWorkflowDto
+  workflow: StatusTrackerWorkflowDto
   responseId: string | undefined
   form: string
 }
