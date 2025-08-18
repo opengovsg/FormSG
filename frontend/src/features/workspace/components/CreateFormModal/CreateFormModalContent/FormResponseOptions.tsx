@@ -76,10 +76,7 @@ export const FormResponseOptions = forwardRef<
               { text: storage.optionDescriptionItems.supportEmailSubmissions },
               { text: storage.optionDescriptionItems.supportSingpassMyinfo },
               { text: storage.optionDescriptionItems.supportWebhooks },
-              {
-                text: storage.optionDescriptionItems.sensitivity,
-                badge: 'new',
-              },
+              { text: storage.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>
@@ -100,7 +97,7 @@ export const FormResponseOptions = forwardRef<
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
               },
-              { text: mrf.optionDescriptionItems.sensitivity, badge: 'new' },
+              { text: mrf.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>
