@@ -18,8 +18,8 @@ npm run build-ts-dist
 
 # The necessary files are now in the dist directory - begin building the zip file contents
 cd dist 
-# # Install dev dependencies only in node_modules in the dist directory
+# Install dependencies in the dist directory (including @sparticuz/chromium with required .br binaries)
 npm ci --omit=dev 
 
-# # Zip the dist directory into a zip file called pdf-gen-sparticuz.zip
+# Zip the dist directory into a zip file called pdf-gen-sparticuz.zip
 zip -r ../pdf-gen-sparticuz.zip ./*

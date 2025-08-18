@@ -3,7 +3,7 @@ frameworkVersion: '3' # RATIONALE: Used to avoid authentcation required by serve
 
 provider:
   name: aws
-  runtime: nodejs22.x # NOTE: Invalid configuration error message occurs but it will still work to deploy node 22. 
+  runtime: nodejs20.x # NOTE: Invalid configuration error message occurs but it will still work to deploy node 22. 
   region: ap-southeast-1
   deploymentBucket:
     name: pdf-gen-lambda-code-zip # provisioned by Pulumi in formsg-infra
@@ -26,4 +26,4 @@ functions:
   pdf-gen-sparticuz:
     handler: index.handler
     timeout: 300
-    memorySize: 1024 
+    memorySize: 2048

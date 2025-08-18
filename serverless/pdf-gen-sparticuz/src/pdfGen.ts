@@ -63,16 +63,19 @@ const generatePdf = async (page: Page): Promise<Buffer> => {
 export const convertHtmlToPdf = async (html: string): Promise<Buffer> => {
   let browser: Browser | undefined;
   try { 
+
+    const chromiumExecutablePath = await chromium.executablePath();
     console.info({
       action: 'convertHtmlToPdf',
       message: 'HTML to PDF conversion started',
+      chromiumExecutablePath: chromium.executablePath(),
     })
     chromium.setGraphicsMode = false;
     const chromiumArgs = [...chromium.args, '--no-sandbox', '--disable-gpu']
 
     browser = await puppeteer.launch({
       args: puppeteer.defaultArgs({ args: chromiumArgs, headless: true }),
-      executablePath: await chromium.executablePath(),
+      executablePath: chromiumExecutablePath,
       headless: true,
     });
 
