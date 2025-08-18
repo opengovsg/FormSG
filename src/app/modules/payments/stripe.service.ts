@@ -450,6 +450,7 @@ type HandleStripeEventResultError =
  */
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
+  isUseLambdaOutput: boolean,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -496,6 +497,7 @@ export const handleStripeEvent = (
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
+              isUseLambdaOutput,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {

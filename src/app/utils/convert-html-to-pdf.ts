@@ -1,9 +1,9 @@
-import tracer from 'dd-trace'
 import { err, ok, ResultAsync } from 'neverthrow'
 import puppeteer from 'puppeteer-core'
 
 import config, { aws as AwsConfig, isDevOrTest } from '../config/config'
 import { createLoggerWithLabel } from '../config/logger'
+import { startStopwatch, submitPdfGenerationLatencyMetric } from '../modules/datadog/datadog.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -91,15 +91,48 @@ const generatePdfFromHtmlLambda = (
  */
 export const generatePdfFromHtml = async (
   summaryHtml: string,
+  isUseLambdaOutput: boolean, 
 ): Promise<Buffer> => {
-  return tracer.trace('generatePdfFromHtml', async () => {
-    if (isDevOrTest) {
-      return generatePdfFromHtmlLocally(summaryHtml)
-    }
-    const result = await generatePdfFromHtmlLambda(summaryHtml)
-    if (result.isErr()) {
-      throw result.error
-    }
-    return result.value
+  const logMeta = {
+    action: 'generatePdfFromHtml',
+  }
+
+  const localStopwatch = startStopwatch()
+  const localResult = generatePdfFromHtmlLocally(summaryHtml).then(result => {
+    const latency = localStopwatch.stop()
+    submitPdfGenerationLatencyMetric({
+      latency,
+      isLocal: true,
+    })
+    return result 
   })
+
+
+  // NOTE: Currently run as shadow to compute the latency of the lambda function. 
+  if (!isDevOrTest) {
+    const lambdaStopwatch = startStopwatch()
+    const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(result => {
+      const latency = lambdaStopwatch.stop()
+      submitPdfGenerationLatencyMetric({
+        latency,
+        isLocal: false,
+      })
+      return result
+    })
+
+    if (isUseLambdaOutput) {
+      const lambdaResult = await lambdaResultAsync
+      if (lambdaResult.isErr()) {
+        logger.error({
+          message: 'Error generating pdf from html using lambda',
+          meta: logMeta,
+          error: lambdaResult.error,
+        })
+        throw lambdaResult.error
+      }
+      return lambdaResult.value
+    }
+  } 
+
+  return await localResult
 }

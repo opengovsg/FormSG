@@ -17,6 +17,7 @@ import {
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -87,9 +88,11 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
+  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+
   // Step 3: Process the event
   return (
-    StripeService.handleStripeEvent(event)
+    StripeService.handleStripeEvent(event, isUseLambdaOutput)
       // Step 4: Return response to Stripe based on result
       .match(
         () => res.sendStatus(StatusCodes.OK),

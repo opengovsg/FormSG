@@ -109,7 +109,8 @@ export const generateBounceNotificationHtml = (
 
 export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
-): ResultAsync<Uint8Array, MailGenerationError> => {
+  isUseLambdaOutput: boolean, 
+): ResultAsync<Buffer, MailGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
 
   logger.info({
@@ -124,7 +125,7 @@ export const generateAutoreplyPdf = (
 
   return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
     return ResultAsync.fromPromise(
-      generatePdfFromHtml(summaryHtml),
+      generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
       (error) => {
         logger.error({
           meta: {

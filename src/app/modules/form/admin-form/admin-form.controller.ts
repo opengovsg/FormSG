@@ -115,6 +115,7 @@ import {
   mapRouteError,
   verifyValidUnicodeString,
 } from './admin-form.utils'
+import { featureFlags } from 'shared/constants'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -2206,6 +2207,8 @@ export const submitEmailPreview: ControllerHandler<
     })
   }
 
+  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+
   // Don't await on email confirmations, so submission is successful even if
   // this fails
   void SubmissionService.sendEmailConfirmations({
@@ -2217,6 +2220,7 @@ export const submitEmailPreview: ControllerHandler<
       parsedResponses.getAllResponses(),
       form.form_fields,
     ),
+    isUseLambdaOutput,
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

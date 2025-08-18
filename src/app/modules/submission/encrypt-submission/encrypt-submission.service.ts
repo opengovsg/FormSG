@@ -145,6 +145,7 @@ export const createEncryptSubmissionWithoutSave = ({
 export const performEncryptPostSubmissionActions = (
   submission: IEncryptedSubmissionSchema,
   responses: FieldResponse[],
+  isUseLambdaOutput: boolean,
   emailData?: SubmissionEmailObj,
   attachments?: Mail.Attachment[],
   respondentEmails?: string[],
@@ -192,6 +193,7 @@ export const performEncryptPostSubmissionActions = (
           ...extractEmailConfirmationData(responses, form.form_fields),
           ...respondentCopyEmailData,
         ],
+        isUseLambdaOutput,
       }).mapErr((error) => {
         logger.error({
           message: 'Error while sending email confirmations',

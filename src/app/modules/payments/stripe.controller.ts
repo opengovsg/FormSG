@@ -9,6 +9,7 @@ import Stripe from 'stripe'
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
+  featureFlags,
 } from '../../../../shared/constants'
 import {
   ErrorDto,
@@ -294,6 +295,8 @@ export const reconcileAccount: ControllerHandler<
 
   const eventsReport: ReconciliationEventsReportLine[] = []
 
+  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+
   return StripeService.getUndeliveredStripeEventsForAccount(
     stripeAccount,
     maxAgeHrs,
@@ -304,7 +307,7 @@ export const reconcileAccount: ControllerHandler<
         meta: { ...logMeta, event },
       })
 
-      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
+      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent, isUseLambdaOutput)
         .andThen(() => {
           logger.warn({
             message:

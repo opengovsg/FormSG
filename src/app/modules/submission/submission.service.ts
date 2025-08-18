@@ -593,12 +593,14 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   responsesData = [],
   attachments,
   recipientData,
+  isUseLambdaOutput,
 }: {
   form: IPopulatedForm
   submission: S
   responsesData?: EmailRespondentConfirmationField[]
   attachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
+  isUseLambdaOutput: boolean
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
@@ -614,6 +616,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     attachments,
     responsesData,
     autoReplyMailDatas: recipientData,
+    isUseLambdaOutput
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

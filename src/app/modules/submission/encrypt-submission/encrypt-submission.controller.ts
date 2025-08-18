@@ -99,6 +99,7 @@ import {
   getPaymentIntentDescription,
   getStripePaymentMethod,
 } from './encrypt-submission.utils'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -873,12 +874,15 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
+  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+
   return await performEncryptPostSubmissionActions(
     submission,
     responses,
+    isUseLambdaOutput,
     emailData,
     emailAttachments,
-    respondentEmails,
+    respondentEmails
   )
 }
 

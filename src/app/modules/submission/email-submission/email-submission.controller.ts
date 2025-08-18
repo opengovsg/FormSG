@@ -47,6 +47,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
 import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -446,6 +447,8 @@ export const submitEmailModeForm: ControllerHandler<
           })
         }
 
+        const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+
         // Send email confirmations
         void SubmissionService.sendEmailConfirmations({
           form,
@@ -456,6 +459,7 @@ export const submitEmailModeForm: ControllerHandler<
             parsedResponses.getAllResponses(),
             form.form_fields,
           ),
+          isUseLambdaOutput,
         }).mapErr((error) => {
           // NOTE: MyInfo access token is not cleared here.
           // This is because if the reason for failure is not on the users' end,

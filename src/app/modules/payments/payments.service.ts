@@ -208,6 +208,7 @@ export const confirmPaymentPendingSubmission = (
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
+  isUseLambdaOutput: boolean,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -242,6 +243,7 @@ export const performPaymentPostSubmissionActions = (
                 performEncryptPostSubmissionActions(
                   submission,
                   payment.responses,
+                  isUseLambdaOutput,
                 )
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.
