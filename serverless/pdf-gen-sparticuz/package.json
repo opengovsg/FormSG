@@ -21,7 +21,7 @@
     "esbuild": "^0.25.9",
     "jest": "^30.0.5",
     "serverless": "^3.40.0",
-    "ts-jest": "^30.0.0",
-    "typescript": "^5.0.0"
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
   }
 }
