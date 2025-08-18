@@ -6,15 +6,11 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import {
-  convertToSignatureVectorArray,
-  getSignatureFileName,
-} from '../../../../../shared/utils/signature'
+import { convertToSignatureVectorArray, getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
-  EmailDataForOneField,
   EmailRespondentConfirmationField,
   IAttachmentInfo,
   MapRouteError,
@@ -88,7 +84,6 @@ import {
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSignatureResponse,
-  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
@@ -231,14 +226,7 @@ export const getAnswerForAddress = (
 export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
-  // let signatureAnswer: string
-  // switch (response.answerArray[0]) {
-  //   case 'draw':
-  //     signatureAnswer = getSignatureFileName({ fieldId: response._id })
-  //     break
-  //   default:
-  //     signatureAnswer = ''
-  // }
+  const signatureFileName = getSignatureFileName({ fieldId: response._id })
   const signatureAnswer = convertToSignaturePngDataURI(
     convertToSignatureVectorArray(response.answerArray[1]),
   )
@@ -250,54 +238,7 @@ export const getAnswerForSignature = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: signatureAnswer,
-  }
-}
-
-/**
- *  Formats the response for sending to the submitter (autoReplyData),
- *  the table that is sent to the admin (formData),
- *  and the json used by data collation tool (dataCollationData).
- *
- * @param response
- * @param hashedFields Field IDs hashed to verify answers provided by MyInfo
- * @returns an object containing three sets of formatted responses
- */
-export const getFormattedResponse = (
-  response: ResponseFormattedForEmail,
-  hashedFields: Set<string>,
-): EmailDataForOneField => {
-  const { question, answer, fieldType, isVisible } = response
-  const answerSplitByNewLine = answer.split('\n')
-
-  let autoReplyData: EmailRespondentConfirmationField | undefined
-  let dataCollationData: EmailDataCollationToolField | undefined
-  // Auto reply email will contain only visible fields
-  if (isVisible) {
-    autoReplyData = {
-      question, // No prefixes for autoreply
-      answerTemplate: answerSplitByNewLine,
-    }
-  }
-
-  // Headers are excluded from JSON data
-  if (fieldType !== BasicField.Section) {
-    dataCollationData = {
-      question: getJsonPrefixedQuestion(response),
-      answer,
-    }
-  }
-
-  // Send all the fields to admin
-  const formData = {
-    question: getFormDataPrefixedQuestion(response, hashedFields),
-    answerTemplate: answerSplitByNewLine,
-    answer,
-    fieldType,
-  }
-  return {
-    autoReplyData,
-    dataCollationData,
-    formData,
+    answerTemplate: [signatureFileName],
   }
 }
 
@@ -572,6 +513,13 @@ const getDataCollationFormattedResponse = (
   response: ResponseFormattedForEmail,
 ): EmailDataCollationToolField | undefined => {
   const { answer, fieldType } = response
+
+  if (fieldType === BasicField.Signature) {
+    return {
+      question: getJsonPrefixedQuestion(response),
+      answer: response.answerTemplate ? response.answerTemplate[0] : '',
+    }
+  }
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
     return {
@@ -592,7 +540,19 @@ const getFormFormattedResponse = (
 ): EmailAdminDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
+
+  if (fieldType === BasicField.Signature) {
+    return {
+      _id: response._id,
+      question: getFormDataPrefixedQuestion(response, hashedFields),
+      answerTemplate: response.answerTemplate ?? [],
+      answer,
+      fieldType,
+    }
+  }
+
   return {
+    _id: response._id,
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
     answer,
@@ -607,13 +567,17 @@ const getFormFormattedResponse = (
 const getAutoReplyFormattedResponse = (
   response: ResponseFormattedForEmail,
 ): EmailRespondentConfirmationField | undefined => {
-  const { question, answer, isVisible } = response
-  const answerSplitByNewLine = answer.split('\n')
+  const { question, answer, isVisible, answerTemplate } = response
+  const answerSplitByNewLine = answerTemplate ?? answer.split('\n')
   // Auto reply email will contain only visible fields
   if (isVisible !== false) {
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
+      fieldType: response.fieldType,
+      ...(response.fieldType === BasicField.Signature && {
+        answer: response.answer,
+      }), // add signature answer for PDF generation
     }
   }
   return undefined
@@ -623,7 +587,6 @@ export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<MyInfoKey>
   authType: FormAuthType
-  submissionId?: string
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
@@ -706,18 +669,6 @@ const formatDataCollationResponse = (
           answer: answer,
         })
       })
-    } else if (
-      response.fieldType === BasicField.Signature &&
-      isProcessedSignatureResponse(response)
-    ) {
-      responses.push({
-        _id: `${response._id}`,
-        fieldType: response.fieldType,
-        question: `${response.question}`,
-        answer: getSignatureFileName({
-          fieldId: response._id,
-        }),
-      } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)
     }

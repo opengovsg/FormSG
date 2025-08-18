@@ -31,7 +31,6 @@ export type SendAutoReplyEmailsArgs = {
   attachments?: Mail.Attachment[]
   responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
     fieldType?: EmailAdminDataField['fieldType']
-    _id?: string
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
 }
@@ -59,7 +58,6 @@ export type AutoreplySummaryRenderData = {
   submissionTime: string
   formData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
     fieldType?: EmailAdminDataField['fieldType']
-    _id?: string
   })[]
   formUrl: string
 }

@@ -7,13 +7,8 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import {
-  BasicField,
-  FormResponseMode,
-  PaymentChannel,
-} from '../../../../shared/types'
+import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
-import { getSignatureFileName } from '../../../../shared/utils/signature'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
@@ -301,17 +296,6 @@ export class MailService {
 
     const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
     const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
-
-    // For signature fields, replace vector array with file name for email display
-    for (const item of formSummaryRenderData.formData) {
-      if (item.fieldType === BasicField.Signature) {
-        item.answerTemplate = [
-          getSignatureFileName({
-            fieldId: item._id ?? '',
-          }),
-        ]
-      }
-    }
 
     const templateData = {
       submissionId: submission.id,
@@ -708,14 +692,6 @@ export class MailService {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
-    // For signature fields, replace vector array with file name for email display
-    for (const item of formData) {
-      if (item.fieldType === BasicField.Signature) {
-        item.answerTemplate = [
-          getSignatureFileName({ fieldId: item._id ?? '' }),
-        ]
-      }
-    }
     // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
     const htmlData: SubmissionToAdminHtmlData = {
@@ -800,7 +776,6 @@ export class MailService {
     PromiseSettledResult<Result<true, MailSendError | MailGenerationError>>[]
   > => {
     // Data to render both the submission details mail HTML body and PDF.
-
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,

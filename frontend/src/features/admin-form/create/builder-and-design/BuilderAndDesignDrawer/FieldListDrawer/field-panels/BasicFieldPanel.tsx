@@ -103,7 +103,6 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       <Droppable isDropDisabled droppableId={CREATE_FIELD_FREE_TEXT_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            {/* <FieldSection> */}
             <FieldSection label="Free text">
               {filteredCreateBasicFreeTextFields.map(
                 ({ fieldType, originalIndex }) => (
@@ -117,7 +116,6 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
               )}
             </FieldSection>
             <Box display="none">{provided.placeholder}</Box>
-            {/* </FieldSection> */}
           </Box>
         )}
       </Droppable>
