@@ -31,6 +31,13 @@ const generatePdfFromHtmlLocally = async (
     },
   })
   await browser.close()
+
+  logger.info({ 
+    message: 'Successfully generated pdf from html using local',
+    meta: {
+      action: 'generatePdfFromHtmlLocally',
+    },
+  })
   return Buffer.from(pdfBuffer)
 }
 
@@ -71,6 +78,12 @@ const generatePdfFromHtmlLambda = (
       }
 
       const pdfBuffer = Buffer.from(response.body, 'base64')
+
+      logger.info({ 
+        message: 'Successfully retrieved pdf response from pdf generator lambda',
+        meta: logMeta,
+      })
+
       return ok(pdfBuffer)
     })
     .mapErr((error) => {
@@ -93,13 +106,23 @@ export const generatePdfFromHtml = async (
   summaryHtml: string,
   isUseLambdaOutput: boolean, 
 ): Promise<Buffer> => {
+
   const logMeta = {
     action: 'generatePdfFromHtml',
+    isUseLambdaOutput,
   }
+  logger.info({
+    message: 'Generating pdf from html started',
+    meta: logMeta,
+  })
 
   const localStopwatch = startStopwatch()
   const localResult = generatePdfFromHtmlLocally(summaryHtml).then(result => {
     const latencyMs = localStopwatch.stop()
+    logger.info({
+      message: 'Successfully generated pdf from html using local',
+      meta: {...logMeta, latencyMs},
+    })
     submitPdfGenerationLatencyMetric({
       latencyMs,
       isLocal: true,
@@ -113,6 +136,10 @@ export const generatePdfFromHtml = async (
     const lambdaStopwatch = startStopwatch()
     const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(result => {
       const latencyMs = lambdaStopwatch.stop()
+      logger.info({
+        message: 'Successfully generated pdf from html using lambda',
+        meta: {...logMeta, latencyMs},
+      })
       submitPdfGenerationLatencyMetric({
         latencyMs,
         isLocal: false,
@@ -130,9 +157,18 @@ export const generatePdfFromHtml = async (
         })
         throw lambdaResult.error
       }
+
+      logger.info({ 
+        message: 'Successfully generated pdf from html - using result from lambda pdf generation',
+        meta: logMeta,
+      })
       return lambdaResult.value
     }
   } 
 
+  logger.info({
+    message: 'Successfully generated pdf from html - using result from local pdf generation',
+    meta: logMeta,
+  })
   return await localResult
 }
