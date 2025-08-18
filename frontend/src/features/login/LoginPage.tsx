@@ -121,7 +121,7 @@ export const LoginPage = (): JSX.Element => {
             </>
           )}
           <LoginForm onSubmit={handleSendOtp} />
-          {!shouldShowSgidLogin && (
+          {shouldShowSgidLogin && (
             <>
               <OrDivider />
               <SgidLoginButton />
