@@ -61,14 +61,8 @@
                             <strong><%= fieldTuple.question %></strong>
                         </td>
                         <td class="value-cell">
-                            <% if (fieldTuple.fieldType === 'signature') { %>
-                                <% fieldTuple.answerTemplate.forEach(function(answer) { %>
-                                    <% if (answer.startsWith('data:image/png')) { %>
-                                        <img src="<%- answer %>" alt="Signature" style="max-width: 300px;" /><br />
-                                    <% } else { %>
-                                        <%= answer %><br />
-                                    <% } %>
-                                <% }) %>
+                            <% if (fieldTuple.fieldType === 'signature' && fieldTuple.answer) { %>
+                                <img src="<%= fieldTuple.answer %>" alt="Signature" style="max-width: 300px;" /><br />
                             <% } else { %>
                                 <% fieldTuple.answerTemplate.forEach(function(answer) { %>
                                 <%= answer %><br />

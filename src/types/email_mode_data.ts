@@ -13,7 +13,6 @@ export type EmailDataCollationToolField = {
 }
 
 export type EmailAdminDataField = {
-  _id: string
   question: string
   answer: string
   fieldType: BasicField

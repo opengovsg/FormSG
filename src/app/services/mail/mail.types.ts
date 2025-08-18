@@ -30,7 +30,7 @@ export type SendAutoReplyEmailsArgs = {
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
   attachments?: Mail.Attachment[]
   responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
-    fieldType?: EmailAdminDataField['fieldType']
+    answer?: EmailAdminDataField['answer']
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
 }
@@ -57,7 +57,7 @@ export type AutoreplySummaryRenderData = {
   formTitle: IFormSchema['title']
   submissionTime: string
   formData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
-    fieldType?: EmailAdminDataField['fieldType']
+    answer?: EmailAdminDataField['answer']
   })[]
   formUrl: string
 }
