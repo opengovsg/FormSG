@@ -690,7 +690,6 @@ export class SubmissionEmailObj {
 
 const formatDataCollationResponse = (
   parsedResponses: ProcessedFieldResponse[],
-  submissionId?: string,
 ) => {
   const responses: ProcessedFieldResponse[] = []
   for (const i in parsedResponses) {
