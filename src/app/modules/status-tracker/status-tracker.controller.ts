@@ -32,8 +32,14 @@ const getStatusTrackerSubmissionData: ControllerHandler<
   return okAsync(submissionId)
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
+      // strip nextStepRecipientEmails
+      const strippedSubmittedSteps = submissionData.submittedSteps?.map(
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ({ nextStepRecipientEmails, ...rest }) => rest,
+      )
+
       const statusTrackerData: StatusTrackerData = {
-        submittedSteps: submissionData.submittedSteps,
+        submittedSteps: strippedSubmittedSteps,
         workflow: submissionData.workflow,
         responseId: submissionData.id,
         form: submissionData.form,
