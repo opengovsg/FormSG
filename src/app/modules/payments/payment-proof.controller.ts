@@ -48,6 +48,16 @@ export const downloadPaymentInvoice: ControllerHandler<{
       })
 
       const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+      logger.info({ 
+        message: 'Growthbook flag for lambda pdf generation',
+        meta: {
+          action: 'downloadPaymentInvoice',
+          formId, 
+          paymentId,
+          isUseLambdaOutput, 
+          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+        },
+      })
 
       return PaymentProofService.generatePaymentInvoiceUrl(
         payment,

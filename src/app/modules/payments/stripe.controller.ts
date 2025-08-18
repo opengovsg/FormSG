@@ -296,6 +296,14 @@ export const reconcileAccount: ControllerHandler<
   const eventsReport: ReconciliationEventsReportLine[] = []
 
   const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+  logger.info({ 
+    message: 'Growthbook flag for lambda pdf generation',
+    meta: {
+      ...logMeta,
+      isUseLambdaOutput, 
+      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+    },
+  })
 
   return StripeService.getUndeliveredStripeEventsForAccount(
     stripeAccount,

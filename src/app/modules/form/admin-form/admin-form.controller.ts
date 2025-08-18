@@ -2208,6 +2208,14 @@ export const submitEmailPreview: ControllerHandler<
   }
 
   const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+  logger.info({ 
+    message: 'Growthbook flag for lambda pdf generation',
+    meta: {
+      ...logMeta,
+      isUseLambdaOutput, 
+      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+    },
+  })
 
   // Don't await on email confirmations, so submission is successful even if
   // this fails
