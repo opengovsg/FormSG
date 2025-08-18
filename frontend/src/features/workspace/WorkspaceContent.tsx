@@ -23,7 +23,7 @@ import { useWorkspaceContext } from './WorkspaceContext'
  *
  * Example usage DASHBOARD_MESSAGE = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
  */
-const DASHBOARD_MESSAGE = ``
+const DASHBOARD_MESSAGE = `TEST`
 
 export const WorkspaceContent = (): JSX.Element => {
   const { isLoading, totalFormsCount, isDefaultWorkspace } =
