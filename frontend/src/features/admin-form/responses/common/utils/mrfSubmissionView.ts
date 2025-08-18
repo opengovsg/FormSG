@@ -1,4 +1,8 @@
-import { FormWorkflowDto, SubmittedStep, WorkflowStatus } from '~shared/types'
+import {
+  StatusTrackerWorkflowDto,
+  SubmittedStep,
+  WorkflowStatus,
+} from '~shared/types'
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
@@ -72,7 +76,7 @@ export const getStatusFromWorkflowStatus = (
 
 export type getWorkflowStatusFromFormResponseProps = {
   index: number
-  workflow: FormWorkflowDto
+  workflow: StatusTrackerWorkflowDto
   submittedSteps: SubmittedStep[]
 }
 

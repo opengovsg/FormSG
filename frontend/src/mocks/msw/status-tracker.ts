@@ -8,11 +8,9 @@ const BASE_STATUS_TRACKER_DATA: StatusTrackerData = {
     {
       isApproval: false,
       submittedAt: '2025-05-26T00:23:43.574Z',
-      nextStepRecipientEmails: ['scott@open.gov.sg'],
     },
     {
       submittedAt: '2025-05-26T00:23:57.742Z',
-      nextStepRecipientEmails: ['scott@open.gov.sg'],
       status: WorkflowStatus.APPROVED,
       isApproval: true,
     },
@@ -21,20 +19,17 @@ const BASE_STATUS_TRACKER_DATA: StatusTrackerData = {
     {
       _id: '6825459367829851d459dbc4',
       workflow_type: WorkflowType.Static,
-      emails: [],
       edit: ['6824431c419499b9130367fa'],
       step_name: 'sdfasdhadh',
     },
     {
       _id: '6825467967829851d459dbd4',
       workflow_type: WorkflowType.Static,
-      emails: ['scott@open.gov.sg'],
       edit: ['68244320419499b913036805'],
     },
     {
       _id: '682fe307d29c96acb37efa45',
       workflow_type: WorkflowType.Static,
-      emails: ['scott@open.gov.sg'],
       edit: ['682fe2f1d29c96acb37efa32'],
       approval_field: '682fe2f1d29c96acb37efa32',
     },
