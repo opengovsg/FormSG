@@ -9,7 +9,7 @@
     "build-dist": "sh build-dist.sh",
     "sam-build": "npm run build-dist && sam build",
     "sam-deploy": "npm run sam-build && sam deploy",
-    "ci-deploy": "npm run sam-build && sam deploy --config-env ci"
+    "ci-sam-deploy": "npm run sam-build && sam deploy --config-env ci"
   },
   "author": "",
   "license": "ISC",
