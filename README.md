@@ -86,10 +86,10 @@ nvm install
 nvm use
 ```
 
-To install the relevant npm packages (frontend, backend and virus-scanner), run the following in the root direcory:
+To install the relevant npm packages (frontend, backend, serverless functions including pdf-generator and virus-scanner), run the following in the root directory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install
+npm install && npm --prefix serverless/virus-scanner install && npm --prefix serverless/pdf-gen-sparticuz
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.

@@ -1,12 +1,12 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import { GrowthBook } from '@growthbook/growthbook'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { SetRequired } from 'type-fest'
 import isURL from 'validator/lib/isURL'
-import { GrowthBook } from '@growthbook/growthbook'
 
 import { featureFlags } from '../../../../shared/constants'
 import {

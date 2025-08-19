@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
 
-import { featureFlags } from '../../../../shared/constants'
 import { ErrorDto } from '../../../../shared/types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'

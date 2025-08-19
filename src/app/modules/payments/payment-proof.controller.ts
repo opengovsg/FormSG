@@ -6,10 +6,10 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import * as UserService from '../user/user.service'
 
 import * as PaymentProofService from './payment-proof.service'
 import * as PaymentService from './payments.service'
-import * as UserService from '../user/user.service'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -39,54 +39,47 @@ export const downloadPaymentInvoice: ControllerHandler<{
   return ResultAsync.combine([
     PaymentService.findPaymentById(paymentId),
     FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
-  ]).map(async ([payment, populatedForm]) => {
-    // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-    await UserService.getPopulatedUserById(populatedForm.admin).map(async (admin) => {
-      await req.growthbook?.setAttributes({ 
-        ...logMeta,
-        formId,
-        adminEmail: admin.email,
-        adminAgency: admin.agency,
-        isDownloadPaymentInvoice: true, 
+  ])
+    .map(async ([payment, populatedForm]) => {
+      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+      await UserService.getPopulatedUserById(populatedForm.admin).map(
+        async (admin) => {
+          await req.growthbook?.setAttributes({
+            ...logMeta,
+            formId,
+            adminEmail: admin.email,
+            adminAgency: admin.agency,
+            isDownloadPaymentInvoice: true,
+          })
+        },
+      )
+      const isUseLambdaOutput =
+        req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+      logger.info({
+        message: 'Growthbook flag for lambda pdf generation',
+        meta: {
+          ...logMeta,
+          isUseLambdaOutput,
+          growthbookAttributes: req.growthbook?.getAttributes(),
+          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+            featureFlags.lambdaPdfGeneration,
+            undefined,
+          ),
+        },
       })
-    })
-  const isUseLambdaOutput =
-    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({
-    message: 'Growthbook flag for lambda pdf generation',
-    meta: {
-      ...logMeta,
-      isUseLambdaOutput,
-      growthbookAttributes: req.growthbook?.getAttributes(),
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-        featureFlags.lambdaPdfGeneration,
-        undefined,
-      ),
-    },
-  })
 
-    return [payment, populatedForm]
-  })
-    .andThen(([payment, populatedForm]) => {
+      return {
+        payment,
+        populatedForm,
+        isUseLambdaOutput,
+      }
+    })
+    .andThen(({ payment, populatedForm, isUseLambdaOutput }) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
           action: 'downloadPaymentInvoice',
           payment,
-        },
-      })
-      
-      logger.info({
-        message: 'Growthbook flag for lambda pdf generation',
-        meta: {
-          action: 'downloadPaymentInvoice',
-          formId,
-          paymentId,
-          isUseLambdaOutput,
-          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-            featureFlags.lambdaPdfGeneration,
-            undefined,
-          ),
         },
       })
 

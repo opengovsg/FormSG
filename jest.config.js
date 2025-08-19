@@ -2,10 +2,15 @@
 module.exports = {
   preset: 'ts-jest',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
-  modulePaths: ['<rootDir>', '<rootDir>/serverless/virus-scanner/'],
+  modulePaths: [
+    '<rootDir>',
+    '<rootDir>/serverless/virus-scanner/',
+    '<rootDir>/serverless/pdf-gen-sparticuz/',
+  ],
   moduleDirectories: [
     'node_modules',
     './serverless/virus-scanner/node_modules',
+    './serverless/pdf-gen-sparticuz/node_modules',
   ],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/__tests__/setup/jest-global-setup.js',

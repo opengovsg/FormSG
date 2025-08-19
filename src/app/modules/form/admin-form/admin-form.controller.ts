@@ -2116,16 +2116,16 @@ export const submitEmailPreview: ControllerHandler<
   }
 
   const formResult = await UserService.getPopulatedUserById(sessionUserId)
-  // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+    // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
     .map(async (admin) => {
-      await req.growthbook?.setAttributes({ 
+      await req.growthbook?.setAttributes({
         ...logMeta,
         formId: form.id,
         adminEmail: admin.email,
         adminAgency: admin.agency,
         isEmailConfirmation: true,
       })
-      return admin 
+      return admin
     })
     .andThen((user) =>
       AuthService.getFormAfterPermissionChecks({

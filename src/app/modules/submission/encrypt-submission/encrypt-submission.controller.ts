@@ -7,7 +7,6 @@ import mongoose from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   DateString,

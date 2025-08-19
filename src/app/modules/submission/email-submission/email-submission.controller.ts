@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorCode,
   FormAuthType,
@@ -457,7 +456,7 @@ export const submitEmailModeForm: ControllerHandler<
             parsedResponses.getAllResponses(),
             form.form_fields,
           ),
-          isUseLambdaOutput: false, // NOTE: Set to false since email mode is deprecated. 
+          isUseLambdaOutput: false, // NOTE: Set to false since email mode is deprecated.
         }).mapErr((error) => {
           // NOTE: MyInfo access token is not cleared here.
           // This is because if the reason for failure is not on the users' end,

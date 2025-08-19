@@ -1,6 +1,6 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
-import { GrowthBook } from '@growthbook/growthbook'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 

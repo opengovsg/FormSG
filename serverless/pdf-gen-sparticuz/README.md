@@ -1,6 +1,5 @@
-# PDF Generator
+# PDF Generator Lambda
 Converts HTML input into a PDF output. 
-
 This is used for eg, payment invoice and auto-reply PDF generation. 
 
 # Deployment 

@@ -9,7 +9,6 @@ import Stripe from 'stripe'
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
-  featureFlags,
 } from '../../../../shared/constants'
 import {
   ErrorDto,
