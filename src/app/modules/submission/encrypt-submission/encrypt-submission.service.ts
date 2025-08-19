@@ -2,10 +2,10 @@ import { GrowthBook } from '@growthbook/growthbook'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
-import { featureFlags } from 'shared/constants'
 
 import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   DateString,
   FormResponseMode,

@@ -5,7 +5,7 @@ Description: PDF Generation Lambda Function using Sparticuz Chromium
 Parameters:
   Environment:
     Type: String
-    Default: staging
+    Default: dev
     Description: Environment name (eg, production, staging, stg-alt)
 
 Globals:

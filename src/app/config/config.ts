@@ -139,11 +139,11 @@ const pdfGeneratorLambda = new Lambda({
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
-  ...(isDevOrTest || basicVars.awsConfig.guarddutyLambdaEndpoint
+  ...(isDevOrTest || basicVars.awsConfig.pdfGeneratorLambdaEndpoint
     ? {
         endpoint:
           basicVars.awsConfig.pdfGeneratorLambdaEndpoint ||
-          'http://host.docker.internal:9998',
+          'http://host.docker.internal:9997',
       }
     : undefined),
 })
