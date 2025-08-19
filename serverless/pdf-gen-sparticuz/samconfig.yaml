@@ -2,7 +2,6 @@ version: 0.1
 default:
   deploy:
     parameters:
-      stack_name: pdf-gen-sparticuz
       s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       confirm_changeset: true 
@@ -18,5 +17,11 @@ default:
 ci:
   deploy:
     parameters:
-      confirm_changeset: false 
-      no_fail_on_empty_changeset: true 
+      s3_bucket: pdf-gen-lambda-code-zip
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: pdf-gen-sparticuz-sam-builds
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: false # For automated deployments, we don't want to confirm changeset
+      no_fail_on_empty_changeset: true # For automated deployments, we don't want to fail if there are no changes

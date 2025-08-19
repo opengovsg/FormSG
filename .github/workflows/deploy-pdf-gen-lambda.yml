@@ -70,6 +70,4 @@ jobs:
 
       - name: Deploy with SAM
         working-directory: ./serverless/pdf-gen-sparticuz
-        env:
-          ENV: ${{ inputs.environment }}
-        run: npm run ci-sam-deploy
+        run: npm run ci-sam-deploy -- --parameter-overrides Environment=${{ inputs.environment }} --stack-name pdf-gen-sparticuz-${{ inputs.environment }}
