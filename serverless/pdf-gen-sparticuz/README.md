@@ -5,30 +5,28 @@ This is used for eg, payment invoice and auto-reply PDF generation.
 
 # Deployment 
 
-# Deploying via Github Actions 
+## Deploying via Github Actions 
 Push to a branch with a valid actions workflow configured. 
 The deployment should start automatically to the corresponding environment. 
 
-# Deploying locally
-1. Open a new terminal instance
+## Deploying locally
+1. Connect to aws
+`export AWS_PROFILE=<profle> && aws sso login`
 
-2. Specify a environment (in Serverless, envs are referred to as 'stages') to deploy the function to. 
+2. Deploy using AWS SAM to desired environment
+
+Replace the placeholders in `Environmen=<env>` and `--stack-name pdf-gen-sparticuz-<env>` 
+
 ```
-export ENV=stg
-```
-
-Other valid environment names include for example: `stg-alt3`. 
-This causes the function to be deployed as `<function-name>-stg-<function-name>` 
-
-3. Configure serverless AWS credentials locally
-```
-# Ensure AWS_PROFILE env variable is not set, as it interferes with serverless's AWS credentials resolution by looking in the  ~/.aws/credentials file. To do so, run: `export AWS_PROFILE=`
-aws sso login --profile <profile>
-
-eval "$(aws configure export-credentials --profile <profile> --format env)"
+npm run ci-sam-deploy -- --parameter-overrides Environment=stg-alt3 --stack-name pdf-gen-sparticuz-stg-alt3
 ```
 
-4. Run the deploy script
-```
-npm run deploy
-```  
+For example: 
+`npm run ci-sam-deploy -- --parameter-overrides Environment=stg-alt3 --stack-name pdf-gen-sparticuz-stg-alt3` for stg-alt3 deployment. 
+
+## Tearing down for a specific environment
+1. Get the stack name for the environment. 
+This should be pdf-gen-sparticuz-<env name eg, stg-alt3>
+
+2. Run the SAM delete command  
+`sam delete --stack-name  pdf-gen-sparticuz-stg-alt3`

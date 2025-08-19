@@ -18,6 +18,7 @@ Resources:
   PdfGenFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Description: Lambda function that generates PDFs from HTML (eg, FormSG payment invoice PDFs, response PDFs)
       FunctionName: !Sub "pdf-gen-sparticuz-${Environment}"
       CodeUri: dist/
       Handler: index.handler
