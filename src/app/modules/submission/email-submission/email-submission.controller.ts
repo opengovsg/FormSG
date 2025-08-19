@@ -47,7 +47,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
 import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
-import { featureFlags } from 'shared/constants'
+import { featureFlags } from '../../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 

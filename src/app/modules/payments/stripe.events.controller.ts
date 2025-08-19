@@ -17,7 +17,7 @@ import {
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
-import { featureFlags } from 'shared/constants'
+import { featureFlags } from '../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 

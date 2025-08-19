@@ -99,7 +99,7 @@ import {
   getPaymentIntentDescription,
   getStripePaymentMethod,
 } from './encrypt-submission.utils'
-import { featureFlags } from 'shared/constants'
+import { featureFlags } from '../../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)

@@ -115,7 +115,7 @@ import {
   mapRouteError,
   verifyValidUnicodeString,
 } from './admin-form.utils'
-import { featureFlags } from 'shared/constants'
+import { featureFlags } from '../../../../../shared/constants'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi

@@ -8,7 +8,7 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import * as PaymentProofService from './payment-proof.service'
 import * as PaymentService from './payments.service'
-import { featureFlags } from 'shared/constants'
+import { featureFlags } from '../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 /**
