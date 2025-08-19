@@ -45,6 +45,6 @@ export const enSG: Toasts = {
     successBefore: 'Respondents will',
     disabled: 'not ',
     successAfter:
-      'be able to receive a status tracking link of their submission',
+      'be able to receive a status tracking link of their submission.',
   },
 }
