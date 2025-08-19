@@ -112,7 +112,9 @@ const mapSuggestedFormFieldToFieldCreateDto = (
   })
 }
 
-const BASIC_FIELD_NAMES = Object.keys(omit(BasicField, ['Children', 'Image']))
+const BASIC_FIELD_NAMES = Object.keys(
+  omit(BasicField, ['Children', 'Image', 'Signature']),
+)
   .map((fieldType) => `"${fieldType}"`)
   .toString()
 
@@ -175,7 +177,7 @@ const generateFormCreationPrompt = (userPrompt: string) => {
  * Field types supported by Mfb.
  */
 const supportedFieldTypes = Object.keys(
-  omit(BasicField, ['Children', 'Image']),
+  omit(BasicField, ['Children', 'Image', 'Signature']),
 ) as [string, ...string[]]
 
 /**
