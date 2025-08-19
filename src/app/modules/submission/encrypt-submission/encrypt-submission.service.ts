@@ -22,6 +22,7 @@ import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
+import * as UserService from '../../user/user.service'
 import { isFormEncryptMode } from '../../form/form.utils'
 import {
   WebhookPushToQueueError,
@@ -40,6 +41,8 @@ import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
+import { GrowthBook } from '@growthbook/growthbook'
+import { featureFlags } from 'shared/constants'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
@@ -145,7 +148,7 @@ export const createEncryptSubmissionWithoutSave = ({
 export const performEncryptPostSubmissionActions = (
   submission: IEncryptedSubmissionSchema,
   responses: FieldResponse[],
-  isUseLambdaOutput: boolean,
+  growthbook: GrowthBook | undefined,
   emailData?: SubmissionEmailObj,
   attachments?: Mail.Attachment[],
   respondentEmails?: string[],
@@ -159,6 +162,11 @@ export const performEncryptPostSubmissionActions = (
   | SubmissionNotFoundError
   | PossibleDatabaseError
 > => {
+  const logMeta = {
+    action: 'performEncryptPostSubmissionActions',
+    submissionId: submission.id,
+  }
+
   return FormService.retrieveFullFormById(submission.form)
     .andThen(checkFormIsEncryptMode)
     .andThen((form) => {
@@ -174,6 +182,18 @@ export const performEncryptPostSubmissionActions = (
         !!form.webhook?.isRetryEnabled,
       ).andThen(() => okAsync(form))
     })
+    // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+    .map(async (form) => {
+      await UserService.getPopulatedUserById(form.admin).map(async (admin) => { 
+        await growthbook?.setAttributes({ 
+          ...logMeta, 
+          formId: form.id,
+          adminEmail: admin.email,
+          adminAgency: admin.agency,
+        })
+      })
+      return form
+    })
     .andThen((form) => {
       const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
@@ -183,6 +203,22 @@ export const performEncryptPostSubmissionActions = (
             }
           })
         : []
+
+      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+      const isUseLambdaOutput =
+        growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+      logger.info({
+        message: 'Growthbook flag for lambda pdf generation',
+        meta: {
+          ...logMeta,
+          isUseLambdaOutput,
+          growthbookAttributes: growthbook?.getAttributes(),
+          lambdaPdfGenerationGrowthbookValue: growthbook?.getFeatureValue(
+            featureFlags.lambdaPdfGeneration,
+            undefined,
+          ),
+        },
+      })
 
       return sendEmailConfirmations({
         form,

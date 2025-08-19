@@ -1,5 +1,6 @@
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
+import { GrowthBook } from '@growthbook/growthbook'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -208,7 +209,7 @@ export const confirmPaymentPendingSubmission = (
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
-  isUseLambdaOutput: boolean,
+  growthbook: GrowthBook | undefined,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -243,7 +244,7 @@ export const performPaymentPostSubmissionActions = (
                 performEncryptPostSubmissionActions(
                   submission,
                   payment.responses,
-                  isUseLambdaOutput,
+                  growthbook,
                 )
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.

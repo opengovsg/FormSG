@@ -447,20 +447,6 @@ export const submitEmailModeForm: ControllerHandler<
           })
         }
 
-        const isUseLambdaOutput =
-          req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-        logger.info({
-          message: 'Growthbook flag for lambda pdf generation',
-          meta: {
-            ...logMeta,
-            isUseLambdaOutput,
-            lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-              featureFlags.lambdaPdfGeneration,
-              undefined,
-            ),
-          },
-        })
-
         // Send email confirmations
         void SubmissionService.sendEmailConfirmations({
           form,
@@ -471,7 +457,7 @@ export const submitEmailModeForm: ControllerHandler<
             parsedResponses.getAllResponses(),
             form.form_fields,
           ),
-          isUseLambdaOutput,
+          isUseLambdaOutput: false, // NOTE: Set to false since email mode is deprecated. 
         }).mapErr((error) => {
           // NOTE: MyInfo access token is not cleared here.
           // This is because if the reason for failure is not on the users' end,

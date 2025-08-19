@@ -6,6 +6,7 @@ import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { SetRequired } from 'type-fest'
 import isURL from 'validator/lib/isURL'
+import { GrowthBook } from '@growthbook/growthbook'
 
 import { featureFlags } from '../../../../shared/constants'
 import {
@@ -450,7 +451,7 @@ type HandleStripeEventResultError =
  */
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
-  isUseLambdaOutput: boolean,
+  growthbook: GrowthBook | undefined,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -497,7 +498,7 @@ export const handleStripeEvent = (
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
-              isUseLambdaOutput,
+              growthbook,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {

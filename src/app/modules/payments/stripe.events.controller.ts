@@ -88,23 +88,9 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
-  const isUseLambdaOutput =
-    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({
-    message: 'Growthbook flag for lambda pdf generation',
-    meta: {
-      ...logMeta,
-      isUseLambdaOutput,
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-        featureFlags.lambdaPdfGeneration,
-        undefined,
-      ),
-    },
-  })
-
   // Step 3: Process the event
   return (
-    StripeService.handleStripeEvent(event, isUseLambdaOutput)
+    StripeService.handleStripeEvent(event, req.growthbook)
       // Step 4: Return response to Stripe based on result
       .match(
         () => res.sendStatus(StatusCodes.OK),

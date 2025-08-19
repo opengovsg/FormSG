@@ -874,24 +874,10 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  const isUseLambdaOutput =
-    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({
-    message: 'Growthbook flag for lambda pdf generation',
-    meta: {
-      ...logMeta,
-      isUseLambdaOutput,
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-        featureFlags.lambdaPdfGeneration,
-        undefined,
-      ),
-    },
-  })
-
   return await performEncryptPostSubmissionActions(
     submission,
     responses,
-    isUseLambdaOutput,
+    req.growthbook,
     emailData,
     emailAttachments,
     respondentEmails,
