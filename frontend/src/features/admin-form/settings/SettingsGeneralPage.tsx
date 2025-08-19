@@ -1,10 +1,5 @@
 import { Divider } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
-import { useUser } from '~features/user/queries'
-
-import { StatusTrackerToggle } from './components/EmailNotificationsSection/StatusTrackerToggle'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'

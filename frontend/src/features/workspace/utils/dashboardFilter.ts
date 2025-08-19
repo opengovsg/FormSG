@@ -4,7 +4,7 @@ export const FILTER_OPTIONS: FilterOption[] = [
   FilterOption.AllForms,
   FilterOption.OpenForms,
   FilterOption.ClosedForms,
-  FilterOption.EmailForms,
   FilterOption.StorageForms,
   FilterOption.MultiRespondentForms,
+  FilterOption.EmailForms,
 ]
