@@ -1,13 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { BiLockAlt } from 'react-icons/bi'
-import { forwardRef, Stack, Text, UnorderedList } from '@chakra-ui/react'
+import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
-import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
 import Tile from '~components/Tile'
 
 export interface FormResponseOptionsProps {
@@ -51,7 +49,7 @@ const OptionDescription = ({
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, isSingpass, handleEmailButtonPress }, ref) => {
+>(({ value, onChange, isSingpass }, ref) => {
   const { t } = useTranslation()
   const { storage, mrf } = t(
     'features.workspace.modals.forms.create.details.type',
@@ -75,7 +73,6 @@ export const FormResponseOptions = forwardRef<
             listItems={[
               { text: storage.optionDescriptionItems.supportSingpassMyinfo },
               { text: storage.optionDescriptionItems.supportWebhooks },
-              { text: storage.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>
@@ -95,7 +92,6 @@ export const FormResponseOptions = forwardRef<
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
               },
-              { text: mrf.optionDescriptionItems.sensitivity },
             ]}
           />
         </Tile>

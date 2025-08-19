@@ -22,6 +22,7 @@ export const enSG: CreateFormModal = {
     },
     type: {
       label: 'What type of form do you need?',
+      description: 'Both support up to Confidential (Cloud eligible) and Sensitive (High) data.',
       storage: {
         title: 'Storage mode form',
         subtitle:

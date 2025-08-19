@@ -20,6 +20,7 @@ export interface CreateFormModal {
     }
     type: {
       label: string
+      description: string
       storage: {
         title: string
         subtitle: string
