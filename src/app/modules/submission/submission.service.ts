@@ -616,7 +616,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     attachments,
     responsesData,
     autoReplyMailDatas: recipientData,
-    isUseLambdaOutput
+    isUseLambdaOutput,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

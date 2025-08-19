@@ -773,7 +773,7 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
-    isUseLambdaOutput, 
+    isUseLambdaOutput,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<Result<true, MailSendError | MailGenerationError>>[]
   > => {
@@ -804,7 +804,10 @@ export class MailService {
       autoReplyMailDatas.some((data) => data.includeFormSummary) &&
       !isPaymentEnabled
     ) {
-      const pdfBufferResult = await generateAutoreplyPdf(renderData, isUseLambdaOutput)
+      const pdfBufferResult = await generateAutoreplyPdf(
+        renderData,
+        isUseLambdaOutput,
+      )
       if (pdfBufferResult.isErr()) {
         return Promise.allSettled([err(pdfBufferResult.error)])
       }

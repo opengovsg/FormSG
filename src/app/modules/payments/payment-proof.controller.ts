@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
@@ -8,7 +9,6 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import * as PaymentProofService from './payment-proof.service'
 import * as PaymentService from './payments.service'
-import { featureFlags } from '../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 /**
@@ -47,15 +47,19 @@ export const downloadPaymentInvoice: ControllerHandler<{
         },
       })
 
-      const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-      logger.info({ 
+      const isUseLambdaOutput =
+        req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+      logger.info({
         message: 'Growthbook flag for lambda pdf generation',
         meta: {
           action: 'downloadPaymentInvoice',
-          formId, 
+          formId,
           paymentId,
-          isUseLambdaOutput, 
-          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+          isUseLambdaOutput,
+          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+            featureFlags.lambdaPdfGeneration,
+            undefined,
+          ),
         },
       })
 

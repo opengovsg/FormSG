@@ -3,7 +3,10 @@ import puppeteer from 'puppeteer-core'
 
 import config, { aws as AwsConfig, isDevOrTest } from '../config/config'
 import { createLoggerWithLabel } from '../config/logger'
-import { startStopwatch, submitPdfGenerationLatencyMetric } from '../modules/datadog/datadog.utils'
+import {
+  startStopwatch,
+  submitPdfGenerationLatencyMetric,
+} from '../modules/datadog/datadog.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -32,7 +35,7 @@ const generatePdfFromHtmlLocally = async (
   })
   await browser.close()
 
-  logger.info({ 
+  logger.info({
     message: 'Successfully generated pdf from html using local',
     meta: {
       action: 'generatePdfFromHtmlLocally',
@@ -79,8 +82,9 @@ const generatePdfFromHtmlLambda = (
 
       const pdfBuffer = Buffer.from(response.body, 'base64')
 
-      logger.info({ 
-        message: 'Successfully retrieved pdf response from pdf generator lambda',
+      logger.info({
+        message:
+          'Successfully retrieved pdf response from pdf generator lambda',
         meta: logMeta,
       })
 
@@ -104,9 +108,8 @@ const generatePdfFromHtmlLambda = (
  */
 export const generatePdfFromHtml = async (
   summaryHtml: string,
-  isUseLambdaOutput: boolean, 
+  isUseLambdaOutput: boolean,
 ): Promise<Buffer> => {
-
   const logMeta = {
     action: 'generatePdfFromHtml',
     isUseLambdaOutput,
@@ -117,35 +120,36 @@ export const generatePdfFromHtml = async (
   })
 
   const localStopwatch = startStopwatch()
-  const localResult = generatePdfFromHtmlLocally(summaryHtml).then(result => {
+  const localResult = generatePdfFromHtmlLocally(summaryHtml).then((result) => {
     const latencyMs = localStopwatch.stop()
     logger.info({
       message: 'Successfully generated pdf from html using local',
-      meta: {...logMeta, latencyMs},
+      meta: { ...logMeta, latencyMs },
     })
     submitPdfGenerationLatencyMetric({
       latencyMs,
       isLocal: true,
     })
-    return result 
+    return result
   })
 
-
-  // NOTE: Currently run as shadow to compute the latency of the lambda function. 
+  // NOTE: Currently run as shadow to compute the latency of the lambda function.
   if (!isDevOrTest) {
     const lambdaStopwatch = startStopwatch()
-    const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(result => {
-      const latencyMs = lambdaStopwatch.stop()
-      logger.info({
-        message: 'Successfully generated pdf from html using lambda',
-        meta: {...logMeta, latencyMs},
-      })
-      submitPdfGenerationLatencyMetric({
-        latencyMs,
-        isLocal: false,
-      })
-      return result
-    })
+    const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(
+      (result) => {
+        const latencyMs = lambdaStopwatch.stop()
+        logger.info({
+          message: 'Successfully generated pdf from html using lambda',
+          meta: { ...logMeta, latencyMs },
+        })
+        submitPdfGenerationLatencyMetric({
+          latencyMs,
+          isLocal: false,
+        })
+        return result
+      },
+    )
 
     if (isUseLambdaOutput) {
       const lambdaResult = await lambdaResultAsync
@@ -158,16 +162,18 @@ export const generatePdfFromHtml = async (
         throw lambdaResult.error
       }
 
-      logger.info({ 
-        message: 'Successfully generated pdf from html - using result from lambda pdf generation',
+      logger.info({
+        message:
+          'Successfully generated pdf from html - using result from lambda pdf generation',
         meta: logMeta,
       })
       return lambdaResult.value
     }
-  } 
+  }
 
   logger.info({
-    message: 'Successfully generated pdf from html - using result from local pdf generation',
+    message:
+      'Successfully generated pdf from html - using result from local pdf generation',
     meta: logMeta,
   })
   return await localResult

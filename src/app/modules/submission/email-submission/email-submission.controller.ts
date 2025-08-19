@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorCode,
   FormAuthType,
@@ -47,7 +48,6 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
 import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
-import { featureFlags } from '../../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -447,13 +447,17 @@ export const submitEmailModeForm: ControllerHandler<
           })
         }
 
-        const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-        logger.info({ 
+        const isUseLambdaOutput =
+          req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+        logger.info({
           message: 'Growthbook flag for lambda pdf generation',
           meta: {
             ...logMeta,
-            isUseLambdaOutput, 
-            lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+            isUseLambdaOutput,
+            lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+              featureFlags.lambdaPdfGeneration,
+              undefined,
+            ),
           },
         })
 

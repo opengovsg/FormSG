@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   DateString,
@@ -99,7 +100,6 @@ import {
   getPaymentIntentDescription,
   getStripePaymentMethod,
 } from './encrypt-submission.utils'
-import { featureFlags } from '../../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -874,13 +874,17 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({ 
+  const isUseLambdaOutput =
+    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+  logger.info({
     message: 'Growthbook flag for lambda pdf generation',
     meta: {
       ...logMeta,
-      isUseLambdaOutput, 
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+      isUseLambdaOutput,
+      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+        featureFlags.lambdaPdfGeneration,
+        undefined,
+      ),
     },
   })
 
@@ -890,7 +894,7 @@ const _createSubmission = async ({
     isUseLambdaOutput,
     emailData,
     emailAttachments,
-    respondentEmails
+    respondentEmails,
   )
 }
 

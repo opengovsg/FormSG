@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -115,7 +116,6 @@ import {
   mapRouteError,
   verifyValidUnicodeString,
 } from './admin-form.utils'
-import { featureFlags } from '../../../../../shared/constants'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -2207,13 +2207,17 @@ export const submitEmailPreview: ControllerHandler<
     })
   }
 
-  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({ 
+  const isUseLambdaOutput =
+    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+  logger.info({
     message: 'Growthbook flag for lambda pdf generation',
     meta: {
       ...logMeta,
-      isUseLambdaOutput, 
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+      isUseLambdaOutput,
+      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+        featureFlags.lambdaPdfGeneration,
+        undefined,
+      ),
     },
   })
 

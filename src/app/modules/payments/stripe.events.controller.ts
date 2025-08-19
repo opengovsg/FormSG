@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../shared/constants'
 import { ErrorDto } from '../../../../shared/types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -17,7 +18,6 @@ import {
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
-import { featureFlags } from '../../../../shared/constants'
 
 const logger = createLoggerWithLabel(module)
 
@@ -88,13 +88,17 @@ const _handleStripeEventUpdates: ControllerHandler<
     meta: logMeta,
   })
 
-  const isUseLambdaOutput = req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({ 
+  const isUseLambdaOutput =
+    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+  logger.info({
     message: 'Growthbook flag for lambda pdf generation',
     meta: {
       ...logMeta,
-      isUseLambdaOutput, 
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(featureFlags.lambdaPdfGeneration, undefined),
+      isUseLambdaOutput,
+      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
+        featureFlags.lambdaPdfGeneration,
+        undefined,
+      ),
     },
   })
 
