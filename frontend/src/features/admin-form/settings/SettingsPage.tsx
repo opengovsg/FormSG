@@ -86,7 +86,6 @@ export const SettingsPage = (): JSX.Element => {
       icon: BiMailSend,
       component: SettingsEmailsPage,
       path: 'email-notifications',
-      showRedDot: true,
     },
     {
       label: t('features.adminForm.settings.webhooks.title'),
