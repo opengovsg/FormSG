@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: PDF Generation Lambda Function using Sparticuz Chromium
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 2048
+    Runtime: nodejs22.x
+
+Resources:
+  PdfGenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pdf-gen-sparticuz
+      CodeUri: dist/
+      Handler: index.handler
+      Architectures:
+        - x86_64
+
+Outputs:
+  PdfGenFunction:
+    Description: "PDF Generation Lambda Function ARN"
+    Value: !GetAtt PdfGenFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-PdfGenFunctionArn"
+  
+  PdfGenFunctionName:
+    Description: "PDF Generation Lambda Function Name"
+    Value: !Ref PdfGenFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-PdfGenFunctionName" 

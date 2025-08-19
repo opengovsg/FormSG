@@ -6,8 +6,10 @@
   "scripts": {
     "test": "jest",
     "build-ts-dist": "esbuild src/index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js --external:@sparticuz/chromium",
-    "build-zip": "sh build-zip.sh",
-    "deploy": "npm run build-zip && serverless deploy --stage ${ENV:-'staging'}"
+    "build-dist": "sh build-dist.sh",
+    "sam-build": "npm run build-dist && sam build",
+    "sam-deploy": "npm run sam-build && sam deploy",
+    "ci-deploy": "npm run sam-build && sam deploy --config-env ci"
   },
   "author": "",
   "license": "ISC",
