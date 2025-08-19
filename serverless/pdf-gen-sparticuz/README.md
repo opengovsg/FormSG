@@ -14,19 +14,11 @@ The deployment should start automatically to the corresponding environment.
 `export AWS_PROFILE=<profle> && aws sso login`
 
 2. Deploy using AWS SAM to desired environment
-
-Replace the placeholders in `Environmen=<env>` and `--stack-name pdf-gen-sparticuz-<env>` 
-
-```
-npm run ci-sam-deploy -- --parameter-overrides Environment=stg-alt3 --stack-name pdf-gen-sparticuz-stg-alt3
-```
-
-For example: 
-`npm run ci-sam-deploy -- --parameter-overrides Environment=stg-alt3 --stack-name pdf-gen-sparticuz-stg-alt3` for stg-alt3 deployment. 
+`npm run sam-deploy -- --config-env <env listed in samconfig.yaml eg, stg-alt3>`
 
 ## Tearing down for a specific environment
 1. Get the stack name for the environment. 
-This should be pdf-gen-sparticuz-<env name eg, stg-alt3>
+This should be pdf-gen-sparticuz-<env name eg, stg-alt3>. For more info, refer to the stack names defined for each env in samconfig.yml. 
 
 2. Run the SAM delete command  
 `sam delete --stack-name  pdf-gen-sparticuz-stg-alt3`

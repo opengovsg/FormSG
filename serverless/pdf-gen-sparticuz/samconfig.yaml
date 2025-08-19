@@ -1,27 +1,13 @@
 version: 0.1
-default:
+stg-alt3:
   deploy:
     parameters:
+      stack_name: pdf-gen-sparticuz-stg-alt3
       s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
-      confirm_changeset: true 
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
-      s3_prefix: pdf-gen-sparticuz-sam-builds
+      s3_prefix: stg-alt3
       image_repositories: [] 
       disable_rollback: false # Rolls back to previous version if the deployment fails 
-  build:
-    parameters:
-      use_container: false
-      cached: true 
-
-ci:
-  deploy:
-    parameters:
-      s3_bucket: pdf-gen-lambda-code-zip
-      region: ap-southeast-1
-      capabilities: CAPABILITY_IAM
-      s3_prefix: pdf-gen-sparticuz-sam-builds
-      image_repositories: []
-      disable_rollback: false
-      confirm_changeset: false # For automated deployments, we don't want to confirm changeset
-      no_fail_on_empty_changeset: true # For automated deployments, we don't want to fail if there are no changes
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt3
