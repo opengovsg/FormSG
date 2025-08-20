@@ -11,11 +11,11 @@ import { handleAddressResponseDisplay } from '~shared/utils/address'
 import {
   convertToSignatureVectorArray,
   getBoundingBox,
-  signatureOutputPaddingDefault,
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
 import { drawStroke } from '~utils/convertSignatureOutput'
@@ -151,7 +151,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     // Step 1: Compute bounding box of all x and y points
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
 
-    const padding = signatureOutputPaddingDefault
+    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
     const width = maxX - minX
     const height = maxY - minY
     const canvasWidth = width + padding * 2
@@ -174,10 +174,10 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
         pressure,
       ])
       const pathData = getStroke(normalizedStroke, {
-        size: signatureStrokeSize,
-        thinning: signatureStrokeThinning,
-        smoothing: signatureStrokeSmoothing,
-        streamline: signatureStrokeStreamline,
+        size: SIGNATURE_STROKE_SIZE,
+        thinning: SIGNATURE_STROKE_THINNING,
+        smoothing: SIGNATURE_STROKE_SMOOTHING,
+        streamline: SIGNATURE_STROKE_STREAMLINE,
       })
       drawStroke(ctx, pathData)
     })

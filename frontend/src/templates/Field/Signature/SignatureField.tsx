@@ -5,10 +5,10 @@ import getStroke from 'perfect-freehand'
 
 import { SignatureVectorArray } from '~shared/types'
 import {
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
 import { createSignatureValidationRules } from '~utils/fieldValidation'
@@ -73,10 +73,10 @@ export const SignatureField = ({
 
     for (const strokePoints of pfStrokes) {
       const stroke = getStroke(strokePoints, {
-        size: signatureStrokeSize,
-        thinning: signatureStrokeThinning,
-        smoothing: signatureStrokeSmoothing,
-        streamline: signatureStrokeStreamline,
+        size: SIGNATURE_STROKE_SIZE,
+        thinning: SIGNATURE_STROKE_THINNING,
+        smoothing: SIGNATURE_STROKE_SMOOTHING,
+        streamline: SIGNATURE_STROKE_STREAMLINE,
       })
 
       ctx.beginPath()

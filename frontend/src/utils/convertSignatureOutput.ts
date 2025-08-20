@@ -2,14 +2,14 @@ import getStroke from 'perfect-freehand'
 
 import { SignatureVectorArray } from '~shared/types'
 import {
-  boxHeightDefault,
-  boxWidthDefault,
+  BOX_HEIGHT_DEFAULT,
+  BOX_WIDTH_DEFAULT,
   getBoundingBox,
-  signatureOutputPaddingDefault,
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
 export const drawStroke = (
@@ -30,13 +30,13 @@ export const drawStroke = (
 
 export const convertToSignatureSvgString = (
   vectorArray: SignatureVectorArray,
-  padding = signatureOutputPaddingDefault,
+  padding = SIGNATURE_OUTPUT_PADDING_DEFAULT,
 ): string => {
   if (vectorArray.length === 0) return ''
 
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || boxWidthDefault
-  const boxHeight = maxY - minY || boxHeightDefault
+  const boxWidth = maxX - minX || BOX_WIDTH_DEFAULT
+  const boxHeight = maxY - minY || BOX_HEIGHT_DEFAULT
 
   const canvasWidth = boxWidth + 2 * padding
   const canvasHeight = boxHeight + 2 * padding
@@ -51,10 +51,10 @@ export const convertToSignatureSvgString = (
     ])
 
     const strokePoints = getStroke(normalizedStroke, {
-      size: signatureStrokeSize,
-      thinning: signatureStrokeThinning,
-      smoothing: signatureStrokeSmoothing,
-      streamline: signatureStrokeStreamline,
+      size: SIGNATURE_STROKE_SIZE,
+      thinning: SIGNATURE_STROKE_THINNING,
+      smoothing: SIGNATURE_STROKE_SMOOTHING,
+      streamline: SIGNATURE_STROKE_STREAMLINE,
     })
 
     if (strokePoints.length === 0) return ''
