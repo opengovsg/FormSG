@@ -158,6 +158,7 @@ export const SignatureField = ({
     }
 
     const handlePointerUp = () => {
+      if (!isDrawing) return
       setIsDrawing(false)
       setValue(
         `${schema._id}`,
