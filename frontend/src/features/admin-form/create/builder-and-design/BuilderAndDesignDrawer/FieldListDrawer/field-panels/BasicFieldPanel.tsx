@@ -83,6 +83,13 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
             <FieldSection label="Basic">
               {filteredCreateBasicFields.map(({ fieldType, originalIndex }) => {
                 const shouldDisableField = isLoading
+                // TODO: FRM-2054 remove when signature field is out of beta
+                if (
+                  fieldType === BasicField.Signature &&
+                  !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
+                )
+                  return null
+
                 return (
                   <DraggableBasicFieldListOption
                     index={originalIndex}
@@ -106,14 +113,17 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
             {filteredCreateBasicFreeTextFields.length > 0 && (
               <FieldSection label="Free text">
                 {filteredCreateBasicFreeTextFields.map(
-                  ({ fieldType, originalIndex }) => (
-                    <DraggableBasicFieldListOption
-                      index={originalIndex}
-                      isDisabled={isLoading}
-                      key={originalIndex}
-                      fieldType={fieldType}
-                    />
-                  ),
+                  ({ fieldType, originalIndex }) => {
+                    const shouldDisableField = isLoading
+                    return (
+                      <DraggableBasicFieldListOption
+                        index={originalIndex}
+                        isDisabled={shouldDisableField}
+                        key={originalIndex}
+                        fieldType={fieldType}
+                      />
+                    )
+                  },
                 )}
               </FieldSection>
             )}
@@ -127,7 +137,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       >
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            {filteredCreateBasicFreeTextFields.length > 0 && (
+            {filteredCreateBasicOptionsFields.length > 0 && (
               <FieldSection label="Options">
                 {filteredCreateBasicOptionsFields.map(
                   ({ fieldType, originalIndex }) => {
