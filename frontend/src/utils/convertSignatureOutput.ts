@@ -31,6 +31,7 @@ export const drawStroke = (
 export const convertToSignatureSvgString = (
   vectorArray: SignatureVectorArray,
   padding = SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  dpr = 3,
 ): string => {
   if (vectorArray.length === 0) return ''
 
@@ -45,13 +46,13 @@ export const convertToSignatureSvgString = (
     if (stroke.length === 0) return ''
 
     const normalizedStroke = stroke.map(([x, y, pressure]) => [
-      x - minX + padding,
-      y - minY + padding,
+      (x - minX + padding) * dpr,
+      (y - minY + padding) * dpr,
       pressure,
     ])
 
     const strokePoints = getStroke(normalizedStroke, {
-      size: SIGNATURE_STROKE_SIZE,
+      size: SIGNATURE_STROKE_SIZE * dpr,
       thinning: SIGNATURE_STROKE_THINNING,
       smoothing: SIGNATURE_STROKE_SMOOTHING,
       streamline: SIGNATURE_STROKE_STREAMLINE,
@@ -73,7 +74,7 @@ export const convertToSignatureSvgString = (
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg"
          width="${canvasWidth}" height="${canvasHeight}"
-         viewBox="0 0 ${canvasWidth} ${canvasHeight}">
+         viewBox="0 0 ${canvasWidth * dpr} ${canvasHeight * dpr}">
       <rect width="100%" height="100%" fill="white" />
       ${paths.join('\n')}
     </svg>

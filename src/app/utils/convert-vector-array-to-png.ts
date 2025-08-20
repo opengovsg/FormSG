@@ -25,13 +25,17 @@ export const convertToSignaturePngBuffer = (
   const boxWidth = maxX - minX || BOX_WIDTH_DEFAULT
   const boxHeight = maxY - minY || BOX_HEIGHT_DEFAULT
 
+  // default dpr to 3 for overall sharpness
+  const dpr = 3
   // Canvas size includes padding on all sides
-  const canvasWidth = boxWidth + 2 * padding
-  const canvasHeight = boxHeight + 2 * padding
+  const canvasWidth = (boxWidth + 2 * padding) * dpr
+  const canvasHeight = (boxHeight + 2 * padding) * dpr
 
   const canvas = createCanvas(canvasWidth, canvasHeight)
   const ctx = canvas.getContext('2d')
 
+  // Scale the context to account for dpr
+  ctx.scale(dpr, dpr)
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
