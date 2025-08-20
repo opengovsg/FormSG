@@ -28,7 +28,7 @@ export const filterFieldsBySearchValue = <
   T extends BasicField | MyInfoAttribute,
 >(
   searchValue: string,
-  orderedFields: T[],
+  orderedFields: readonly T[],
   fieldsMeta: {
     [key in T]: BuilderSidebarFieldMeta
   },
