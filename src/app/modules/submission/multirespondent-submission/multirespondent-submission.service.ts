@@ -40,6 +40,7 @@ import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -652,6 +653,7 @@ export const createMultiRespondentFormSubmission = ({
 }
 
 export const performMultiRespondentPostSubmissionCreateActions = ({
+  submission,
   submissionId,
   form,
   encryptedPayload,
@@ -659,6 +661,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   attachments,
   respondentEmails,
 }: {
+  submission: IMultirespondentSubmissionSchema
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -692,6 +695,28 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       })
       return error
     })
+  }
+
+  const webhookUrl = form.webhook?.url
+  if (webhookUrl) {
+    logger.info({
+      message: 'Sending initial webhook for multirespondent submission',
+      meta: logMeta,
+    })
+
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!form.webhook?.isRetryEnabled,
+    )
+      .andThen(() => okAsync(form))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Multirespondent submission webhook error',
+          meta: logMeta,
+          error,
+        })
+      })
   }
 
   return sendNextStepEmail({
@@ -880,6 +905,7 @@ export const updateMultiRespondentFormSubmission = ({
 }
 
 export const performMultiRespondentPostSubmissionUpdateActions = ({
+  submission,
   submissionId,
   snapshottedFormDef,
   currentStepNumber,
@@ -888,6 +914,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   attachments,
   respondentEmails,
 }: {
+  submission: IMultirespondentSubmissionSchema
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
@@ -951,6 +978,28 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   }
 
   const isStepRejected = isStepRejectedResult.value
+
+  const webhookUrl = form.webhook?.url
+  if (webhookUrl) {
+    logger.info({
+      message: 'Sending update webhook for multirespondent submission',
+      meta: logMeta,
+    })
+
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!form.webhook?.isRetryEnabled,
+    )
+      .andThen(() => okAsync(form))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Multirespondent submission webhook error',
+          meta: logMeta,
+          error,
+        })
+      })
+  }
 
   if (isStepRejected) {
     return sendMrfOutcomeEmails({

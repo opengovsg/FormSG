@@ -149,6 +149,7 @@ const submitMultirespondentForm = async (
   })
 
   await performMultiRespondentPostSubmissionCreateActions({
+    submission,
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
@@ -243,6 +244,7 @@ const updateMultirespondentSubmission = async (
   const currentStepNumber = submission.workflowStep
 
   await performMultiRespondentPostSubmissionUpdateActions({
+    submission,
     submissionId,
     snapshottedFormDef,
     currentStepNumber,

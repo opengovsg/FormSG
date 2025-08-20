@@ -567,6 +567,43 @@ type MultiRespondentAggregates = Pick<
 type MultiRespondentAggregateResult = MetadataAggregateResult &
   MultiRespondentAggregates
 
+/**
+ * Returns an object which represents the encrypted submission
+ * which will be posted to the webhook URL.
+ */
+MultirespondentSubmissionSchema.methods.getWebhookView = async function (
+  this: IMultirespondentSubmissionSchema,
+): Promise<WebhookView> {
+  const formId = this.populated('form')
+    ? String((this as IMultirespondentSubmissionSchema).form._id)
+    : String(this.form)
+  const attachmentRecords = Object.fromEntries(
+    this.attachmentMetadata ?? new Map(),
+  )
+
+  if (this.paymentId) {
+    await (this as IMultirespondentSubmissionSchema).populate('paymentId')
+  }
+  const paymentContent = this.populated('paymentId')
+    ? getPaymentWebhookEventObject(this.paymentId)
+    : {}
+
+  const webhookData: WebhookData = {
+    formId,
+    submissionId: String(this._id),
+    encryptedContent: this.encryptedContent,
+    verifiedContent: '',
+    version: this.version,
+    created: this.created,
+    attachmentDownloadUrls: attachmentRecords,
+    paymentContent,
+  }
+
+  return {
+    data: webhookData,
+  }
+}
+
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
