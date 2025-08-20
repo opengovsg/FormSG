@@ -151,25 +151,31 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
     }
   })
 
-export const BASIC_FIELDS_ORDERED_CATEGORIES = [
-  // Free text
+export const BASIC_FIELDS_FREE_TEXT = [
   BasicField.ShortText,
   BasicField.LongText,
-  // Options
+] as const
+
+export const BASIC_FIELDS_OPTIONS = [
   BasicField.Radio,
   BasicField.Checkbox,
   BasicField.Dropdown,
   BasicField.Rating,
   BasicField.YesNo,
-  // Content and descriptions
+] as const
+
+export const BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS = [
   BasicField.Section,
   BasicField.Statement,
   BasicField.Image,
-  // Dates and number
+] as const
+
+export const BASIC_FIELDS_DATES_AND_NUMBER = [
   BasicField.Number,
   BasicField.Decimal,
   BasicField.Date,
-  // Personal
+] as const
+export const BASIC_FIELDS_PERSONAL = [
   BasicField.Email,
   BasicField.Mobile,
   BasicField.HomeNo,
@@ -178,26 +184,22 @@ export const BASIC_FIELDS_ORDERED_CATEGORIES = [
   BasicField.Uen,
   BasicField.CountryRegion,
   BasicField.Signature,
-  // Others
+] as const
+
+export const BASIC_FIELDS_OTHERS = [
   BasicField.Table,
   BasicField.Attachment,
-]
+] as const
 
-// variables to experiment with Categories
-export const BASIC_FIELDS_FREE_TEXT = BASIC_FIELDS_ORDERED_CATEGORIES.slice(
-  0,
-  2,
-)
-export const BASIC_FIELDS_OPTIONS = BASIC_FIELDS_ORDERED_CATEGORIES.slice(2, 7)
-export const BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS =
-  BASIC_FIELDS_ORDERED_CATEGORIES.slice(7, 10)
-export const BASIC_FIELDS_DATES_AND_NUMBER =
-  BASIC_FIELDS_ORDERED_CATEGORIES.slice(10, 13)
-export const BASIC_FIELDS_PERSONAL = BASIC_FIELDS_ORDERED_CATEGORIES.slice(
-  13,
-  21,
-)
-export const BASIC_FIELDS_OTHERS = BASIC_FIELDS_ORDERED_CATEGORIES.slice(21, 23)
+export const BASIC_FIELDS_ORDERED_CATEGORIES = [
+  // Free text
+  ...BASIC_FIELDS_FREE_TEXT,
+  ...BASIC_FIELDS_OPTIONS,
+  ...BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
+  ...BASIC_FIELDS_DATES_AND_NUMBER,
+  ...BASIC_FIELDS_PERSONAL,
+  ...BASIC_FIELDS_OTHERS,
+]
 
 export const CREATE_FIELD_FREE_TEXT_DROP_ID = 'create-fields-field-free-text'
 export const CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID =
