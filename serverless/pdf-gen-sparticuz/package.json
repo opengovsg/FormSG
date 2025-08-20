@@ -9,9 +9,9 @@
     "build-dist": "sh build-dist.sh",
     "sam-build": "npm run build-dist && sam build",
     "sam-deploy": "npm run sam-build && sam deploy",
-    "dev": "npm run sam-build && sam local start-lambda --port 9997 --warm-containers EAGER", 
-    "setup_colima_x86_64": "colima start --arch x86_64 x86 && export DOCKER_HOST=$(docker context inspect colima-x86 --format '{{.Endpoints.docker.Host}}')",
-    "dev:colima": "npm run setup_colima_x86_64 && npm run dev"
+    "sam-local-start-lambda": "npm run sam-build && sam local start-lambda --port 9997 --warm-containers EAGER", 
+    "setup-colima-x86_64": "command -v colima >/dev/null 2>&1 && (colima start --arch x86_64 x86 && export DOCKER_HOST=$(docker context inspect colima-x86 --format '{{.Endpoints.docker.Host}}'))", 
+    "dev": "npm run setup-colima-x86_64 && npm run sam-local-start-lambda"
   },
   "author": "",
   "license": "ISC",

@@ -104,8 +104,32 @@ npm run build:frontend
 
 Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
 
+This command runs: 
+- backend server
+- frontend server
+- emulated serverless ClamAV (legacy) virus scanner function 
+- emulated serverless GuardDuty virus scanner function 
+- emulated serverless pdf generation function  
+
 ```bash
 npm run dev
+```
+
+Alternatively, you can run required components independently - which is what the main dev team usually does: 
+```bash
+# Frontend server 
+npm run dev:frontend (frontend react server, compulsory)
+
+# Backend server 
+docker compose up 
+
+# PDF generation function (only needed if you're using features requiring PDF generation, eg, payment invoice/auto-reply PDF) 
+npm run dev:pdf-gen 
+
+# Virus scanners - run both (only needed if you're uploading attachments)
+npm run dev:virus-scanner 
+
+npm run dev:virus-scanner-guardduty
 ```
 
 After the Docker image has finished building, the following local applications can be accessed:
