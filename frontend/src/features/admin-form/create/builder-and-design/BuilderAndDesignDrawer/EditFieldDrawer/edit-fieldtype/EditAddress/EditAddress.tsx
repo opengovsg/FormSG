@@ -28,15 +28,10 @@ export const EditAddress = ({ field }: EditAddressProps): JSX.Element => {
   const {
     register,
     formState: { errors },
-    getValues,
     buttonText,
     handleUpdateField,
-    watch,
-    control,
-    clearErrors,
     isLoading,
     handleCancel,
-    setValue,
   } = useEditFieldForm<EditAddressInputs, AddressCompoundFieldBase>({
     field,
     transform: {

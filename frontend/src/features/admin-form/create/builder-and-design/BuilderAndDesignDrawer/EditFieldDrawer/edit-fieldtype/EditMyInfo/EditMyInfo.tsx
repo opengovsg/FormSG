@@ -1,10 +1,9 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
 import { MyInfoField } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
