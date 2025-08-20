@@ -102,6 +102,9 @@ on:
       DD_API_KEY:
         description: 'Datadog API key'
         required: true
+      S3_STATIC_ASSETS_BUCKET_NAME:
+        description: 'S3 domain style bucket name for static assets'
+        required: true
 
 # used to configure IAM to trust Github's OIDC provider
 permissions:
@@ -200,6 +203,17 @@ jobs:
           environment-variables: |
             ENV_TYPE=${{ inputs.environment }}
             ENV_SITE_NAME=${{ inputs.environment-site-name }}
+
+      - name: Copy Static Assets from Docker Image and Push to S3
+        env:
+          S3_STATIC_ASSETS_BUCKET_NAME: ${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          mkdir -p /tmp/s3static
+          chmod 777 /tmp/s3static
+          docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG cp -r ./dist/frontend/. /tmp/s3static
+          aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a

@@ -48,3 +48,4 @@ jobs:
       dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
       dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
       DD_API_KEY: ${{ secrets.DD_API_KEY }}
+      S3_STATIC_ASSETS_BUCKET_NAME: ${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
