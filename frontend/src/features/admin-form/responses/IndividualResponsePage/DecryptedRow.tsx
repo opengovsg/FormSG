@@ -148,32 +148,34 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     const canvas = canvasRef.current
     if (!canvas || vectorArray.length === 0) return
 
-    // Step 1: Compute bounding box of all x and y points
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
 
-    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
-    const width = maxX - minX
-    const height = maxY - minY
-    const canvasWidth = width + padding * 2
-    const canvasHeight = height + padding * 2
+    // apply devicePixelRatio to maintain sharpness
+    const dpr = window.devicePixelRatio || 1
+    canvas.width = maxX * dpr
+    canvas.height = maxY * dpr
 
-    // Step 2: Resize canvas
-    canvas.width = canvasWidth
-    canvas.height = canvasHeight
-    setCanvasSize({ width: canvasWidth, height: canvasHeight })
+    // keep the CSS size same as logical size
+    canvas.style.width = `${maxX}px`
+    canvas.style.height = `${maxY}px`
+
+    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
+    setCanvasSize({ width: maxX, height: maxY })
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    // Scale the context to account for dpr
+    ctx.scale(dpr, dpr)
+    ctx.clearRect(0, 0, maxX - minX + padding * 2, maxY - minY + padding * 2)
 
-    // Step 3: Draw centered strokes inside trimmed canvas
+    // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {
-      const normalizedStroke = stroke.map(([x, y, pressure]) => [
+      const shiftedStroke = stroke.map(([x, y, pressure]) => [
         x - minX + padding,
         y - minY + padding,
         pressure,
       ])
-      const pathData = getStroke(normalizedStroke, {
+      const pathData = getStroke(shiftedStroke, {
         size: SIGNATURE_STROKE_SIZE,
         thinning: SIGNATURE_STROKE_THINNING,
         smoothing: SIGNATURE_STROKE_SMOOTHING,
@@ -190,7 +192,6 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
         background="white"
         width={`${canvasSize.width}px`}
         height={`${canvasSize.height}px`}
-        border="1px solid"
         borderColor="neutral.400"
         borderRadius="0.25rem"
       >
