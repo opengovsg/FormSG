@@ -169,11 +169,13 @@ export const SignatureField = ({
     canvas.addEventListener('pointerdown', handlePointerDown)
     canvas.addEventListener('pointermove', handlePointerMove)
     canvas.addEventListener('pointerup', handlePointerUp)
+    canvas.addEventListener('pointerleave', handlePointerUp)
 
     return () => {
       canvas.removeEventListener('pointerdown', handlePointerDown)
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', handlePointerUp)
+      canvas.addEventListener('pointerleave', handlePointerUp)
     }
   }, [
     drawAllStrokes,
