@@ -227,13 +227,7 @@ export const SignatureField = ({
                 width="100%"
                 maxWidth="100%"
                 height="11.125rem"
-                border={
-                  signatureErrors
-                    ? '1px solid'
-                    : isDrawing
-                      ? '2px solid'
-                      : '1px solid'
-                }
+                border="1px solid"
                 borderRadius="0.25rem"
                 cursor={schema.disabled ? 'not-allowed' : 'auto'}
                 borderColor={
@@ -247,6 +241,7 @@ export const SignatureField = ({
                 overflow="hidden"
                 _hover={{
                   background: schema.disabled ? 'neutral.200' : 'primary.100',
+                  outline: isDrawing ? '2px solid #445fcd' : 'none',
                 }}
               >
                 {showSignaturePlaceholder && (
@@ -297,6 +292,7 @@ export const SignatureField = ({
               }}
               isLoading={isSubmitting}
               isDisabled={schema.disabled}
+              variant={'outline'}
             >
               Clear
             </Button>
