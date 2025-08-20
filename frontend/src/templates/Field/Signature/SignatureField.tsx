@@ -282,7 +282,14 @@ export const SignatureField = ({
               </Box>
             </Stack>
           </Flex>
-          <Box alignSelf="end" marginTop="0.5rem">
+          <Flex justify="space-between" mt="0.5rem" align="flex-start">
+            {signatureErrors?.message ? (
+              <FormErrorMessage mt="0">
+                {signatureErrors.message}
+              </FormErrorMessage>
+            ) : (
+              <Box /> // placeholder to consistently flush button to the right
+            )}
             <Button
               onClick={() => {
                 handleClearPerfectFreehandSignature()
@@ -292,8 +299,7 @@ export const SignatureField = ({
             >
               Clear
             </Button>
-          </Box>
-          <FormErrorMessage>{signatureErrors?.message}</FormErrorMessage>
+          </Flex>
         </Stack>
       </FormControl>
     </Box>
