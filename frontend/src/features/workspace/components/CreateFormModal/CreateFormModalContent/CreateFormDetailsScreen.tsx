@@ -112,7 +112,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel>
+            <FormLabel
+              description={t(
+                'features.workspace.modals.forms.create.details.type.description',
+              )}
+            >
               {t('features.workspace.modals.forms.create.details.type.label')}
             </FormLabel>
             <Skeleton isLoaded={!isFetching}>

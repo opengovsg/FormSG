@@ -18,6 +18,11 @@ export interface FormWorkflowStepStatic extends FormWorkflowStepBase {
   emails: string[]
 }
 
+export type FormWorkflowStepStaticNoEmails = Omit<
+  FormWorkflowStepStatic,
+  'emails'
+>
+
 export interface FormWorkflowStepDynamic extends FormWorkflowStepBase {
   workflow_type: WorkflowType.Dynamic
   field: FormFieldDto['_id']
@@ -33,6 +38,11 @@ export type FormWorkflowStep =
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
 
+export type StatusTrackerWorkflowStep =
+  | FormWorkflowStepStaticNoEmails
+  | FormWorkflowStepDynamic
+  | FormWorkflowStepConditional
+
 export type FormWorkflow = Array<FormWorkflowStep>
 
 // Additional props to be added for DTOs
@@ -40,3 +50,9 @@ export type FormWorkflow = Array<FormWorkflowStep>
 export type FormWorkflowStepDto = FormWorkflowStep & { _id: string }
 
 export type FormWorkflowDto = Array<FormWorkflowStepDto>
+
+export type StatusTrackerWorkflowStepDto = StatusTrackerWorkflowStep & {
+  _id: string
+}
+
+export type StatusTrackerWorkflowDto = Array<StatusTrackerWorkflowStepDto>

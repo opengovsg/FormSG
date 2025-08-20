@@ -11,13 +11,10 @@ import {
   Grid,
   GridItem,
   Stack,
-  Text,
   useDisclosure,
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { KILL_EMAIL_MODE_LINK } from '~shared/constants'
-import { FormResponseMode, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -25,8 +22,6 @@ import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
-import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
@@ -40,10 +35,9 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
   const { t } = useTranslation()
-  const { defaultTitle, emailRetirementNotice } = t(
-    'features.workspace.workspacePage',
-    { returnObjects: true },
-  )
+  const { defaultTitle } = t('features.workspace.workspacePage', {
+    returnObjects: true,
+  })
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
   const siteBannerContentGB = useFeatureValue('site-banner-content', '')
@@ -55,20 +49,6 @@ export const WorkspacePage = (): JSX.Element => {
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
-
-  const [openEmailModeForms, hasOpenEmailModeForms] = useMemo(() => {
-    const emailModeForms =
-      !isDashboardLoading && dashboardForms
-        ? dashboardForms.filter(
-            (form) =>
-              form.responseMode === FormResponseMode.Email &&
-              form.status === FormStatus.Public,
-          )
-        : undefined
-    return emailModeForms
-      ? [emailModeForms, emailModeForms.length > 0]
-      : [undefined, false]
-  }, [dashboardForms, isDashboardLoading])
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -185,46 +165,6 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
-            {hasOpenEmailModeForms && (
-              <InlineMessage>
-                <Text>
-                  {t(
-                    'features.workspace.workspacePage.emailRetirementNotice.description',
-                  )}{' '}
-                  <Text as="span" fontWeight="bold">
-                    {t(
-                      'features.workspace.workspacePage.emailRetirementNotice.date',
-                      {
-                        retirementDate: new Date(
-                          Date.UTC(2025, 7, 31, 3, 0, 0),
-                        ),
-                      },
-                    )}
-                  </Text>
-                  {'. '}
-                  {t(
-                    'features.workspace.workspacePage.emailRetirementNotice.beforeLink',
-                  )}
-                  <Link href="/dashboard?filter=email">
-                    {t(
-                      'features.workspace.workspacePage.emailRetirementNotice.link',
-                      {
-                        count: openEmailModeForms?.length || 0,
-                      },
-                    )}
-                  </Link>
-                  {emailRetirementNotice.additionalDescription}{' '}
-                  <Link
-                    display="inline"
-                    href={KILL_EMAIL_MODE_LINK}
-                    target="_blank"
-                  >
-                    {emailRetirementNotice.learnMore}
-                  </Link>
-                  {'.'}
-                </Text>
-              </InlineMessage>
-            )}
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>

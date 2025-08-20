@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { authCallbackForwardingMiddleware } from '../../../../modules/auth/auth.middlewares'
 import * as AuthSgidController from '../../../../modules/auth/sgid/auth-sgid.controller'
 
 export const AuthSGIDRouter = Router()
@@ -17,7 +18,11 @@ AuthSGIDRouter.get('/authurl', AuthSgidController.generateAuthUrl)
  * @return 400 when code or state is not provided, or state is incorrect
  * @return 500 when processing the code verifier cookie fails, or when an unknown error occurs
  */
-AuthSGIDRouter.get('/login/callback', AuthSgidController.handleLoginCallback)
+AuthSGIDRouter.get(
+  '/login/callback',
+  authCallbackForwardingMiddleware,
+  AuthSgidController.handleLoginCallback,
+)
 
 /**
  * Sets the selected user profile

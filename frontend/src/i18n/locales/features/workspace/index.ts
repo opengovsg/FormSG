@@ -73,14 +73,6 @@ export interface Workspace {
   }
   workspacePage: {
     defaultTitle: string
-    emailRetirementNotice: {
-      description: string
-      date: string
-      beforeLink: string
-      link: string
-      additionalDescription: string
-      learnMore: string
-    }
   }
   sideMenu: SideMenu
   header: Header

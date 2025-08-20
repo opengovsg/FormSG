@@ -1,4 +1,4 @@
-name: Deploy FormSG app to production
+name: Deploy FormSG app to stg-alt
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -7,37 +7,37 @@ concurrency:
 on:
   push:
     branches:
-      - release-al2
+      - stg-alt
 
 jobs:
   deploy:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
     with:
-      gha-environment: 'release-al2'
+      gha-environment: 'stg-alt'
       # Environment configuration
-      environment: 'production'
-      environment-site-name: 'prod'
+      environment: 'stg-alt'
+      environment-site-name: 'stg-alt'
       app-version: ${{ github.sha }}
-      app-url: 'https://form.gov.sg'
-      react-app-form-sg-sdk-mode: 'production'
+      app-url: 'https://stg-alt.form.gov.sg'
+      react-app-form-sg-sdk-mode: 'staging'
       # AWS configuration
       aws-region: 'ap-southeast-1'
       ecr-repository: 'formsg'
       # ECS configuration
-      ecs-cpu: 2048
-      ecs-memory: 4096
-      ecs-cluster-name: 'formsg-prod-ecs'
-      ecs-service-name: 'formsg-prod-ecs-service'
-      ecs-task-definition: 'formsg-prod-ecs'
+      ecs-cpu: 1024
+      ecs-memory: 2048
+      ecs-cluster-name: 'formsg-stg-alt-ecs'
+      ecs-service-name: 'formsg-stg-alt-ecs-service'
+      ecs-task-definition: 'formsg-stg-alt-ecs'
       ecs-task-definition-path: 'deploy/ecs-task-definition.json'
       ecs-container-name: 'formsg-app'
       # CodeDeploy configuration
-      codedeploy-application: 'formsg-prod-ecs-app'
+      codedeploy-application: 'formsg-stg-alt-ecs-app'
       codedeploy-appspec-path: deploy/appspec.yml
-      codedeploy-deployment-group: 'formsg-prod-ecs-dg'
+      codedeploy-deployment-group: 'formsg-stg-alt-ecs-dg'
       # Datadog config
-      dd-env: 'production-iac'
+      dd-env: 'stg-alt'
     secrets:
       # AWS credentials and configuration
       aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}

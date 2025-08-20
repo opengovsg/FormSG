@@ -57,7 +57,8 @@ export const FormEndPage = ({
             />
           )}
           {form?.responseMode === FormResponseMode.Multirespondent &&
-          form?.hasStatusTracker ? (
+          form?.hasStatusTracker &&
+          !previousSubmissionId ? (
             <SubmitAnotherResponseButton
               endPage={endPageProps.endPage}
               colorTheme={colorTheme}
