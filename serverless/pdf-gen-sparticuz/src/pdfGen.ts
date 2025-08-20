@@ -1,6 +1,14 @@
-import { PdfLoadingError, PdfGenerationError, PuppeteerChromiumError } from "./errors";
-import puppeteer, { Browser, Page } from "puppeteer-core";
-const chromium = require("@sparticuz/chromium"); // NOTE: need to use require to avoid loading issues. 
+import puppeteer, { Browser, Page } from 'puppeteer-core'
+
+import {
+  PdfGenerationError,
+  PdfLoadingError,
+  PuppeteerChromiumError,
+} from './errors'
+
+// NOTE: need to use require to avoid module path resolution issues.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const chromium = require('@sparticuz/chromium')
 
 /**
  * Loads HTML content into a Puppeteer page
@@ -9,18 +17,18 @@ const chromium = require("@sparticuz/chromium"); // NOTE: need to use require to
  * @throws {PdfLoadingError} When HTML content cannot be loaded into the page
  */
 const loadHtmlIntoPage = async (page: Page, html: string): Promise<void> => {
-  try { 
+  try {
     await page.setContent(html, {
       waitUntil: 'networkidle0',
     })
-  } catch (error) { 
-    const pdfLoadingError = new PdfLoadingError(undefined, error as Error);
+  } catch (error) {
+    const pdfLoadingError = new PdfLoadingError(undefined, error as Error)
     console.error({
       action: 'loadHtmlIntoPage',
       message: 'Error loading HTML into chromium page',
       error: pdfLoadingError,
     })
-    throw pdfLoadingError;
+    throw pdfLoadingError
   }
 }
 
@@ -31,25 +39,36 @@ const loadHtmlIntoPage = async (page: Page, html: string): Promise<void> => {
  * @throws {PdfGenerationError} When PDF generation fails
  */
 const generatePdf = async (page: Page): Promise<Buffer> => {
-  try { 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { 
-      top: '20px',
-      bottom: '40px',
-    },
-  })
-  return Buffer.from(pdfBuffer);
-  } catch (error) { 
-    const pdfGenerationError = new PdfGenerationError(undefined, error as Error);
+  try {
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20px',
+        bottom: '40px',
+      },
+    })
+    return Buffer.from(pdfBuffer)
+  } catch (error) {
+    const pdfGenerationError = new PdfGenerationError(undefined, error as Error)
     console.error({
       action: 'generatePdf',
       message: 'Error generating PDF from Chromium loaded page',
       error: pdfGenerationError,
     })
-    throw pdfGenerationError;
-  }  
+    throw pdfGenerationError
+  }
+}
+
+const configureSparticuzChromium = async () => {
+  const chromiumArgs = [...chromium.args, '--no-sandbox', '--disable-gpu']
+  chromium.setGraphicsMode = false
+
+  const chromiumExecutablePath = await chromium.executablePath()
+  return {
+    chromiumExecutablePath,
+    chromiumArgs,
+  }
 }
 
 /**
@@ -61,49 +80,50 @@ const generatePdf = async (page: Page): Promise<Buffer> => {
  * @throws {PuppeteerChromiumError} When Puppeteer Chromium browser initialization or operation fails
  */
 export const convertHtmlToPdf = async (html: string): Promise<Buffer> => {
-  let browser: Browser | undefined;
-  try { 
-
-    const chromiumExecutablePath = await chromium.executablePath();
+  let browser: Browser | undefined
+  try {
+    const { chromiumExecutablePath, chromiumArgs } =
+      await configureSparticuzChromium()
     console.info({
       action: 'convertHtmlToPdf',
       message: 'HTML to PDF conversion started',
       chromiumExecutablePath: chromium.executablePath(),
     })
-    chromium.setGraphicsMode = false;
-    const chromiumArgs = [...chromium.args, '--no-sandbox', '--disable-gpu']
 
     browser = await puppeteer.launch({
       args: puppeteer.defaultArgs({ args: chromiumArgs, headless: true }),
       executablePath: chromiumExecutablePath,
       headless: true,
-    });
+    })
 
-    const page = await browser.newPage();
-    await loadHtmlIntoPage(page, html);
-    const pdfBuffer = await generatePdf(page);    
+    const page = await browser.newPage()
+    await loadHtmlIntoPage(page, html)
+    const pdfBuffer = await generatePdf(page)
     console.info({
       action: 'convertHtmlToPdf',
       message: 'HTML to PDF conversion completed',
     })
-    return pdfBuffer;
-  } catch (error) { 
-    if (error instanceof PdfLoadingError) { 
-      throw error;
+    return pdfBuffer
+  } catch (error) {
+    if (error instanceof PdfLoadingError) {
+      throw error
     }
-    if (error instanceof PdfGenerationError) { 
-      throw error;
+    if (error instanceof PdfGenerationError) {
+      throw error
     }
-    const puppeteerChromiumError = new PuppeteerChromiumError(undefined, error as Error);
+    const puppeteerChromiumError = new PuppeteerChromiumError(
+      undefined,
+      error as Error,
+    )
     console.error({
       action: 'convertHtmlToPdf',
       message: 'Error with Puppeteer or Chromium operation occurred',
       error: puppeteerChromiumError,
     })
-    throw puppeteerChromiumError;
+    throw puppeteerChromiumError
   } finally {
     if (browser) {
-      await browser.close();
+      await browser.close()
     }
   }
 }

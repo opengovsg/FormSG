@@ -1,5 +1,5 @@
-interface LogMeta {
-  action: string; 
-  message?: string 
-  [key: string]: any;
+export interface LogMeta {
+  action: string
+  message?: string
+  [key: string]: unknown
 }
