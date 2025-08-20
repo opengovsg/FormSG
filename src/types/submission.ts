@@ -120,7 +120,7 @@ export interface IMultirespondentSubmissionSchema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
   submissionType: SubmissionType.Multirespondent
-  getWebhookView(): Promise<null>
+  getWebhookView(): Promise<WebhookView>
   mrfVersion: number
 }
 

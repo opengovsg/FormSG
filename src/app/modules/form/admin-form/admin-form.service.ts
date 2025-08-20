@@ -1857,15 +1857,6 @@ export const updateFormSettings = (
     return errAsync(new MalformedParametersError('Invalid authentication type'))
   }
 
-  if (
-    originalForm.responseMode === FormResponseMode.Multirespondent &&
-    Boolean(body.webhook?.url)
-  ) {
-    return errAsync(
-      new MalformedParametersError('Webhooks not supported on MRF'),
-    )
-  }
-
   if (isFormEmailMode(originalForm)) {
     if (
       originalForm.isForceConvertToStorageMode &&
