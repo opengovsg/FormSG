@@ -35,7 +35,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
-import { convertToSignaturePngDataURI } from '../../../utils/convert-vector-array-to-png'
+import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,
@@ -234,7 +234,7 @@ export const getAnswerForSignature = (
   let signatureAnswer: string
   switch (response.answerArray[0]) {
     case 'draw':
-      signatureAnswer = convertToSignaturePngDataURI(
+      signatureAnswer = convertToSignaturePngDataUri(
         convertToSignatureVectorArray(response.answerArray[1]),
       )
       break
