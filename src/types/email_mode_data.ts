@@ -4,6 +4,7 @@ export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
   fieldType?: BasicField
+  answer?: string
 }
 
 export type EmailDataCollationToolField = {

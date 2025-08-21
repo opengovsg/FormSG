@@ -150,3 +150,63 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
       label: MYINFO_FIELD_TO_DRAWER_META[value].label,
     }
   })
+
+export const BASIC_FIELDS_FREE_TEXT = [
+  BasicField.ShortText,
+  BasicField.LongText,
+] as const
+
+export const BASIC_FIELDS_OPTIONS = [
+  BasicField.Radio,
+  BasicField.Checkbox,
+  BasicField.Dropdown,
+  BasicField.Rating,
+  BasicField.YesNo,
+] as const
+
+export const BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS = [
+  BasicField.Section,
+  BasicField.Statement,
+  BasicField.Image,
+] as const
+
+export const BASIC_FIELDS_DATES_AND_NUMBER = [
+  BasicField.Number,
+  BasicField.Decimal,
+  BasicField.Date,
+] as const
+export const BASIC_FIELDS_PERSONAL = [
+  BasicField.Email,
+  BasicField.Mobile,
+  BasicField.HomeNo,
+  BasicField.Address,
+  BasicField.Nric,
+  BasicField.Uen,
+  BasicField.CountryRegion,
+  BasicField.Signature,
+] as const
+
+export const BASIC_FIELDS_OTHERS = [
+  BasicField.Table,
+  BasicField.Attachment,
+] as const
+
+export const BASIC_FIELDS_ORDERED_CATEGORIES = [
+  // Free text
+  ...BASIC_FIELDS_FREE_TEXT,
+  ...BASIC_FIELDS_OPTIONS,
+  ...BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
+  ...BASIC_FIELDS_DATES_AND_NUMBER,
+  ...BASIC_FIELDS_PERSONAL,
+  ...BASIC_FIELDS_OTHERS,
+]
+
+export const CREATE_FIELD_FREE_TEXT_DROP_ID = 'create-fields-field-free-text'
+export const CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID =
+  'create-fields-field-options'
+export const CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID =
+  'create-fields-field-content-and-descriptions'
+export const CREATE_FIELD_DATES_AND_NUMBER_DROP_ID =
+  'create-fields-field-dates-and-number'
+export const CREATE_FIELD_PERSONAL_DROP_ID = 'create-fields-field-personal'
+export const CREATE_FIELD_OTHERS_DROP_ID = 'create-fields-field-others'

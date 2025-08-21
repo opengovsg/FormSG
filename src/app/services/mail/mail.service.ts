@@ -812,6 +812,19 @@ export class MailService {
       })
     }
 
+    // strip answer from renderData to always use answerTemplate for email body responses
+    const strippedResponsesData = responsesData.map(
+      ({ question, answerTemplate }) => ({
+        question,
+        answerTemplate,
+      }),
+    )
+
+    const strippedRenderData = {
+      ...renderData,
+      formData: strippedResponsesData,
+    }
+
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
       autoReplyMailDatas.map((mailData, index) => {
@@ -822,7 +835,7 @@ export class MailService {
             ? attachmentsWithAutoreplyPdf
             : attachments,
           autoReplyMailData: mailData,
-          formSummaryRenderData: renderData,
+          formSummaryRenderData: strippedRenderData,
           index,
           isPaymentEnabled,
         })
