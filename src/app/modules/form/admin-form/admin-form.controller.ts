@@ -2116,16 +2116,6 @@ export const submitEmailPreview: ControllerHandler<
   }
 
   const formResult = await UserService.getPopulatedUserById(sessionUserId)
-    // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-    .map(async (admin) => {
-      await req.growthbook?.setAttributes({
-        ...req.growthbook?.getAttributes(),
-        formId,
-        adminEmail: admin.email,
-        adminAgency: admin.agency.shortName,
-      })
-      return admin
-    })
     .andThen((user) =>
       AuthService.getFormAfterPermissionChecks({
         user,
@@ -2217,22 +2207,6 @@ export const submitEmailPreview: ControllerHandler<
     })
   }
 
-  // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-  const isUseLambdaOutput =
-    req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-  logger.info({
-    message: 'Growthbook flag for lambda pdf generation',
-    meta: {
-      ...logMeta,
-      isUseLambdaOutput,
-      growthbookAttributes: req.growthbook?.getAttributes(),
-      lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-        featureFlags.lambdaPdfGeneration,
-        undefined,
-      ),
-    },
-  })
-
   // Don't await on email confirmations, so submission is successful even if
   // this fails
   void SubmissionService.sendEmailConfirmations({
@@ -2244,7 +2218,7 @@ export const submitEmailPreview: ControllerHandler<
       parsedResponses.getAllResponses(),
       form.form_fields,
     ),
-    isUseLambdaOutput,
+    isUseLambdaOutput: false, // TODO: [PDF-LAMBDA-GENERATION]: To remove once pdf lambda rollout is complete. Currently set to false since v2 api is not being used.
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',

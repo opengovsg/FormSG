@@ -456,7 +456,7 @@ export const submitEmailModeForm: ControllerHandler<
             parsedResponses.getAllResponses(),
             form.form_fields,
           ),
-          isUseLambdaOutput: false, // NOTE: Set to false since email mode is deprecated.
+          isUseLambdaOutput: false, // TODO: [PDF-LAMBDA-GENERATION]: To remove once pdf lambda rollout is complete. Currently set to false since email mode is deprecated.
         }).mapErr((error) => {
           // NOTE: MyInfo access token is not cleared here.
           // This is because if the reason for failure is not on the users' end,
