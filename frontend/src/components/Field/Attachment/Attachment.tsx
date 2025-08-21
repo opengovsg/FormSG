@@ -331,6 +331,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             {...(!value
               ? { role: 'button', ref: mergedRefs, __css: styles.dropzone }
               : {})}
+            tabIndex={inputProps.disabled ? -1 : 0} // prevent focus capture when disabled
           >
             {value ? (
               <AttachmentFileInfo
