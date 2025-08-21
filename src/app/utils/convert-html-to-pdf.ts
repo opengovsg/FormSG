@@ -202,3 +202,6 @@ export const generatePdfFromHtml = async (
   })
   return await localResult
 }
+
+export const _generatePdfFromHtmlLocallyForTest = generatePdfFromHtmlLocally
+export const _generatePdfFromHtmlLambdaForTest = generatePdfFromHtmlLambda
