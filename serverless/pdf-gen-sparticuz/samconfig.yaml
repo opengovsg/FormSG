@@ -1,4 +1,18 @@
 version: 0.1
+
+stg-alt:
+  deploy:
+    parameters:
+      stack_name: pdf-gen-sparticuz-stg-alt
+      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
+      s3_prefix: stg-alt
+      image_repositories: [] 
+      disable_rollback: false # Rolls back to previous version if the deployment fails 
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt
+      
 stg-alt3:
   deploy:
     parameters:
@@ -11,3 +25,28 @@ stg-alt3:
       disable_rollback: false # Rolls back to previous version if the deployment fails 
       confirm_changeset: true
       parameter_overrides: Environment=stg-alt3
+
+uat: 
+  deploy: 
+    parameters:
+      stack_name: pdf-gen-sparticuz-uat
+      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
+      s3_prefix: uat
+      image_repositories: [] 
+      disable_rollback: false # Rolls back to previous version if the deployment fails 
+      confirm_changeset: true
+      parameter_overrides: Environment=uat
+
+production: 
+  deploy: 
+    parameters:
+      stack_name: pdf-gen-sparticuz-production
+      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
+      s3_prefix: production
+      image_repositories: [] 
+      disable_rollback: false # Rolls back to previous version if the deployment fails 
+      confirm_changeset: true
