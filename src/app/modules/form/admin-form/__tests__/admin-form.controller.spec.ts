@@ -6031,6 +6031,7 @@ describe('admin-form.controller', () => {
           attachments: [],
           responsesData: MOCK_AUTOREPLY_DATA,
           recipientData: [],
+          isUseLambdaOutput: false,
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -6868,6 +6869,7 @@ describe('admin-form.controller', () => {
           attachments: [],
           responsesData: MOCK_AUTOREPLY_DATA,
           recipientData: [],
+          isUseLambdaOutput: false,
         },
       )
       expect(mockRes.json).toHaveBeenCalledWith({

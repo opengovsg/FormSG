@@ -241,11 +241,11 @@ export const performPaymentPostSubmissionActions = (
           .andThen((submission) => {
             if (isSubmissionEncryptMode(submission)) {
               return (
-                performEncryptPostSubmissionActions(
+                performEncryptPostSubmissionActions({
                   submission,
-                  payment.responses,
+                  responses: payment.responses,
                   growthbook,
-                )
+                })
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.
                     ResultAsync.fromPromise(

@@ -145,14 +145,21 @@ export const createEncryptSubmissionWithoutSave = ({
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  * @returns err(PossibleDatabaseError) if error occurs whilst querying the database
  */
-export const performEncryptPostSubmissionActions = (
-  submission: IEncryptedSubmissionSchema,
-  responses: FieldResponse[],
-  growthbook: GrowthBook | undefined,
-  emailData?: SubmissionEmailObj,
-  attachments?: Mail.Attachment[],
-  respondentEmails?: string[],
-): ResultAsync<
+export const performEncryptPostSubmissionActions = ({
+  submission,
+  responses,
+  growthbook,
+  emailData,
+  attachments,
+  respondentEmails,
+}: {
+  submission: IEncryptedSubmissionSchema
+  responses: FieldResponse[]
+  growthbook?: GrowthBook
+  emailData?: SubmissionEmailObj
+  attachments?: Mail.Attachment[]
+  respondentEmails?: string[]
+}): ResultAsync<
   true,
   | FormNotFoundError
   | ResponseModeError

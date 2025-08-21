@@ -873,14 +873,14 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  return await performEncryptPostSubmissionActions(
+  return await performEncryptPostSubmissionActions({
     submission,
     responses,
-    req.growthbook,
+    growthbook: req.growthbook,
     emailData,
-    emailAttachments,
+    attachments: emailAttachments,
     respondentEmails,
-  )
+  })
 }
 
 export const handleStorageSubmission = [
