@@ -11,6 +11,7 @@ import { ProcessedResponse } from '../submission.types'
 // should have been converted to answer
 export type ResponseFormattedForEmail = Omit<FieldResponse, 'answerArray'> & {
   answer: string
+  answerTemplate?: string[]
 } & ProcessedResponse
 
 export interface ParsedMultipartForm {

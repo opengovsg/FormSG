@@ -61,9 +61,13 @@
                             <strong><%= fieldTuple.question %></strong>
                         </td>
                         <td class="value-cell">
-                            <% fieldTuple.answerTemplate.forEach(function(answer) { %>
+                            <% if (fieldTuple.answer) { %>
+                                <img src="<%= fieldTuple.answer %>" alt="Signature" style="max-width: 300px;" /><br />
+                            <% } else { %>
+                                <% fieldTuple.answerTemplate.forEach(function(answer) { %>
                                 <%= answer %><br />
                             <% }) %>
+                        <% } %>
                         </td>
                     </tr>
                     <% }) %>

@@ -6,7 +6,10 @@ import {
   answerKey,
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
-import { getSignatureFileName } from '../../../../../shared/utils/signature'
+import {
+  convertToSignatureVectorArray,
+  getSignatureFileName,
+} from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -32,6 +35,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
+import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,
@@ -84,7 +88,6 @@ import {
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedSignatureResponse,
-  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
@@ -227,10 +230,13 @@ export const getAnswerForAddress = (
 export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
+  const signatureFileName = getSignatureFileName({ fieldId: response._id })
   let signatureAnswer: string
   switch (response.answerArray[0]) {
     case 'draw':
-      signatureAnswer = getSignatureFileName({ fieldId: response._id })
+      signatureAnswer = convertToSignaturePngDataUri(
+        convertToSignatureVectorArray(response.answerArray[1]),
+      )
       break
     default:
       signatureAnswer = ''
@@ -243,6 +249,7 @@ export const getAnswerForSignature = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: signatureAnswer,
+    answerTemplate: [signatureFileName],
   }
 }
 
@@ -565,6 +572,13 @@ const getDataCollationFormattedResponse = (
   response: ResponseFormattedForEmail,
 ): EmailDataCollationToolField | undefined => {
   const { answer, fieldType } = response
+
+  if (fieldType === BasicField.Signature) {
+    return {
+      question: getJsonPrefixedQuestion(response),
+      answer: response.answerTemplate ? response.answerTemplate[0] : '',
+    }
+  }
   // Headers are excluded from JSON data
   if (fieldType !== BasicField.Section) {
     return {
@@ -585,6 +599,16 @@ const getFormFormattedResponse = (
 ): EmailAdminDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
+
+  if (fieldType === BasicField.Signature) {
+    return {
+      question: getFormDataPrefixedQuestion(response, hashedFields),
+      answerTemplate: response.answerTemplate ?? [],
+      answer,
+      fieldType,
+    }
+  }
+
   return {
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
@@ -600,14 +624,16 @@ const getFormFormattedResponse = (
 const getAutoReplyFormattedResponse = (
   response: ResponseFormattedForEmail,
 ): EmailRespondentConfirmationField | undefined => {
-  const { question, answer, isVisible } = response
-  const answerSplitByNewLine = answer.split('\n')
+  const { question, answer, isVisible, answerTemplate } = response
+  const answerSplitByNewLine = answerTemplate ?? answer.split('\n')
   // Auto reply email will contain only visible fields
   if (isVisible !== false) {
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
-      // fieldType: response.fieldType,
+      ...(response.fieldType === BasicField.Signature && {
+        answer: response.answer,
+      }), // add signature answer for PDF generation
     }
   }
   return undefined
@@ -699,16 +725,6 @@ const formatDataCollationResponse = (
           answer: answer,
         })
       })
-    } else if (
-      response.fieldType === BasicField.Signature &&
-      isProcessedSignatureResponse(response)
-    ) {
-      responses.push({
-        _id: `${response._id}`,
-        fieldType: response.fieldType,
-        question: `${response.question}`,
-        answer: getSignatureFileName({ fieldId: response._id }),
-      } as unknown as ProcessedSingleAnswerResponse)
     } else {
       responses.push(response)
     }
