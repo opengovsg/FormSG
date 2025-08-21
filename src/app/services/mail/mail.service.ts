@@ -39,7 +39,11 @@ import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresh
 import { smsThreshold } from '../sms/sms.utils'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
-import { MailGenerationError, MailSendError } from './mail.errors'
+import {
+  AutoreplyPdfGenerationError,
+  MailGenerationError,
+  MailSendError,
+} from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
@@ -775,7 +779,12 @@ export class MailService {
     attachments = [],
     isUseLambdaOutput,
   }: SendAutoReplyEmailsArgs): Promise<
-    PromiseSettledResult<Result<true, MailSendError | MailGenerationError>>[]
+    PromiseSettledResult<
+      Result<
+        true,
+        MailSendError | MailGenerationError | AutoreplyPdfGenerationError
+      >
+    >[]
   > => {
     // Data to render both the submission details mail HTML body and PDF.
 

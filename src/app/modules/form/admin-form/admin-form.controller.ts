@@ -2119,11 +2119,10 @@ export const submitEmailPreview: ControllerHandler<
     // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
     .map(async (admin) => {
       await req.growthbook?.setAttributes({
-        ...logMeta,
-        formId: form.id,
+        ...req.growthbook?.getAttributes(),
+        formId,
         adminEmail: admin.email,
-        adminAgency: admin.agency,
-        isEmailConfirmation: true,
+        adminAgency: admin.agency.shortName,
       })
       return admin
     })

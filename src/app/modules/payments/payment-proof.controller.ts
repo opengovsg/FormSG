@@ -45,11 +45,11 @@ export const downloadPaymentInvoice: ControllerHandler<{
       await UserService.getPopulatedUserById(populatedForm.admin).map(
         async (admin) => {
           await req.growthbook?.setAttributes({
-            ...logMeta,
+            ...req.growthbook?.getAttributes(),
             formId,
             adminEmail: admin.email,
-            adminAgency: admin.agency,
-            isDownloadPaymentInvoice: true,
+            adminAgency: admin.agency.shortName,
+            isPaymentInvoice: true,
           })
         },
       )

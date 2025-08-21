@@ -188,10 +188,10 @@ export const performEncryptPostSubmissionActions = (
         await UserService.getPopulatedUserById(form.admin).map(
           async (admin) => {
             await growthbook?.setAttributes({
-              ...logMeta,
-              formId: form.id,
+              ...growthbook?.getAttributes(),
+              formId: submission.form.toString(),
               adminEmail: admin.email,
-              adminAgency: admin.agency,
+              adminAgency: admin.agency.shortName,
             })
           },
         )
