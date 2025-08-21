@@ -1,6 +1,6 @@
 import { DropzoneInputProps, DropzoneState } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
-import { chakra, Icon, Text, VisuallyHidden } from '@chakra-ui/react'
+import { chakra, Icon, Text, VisuallyHidden, Box } from '@chakra-ui/react'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import Link from '~components/Link'
@@ -14,13 +14,35 @@ interface AttachmentDropzoneProps {
   question?: string
 }
 
+const DropzoneText = ({ inputProps }: { inputProps: DropzoneInputProps }) => {
+  const { t } = useTranslation()
+  const isDisabled = inputProps.disabled
+
+  return (
+    <Text aria-hidden>
+      {isDisabled ? (
+        t('features.publicForm.components.fields.attachment.disabled')
+      ) : (
+        <>
+          <Link>
+            {t(
+              'features.publicForm.components.fields.attachment.fileUploaderLink',
+            )}
+          </Link>
+
+          {t('features.publicForm.components.fields.attachment.dragAndDrop')}
+        </>
+      )}
+    </Text>
+  )
+}
+
 export const AttachmentDropzone = ({
   inputProps,
   isDragActive,
   readableMaxSize,
   question,
 }: AttachmentDropzoneProps): JSX.Element => {
-  const { t } = useTranslation()
   const styles = useAttachmentStyles()
 
   return (
@@ -34,14 +56,7 @@ export const AttachmentDropzone = ({
       {isDragActive ? (
         <Text aria-hidden>Drop the file here...</Text>
       ) : (
-        <Text aria-hidden>
-          <Link isDisabled={inputProps.disabled}>
-            {t(
-              'features.publicForm.components.fields.attachment.fileUploaderLink',
-            )}
-          </Link>
-          {t('features.publicForm.components.fields.attachment.dragAndDrop')}
-        </Text>
+        <DropzoneText inputProps={inputProps} />
       )}
     </>
   )
