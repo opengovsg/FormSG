@@ -24,16 +24,3 @@ Resources:
       Handler: index.handler
       Architectures:
         - x86_64
-
-Outputs:
-  PdfGenFunction:
-    Description: "PDF Generation Lambda Function ARN"
-    Value: !GetAtt PdfGenFunction.Arn
-    Export:
-      Name: !Sub "${AWS::StackName}-PdfGenFunctionArn"
-  
-  PdfGenFunctionName:
-    Description: "PDF Generation Lambda Function Name"
-    Value: !Ref PdfGenFunction
-    Export:
-      Name: !Sub "${AWS::StackName}-PdfGenFunctionName" 
