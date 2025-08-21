@@ -65,6 +65,14 @@ export const Attachment: ComponentMultiStyleConfig<typeof parts> = {
           },
           _disabled: {
             ...inputStyle._disabled,
+            _focus: {
+              border: '1px dashed',
+              borderColor: `neutral.400`,
+              boxShadow: `unset !important`,
+            },
+            _focusVisible: {
+              outline: 'none',
+            },
           },
           _hover: {
             bg: `${c}.100`,
