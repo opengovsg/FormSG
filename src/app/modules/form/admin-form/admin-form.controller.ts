@@ -7,7 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
