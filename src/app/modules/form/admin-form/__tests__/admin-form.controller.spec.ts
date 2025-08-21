@@ -3371,6 +3371,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockDupedFormView = {
         title: 'mock view',
@@ -3422,6 +3423,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockDupedFormView = {
         title: 'mock view',
@@ -3496,6 +3498,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockRes = expressHandler.mockResponse()
       const mockReqWithParams = merge({}, MOCK_REQ, {
@@ -3631,6 +3634,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockRes = expressHandler.mockResponse()
       const mockReqWithParams = merge({}, MOCK_REQ, {
@@ -3933,6 +3937,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockRes = expressHandler.mockResponse()
       const mockReqWithParams = merge({}, MOCK_REQ, {
@@ -4081,6 +4086,7 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Encrypt,
         publicKey: 'some public key',
         title: 'mock title',
+        emails: [],
       }
       const mockRes = expressHandler.mockResponse()
       const mockReqWithParams = merge({}, MOCK_REQ, {

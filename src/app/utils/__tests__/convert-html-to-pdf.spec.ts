@@ -1,16 +1,16 @@
 import puppeteer from 'puppeteer-core'
 
-import { aws as AwsConfig } from '../../config/config'
+import { aws as AwsConfig } from 'src/app/config/config'
 import {
   PdfGenerationLambdaFailureError,
   PdfGenerationLambdaInvocationError,
   PdfGenerationLambdaJsonParseError,
-} from '../../modules/core/core.errors'
+} from 'src/app/modules/core/core.errors'
 import {
   _generatePdfFromHtmlLambdaForTest,
   _generatePdfFromHtmlLocallyForTest,
   generatePdfFromHtml,
-} from '../convert-html-to-pdf'
+} from 'src/app/utils/convert-html-to-pdf'
 
 jest.mock('puppeteer-core')
 jest.mock('../../config/config')
