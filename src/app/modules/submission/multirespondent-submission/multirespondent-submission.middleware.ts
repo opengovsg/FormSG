@@ -636,22 +636,23 @@ export const setCurrentWorkflowStep = async (
         ),
       )
       // Step 6: Retrieve presigned URLs for attachments.
-      .map((submissionData) => {
+      .andThen((submissionData) => {
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {
           return errAsync(new InvalidSubmissionTypeError())
         }
         // Increment previous submission's workflow step by 1 to get workflow step of current submission
         req.body.workflowStep = submissionData.workflowStep + 1
         // If the workflow step is greater than the submission's snapshot workflow step, this is an invalid submission.
-        if (req.body.workflowStep > submissionData.workflowStep) {
+        if (req.body.workflowStep >= submissionData.workflow.length) {
           return errAsync(
             new MrfWorkflowOverflowError(
-              'Workflow step cannot be greater than previous submission workflow step',
+              'Workflow step cannot be greater than the submission workflow length',
             ),
           )
         }
-        return next()
+        return okAsync(undefined)
       })
+      .map(() => next())
       .mapErr((error) => {
         logger.error({
           message: 'Failure retrieving encrypted submission response',
