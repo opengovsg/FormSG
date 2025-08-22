@@ -19,16 +19,18 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
+import { useUser } from '~features/user/queries'
+
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { useIndividualSubmission } from './queries'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-import { featureFlags } from '~shared/constants'
-import { useUser } from '~features/user/queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
   const { state } = useLocation()
@@ -145,7 +147,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
               {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
             </Text>
             {user?.betaFlags?.signatureField && isSignatureFieldEnabled ? (
-              <Box onClick={() => window.print()}>
+              <Box>
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
