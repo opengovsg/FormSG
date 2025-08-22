@@ -39,6 +39,12 @@ export class InvalidSubmissionTypeError extends ApplicationError {
   }
 }
 
+export class MrfWorkflowOverflowError extends ApplicationError {
+  constructor(message = 'MRF workflow overflow error encountered.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_OVERFLOW_ERROR)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */
