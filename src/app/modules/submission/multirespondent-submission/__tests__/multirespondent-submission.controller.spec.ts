@@ -17,6 +17,7 @@ import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { IMultirespondentSubmissionSchema } from 'src/types'
+import { SnapshottedFormDef } from 'src/types/api'
 
 import {
   AttachmentUploadError,
@@ -323,6 +324,45 @@ describe('multirespondent-submision.controller', () => {
   })
 
   describe('updateMultirespondentSubmission', () => {
+    it('returns 400 bad request if snapshottedFormDef is not provided when updating mrf submission', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await updateMultirespondentSubmissionForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message:
+          'The form submission could not be processed. Please try again.',
+      })
+    })
+
     it('returns 200 ok when form validation passes and invokes updateMultiRespondentFormSubmission and performMultiRespondentPostSubmissionUpdateActions', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
@@ -339,6 +379,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -410,6 +461,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -452,6 +514,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -494,6 +567,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -536,6 +620,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -575,6 +670,17 @@ describe('multirespondent-submision.controller', () => {
             authType: FormAuthType.NIL,
             getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
           },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+          } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,

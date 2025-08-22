@@ -4,7 +4,11 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { IAttachmentInfo, IMultirespondentSubmissionSchema } from 'src/types'
+import {
+  IAttachmentInfo,
+  IMultirespondentSubmissionSchema,
+  IPopulatedMultirespondentForm,
+} from 'src/types'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -112,10 +116,26 @@ const retrieveMultirespondentSubmissionIfExists = (
   return okAsync(undefined)
 }
 
+const getSnapshottedFormDef = (
+  mrfSubmission: IMultirespondentSubmissionSchema,
+  currentFormDef: IPopulatedMultirespondentForm,
+): SnapshottedFormDef => ({
+  _id: mrfSubmission.form.toString(),
+  title: currentFormDef.title,
+  form_fields: mrfSubmission.form_fields,
+  form_logics: mrfSubmission.form_logics,
+  workflow: mrfSubmission.workflow,
+  hasRespondentCopy: currentFormDef.hasRespondentCopy,
+  emails: currentFormDef.emails,
+  stepOneEmailNotificationFieldId:
+    currentFormDef.stepOneEmailNotificationFieldId,
+  stepsToNotify: currentFormDef.stepsToNotify,
+})
+
 /**
  * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
  */
-export const createFormsgAndRetrieveForm = async (
+export const createFormsgAndRetrieveForm = (
   req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],
   next: NextFunction,
@@ -144,7 +164,7 @@ export const createFormsgAndRetrieveForm = async (
         error,
       })
     })
-    .map((featureFlags) => {
+    .andThen((featureFlags) => {
       // Step 2b: Set formsg.featureFlags
       formsg.featureFlags = featureFlags
       // Step 3: Retrieve mrf submission if exists
@@ -162,7 +182,7 @@ export const createFormsgAndRetrieveForm = async (
           formsg.mrfSubmission = mrfSubmission
           return mrfSubmission
         })
-        .map((mrfSubmission) => {
+        .andThen((mrfSubmission) => {
           // Step 4: Retrieve latest form definition
           return FormService.retrieveFullFormById(formId)
             .mapErr((error) => {
@@ -194,21 +214,12 @@ export const createFormsgAndRetrieveForm = async (
             .map((latestMrfFormDef) => {
               // Step 4b: Set formsg.latestFormDef
               formsg.formDef = latestMrfFormDef
-
+              // Step 4c: Set formsg.snapshottedFormDef if mrfSubmission exists
               if (mrfSubmission) {
-                const snapshottedMrfFormDefinition: SnapshottedFormDef = {
-                  _id: mrfSubmission.form.toString(),
-                  title: latestMrfFormDef.title,
-                  form_fields: mrfSubmission.form_fields,
-                  form_logics: mrfSubmission.form_logics,
-                  workflow: mrfSubmission.workflow,
-                  hasRespondentCopy: latestMrfFormDef.hasRespondentCopy,
-                  emails: latestMrfFormDef.emails,
-                  stepOneEmailNotificationFieldId:
-                    latestMrfFormDef.stepOneEmailNotificationFieldId,
-                  stepsToNotify: latestMrfFormDef.stepsToNotify,
-                }
-                formsg.snapshottedFormDef = snapshottedMrfFormDefinition
+                formsg.snapshottedFormDef = getSnapshottedFormDef(
+                  mrfSubmission,
+                  latestMrfFormDef,
+                )
               }
             })
             .map(() => {
