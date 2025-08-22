@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
+import { FaRegFilePdf } from 'react-icons/fa6'
 import {
   Link as ReactLink,
   useLocation,
@@ -8,12 +9,14 @@ import {
   useParams,
 } from 'react-router-dom'
 import {
+  Box,
   ButtonGroup,
   Flex,
   Grid,
   Icon,
   Link,
   Skeleton,
+  Stack,
   Text,
 } from '@chakra-ui/react'
 
@@ -23,6 +26,9 @@ import IconButton from '~components/IconButton'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { useIndividualSubmission } from './queries'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { featureFlags } from '~shared/constants'
+import { useUser } from '~features/user/queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
   const { state } = useLocation()
@@ -102,6 +108,9 @@ export const IndividualResponseNavbar = (): JSX.Element => {
 
   const { t } = useTranslation()
 
+  const { user } = useUser()
+  const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
+
   return (
     <Grid
       sx={noPrintCss}
@@ -130,10 +139,22 @@ export const IndividualResponseNavbar = (): JSX.Element => {
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
-          <Text textStyle="h2" as="h2">
-            {t('features.common.response')}
-            {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
-          </Text>
+          <Stack direction="row" justify="center" align="center">
+            <Text textStyle="h2" as="h2">
+              {t('features.common.response')}
+              {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
+            </Text>
+            {user?.betaFlags?.signatureField && isSignatureFieldEnabled ? (
+              <Box onClick={() => window.print()}>
+                <IconButton
+                  aria-label="Print"
+                  icon={<FaRegFilePdf />}
+                  onClick={() => window.print()}
+                  variant="clear"
+                />
+              </Box>
+            ) : null}
+          </Stack>
         </Skeleton>
       </Flex>
       <ButtonGroup gridArea="navigate">
