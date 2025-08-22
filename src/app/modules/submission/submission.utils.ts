@@ -362,10 +362,15 @@ const errorMapper: MapRouteError = (
       }
     case MrfReminderInvalidWorkflowStepError:
     case MrfReminderRecipientEmailsEmptyError:
-    case MrfWorkflowOverflowError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MrfWorkflowOverflowError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'The link you used is no longer valid. Please contact the form admin that gave you this link.',
       }
     case MailSendError:
       return {
