@@ -218,7 +218,6 @@ export const Radio = forwardRef<RadioProps, 'input'>(
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,
-      ...(isHighContrast && { color: 'neutral.800' }),
     }
 
     return (

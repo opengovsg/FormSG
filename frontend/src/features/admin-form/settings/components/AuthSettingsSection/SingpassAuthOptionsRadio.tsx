@@ -88,7 +88,7 @@ export const SingpassAuthOptionsRadio = ({
 
   return (
     <Radio.RadioGroup
-      style={{ opacity: isDisabled ? 0.3 : 1 }}
+      style={{ opacity: isDisabled ? 0.8 : 1 }}
       value={settings.authType}
       onKeyDown={handleEnterKeyDown}
       onChange={(e: FormAuthType) => setFocusedValue(e)}

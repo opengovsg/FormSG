@@ -113,7 +113,6 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
     // Text label
     label: {
       _disabled: {
-        color: 'neutral.500',
         // Chakra automatically sets opacity to 0.4, so override that
         opacity: 1,
       },
