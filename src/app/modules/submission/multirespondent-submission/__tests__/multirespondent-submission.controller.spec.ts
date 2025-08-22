@@ -420,7 +420,7 @@ describe('multirespondent-submision.controller', () => {
       ).toEqual({
         submissionId: mockSubmissionId,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
-        form: mockSubmitMrfReq.formsg.formDef,
+        snapshottedFormDef: mockSubmitMrfReq.formsg.snapshottedFormDef,
       })
 
       // Assert post save actions are invoked with correct args
@@ -434,7 +434,7 @@ describe('multirespondent-submision.controller', () => {
           'logMeta',
         ),
       ).toEqual({
-        form: mockSubmitMrfReq.formsg.formDef,
+        snapshottedFormDef: mockSubmitMrfReq.formsg.snapshottedFormDef,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         submissionId: mockSubmissionId,
       })
