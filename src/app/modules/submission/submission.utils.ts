@@ -138,7 +138,7 @@ import {
   InvalidFileKeyError,
   MaliciousFileDetectedError,
   MrfReminderInvalidWorkflowStepError,
-  MrfReminderRecipientEmailsEmptyError,
+  MrfReminderRecipientEmailsEmptyError, MrfworkflowOverflowError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
@@ -361,6 +361,7 @@ const errorMapper: MapRouteError = (
       }
     case MrfReminderInvalidWorkflowStepError:
     case MrfReminderRecipientEmailsEmptyError:
+    case MrfworkflowOverflowError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
