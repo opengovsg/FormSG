@@ -139,6 +139,7 @@ import {
   MaliciousFileDetectedError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowOverflowError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
@@ -364,6 +365,12 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MrfWorkflowOverflowError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'The link you used is no longer valid. Please contact the form admin that gave you this link.',
       }
     case MailSendError:
       return {
