@@ -36,7 +36,7 @@ import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submissi
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
   InvalidSubmissionTypeError,
-  MrfworkflowOverflowError,
+  MrfWorkflowOverflowError,
   ProcessingError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
@@ -645,7 +645,7 @@ export const setCurrentWorkflowStep = async (
         // If the workflow step is greater than the submission's snapshot workflow step, this is an invalid submission.
         if (req.body.workflowStep > submissionData.workflowStep) {
           return errAsync(
-            new MrfworkflowOverflowError(
+            new MrfWorkflowOverflowError(
               'Workflow step cannot be greater than previous submission workflow step',
             ),
           )
