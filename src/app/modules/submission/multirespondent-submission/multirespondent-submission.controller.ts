@@ -172,9 +172,16 @@ const updateMultirespondentSubmission = async (
     formId,
   }
 
-  const form = req.formsg.formDef
+  const { formDef: currentForm, snapshottedFormDef } = req.formsg
 
-  setFormTags(form)
+  if (!snapshottedFormDef) {
+    const { errorMessage, statusCode } = mapRouteError(
+      new SubmissionFailedError(),
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  setFormTags(currentForm)
 
   const ensurePipeline = new Pipeline(
     ensurePublicForm,
@@ -183,7 +190,7 @@ const updateMultirespondentSubmission = async (
   )
 
   const hasEnsuredAll = await ensurePipeline.execute({
-    form,
+    form: currentForm,
     logMeta,
     req,
     res,
@@ -204,7 +211,7 @@ const updateMultirespondentSubmission = async (
   const updateMultiRespondentFormSubmissionResult =
     await updateMultiRespondentFormSubmission({
       submissionId,
-      form,
+      snapshottedFormDef,
       encryptedPayload,
       logMeta,
     })
@@ -237,7 +244,7 @@ const updateMultirespondentSubmission = async (
 
   await performMultiRespondentPostSubmissionUpdateActions({
     submissionId,
-    form,
+    snapshottedFormDef,
     currentStepNumber,
     encryptedPayload,
     logMeta,

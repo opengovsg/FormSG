@@ -14,7 +14,7 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedMultirespondentForm,
 } from 'src/types'
-import { MultirespondentSubmissionDto } from 'src/types/api'
+import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
 import {
   MrfReminderInvalidWorkflowStepError,
@@ -126,12 +126,12 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[0]],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -235,12 +235,12 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -350,13 +350,13 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[3]],
           stepsToNotify: [stepTwoId, stepThreeId],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -461,12 +461,12 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -567,12 +567,12 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -691,13 +691,13 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: fiveStepApprovalWorkflow,
           emails: [expectedEmails[1], expectedEmails[2]],
           stepsToNotify: [stepThreeId, stepFourId, stepFiveId],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -802,12 +802,12 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -948,13 +948,13 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: fourStepWorkflow,
           emails: [expectedEmails[3]],
           stepsToNotify: [stepFourId],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1047,13 +1047,13 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: fourStepWorkflow,
           emails: [selectedEmails[3]],
           stepsToNotify: [stepFourId],
           stepOneEmailNotificationFieldId: emailFieldId1,
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1113,13 +1113,13 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const form: IPopulatedMultirespondentForm = {
+      const snapshottedFormDef = {
         _id: mockFormId,
         workflow,
         emails: [expectedStaticEmail],
         stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
         stepOneEmailNotificationFieldId,
-      } as IPopulatedMultirespondentForm
+      } as SnapshottedFormDef
 
       const submissionResponses: FieldResponsesV3 = {
         [stepOneEmailNotificationFieldId]: {
@@ -1139,7 +1139,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form,
+        snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1195,17 +1195,17 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const form: IPopulatedMultirespondentForm = {
+      const snapshottedFormDef = {
         _id: mockFormId,
         workflow,
         emails: [staticEmail],
         stepsToNotify: [stepTwoId],
-      } as IPopulatedMultirespondentForm
+      } as SnapshottedFormDef
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form,
+        snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1256,13 +1256,13 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const form: IPopulatedMultirespondentForm = {
+      const snapshottedFormDef = {
         _id: mockFormId,
         workflow,
         emails: [staticEmail],
         stepsToNotify: [stepTwoId],
         stepOneEmailNotificationFieldId,
-      } as IPopulatedMultirespondentForm
+      } as SnapshottedFormDef
 
       const submissionResponses: FieldResponsesV3 = {
         // stepOneEmailNotificationFieldId is not present in responses
@@ -1271,7 +1271,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form,
+        snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1332,13 +1332,13 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const form: IPopulatedMultirespondentForm = {
+      const snapshottedFormDef = {
         _id: mockFormId,
         workflow,
         emails: [expectedStaticEmail],
         stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
         stepOneEmailNotificationFieldId,
-      } as IPopulatedMultirespondentForm
+      } as SnapshottedFormDef
 
       const submissionResponses: FieldResponsesV3 = {
         [stepOneEmailNotificationFieldId]: {
@@ -1358,7 +1358,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form,
+        snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1449,11 +1449,11 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form: {
+        snapshottedFormDef: {
           _id: mockFormId,
           workflow: singleStepWorkflow,
           emails: ['email1@example.com'],
-        } as IPopulatedMultirespondentForm,
+        } as SnapshottedFormDef,
         currentStepNumber: 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
@@ -1551,13 +1551,13 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const form: IPopulatedMultirespondentForm = {
+      const snapshottedFormDef = {
         _id: mockFormId,
         workflow,
         emails: [expectedStaticEmail],
         stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
         stepOneEmailNotificationFieldId,
-      } as IPopulatedMultirespondentForm
+      } as SnapshottedFormDef
       const respondentEmails = ['test@example.com', 'test1@example.com']
 
       const submissionResponses: FieldResponsesV3 = {
@@ -1578,7 +1578,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
-        form,
+        snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',

@@ -4,7 +4,11 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { IAttachmentInfo } from 'src/types'
+import {
+  IAttachmentInfo,
+  IMultirespondentSubmissionSchema,
+  IPopulatedMultirespondentForm,
+} from 'src/types'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -20,7 +24,10 @@ import {
   ParsedClearFormFieldResponsesV3,
   ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
-import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
+import {
+  MultirespondentFormLoadedDto,
+  SnapshottedFormDef,
+} from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -29,6 +36,7 @@ import {
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
 import { isFieldResponseV3Equal } from '../../../utils/response-v3'
+import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
@@ -38,6 +46,7 @@ import {
   InvalidSubmissionTypeError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
 import {
@@ -96,15 +105,43 @@ export const validateMultirespondentRemindBody = celebrate({
   [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
 })
 
+const retrieveMultirespondentSubmissionIfExists = (
+  submissionId?: string,
+): ResultAsync<
+  IMultirespondentSubmissionSchema | undefined,
+  DatabaseError | SubmissionNotFoundError
+> => {
+  if (submissionId) {
+    return getMultirespondentSubmission(submissionId)
+  }
+  return okAsync(undefined)
+}
+
+const getSnapshottedFormDef = (
+  mrfSubmission: IMultirespondentSubmissionSchema,
+  currentFormDef: IPopulatedMultirespondentForm,
+): SnapshottedFormDef => ({
+  _id: mrfSubmission.form.toString(),
+  title: currentFormDef.title,
+  form_fields: mrfSubmission.form_fields,
+  form_logics: mrfSubmission.form_logics,
+  workflow: mrfSubmission.workflow,
+  hasRespondentCopy: currentFormDef.hasRespondentCopy,
+  emails: currentFormDef.emails,
+  stepOneEmailNotificationFieldId:
+    currentFormDef.stepOneEmailNotificationFieldId,
+  stepsToNotify: currentFormDef.stepsToNotify,
+})
+
 /**
  * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
  */
-export const createFormsgAndRetrieveForm = async (
+export const createFormsgAndRetrieveForm = (
   req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const { formId } = req.params
+  const { formId, submissionId } = req.params
 
   const logMeta = {
     action: 'createFormsgAndRetrieveForm',
@@ -128,41 +165,68 @@ export const createFormsgAndRetrieveForm = async (
         error,
       })
     })
-    .map((featureFlags) => {
+    .andThen((featureFlags) => {
       // Step 2b: Set formsg.featureFlags
       formsg.featureFlags = featureFlags
-
-      // Step 3: Retrieve form
-      return FormService.retrieveFullFormById(formId)
+      // Step 3: Retrieve mrf submission if exists
+      return retrieveMultirespondentSubmissionIfExists(submissionId)
         .mapErr((error) => {
-          logger.warn({
-            message: 'Failed to retrieve form from database',
+          logger.error({
+            message: 'Error occurred whilst retrieving mrf submission',
             meta: logMeta,
             error,
           })
-          const { errorMessage, statusCode } = mapRouteError(error)
+          const { statusCode, errorMessage } = mapRouteError(error)
           return res.status(statusCode).json({ message: errorMessage })
         })
-        .map((formDef) =>
-          // Step 4a: Check form is multirespondent form
-          checkFormIsMultirespondent(formDef)
+        .map((mrfSubmission) => {
+          formsg.mrfSubmission = mrfSubmission
+          return mrfSubmission
+        })
+        .andThen((mrfSubmission) => {
+          // Step 4: Retrieve latest form definition
+          return FormService.retrieveFullFormById(formId)
             .mapErr((error) => {
-              logger.error({
-                message:
-                  'Trying to submit non-multirespondent submission on multirespondent submission endpoint',
+              logger.warn({
+                message: 'Failed to retrieve form from database',
                 meta: logMeta,
+                error,
               })
-              const { statusCode, errorMessage } = mapRouteError(error)
-              return res.status(statusCode).json({
-                message: errorMessage,
-              })
+              const { errorMessage, statusCode } = mapRouteError(error)
+              return res.status(statusCode).json({ message: errorMessage })
             })
-            .map((multirespondentFormDef) => {
-              // Step 4b: Set formsg.formDef
-              formsg.formDef = multirespondentFormDef
-
-              // Step 5: Check if form has public key
-              if (!multirespondentFormDef.publicKey) {
+            .andThen((latestFormDef) => {
+              // Step 4a: Check form is multirespondent form
+              return checkFormIsMultirespondent(latestFormDef).mapErr(
+                (error) => {
+                  logger.error({
+                    message:
+                      'Trying to submit non-multirespondent submission on multirespondent submission endpoint',
+                    meta: logMeta,
+                    error,
+                  })
+                  const { statusCode, errorMessage } = mapRouteError(error)
+                  return res.status(statusCode).json({
+                    message: errorMessage,
+                  })
+                },
+              )
+            })
+            .map((latestMrfFormDef) => {
+              // Step 4b: Set formsg.latestFormDef
+              formsg.formDef = latestMrfFormDef
+              // Step 4c: Set formsg.snapshottedFormDef if mrfSubmission exists
+              if (mrfSubmission) {
+                formsg.snapshottedFormDef = getSnapshottedFormDef(
+                  mrfSubmission,
+                  latestMrfFormDef,
+                )
+              }
+            })
+            .map(() => {
+              const formDef = formsg.formDef
+              // Step 5: Check that the form def has a public key
+              if (!formDef.publicKey) {
                 const message = 'Form does not have a public key'
                 logger.warn({ message, meta: logMeta })
                 return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -174,8 +238,8 @@ export const createFormsgAndRetrieveForm = async (
               req.formsg = formsg
 
               return next()
-            }),
-        )
+            })
+        })
     })
 }
 
@@ -389,6 +453,7 @@ export const validateMultirespondentSubmission = async (
   next: NextFunction,
 ) => {
   const { formId, submissionId } = req.params
+  const { mrfSubmission } = req.formsg
 
   const logMeta = {
     action: 'validateMultirespondentSubmission',
@@ -399,27 +464,27 @@ export const validateMultirespondentSubmission = async (
 
   return (
     // Step 0: Prepare by retrieving relevant reference data
-    okAsync(submissionId)
-      .andThen((submissionId) =>
+    ok(mrfSubmission)
+      .andThen((mrfSubmission) =>
         // Step 0a: If its an existing submission, use the reference data from
         // the submission rather than the form
-        submissionId
-          ? getMultirespondentSubmission(submissionId).map((submission) => ({
+        mrfSubmission
+          ? ok({
               previousSubmission: {
-                encryptedContent: submission.encryptedContent,
-                version: submission.version,
+                encryptedContent: mrfSubmission.encryptedContent,
+                version: mrfSubmission.version,
               },
-              workflowStep: submission.workflowStep + 1,
-              workflow: submission.workflow,
-              form_fields: submission.form_fields,
-              form_logics: submission.form_logics,
-            }))
-          : okAsync({
+              workflowStep: mrfSubmission.workflowStep + 1,
+              workflow: mrfSubmission.workflow,
+              form_fields: mrfSubmission.form_fields,
+              form_logics: mrfSubmission.form_logics,
+            })
+          : ok({
               previousSubmission: undefined,
               workflowStep: 0,
               workflow: req.formsg.formDef.workflow,
               form_fields: req.formsg.formDef.form_fields.map(
-                (ff) => ff.toObject() as FormFieldDto,
+                (ff_schema) => ff_schema.toObject() as FormFieldDto,
               ),
               form_logics: req.formsg.formDef.form_logics,
             }),
