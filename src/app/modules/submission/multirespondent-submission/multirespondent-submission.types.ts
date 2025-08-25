@@ -17,7 +17,7 @@ import { ControllerHandler } from '../../core/core.types'
 
 export type CreateFormsgAndRetrieveFormMiddlewareHandlerType =
   ControllerHandler<
-    { formId: string },
+    { formId: string; submissionId?: string },
     SubmissionResponseDto | SubmissionErrorDto,
     ParsedMultirespondentSubmissionBody,
     { captchaResponse?: unknown; captchaType?: unknown }

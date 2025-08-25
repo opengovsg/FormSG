@@ -6,6 +6,7 @@ import Mail from 'nodemailer/lib/mailer'
 import {
   BasicField,
   FieldResponsesV3,
+  FormFieldDto,
   FormResponseMode,
   FormWorkflowStepDto,
   SubmittedApprovalStep,
@@ -17,12 +18,16 @@ import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
   Environment,
+  FormFieldSchema,
   IAttachmentInfo,
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
 } from '../../../../types'
-import { MultirespondentSubmissionDto } from '../../../../types/api'
+import {
+  MultirespondentSubmissionDto,
+  SnapshottedFormDef,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import {
   createLoggerWithLabel,
@@ -78,7 +83,9 @@ export const checkFormIsMultirespondent = (
       )
 }
 
-const checkIsFormApproval = (form: IPopulatedMultirespondentForm): boolean => {
+const checkIsFormApproval = (
+  form: Pick<IPopulatedMultirespondentForm, 'workflow'>,
+): boolean => {
   return (
     form.workflow &&
     form.workflow.map((step) => step.approval_field).filter(Boolean).length > 0
@@ -91,7 +98,7 @@ const checkIsStepRejected = ({
   responses,
 }: {
   zeroIndexedStepNumber: number
-  form: IPopulatedMultirespondentForm
+  form: Pick<IPopulatedMultirespondentForm, 'workflow'>
   responses: FieldResponsesV3
 }): Result<
   boolean,
@@ -121,7 +128,9 @@ const checkIsStepRejected = ({
 
 interface sendNextStepEmailProps {
   nextStepNumber: number
-  form: IPopulatedMultirespondentForm
+  form: Pick<IPopulatedMultirespondentForm, 'workflow'> & {
+    form_fields: FormFieldSchema[] | FormFieldDto[]
+  }
   formTitle: string
   responseUrl: string
   formId: string
@@ -307,7 +316,17 @@ const sendMrfOutcomeEmails = ({
   attachments,
 }: {
   currentStepNumber: number
-  form: IPopulatedMultirespondentForm
+  form: Pick<
+    IPopulatedMultirespondentForm,
+    | '_id'
+    | 'title'
+    | 'emails'
+    | 'stepOneEmailNotificationFieldId'
+    | 'stepsToNotify'
+    | 'workflow'
+  > & {
+    form_fields: FormFieldSchema[] | FormFieldDto[]
+  }
   responses: FieldResponsesV3
   submissionId: string
   isApproval?: boolean
@@ -463,7 +482,12 @@ const sendMrfRespondentCopyEmails = ({
   attachments,
   respondentEmails,
 }: {
-  form: IPopulatedMultirespondentForm
+  form: Pick<
+    IPopulatedMultirespondentForm,
+    '_id' | 'title' | 'hasRespondentCopy'
+  > & {
+    form_fields: FormFieldSchema[] | FormFieldDto[]
+  }
   responses: FieldResponsesV3
   submissionId: string
   attachments?: IAttachmentInfo[]
@@ -712,12 +736,12 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
 
 export const updateMultiRespondentFormSubmission = ({
   submissionId,
-  form,
+  snapshottedFormDef,
   encryptedPayload,
   logMeta,
 }: {
   submissionId: string
-  form: IPopulatedMultirespondentForm
+  snapshottedFormDef: SnapshottedFormDef
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
@@ -730,7 +754,7 @@ export const updateMultiRespondentFormSubmission = ({
   }
 
   return saveAttachmentsToDbIfExists({
-    formId: form._id,
+    formId: snapshottedFormDef._id,
     attachments: encryptedPayload.attachments,
   })
     .map(async (attachmentMetadata) => {
@@ -760,12 +784,12 @@ export const updateMultiRespondentFormSubmission = ({
 
       const nextStepNumber = workflowStep + 1
       const nextStep =
-        form.workflow.length > nextStepNumber
-          ? form.workflow[nextStepNumber]
+        snapshottedFormDef.workflow.length > nextStepNumber
+          ? snapshottedFormDef.workflow[nextStepNumber]
           : null
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
-            form,
+            snapshottedFormDef,
             nextStep,
             encryptedPayload.responses,
           )
@@ -785,10 +809,10 @@ export const updateMultiRespondentFormSubmission = ({
         ? nextStepRecipientEmailsResult.unwrapOr(undefined)
         : undefined
 
-      const isApprovalForm = checkIsFormApproval(form)
+      const isApprovalForm = checkIsFormApproval(snapshottedFormDef)
       const isStepRejectedResult = checkIsStepRejected({
         zeroIndexedStepNumber: workflowStep,
-        form,
+        form: snapshottedFormDef,
         responses: encryptedPayload.responses,
       })
       if (isStepRejectedResult.isErr()) {
@@ -857,7 +881,7 @@ export const updateMultiRespondentFormSubmission = ({
 
 export const performMultiRespondentPostSubmissionUpdateActions = ({
   submissionId,
-  form,
+  snapshottedFormDef,
   currentStepNumber,
   encryptedPayload,
   logMeta,
@@ -865,7 +889,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   respondentEmails,
 }: {
   submissionId: string
-  form: IPopulatedMultirespondentForm
+  snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
@@ -884,13 +908,13 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     ...logMeta,
     action: 'performMultiRespondentPostSubmissionUpdateActions',
     currentWorkflowStep: currentStepNumber,
-    formId: form._id,
+    formId: snapshottedFormDef._id,
     submissionId,
   }
 
   if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
-      form,
+      form: snapshottedFormDef,
       responses,
       submissionId,
       attachments,
@@ -906,7 +930,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   const isStepRejectedResult = checkIsStepRejected({
     zeroIndexedStepNumber: currentStepNumber,
-    form,
+    form: snapshottedFormDef,
     responses,
   }).mapErr((error) => {
     logger.error({
@@ -931,7 +955,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   if (isStepRejected) {
     return sendMrfOutcomeEmails({
       currentStepNumber,
-      form,
+      form: snapshottedFormDef,
       responses,
       submissionId,
       isApproval: true,
@@ -948,10 +972,10 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   }
   return sendMrfOutcomeEmails({
     currentStepNumber,
-    form,
+    form: snapshottedFormDef,
     responses,
     submissionId,
-    isApproval: checkIsFormApproval(form),
+    isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
   })
     .mapErr((error) => {
@@ -965,14 +989,14 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     .andThen(() =>
       sendNextStepEmail({
         nextStepNumber: currentStepNumber + 1,
-        form,
-        formTitle: form.title,
+        form: snapshottedFormDef,
+        formTitle: snapshottedFormDef.title,
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-          form._id,
+          snapshottedFormDef._id,
           submissionId,
           { key: submissionSecretKey },
         )}`,
-        formId: form._id,
+        formId: snapshottedFormDef._id,
         submissionId,
         responses,
       }).mapErr((error) => {

@@ -15,7 +15,6 @@ import { handleAddressResponseDisplay } from '../../../../../shared/utils/addres
 import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import {
   FormFieldSchema,
-  IPopulatedForm,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
@@ -73,11 +72,11 @@ export const getEmailFromResponses = (
 }
 
 const getConditionalFieldEmailRecipient = (
-  form: IPopulatedForm,
+  form_fields: FormFieldSchema[] | FormFieldDto[],
   fieldId: string,
   responses: FieldResponsesV3,
 ): string[] => {
-  const conditionalField = form.form_fields.find(
+  const conditionalField = form_fields.find(
     (field) => field._id.toString() === fieldId.toString(),
   )
   const conditionalFieldResponse = responses[fieldId]
@@ -104,7 +103,7 @@ const getConditionalFieldEmailRecipient = (
 }
 
 export const retrieveWorkflowStepEmailAddresses = (
-  form: IPopulatedForm,
+  form: { form_fields: FormFieldSchema[] | FormFieldDto[] },
   step: FormWorkflowStepDto,
   responses: FieldResponsesV3,
 ): Result<string[], InvalidWorkflowTypeError> => {
@@ -121,7 +120,7 @@ export const retrieveWorkflowStepEmailAddresses = (
     case WorkflowType.Conditional: {
       return ok(
         getConditionalFieldEmailRecipient(
-          form,
+          form.form_fields,
           step.conditional_field,
           responses,
         ),
@@ -205,7 +204,7 @@ export const getQuestionTitleAnswerString = ({
   formFields,
   responses,
 }: {
-  formFields: FormFieldSchema[]
+  formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
 }): QuestionAnswer[] => {
   const questionAnswerPair = []
