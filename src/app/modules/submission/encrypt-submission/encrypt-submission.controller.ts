@@ -2,6 +2,7 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
+import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
@@ -811,6 +812,9 @@ const _createSubmission = async ({
   const signatureAttachments: Mail.Attachment[] = []
   emailFields.forEach((field) => {
     if (field.fieldType === BasicField.Signature) {
+      // no signature
+      if (isEmpty(field.answerArray)) return
+
       const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
       const signatureData = convertToSignaturePngBuffer(vectorArray)
       signatureAttachments.push({
