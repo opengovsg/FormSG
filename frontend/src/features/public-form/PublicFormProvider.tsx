@@ -1067,7 +1067,7 @@ export const PublicFormProvider = ({
   })
 
   useEffect(() => {
-    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000 && draftSubmission.draftResponses) {
+    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       toast({ 
         description: 'Your draft has been successfully restored.',
       })
