@@ -2,12 +2,11 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     # This script references these environments in github actions secrets:
-    # release-al2, staging, staging-alt, staging-alt2.
+    # release-al2, staging, staging-alt2.
     # This is different from the DEPLOY_ENV secret which corresponds to elastic beanstalk environment name.
     branches:
       - release-al2
       - staging
-      - staging-alt
       - staging-alt2
 
 permissions:
