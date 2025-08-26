@@ -1426,11 +1426,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // Webhooks only allowed if encrypt mode
     if (
       this.responseMode !== FormResponseMode.Encrypt &&
+      this.responseMode !== FormResponseMode.Multirespondent &&
       (this.webhook?.url?.length ?? 0) > 0
     ) {
       const validationError = this.invalidate(
         'webhook',
-        'Webhook only allowed on storage mode form',
+        'Webhook only allowed on storage and multirespondent mode form',
       ) as mongoose.Error.ValidationError
       return next(validationError)
     }
