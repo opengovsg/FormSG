@@ -18,6 +18,7 @@ import { useMutateFormSettings } from '../../mutations'
 import { FORM_SINGPASS_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 import { pickBy } from 'lodash'
+import { isEsrvcidRequired } from '../utils'
 
 export interface SingpassAuthOptionsRadioProps {
   settings: FormSettings
@@ -25,21 +26,6 @@ export interface SingpassAuthOptionsRadioProps {
 }
 
 type RadioOptionsType = [FormAuthType, string][]
-
-/**
- * Only CorpPass requires esrvcid as other options will use FormSG's
- * supplied value to increase Singpass Myinfo adoption
- * @param authType
- * @returns
- */
-const isEsrvcidRequired = (authType: FormAuthType) => {
-  switch (authType) {
-    case FormAuthType.CP:
-      return true
-    default:
-      return false
-  }
-}
 
 const COLLAPSED_FORM_SINGPASS_AUTHTYPES = pickBy(
   FORM_SINGPASS_AUTHTYPES,
