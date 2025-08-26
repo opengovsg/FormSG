@@ -77,13 +77,13 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const toast = useToast({ isClosable: true })
 
   const onSaveDraft = () => {
-    const dirtyFieldKeys = dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : []
-    const newDraftChanges = pick(getValues(), dirtyFieldKeys)
+    const dirtyFieldKeys = dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : [] 
+    const newDraftChanges = pick(getValues(), dirtyFieldKeys)  
     const updatedDraftResponses = draftSubmission?.draftResponses ? { ...draftSubmission.draftResponses, ...newDraftChanges } : newDraftChanges
 
     setDraftSubmission({
       lastUpdated: Date.now(),
-      draftResponses: updatedDraftResponses
+      draftResponses: !isEmpty(updatedDraftResponses) ? updatedDraftResponses : null
     })
     
     toast({ 
