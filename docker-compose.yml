@@ -180,8 +180,7 @@ services:
       - ./.localstack/volume:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4566 to localstack:4566
-    logging:
-      driver: none
+    attach: false
 
   maildev:
     image: maildev/maildev
