@@ -25,7 +25,7 @@ export type SubmissionData = {
 
 export interface DraftSubmission {
   lastUpdated: number | null
-  draftResponses: Record<string, string>
+  draftResponses: Record<string, string> | null
 }  
 
 export interface PublicFormContextProps

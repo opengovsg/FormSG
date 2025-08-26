@@ -78,7 +78,7 @@ import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
-import { augmentFieldWithMrfWorkflowDisabling } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import { augmentFieldWithMrfWorkflowDisabling, isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
@@ -217,42 +217,71 @@ const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URLSearchP
 }
 
 const getInitialFormValues = ({
+  formResponseMode,
   previousSubmission,
   previousAttachments, 
+  currentStepNumberWorkflowStep,
   augmentedFormFields, 
   fieldPrefillMap,
+  draftSubmission,
   searchParams,
 }: {
-  previousSubmission: ReturnType<typeof decryptSubmission>
-  previousAttachments: Record<string, ArrayBuffer>
+  formResponseMode: FormResponseMode
+  previousSubmission?: ReturnType<typeof decryptSubmission>
+  previousAttachments?: Record<string, ArrayBuffer>
+  currentStepNumberWorkflowStep?: FormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
+  draftSubmission?: DraftSubmission 
   searchParams: URLSearchParams
 }): FormFieldValues => {
   const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
-    const previousResponse = previousSubmission?.responses[field._id]
-    const previousAttachmentFieldResponseFileBuffer = previousAttachments?.[field._id]
-    const value = extractMrfPreviousStepResponseValue(field, previousResponse, previousAttachmentFieldResponseFileBuffer)
-    if (value) {
-      acc[field._id] = value
+    if (formResponseMode === FormResponseMode.Multirespondent) {
+      const previousResponse = previousSubmission?.responses[field._id]
+      const previousAttachmentFieldResponseFileBuffer = previousAttachments?.[field._id]
+      const value = extractMrfPreviousStepResponseValue(field, previousResponse, previousAttachmentFieldResponseFileBuffer)
+      if (value) {
+        acc[field._id] = value
+      }
+
+      // Only allow overriding of previous submission values if the field can be edited in this step. 
+      if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
+        // Reinstate save draft values
+        if (draftSubmission?.draftResponses?.[field._id]) {
+          acc[field._id] = draftSubmission.draftResponses[field._id]
+        }
+        // Use prefill value if exists 
+        if (fieldPrefillMap[field._id]) {
+          acc[field._id] = fieldPrefillMap[field._id].prefillValue
+        }
+      }
+    } else if (formResponseMode === FormResponseMode.Encrypt) {
+      // Reinstate save draft values
+      if (draftSubmission?.draftResponses?.[field._id]) {
+        acc[field._id] = draftSubmission.draftResponses[field._id]
+      }
+      // Use prefill value if exists.
+      if (fieldPrefillMap[field._id]) {
+        acc[field._id] = fieldPrefillMap[field._id].prefillValue
+      }
+      // Use myinfo server default value if it exists. 
+      // Myinfo overrides existing values since myinfo is seen as source of truth.
+      if (hasExistingFieldValue(field)) {
+        acc[field._id] = extractPreviewValue(field)
+      }
     }
 
-    // Use server default value if it exists.
-    if (hasExistingFieldValue(field)) {
-      acc[field._id] = extractPreviewValue(field)
-    }
-
-    // Use prefill value if exists.
-    if (fieldPrefillMap[field._id]) {
-      acc[field._id] = fieldPrefillMap[field._id].prefillValue
-    }
-
-    // Required so table column fields will render due to useFieldArray usage.
-    // See https://react-hook-form.com/api/usefieldarray
-    if (field.fieldType === BasicField.Table) {
-      acc[field._id] = times(field.minimumRows || 0, () =>
-        createTableRow(field),
-      )
+    if (!acc[field._id]) {
+      // Required so table column fields will render due to useFieldArray usage.
+      // See https://react-hook-form.com/api/usefieldarray
+      if (field.fieldType === BasicField.Table) {
+        acc[field._id] = times(field.minimumRows || 0, () =>
+          createTableRow(field),
+        )
+      } else {
+        // Set a default value for React Hook form to use as initial SSOT for comparing if field is dirty. This is used for Save Draft. 
+        acc[field._id] = ''
+      }
     }
 
     return acc
@@ -1035,26 +1064,37 @@ export const PublicFormProvider = ({
   const formDraftSubmissionKey = `form-${formId}-draft-submission`
   const [draftSubmission, setDraftSubmission] = useLocalStorage<DraftSubmission>(formDraftSubmissionKey, {
     lastUpdated: null,
-    draftResponses: {},
+    draftResponses: null,
   })
 
-  const formFields = data?.form.form_fields ?? []
+  useEffect(() => {
+    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000 && draftSubmission.draftResponses) {
+      toast({ 
+        description: 'Your draft has been successfully restored.',
+      })
+    }
+  }, [draftSubmission?.lastUpdated])
+
+  const form = data?.form
+  const formFields = form?.form_fields ?? []
   const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
   const currentWorkflowStepNumber = previousWorkflowStepNumber ? previousWorkflowStepNumber + 1 : 0
-  const formWorkflow = data && data.form.responseMode === FormResponseMode.Multirespondent ? data.form.workflow : undefined
-  const currentWorkflowStep = formWorkflow && currentWorkflowStepNumber && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
+  const currentStepNumberWorkflowStep = formWorkflow && currentWorkflowStepNumber && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
   
-  const fieldPrefillMap = getFieldPrefillMap(formFields, searchParams)
+  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
+  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
 
-  const augmentedFormFields = augmentFormFields(formFields, currentWorkflowStep)
-
-  const defaultFormValues = getInitialFormValues({
+  const defaultFormValues = useMemo(() => form ? getInitialFormValues({
+    formResponseMode: form.responseMode, 
     previousSubmission,
     previousAttachments,
     augmentedFormFields,
+    currentStepNumberWorkflowStep, 
     fieldPrefillMap,
+    draftSubmission,
     searchParams,
-  })
+  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftSubmission?.lastUpdated, searchParams])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,

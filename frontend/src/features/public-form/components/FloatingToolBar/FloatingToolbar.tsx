@@ -9,6 +9,8 @@ import Tooltip from '~components/Tooltip'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
+import { useFormContext } from 'react-hook-form'
+import { isEmpty, keysIn, pick } from 'lodash'
 
 const SaveDraftButton = ({ onSaveDraft }: { onSaveDraft?: () => void }) => {
 
@@ -63,15 +65,29 @@ const IssueFeedbackButton = ({ isPreview, formId }: { isPreview: boolean, formId
     </>
 }
 
-export const FloatingToolBar = ({
-  onSaveDraft,
-}: {
-  onSaveDraft?: () => void
-}): JSX.Element | null => {
+export const FloatingToolBar = (): JSX.Element | null => {
   const { isPreview, formId, submissionData } = usePublicFormContext()
   if (submissionData) return null
 
   const { draftSubmission, setDraftSubmission } = usePublicFormContext()
+  const { formState: { dirtyFields }, getValues } = useFormContext()
+  const toast = useToast({ isClosable: true })
+
+  const onSaveDraft = () => {
+    if (dirtyFields && !isEmpty(dirtyFields)) {
+      const dirtyFieldKeys = keysIn(dirtyFields)
+      const draft = pick(getValues(), dirtyFieldKeys)
+      const draftResponses = draftSubmission?.draftResponses ? { ...draftSubmission.draftResponses, ...draft } : draft
+  
+      setDraftSubmission({
+        lastUpdated: Date.now(),
+        draftResponses 
+      })
+    }
+    toast({ 
+      description: 'Your draft has been successfully saved.',
+    })
+  }
 
   return (
     <Stack
