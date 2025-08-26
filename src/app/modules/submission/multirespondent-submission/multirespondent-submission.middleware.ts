@@ -126,6 +126,7 @@ const getSnapshottedFormDef = (
   form_fields: mrfSubmission.form_fields,
   form_logics: mrfSubmission.form_logics,
   workflow: mrfSubmission.workflow,
+  webhook: currentFormDef.webhook,
   hasRespondentCopy: currentFormDef.hasRespondentCopy,
   emails: currentFormDef.emails,
   stepOneEmailNotificationFieldId:

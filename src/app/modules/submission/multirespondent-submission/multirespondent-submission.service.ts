@@ -979,7 +979,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   const isStepRejected = isStepRejectedResult.value
 
-  const webhookUrl = form.webhook?.url
+  const webhookUrl = snapshottedFormDef.webhook?.url
   if (webhookUrl) {
     logger.info({
       message: 'Sending update webhook for multirespondent submission',
@@ -989,9 +989,9 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     WebhookFactory.sendInitialWebhook(
       submission,
       webhookUrl,
-      !!form.webhook?.isRetryEnabled,
+      !!snapshottedFormDef.webhook?.isRetryEnabled,
     )
-      .andThen(() => okAsync(form))
+      .andThen(() => okAsync(undefined))
       .mapErr((error) => {
         logger.error({
           message: 'Multirespondent submission webhook error',

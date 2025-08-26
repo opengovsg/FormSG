@@ -178,6 +178,7 @@ describe('createFormsgAndRetrieveForm', () => {
       title: MOCK_FORM.title,
       form_fields: MOCK_MRF_SUBMISSION.form_fields, // Should use snapshot from submission
       form_logics: MOCK_MRF_SUBMISSION.form_logics, // Should use snapshot from submission
+      webhook: MOCK_FORM.webhook, // Should use current form data
       workflow: MOCK_MRF_SUBMISSION.workflow, // Should use snapshot from submission
       hasRespondentCopy: MOCK_FORM.hasRespondentCopy, // Should use current form data
       emails: MOCK_FORM.emails, // Should use current form data
