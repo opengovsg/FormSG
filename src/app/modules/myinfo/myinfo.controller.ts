@@ -18,7 +18,7 @@ import {
   MyInfoAuthCodeCookieState,
   MyInfoAuthCodeSuccessPayload,
 } from './myinfo.types'
-import { mapRedirectURLError, validateMyInfoForm } from './myinfo.util'
+import { getMyInfoEserviceIdInForm, mapRedirectURLError } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -48,10 +48,10 @@ export const respondWithRedirectURL: ControllerHandler<
 > = async (req, res) => {
   const { formId, encodedQuery } = req.query
   return FormService.retrieveFormById(formId)
-    .andThen((form) => validateMyInfoForm(form))
-    .andThen((form) =>
+    .andThen((form) => getMyInfoEserviceIdInForm(form))
+    .andThen(([form, eserviceId]) =>
       MyInfoService.createRedirectURL({
-        formEsrvcId: form.esrvcId,
+        formEsrvcId: eserviceId,
         formId,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
         encodedQuery,

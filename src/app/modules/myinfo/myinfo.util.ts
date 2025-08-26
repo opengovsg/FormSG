@@ -314,26 +314,27 @@ export const createRelayState = (
   })
 
 /**
- * Validates that a form is a MyInfo form with an e-service ID
+ * returns form with an e-service ID if form is a MyInfo form
  * @param form Form to validate
  */
-export const validateMyInfoForm = <T extends IFormSchema>(
+export const getMyInfoEserviceIdInForm = <T extends IFormSchema>(
   form: T,
-): Result<MyInfoForm<T>, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
-  if (!form.esrvcId) {
-    return err(new FormAuthNoEsrvcIdError(form._id))
-  }
-  if (isMyInfoFormWithEsrvcId(form)) {
-    return ok(form)
+): Result<
+  [MyInfoForm<T>, string],
+  FormAuthNoEsrvcIdError | AuthTypeMismatchError
+> => {
+  if (isMyInfoForm(form)) {
+    const esrvcId = form.esrvcId || spcpMyInfoConfig.spEsrvcId
+    return ok([form, esrvcId])
   }
   return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))
 }
 
-// Typeguard to ensure that form has eserviceId and MyInfo authType
-const isMyInfoFormWithEsrvcId = <F extends IFormSchema>(
+// Typeguard to ensure that form is MyInfo authType
+const isMyInfoForm = <F extends IFormSchema>(
   form: F,
 ): form is MyInfoForm<F> => {
-  return form.authType === FormAuthType.MyInfo && !!form.esrvcId
+  return form.authType === FormAuthType.MyInfo
 }
 
 /**

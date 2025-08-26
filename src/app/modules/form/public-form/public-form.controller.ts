@@ -35,7 +35,7 @@ import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
   createMyInfoLoginCookie,
   extractAuthCode,
-  validateMyInfoForm,
+  getMyInfoEserviceIdInForm,
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
@@ -663,9 +663,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
       formAuthType = form.authType
       switch (form.authType) {
         case FormAuthType.MyInfo:
-          return validateMyInfoForm(form).andThen((form) =>
+          return getMyInfoEserviceIdInForm(form).andThen(([form, eserviceId]) =>
             MyInfoService.createRedirectURL({
-              formEsrvcId: form.esrvcId,
+              formEsrvcId: eserviceId,
               formId,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
               encodedQuery,
