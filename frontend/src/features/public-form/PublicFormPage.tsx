@@ -24,12 +24,6 @@ export const PublicFormPage = (): JSX.Element => {
   // Get date time in miliseconds when user first loads the form
   const startTime = Date.now()
 
-  const {
-    isOpen: isSaveDraftOpen,
-    onOpen: onOpenSaveDraft,
-    onClose: onCloseSaveDraft,
-  } = useDisclosure()
-
   return (
     <PublicFormProvider
       formId={formId}
@@ -44,14 +38,8 @@ export const PublicFormPage = (): JSX.Element => {
           <LanguageControl />
           <PublicFormWrapper>
             <FormInstructions />
-            <FormFields
-              isSaveDraftOpen={isSaveDraftOpen}
-              onCloseSaveDraft={onCloseSaveDraft}
-            />
-            <FloatingToolbar
-              isPublicFormPage
-              onOpenSaveDraft={onOpenSaveDraft}
-            />
+            <FormFields />
+            <FloatingToolbar />
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>

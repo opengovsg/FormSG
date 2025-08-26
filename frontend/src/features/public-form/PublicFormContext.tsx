@@ -8,10 +8,12 @@ import {
 } from 'react'
 import { UseQueryResult } from 'react-query'
 
-import { MultirespondentSubmissionDto } from '~shared/types'
+import { FormFieldDto, MultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
 import { decryptSubmission } from './utils/decryptSubmission'
+import { FormFieldValues } from '~templates/Field'
+import { PrefillMap } from './components/FormFields/FormFields'
 
 export type SubmissionData = {
   /** Submission id */
@@ -20,6 +22,11 @@ export type SubmissionData = {
   timestamp: number
   mrfStep?: number
 }
+
+export interface DraftSubmission {
+  lastUpdated: number | null
+  draftResponses: Record<string, string>
+}  
 
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
@@ -77,6 +84,11 @@ export interface PublicFormContextProps
   setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
+  draftSubmission?: DraftSubmission
+  setDraftSubmission: (draftSubmission: DraftSubmission) => void
+  defaultFormValues: FormFieldValues
+  augmentedFormFields: FormFieldDto[]
+  fieldPrefillMap: PrefillMap
 }
 
 export const PublicFormContext = createContext<

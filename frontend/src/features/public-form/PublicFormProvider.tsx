@@ -7,14 +7,14 @@ import {
   useState,
 } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
-import { flow } from 'lodash'
+import { flow, times } from 'lodash'
 import get from 'lodash/get'
 
 import {
@@ -24,17 +24,18 @@ import {
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
 } from '~shared/constants'
-import { BasicField, PaymentType } from '~shared/types'
+import { BasicField, FormFieldDto, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
 import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
+  FormWorkflowStepDto,
   Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
-import { dollarsToCents } from '~shared/utils/payments'
+import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
@@ -72,9 +73,18 @@ import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
-import { PublicFormContext, SubmissionData } from './PublicFormContext'
+import { DraftSubmission, PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+import { augmentFieldWithMrfWorkflowDisabling } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
+import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
+import { hasExistingFieldValue } from '~features/myinfo/utils'
+import { PrefillMap } from './components/FormFields/FormFields'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
+import { f } from 'msw/lib/glossary-2792c6da'
 
 interface PublicFormProviderProps {
   formId: string
@@ -184,6 +194,87 @@ const transformFormInputTrimTextInputs =
     )
   }
 
+const augmentFormFields = (formFields: FormFieldDto[], currentStepNumberWorkflowStep?: FormWorkflowStepDto) => {
+  return formFields.map(augmentWithMyInfo)
+  .map((fields) => augmentFieldWithMrfWorkflowDisabling(currentStepNumberWorkflowStep, fields))
+} 
+
+const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URLSearchParams) => {
+  // Return object containing field id and query param value only if id exists in form fields.
+  return formFields.reduce((acc, field) => {
+    if (
+      field.fieldType === BasicField.ShortText &&
+      field.allowPrefill &&
+      searchParams.has(field._id)
+    ) {
+      acc[field._id] = {
+        prefillValue: searchParams.get(field._id) ?? '',
+        lockPrefill: field.lockPrefill ?? false,
+      }
+    }
+    return acc
+  }, {} as PrefillMap)
+}
+
+const getInitialFormValues = ({
+  previousSubmission,
+  previousAttachments, 
+  augmentedFormFields, 
+  fieldPrefillMap,
+  searchParams,
+}: {
+  previousSubmission: ReturnType<typeof decryptSubmission>
+  previousAttachments: Record<string, ArrayBuffer>
+  augmentedFormFields: FormFieldDto[]
+  fieldPrefillMap: PrefillMap
+  searchParams: URLSearchParams
+}): FormFieldValues => {
+  const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
+    const previousResponse = previousSubmission?.responses[field._id]
+    const previousAttachmentFieldResponseFileBuffer = previousAttachments?.[field._id]
+    const value = extractMrfPreviousStepResponseValue(field, previousResponse, previousAttachmentFieldResponseFileBuffer)
+    if (value) {
+      acc[field._id] = value
+    }
+
+    // Use server default value if it exists.
+    if (hasExistingFieldValue(field)) {
+      acc[field._id] = extractPreviewValue(field)
+    }
+
+    // Use prefill value if exists.
+    if (fieldPrefillMap[field._id]) {
+      acc[field._id] = fieldPrefillMap[field._id].prefillValue
+    }
+
+    // Required so table column fields will render due to useFieldArray usage.
+    // See https://react-hook-form.com/api/usefieldarray
+    if (field.fieldType === BasicField.Table) {
+      acc[field._id] = times(field.minimumRows || 0, () =>
+        createTableRow(field),
+      )
+    }
+
+    return acc
+  }, {})
+
+  // Payment prefills - only for variable payments
+  if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {
+    const paymentParamValue = Number.parseInt(
+      searchParams.get(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID) ?? '',
+      10,
+    )
+    if (Number.isInteger(paymentParamValue) && paymentParamValue > 0) {
+      const paymentAmount = centsToDollars(Number(paymentParamValue))
+      defaultFormValues[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID] = paymentAmount
+    }
+  }
+
+  defaultFormValues[RESPONDENT_EMAIL_FIELD_ID] = []
+
+  return defaultFormValues
+}
+
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
@@ -195,6 +286,7 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
+
 
   const {
     data,
@@ -940,6 +1032,35 @@ export const PublicFormProvider = ({
     return <NotFoundErrorPage />
   }
 
+  const formDraftSubmissionKey = `form-${formId}-draft-submission`
+  const [draftSubmission, setDraftSubmission] = useLocalStorage<DraftSubmission>(formDraftSubmissionKey, {
+    lastUpdated: null,
+    draftResponses: {},
+  })
+
+  const formFields = data?.form.form_fields ?? []
+  const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
+  const currentWorkflowStepNumber = previousWorkflowStepNumber ? previousWorkflowStepNumber + 1 : 0
+  const formWorkflow = data && data.form.responseMode === FormResponseMode.Multirespondent ? data.form.workflow : undefined
+  const currentWorkflowStep = formWorkflow && currentWorkflowStepNumber && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  
+  const fieldPrefillMap = getFieldPrefillMap(formFields, searchParams)
+
+  const augmentedFormFields = augmentFormFields(formFields, currentWorkflowStep)
+
+  const defaultFormValues = getInitialFormValues({
+    previousSubmission,
+    previousAttachments,
+    augmentedFormFields,
+    fieldPrefillMap,
+    searchParams,
+  })
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+    mode: 'onTouched',
+  })
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -963,6 +1084,11 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
+        draftSubmission,
+        setDraftSubmission,
+        defaultFormValues,
+        augmentedFormFields, 
+        fieldPrefillMap,
         ...commonFormValues,
         ...data,
         ...rest,
@@ -976,7 +1102,9 @@ export const PublicFormProvider = ({
       {formNotFoundMessage ? (
         <FormNotFound {...formNotFoundMessage} />
       ) : (
-        children
+        <FormProvider {...formMethods}>
+          {children}
+        </FormProvider>
       )}
     </PublicFormContext.Provider>
   )

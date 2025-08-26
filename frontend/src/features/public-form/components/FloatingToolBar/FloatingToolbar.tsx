@@ -1,5 +1,6 @@
 import { BiQuestionMark, BiSave } from 'react-icons/bi'
-import { Flex, useDisclosure } from '@chakra-ui/react'
+import { Stack, useDisclosure } from '@chakra-ui/react'
+import { useToast } from '~hooks/useToast'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
@@ -9,29 +10,17 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-export const FloatingToolBar = ({
-  isPublicFormPage = false,
-  onOpenSaveDraft,
-}: {
-  isPublicFormPage?: boolean
-  onOpenSaveDraft?: () => void
-}): JSX.Element | null => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+const SaveDraftButton = ({ onSaveDraft }: { onSaveDraft?: () => void }) => {
 
-  const { isPreview, formId, submissionData } = usePublicFormContext()
-  if (submissionData) return null
+  const toast = useToast({ isClosable: true })
+  const defaultOnSaveDraft = () => {
+    toast({
+      description: 'Since you are in preview mode, there is no draft saved.',
+    })
+  }
 
   return (
-    <Flex
-      flexDir="column"
-      position="fixed"
-      bottom={{ base: '1rem', md: '2.625rem' }}
-      right={{ base: '1rem', md: '2.75rem' }}
-      sx={noPrintCss}
-      zIndex="docked"
-    >
-      {isPublicFormPage ? (
-        <Tooltip placement="left" label="Save as draft">
+    <Tooltip placement="left" label="Save a draft">
           <IconButton
             variant="outline"
             cursor="pointer"
@@ -39,13 +28,18 @@ export const FloatingToolBar = ({
             _focus={{
               boxShadow: 0,
             }}
-            aria-label="save as draft"
+            aria-label="save a draft"
             icon={<BiSave color="primary.500" />}
-            onClick={onOpenSaveDraft}
+            onClick={onSaveDraft || defaultOnSaveDraft}
           />
         </Tooltip>
-      ) : null}
-      <Tooltip placement="left" label="Report an issue">
+  )
+}
+
+const IssueFeedbackButton = ({ isPreview, formId }: { isPreview: boolean, formId: string }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  return <>
+        <Tooltip placement="left" label="Report an issue">
         <IconButton
           variant="outline"
           cursor="pointer"
@@ -66,6 +60,31 @@ export const FloatingToolBar = ({
         isPreview={isPreview}
         formId={formId}
       />
-    </Flex>
+    </>
+}
+
+export const FloatingToolBar = ({
+  onSaveDraft,
+}: {
+  onSaveDraft?: () => void
+}): JSX.Element | null => {
+  const { isPreview, formId, submissionData } = usePublicFormContext()
+  if (submissionData) return null
+
+  const { draftSubmission, setDraftSubmission } = usePublicFormContext()
+
+  return (
+    <Stack
+      direction={{ base: 'row', md: 'column' }}
+      position="fixed"
+      spacing='1rem'
+      bottom='2rem'
+      right='2rem'
+      sx={noPrintCss}
+      zIndex="docked"
+    >
+      <IssueFeedbackButton isPreview={isPreview} formId={formId} />
+      <SaveDraftButton onSaveDraft={onSaveDraft} />
+    </Stack>
   )
 }
