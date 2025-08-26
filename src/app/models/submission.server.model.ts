@@ -597,6 +597,10 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     created: this.created,
     attachmentDownloadUrls: attachmentRecords,
     paymentContent,
+    workflowContent: {
+      workflow: this.workflow,
+      workflowStep: this.workflowStep,
+    },
   }
 
   return {
