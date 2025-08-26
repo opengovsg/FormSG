@@ -41,13 +41,7 @@ export const FormStatusToggle = (): JSX.Element => {
     if (status === FormStatus.Public) return
 
     // Prevent form activation if form has authType but no esrvcId.
-    if (
-      authType &&
-      [FormAuthType.CP, FormAuthType.SP, FormAuthType.MyInfo].includes(
-        authType,
-      ) &&
-      !esrvcId
-    ) {
+    if (authType && [FormAuthType.CP].includes(authType) && !esrvcId) {
       return t(
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
