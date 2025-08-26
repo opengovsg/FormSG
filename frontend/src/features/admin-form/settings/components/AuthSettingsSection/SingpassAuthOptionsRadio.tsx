@@ -24,8 +24,6 @@ export interface SingpassAuthOptionsRadioProps {
 
 const isEsrvcidRequired = (authType: FormAuthType) => {
   switch (authType) {
-    case FormAuthType.SP:
-    case FormAuthType.MyInfo:
     case FormAuthType.CP:
       return true
     default:
