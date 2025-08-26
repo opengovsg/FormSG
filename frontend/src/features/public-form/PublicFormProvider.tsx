@@ -84,7 +84,6 @@ import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
-import { f } from 'msw/lib/glossary-2792c6da'
 
 interface PublicFormProviderProps {
   formId: string

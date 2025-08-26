@@ -1,6 +1,7 @@
 import { BiQuestionMark, BiSave } from 'react-icons/bi'
 import { Stack, useDisclosure } from '@chakra-ui/react'
 import { useToast } from '~hooks/useToast'
+import { format } from 'date-fns'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
@@ -12,7 +13,7 @@ import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 import { useFormContext } from 'react-hook-form'
 import { isEmpty, keysIn, pick } from 'lodash'
 
-const SaveDraftButton = ({ onSaveDraft }: { onSaveDraft?: () => void }) => {
+const SaveDraftButton = ({ onSaveDraft, draftLastUpdated }: { onSaveDraft?: () => void, draftLastUpdated?: number | null }) => {
 
   const toast = useToast({ isClosable: true })
   const defaultOnSaveDraft = () => {
@@ -21,8 +22,10 @@ const SaveDraftButton = ({ onSaveDraft }: { onSaveDraft?: () => void }) => {
     })
   }
 
+  const tooltipLabel = draftLastUpdated ? `Last saved: ${format(new Date(draftLastUpdated), 'do MMM yyyy, h:mm:ss a')}` : 'Save a draft'
+
   return (
-    <Tooltip placement="left" label="Save a draft">
+    <Tooltip placement="left" label={tooltipLabel}>
           <IconButton
             variant="outline"
             cursor="pointer"
@@ -74,16 +77,15 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const toast = useToast({ isClosable: true })
 
   const onSaveDraft = () => {
-    if (dirtyFields && !isEmpty(dirtyFields)) {
-      const dirtyFieldKeys = keysIn(dirtyFields)
-      const draft = pick(getValues(), dirtyFieldKeys)
-      const draftResponses = draftSubmission?.draftResponses ? { ...draftSubmission.draftResponses, ...draft } : draft
-  
-      setDraftSubmission({
-        lastUpdated: Date.now(),
-        draftResponses 
-      })
-    }
+    const dirtyFieldKeys = dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : []
+    const newDraftChanges = pick(getValues(), dirtyFieldKeys)
+    const updatedDraftResponses = draftSubmission?.draftResponses ? { ...draftSubmission.draftResponses, ...newDraftChanges } : newDraftChanges
+
+    setDraftSubmission({
+      lastUpdated: Date.now(),
+      draftResponses: updatedDraftResponses
+    })
+    
     toast({ 
       description: 'Your draft has been successfully saved.',
     })
@@ -100,7 +102,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <IssueFeedbackButton isPreview={isPreview} formId={formId} />
-      <SaveDraftButton onSaveDraft={onSaveDraft} />
+      <SaveDraftButton onSaveDraft={onSaveDraft} draftLastUpdated={draftSubmission?.lastUpdated} />
     </Stack>
   )
 }
