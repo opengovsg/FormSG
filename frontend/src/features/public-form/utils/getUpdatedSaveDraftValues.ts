@@ -6,10 +6,12 @@ export const getUpdatedSaveDraftResponses = ({
   formFieldValues,
   dirtyFields,
   previousDraftResponses,
+  existingFormFieldIds,
 }: {
   formFieldValues: FormFieldValues
   dirtyFields: Record<string, boolean>
   previousDraftResponses?: FormFieldValues | null
+  existingFormFieldIds: string[]
 }) => {
   const dirtyFieldKeys =
     dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : []
@@ -18,8 +20,19 @@ export const getUpdatedSaveDraftResponses = ({
     ? { ...previousDraftResponses, ...newDraftChanges }
     : newDraftChanges
 
-  if (isEmpty(updatedDraftResponses)) {
+  // If the field id no longer exists in the form, remove it from the saved draft.
+  const filteredDraftResponses = existingFormFieldIds.reduce(
+    (acc, formFieldId) => {
+      if (formFieldId in updatedDraftResponses) {
+        acc[formFieldId] = updatedDraftResponses[formFieldId]
+      }
+      return acc
+    },
+    {} as FormFieldValues,
+  )
+
+  if (isEmpty(filteredDraftResponses)) {
     return null
   }
-  return updatedDraftResponses
+  return filteredDraftResponses
 }

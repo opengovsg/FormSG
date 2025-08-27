@@ -679,6 +679,16 @@ export const PublicFormProvider = ({
   const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
   const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
 
+  const formDraftSubmissionKey = getSaveDraftKey({
+    formId,
+    formSubmissionId: previousSubmissionId,
+    currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+  })
+  const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
+    lastUpdated: null,
+    draftResponses: null,
+  })
+
   const defaultFormValues = useMemo(() => form ? getInitialFormValues({
     formResponseMode: form.responseMode, 
     previousSubmission,
@@ -693,16 +703,6 @@ export const PublicFormProvider = ({
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
-  })
-
-  const formDraftSubmissionKey = getSaveDraftKey({
-    formId,
-    formSubmissionId: previousSubmissionId,
-    currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
-  })
-  const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
-    lastUpdated: null,
-    draftResponses: null,
   })
 
   useEffect(() => {
