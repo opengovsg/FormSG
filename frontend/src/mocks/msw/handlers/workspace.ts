@@ -3,7 +3,7 @@ import { rest } from 'msw'
 import { UserId } from '~shared/types'
 import { WorkspaceDto, WorkspaceId } from '~shared/types/workspace'
 
-import { DefaultRequestReturn, WithDelayProps } from './types'
+import { WithDelayProps } from './types'
 
 const MOCK_WORKSPACES = [
   {
@@ -37,7 +37,7 @@ export const getWorkspaces = ({
   mockWorkspaces = MOCK_WORKSPACES,
 }: {
   mockWorkspaces?: WorkspaceDto[]
-} & WithDelayProps = {}): DefaultRequestReturn => {
+} & WithDelayProps = {}) => {
   return rest.get<never, never, WorkspaceDto[]>(
     '/api/v3/admin/workspaces',
     (_req, res, ctx) => {
@@ -46,6 +46,6 @@ export const getWorkspaces = ({
   )
 }
 
-export const workspaceHandlers = (
-  props: WithDelayProps = {},
-): DefaultRequestReturn[] => [getWorkspaces(props)]
+export const workspaceHandlers = (props: WithDelayProps = {}) => [
+  getWorkspaces(props),
+]

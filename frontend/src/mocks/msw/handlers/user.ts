@@ -5,7 +5,7 @@ import { ErrorDto } from '~shared/types/core'
 import { DateString } from '~shared/types/generic'
 import { UserDto, UserId, VerifyUserContactOtpDto } from '~shared/types/user'
 
-import { DefaultRequestReturn, WithDelayProps } from './types'
+import { WithDelayProps } from './types'
 
 export const MOCK_USER: UserDto = {
   _id: 'mock_id' as UserId,
@@ -38,7 +38,7 @@ export const getUnauthedUser = ({ delay = 0 }: WithDelayProps = {}) => {
 export const getUser = ({
   delay,
   mockUser = MOCK_USER,
-}: { mockUser?: UserDto } & WithDelayProps = {}): DefaultRequestReturn => {
+}: { mockUser?: UserDto } & WithDelayProps = {}) => {
   return http.get<never, never, UserDto>('/api/v3/user', async () => {
     await MswDelay(delay)
     return HttpResponse.json(mockUser, {
@@ -47,9 +47,7 @@ export const getUser = ({
   })
 }
 
-export const postGenerateContactOtp = ({
-  delay,
-}: WithDelayProps = {}): DefaultRequestReturn => {
+export const postGenerateContactOtp = ({ delay }: WithDelayProps = {}) => {
   return http.post('/api/v3/user/contact/otp/generate', async () => {
     await MswDelay(delay)
     return HttpResponse.json(null, {
@@ -61,7 +59,7 @@ export const postGenerateContactOtp = ({
 export const postVerifyContactOtp = ({
   delay,
   mockOtp,
-}: WithDelayProps & { mockOtp?: string } = {}): DefaultRequestReturn => {
+}: WithDelayProps & { mockOtp?: string } = {}) => {
   return http.post<never, VerifyUserContactOtpDto, UserDto | ErrorDto>(
     '/api/v3/user/contact/otp/verify',
     async ({ request }) => {
@@ -89,9 +87,7 @@ export const postVerifyContactOtp = ({
   )
 }
 
-export const userHandlers = (
-  props: WithDelayProps = {},
-): DefaultRequestReturn[] => [
+export const userHandlers = (props: WithDelayProps = {}) => [
   getUser(props),
   postGenerateContactOtp(props),
   postVerifyContactOtp(props),
