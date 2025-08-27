@@ -1,7 +1,7 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { ButtonProps, Flex, Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
+import { Flex, Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
@@ -9,7 +9,7 @@ import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
@@ -21,7 +21,6 @@ import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 import Tooltip from '~components/Tooltip'
-import { format } from 'date-fns'
 
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
@@ -143,7 +142,7 @@ export const PublicFormSubmitButton = ({
         onClose={onSingleSubmissionModalClose}
       />
       <Flex w='100' gap="1rem">
-        <PublicFormSaveDraftButton flex={1} />
+        <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
         <Button
           flex={1}
           isFullWidth={isMobile}
