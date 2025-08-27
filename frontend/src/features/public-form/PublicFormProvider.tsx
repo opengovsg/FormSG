@@ -679,6 +679,14 @@ export const PublicFormProvider = ({
   const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
   const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
   
+  const isAuthRequired: boolean = useMemo(
+    () =>
+      !!form &&
+      form.authType !== FormAuthType.NIL &&
+      !data.spcpSession,
+    [form, data?.spcpSession],
+  )
+
   const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
   const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
 
@@ -733,12 +741,12 @@ export const PublicFormProvider = ({
   }
 
   useEffect(() => {
-    if (isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
+    if (!isAuthRequired && isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       toast({ 
         description: 'Your draft has been successfully restored.',
       })
     }
-  }, [draftSubmission?.lastUpdated, isSaveDraftEnabled])
+  }, [draftSubmission?.lastUpdated, isSaveDraftEnabled, isAuthRequired])
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -1132,14 +1140,6 @@ export const PublicFormProvider = ({
   )
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
-
-  const isAuthRequired: boolean = useMemo(
-    () =>
-      !!data?.form &&
-      data.form.authType !== FormAuthType.NIL &&
-      !data.spcpSession,
-    [data?.form, data?.spcpSession],
-  )
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
