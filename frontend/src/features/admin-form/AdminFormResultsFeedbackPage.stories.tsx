@@ -7,6 +7,7 @@ import {
   getAdminFormCollaborators,
   getAdminFormFeedback,
   getAdminFormIssue,
+  getAdminFormSubmissions,
   getEmptyAdminFormFeedback,
   getEmptyAdminFormIssue,
   getStorageSubmissionMetadataResponse,
@@ -30,6 +31,7 @@ const DEFAULT_MSW_ROUTES = [
   getAdminFormIssue(),
   getUser(),
   getAdminFormCollaborators(),
+  getAdminFormSubmissions(),
 ]
 
 export default {
@@ -37,9 +39,9 @@ export default {
   component: FeedbackPage,
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
-    msw: DEFAULT_MSW_ROUTES,
+    msw: { handlers: { default: DEFAULT_MSW_ROUTES } },
   },
 } as Meta
 
@@ -74,20 +76,32 @@ export const Default = Template.bind({})
 
 export const EmptyReviewAndIssue = Template.bind({})
 EmptyReviewAndIssue.parameters = {
-  msw: [
-    getEmptyAdminFormIssue(),
-    getEmptyAdminFormFeedback(),
-    ...DEFAULT_MSW_ROUTES,
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getEmptyAdminFormIssue(),
+        getEmptyAdminFormFeedback(),
+        ...DEFAULT_MSW_ROUTES,
+      ],
+    },
+  },
 }
 
 export const EmptyReview = Template.bind({})
 EmptyReview.parameters = {
-  msw: [getEmptyAdminFormFeedback(), ...DEFAULT_MSW_ROUTES],
+  msw: {
+    handlers: {
+      default: [getEmptyAdminFormFeedback(), ...DEFAULT_MSW_ROUTES],
+    },
+  },
 }
 export const EmptyIssue = Template.bind({})
 EmptyIssue.parameters = {
-  msw: [getEmptyAdminFormIssue(), ...DEFAULT_MSW_ROUTES],
+  msw: {
+    handlers: {
+      default: [getEmptyAdminFormIssue(), ...DEFAULT_MSW_ROUTES],
+    },
+  },
 }
 
 export const Tablet = Template.bind({})
@@ -104,7 +118,14 @@ Mobile.parameters = getMobileViewParameters()
 export const LoadingDesktop = Template.bind({})
 LoadingDesktop.storyName = 'Loading/Desktop'
 LoadingDesktop.parameters = {
-  msw: [getAdminFormIssue({ delay: 'infinite' }), ...DEFAULT_MSW_ROUTES],
+  msw: {
+    handlers: {
+      default: [
+        getAdminFormIssue({ delay: 'infinite' }),
+        ...DEFAULT_MSW_ROUTES,
+      ],
+    },
+  },
 }
 export const LoadingMobile = Template.bind({})
 LoadingMobile.storyName = 'Loading/Mobile'
