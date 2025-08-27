@@ -85,6 +85,7 @@ import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import { useIndexedDb } from '~hooks/useIndexedDb'
 import { getUpdatedSaveDraftResponses } from './utils/getUpdatedSaveDraftValues'
+import { BasicFieldPanel } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels'
 
 interface PublicFormProviderProps {
   formId: string
@@ -726,8 +727,7 @@ export const PublicFormProvider = ({
       previousDraftResponses: draftSubmission?.draftResponses,
       formFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields), 
-      existingFormFieldIds: formFields.map((field) => field._id),
-      myInfoFieldIds: formFields.filter((field) => isMyInfo(field)).map((field) => field._id),
+      formFields, 
     })
 
     setDraftSubmission({

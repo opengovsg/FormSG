@@ -1,32 +1,59 @@
-import { difference, isEmpty, pick } from 'lodash'
+import { difference, isEmpty, mapValues, pick } from 'lodash'
 
-import { FormFieldValues } from '~templates/Field'
+import { BasicField, FormFieldDto } from '~shared/types'
+
+import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
+
+import { isMyInfo } from '~features/myinfo/utils'
 
 export const getUpdatedSaveDraftResponses = ({
   previousDraftResponses,
   formFieldValues,
   dirtyFieldIds,
-  existingFormFieldIds,
-  myInfoFieldIds,
+  formFields,
 }: {
   previousDraftResponses?: FormFieldValues | null
   formFieldValues: FormFieldValues
   dirtyFieldIds: string[]
-  existingFormFieldIds: string[]
-  myInfoFieldIds: string[]
+  formFields: FormFieldDto[]
 }): FormFieldValues | null => {
+  const validFormFieldIds = formFields.map((field) => field._id)
+  const myInfoFieldIds = formFields
+    .filter((field) => isMyInfo(field))
+    .map((field) => field._id)
+
+  const verifiableFieldIds = formFields
+    .filter(
+      (field) =>
+        (field.fieldType === BasicField.Mobile ||
+          field.fieldType === BasicField.Email) &&
+        field.isVerifiable,
+    )
+    .map((field) => field._id)
+
   const currentDirtyFieldValues = pick(formFieldValues, dirtyFieldIds)
 
   const allDirtyFieldValues = {
     ...(previousDraftResponses ?? {}),
     ...currentDirtyFieldValues,
   }
-  const fieldIdsToInclude = difference(existingFormFieldIds, myInfoFieldIds)
+  const fieldIdsToInclude = difference(validFormFieldIds, myInfoFieldIds)
 
   const updatedDraftResponses = pick(allDirtyFieldValues, fieldIdsToInclude)
 
-  if (isEmpty(updatedDraftResponses)) {
+  // Avoid saving 'signature' property values from verifiable fields in the draft.
+  // This is to prevent signature from being reused and to force the user to
+  // re-verify the field value when they restore the draft.
+  const updatedDraftResponsesWithoutVerifiableFieldSignatures = mapValues(
+    updatedDraftResponses,
+    (fieldValue, fieldId) =>
+      verifiableFieldIds.includes(fieldId)
+        ? { ...(fieldValue as VerifiableFieldValues), signature: undefined }
+        : fieldValue,
+  )
+
+  if (isEmpty(updatedDraftResponsesWithoutVerifiableFieldSignatures)) {
     return null
   }
-  return updatedDraftResponses
+  return updatedDraftResponsesWithoutVerifiableFieldSignatures
 }
