@@ -1,24 +1,29 @@
-import { difference, intersection, isEmpty, pick } from 'lodash'
+import { difference, isEmpty, pick } from 'lodash'
 
 import { FormFieldValues } from '~templates/Field'
 
 export const getUpdatedSaveDraftResponses = ({
+  previousDraftResponses,
   formFieldValues,
   dirtyFieldIds,
   existingFormFieldIds,
   myInfoFieldIds,
 }: {
+  previousDraftResponses?: FormFieldValues | null
   formFieldValues: FormFieldValues
   dirtyFieldIds: string[]
   existingFormFieldIds: string[]
   myInfoFieldIds: string[]
 }): FormFieldValues | null => {
-  const fieldIdsToInclude = difference(
-    intersection(dirtyFieldIds, existingFormFieldIds),
-    myInfoFieldIds,
-  )
+  const currentDirtyFieldValues = pick(formFieldValues, dirtyFieldIds)
 
-  const updatedDraftResponses = pick(formFieldValues, fieldIdsToInclude)
+  const allDirtyFieldValues = {
+    ...(previousDraftResponses ?? {}),
+    ...currentDirtyFieldValues,
+  }
+  const fieldIdsToInclude = difference(existingFormFieldIds, myInfoFieldIds)
+
+  const updatedDraftResponses = pick(allDirtyFieldValues, fieldIdsToInclude)
 
   if (isEmpty(updatedDraftResponses)) {
     return null

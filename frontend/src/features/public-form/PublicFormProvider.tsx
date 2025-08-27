@@ -715,6 +715,7 @@ export const PublicFormProvider = ({
     const { formState: { dirtyFields} } = formMethods
     
     const updatedDraftResponses = getUpdatedSaveDraftResponses({
+      previousDraftResponses: draftSubmission?.draftResponses,
       formFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields), 
       existingFormFieldIds: formFields.map((field) => field._id),
