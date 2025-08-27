@@ -84,7 +84,7 @@ export interface PublicFormContextProps
   setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
-  draftSubmission?: DraftSubmission
+  draftLastSavedDateTimeString?: string
   onSaveDraft: () => void
   defaultFormValues: FormFieldValues
   augmentedFormFields: FormFieldDto[]

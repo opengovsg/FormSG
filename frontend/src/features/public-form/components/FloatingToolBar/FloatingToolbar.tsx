@@ -11,7 +11,7 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-const SaveDraftButton = ({ onSaveDraft, draftLastUpdated }: { onSaveDraft?: () => void, draftLastUpdated?: number | null }) => {
+const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSaveDraft?: () => void, draftLastSavedDateTimeString?: string }) => {
 
   const toast = useToast({ isClosable: true })
   const defaultOnSaveDraft = () => {
@@ -20,7 +20,7 @@ const SaveDraftButton = ({ onSaveDraft, draftLastUpdated }: { onSaveDraft?: () =
     })
   }
 
-  const tooltipLabel = draftLastUpdated ? `Last saved: ${format(new Date(draftLastUpdated), 'do MMM yyyy, h:mm:ss a')}` : 'Save a draft'
+  const tooltipLabel = draftLastSavedDateTimeString ? `Last saved: ${draftLastSavedDateTimeString}` : 'Save a draft'
 
   return (
     <Tooltip placement="left" label={tooltipLabel}>
@@ -70,7 +70,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const { isPreview, formId, submissionData } = usePublicFormContext()
   if (submissionData) return null
 
-  const { draftSubmission, onSaveDraft } = usePublicFormContext()
+  const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
 
   return (
     <Stack
@@ -83,7 +83,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <IssueFeedbackButton isPreview={isPreview} formId={formId} />
-      <SaveDraftButton onSaveDraft={onSaveDraft} draftLastUpdated={draftSubmission?.lastUpdated} />
+      <SaveDraftButton onSaveDraft={onSaveDraft} draftLastSavedDateTimeString={draftLastSavedDateTimeString} />
     </Stack>
   )
 }

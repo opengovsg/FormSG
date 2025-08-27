@@ -24,10 +24,9 @@ import Tooltip from '~components/Tooltip'
 import { format } from 'date-fns'
 
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
-  const { draftSubmission, onSaveDraft } = usePublicFormContext()
-  const draftLastUpdated = draftSubmission?.lastUpdated
+  const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
 
-  const tooltipLabel = draftLastUpdated ? `Last saved: ${format(new Date(draftLastUpdated), 'do MMM yyyy, h:mm:ss a')}` : ''
+  const tooltipLabel = draftLastSavedDateTimeString ? `Last saved: ${draftLastSavedDateTimeString}` : ''
 
   return (
     <Tooltip placement='top' label={tooltipLabel}>

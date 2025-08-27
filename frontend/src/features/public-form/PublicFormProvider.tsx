@@ -13,7 +13,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
-import { differenceInMilliseconds, isPast } from 'date-fns'
+import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
 
@@ -1162,7 +1162,7 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
-        draftSubmission,
+        draftLastSavedDateTimeString: draftSubmission?.lastUpdated ? format(new Date(draftSubmission.lastUpdated), 'do MMM yyyy, h:mm:ss a') : undefined,
         onSaveDraft,
         defaultFormValues,
         augmentedFormFields, 
