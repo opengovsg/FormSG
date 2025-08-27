@@ -1,5 +1,5 @@
 import { merge } from 'lodash'
-import { DelayMode, rest } from 'msw'
+import { delay as MswDelay, DelayMode, http, HttpResponse } from 'msw'
 
 import { AnalyticStatsDto } from '~shared/types'
 
@@ -17,10 +17,11 @@ export const getLandingStats = ({
   overrides?: Partial<AnalyticStatsDto>
   delay?: DelayMode | number
 } = {}) => {
-  return rest.get<never, never, Partial<AnalyticStatsDto>>(
+  return http.get<never, never, Partial<AnalyticStatsDto>>(
     '/api/v3/analytics/statistics',
-    (_req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.json(merge({}, MOCK_STATS, overrides)))
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(merge({}, MOCK_STATS, overrides))
     },
   )
 }
