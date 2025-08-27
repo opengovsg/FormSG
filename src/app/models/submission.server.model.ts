@@ -600,6 +600,7 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     workflowContent: {
       workflow: this.workflow,
       workflowStep: this.workflowStep,
+      submittedSteps: this.submittedSteps,
     },
   }
 
