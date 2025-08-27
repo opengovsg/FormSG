@@ -303,6 +303,19 @@ const getInitialFormValues = ({
   return defaultFormValues
 }
 
+const getSaveDraftKey = ({
+  formId, 
+  formSubmissionId, 
+  currentMrfWorkflowStepNumber,
+}: {
+  formId: string
+  formSubmissionId?: string
+  currentMrfWorkflowStepNumber: number
+}) => {
+  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
+  return [FORMSG_SAVE_DRAFT_PREFIX, formId, formSubmissionId, currentMrfWorkflowStepNumber !== undefined ? 'step' + currentMrfWorkflowStepNumber : undefined].filter(Boolean).join('-')
+}
+
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
@@ -656,11 +669,49 @@ export const PublicFormProvider = ({
     previousSubmission?.submissionSecretKey,
   )
 
-  const formDraftSubmissionKey = `form-${formId}-draft-submission`
+  const form = data?.form
+  const formFields = form?.form_fields ?? []
+  const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
+  const currentWorkflowStepNumber = previousWorkflowStepNumber !== undefined ? previousWorkflowStepNumber + 1 : 0
+  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
+  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  
+  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
+  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
+
+  const defaultFormValues = useMemo(() => form ? getInitialFormValues({
+    formResponseMode: form.responseMode, 
+    previousSubmission,
+    previousAttachments,
+    augmentedFormFields,
+    currentStepNumberWorkflowStep, 
+    fieldPrefillMap,
+    draftSubmission,
+    searchParams,
+  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftSubmission?.lastUpdated, searchParams])
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+    mode: 'onTouched',
+  })
+
+  const formDraftSubmissionKey = getSaveDraftKey({
+    formId,
+    formSubmissionId: previousSubmissionId,
+    currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+  })
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
     lastUpdated: null,
     draftResponses: null,
   })
+
+  useEffect(() => {
+    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
+      toast({ 
+        description: 'Your draft has been successfully restored.',
+      })
+    }
+  }, [draftSubmission?.lastUpdated])
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -1066,40 +1117,6 @@ export const PublicFormProvider = ({
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
-
-  useEffect(() => {
-    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
-      toast({ 
-        description: 'Your draft has been successfully restored.',
-      })
-    }
-  }, [draftSubmission?.lastUpdated])
-
-  const form = data?.form
-  const formFields = form?.form_fields ?? []
-  const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
-  const currentWorkflowStepNumber = previousWorkflowStepNumber ? previousWorkflowStepNumber + 1 : 0
-  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
-  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
-  
-  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
-  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
-
-  const defaultFormValues = useMemo(() => form ? getInitialFormValues({
-    formResponseMode: form.responseMode, 
-    previousSubmission,
-    previousAttachments,
-    augmentedFormFields,
-    currentStepNumberWorkflowStep, 
-    fieldPrefillMap,
-    draftSubmission,
-    searchParams,
-  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftSubmission?.lastUpdated, searchParams])
-
-  const formMethods = useForm<FormFieldValues>({
-    defaultValues: defaultFormValues,
-    mode: 'onTouched',
-  })
 
   return (
     <PublicFormContext.Provider
