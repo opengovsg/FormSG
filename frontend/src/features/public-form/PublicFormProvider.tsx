@@ -722,7 +722,7 @@ export const PublicFormProvider = ({
     })
 
     toast({ 
-      description: 'Your draft has been successfully saved.',
+      description: 'A draft has been successfully saved on your browser.',
     })
   }
 
