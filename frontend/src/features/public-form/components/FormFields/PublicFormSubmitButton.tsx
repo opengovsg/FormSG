@@ -56,6 +56,8 @@ export const PublicFormSubmitButton = ({
   const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
 
+  const { isSaveDraftEnabled } = usePublicFormContext()
+
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
@@ -142,7 +144,7 @@ export const PublicFormSubmitButton = ({
         onClose={onSingleSubmissionModalClose}
       />
       <Flex w='100' gap="1rem">
-        <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
+        {isSaveDraftEnabled && <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />}
         <Button
           flex={1}
           isFullWidth={isMobile}

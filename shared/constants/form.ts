@@ -7,6 +7,7 @@ const PUBLIC_FORM_FIELDS = [
   'esrvcId',
   'form_fields',
   'form_logics',
+  'isSaveDraftEnabled',
   'hasCaptcha',
   'hasIssueNotification',
   'hasMultiLang',

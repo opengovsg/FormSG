@@ -225,6 +225,7 @@ const getInitialFormValues = ({
   fieldPrefillMap,
   draftSubmission,
   searchParams,
+  isSaveDraftEnabled,
 }: {
   formResponseMode: FormResponseMode
   previousSubmission?: ReturnType<typeof decryptSubmission>
@@ -234,6 +235,7 @@ const getInitialFormValues = ({
   fieldPrefillMap: PrefillMap
   draftSubmission?: DraftSubmission 
   searchParams: URLSearchParams
+  isSaveDraftEnabled: boolean
 }): FormFieldValues => {
   const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
     if (formResponseMode === FormResponseMode.Multirespondent) {
@@ -247,7 +249,7 @@ const getInitialFormValues = ({
       // Only allow overriding of previous submission values if the field can be edited in this step. 
       if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
         // Reinstate save draft values
-        if (draftSubmission?.draftResponses?.[field._id]) {
+        if (isSaveDraftEnabled && draftSubmission?.draftResponses?.[field._id]) {
           acc[field._id] = draftSubmission.draftResponses[field._id]
         }
         // Use prefill value if exists 
@@ -257,7 +259,7 @@ const getInitialFormValues = ({
       }
     } else if (formResponseMode === FormResponseMode.Encrypt) {
       // Reinstate save draft values
-      if (draftSubmission?.draftResponses?.[field._id]) {
+      if (isSaveDraftEnabled && draftSubmission?.draftResponses?.[field._id]) {
         acc[field._id] = draftSubmission.draftResponses[field._id]
       }
       // Use prefill value if exists.
@@ -690,6 +692,8 @@ export const PublicFormProvider = ({
     draftResponses: null,
   })
 
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
   const defaultFormValues = useMemo(() => form ? getInitialFormValues({
     formResponseMode: form.responseMode, 
     previousSubmission,
@@ -699,6 +703,7 @@ export const PublicFormProvider = ({
     fieldPrefillMap,
     draftSubmission,
     searchParams,
+    isSaveDraftEnabled,
   }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftSubmission?.lastUpdated, searchParams])
 
   const formMethods = useForm<FormFieldValues>({
@@ -727,12 +732,12 @@ export const PublicFormProvider = ({
   }
 
   useEffect(() => {
-    if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
+    if (isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       toast({ 
         description: 'Your draft has been successfully restored.',
       })
     }
-  }, [draftSubmission?.lastUpdated])
+  }, [draftSubmission?.lastUpdated, isSaveDraftEnabled])
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -1127,7 +1132,7 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
-  const isAuthRequired = useMemo(
+  const isAuthRequired: boolean = useMemo(
     () =>
       !!data?.form &&
       data.form.authType !== FormAuthType.NIL &&
@@ -1162,6 +1167,7 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
+        isSaveDraftEnabled, 
         draftLastSavedDateTimeString: draftSubmission?.lastUpdated ? format(new Date(draftSubmission.lastUpdated), 'do MMM yyyy, h:mm:ss a') : undefined,
         onSaveDraft,
         defaultFormValues,

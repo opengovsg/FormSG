@@ -12,7 +12,7 @@ export const getUpdatedSaveDraftResponses = ({
   dirtyFieldIds: string[]
   existingFormFieldIds: string[]
   myInfoFieldIds: string[]
-}) => {
+}): FormFieldValues | null => {
   const fieldIdsToInclude = difference(
     intersection(dirtyFieldIds, existingFormFieldIds),
     myInfoFieldIds,

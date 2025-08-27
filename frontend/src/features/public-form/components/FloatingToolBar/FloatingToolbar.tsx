@@ -70,7 +70,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const { isPreview, formId, submissionData } = usePublicFormContext()
   if (submissionData) return null
 
-  const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
+  const { draftLastSavedDateTimeString, onSaveDraft, isSaveDraftEnabled } = usePublicFormContext()
 
   return (
     <Stack
@@ -83,7 +83,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <IssueFeedbackButton isPreview={isPreview} formId={formId} />
-      <SaveDraftButton onSaveDraft={onSaveDraft} draftLastSavedDateTimeString={draftLastSavedDateTimeString} />
+      {isSaveDraftEnabled && <SaveDraftButton onSaveDraft={onSaveDraft} draftLastSavedDateTimeString={draftLastSavedDateTimeString} />}
     </Stack>
   )
 }

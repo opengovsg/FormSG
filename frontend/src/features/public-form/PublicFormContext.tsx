@@ -86,6 +86,7 @@ export interface PublicFormContextProps
   ) => void
   draftLastSavedDateTimeString?: string
   onSaveDraft: () => void
+  isSaveDraftEnabled: boolean
   defaultFormValues: FormFieldValues
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
