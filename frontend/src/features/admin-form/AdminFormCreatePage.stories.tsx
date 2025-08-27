@@ -77,7 +77,7 @@ export default {
     // the story has loaded
     chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
-    msw: buildMswRoutes(),
+    msw: { handlers: { default: buildMswRoutes() } },
     mockdate: new Date('2022-12-25T06:22:27.219Z'),
     userId: 'adminFormTestUserId',
   },
@@ -87,18 +87,26 @@ const Template: StoryFn = () => <CreatePage />
 export const DesktopEmpty = Template.bind({})
 export const DesktopAllFields = Template.bind({})
 DesktopAllFields.parameters = {
-  msw: buildMswRoutes({
-    form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
-    authType: FormAuthType.MyInfo,
-    responseMode: FormResponseMode.Email,
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: MOCK_FORM_FIELDS_WITH_MYINFO,
+        authType: FormAuthType.MyInfo,
+        responseMode: FormResponseMode.Email,
+      }),
+    },
+  },
 }
 
 export const DesktopFieldsWithAcceptDeny = Template.bind({})
 DesktopFieldsWithAcceptDeny.parameters = {
-  msw: buildMswRoutes({
-    form_fields: MOCK_FORM_FIELDS,
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: MOCK_FORM_FIELDS,
+      }),
+    },
+  },
 }
 DesktopFieldsWithAcceptDeny.decorators = [
   (Story) => {
@@ -115,7 +123,11 @@ DesktopFieldsWithAcceptDeny.decorators = [
 
 export const DesktopLoading = Template.bind({})
 DesktopLoading.parameters = {
-  msw: buildMswRoutes({}, 'infinite'),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({}, 'infinite'),
+    },
+  },
 }
 
 export const TabletEmpty = Template.bind({})
@@ -123,13 +135,21 @@ TabletEmpty.parameters = getTabletViewParameters()
 export const TabletAllFields = Template.bind({})
 TabletAllFields.parameters = {
   ...getTabletViewParameters(),
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+    },
+  },
 }
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   ...getTabletViewParameters(),
   mockdate: new Date('2024-09-11T13:00:00.000Z'),
-  msw: buildMswRoutes({}, 'infinite'),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({}, 'infinite'),
+    },
+  },
 }
 
 export const MobileEmpty = Template.bind({})
@@ -137,12 +157,20 @@ MobileEmpty.parameters = getMobileViewParameters()
 export const MobileAllFields = Template.bind({})
 MobileAllFields.parameters = {
   ...getMobileViewParameters(),
-  msw: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
+    },
+  },
 }
 export const MobileLoading = Template.bind({})
 MobileLoading.parameters = {
   ...getMobileViewParameters(),
-  msw: buildMswRoutes({}, 'infinite'),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({}, 'infinite'),
+    },
+  },
 }
 
 export const AllFieldsFieldsHiddenByLogic = Template.bind({})
@@ -157,17 +185,21 @@ AllFieldsFieldsHiddenByLogic.parameters = {
 
 export const FormWithWebhook = Template.bind({})
 FormWithWebhook.parameters = {
-  msw: [
-    getAdminFormSettings({
-      overrides: {
-        webhook: {
-          url: 'some-webhook-url',
-          isRetryEnabled: false,
-        },
-      },
-    }),
-    ...buildMswRoutes(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        getAdminFormSettings({
+          overrides: {
+            webhook: {
+              url: 'some-webhook-url',
+              isRetryEnabled: false,
+            },
+          },
+        }),
+        ...buildMswRoutes(),
+      ],
+    },
+  },
 }
 
 export const FormWithWebhookMobile = Template.bind({})
@@ -178,21 +210,25 @@ FormWithWebhookMobile.parameters = {
 
 export const FormWithPayment = Template.bind({})
 FormWithPayment.parameters = {
-  msw: buildMswRoutes({
-    responseMode: FormResponseMode.Encrypt,
-    payments_channel: {
-      channel: PaymentChannel.Stripe,
-      target_account_id: 'acct_sampleid',
-      publishable_key: 'pk_samplekey',
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        responseMode: FormResponseMode.Encrypt,
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+          target_account_id: 'acct_sampleid',
+          publishable_key: 'pk_samplekey',
+        },
+        payments_field: {
+          enabled: true,
+          description: 'Test event registration fee',
+          payment_type: PaymentType.Variable,
+          min_amount: 1000,
+          max_amount: 5000,
+        },
+      }),
     },
-    payments_field: {
-      enabled: true,
-      description: 'Test event registration fee',
-      payment_type: PaymentType.Variable,
-      min_amount: 1000,
-      max_amount: 5000,
-    },
-  }),
+  },
 }
 
 export const FormWithPaymentMobile = Template.bind({})

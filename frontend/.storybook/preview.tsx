@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
 import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import { Decorator, ReactRenderer } from '@storybook/react'
-import { initialize, mswDecorator } from 'msw-storybook-addon'
+import { initialize, mswDecorator, mswLoader } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
 import * as dayjsUtils from '~utils/dayjs'
@@ -18,6 +18,7 @@ import i18n from '../src/i18n/i18n'
 import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
+import { envHandlers } from '~/mocks/msw/handlers/env'
 
 initialize({
   onUnhandledRequest: 'bypass',
@@ -55,7 +56,7 @@ export const decorators = [
     },
     Provider: ChakraProvider,
   }),
-  mswDecorator,
+  mswDecorator, // TODO: remove this in favor of `const loaders = [mswLoader]`. Unable to remove due to FE vitest failing
 ]
 
 export const parameters = {
@@ -69,4 +70,11 @@ export const parameters = {
     theme: StorybookTheme.docs,
     inlineStories: true,
   },
+  msw: {
+    handlers: {
+      env: envHandlers,
+    },
+  },
 }
+
+export const loaders = [mswLoader]
