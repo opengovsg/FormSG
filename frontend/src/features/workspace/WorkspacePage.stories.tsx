@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { times } from 'lodash'
-import { http, delay as MswDelay, HttpResponse } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { UserId } from '~shared/types'
 import {
