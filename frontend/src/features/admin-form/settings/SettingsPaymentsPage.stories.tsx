@@ -21,7 +21,7 @@ export default {
   component: SettingsPaymentsPage,
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
-    msw: buildEncryptModeMswRoutes(),
+    msw: { handlers: { default: buildEncryptModeMswRoutes() } },
   },
 } as Meta
 
@@ -30,19 +30,37 @@ export const IsSingleSubmissionEnabledWithoutEmailNotifications = Template.bind(
   {},
 )
 IsSingleSubmissionEnabledWithoutEmailNotifications.parameters = {
-  msw: buildEncryptModeMswRoutes({ isSingleSubmission: true, emails: [] }),
+  msw: {
+    handlers: {
+      default: buildEncryptModeMswRoutes({
+        isSingleSubmission: true,
+        emails: [],
+      }),
+    },
+  },
 }
 
 export const IsSingleSubmissionEnabledWithEmailNotifications = Template.bind({})
 IsSingleSubmissionEnabledWithEmailNotifications.parameters = {
-  msw: buildEncryptModeMswRoutes({
-    isSingleSubmission: true,
-    emails: ['dummy@dummy.com'],
-  }),
+  msw: {
+    handlers: {
+      default: buildEncryptModeMswRoutes({
+        isSingleSubmission: true,
+        emails: ['dummy@dummy.com'],
+      }),
+    },
+  },
 }
 
 export const IsSingleSubmissionDisabledWithoutEmailNotifications =
   Template.bind({})
 IsSingleSubmissionDisabledWithoutEmailNotifications.parameters = {
-  msw: buildEncryptModeMswRoutes({ isSingleSubmission: false, emails: [] }),
+  msw: {
+    handlers: {
+      default: buildEncryptModeMswRoutes({
+        isSingleSubmission: false,
+        emails: [],
+      }),
+    },
+  },
 }
