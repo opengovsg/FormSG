@@ -10,7 +10,6 @@ export default defineConfig((configEnv) =>
         setupFiles: ['./vitest-setup.ts'],
         globals: true,
         environment: 'jsdom', // For storybook tests to work properly
-        pool: 'forks', // Even though the default should be 'forks' but for some reason this has to be specified otherwise there would be issues with tests throwing cryptic errors
       },
     }),
   ),
