@@ -721,8 +721,8 @@ export const PublicFormProvider = ({
   })
 
   const onSaveDraft = () => {
-    const { formState: { dirtyFields} } = formMethods
-    
+    const { formState: { dirtyFields } } = formMethods
+
     const updatedDraftResponses = getUpdatedSaveDraftResponses({
       previousDraftResponses: draftSubmission?.draftResponses,
       formFieldValues: formMethods.getValues(),

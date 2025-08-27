@@ -17,7 +17,18 @@ export const getUpdatedSaveDraftResponses = ({
   dirtyFieldIds: string[]
   formFields: FormFieldDto[]
 }): FormFieldValues | null => {
-  const validFormFieldIds = formFields.map((field) => field._id)
+  // Note: payment fields are not included in formFields to keep the implementation simple,
+  // hence they will not be saved in the draft.
+  const validFormFieldIds = [
+    ...formFields
+      // Exclude non-fillable fields from the draft
+      .filter(
+        (field) =>
+          field.fieldType !== BasicField.Section &&
+          field.fieldType !== BasicField.Statement,
+      )
+      .map((field) => field._id),
+  ]
   const myInfoFieldIds = formFields
     .filter((field) => isMyInfo(field))
     .map((field) => field._id)
