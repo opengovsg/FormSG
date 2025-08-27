@@ -37,6 +37,7 @@ import {
   updateFormEsrvcId,
   updateFormHasMultiLang,
   updateFormInactiveMessage,
+  updateFormIsSaveDraftEnabled,
   updateFormIssueNotification,
   updateFormLimit,
   updateFormRespondentCopy,
@@ -202,6 +203,22 @@ export const useMutateFormSettings = () => {
             toastDescription: isSelectedLanguageSupported,
           })
         }
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormIsSaveDraftEnabled = useMutation(
+    (nextIsSaveDraftEnabled: boolean) =>
+      updateFormIsSaveDraftEnabled(formId, nextIsSaveDraftEnabled),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Saving of draft responses is now ${
+            newData.isSaveDraftEnabled ? 'enabled' : 'disabled'
+          } on your form.`,
+        })
       },
       onError: handleError,
     },
@@ -545,6 +562,7 @@ export const useMutateFormSettings = () => {
     mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
+    mutateFormIsSaveDraftEnabled,
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,

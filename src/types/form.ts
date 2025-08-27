@@ -59,6 +59,7 @@ type FormDefaultableKey =
   | 'permissionList'
   | 'startPage'
   | 'endPage'
+  | 'isSaveDraftEnabled'
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'hasRespondentCopy'
@@ -289,6 +290,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   form_fields: NonNullable<T['form_fields']>
   form_logics: NonNullable<T['form_logics']>
   permissionList: NonNullable<T['permissionList']>
+  isSaveDraftEnabled: NonNullable<T['isSaveDraftEnabled']>
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   hasRespondentCopy: NonNullable<T['hasRespondentCopy']>

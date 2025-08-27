@@ -94,6 +94,14 @@ export const updateFormSupportedLanguages: UpdateFormFn<
   })
 }
 
+export const updateFormIsSaveDraftEnabled: UpdateFormFn<
+  'isSaveDraftEnabled'
+> = async (formId, newIsSaveDraftEnabled) => {
+  return updateFormSettings(formId, {
+    isSaveDraftEnabled: newIsSaveDraftEnabled,
+  })
+}
+
 export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
   formId,
   newHasCaptcha,

@@ -40,6 +40,7 @@ const FORM_SETTINGS_FIELDS = [
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'esrvcId',
+  'isSaveDraftEnabled',
   'hasCaptcha',
   'hasIssueNotification',
   'inactiveMessage',

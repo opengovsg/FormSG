@@ -670,6 +670,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
+      isSaveDraftEnabled: {
+        type: Boolean,
+        default: false,
+      },
+
       hasCaptcha: {
         type: Boolean,
         default: true,

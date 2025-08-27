@@ -7,6 +7,7 @@ import { FormIssueNotificationToggle } from './components/FormIssueNotificationT
 import { FormLimitToggle } from './components/FormLimitToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
 import { GeneralTabHeader } from './components/GeneralTabHeader'
+import FormSaveDraftToggle from './components/FormSaveDraftToggle'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
@@ -15,6 +16,8 @@ export const SettingsGeneralPage = (): JSX.Element => {
       <FormStatusToggle />
       <FormLimitToggle />
       <FormCustomisationSection />
+      <Divider my="2.5rem" />
+      <FormSaveDraftToggle /> 
       <Divider my="2.5rem" />
       <FormCaptchaToggle />
       <Divider my="2.5rem" />
