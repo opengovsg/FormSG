@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
@@ -32,13 +33,17 @@ export const SettingsWebhooksPage = (): JSX.Element => {
 
   // Webhooks are only supported in storage mode; show message if form response mode is not storage
   if (!enableWebhooks) {
-    return <WebhooksUnsupportedMsg />
+    return (
+      <Skeleton isLoaded={!isLoading}>
+        <WebhooksUnsupportedMsg />
+      </Skeleton>
+    )
   }
 
   return (
-    <>
+    <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>Webhooks</CategoryHeader>
       <WebhooksSection />
-    </>
+    </Skeleton>
   )
 }
