@@ -19,6 +19,7 @@ import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 import { envHandlers } from '~/mocks/msw/handlers/env'
+import { featureFlagHandlers } from '~/mocks/msw/handlers/feature-flag'
 
 initialize({
   onUnhandledRequest: 'bypass',
@@ -73,6 +74,7 @@ export const parameters = {
   msw: {
     handlers: {
       env: envHandlers,
+      featureFlag: featureFlagHandlers,
     },
   },
 }
