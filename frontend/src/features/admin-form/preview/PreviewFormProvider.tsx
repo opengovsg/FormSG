@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
@@ -14,7 +14,7 @@ import {
   PublicFormContext,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
-import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
+import { augmentFormFields, getFieldPrefillMap, useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
@@ -324,6 +324,31 @@ export const PreviewFormProvider = ({
     return <NotFoundErrorPage />
   }
 
+  const onSaveDraft = () => {
+    toast({
+      description: 'Since you are in preview mode, there is no draft saved.',
+    })
+  }
+
+  const searchParams = new URLSearchParams(window.location.search)
+
+  const form = data?.form
+  const formFields = form?.form_fields ?? []
+  const currentWorkflowStepNumber = 0 
+  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
+  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  
+  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
+  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
+
+  const defaultFormValues = {}
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+  })
+
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -337,6 +362,12 @@ export const PreviewFormProvider = ({
         handleLogout: undefined,
         isPaymentEnabled,
         isPreview: true,
+        onSaveDraft, 
+        isSaveDraftEnabled,
+        draftLastSavedDateTimeString: undefined,
+        augmentedFormFields, 
+        defaultFormValues,
+        fieldPrefillMap, 
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
@@ -351,7 +382,7 @@ export const PreviewFormProvider = ({
             : data?.form.title
         }
       />
-      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : <FormProvider {...formMethods}>{children}</FormProvider>}
     </PublicFormContext.Provider>
   )
 }

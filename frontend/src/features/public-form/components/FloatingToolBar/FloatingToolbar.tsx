@@ -1,7 +1,5 @@
 import { BiQuestionMark, BiSave } from 'react-icons/bi'
 import { Stack, useDisclosure } from '@chakra-ui/react'
-import { useToast } from '~hooks/useToast'
-import { format } from 'date-fns'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
@@ -11,14 +9,7 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSaveDraft?: () => void, draftLastSavedDateTimeString?: string }) => {
-
-  const toast = useToast({ isClosable: true })
-  const defaultOnSaveDraft = () => {
-    toast({
-      description: 'Since you are in preview mode, there is no draft saved.',
-    })
-  }
+const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSaveDraft: () => void, draftLastSavedDateTimeString?: string }) => {
 
   const tooltipLabel = draftLastSavedDateTimeString ? `Last saved: ${draftLastSavedDateTimeString}` : 'Save a draft'
 
@@ -33,7 +24,7 @@ const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSave
             }}
             aria-label="save a draft"
             icon={<BiSave color="primary.500" />}
-            onClick={onSaveDraft || defaultOnSaveDraft}
+            onClick={onSaveDraft}
           />
         </Tooltip>
   )

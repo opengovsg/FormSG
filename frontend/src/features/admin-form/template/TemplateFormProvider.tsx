@@ -4,17 +4,19 @@ import { useTranslation } from 'react-i18next'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
 import { PublicFormContext } from '~/features/public-form/PublicFormContext'
-import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
+import { augmentFormFields, getFieldPrefillMap, useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { FormProvider, useForm } from 'react-hook-form'
+import { FormFieldValues } from '~templates/Field'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -79,6 +81,32 @@ export const TemplateFormProvider = ({
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
+  
+  const onSaveDraft = () => {
+    toast({
+      description: 'Since you are in template preview mode, there is no draft saved.',
+    })
+  }
+
+  const searchParams = new URLSearchParams(window.location.search)
+  
+  const form = data?.form
+  const formFields = form?.form_fields ?? []
+  const currentWorkflowStepNumber = 0 
+  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
+  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  
+  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
+  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
+
+
+  const defaultFormValues = {}
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+  })
+
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   return (
     <PublicFormContext.Provider
@@ -92,6 +120,11 @@ export const TemplateFormProvider = ({
         handleLogout: undefined,
         isPreview: true,
         isPaymentEnabled: false,
+        onSaveDraft, 
+        isSaveDraftEnabled,
+        defaultFormValues,
+        augmentedFormFields, 
+        fieldPrefillMap, 
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
@@ -106,7 +139,7 @@ export const TemplateFormProvider = ({
             : data?.form.title
         }
       />
-      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : <FormProvider {...formMethods}>{children}</FormProvider>}
     </PublicFormContext.Provider>
   )
 }

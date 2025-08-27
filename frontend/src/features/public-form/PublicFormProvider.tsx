@@ -194,12 +194,12 @@ const transformFormInputTrimTextInputs =
     )
   }
 
-const augmentFormFields = (formFields: FormFieldDto[], currentStepNumberWorkflowStep?: FormWorkflowStepDto) => {
+export const augmentFormFields = (formFields: FormFieldDto[], currentStepNumberWorkflowStep?: FormWorkflowStepDto) => {
   return formFields.map(augmentWithMyInfo)
   .map((fields) => augmentFieldWithMrfWorkflowDisabling(currentStepNumberWorkflowStep, fields))
 } 
 
-const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URLSearchParams) => {
+export const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URLSearchParams) => {
   // Return object containing field id and query param value only if id exists in form fields.
   return formFields.reduce((acc, field) => {
     if (
