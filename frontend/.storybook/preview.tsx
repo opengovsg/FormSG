@@ -11,6 +11,9 @@ import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import { Decorator, ReactRenderer } from '@storybook/react'
 import { initialize, mswDecorator, mswLoader } from 'msw-storybook-addon'
 
+import { envHandlers } from '~/mocks/msw/handlers/env'
+import { featureFlagHandlers } from '~/mocks/msw/handlers/feature-flag'
+
 import { AuthProvider } from '~contexts/AuthContext'
 import * as dayjsUtils from '~utils/dayjs'
 
@@ -18,8 +21,6 @@ import i18n from '../src/i18n/i18n'
 import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
-import { envHandlers } from '~/mocks/msw/handlers/env'
-import { featureFlagHandlers } from '~/mocks/msw/handlers/feature-flag'
 
 initialize({
   onUnhandledRequest: 'bypass',
