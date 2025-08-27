@@ -119,7 +119,6 @@ export const FormFields = ({
             />
           </Box>
         )}
-      <PublicFormPaymentResumeModal />
       {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
       {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
         <Box mt="2.5rem" px={{ base: '1rem', md: 0 }}>

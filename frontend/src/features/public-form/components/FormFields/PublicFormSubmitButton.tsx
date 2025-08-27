@@ -1,7 +1,7 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
-import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
+import { useFormContext, useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
+import { ButtonProps, Flex, Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
@@ -20,6 +20,42 @@ import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePayment
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
+import Tooltip from '~components/Tooltip'
+import { format } from 'date-fns'
+import { getUpdatedSaveDraftResponses } from '~features/public-form/utils/getUpdatedSaveDraftValues'
+import { useToast } from '~hooks/useToast'
+
+const PublicFormSaveDraftButton = (props: ButtonProps) => {
+  const toast = useToast({ isClosable: true })
+  const { draftSubmission, setDraftSubmission } = usePublicFormContext()
+  const { getValues, formState: { dirtyFields } } = useFormContext()
+  const draftLastUpdated = draftSubmission?.lastUpdated
+
+  const tooltipLabel = draftLastUpdated ? `Last saved: ${format(new Date(draftLastUpdated), 'do MMM yyyy, h:mm:ss a')}` : ''
+
+  const onSaveDraft = () => {
+    const updatedDraftResponses = getUpdatedSaveDraftResponses({
+      formFieldValues: getValues(),
+      dirtyFields,
+      previousDraftResponses: draftSubmission?.draftResponses,
+    })
+    
+    setDraftSubmission({
+      lastUpdated: Date.now(),
+      draftResponses: updatedDraftResponses
+    })
+
+    toast({ 
+      description: 'Your draft has been successfully saved.',
+    })
+  }
+
+  return (
+    <Tooltip placement='top' label={tooltipLabel}>
+      <Button variant="outline" onClick={onSaveDraft} {...props}>Save a draft</Button>
+    </Tooltip>
+    )
+}
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -128,27 +164,30 @@ export const PublicFormSubmitButton = ({
         isOpen={isSingleSubmissionOnlyModalOpen}
         onClose={onSingleSubmissionModalClose}
       />
-      <Button
-        isFullWidth={isMobile}
-        w="100%"
-        colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
-        type="button"
-        isLoading={isSubmitting}
-        isDisabled={!!preventSubmissionLogic || !onSubmit}
-        loadingText={t(
-          'features.publicForm.components.submitButton.loadingText',
-        )}
-        onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
-      >
-        <VisuallyHidden>
-          {t('features.publicForm.components.submitButton.visuallyHidden')}
-        </VisuallyHidden>
-        {preventSubmissionLogic
-          ? t('features.publicForm.components.submitButton.preventSubmission')
-          : isPaymentEnabled
-            ? t('features.publicForm.components.submitButton.proceedToPay')
-            : t('features.publicForm.components.submitButton.submitNow')}
-      </Button>
+      <Flex w='100' gap="1rem">
+        <PublicFormSaveDraftButton flex={1} />
+        <Button
+          flex={1}
+          isFullWidth={isMobile}
+          colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
+          type="button"
+          isLoading={isSubmitting}
+          isDisabled={!!preventSubmissionLogic || !onSubmit}
+          loadingText={t(
+            'features.publicForm.components.submitButton.loadingText',
+          )}
+          onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
+        >
+          <VisuallyHidden>
+            {t('features.publicForm.components.submitButton.visuallyHidden')}
+          </VisuallyHidden>
+          {preventSubmissionLogic
+            ? t('features.publicForm.components.submitButton.preventSubmission')
+            : isPaymentEnabled
+              ? t('features.publicForm.components.submitButton.proceedToPay')
+              : t('features.publicForm.components.submitButton.submitNow')}
+        </Button>
+      </Flex>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
           {preventSubmissionMessage}

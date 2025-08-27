@@ -76,7 +76,6 @@ import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { DraftSubmission, PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
-import { useLocalStorage } from '~hooks/useLocalStorage'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { augmentFieldWithMrfWorkflowDisabling, isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
@@ -84,6 +83,7 @@ import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
+import { useIndexedDb } from '~hooks/useIndexedDb'
 
 interface PublicFormProviderProps {
   formId: string
@@ -656,6 +656,12 @@ export const PublicFormProvider = ({
     previousSubmission?.submissionSecretKey,
   )
 
+  const formDraftSubmissionKey = `form-${formId}-draft-submission`
+  const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
+    lastUpdated: null,
+    draftResponses: null,
+  })
+
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const handleLogout = useCallback(() => {
@@ -795,7 +801,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitEmailFormWithFetch()
+            return submitEmailFormWithFetch().then(() => clearDraftSubmission())
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
@@ -814,6 +820,7 @@ export const PublicFormProvider = ({
                   },
                   { onSuccess },
                 )
+                .then(() => clearDraftSubmission())
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
@@ -930,7 +937,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch()
+            return submitStorageFormWithFetch().then(() => clearDraftSubmission())
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -974,7 +981,7 @@ export const PublicFormProvider = ({
                   })
                 },
               },
-            )
+            ).then(() => clearDraftSubmission())
             .catch(async (error) => {
               postIFrameMessage({ state: 'submitError' })
               // TODO(#5826): Remove when we have resolved the Network Error
@@ -1014,7 +1021,7 @@ export const PublicFormProvider = ({
                   mrfStep,
                 })
               },
-            })
+            }).then(() => clearDraftSubmission())
             .catch(async (error) => {
               showErrorToast(error, form)
             })
@@ -1060,12 +1067,6 @@ export const PublicFormProvider = ({
     return <NotFoundErrorPage />
   }
 
-  const formDraftSubmissionKey = `form-${formId}-draft-submission`
-  const [draftSubmission, setDraftSubmission] = useLocalStorage<DraftSubmission>(formDraftSubmissionKey, {
-    lastUpdated: null,
-    draftResponses: null,
-  })
-
   useEffect(() => {
     if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       toast({ 
@@ -1079,7 +1080,7 @@ export const PublicFormProvider = ({
   const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
   const currentWorkflowStepNumber = previousWorkflowStepNumber ? previousWorkflowStepNumber + 1 : 0
   const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
-  const currentStepNumberWorkflowStep = formWorkflow && currentWorkflowStepNumber && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
+  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
   
   const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
   const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  

@@ -11,7 +11,7 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 import { useFormContext } from 'react-hook-form'
-import { isEmpty, keysIn, pick } from 'lodash'
+import { getUpdatedSaveDraftResponses } from '~features/public-form/utils/getUpdatedSaveDraftValues'
 
 const SaveDraftButton = ({ onSaveDraft, draftLastUpdated }: { onSaveDraft?: () => void, draftLastUpdated?: number | null }) => {
 
@@ -77,13 +77,15 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const toast = useToast({ isClosable: true })
 
   const onSaveDraft = () => {
-    const dirtyFieldKeys = dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : [] 
-    const newDraftChanges = pick(getValues(), dirtyFieldKeys)  
-    const updatedDraftResponses = draftSubmission?.draftResponses ? { ...draftSubmission.draftResponses, ...newDraftChanges } : newDraftChanges
-
+    const updatedDraftResponses = getUpdatedSaveDraftResponses({
+      formFieldValues: getValues(),
+      dirtyFields,
+      previousDraftResponses: draftSubmission?.draftResponses,
+    })
+    
     setDraftSubmission({
       lastUpdated: Date.now(),
-      draftResponses: !isEmpty(updatedDraftResponses) ? updatedDraftResponses : null
+      draftResponses: updatedDraftResponses
     })
     
     toast({ 
