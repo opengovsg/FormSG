@@ -45,7 +45,6 @@ export default {
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true, delay: 300 },
-    msw: { handlers: { default: buildEmailModeMswRoutes() } },
   },
 } as Meta
 
@@ -374,7 +373,9 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
   msw: {
     handlers: {
-      default: PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw,
+      default:
+        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
+          .default,
     },
   },
 }
@@ -387,7 +388,9 @@ Mobile.parameters = {
   chromatic: { viewports: [viewports.xs] },
   msw: {
     handlers: {
-      default: PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw,
+      default:
+        PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw.handlers
+          .default,
     },
   },
 }
