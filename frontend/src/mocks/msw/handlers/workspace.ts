@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { UserId } from '~shared/types'
 import { WorkspaceDto, WorkspaceId } from '~shared/types/workspace'
@@ -38,10 +38,11 @@ export const getWorkspaces = ({
 }: {
   mockWorkspaces?: WorkspaceDto[]
 } & WithDelayProps = {}) => {
-  return rest.get<never, never, WorkspaceDto[]>(
+  return http.get<never, never, WorkspaceDto[]>(
     '/api/v3/admin/workspaces',
-    (_req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(mockWorkspaces))
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(mockWorkspaces, { status: 200 })
     },
   )
 }
