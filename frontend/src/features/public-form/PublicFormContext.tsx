@@ -85,7 +85,7 @@ export interface PublicFormContextProps
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
   draftSubmission?: DraftSubmission
-  setDraftSubmission: (draftSubmission: DraftSubmission) => void
+  onSaveDraft: () => void
   defaultFormValues: FormFieldValues
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap

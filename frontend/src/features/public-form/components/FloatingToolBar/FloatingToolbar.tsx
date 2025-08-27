@@ -10,8 +10,6 @@ import Tooltip from '~components/Tooltip'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
-import { useFormContext } from 'react-hook-form'
-import { getUpdatedSaveDraftResponses } from '~features/public-form/utils/getUpdatedSaveDraftValues'
 
 const SaveDraftButton = ({ onSaveDraft, draftLastUpdated }: { onSaveDraft?: () => void, draftLastUpdated?: number | null }) => {
 
@@ -72,26 +70,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
   const { isPreview, formId, submissionData } = usePublicFormContext()
   if (submissionData) return null
 
-  const { draftSubmission, setDraftSubmission } = usePublicFormContext()
-  const { formState: { dirtyFields }, getValues } = useFormContext()
-  const toast = useToast({ isClosable: true })
-
-  const onSaveDraft = () => {
-    const updatedDraftResponses = getUpdatedSaveDraftResponses({
-      formFieldValues: getValues(),
-      dirtyFields,
-      previousDraftResponses: draftSubmission?.draftResponses,
-    })
-    
-    setDraftSubmission({
-      lastUpdated: Date.now(),
-      draftResponses: updatedDraftResponses
-    })
-    
-    toast({ 
-      description: 'Your draft has been successfully saved.',
-    })
-  }
+  const { draftSubmission, onSaveDraft } = usePublicFormContext()
 
   return (
     <Stack

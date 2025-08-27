@@ -1,38 +1,31 @@
-import { isEmpty, keysIn, pick } from 'lodash'
+import { difference, intersection, isEmpty, pick } from 'lodash'
 
 import { FormFieldValues } from '~templates/Field'
 
 export const getUpdatedSaveDraftResponses = ({
   formFieldValues,
-  dirtyFields,
-  previousDraftResponses,
+  dirtyFieldIds,
   existingFormFieldIds,
+  myInfoFieldIds,
 }: {
   formFieldValues: FormFieldValues
-  dirtyFields: Record<string, boolean>
-  previousDraftResponses?: FormFieldValues | null
+  dirtyFieldIds: string[]
   existingFormFieldIds: string[]
+  myInfoFieldIds: string[]
 }) => {
-  const dirtyFieldKeys =
-    dirtyFields || isEmpty(dirtyFields) ? keysIn(dirtyFields) : []
-  const newDraftChanges = pick(formFieldValues, dirtyFieldKeys)
-  const updatedDraftResponses = previousDraftResponses
-    ? { ...previousDraftResponses, ...newDraftChanges }
-    : newDraftChanges
+  console.log('dirtyFieldIds:', dirtyFieldIds)
+  console.log('existingFieldIds:', existingFormFieldIds)
+  console.log('myInfoFieldIds:', myInfoFieldIds)
 
-  // If the field id no longer exists in the form, remove it from the saved draft.
-  const filteredDraftResponses = existingFormFieldIds.reduce(
-    (acc, formFieldId) => {
-      if (formFieldId in updatedDraftResponses) {
-        acc[formFieldId] = updatedDraftResponses[formFieldId]
-      }
-      return acc
-    },
-    {} as FormFieldValues,
+  const fieldIdsToInclude = difference(
+    intersection(dirtyFieldIds, existingFormFieldIds),
+    myInfoFieldIds,
   )
 
-  if (isEmpty(filteredDraftResponses)) {
+  const updatedDraftResponses = pick(formFieldValues, fieldIdsToInclude)
+
+  if (isEmpty(updatedDraftResponses)) {
     return null
   }
-  return filteredDraftResponses
+  return updatedDraftResponses
 }

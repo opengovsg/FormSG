@@ -1,5 +1,5 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
-import { useFormContext, useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
+import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { ButtonProps, Flex, Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
@@ -22,33 +22,12 @@ import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 import Tooltip from '~components/Tooltip'
 import { format } from 'date-fns'
-import { getUpdatedSaveDraftResponses } from '~features/public-form/utils/getUpdatedSaveDraftValues'
-import { useToast } from '~hooks/useToast'
 
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
-  const toast = useToast({ isClosable: true })
-  const { draftSubmission, setDraftSubmission } = usePublicFormContext()
-  const { getValues, formState: { dirtyFields } } = useFormContext()
+  const { draftSubmission, onSaveDraft } = usePublicFormContext()
   const draftLastUpdated = draftSubmission?.lastUpdated
 
   const tooltipLabel = draftLastUpdated ? `Last saved: ${format(new Date(draftLastUpdated), 'do MMM yyyy, h:mm:ss a')}` : ''
-
-  const onSaveDraft = () => {
-    const updatedDraftResponses = getUpdatedSaveDraftResponses({
-      formFieldValues: getValues(),
-      dirtyFields,
-      previousDraftResponses: draftSubmission?.draftResponses,
-    })
-    
-    setDraftSubmission({
-      lastUpdated: Date.now(),
-      draftResponses: updatedDraftResponses
-    })
-
-    toast({ 
-      description: 'Your draft has been successfully saved.',
-    })
-  }
 
   return (
     <Tooltip placement='top' label={tooltipLabel}>

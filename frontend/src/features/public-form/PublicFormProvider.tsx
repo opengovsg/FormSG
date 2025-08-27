@@ -80,10 +80,11 @@ import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { augmentFieldWithMrfWorkflowDisabling, isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
-import { hasExistingFieldValue } from '~features/myinfo/utils'
+import { hasExistingFieldValue, isMyInfo } from '~features/myinfo/utils'
 import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import { useIndexedDb } from '~hooks/useIndexedDb'
+import { getUpdatedSaveDraftResponses } from './utils/getUpdatedSaveDraftValues'
 
 interface PublicFormProviderProps {
   formId: string
@@ -705,6 +706,26 @@ export const PublicFormProvider = ({
     mode: 'onTouched',
   })
 
+  const onSaveDraft = () => {
+    const { formState: { dirtyFields} } = formMethods
+    
+    const updatedDraftResponses = getUpdatedSaveDraftResponses({
+      formFieldValues: formMethods.getValues(),
+      dirtyFieldIds: Object.keys(dirtyFields), 
+      existingFormFieldIds: formFields.map((field) => field._id),
+      myInfoFieldIds: formFields.filter((field) => isMyInfo(field)).map((field) => field._id),
+    })
+
+    setDraftSubmission({
+      lastUpdated: Date.now(),
+      draftResponses: updatedDraftResponses,
+    })
+
+    toast({ 
+      description: 'Your draft has been successfully saved.',
+    })
+  }
+
   useEffect(() => {
     if (draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       toast({ 
@@ -1142,7 +1163,7 @@ export const PublicFormProvider = ({
         previousAttachments,
         setPreviousSubmission,
         draftSubmission,
-        setDraftSubmission,
+        onSaveDraft,
         defaultFormValues,
         augmentedFormFields, 
         fieldPrefillMap,
