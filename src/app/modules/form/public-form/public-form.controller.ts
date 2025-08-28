@@ -7,7 +7,7 @@ import {
   ErrorCode,
   ErrorDto,
   FormAuthType,
-  FormFieldDto,
+  FormFieldDto, FormResponseMode,
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
@@ -64,6 +64,10 @@ import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
+import {
+  PublicMultiRespondentForm
+} from "../../../../../frontend/src/features/admin-form/settings/SettingsEmailsPage.stories";
+import {IPopulatedMultirespondentForm} from "../../../../types";
 
 const logger = createLoggerWithLabel(module)
 
@@ -544,6 +548,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
   { formId: string },
   | {
       responses: ReturnType<typeof FormService.createSampleSubmissionResponses>
+      workflowContent?: { workflow: IPopulatedMultirespondentForm['workflow'] }
     }
   | ErrorDto
   | PrivateFormErrorDto
@@ -609,6 +614,17 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
       error,
     })
     return res.sendStatus(HttpStatusCode.InternalServerError)
+  }
+
+  // Include workflow if form is a multirespondent form
+  if (form.responseMode === FormResponseMode.Multirespondent) {
+    let mrfForm  = form as IPopulatedMultirespondentForm
+    res.json({
+      responses: sampleData,
+      workflowContent: {
+        workflow: mrfForm.workflow,
+      }
+    })
   }
 
   return res.json({ responses: sampleData })
