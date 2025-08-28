@@ -106,6 +106,7 @@ export type PickDuplicateForm = Pick<
   | 'authType'
   | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
+  | 'isSaveDraftEnabled'
   | 'inactiveMessage'
   | 'submissionLimit'
   | 'responseMode'

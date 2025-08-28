@@ -929,6 +929,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
+      'isSaveDraftEnabled',
       'isSubmitterIdCollectionEnabled',
       'isSingleSubmission',
       'inactiveMessage',
