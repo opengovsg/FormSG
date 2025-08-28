@@ -11,7 +11,7 @@ import {
   FormWorkflowDto,
   LogicDto,
   ProductItem,
-  StatusTrackerWorkflowDto,
+  StrippedFormWorkflowDto,
 } from './form'
 import { ErrorCode } from './errorCodes'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
@@ -363,7 +363,7 @@ export type PaymentSubmissionData = {
 
 export type StatusTrackerData = {
   submittedSteps: SubmittedStep[] | undefined
-  workflow: StatusTrackerWorkflowDto
+  workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string
 }

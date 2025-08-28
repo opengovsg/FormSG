@@ -7,13 +7,17 @@ import {
   ErrorCode,
   ErrorDto,
   FormAuthType,
-  FormFieldDto, FormResponseMode,
+  FormFieldDto,
+  FormResponseMode,
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormDto,
   PublicFormViewDto,
+  StrippedFormWorkflowDto,
 } from '../../../../../shared/types'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
+import { IPopulatedMultirespondentForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -64,10 +68,6 @@ import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
-import {
-  PublicMultiRespondentForm
-} from "../../../../../frontend/src/features/admin-form/settings/SettingsEmailsPage.stories";
-import {IPopulatedMultirespondentForm} from "../../../../types";
 
 const logger = createLoggerWithLabel(module)
 
@@ -548,7 +548,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
   { formId: string },
   | {
       responses: ReturnType<typeof FormService.createSampleSubmissionResponses>
-      workflowContent?: { workflow: IPopulatedMultirespondentForm['workflow'] }
+      workflowContent?: { workflow: StrippedFormWorkflowDto }
     }
   | ErrorDto
   | PrivateFormErrorDto
@@ -618,16 +618,16 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
 
   // Include workflow if form is a multirespondent form
   if (form.responseMode === FormResponseMode.Multirespondent) {
-    let mrfForm  = form as IPopulatedMultirespondentForm
+    const mrfForm = form as IPopulatedMultirespondentForm
     res.json({
       responses: sampleData,
       workflowContent: {
-        workflow: mrfForm.workflow,
-      }
+        workflow: stripWorkflowEmails(mrfForm.toObject().workflow),
+      },
     })
+  } else {
+    return res.json({ responses: sampleData })
   }
-
-  return res.json({ responses: sampleData })
 }
 /**
  * NOTE: This is exported only for testing
