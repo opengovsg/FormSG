@@ -1,11 +1,11 @@
+import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
-import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 
 const FormSaveDraftToggle = () => {
   const { t } = useTranslation()
@@ -24,11 +24,7 @@ const FormSaveDraftToggle = () => {
       return
     const nextIsSaveDraftEnabled = !settings.isSaveDraftEnabled
     return mutateFormIsSaveDraftEnabled.mutate(nextIsSaveDraftEnabled)
-  }, [
-    isLoadingSettings,
-    mutateFormIsSaveDraftEnabled,
-    settings,
-  ])
+  }, [isLoadingSettings, mutateFormIsSaveDraftEnabled, settings])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>

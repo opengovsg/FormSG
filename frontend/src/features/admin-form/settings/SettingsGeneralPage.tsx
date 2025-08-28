@@ -1,15 +1,16 @@
 import { Divider, Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants/feature-flags'
 
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'
 import { FormIssueNotificationToggle } from './components/FormIssueNotificationToggle'
 import { FormLimitToggle } from './components/FormLimitToggle'
+import FormSaveDraftToggle from './components/FormSaveDraftToggle'
 import { FormStatusToggle } from './components/FormStatusToggle'
 import { GeneralTabHeader } from './components/GeneralTabHeader'
-import FormSaveDraftToggle from './components/FormSaveDraftToggle'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-import { featureFlags } from '~shared/constants/feature-flags'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   const isSaveDraftFeatureEnabled = useFeatureIsOn(featureFlags.saveDraft)

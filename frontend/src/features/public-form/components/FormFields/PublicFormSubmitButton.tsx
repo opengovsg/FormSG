@@ -11,6 +11,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button, { ButtonProps } from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
+import Tooltip from '~components/Tooltip'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
@@ -20,7 +21,6 @@ import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePayment
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
-import Tooltip from '~components/Tooltip'
 
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
