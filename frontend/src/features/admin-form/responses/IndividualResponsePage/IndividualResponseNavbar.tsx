@@ -19,11 +19,11 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 
-import { datadogRum } from '~utils/datadog'
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
@@ -165,11 +165,11 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
                   onClick={() => {
-                    datadogRum.addAction(
-                      'individualresponsepage.navbar.print',
+                    datadogLogs.logger.info(
+                      `IndividualResponseNavbar: admin printing pdf`,
                       {
                         meta: {
-                          action: featureFlags.adminPrintPdf,
+                          action: 'adminPrintPdf',
                           userId: user?._id,
                           submissionId: submissionId,
                         },
