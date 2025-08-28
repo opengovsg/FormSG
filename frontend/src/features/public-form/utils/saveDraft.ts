@@ -26,12 +26,12 @@ const getFormFieldIdsToChecksumMap = (formFields: FormFieldDto[]) => {
 }
 
 export const getDraftToSave = ({
-  previousDraftResponses,
+  previousRestoredDraftResponses,
   currentFormFieldValues: formFieldValues,
   dirtyFieldIds,
   formFields,
 }: {
-  previousDraftResponses?: FormFieldValues | null
+  previousRestoredDraftResponses?: FormFieldValues | null
   currentFormFieldValues: FormFieldValues
   dirtyFieldIds: string[]
   formFields: FormFieldDto[]
@@ -64,7 +64,7 @@ export const getDraftToSave = ({
   const currentDirtyFieldValues = pick(formFieldValues, dirtyFieldIds)
 
   const allDirtyFieldValues = {
-    ...(previousDraftResponses ?? {}),
+    ...(previousRestoredDraftResponses ?? {}),
     ...currentDirtyFieldValues,
   }
   const fieldIdsToInclude = difference(
@@ -111,7 +111,7 @@ export const getRestoreDraftFormValues = ({
   savedDraftSubmission,
 }: {
   currentFormFields: FormFieldDto[]
-  savedDraftSubmission: Pick<
+  savedDraftSubmission?: Pick<
     DraftSubmission,
     'draftResponses' | 'fieldDefinitionsChecksum'
   >

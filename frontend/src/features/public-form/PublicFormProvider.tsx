@@ -704,7 +704,6 @@ export const PublicFormProvider = ({
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
-    if (!draftSubmission) return { draftResponsesToRestore: {}, changedFieldIds: [] }
     return getRestoreDraftFormValues({
       currentFormFields: formFields,
       savedDraftSubmission: draftSubmission,
@@ -732,7 +731,7 @@ export const PublicFormProvider = ({
     const { formState: { dirtyFields } } = formMethods
 
     const draftToSave = getDraftToSave({
-      previousDraftResponses: draftSubmission?.draftResponses,
+      previousRestoredDraftResponses: draftResponsesToRestore,
       currentFormFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields), 
       formFields, 
