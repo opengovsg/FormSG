@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -701,7 +701,9 @@ export const PublicFormProvider = ({
     fieldDefinitionsChecksum: null,
   })
 
-  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta 
+  const isSaveDraftFeatureEnabled =  useFeatureIsOn(featureFlags.saveDraft)
+  const isSaveDraftEnabled = isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
 
   const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
     return getRestoreDraftFormValues({
