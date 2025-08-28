@@ -92,7 +92,6 @@
     "use-draggable-scroll": "^0.1.0",
     "validator": "^13.7.0",
     "vite-plugin-node-stdlib-browser": "^0.2.1",
-    "web-vitals": "^2.1.2",
     "zustand": "^4.1.1"
   },
   "scripts": {
@@ -131,8 +130,6 @@
     "@storybook/addon-links": "8.3.1",
     "@storybook/addon-themes": "8.3.1",
     "@storybook/blocks": "8.3.1",
-    "@storybook/node-logger": "8.3.1",
-    "@storybook/preset-create-react-app": "8.3.1",
     "@storybook/preview-api": "8.3.1",
     "@storybook/react": "8.3.1",
     "@storybook/react-vite": "8.3.1",
@@ -172,11 +169,9 @@
     "msw": "^2.10.5",
     "msw-storybook-addon": "^2.0.5",
     "prettier": "^3.2.5",
-    "react-refresh": "^0.14.0",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "storybook": "8.3.1",
-    "storybook-react-i18next": "^3.0.1",
     "vite": "^5.4.19",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
