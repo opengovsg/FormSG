@@ -5,8 +5,11 @@ import Toggle from '~components/Toggle'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const FormSaveDraftToggle = () => {
+
+  const { t } = useTranslation()
 
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
@@ -22,8 +25,8 @@ const FormSaveDraftToggle = () => {
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Toggle
-        label="Enable saving of draft responses"
-        description='Respondents will be able to save a draft of their responses on their browser.'
+        label={t('features.adminForm.settings.general.saveDraft.label')}
+        description={t('features.adminForm.settings.general.saveDraft.description')}
         isLoading={mutateFormIsSaveDraftEnabled.isLoading}
         isChecked={Boolean(settings?.isSaveDraftEnabled)}
         onChange={() => handleToggleSaveDraft()}

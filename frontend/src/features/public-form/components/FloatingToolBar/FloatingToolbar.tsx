@@ -8,10 +8,13 @@ import Tooltip from '~components/Tooltip'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
+import { useTranslation } from 'react-i18next'
 
 const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSaveDraft: () => void, draftLastSavedDateTimeString?: string }) => {
 
-  const tooltipLabel = draftLastSavedDateTimeString ? `Last saved: ${draftLastSavedDateTimeString}` : 'Save a draft'
+  const { t } = useTranslation()
+
+  const tooltipLabel = draftLastSavedDateTimeString ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', { lastSavedDateTimeString: draftLastSavedDateTimeString }) : t('features.publicForm.components.saveDraft.tooltip.default')
 
   return (
     <Tooltip placement="left" label={tooltipLabel}>

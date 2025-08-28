@@ -750,15 +750,16 @@ export const PublicFormProvider = ({
     setDraftSubmission(draftToSave)
 
     toast({ 
-      description: 'A draft has been successfully saved on your browser.',
+      description: t('features.publicForm.components.saveDraft.toast.success'),
     })
   }
 
   useEffect(() => {
     if (!isAuthRequired && isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
       const restoreDraftMessage = changedFieldIds.length > 0 
-        ? 'Some fields were not restored as the form has been updated.'
-        : 'Your draft has been successfully restored.' 
+        ? t('features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields') 
+        : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+
       toast({ 
         description: restoreDraftMessage,
       })

@@ -24,8 +24,9 @@ import Tooltip from '~components/Tooltip'
 
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
+  const { t } = useTranslation()
 
-  const tooltipLabel = draftLastSavedDateTimeString ? `Last saved: ${draftLastSavedDateTimeString}` : ''
+  const tooltipLabel = draftLastSavedDateTimeString ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', { lastSavedDateTimeString: draftLastSavedDateTimeString }) : ''
 
   return (
     <Tooltip placement='top' label={tooltipLabel}>
