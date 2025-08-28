@@ -51,7 +51,7 @@ export default {
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true, delay: 200 },
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
     msw: {
       handlers: {
