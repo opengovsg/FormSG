@@ -23,6 +23,7 @@ import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 
+import { datadogRum } from '~utils/datadog'
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
@@ -164,7 +165,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
                   onClick={() => {
-                    console.log({
+                    datadogRum.addAction(featureFlags.adminPrintPdf, {
                       meta: {
                         action: featureFlags.adminPrintPdf,
                         userId: user?._id,
