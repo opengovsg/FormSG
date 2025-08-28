@@ -8,7 +8,6 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const FormSaveDraftToggle = () => {
-
   const { t } = useTranslation()
 
   const { data: settings, isLoading: isLoadingSettings } =
@@ -17,16 +16,27 @@ const FormSaveDraftToggle = () => {
   const { mutateFormIsSaveDraftEnabled } = useMutateFormSettings()
 
   const handleToggleSaveDraft = useCallback(() => {
-    if (!settings || isLoadingSettings || mutateFormIsSaveDraftEnabled.isLoading) return
+    if (
+      !settings ||
+      isLoadingSettings ||
+      mutateFormIsSaveDraftEnabled.isLoading
+    )
+      return
     const nextIsSaveDraftEnabled = !settings.isSaveDraftEnabled
     return mutateFormIsSaveDraftEnabled.mutate(nextIsSaveDraftEnabled)
-  }, [isLoadingSettings, mutateFormIsSaveDraftEnabled, settings?.isSaveDraftEnabled])
+  }, [
+    isLoadingSettings,
+    mutateFormIsSaveDraftEnabled,
+    settings,
+  ])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Toggle
         label={t('features.adminForm.settings.general.saveDraft.label')}
-        description={t('features.adminForm.settings.general.saveDraft.description')}
+        description={t(
+          'features.adminForm.settings.general.saveDraft.description',
+        )}
         isLoading={mutateFormIsSaveDraftEnabled.isLoading}
         isChecked={Boolean(settings?.isSaveDraftEnabled)}
         onChange={() => handleToggleSaveDraft()}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   Flex,
   forwardRef,
@@ -36,7 +36,7 @@ export interface RatingProps {
    */
   wrapComponentsPerRow?: number
   /**
-   * The controlled value of the rating. 
+   * The controlled value of the rating.
    */
   value: number
 

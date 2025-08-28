@@ -10,7 +10,6 @@ import {
   FormSettings,
   FormStatus,
   FormSupportedLanguages,
-  MultirespondentFormSettings,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'

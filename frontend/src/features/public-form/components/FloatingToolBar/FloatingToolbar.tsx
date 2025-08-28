@@ -10,33 +10,49 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 import { useTranslation } from 'react-i18next'
 
-const SaveDraftButton = ({ onSaveDraft, draftLastSavedDateTimeString }: { onSaveDraft: () => void, draftLastSavedDateTimeString?: string }) => {
-
+const SaveDraftButton = ({
+  onSaveDraft,
+  draftLastSavedDateTimeString,
+}: {
+  onSaveDraft: () => void
+  draftLastSavedDateTimeString?: string
+}) => {
   const { t } = useTranslation()
 
-  const tooltipLabel = draftLastSavedDateTimeString ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', { lastSavedDateTimeString: draftLastSavedDateTimeString }) : t('features.publicForm.components.saveDraft.tooltip.default')
+  const tooltipLabel = draftLastSavedDateTimeString
+    ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
+        lastSavedDateTimeString: draftLastSavedDateTimeString,
+      })
+    : t('features.publicForm.components.saveDraft.tooltip.default')
 
   return (
     <Tooltip placement="left" label={tooltipLabel}>
-          <IconButton
-            variant="outline"
-            cursor="pointer"
-            borderBottomRadius={0}
-            _focus={{
-              boxShadow: 0,
-            }}
-            aria-label="save a draft"
-            icon={<BiSave color="primary.500" />}
-            onClick={onSaveDraft}
-          />
-        </Tooltip>
+      <IconButton
+        variant="outline"
+        cursor="pointer"
+        borderBottomRadius={0}
+        _focus={{
+          boxShadow: 0,
+        }}
+        aria-label="save a draft"
+        icon={<BiSave color="primary.500" />}
+        onClick={onSaveDraft}
+      />
+    </Tooltip>
   )
 }
 
-const IssueFeedbackButton = ({ isPreview, formId }: { isPreview: boolean, formId: string }) => {
+const IssueFeedbackButton = ({
+  isPreview,
+  formId,
+}: {
+  isPreview: boolean
+  formId: string
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  return <>
-        <Tooltip placement="left" label="Report an issue">
+  return (
+    <>
+      <Tooltip placement="left" label="Report an issue">
         <IconButton
           variant="outline"
           cursor="pointer"
@@ -58,26 +74,37 @@ const IssueFeedbackButton = ({ isPreview, formId }: { isPreview: boolean, formId
         formId={formId}
       />
     </>
+  )
 }
 
 export const FloatingToolBar = (): JSX.Element | null => {
-  const { isPreview, formId, submissionData } = usePublicFormContext()
+  const {
+    isPreview,
+    formId,
+    submissionData,
+    isSaveDraftEnabled,
+    onSaveDraft,
+    draftLastSavedDateTimeString,
+  } = usePublicFormContext()
   if (submissionData) return null
-
-  const { draftLastSavedDateTimeString, onSaveDraft, isSaveDraftEnabled } = usePublicFormContext()
 
   return (
     <Stack
       direction={{ base: 'row', md: 'column' }}
       position="fixed"
-      spacing='1rem'
-      bottom='2rem'
-      right='2rem'
+      spacing="1rem"
+      bottom="2rem"
+      right="2rem"
       sx={noPrintCss}
       zIndex="docked"
     >
       <IssueFeedbackButton isPreview={isPreview} formId={formId} />
-      {isSaveDraftEnabled && <SaveDraftButton onSaveDraft={onSaveDraft} draftLastSavedDateTimeString={draftLastSavedDateTimeString} />}
+      {isSaveDraftEnabled && (
+        <SaveDraftButton
+          onSaveDraft={onSaveDraft}
+          draftLastSavedDateTimeString={draftLastSavedDateTimeString}
+        />
+      )}
     </Stack>
   )
 }

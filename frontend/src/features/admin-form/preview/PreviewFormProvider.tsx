@@ -14,7 +14,11 @@ import {
   PublicFormContext,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
-import { augmentFormFields, getFieldPrefillMap, useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
+import {
+  augmentFormFields,
+  getFieldPrefillMap,
+  useCommonFormProvider,
+} from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
@@ -334,12 +338,27 @@ export const PreviewFormProvider = ({
 
   const form = data?.form
   const formFields = form?.form_fields ?? []
-  const currentWorkflowStepNumber = 0 
-  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
-  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
-  
-  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
-  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
+  const currentWorkflowStepNumber = 0
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+  const currentStepNumberWorkflowStep =
+    formWorkflow && formWorkflow.length > currentWorkflowStepNumber
+      ? formWorkflow[currentWorkflowStepNumber]
+      : undefined
+
+  const fieldPrefillMap = useMemo(
+    () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
+    [formFields, searchParams],
+  )
+  const augmentedFormFields = useMemo(
+    () =>
+      formFields
+        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        : [],
+    [formFields, currentStepNumberWorkflowStep],
+  )
 
   const defaultFormValues = {}
 
@@ -362,12 +381,12 @@ export const PreviewFormProvider = ({
         handleLogout: undefined,
         isPaymentEnabled,
         isPreview: true,
-        onSaveDraft, 
+        onSaveDraft,
         isSaveDraftEnabled,
         draftLastSavedDateTimeString: undefined,
-        augmentedFormFields, 
+        augmentedFormFields,
         defaultFormValues,
-        fieldPrefillMap, 
+        fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
@@ -382,7 +401,11 @@ export const PreviewFormProvider = ({
             : data?.form.title
         }
       />
-      {isFormNotFound ? <FormNotFound message={error?.message} /> : <FormProvider {...formMethods}>{children}</FormProvider>}
+      {isFormNotFound ? (
+        <FormNotFound message={error?.message} />
+      ) : (
+        <FormProvider {...formMethods}>{children}</FormProvider>
+      )}
     </PublicFormContext.Provider>
   )
 }

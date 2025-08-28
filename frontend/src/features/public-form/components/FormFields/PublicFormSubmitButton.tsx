@@ -26,13 +26,19 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
   const { t } = useTranslation()
 
-  const tooltipLabel = draftLastSavedDateTimeString ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', { lastSavedDateTimeString: draftLastSavedDateTimeString }) : ''
+  const tooltipLabel = draftLastSavedDateTimeString
+    ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
+        lastSavedDateTimeString: draftLastSavedDateTimeString,
+      })
+    : ''
 
   return (
-    <Tooltip placement='top' label={tooltipLabel}>
-      <Button variant="outline" onClick={onSaveDraft} {...props}>Save a draft</Button>
+    <Tooltip placement="top" label={tooltipLabel}>
+      <Button variant="outline" onClick={onSaveDraft} {...props}>
+        Save a draft
+      </Button>
     </Tooltip>
-    )
+  )
 }
 
 interface PublicFormSubmitButtonProps {
@@ -106,7 +112,7 @@ export const PublicFormSubmitButton = ({
           formId,
         )
         setPrevPaymentId(paymentId)
-      } catch (err) {
+      } catch (_err) {
         setPrevPaymentId('')
       }
       onPaymentsModalOpen()
@@ -144,8 +150,10 @@ export const PublicFormSubmitButton = ({
         isOpen={isSingleSubmissionOnlyModalOpen}
         onClose={onSingleSubmissionModalClose}
       />
-      <Flex w='100' gap="1rem">
-        {isSaveDraftEnabled && <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />}
+      <Flex w="100" gap="1rem">
+        {isSaveDraftEnabled && (
+          <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
+        )}
         <Button
           flex={1}
           isFullWidth={isMobile}

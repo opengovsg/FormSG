@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { Flex, useDisclosure } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 

@@ -55,7 +55,8 @@ export const VisibleFormFields = ({
     const visibleFields = formFields.filter((field) =>
       visibleFieldIds.has(field._id),
     )
-    const visibleFieldsWithQuestionNo = augmentFieldWithQuestionNo(visibleFields)
+    const visibleFieldsWithQuestionNo =
+      augmentFieldWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
 
     // set the number of visible fields in the context for public forms

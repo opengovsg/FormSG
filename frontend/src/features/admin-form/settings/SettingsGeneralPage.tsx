@@ -12,22 +12,21 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { featureFlags } from '~shared/constants/feature-flags'
 
 export const SettingsGeneralPage = (): JSX.Element => {
-
   const isSaveDraftFeatureEnabled = useFeatureIsOn(featureFlags.saveDraft)
-  
+
   return (
-      <Stack divider={<Divider />} spacing='2.5rem'>
-        <>
-          <GeneralTabHeader />
-          <FormStatusToggle />
-          <FormLimitToggle />
-          <FormCustomisationSection />
-        </>
-        {/* TODO [Save Draft v1.0]: Remove feature flagonce save draft is out of beta  */}
-        {isSaveDraftFeatureEnabled && <FormSaveDraftToggle />}
-        <FormCaptchaToggle />
-        <FormIssueNotificationToggle />
-        <FormDetailsSection />
-      </Stack>
+    <Stack divider={<Divider />} spacing="2.5rem">
+      <>
+        <GeneralTabHeader />
+        <FormStatusToggle />
+        <FormLimitToggle />
+        <FormCustomisationSection />
+      </>
+      {/* TODO [Save Draft v1.0]: Remove feature flagonce save draft is out of beta  */}
+      {isSaveDraftFeatureEnabled && <FormSaveDraftToggle />}
+      <FormCaptchaToggle />
+      <FormIssueNotificationToggle />
+      <FormDetailsSection />
+    </Stack>
   )
 }

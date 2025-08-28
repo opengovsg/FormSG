@@ -73,11 +73,18 @@ import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
-import { DraftSubmission, PublicFormContext, SubmissionData } from './PublicFormContext'
+import {
+  DraftSubmission,
+  PublicFormContext,
+  SubmissionData,
+} from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
-import { augmentFieldWithMrfWorkflowDisabling, isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import {
+  augmentFieldWithMrfWorkflowDisabling,
+  isFieldEnabledByMrfWorkflow,
+} from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
@@ -194,12 +201,24 @@ const transformFormInputTrimTextInputs =
     )
   }
 
-export const augmentFormFields = (formFields: FormFieldDto[], currentStepNumberWorkflowStep?: FormWorkflowStepDto) => {
-  return formFields.map(augmentWithMyInfo)
-  .map((fields) => augmentFieldWithMrfWorkflowDisabling(currentStepNumberWorkflowStep, fields))
-} 
+export const augmentFormFields = (
+  formFields: FormFieldDto[],
+  currentStepNumberWorkflowStep?: FormWorkflowStepDto,
+) => {
+  return formFields
+    .map(augmentWithMyInfo)
+    .map((fields) =>
+      augmentFieldWithMrfWorkflowDisabling(
+        currentStepNumberWorkflowStep,
+        fields,
+      ),
+    )
+}
 
-export const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URLSearchParams) => {
+export const getFieldPrefillMap = (
+  formFields: FormFieldDto[],
+  searchParams: URLSearchParams,
+) => {
   // Return object containing field id and query param value only if id exists in form fields.
   return formFields.reduce((acc, field) => {
     if (
@@ -219,9 +238,9 @@ export const getFieldPrefillMap = (formFields: FormFieldDto[], searchParams: URL
 const getInitialFormValues = ({
   formResponseMode,
   previousSubmission,
-  previousAttachments, 
+  previousAttachments,
   currentStepNumberWorkflowStep,
-  augmentedFormFields, 
+  augmentedFormFields,
   fieldPrefillMap,
   draftResponsesToRestore,
   searchParams,
@@ -237,57 +256,73 @@ const getInitialFormValues = ({
   searchParams: URLSearchParams
   isSaveDraftEnabled: boolean
 }): FormFieldValues => {
-  const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
-    if (formResponseMode === FormResponseMode.Multirespondent) {
-      const previousResponse = previousSubmission?.responses[field._id]
-      const previousAttachmentFieldResponseFileBuffer = previousAttachments?.[field._id]
-      const value = extractMrfPreviousStepResponseValue(field, previousResponse, previousAttachmentFieldResponseFileBuffer)
-      if (value) {
-        acc[field._id] = value
-      }
+  const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>(
+    (acc, field) => {
+      if (formResponseMode === FormResponseMode.Multirespondent) {
+        const previousResponse = previousSubmission?.responses[field._id]
+        const previousAttachmentFieldResponseFileBuffer =
+          previousAttachments?.[field._id]
+        const value = extractMrfPreviousStepResponseValue(
+          field,
+          previousResponse,
+          previousAttachmentFieldResponseFileBuffer,
+        )
+        if (value) {
+          acc[field._id] = value
+        }
 
-      // Only allow overriding of previous submission values if the field can be edited in this step. 
-      if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
+        // Only allow overriding of previous submission values if the field can be edited in this step.
+        if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
+          // Reinstate save draft values
+          if (
+            isSaveDraftEnabled &&
+            draftResponsesToRestore &&
+            draftResponsesToRestore[field._id]
+          ) {
+            acc[field._id] = draftResponsesToRestore[field._id]
+          }
+          // Use prefill value if exists
+          if (fieldPrefillMap[field._id]) {
+            acc[field._id] = fieldPrefillMap[field._id].prefillValue
+          }
+        }
+      } else if (formResponseMode === FormResponseMode.Encrypt) {
         // Reinstate save draft values
-        if (isSaveDraftEnabled && draftResponsesToRestore && draftResponsesToRestore[field._id]) {
+        if (
+          isSaveDraftEnabled &&
+          draftResponsesToRestore &&
+          draftResponsesToRestore[field._id]
+        ) {
           acc[field._id] = draftResponsesToRestore[field._id]
         }
-        // Use prefill value if exists 
+        // Use prefill value if exists.
         if (fieldPrefillMap[field._id]) {
           acc[field._id] = fieldPrefillMap[field._id].prefillValue
         }
+        // Use myinfo server default value if it exists.
+        // Myinfo overrides existing values since myinfo is seen as source of truth.
+        if (hasExistingFieldValue(field)) {
+          acc[field._id] = extractPreviewValue(field)
+        }
       }
-    } else if (formResponseMode === FormResponseMode.Encrypt) {
-      // Reinstate save draft values
-      if (isSaveDraftEnabled && draftResponsesToRestore && draftResponsesToRestore[field._id]) {
-        acc[field._id] = draftResponsesToRestore[field._id]
-      }
-      // Use prefill value if exists.
-      if (fieldPrefillMap[field._id]) {
-        acc[field._id] = fieldPrefillMap[field._id].prefillValue
-      }
-      // Use myinfo server default value if it exists. 
-      // Myinfo overrides existing values since myinfo is seen as source of truth.
-      if (hasExistingFieldValue(field)) {
-        acc[field._id] = extractPreviewValue(field)
-      }
-    }
 
-    if (!acc[field._id]) {
-      // Required so table column fields will render due to useFieldArray usage.
-      // See https://react-hook-form.com/api/usefieldarray
-      if (field.fieldType === BasicField.Table) {
-        acc[field._id] = times(field.minimumRows || 0, () =>
-          createTableRow(field),
-        )
-      } else {
-        // Set a default value for React Hook form to use as initial SSOT for comparing if field is dirty. This is used for Save Draft. 
-        acc[field._id] = ''
+      if (!acc[field._id]) {
+        // Required so table column fields will render due to useFieldArray usage.
+        // See https://react-hook-form.com/api/usefieldarray
+        if (field.fieldType === BasicField.Table) {
+          acc[field._id] = times(field.minimumRows || 0, () =>
+            createTableRow(field),
+          )
+        } else {
+          // Set a default value for React Hook form to use as initial SSOT for comparing if field is dirty. This is used for Save Draft.
+          acc[field._id] = ''
+        }
       }
-    }
 
-    return acc
-  }, {})
+      return acc
+    },
+    {},
+  )
 
   // Payment prefills - only for variable payments
   if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {
@@ -307,8 +342,8 @@ const getInitialFormValues = ({
 }
 
 const getSaveDraftKey = ({
-  formId, 
-  formSubmissionId, 
+  formId,
+  formSubmissionId,
   currentMrfWorkflowStepNumber,
 }: {
   formId: string
@@ -316,7 +351,16 @@ const getSaveDraftKey = ({
   currentMrfWorkflowStepNumber: number
 }) => {
   const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
-  return [FORMSG_SAVE_DRAFT_PREFIX, formId, formSubmissionId, currentMrfWorkflowStepNumber !== undefined ? 'step' + currentMrfWorkflowStepNumber : undefined].filter(Boolean).join('-')
+  return [
+    FORMSG_SAVE_DRAFT_PREFIX,
+    formId,
+    formSubmissionId,
+    currentMrfWorkflowStepNumber !== undefined
+      ? 'step' + currentMrfWorkflowStepNumber
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join('-')
 }
 
 export const PublicFormProvider = ({
@@ -330,7 +374,6 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-
 
   const {
     data,
@@ -675,35 +718,52 @@ export const PublicFormProvider = ({
   const form = data?.form
   const formFields = form?.form_fields ?? []
   const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
-  const currentWorkflowStepNumber = previousWorkflowStepNumber !== undefined ? previousWorkflowStepNumber + 1 : 0
-  const formWorkflow = form?.responseMode === FormResponseMode.Multirespondent ? form.workflow : undefined
-  const currentStepNumberWorkflowStep = formWorkflow && formWorkflow.length > currentWorkflowStepNumber ? formWorkflow[currentWorkflowStepNumber] : undefined
-  
+  const currentWorkflowStepNumber =
+    previousWorkflowStepNumber !== undefined
+      ? previousWorkflowStepNumber + 1
+      : 0
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+  const currentStepNumberWorkflowStep =
+    formWorkflow && formWorkflow.length > currentWorkflowStepNumber
+      ? formWorkflow[currentWorkflowStepNumber]
+      : undefined
+
   const isAuthRequired: boolean = useMemo(
-    () =>
-      !!form &&
-      form.authType !== FormAuthType.NIL &&
-      !data.spcpSession,
+    () => !!form && form.authType !== FormAuthType.NIL && !data.spcpSession,
     [form, data?.spcpSession],
   )
 
-  const fieldPrefillMap = useMemo(() => formFields ? getFieldPrefillMap(formFields, searchParams) : {}, [formFields, searchParams])
-  const augmentedFormFields = useMemo(() => formFields ? augmentFormFields(formFields, currentStepNumberWorkflowStep) : [], [formFields, currentStepNumberWorkflowStep])  
+  const fieldPrefillMap = useMemo(
+    () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
+    [formFields, searchParams],
+  )
+  const augmentedFormFields = useMemo(
+    () =>
+      formFields
+        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        : [],
+    [formFields, currentStepNumberWorkflowStep],
+  )
 
   const formDraftSubmissionKey = getSaveDraftKey({
     formId,
     formSubmissionId: previousSubmissionId,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
   })
-  const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
-    lastUpdated: null,
-    draftResponses: null,
-    fieldDefinitionsChecksum: null,
-  })
+  const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
+    useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
+      lastUpdated: null,
+      draftResponses: null,
+      fieldDefinitionsChecksum: null,
+    })
 
-  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta 
-  const isSaveDraftFeatureEnabled =  useFeatureIsOn(featureFlags.saveDraft)
-  const isSaveDraftEnabled = isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
+  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
+  const isSaveDraftFeatureEnabled = useFeatureIsOn(featureFlags.saveDraft)
+  const isSaveDraftEnabled =
+    isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
 
   const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
     return getRestoreDraftFormValues({
@@ -712,17 +772,32 @@ export const PublicFormProvider = ({
     })
   }, [draftSubmission?.lastUpdated, formFields])
 
-  const defaultFormValues = useMemo(() => form ? getInitialFormValues({
-    formResponseMode: form.responseMode, 
-    previousSubmission,
-    previousAttachments,
-    augmentedFormFields,
-    currentStepNumberWorkflowStep, 
-    fieldPrefillMap,
-    draftResponsesToRestore,
-    searchParams,
-    isSaveDraftEnabled,
-  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftResponsesToRestore, searchParams])
+  const defaultFormValues = useMemo(
+    () =>
+      form
+        ? getInitialFormValues({
+            formResponseMode: form.responseMode,
+            previousSubmission,
+            previousAttachments,
+            augmentedFormFields,
+            currentStepNumberWorkflowStep,
+            fieldPrefillMap,
+            draftResponsesToRestore,
+            searchParams,
+            isSaveDraftEnabled,
+          })
+        : {},
+    [
+      form,
+      previousSubmission,
+      previousAttachments,
+      augmentedFormFields,
+      currentStepNumberWorkflowStep,
+      fieldPrefillMap,
+      draftResponsesToRestore,
+      searchParams,
+    ],
+  )
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
@@ -734,33 +809,45 @@ export const PublicFormProvider = ({
     datadogLogs.logger.info('Save draft used', {
       meta: {
         action: 'save-draft-used',
-        formId
+        formId,
       },
     })
 
-    const { formState: { dirtyFields } } = formMethods
+    const {
+      formState: { dirtyFields },
+    } = formMethods
 
     const draftToSave = getDraftToSave({
       previousRestoredDraftResponses: draftResponsesToRestore,
       currentFormFieldValues: formMethods.getValues(),
-      dirtyFieldIds: Object.keys(dirtyFields), 
-      formFields, 
+      dirtyFieldIds: Object.keys(dirtyFields),
+      formFields,
     })
 
     setDraftSubmission(draftToSave)
 
-    toast({ 
+    toast({
       description: t('features.publicForm.components.saveDraft.toast.success'),
     })
   }
 
   useEffect(() => {
-    if (!isAuthRequired && isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
-      const restoreDraftMessage = changedFieldIds.length > 0 
-        ? t('features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields') 
-        : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+    if (
+      !isAuthRequired &&
+      isSaveDraftEnabled &&
+      draftSubmission?.lastUpdated &&
+      draftSubmission.lastUpdated < Date.now() - 1000
+    ) {
+      const restoreDraftMessage =
+        changedFieldIds.length > 0
+          ? t(
+              'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+            )
+          : t(
+              'features.publicForm.components.saveDraft.toast.restoredAllFields',
+            )
 
-      toast({ 
+      toast({
         description: restoreDraftMessage,
       })
     }
@@ -1041,7 +1128,9 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch().then(() => clearDraftSubmission())
+            return submitStorageFormWithFetch().then(() =>
+              clearDraftSubmission(),
+            )
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -1085,7 +1174,8 @@ export const PublicFormProvider = ({
                   })
                 },
               },
-            ).then(() => clearDraftSubmission())
+            )
+            .then(() => clearDraftSubmission())
             .catch(async (error) => {
               postIFrameMessage({ state: 'submitError' })
               // TODO(#5826): Remove when we have resolved the Network Error
@@ -1125,7 +1215,8 @@ export const PublicFormProvider = ({
                   mrfStep,
                 })
               },
-            }).then(() => clearDraftSubmission())
+            })
+            .then(() => clearDraftSubmission())
             .catch(async (error) => {
               showErrorToast(error, form)
             })
@@ -1186,11 +1277,16 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
-        isSaveDraftEnabled, 
-        draftLastSavedDateTimeString: draftSubmission?.lastUpdated ? format(new Date(draftSubmission.lastUpdated), 'do MMM yyyy, h:mm:ss a') : undefined,
+        isSaveDraftEnabled,
+        draftLastSavedDateTimeString: draftSubmission?.lastUpdated
+          ? format(
+              new Date(draftSubmission.lastUpdated),
+              'do MMM yyyy, h:mm:ss a',
+            )
+          : undefined,
         onSaveDraft,
         defaultFormValues,
-        augmentedFormFields, 
+        augmentedFormFields,
         fieldPrefillMap,
         ...commonFormValues,
         ...data,
@@ -1205,9 +1301,7 @@ export const PublicFormProvider = ({
       {formNotFoundMessage ? (
         <FormNotFound {...formNotFoundMessage} />
       ) : (
-        <FormProvider {...formMethods}>
-          {children}
-        </FormProvider>
+        <FormProvider {...formMethods}>{children}</FormProvider>
       )}
     </PublicFormContext.Provider>
   )
