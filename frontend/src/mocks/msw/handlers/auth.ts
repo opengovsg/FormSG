@@ -1,19 +1,18 @@
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 export const otpGenerationResponse = ({
   isInvalid = false,
-}: { isInvalid?: boolean } = {}): ReturnType<(typeof rest)['post']> => {
-  return rest.post<{ email: string }, never, string>(
+}: { isInvalid?: boolean } = {}): ReturnType<(typeof http)['post']> => {
+  return http.post<never, { email: string }, string>(
     '/api/v3/auth/otp/generate',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(),
-        ctx.status(isInvalid ? 401 : 200),
-        ctx.json(
-          isInvalid
-            ? 'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.'
-            : `OTP sent to ${req.body.email}`,
-        ),
+    async ({ request }) => {
+      const body = await request.json()
+      await MswDelay()
+      return HttpResponse.json(
+        isInvalid
+          ? 'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.'
+          : `OTP sent to ${body.email}`,
+        { status: isInvalid ? 401 : 200 },
       )
     },
   )
@@ -21,24 +20,24 @@ export const otpGenerationResponse = ({
 
 export const authHandlers = [
   otpGenerationResponse(),
-  rest.post<{ email: string; otp: string }>(
+  http.post<never, { email: string; otp: string }>(
     '/api/v3/auth/otp/verify',
-    (req, res, ctx) => {
-      if (req.body.otp === '123456') {
-        return res(ctx.delay(), ctx.status(200))
+    async ({ request }) => {
+      const body = await request.json()
+
+      if (body.otp === '123456') {
+        await MswDelay()
+        return new HttpResponse({ status: 200 })
       }
-      return res(
-        ctx.delay(),
-        ctx.status(401),
-        ctx.json({ message: 'Wrong OTP' }),
-      )
+      await MswDelay()
+      return HttpResponse.json({ message: 'Wrong OTP' }, { status: 401 })
     },
   ),
-  rest.get('/api/v3/auth/logout', (_req, res, ctx) => {
-    return res(
-      ctx.delay(),
-      ctx.status(200),
-      ctx.json({ message: 'Sign out successful' }),
+  http.get('/api/v3/auth/logout', async () => {
+    await MswDelay()
+    return HttpResponse.json(
+      { message: 'Sign out successful' },
+      { status: 200 },
     )
   }),
 ]

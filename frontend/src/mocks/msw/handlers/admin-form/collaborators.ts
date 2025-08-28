@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { FormPermissionsDto } from '~shared/types/form/form'
 
@@ -8,11 +8,14 @@ export const getAdminFormCollaborators = ({
 }: {
   overrides?: FormPermissionsDto
   delay?: number | 'infinite'
-} = {}): ReturnType<(typeof rest)['post']> => {
-  return rest.get<FormPermissionsDto>(
+} = {}): ReturnType<(typeof http)['post']> => {
+  return http.get<{ formId: string }>(
     '/api/v3/admin/forms/:formId/collaborators',
-    (req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(overrides ?? []))
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(overrides ?? [], {
+        status: 200,
+      })
     },
   )
 }
@@ -23,11 +26,14 @@ export const updateFormCollaborators = ({
 }: {
   delay?: number | 'infinite'
   errorCode: number
-}): ReturnType<(typeof rest)['put']> => {
-  return rest.put<FormPermissionsDto>(
+}): ReturnType<(typeof http)['put']> => {
+  return http.put<{ formId: string }>(
     '/api/v3/admin/forms/:formId/collaborators',
-    (_req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(errorCode), ctx.json([]))
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json([], {
+        status: errorCode,
+      })
     },
   )
 }

@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { FormFeedbackMetaDto } from '~shared/types'
 
@@ -40,29 +40,26 @@ export const getAdminFormFeedback = ({
 }: {
   delay?: number | 'infinite'
 } = {}) => {
-  return rest.get<FormFeedbackMetaDto>(
+  return http.get<{ formId: string }, never, FormFeedbackMetaDto>(
     '/api/v3/admin/forms/:formId/feedback',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(generateFormFeedbackMeta()),
-      )
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(generateFormFeedbackMeta(), { status: 200 })
     },
   )
 }
 
 export const getEmptyAdminFormFeedback = () => {
-  return rest.get<FormFeedbackMetaDto>(
+  return http.get<{ formId: string }, never, FormFeedbackMetaDto>(
     '/api/v3/admin/forms/:formId/feedback',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(0),
-        ctx.status(200),
-        ctx.json<FormFeedbackMetaDto>({
+    async () => {
+      await MswDelay(0)
+      return HttpResponse.json(
+        {
           count: 0,
           feedback: [],
-        }),
+        },
+        { status: 200 },
       )
     },
   )

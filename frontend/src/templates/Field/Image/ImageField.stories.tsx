@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { BasicField } from '~shared/types/field'
 
@@ -84,8 +84,9 @@ Loading.args = {
 }
 Loading.parameters = {
   msw: [
-    rest.get('/mock/api', (_req, res, ctx) => {
-      return res(ctx.delay('infinite'))
+    http.get('/mock/api', async () => {
+      await MswDelay('infinite')
+      return new HttpResponse()
     }),
   ],
 }
