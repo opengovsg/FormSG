@@ -80,7 +80,7 @@ import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { augmentFieldWithMrfWorkflowDisabling, isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
-import { hasExistingFieldValue, isMyInfo } from '~features/myinfo/utils'
+import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import { useIndexedDb } from '~hooks/useIndexedDb'
@@ -730,6 +730,14 @@ export const PublicFormProvider = ({
   })
 
   const onSaveDraft = () => {
+    // Used to track save draft usage
+    datadogLogs.logger.info('Save draft used', {
+      meta: {
+        action: 'save-draft-used',
+        formId
+      },
+    })
+
     const { formState: { dirtyFields } } = formMethods
 
     const draftToSave = getDraftToSave({
