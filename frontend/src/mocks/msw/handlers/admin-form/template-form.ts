@@ -1,5 +1,5 @@
 import { mergeWith } from 'lodash'
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 import { PartialDeep } from 'type-fest'
 
 import { FormId, PreviewFormViewDto } from '~shared/types/form/form'
@@ -15,10 +15,10 @@ export const getTemplateFormResponse = ({
   delay?: number | 'infinite'
   overrides?: PartialDeep<PreviewFormViewDto>
 } = {}) => {
-  return rest.get<PreviewFormViewDto>(
+  return http.get<{ formId: string }, never, PreviewFormViewDto>(
     `/api/v3/admin/forms/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
-    (req, res, ctx) => {
-      const formId = req.params.formId ?? '61540ece3d4a6e50ac0cc6ff'
+    async ({ params }) => {
+      const formId = params.formId ?? '61540ece3d4a6e50ac0cc6ff'
 
       const response = mergeWith(
         {},
@@ -35,7 +35,8 @@ export const getTemplateFormResponse = ({
           }
         },
       ) as PreviewFormViewDto
-      return res(ctx.delay(delay), ctx.json(response))
+      await MswDelay(delay)
+      return HttpResponse.json(response)
     },
   )
 }
@@ -49,10 +50,11 @@ export const getTemplateFormErrorResponse = ({
   status?: number
   message?: string
 } = {}) => {
-  return rest.get<PreviewFormViewDto>(
+  return http.get<{ formId: string }>(
     `/api/v3/admin/forms/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`,
-    (req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(status), ctx.json({ message }))
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json({ message }, { status })
     },
   )
 }

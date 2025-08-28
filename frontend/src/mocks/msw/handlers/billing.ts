@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import { BillingInfoDto, FormAuthType, FormId } from '~shared/types'
 
@@ -106,23 +106,21 @@ export const getBillingInfo = ({
 }: {
   delay?: number | 'infinite'
 } = {}) => {
-  return rest.get<BillingInfoDto>('/api/v3/billings', (_req, res, ctx) => {
-    return res(
-      ctx.delay(delay),
-      ctx.status(200),
-      ctx.json(generateBillingMeta()),
-    )
-  })
+  return http.get<never, never, BillingInfoDto>(
+    '/api/v3/billings',
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(generateBillingMeta(), { status: 200 })
+    },
+  )
 }
 
 export const getEmptyBillingInfo = () => {
-  return rest.get<BillingInfoDto>('/api/v3/billings', (_req, res, ctx) => {
-    return res(
-      ctx.delay(0),
-      ctx.status(200),
-      ctx.json<BillingInfoDto>({
-        loginStats: [],
-      }),
-    )
-  })
+  return http.get<never, never, BillingInfoDto>(
+    '/api/v3/billings',
+    async () => {
+      await MswDelay(0)
+      return HttpResponse.json({ loginStats: [] }, { status: 200 })
+    },
+  )
 }

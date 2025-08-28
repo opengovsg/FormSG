@@ -45,8 +45,8 @@ export default {
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: buildMswRoutes(),
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 
@@ -56,26 +56,42 @@ const Template: StoryFn = () => <SettingsMultiLangPage />
 // and choosing which language to enable translations for
 export const MultiLangNotSelected = Template.bind({})
 MultiLangNotSelected.parameters = {
-  msw: buildMswRoutes({
-    overrides: { hasMultiLang: false },
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: { hasMultiLang: false },
+      }),
+    },
+  },
 }
 
 export const MultiLangAllLanguagesSelected = Template.bind({})
 MultiLangAllLanguagesSelected.parameters = {
-  msw: buildMswRoutes({
-    overrides: { hasMultiLang: true },
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: { hasMultiLang: true },
+      }),
+    },
+  },
 }
 
 export const MultiLangEnglishChineseMalaySelected = Template.bind({})
 MultiLangEnglishChineseMalaySelected.parameters = {
-  msw: buildMswRoutes({
-    overrides: {
-      hasMultiLang: true,
-      supportedLanguages: [Language.ENGLISH, Language.CHINESE, Language.MALAY],
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          hasMultiLang: true,
+          supportedLanguages: [
+            Language.ENGLISH,
+            Language.CHINESE,
+            Language.MALAY,
+          ],
+        },
+      }),
     },
-  }),
+  },
 }
 
 // Stories related to displaying list of form fields for translations
@@ -85,20 +101,28 @@ MultiLangListOfFormFieldsWithNoTranslations.parameters = {
     initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/language'],
     path: '/:formId/settings/language',
   },
-  msw: [
-    ...createFormBuilderMocks({
-      form_fields: MOCK_FORM_FIELDS_WITH_NO_TRANSLATIONS,
-      startPage: {
-        colorTheme: FormColorTheme.Blue,
-        logo: { state: FormLogoState.Default },
-        paragraph: 'Test start page',
-      },
-      hasMultiLang: true,
-      supportedLanguages: [Language.ENGLISH, Language.CHINESE, Language.MALAY],
-    }),
-    getAdminFormSettings(),
-    patchAdminFormSettings(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({
+          form_fields: MOCK_FORM_FIELDS_WITH_NO_TRANSLATIONS,
+          startPage: {
+            colorTheme: FormColorTheme.Blue,
+            logo: { state: FormLogoState.Default },
+            paragraph: 'Test start page',
+          },
+          hasMultiLang: true,
+          supportedLanguages: [
+            Language.ENGLISH,
+            Language.CHINESE,
+            Language.MALAY,
+          ],
+        }),
+        getAdminFormSettings(),
+        patchAdminFormSettings(),
+      ],
+    },
+  },
 }
 
 export const MultiLangListOfFormFieldsWithCompletedTranslations = Template.bind(
@@ -109,46 +133,57 @@ MultiLangListOfFormFieldsWithCompletedTranslations.parameters = {
     initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/language'],
     path: '/:formId/settings/language',
   },
-  msw: [
-    ...createFormBuilderMocks({
-      form_fields: MOCK_FORM_FIELDS_WITH_TRANSLATIONS,
-      // Completed translations for start page
-      startPage: {
-        colorTheme: FormColorTheme.Blue,
-        logo: { state: FormLogoState.Default },
-        paragraph: 'Test start page',
-        paragraphTranslations: [
-          { language: Language.CHINESE, translation: 'Fake Translations' },
-        ],
-      },
-      // Completed translations for end page
-      endPage: {
-        title: 'Thank you for filling out the form.',
-        titleTranslations: [
-          { language: Language.CHINESE, translation: 'Fake Title Translation' },
-        ],
-        paragraph: 'Test end page paragraph',
-        paragraphTranslations: [
-          {
-            language: Language.CHINESE,
-            translation: 'Fake Paragraph Translation',
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({
+          form_fields: MOCK_FORM_FIELDS_WITH_TRANSLATIONS,
+          // Completed translations for start page
+          startPage: {
+            colorTheme: FormColorTheme.Blue,
+            logo: { state: FormLogoState.Default },
+            paragraph: 'Test start page',
+            paragraphTranslations: [
+              { language: Language.CHINESE, translation: 'Fake Translations' },
+            ],
           },
-        ],
-        buttonText: 'Submit another form',
-        paymentTitle: 'payment title',
-        paymentParagraph: 'payment paragraph',
-      },
-      hasMultiLang: true,
-      supportedLanguages: [Language.ENGLISH, Language.CHINESE, Language.MALAY],
-    }),
-    getAdminFormSettings(),
-    patchAdminFormSettings(),
-  ],
+          // Completed translations for end page
+          endPage: {
+            title: 'Thank you for filling out the form.',
+            titleTranslations: [
+              {
+                language: Language.CHINESE,
+                translation: 'Fake Title Translation',
+              },
+            ],
+            paragraph: 'Test end page paragraph',
+            paragraphTranslations: [
+              {
+                language: Language.CHINESE,
+                translation: 'Fake Paragraph Translation',
+              },
+            ],
+            buttonText: 'Submit another form',
+            paymentTitle: 'payment title',
+            paymentParagraph: 'payment paragraph',
+          },
+          hasMultiLang: true,
+          supportedLanguages: [
+            Language.ENGLISH,
+            Language.CHINESE,
+            Language.MALAY,
+          ],
+        }),
+        getAdminFormSettings(),
+        patchAdminFormSettings(),
+      ],
+    },
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: buildMswRoutes({ delay: 'infinite' }),
+  msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
 }
 
 export const Mobile = Template.bind({})

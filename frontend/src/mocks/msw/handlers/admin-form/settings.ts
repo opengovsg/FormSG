@@ -1,5 +1,5 @@
 import { pick } from 'lodash'
-import { rest } from 'msw'
+import { delay as MswDelay, http, HttpResponse } from 'msw'
 
 import {
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -8,6 +8,7 @@ import {
 } from '~shared/constants/form'
 import {
   AdminFormDto,
+  AdminFormViewDto,
   FormId,
   FormResponseMode,
   FormSettings,
@@ -24,19 +25,17 @@ export const getAdminFormView = ({
   overrides?: Partial<AdminFormDto>
   mode?: FormResponseMode
 } = {}) => {
-  return rest.get<AdminFormDto>(
+  return http.get<{ formId: string }, never, AdminFormViewDto>(
     '/api/v3/admin/forms/:formId',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(
-          createMockForm({
-            _id: req.params.formId as FormId,
-            responseMode: mode,
-            ...overrides,
-          }),
-        ),
+    async ({ params }) => {
+      await MswDelay(delay)
+      return HttpResponse.json(
+        createMockForm({
+          _id: params.formId as FormId,
+          responseMode: mode,
+          ...overrides,
+        }),
+        { status: 200 },
       )
     },
   )
@@ -57,22 +56,20 @@ export const getAdminFormSettings = ({
     [FormResponseMode.Multirespondent]: MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   }
 
-  return rest.get<FormSettings>(
+  return http.get<{ formId: string }, never>(
     '/api/v3/admin/forms/:formId/settings',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(
-          pick(
-            createMockForm({
-              _id: req.params.formId as FormId,
-              responseMode: mode,
-              ...overrides,
-            }).form,
-            MODE_TO_SETTINGS_FIELDS_MAP[mode],
-          ),
+    async ({ params }) => {
+      await MswDelay(delay)
+      return HttpResponse.json(
+        pick(
+          createMockForm({
+            _id: params.formId as FormId,
+            responseMode: mode,
+            ...overrides,
+          }).form,
+          MODE_TO_SETTINGS_FIELDS_MAP[mode],
         ),
+        { status: 200 },
       )
     },
   )
@@ -87,25 +84,24 @@ export const patchAdminFormSettings = ({
   overrides?: Partial<FormSettings>
   mode?: FormResponseMode
 } = {}) => {
-  return rest.patch<Partial<FormSettings>>(
+  return http.patch<{ formId: string }, Partial<FormSettings>>(
     '/api/v3/admin/forms/:formId/settings',
-    (req, res, ctx) => {
-      return res(
-        ctx.delay(delay),
-        ctx.status(200),
-        ctx.json(
-          pick(
-            createMockForm({
-              _id: req.params.formId as FormId,
-              responseMode: mode,
-              ...overrides,
-              ...req.body,
-            }).form,
-            mode === FormResponseMode.Email
-              ? EMAIL_FORM_SETTINGS_FIELDS
-              : STORAGE_FORM_SETTINGS_FIELDS,
-          ),
+    async ({ params, request }) => {
+      const body = await request.json()
+      await MswDelay(delay)
+      return HttpResponse.json(
+        pick(
+          createMockForm({
+            _id: params.formId as FormId,
+            responseMode: mode,
+            ...overrides,
+            ...body,
+          }).form,
+          mode === FormResponseMode.Email
+            ? EMAIL_FORM_SETTINGS_FIELDS
+            : STORAGE_FORM_SETTINGS_FIELDS,
         ),
+        { status: 200 },
       )
     },
   )
@@ -114,14 +110,12 @@ export const patchAdminFormSettings = ({
 export const putFormWhitelistSettingSimulateCsvStringValidationError = (
   formId: string,
 ) => {
-  return rest.put<Partial<FormSettings>>(
+  return http.put<{ formId: string }, never>(
     `/api/v3/admin/forms/${formId}/settings/whitelist`,
-    (req, res, ctx) => {
-      return res(
-        ctx.status(422),
-        ctx.json({
-          message: 'Storybook whitelist update mock validation error',
-        }),
+    async () => {
+      return HttpResponse.json(
+        { message: 'Storybook whitelist update mock validation error' },
+        { status: 422 },
       )
     },
   )

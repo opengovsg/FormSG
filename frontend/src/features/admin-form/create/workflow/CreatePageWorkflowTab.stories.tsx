@@ -28,11 +28,15 @@ export default {
     // Required so skeleton "animation" does not hide content.
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
     // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
-    msw: buildMswRoutes({
-      responseMode: FormResponseMode.Multirespondent,
-      workflow: [],
-    }),
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    msw: {
+      handlers: {
+        default: buildMswRoutes({
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [],
+        }),
+      },
+    },
   },
 } as Meta
 
@@ -243,12 +247,12 @@ MobileNoWorkflow.parameters = {
 
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {
-  msw: buildMswRoutes(FORM_WITH_WORKFLOW),
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
 }
 
 export const MobileWithWorkflow = Template.bind({})
 MobileWithWorkflow.parameters = {
-  msw: buildMswRoutes(FORM_WITH_WORKFLOW),
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
   viewport: {
     defaultViewport: 'mobile1',
   },
@@ -257,10 +261,14 @@ MobileWithWorkflow.parameters = {
 
 export const Step1 = Template.bind({})
 Step1.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1],
+      }),
+    },
+  },
   documentation: {
     storyDescription:
       'Step 1 of a workflow should not show any respondent selected',
@@ -269,63 +277,91 @@ Step1.parameters = {
 
 export const Step3Approval = Template.bind({})
 Step3Approval.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1, workflow_step_2, workflow_step_3_with_approval],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2,
+          workflow_step_3_with_approval,
+        ],
+      }),
+    },
+  },
 }
 
 export const Step3ApprovalFieldDeleted = Template.bind({})
 Step3ApprovalFieldDeleted.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [
-      workflow_step_1,
-      workflow_step_2,
-      workflow_step_3_with_deleted_approval,
-    ],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2,
+          workflow_step_3_with_deleted_approval,
+        ],
+      }),
+    },
+  },
 }
 
 export const Step2FieldDeleted = Template.bind({})
 Step2FieldDeleted.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1, workflow_step_2_with_deleted_field],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_deleted_field],
+      }),
+    },
+  },
 }
 
 export const Step2AllFieldsDeleted = Template.bind({})
 Step2AllFieldsDeleted.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1, workflow_step_2_with_all_fields_deleted],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_all_fields_deleted],
+      }),
+    },
+  },
 }
 
 export const Step2ValidConditionalRecipientSelected = Template.bind({})
 Step2ValidConditionalRecipientSelected.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [
-      workflow_step_1,
-      workflow_step_2_with_valid_conditional_recipient,
-    ],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2_with_valid_conditional_recipient,
+        ],
+      }),
+    },
+  },
 }
 
 export const Step2InvalidConditionalRecipientSelected = Template.bind({})
 Step2InvalidConditionalRecipientSelected.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [
-      workflow_step_1,
-      workflow_step_2_with_invalid_conditional_recipient,
-    ],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2_with_invalid_conditional_recipient,
+        ],
+      }),
+    },
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: buildMswRoutes({}, 'infinite'),
+  msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }

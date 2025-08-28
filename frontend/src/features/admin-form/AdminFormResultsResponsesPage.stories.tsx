@@ -35,12 +35,16 @@ export default {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
-    msw: [
-      ...createFormBuilderMocks({}, 0),
-      getAdminFormSubmissions(),
-      getUser(),
-      getAdminFormCollaborators(),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          ...createFormBuilderMocks({}, 0),
+          getAdminFormSubmissions(),
+          getUser(),
+          getAdminFormCollaborators(),
+        ],
+      },
+    },
   },
 } as Meta
 
@@ -83,24 +87,32 @@ export const EmailForm = Template.bind({})
 
 export const EmailFormLoading = Template.bind({})
 EmailFormLoading.parameters = {
-  msw: [
-    ...createFormBuilderMocks({}, 0),
-    getAdminFormSubmissions({ delay: 'infinite' }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({}, 0),
+        getAdminFormSubmissions({ delay: 'infinite' }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 export const EmptyEmailForm = Template.bind({})
 EmptyEmailForm.parameters = {
-  msw: [
-    ...createFormBuilderMocks({}, 0),
-    getAdminFormSubmissions({
-      override: 0,
-    }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({}, 0),
+        getAdminFormSubmissions({
+          override: 0,
+        }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 export const EmailFormTablet = Template.bind({})
@@ -116,19 +128,23 @@ EmailFormMobile.parameters = getMobileViewParameters()
 
 export const StorageForm = Template.bind({})
 StorageForm.parameters = {
-  msw: [
-    ...createFormBuilderMocks(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        publicKey: MOCK_KEYPAIR.publicKey,
-      },
-      0,
-    ),
-    getAdminFormSubmissions(),
-    getStorageSubmissionMetadataResponse(),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
+          {
+            responseMode: FormResponseMode.Encrypt,
+            publicKey: MOCK_KEYPAIR.publicKey,
+          },
+          0,
+        ),
+        getAdminFormSubmissions(),
+        getStorageSubmissionMetadataResponse(),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 export const StorageFormUnlocked = Template.bind({})
@@ -177,39 +193,54 @@ StorageFormMobile.parameters = {
 
 export const StorageFormLoading = Template.bind({})
 StorageFormLoading.parameters = {
-  msw: [
-    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }, 0),
-    getAdminFormSubmissions({ delay: 'infinite' }),
-    getStorageSubmissionMetadataResponse({}, 'infinite'),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
+          { responseMode: FormResponseMode.Encrypt },
+          0,
+        ),
+        getAdminFormSubmissions({ delay: 'infinite' }),
+        getStorageSubmissionMetadataResponse({}, 'infinite'),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 export const MultiRespondentFormUnlocked = Template.bind({})
 MultiRespondentFormUnlocked.parameters = {
-  msw: [
-    ...createFormBuilderMocks(
-      {
-        responseMode: FormResponseMode.Multirespondent,
-        publicKey: MOCK_KEYPAIR.publicKey,
-      },
-      0,
-    ),
-    getAdminFormSubmissions({ override: 5 }),
-    getMultiRespondentSubmissionMetadataResponse(),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
+          {
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: MOCK_KEYPAIR.publicKey,
+          },
+          0,
+        ),
+        getAdminFormSubmissions({ override: 5 }),
+        getMultiRespondentSubmissionMetadataResponse(),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 MultiRespondentFormUnlocked.play = StorageFormUnlocked.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [
-    ...createFormBuilderMocks({ responseMode: undefined }, 'infinite'),
-    getAdminFormSubmissions({ delay: 'infinite' }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({ responseMode: undefined }, 'infinite'),
+        getAdminFormSubmissions({ delay: 'infinite' }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }

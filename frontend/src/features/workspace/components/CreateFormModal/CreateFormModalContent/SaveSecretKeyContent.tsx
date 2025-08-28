@@ -140,6 +140,7 @@ export const SaveSecretKeyContent = ({
                   bg="neutral.200"
                   color="secondary.500"
                   borderRadius="4px"
+                  data-chromatic="ignore" // secret key always changes in Chromatic so this should be ignored
                 >
                   {secretKey}
                 </Code>
