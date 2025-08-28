@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
@@ -19,7 +19,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 
@@ -111,7 +111,19 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const { t } = useTranslation()
 
   const { user } = useUser()
-  const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
+  const gb = useGrowthBook()
+
+  useEffect(() => {
+    if (user) {
+      gb?.setAttributes({
+        id: user._id,
+        email: user.email,
+        agency: user.agency,
+      })
+    }
+  }, [gb, user])
+
+  const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
 
   return (
     <Grid
@@ -146,16 +158,25 @@ export const IndividualResponseNavbar = (): JSX.Element => {
               {t('features.common.response')}
               {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
             </Text>
-            {user?.betaFlags?.signatureField && isSignatureFieldEnabled ? (
+            {isAdminPrintPdfEnabled && (
               <Box>
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    console.log({
+                      meta: {
+                        action: featureFlags.adminPrintPdf,
+                        userId: user?._id,
+                        submissionId: submissionId,
+                      },
+                    })
+                    window.print()
+                  }}
                   variant="clear"
                 />
               </Box>
-            ) : null}
+            )}
           </Stack>
         </Skeleton>
       </Flex>
