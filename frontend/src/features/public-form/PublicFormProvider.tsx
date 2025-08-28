@@ -84,8 +84,7 @@ import { hasExistingFieldValue, isMyInfo } from '~features/myinfo/utils'
 import { PrefillMap } from './components/FormFields/FormFields'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import { useIndexedDb } from '~hooks/useIndexedDb'
-import { getUpdatedSaveDraftResponses } from './utils/getUpdatedSaveDraftValues'
-import { BasicFieldPanel } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels'
+import { getDraftToSave, getRestoreDraftFormValues } from './utils/saveDraft'
 
 interface PublicFormProviderProps {
   formId: string
@@ -224,7 +223,7 @@ const getInitialFormValues = ({
   currentStepNumberWorkflowStep,
   augmentedFormFields, 
   fieldPrefillMap,
-  draftSubmission,
+  draftResponsesToRestore,
   searchParams,
   isSaveDraftEnabled,
 }: {
@@ -234,7 +233,7 @@ const getInitialFormValues = ({
   currentStepNumberWorkflowStep?: FormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
-  draftSubmission?: DraftSubmission 
+  draftResponsesToRestore: FormFieldValues
   searchParams: URLSearchParams
   isSaveDraftEnabled: boolean
 }): FormFieldValues => {
@@ -250,8 +249,8 @@ const getInitialFormValues = ({
       // Only allow overriding of previous submission values if the field can be edited in this step. 
       if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
         // Reinstate save draft values
-        if (isSaveDraftEnabled && draftSubmission?.draftResponses?.[field._id]) {
-          acc[field._id] = draftSubmission.draftResponses[field._id]
+        if (isSaveDraftEnabled && draftResponsesToRestore && draftResponsesToRestore[field._id]) {
+          acc[field._id] = draftResponsesToRestore[field._id]
         }
         // Use prefill value if exists 
         if (fieldPrefillMap[field._id]) {
@@ -260,8 +259,8 @@ const getInitialFormValues = ({
       }
     } else if (formResponseMode === FormResponseMode.Encrypt) {
       // Reinstate save draft values
-      if (isSaveDraftEnabled && draftSubmission?.draftResponses?.[field._id]) {
-        acc[field._id] = draftSubmission.draftResponses[field._id]
+      if (isSaveDraftEnabled && draftResponsesToRestore && draftResponsesToRestore[field._id]) {
+        acc[field._id] = draftResponsesToRestore[field._id]
       }
       // Use prefill value if exists.
       if (fieldPrefillMap[field._id]) {
@@ -699,9 +698,18 @@ export const PublicFormProvider = ({
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] = useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
     lastUpdated: null,
     draftResponses: null,
+    fieldDefinitionsChecksum: null,
   })
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
+  const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
+    if (!draftSubmission) return { draftResponsesToRestore: {}, changedFieldIds: [] }
+    return getRestoreDraftFormValues({
+      currentFormFields: formFields,
+      savedDraftSubmission: draftSubmission,
+    })
+  }, [draftSubmission?.lastUpdated, formFields])
 
   const defaultFormValues = useMemo(() => form ? getInitialFormValues({
     formResponseMode: form.responseMode, 
@@ -710,10 +718,10 @@ export const PublicFormProvider = ({
     augmentedFormFields,
     currentStepNumberWorkflowStep, 
     fieldPrefillMap,
-    draftSubmission,
+    draftResponsesToRestore,
     searchParams,
     isSaveDraftEnabled,
-  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftSubmission?.lastUpdated, searchParams])
+  }) : {}, [form, previousSubmission, previousAttachments, augmentedFormFields, currentStepNumberWorkflowStep, fieldPrefillMap, draftResponsesToRestore, searchParams])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
@@ -723,17 +731,14 @@ export const PublicFormProvider = ({
   const onSaveDraft = () => {
     const { formState: { dirtyFields } } = formMethods
 
-    const updatedDraftResponses = getUpdatedSaveDraftResponses({
+    const draftToSave = getDraftToSave({
       previousDraftResponses: draftSubmission?.draftResponses,
-      formFieldValues: formMethods.getValues(),
+      currentFormFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields), 
       formFields, 
     })
 
-    setDraftSubmission({
-      lastUpdated: Date.now(),
-      draftResponses: updatedDraftResponses,
-    })
+    setDraftSubmission(draftToSave)
 
     toast({ 
       description: 'A draft has been successfully saved on your browser.',
@@ -742,8 +747,11 @@ export const PublicFormProvider = ({
 
   useEffect(() => {
     if (!isAuthRequired && isSaveDraftEnabled && draftSubmission?.lastUpdated && draftSubmission.lastUpdated < Date.now() - 1000) {
+      const restoreDraftMessage = changedFieldIds.length > 0 
+        ? 'Some fields were not restored as the form has been updated.'
+        : 'Your draft has been successfully restored.' 
       toast({ 
-        description: 'Your draft has been successfully restored.',
+        description: restoreDraftMessage,
       })
     }
   }, [draftSubmission?.lastUpdated, isSaveDraftEnabled, isAuthRequired])

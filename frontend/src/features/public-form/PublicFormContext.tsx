@@ -26,7 +26,13 @@ export type SubmissionData = {
 export interface DraftSubmission {
   lastUpdated: number | null
   draftResponses: FormFieldValues | null
-}  
+  /*
+    Map of field id to checksum (hash) of the field definition.
+    This is used to check if the field definition has changed since the last save draft.
+    If it has changed, the saved field value will not be used.
+  */
+  fieldDefinitionsChecksum: Record<string, string> | null
+}
 
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
