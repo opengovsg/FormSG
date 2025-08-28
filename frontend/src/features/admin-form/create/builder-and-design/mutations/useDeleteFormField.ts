@@ -3,12 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { PaymentType } from '~shared/types'
-import {
-  AdminFormDto,
-  AdminStorageFormDto,
-  PaymentsUpdateDto,
-} from '~shared/types/form'
+import { AdminFormDto, AdminStorageFormDto } from '~shared/types/form'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { useToast } from '~hooks/useToast'

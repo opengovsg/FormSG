@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -324,20 +325,16 @@ export const PreviewFormProvider = ({
     data?.form.responseMode === FormResponseMode.Encrypt &&
     data.form.payments_field.enabled
 
-  if (isNotFormId) {
-    return <NotFoundErrorPage />
-  }
-
   const onSaveDraft = () => {
     toast({
       description: 'Since you are in preview mode, there is no draft saved.',
     })
   }
 
-  const searchParams = new URLSearchParams(window.location.search)
+  const [searchParams] = useSearchParams()
 
   const form = data?.form
-  const formFields = form?.form_fields ?? []
+  const formFields = form?.form_fields
   const currentWorkflowStepNumber = 0
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
@@ -367,6 +364,10 @@ export const PreviewFormProvider = ({
   })
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
+  if (isNotFormId) {
+    return <NotFoundErrorPage />
+  }
 
   return (
     <PublicFormContext.Provider

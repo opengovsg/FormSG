@@ -716,7 +716,10 @@ export const PublicFormProvider = ({
   )
 
   const form = data?.form
-  const formFields = form?.form_fields ?? []
+  const formFields = useMemo(() => {
+    if (!form) return []
+    return form.form_fields
+  }, [form])
   const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
   const currentWorkflowStepNumber =
     previousWorkflowStepNumber !== undefined
@@ -770,7 +773,7 @@ export const PublicFormProvider = ({
       currentFormFields: formFields,
       savedDraftSubmission: draftSubmission,
     })
-  }, [draftSubmission?.lastUpdated, formFields])
+  }, [draftSubmission, formFields])
 
   const defaultFormValues = useMemo(
     () =>
@@ -796,6 +799,7 @@ export const PublicFormProvider = ({
       fieldPrefillMap,
       draftResponsesToRestore,
       searchParams,
+      isSaveDraftEnabled,
     ],
   )
 
@@ -851,7 +855,14 @@ export const PublicFormProvider = ({
         description: restoreDraftMessage,
       })
     }
-  }, [draftSubmission?.lastUpdated, isSaveDraftEnabled, isAuthRequired])
+  }, [
+    draftSubmission?.lastUpdated,
+    isSaveDraftEnabled,
+    changedFieldIds.length,
+    isAuthRequired,
+    t,
+    toast,
+  ])
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -1245,6 +1256,7 @@ export const PublicFormProvider = ({
       storePaymentMemory,
       clearRespondentAccessErrors,
       selectedLanguage,
+      clearDraftSubmission,
     ],
   )
 

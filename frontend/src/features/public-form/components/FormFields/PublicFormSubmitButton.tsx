@@ -112,7 +112,7 @@ export const PublicFormSubmitButton = ({
           formId,
         )
         setPrevPaymentId(paymentId)
-      } catch (_err) {
+      } catch (err) {
         setPrevPaymentId('')
       }
       onPaymentsModalOpen()

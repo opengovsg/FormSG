@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -82,10 +83,6 @@ export const TemplateFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  if (isNotFormId) {
-    return <NotFoundErrorPage />
-  }
-
   const onSaveDraft = () => {
     toast({
       description:
@@ -93,10 +90,13 @@ export const TemplateFormProvider = ({
     })
   }
 
-  const searchParams = new URLSearchParams(window.location.search)
+  const [searchParams] = useSearchParams()
 
   const form = data?.form
-  const formFields = form?.form_fields ?? []
+  const formFields = useMemo(() => {
+    if (!form) return []
+    return form.form_fields
+  }, [form])
   const currentWorkflowStepNumber = 0
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
@@ -126,6 +126,10 @@ export const TemplateFormProvider = ({
   })
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
+  if (isNotFormId) {
+    return <NotFoundErrorPage />
+  }
 
   return (
     <PublicFormContext.Provider
