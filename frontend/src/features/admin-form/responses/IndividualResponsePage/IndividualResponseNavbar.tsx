@@ -165,7 +165,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
                   onClick={() => {
-                    datadogRum.addAction(featureFlags.adminPrintPdf, {
+                    datadogRum.addAction('individualresponsepage.navbar.print', {
                       meta: {
                         action: featureFlags.adminPrintPdf,
                         userId: user?._id,
