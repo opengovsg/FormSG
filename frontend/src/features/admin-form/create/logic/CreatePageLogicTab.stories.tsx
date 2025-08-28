@@ -37,8 +37,8 @@ export default {
     // Required so skeleton "animation" does not hide content.
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
     // the story has loaded
-    chromatic: { pauseAnimationAtEnd: true, delay: 50 },
-    msw: buildMswRoutes(),
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 
@@ -132,12 +132,12 @@ const FORM_WITH_LOGIC: Partial<AdminFormDto> = {
 const Template: StoryFn = () => <CreatePageLogicTab />
 export const NoLogic = Template.bind({})
 NoLogic.parameters = {
-  msw: buildMswRoutes({ form_logics: [] }),
+  msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
 }
 
 export const MobileNoLogic = Template.bind({})
 MobileNoLogic.parameters = {
-  msw: buildMswRoutes({ form_logics: [] }),
+  msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
   viewport: {
     defaultViewport: 'mobile1',
   },
@@ -146,12 +146,12 @@ MobileNoLogic.parameters = {
 
 export const WithLogic = Template.bind({})
 WithLogic.parameters = {
-  msw: buildMswRoutes(FORM_WITH_LOGIC),
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
 }
 
 export const MobileWithLogic = Template.bind({})
 MobileWithLogic.parameters = {
-  msw: buildMswRoutes(FORM_WITH_LOGIC),
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
   viewport: {
     defaultViewport: 'mobile1',
   },
@@ -168,26 +168,40 @@ ErrorIfDeleted.parameters = {
 
 export const ErrorShowSomeDeleted = Template.bind({})
 ErrorShowSomeDeleted.parameters = {
-  msw: buildMswRoutes({
-    form_fields: [form_field_1, form_field_2, form_field_4],
-    form_logics: [if_12_show_34, if_12_preventsubmit],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: [form_field_1, form_field_2, form_field_4],
+        form_logics: [if_12_show_34, if_12_preventsubmit],
+      }),
+    },
+  },
 }
 
 export const ErrorShowAllDeleted = Template.bind({})
 ErrorShowAllDeleted.parameters = {
-  msw: buildMswRoutes({
-    form_fields: [form_field_1, form_field_2],
-    form_logics: [if_12_show_34, if_12_preventsubmit],
-  }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_fields: [form_field_1, form_field_2],
+        form_logics: [if_12_show_34, if_12_preventsubmit],
+      }),
+    },
+  },
 }
 
 export const ErrorAllDeleted = Template.bind({})
 ErrorAllDeleted.parameters = {
-  msw: buildMswRoutes({ form_logics: [if_12_show_34, if_12_preventsubmit] }),
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        form_logics: [if_12_show_34, if_12_preventsubmit],
+      }),
+    },
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: buildMswRoutes({}, 'infinite'),
+  msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }

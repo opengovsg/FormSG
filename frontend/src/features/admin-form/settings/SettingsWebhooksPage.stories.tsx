@@ -32,39 +32,47 @@ export default {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: buildMswRoutes(),
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 
 const Template: StoryFn = () => <SettingsWebhooksPage />
 export const StorageModeEmpty = Template.bind({})
 StorageModeEmpty.parameters = {
-  msw: buildMswRoutes({
-    overrides: {
-      responseMode: FormResponseMode.Encrypt,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Encrypt,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const StorageModeRetryEnabled = Template.bind({})
 StorageModeRetryEnabled.parameters = {
-  msw: buildMswRoutes({
-    overrides: {
-      responseMode: FormResponseMode.Encrypt,
-      webhook: {
-        url: 'https://example.com/webhook',
-        isRetryEnabled: true,
-      },
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Encrypt,
+          webhook: {
+            url: 'https://example.com/webhook',
+            isRetryEnabled: true,
+          },
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const UnsupportedEmailMode = Template.bind({})
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: buildMswRoutes({ delay: 'infinite' }),
+  msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
 }
 
 export const Mobile = Template.bind({})

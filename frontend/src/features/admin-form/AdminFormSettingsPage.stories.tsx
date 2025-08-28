@@ -51,16 +51,20 @@ export default {
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     layout: 'fullscreen',
-    msw: [
-      ...createFormBuilderMocks(),
-      getAdminFormSettings(),
-      getAdminFormSubmissions(),
-      patchAdminFormSettings(),
-      getUser(),
-      getAdminFormCollaborators(),
-    ],
+    msw: {
+      handlers: {
+        default: [
+          ...createFormBuilderMocks(),
+          getAdminFormSettings(),
+          getAdminFormSubmissions(),
+          patchAdminFormSettings(),
+          getUser(),
+          getAdminFormCollaborators(),
+        ],
+      },
+    },
   },
 } as Meta
 
@@ -69,20 +73,24 @@ export const Desktop = Template.bind({})
 
 export const PreventActivation = Template.bind({})
 PreventActivation.parameters = {
-  msw: [
-    ...createFormBuilderMocks(),
-    getAdminFormSubmissions(),
-    patchAdminFormSettings(),
-    getAdminFormSettings({
-      overrides: {
-        status: FormStatus.Private,
-        authType: FormAuthType.SP,
-        esrvcId: '',
-      },
-    }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(),
+        getAdminFormSubmissions(),
+        patchAdminFormSettings(),
+        getAdminFormSettings({
+          overrides: {
+            status: FormStatus.Private,
+            authType: FormAuthType.SP,
+            esrvcId: '',
+          },
+        }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }
 
 export const Tablet = Template.bind({})
@@ -108,21 +116,25 @@ StorageModeSettings.parameters = {
   docs: {
     storyDescription: `The passing secret key is ${storageModeKeypair.secretKey}`,
   },
-  msw: [
-    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
-    getAdminFormSettings({
-      mode: FormResponseMode.Encrypt,
-      overrides: {
-        status: FormStatus.Private,
-        publicKey: storageModeKeypair.publicKey,
-      },
-    }),
-    getAdminFormSubmissions(),
-    patchAdminFormSettings({
-      mode: FormResponseMode.Encrypt,
-      overrides: { publicKey: storageModeKeypair.publicKey },
-    }),
-    getUser(),
-    getAdminFormCollaborators(),
-  ],
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
+        getAdminFormSettings({
+          mode: FormResponseMode.Encrypt,
+          overrides: {
+            status: FormStatus.Private,
+            publicKey: storageModeKeypair.publicKey,
+          },
+        }),
+        getAdminFormSubmissions(),
+        patchAdminFormSettings({
+          mode: FormResponseMode.Encrypt,
+          overrides: { publicKey: storageModeKeypair.publicKey },
+        }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
 }

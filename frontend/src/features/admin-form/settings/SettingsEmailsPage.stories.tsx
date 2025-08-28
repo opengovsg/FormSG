@@ -96,8 +96,8 @@ export default {
   decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
   parameters: {
     // Required so skeleton "animation" does not hide content.
-    chromatic: { pauseAnimationAtEnd: true },
-    msw: buildMswRoutes(),
+    chromatic: { pauseAnimationAtEnd: true, delay: 300 },
+    msw: { handlers: { default: buildMswRoutes() } },
   },
 } as Meta
 
@@ -105,175 +105,220 @@ const Template: StoryFn = () => <SettingsEmailsPage />
 
 export const PrivateStorageForm = Template.bind({})
 PrivateStorageForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Encrypt,
-    overrides: {
-      status: FormStatus.Private,
-      emails: [], // has one email by default
-      ...PAYMENTS_DISABLED,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Encrypt,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [], // has one email by default
+          ...PAYMENTS_DISABLED,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const PrivateEmailForm = Template.bind({})
 PrivateEmailForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Email,
-    overrides: {
-      status: FormStatus.Private,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Email,
+        overrides: {
+          status: FormStatus.Private,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const PrivateMultiRespondentForm = Template.bind({})
 PrivateMultiRespondentForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Multirespondent,
-    overrides: {
-      form_fields: [
-        {
-          _id: 'email_field_id',
-          fieldType: BasicField.Email,
-          title: 'Respondent 1 Email',
-        } as FormFieldDto,
-      ],
-      status: FormStatus.Private,
-      stepOneEmailNotificationFieldId: 'email_field_id',
-      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
-      stepsToNotify: ['field_id_2'],
-      workflow: [
-        {
-          _id: 'field_id_1',
-          workflow_type: WorkflowType.Dynamic,
-          field: 'email_field_id',
-          edit: [],
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          form_fields: [
+            {
+              _id: 'email_field_id',
+              fieldType: BasicField.Email,
+              title: 'Respondent 1 Email',
+            } as FormFieldDto,
+          ],
+          status: FormStatus.Private,
+          stepOneEmailNotificationFieldId: 'email_field_id',
+          emails: [
+            'selected_email@example.com',
+            'selected_email_2@example.com',
+          ],
+          stepsToNotify: ['field_id_2'],
+          workflow: [
+            {
+              _id: 'field_id_1',
+              workflow_type: WorkflowType.Dynamic,
+              field: 'email_field_id',
+              edit: [],
+            },
+            {
+              _id: 'field_id_2',
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            },
+          ],
         },
-        {
-          _id: 'field_id_2',
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ],
+      }),
     },
-  }),
+  },
 }
 
 export const PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId =
   Template.bind({})
 PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId.parameters =
   {
-    msw: buildMswRoutes({
-      mode: FormResponseMode.Multirespondent,
-      overrides: {
-        status: FormStatus.Private,
-        stepOneEmailNotificationFieldId: 'invalid_field_id',
-        emails: ['selected_email@example.com', 'selected_email_2@example.com'],
-        stepsToNotify: ['field_id_2'],
-        workflow: [
-          {
-            _id: 'field_id_1',
-            workflow_type: WorkflowType.Dynamic,
-            field: 'email_field_id',
-            edit: [],
+    msw: {
+      handlers: {
+        default: buildMswRoutes({
+          mode: FormResponseMode.Multirespondent,
+          overrides: {
+            status: FormStatus.Private,
+            stepOneEmailNotificationFieldId: 'invalid_field_id',
+            emails: [
+              'selected_email@example.com',
+              'selected_email_2@example.com',
+            ],
+            stepsToNotify: ['field_id_2'],
+            workflow: [
+              {
+                _id: 'field_id_1',
+                workflow_type: WorkflowType.Dynamic,
+                field: 'email_field_id',
+                edit: [],
+              },
+              {
+                _id: 'field_id_2',
+                workflow_type: WorkflowType.Static,
+                emails: [],
+                edit: [],
+              },
+            ],
           },
-          {
-            _id: 'field_id_2',
-            workflow_type: WorkflowType.Static,
-            emails: [],
-            edit: [],
-          },
-        ],
+        }),
       },
-    }),
+    },
   }
 
 export const PrivateMultiRespondentFormNothingSelected = Template.bind({})
 PrivateMultiRespondentFormNothingSelected.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Multirespondent,
-    overrides: {
-      status: FormStatus.Private,
-      emails: [],
-      stepsToNotify: [],
-      stepOneEmailNotificationFieldId: undefined,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: undefined,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const PublicForm = Template.bind({})
 PublicForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Encrypt,
-    overrides: {
-      status: FormStatus.Public,
-      emails: [],
-      ...PAYMENTS_DISABLED,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Encrypt,
+        overrides: {
+          status: FormStatus.Public,
+          emails: [],
+          ...PAYMENTS_DISABLED,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const PublicMultiRespondentForm = Template.bind({})
 PublicMultiRespondentForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Multirespondent,
-    overrides: {
-      form_fields: [
-        {
-          _id: 'email_field_id',
-          fieldType: BasicField.Email,
-          title: 'Respondent 1 Email',
-        } as FormFieldDto,
-      ],
-      status: FormStatus.Public,
-      stepOneEmailNotificationFieldId: 'email_field_id',
-      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
-      stepsToNotify: ['field_id_2'],
-      workflow: [
-        {
-          _id: 'field_id_1',
-          workflow_type: WorkflowType.Dynamic,
-          field: 'email_field_id',
-          edit: [],
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          form_fields: [
+            {
+              _id: 'email_field_id',
+              fieldType: BasicField.Email,
+              title: 'Respondent 1 Email',
+            } as FormFieldDto,
+          ],
+          status: FormStatus.Public,
+          stepOneEmailNotificationFieldId: 'email_field_id',
+          emails: [
+            'selected_email@example.com',
+            'selected_email_2@example.com',
+          ],
+          stepsToNotify: ['field_id_2'],
+          workflow: [
+            {
+              _id: 'field_id_1',
+              workflow_type: WorkflowType.Dynamic,
+              field: 'email_field_id',
+              edit: [],
+            },
+            {
+              _id: 'field_id_2',
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            },
+          ],
         },
-        {
-          _id: 'field_id_2',
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ],
+      }),
     },
-  }),
+  },
 }
 
 export const PaymentForm = Template.bind({})
 PaymentForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Encrypt,
-    overrides: {
-      status: FormStatus.Private,
-      emails: [],
-      ...PAYMENTS_ENABLED,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Encrypt,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [],
+          ...PAYMENTS_ENABLED,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: buildMswRoutes({ delay: 'infinite' }),
+  msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
 }
 
 export const NoEmailsAddedForm = Template.bind({})
 NoEmailsAddedForm.parameters = {
-  msw: buildMswRoutes({
-    mode: FormResponseMode.Encrypt,
-    overrides: {
-      status: FormStatus.Private,
-      emails: [],
-      ...PAYMENTS_DISABLED,
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Encrypt,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [],
+          ...PAYMENTS_DISABLED,
+        },
+      }),
     },
-  }),
+  },
 }
 
 export const Mobile = Template.bind({})
