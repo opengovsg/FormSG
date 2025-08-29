@@ -109,7 +109,7 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
       },
       _disabled: {
         bg: 'white',
-        color: 'neutral.500',
+        color: 'neutral.800',
         cursor: 'not-allowed',
       },
     },
