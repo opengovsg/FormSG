@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { pickBy } from 'lodash'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types'
 
@@ -14,11 +15,10 @@ import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
 
 import { useMutateFormSettings } from '../../mutations'
+import { isEsrvcidRequired } from '../utils'
 
 import { FORM_SINGPASS_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
-import { pickBy } from 'lodash'
-import { isEsrvcidRequired } from '../utils'
 
 export interface SingpassAuthOptionsRadioProps {
   settings: FormSettings
