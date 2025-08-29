@@ -98,6 +98,9 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
       color: 'secondary.700',
       _hover: {
         bg: `${c}.100`,
+        _disabled: {
+          bg: 'none',
+        },
       },
       _focusWithin: {
         // use boxShadow instead of border to ensure that control and label
