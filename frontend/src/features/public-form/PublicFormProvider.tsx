@@ -344,7 +344,7 @@ const getInitialFormValues = ({
 const getSaveDraftKey = ({
   formId,
   formSubmissionId,
-  isMrf, 
+  isMrf,
   currentMrfWorkflowStepNumber,
 }: {
   formId: string
@@ -357,9 +357,7 @@ const getSaveDraftKey = ({
     FORMSG_SAVE_DRAFT_PREFIX,
     formId,
     formSubmissionId,
-    isMrf
-      ? 'step' + currentMrfWorkflowStepNumber
-      : undefined,
+    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
   ]
     .filter(Boolean)
     .join('-')
@@ -771,72 +769,79 @@ export const PublicFormProvider = ({
   const isSaveDraftEnabled =
     isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
 
-  const { draftResponsesToRestore, changedFieldIds, unchangedFieldIds } = useMemo(() => {
-    return getRestoreDraftFormValues({
-      currentFormFields: formFields,
-      savedDraftSubmission: draftSubmission,
-    })
-  }, [draftSubmission?.lastUpdated, formFields])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
+  const { draftResponsesToRestore, changedFieldIds, unchangedFieldIds } =
+    useMemo(() => {
+      return getRestoreDraftFormValues({
+        currentFormFields: formFields,
+        savedDraftSubmission: draftSubmission,
+      })
+    }, [draftSubmission?.lastUpdated, formFields])
 
-  const hasShownRestoredDraftToast = useRef<boolean>(false) 
-  const showRestoredDraftToast = useCallback(({
-    hasChangedDraftFields
-  }: {
-    hasChangedDraftFields: boolean
-  }) => {
-    const restoreDraftMessage =
-    hasChangedDraftFields
-      ? t(
-          'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
-        )
-      : t(
-          'features.publicForm.components.saveDraft.toast.restoredAllFields',
-        )
-    toast({
-      description: restoreDraftMessage,
-    })
-  }, [t, toast])
+  const hasShownRestoredDraftToast = useRef<boolean>(false)
+  const showRestoredDraftToast = useCallback(
+    ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
+      const restoreDraftMessage = hasChangedDraftFields
+        ? t(
+            'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+          )
+        : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+      toast({
+        description: restoreDraftMessage,
+      })
+    },
+    [t, toast],
+  )
 
   const hasDraftResponsesToRestore = Boolean(unchangedFieldIds?.length > 0)
   const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
 
   useEffect(() => {
-    if (!hasShownRestoredDraftToast.current && isSaveDraftEnabled && !isAuthRequired && hasDraftResponsesToRestore) {
+    if (
+      !hasShownRestoredDraftToast.current &&
+      isSaveDraftEnabled &&
+      !isAuthRequired &&
+      hasDraftResponsesToRestore
+    ) {
       showRestoredDraftToast({
-        hasChangedDraftFields: hasUnrestorableFields
+        hasChangedDraftFields: hasUnrestorableFields,
       })
       hasShownRestoredDraftToast.current = true
     }
-  }, [isSaveDraftEnabled, hasDraftResponsesToRestore, hasUnrestorableFields, hasShownRestoredDraftToast.current, showRestoredDraftToast])
+  }, [
+    isSaveDraftEnabled,
+    hasDraftResponsesToRestore,
+    hasUnrestorableFields,
+    hasShownRestoredDraftToast.current,
+    showRestoredDraftToast,
+  ])
 
-  const defaultFormValues = useMemo(
-    () => {
-      if (!form?.responseMode) return {}
-      return getInitialFormValues({
-            formResponseMode: form?.responseMode,
-            previousSubmission,
-            previousAttachments,
-            augmentedFormFields,
-            currentStepNumberWorkflowStep,
-            fieldPrefillMap,
-            draftResponsesToRestore,
-            searchParams,
-            isSaveDraftEnabled,
-          })
-      },
-    [
-      form?.responseMode,
+  const defaultFormValues = useMemo(() => {
+    if (!form?.responseMode) return {}
+    return getInitialFormValues({
+      formResponseMode: form?.responseMode,
       previousSubmission,
       previousAttachments,
       augmentedFormFields,
       currentStepNumberWorkflowStep,
       fieldPrefillMap,
       draftResponsesToRestore,
-      changedFieldIds,
       searchParams,
       isSaveDraftEnabled,
-    ],
-  )
+    })
+  }, [
+    form?.responseMode,
+    previousSubmission,
+    previousAttachments,
+    augmentedFormFields,
+    currentStepNumberWorkflowStep,
+    fieldPrefillMap,
+    draftResponsesToRestore,
+    changedFieldIds,
+    searchParams,
+    isSaveDraftEnabled,
+  ])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
