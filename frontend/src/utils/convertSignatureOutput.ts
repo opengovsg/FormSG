@@ -2,14 +2,14 @@ import getStroke from 'perfect-freehand'
 
 import { SignatureVectorArray } from '~shared/types'
 import {
-  boxHeightDefault,
-  boxWidthDefault,
+  BOX_HEIGHT_DEFAULT,
+  BOX_WIDTH_DEFAULT,
   getBoundingBox,
-  signatureOutputPaddingDefault,
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
 export const drawStroke = (
@@ -30,13 +30,14 @@ export const drawStroke = (
 
 export const convertToSignatureSvgString = (
   vectorArray: SignatureVectorArray,
-  padding = signatureOutputPaddingDefault,
+  padding = SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  dpr = 3,
 ): string => {
   if (vectorArray.length === 0) return ''
 
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || boxWidthDefault
-  const boxHeight = maxY - minY || boxHeightDefault
+  const boxWidth = maxX - minX || BOX_WIDTH_DEFAULT
+  const boxHeight = maxY - minY || BOX_HEIGHT_DEFAULT
 
   const canvasWidth = boxWidth + 2 * padding
   const canvasHeight = boxHeight + 2 * padding
@@ -45,16 +46,16 @@ export const convertToSignatureSvgString = (
     if (stroke.length === 0) return ''
 
     const normalizedStroke = stroke.map(([x, y, pressure]) => [
-      x - minX + padding,
-      y - minY + padding,
+      (x - minX + padding) * dpr,
+      (y - minY + padding) * dpr,
       pressure,
     ])
 
     const strokePoints = getStroke(normalizedStroke, {
-      size: signatureStrokeSize,
-      thinning: signatureStrokeThinning,
-      smoothing: signatureStrokeSmoothing,
-      streamline: signatureStrokeStreamline,
+      size: SIGNATURE_STROKE_SIZE * dpr,
+      thinning: SIGNATURE_STROKE_THINNING,
+      smoothing: SIGNATURE_STROKE_SMOOTHING,
+      streamline: SIGNATURE_STROKE_STREAMLINE,
     })
 
     if (strokePoints.length === 0) return ''
@@ -73,7 +74,7 @@ export const convertToSignatureSvgString = (
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg"
          width="${canvasWidth}" height="${canvasHeight}"
-         viewBox="0 0 ${canvasWidth} ${canvasHeight}">
+         viewBox="0 0 ${canvasWidth * dpr} ${canvasHeight * dpr}">
       <rect width="100%" height="100%" fill="white" />
       ${paths.join('\n')}
     </svg>
