@@ -1,81 +1,11 @@
-import { useTranslation } from 'react-i18next'
-import { BiQuestionMark, BiSave } from 'react-icons/bi'
-import { Stack, useDisclosure } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 
 import { noPrintCss } from '~utils/noPrintCss'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
-
-const SaveDraftButton = ({
-  onSaveDraft,
-  draftLastSavedDateTimeString,
-}: {
-  onSaveDraft: () => void
-  draftLastSavedDateTimeString?: string
-}) => {
-  const { t } = useTranslation()
-
-  const tooltipLabel = draftLastSavedDateTimeString
-    ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
-        lastSavedDateTimeString: draftLastSavedDateTimeString,
-      })
-    : t('features.publicForm.components.saveDraft.tooltip.default')
-
-  return (
-    <Tooltip placement="left" label={tooltipLabel}>
-      <IconButton
-        variant="outline"
-        cursor="pointer"
-        borderBottomRadius={0}
-        _focus={{
-          boxShadow: 0,
-        }}
-        aria-label="save a draft"
-        icon={<BiSave color="primary.500" />}
-        onClick={onSaveDraft}
-      />
-    </Tooltip>
-  )
-}
-
-const IssueFeedbackButton = ({
-  isPreview,
-  formId,
-}: {
-  isPreview: boolean
-  formId: string
-}) => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  return (
-    <>
-      <Tooltip placement="left" label="Report an issue">
-        <IconButton
-          variant="outline"
-          cursor="pointer"
-          // To implement attached button group vertically
-          mt="-1px"
-          borderTopRadius={0}
-          _focus={{
-            boxShadow: 0,
-          }}
-          aria-label="issue feedback"
-          icon={<BiQuestionMark color="primary.500" />}
-          onClick={onOpen}
-        />
-      </Tooltip>
-      <FormIssueFeedbackModal
-        isOpen={isOpen}
-        onClose={onClose}
-        isPreview={isPreview}
-        formId={formId}
-      />
-    </>
-  )
-}
+import { FloatingIssueFeedbackButton } from './FloatingIssueFeedbackButton'
+import { FloatingSaveDraftButton } from './FloatingSaveDraftButton'
 
 export const FloatingToolBar = (): JSX.Element | null => {
   const {
@@ -98,9 +28,9 @@ export const FloatingToolBar = (): JSX.Element | null => {
       sx={noPrintCss}
       zIndex="docked"
     >
-      <IssueFeedbackButton isPreview={isPreview} formId={formId} />
+      <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
       {isSaveDraftEnabled && (
-        <SaveDraftButton
+        <FloatingSaveDraftButton
           onSaveDraft={onSaveDraft}
           draftLastSavedDateTimeString={draftLastSavedDateTimeString}
         />
