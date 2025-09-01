@@ -967,20 +967,26 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   // Wait for the regular save draft button to be available (the button with text "Save a draft")
   await waitFor(async () => {
     // Get all buttons with "Save a draft" and find the one that contains the text directly
-    const saveDraftButtons = canvas.getAllByRole('button', { name: 'Save a draft' })
-    const textButton = saveDraftButtons.find(button => 
-      button.textContent?.includes('Save a draft')
+    const saveDraftButtons = canvas.getAllByRole('button', {
+      name: 'Save a draft',
+    })
+    const textButton = saveDraftButtons.find((button) =>
+      button.textContent?.includes('Save a draft'),
     )
     await expect(textButton).toBeInTheDocument()
   })
 
   // Click the specific save draft button (the one that contains the text directly)
-  const saveDraftButtons = canvas.getAllByRole('button', { name: 'Save a draft' })
-  const saveDraftButton = saveDraftButtons.find(button => 
-    button.textContent?.includes('Save a draft')
+  const saveDraftButtons = canvas.getAllByRole('button', {
+    name: 'Save a draft',
+  })
+  const saveDraftButton = saveDraftButtons.find((button) =>
+    button.textContent?.includes('Save a draft'),
   )
   if (!saveDraftButton) {
-    throw new Error('Save draft button with text content "Save a draft" not found')
+    throw new Error(
+      'Save draft button with text content "Save a draft" not found',
+    )
   }
   await userEvent.click(saveDraftButton)
 
