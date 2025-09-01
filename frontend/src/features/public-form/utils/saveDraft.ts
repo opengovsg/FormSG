@@ -1,11 +1,4 @@
-import {
-  difference,
-  intersection,
-  isEmpty,
-  mapValues,
-  partition,
-  pick,
-} from 'lodash'
+import { difference, intersection, isEmpty, mapValues, pick } from 'lodash'
 
 import { BasicField, FormFieldDto } from '~shared/types'
 
@@ -118,7 +111,7 @@ export const getRestoreDraftFormValues = ({
 }): {
   draftResponsesToRestore: FormFieldValues
   changedFieldIds: string[]
-  restoredFieldIds: string[]
+  unchangedFieldIds: string[]
 } => {
   const formFieldIdsToChecksumMap =
     getFormFieldIdsToChecksumMap(currentFormFields)
@@ -131,10 +124,11 @@ export const getRestoreDraftFormValues = ({
     Object.keys(fieldDefinitionsChecksum ?? {}),
   )
 
-  const [unchangedFieldIds, changedFieldIds] = partition(
-    currentlyExistingFieldIds,
+  const unchangedFieldIds = currentlyExistingFieldIds.filter(
     (fieldId) =>
       fieldDefinitionsChecksum &&
+      formFieldIdsToChecksumMap[fieldId] &&
+      fieldDefinitionsChecksum[fieldId] &&
       formFieldIdsToChecksumMap[fieldId] === fieldDefinitionsChecksum[fieldId],
   )
 
@@ -143,9 +137,14 @@ export const getRestoreDraftFormValues = ({
     unchangedFieldIds,
   ) as FormFieldValues
 
+  const changedFieldIds = difference(
+    Object.keys(draftResponses ?? {}),
+    unchangedFieldIds,
+  )
+
   return {
     draftResponsesToRestore: formFieldsToRestore,
     changedFieldIds,
-    restoredFieldIds: unchangedFieldIds,
+    unchangedFieldIds,
   }
 }
