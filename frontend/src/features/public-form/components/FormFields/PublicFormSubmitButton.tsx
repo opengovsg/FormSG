@@ -35,7 +35,7 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
   return (
     <Tooltip placement="top" label={tooltipLabel}>
       <Button variant="outline" onClick={onSaveDraft} {...props}>
-        Save a draft
+        {t('features.publicForm.components.saveDraft.button.label')}
       </Button>
     </Tooltip>
   )

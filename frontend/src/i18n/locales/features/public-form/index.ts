@@ -40,6 +40,9 @@ export interface PublicForm {
         default: string
         lastSaved: string
       }
+      button: {
+        label: string
+      }
     }
     table: Table
     fields: Fields

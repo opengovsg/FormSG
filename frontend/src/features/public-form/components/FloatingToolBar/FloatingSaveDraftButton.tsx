@@ -26,11 +26,10 @@ export const FloatingSaveDraftButton = ({
       <IconButton
         variant="outline"
         cursor="pointer"
-        borderBottomRadius={0}
         _focus={{
           boxShadow: 0,
         }}
-        aria-label="save a draft"
+        aria-label={t('features.publicForm.components.saveDraft.button.label')}
         icon={<BiSave color="primary.500" />}
         onClick={onSaveDraft}
       />

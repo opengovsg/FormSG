@@ -25,7 +25,6 @@ export const FloatingIssueFeedbackButton = ({
           cursor="pointer"
           // To implement attached button group vertically
           mt="-1px"
-          borderTopRadius={0}
           _focus={{
             boxShadow: 0,
           }}

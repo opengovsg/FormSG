@@ -47,6 +47,9 @@ export const enSG: PublicForm = {
         default: 'Save a draft',
         lastSaved: 'Last saved: {lastSavedDateTimeString}',
       },
+      button: {
+        label: 'Save a draft',
+      },
     },
     table,
     fields,
