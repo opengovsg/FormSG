@@ -839,7 +839,6 @@ export const PublicFormProvider = ({
     currentStepNumberWorkflowStep,
     fieldPrefillMap,
     draftResponsesToRestore,
-    changedFieldIds,
     searchParams,
     isSaveDraftEnabled,
   ])

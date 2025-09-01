@@ -357,7 +357,7 @@ export const PreviewFormProvider = ({
     [formFields, currentStepNumberWorkflowStep],
   )
 
-  const defaultFormValues = {}
+  const defaultFormValues = useMemo(() => ({}), [])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
