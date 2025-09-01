@@ -3,35 +3,39 @@ import getStroke from 'perfect-freehand'
 import { SignatureVectorArray } from 'shared/types'
 
 import {
-  boxHeightDefault,
-  boxWidthDefault,
+  BOX_HEIGHT_DEFAULT,
+  BOX_WIDTH_DEFAULT,
   getBoundingBox,
-  signatureOutputPaddingDefault,
-  signatureOutputStrokeFillStyle,
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  SIGNATURE_OUTPUT_STROKE_FILL_STYLE,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '../../../shared/utils/signature'
 
 export const convertToSignaturePngBuffer = (
   vectorArray: SignatureVectorArray,
-  padding = signatureOutputPaddingDefault,
+  padding = SIGNATURE_OUTPUT_PADDING_DEFAULT,
 ): Buffer => {
   if (vectorArray.length === 0) return Buffer.alloc(0)
 
   // Calculate bounding box
   const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-  const boxWidth = maxX - minX || boxWidthDefault
-  const boxHeight = maxY - minY || boxHeightDefault
+  const boxWidth = maxX - minX || BOX_WIDTH_DEFAULT
+  const boxHeight = maxY - minY || BOX_HEIGHT_DEFAULT
 
+  // default dpr to 3 for overall sharpness
+  const dpr = 3
   // Canvas size includes padding on all sides
-  const canvasWidth = boxWidth + 2 * padding
-  const canvasHeight = boxHeight + 2 * padding
+  const canvasWidth = (boxWidth + 2 * padding) * dpr
+  const canvasHeight = (boxHeight + 2 * padding) * dpr
 
   const canvas = createCanvas(canvasWidth, canvasHeight)
   const ctx = canvas.getContext('2d')
 
+  // Scale the context to account for dpr
+  ctx.scale(dpr, dpr)
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
@@ -44,13 +48,13 @@ export const convertToSignaturePngBuffer = (
       pressure,
     ])
     const pathData = getStroke(normalizedStroke, {
-      size: signatureStrokeSize,
-      thinning: signatureStrokeThinning,
-      smoothing: signatureStrokeSmoothing,
-      streamline: signatureStrokeStreamline,
+      size: SIGNATURE_STROKE_SIZE,
+      thinning: SIGNATURE_STROKE_THINNING,
+      smoothing: SIGNATURE_STROKE_SMOOTHING,
+      streamline: SIGNATURE_STROKE_STREAMLINE,
     })
 
-    ctx.fillStyle = signatureOutputStrokeFillStyle
+    ctx.fillStyle = SIGNATURE_OUTPUT_STROKE_FILL_STYLE
     drawStroke(ctx, pathData)
   }
 

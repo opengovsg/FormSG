@@ -16,6 +16,7 @@ import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
+  getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from 'src/app/models/form_whitelist.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
@@ -92,6 +93,7 @@ import * as AdminFormUtils from '../admin-form.utils'
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
+const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
 const FormWhitelistedSubmitterIdsModel =
@@ -1371,6 +1373,13 @@ describe('admin-form.service', () => {
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
       })
+    const MULTIRESPONDENT_UPDATE_SPY = jest
+      .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+
+      // @ts-ignore
+      .mockReturnValue({
+        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
+      })
 
     beforeEach(() => jest.clearAllMocks())
 
@@ -1453,7 +1462,7 @@ describe('admin-form.service', () => {
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
     })
 
-    it('should not allow webhooks updates for MRF', async () => {
+    it('should allow webhooks updates for MRF', async () => {
       const MOCK_MULTIRESPONDENT_FORM = jest.mocked({
         _id: new ObjectId(),
         status: FormStatus.Public,
@@ -1461,7 +1470,7 @@ describe('admin-form.service', () => {
       } as unknown as IPopulatedForm)
       const settingsToUpdate: SettingsUpdateDto = {
         webhook: {
-          url: 'does not matter',
+          url: 'https://example.com',
         },
       }
 
@@ -1472,9 +1481,14 @@ describe('admin-form.service', () => {
       )
 
       // Assert
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
-        MalformedParametersError,
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_MULTIRESPONDENT_FORM._id,
+        // Should be dotified
+        { 'webhook.url': 'https://example.com' },
+        { new: true, runValidators: true },
       )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
 
     it('should allow webhooks updates for encrypt form', async () => {

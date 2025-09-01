@@ -1,5 +1,6 @@
 import * as z from 'zod'
 
+import { FormWorkflowDto, SubmittedStep } from '../../../../shared/types'
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
 
 export interface WebhookParams {
@@ -59,4 +60,10 @@ export type PaymentWebhookEventType = 'payment_charge'
 export type PaymentWebhookEventObject = {
   type: PaymentWebhookEventType
   [key: string]: unknown
+}
+
+export type WorkflowWebhookEventObject = {
+  workflow: FormWorkflowDto
+  workflowStep: number
+  submittedSteps: SubmittedStep[]
 }

@@ -8,12 +8,16 @@ import {
   ErrorDto,
   FormAuthType,
   FormFieldDto,
+  FormResponseMode,
   PrivateFormErrorDto,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   PublicFormDto,
   PublicFormViewDto,
+  StrippedFormWorkflowDto,
 } from '../../../../../shared/types'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
+import { IPopulatedMultirespondentForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -544,6 +548,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
   { formId: string },
   | {
       responses: ReturnType<typeof FormService.createSampleSubmissionResponses>
+      workflowContent?: { workflow: StrippedFormWorkflowDto }
     }
   | ErrorDto
   | PrivateFormErrorDto
@@ -611,7 +616,18 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
     return res.sendStatus(HttpStatusCode.InternalServerError)
   }
 
-  return res.json({ responses: sampleData })
+  // Include workflow if form is a multirespondent form
+  if (form.responseMode === FormResponseMode.Multirespondent) {
+    const mrfForm = form as IPopulatedMultirespondentForm
+    res.json({
+      responses: sampleData,
+      workflowContent: {
+        workflow: stripWorkflowEmails(mrfForm.toObject().workflow),
+      },
+    })
+  } else {
+    return res.json({ responses: sampleData })
+  }
 }
 /**
  * NOTE: This is exported only for testing
