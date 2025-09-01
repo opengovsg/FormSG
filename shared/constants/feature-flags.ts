@@ -21,4 +21,5 @@ export const featureFlags = {
   adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
+  enableMrfWebhooks: 'enable-mrf-webhooks' as const,
 }

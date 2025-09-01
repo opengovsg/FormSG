@@ -1,5 +1,5 @@
 import {
-  StatusTrackerWorkflowDto,
+  StrippedFormWorkflowDto,
   SubmittedStep,
   WorkflowStatus,
 } from '~shared/types'
@@ -76,7 +76,7 @@ export const getStatusFromWorkflowStatus = (
 
 export type getWorkflowStatusFromFormResponseProps = {
   index: number
-  workflow: StatusTrackerWorkflowDto
+  workflow: StrippedFormWorkflowDto
   submittedSteps: SubmittedStep[]
 }
 
