@@ -344,10 +344,12 @@ const getInitialFormValues = ({
 const getSaveDraftKey = ({
   formId,
   formSubmissionId,
+  isMrf, 
   currentMrfWorkflowStepNumber,
 }: {
   formId: string
   formSubmissionId?: string
+  isMrf: boolean
   currentMrfWorkflowStepNumber: number
 }) => {
   const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
@@ -355,7 +357,7 @@ const getSaveDraftKey = ({
     FORMSG_SAVE_DRAFT_PREFIX,
     formId,
     formSubmissionId,
-    currentMrfWorkflowStepNumber !== undefined
+    isMrf
       ? 'step' + currentMrfWorkflowStepNumber
       : undefined,
   ]
@@ -754,6 +756,7 @@ export const PublicFormProvider = ({
   const formDraftSubmissionKey = getSaveDraftKey({
     formId,
     formSubmissionId: previousSubmissionId,
+    isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
   })
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
@@ -768,18 +771,49 @@ export const PublicFormProvider = ({
   const isSaveDraftEnabled =
     isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
 
-  const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
+  const { draftResponsesToRestore, changedFieldIds, unchangedFieldIds } = useMemo(() => {
     return getRestoreDraftFormValues({
       currentFormFields: formFields,
       savedDraftSubmission: draftSubmission,
     })
-  }, [draftSubmission, formFields])
+  }, [draftSubmission?.lastUpdated, formFields])
+
+  const hasShownRestoredDraftToast = useRef<boolean>(false) 
+  const showRestoredDraftToast = useCallback(({
+    hasChangedDraftFields
+  }: {
+    hasChangedDraftFields: boolean
+  }) => {
+    const restoreDraftMessage =
+    hasChangedDraftFields
+      ? t(
+          'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+        )
+      : t(
+          'features.publicForm.components.saveDraft.toast.restoredAllFields',
+        )
+    toast({
+      description: restoreDraftMessage,
+    })
+  }, [t, toast])
+
+  const hasDraftResponsesToRestore = Boolean(unchangedFieldIds?.length > 0)
+  const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
+
+  useEffect(() => {
+    if (!hasShownRestoredDraftToast.current && isSaveDraftEnabled && !isAuthRequired && hasDraftResponsesToRestore) {
+      showRestoredDraftToast({
+        hasChangedDraftFields: hasUnrestorableFields
+      })
+      hasShownRestoredDraftToast.current = true
+    }
+  }, [isSaveDraftEnabled, hasDraftResponsesToRestore, hasUnrestorableFields, hasShownRestoredDraftToast.current, showRestoredDraftToast])
 
   const defaultFormValues = useMemo(
-    () =>
-      form
-        ? getInitialFormValues({
-            formResponseMode: form.responseMode,
+    () => {
+      if (!form?.responseMode) return {}
+      return getInitialFormValues({
+            formResponseMode: form?.responseMode,
             previousSubmission,
             previousAttachments,
             augmentedFormFields,
@@ -789,15 +823,16 @@ export const PublicFormProvider = ({
             searchParams,
             isSaveDraftEnabled,
           })
-        : {},
+      },
     [
-      form,
+      form?.responseMode,
       previousSubmission,
       previousAttachments,
       augmentedFormFields,
       currentStepNumberWorkflowStep,
       fieldPrefillMap,
       draftResponsesToRestore,
+      changedFieldIds,
       searchParams,
       isSaveDraftEnabled,
     ],
@@ -834,35 +869,6 @@ export const PublicFormProvider = ({
       description: t('features.publicForm.components.saveDraft.toast.success'),
     })
   }
-
-  useEffect(() => {
-    if (
-      !isAuthRequired &&
-      isSaveDraftEnabled &&
-      draftSubmission?.lastUpdated &&
-      draftSubmission.lastUpdated < Date.now() - 1000
-    ) {
-      const restoreDraftMessage =
-        changedFieldIds.length > 0
-          ? t(
-              'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
-            )
-          : t(
-              'features.publicForm.components.saveDraft.toast.restoredAllFields',
-            )
-
-      toast({
-        description: restoreDraftMessage,
-      })
-    }
-  }, [
-    draftSubmission?.lastUpdated,
-    isSaveDraftEnabled,
-    changedFieldIds.length,
-    isAuthRequired,
-    t,
-    toast,
-  ])
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
