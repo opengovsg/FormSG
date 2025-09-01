@@ -1,8 +1,9 @@
-import { useTranslation } from "react-i18next"
-import { BiSave } from "react-icons/bi"
-import IconButton from "~components/IconButton"
-import Tooltip from "~components/Tooltip"
-import { useIsMobile } from "~hooks/useIsMobile"
+import { useTranslation } from 'react-i18next'
+import { BiSave } from 'react-icons/bi'
+
+import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 
 export const FloatingSaveDraftButton = ({
   onSaveDraft,

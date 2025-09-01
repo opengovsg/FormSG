@@ -1,9 +1,11 @@
-import { useDisclosure } from "@chakra-ui/react"
-import { BiQuestionMark } from "react-icons/bi"
-import IconButton from "~components/IconButton"
-import Tooltip from "~components/Tooltip"
-import { FormIssueFeedbackModal } from "./FormIssueFeedbackModal"
-import { useIsMobile } from "~hooks/useIsMobile"
+import { BiQuestionMark } from 'react-icons/bi'
+import { useDisclosure } from '@chakra-ui/react'
+
+import { useIsMobile } from '~hooks/useIsMobile'
+import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
+
+import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
 export const FloatingIssueFeedbackButton = ({
   isPreview,
@@ -14,7 +16,7 @@ export const FloatingIssueFeedbackButton = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const isMobile = useIsMobile()
-  
+
   return (
     <>
       <Tooltip placement={isMobile ? 'top' : 'left'} label="Report an issue">

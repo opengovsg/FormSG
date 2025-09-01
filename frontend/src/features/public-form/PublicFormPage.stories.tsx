@@ -900,7 +900,8 @@ WithSaveDraftEnabledMobile.parameters = {
   ...getMobileViewParameters(),
 }
 
-export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton = Template.bind({})
+export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton =
+  Template.bind({})
 WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
   ...WithSaveDraftEnabled.parameters,
   msw: [
@@ -915,18 +916,20 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
-WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({ canvasElement }) => {
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
+  canvasElement,
+}) => {
   const canvas = within(canvasElement)
-  
+
   // Wait for the floating save draft button to be available (using aria-label for specificity)
   await waitFor(async () => {
     await expect(canvas.getByLabelText('save a draft')).toBeInTheDocument()
   })
-  
+
   // Click the floating save draft button
   const saveDraftButton = canvas.getByLabelText('save a draft')
   await userEvent.click(saveDraftButton)
-  
+
   // Assert that the success toast message appears (toast renders in a portal outside canvas)
   await waitFor(async () => {
     await expect(document.body).toHaveTextContent('Your draft has been saved.')
@@ -934,7 +937,7 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({ canvasElemen
 
   // Hover over the save draft button to see the updated tooltip
   await userEvent.hover(saveDraftButton)
-  
+
   // Assert that the last saved tooltip appears with updated content
   await waitFor(async () => {
     await expect(document.body).toHaveTextContent('Last saved')
@@ -956,18 +959,22 @@ WithSaveDraftEnabledAndClickSaveDraftButton.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
-WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({ canvasElement }) => {
+WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
+  canvasElement,
+}) => {
   const canvas = within(canvasElement)
-  
+
   // Wait for the regular save draft button to be available (the button with text "Save a draft")
   await waitFor(async () => {
-    await expect(canvas.getByRole('button', { name: 'Save a draft' })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('button', { name: 'Save a draft' }),
+    ).toBeInTheDocument()
   })
-  
+
   // Click the regular save draft button
   const saveDraftButton = canvas.getByRole('button', { name: 'Save a draft' })
   await userEvent.click(saveDraftButton)
-  
+
   // Assert that the success toast message appears (toast renders in a portal outside canvas)
   await waitFor(async () => {
     await expect(document.body).toHaveTextContent('Your draft has been saved.')

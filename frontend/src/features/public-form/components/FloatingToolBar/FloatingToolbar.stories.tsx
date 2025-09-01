@@ -1,12 +1,13 @@
 import { action } from '@storybook/addon-actions'
 import { Meta, StoryFn } from '@storybook/react'
 
-import {
-  fullScreenDecorator,
-  getMobileViewParameters,
-} from '~utils/storybook'
+import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
-import { PublicFormContext, PublicFormContextProps } from '../../PublicFormContext'
+import {
+  PublicFormContext,
+  PublicFormContextProps,
+} from '../../PublicFormContext'
+
 import { FloatingToolBar } from './FloatingToolbar'
 
 export default {
@@ -19,7 +20,9 @@ export default {
 } as Meta
 
 // Mock context values
-const createMockContext = (overrides: Partial<PublicFormContextProps> = {}): PublicFormContextProps => {
+const createMockContext = (
+  overrides: Partial<PublicFormContextProps> = {},
+): PublicFormContextProps => {
   const baseContext = {
     // Core component props
     miniHeaderRef: { current: null },
@@ -41,11 +44,11 @@ const createMockContext = (overrides: Partial<PublicFormContextProps> = {}): Pub
     defaultFormValues: {},
     augmentedFormFields: [],
     fieldPrefillMap: {},
-    
+
     // Override with provided values
     ...overrides,
   }
-  
+
   // Add React Query props with type assertion to avoid complex typing
   return {
     ...baseContext,
@@ -62,21 +65,32 @@ const createMockContext = (overrides: Partial<PublicFormContextProps> = {}): Pub
     isPreviousData: false,
     isRefetchError: false,
     isStale: false,
-    refetch: (() => Promise.resolve({} as any)) as any,
-    remove: (() => {}) as any,
+    refetch: () => Promise.resolve({}),
+    remove: () => {},
     status: 'success' as const,
   } as PublicFormContextProps
 }
 
 const Template: StoryFn = (args) => {
-  const contextValue = createMockContext(args as Partial<PublicFormContextProps>)
-  
+  const contextValue = createMockContext(
+    args as Partial<PublicFormContextProps>,
+  )
+
   return (
     <PublicFormContext.Provider value={contextValue}>
-      <div style={{ height: '100vh', backgroundColor: '#f7fafc', position: 'relative' }}>
+      <div
+        style={{
+          height: '100vh',
+          backgroundColor: '#f7fafc',
+          position: 'relative',
+        }}
+      >
         <div style={{ padding: '2rem' }}>
           <h1>Sample Form Content</h1>
-          <p>This is where the form would be displayed. The FloatingToolBar should appear in the bottom right corner.</p>
+          <p>
+            This is where the form would be displayed. The FloatingToolBar
+            should appear in the bottom right corner.
+          </p>
         </div>
         <FloatingToolBar />
       </div>

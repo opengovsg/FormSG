@@ -14,7 +14,8 @@ import { GeneralTabHeader } from './components/GeneralTabHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const isSaveDraftFeatureEnabled = isTest || useFeatureIsOn(featureFlags.saveDraft)
+  const isSaveDraftFeatureEnabled =
+    useFeatureIsOn(featureFlags.saveDraft) || isTest
 
   return (
     <Stack divider={<Divider />} spacing="2.5rem">
