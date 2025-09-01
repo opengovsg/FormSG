@@ -765,7 +765,8 @@ export const PublicFormProvider = ({
     })
 
   // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isSaveDraftFeatureEnabled = useFeatureIsOn(featureFlags.saveDraft)
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+  const isSaveDraftFeatureEnabled = isTest || useFeatureIsOn(featureFlags.saveDraft)
   const isSaveDraftEnabled =
     isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
 

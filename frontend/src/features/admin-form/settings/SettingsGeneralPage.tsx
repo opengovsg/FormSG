@@ -13,7 +13,8 @@ import { FormStatusToggle } from './components/FormStatusToggle'
 import { GeneralTabHeader } from './components/GeneralTabHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
-  const isSaveDraftFeatureEnabled = useFeatureIsOn(featureFlags.saveDraft)
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+  const isSaveDraftFeatureEnabled = isTest || useFeatureIsOn(featureFlags.saveDraft)
 
   return (
     <Stack divider={<Divider />} spacing="2.5rem">
