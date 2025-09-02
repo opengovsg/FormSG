@@ -44,7 +44,11 @@ export interface InputProps extends ChakraInputProps {
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
-  const inputStyles = useMultiStyleConfig('Input', props)
+  // const inputStyles = useMultiStyleConfig('Input', props)
+  const inputStyles = useMultiStyleConfig('Input', {
+    ...props,
+    variant: props.isHighContrast ? 'highContrast' : props.variant,
+  })
 
   // Omit extra props so they will not be passed into the DOM and trigger
   // React warnings.
@@ -71,7 +75,10 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
         : {},
     [props.preventDefaultOnEnter],
   )
-
+  // console.log(props)
+  // console.log(inputProps)
+  console.log(inputStyles)
+  console.log(props.sx)
   // Return normal input component if not success state.
   if (!props.isSuccess) {
     if (props.prefix) {
