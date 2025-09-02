@@ -319,12 +319,15 @@ export const createRelayState = (
  */
 export const getMyInfoEserviceIdInForm = <T extends IFormSchema>(
   form: T,
+  useFormsgEsrvcId?: boolean,
 ): Result<
   [MyInfoForm<T>, string],
   FormAuthNoEsrvcIdError | AuthTypeMismatchError
 > => {
   if (isMyInfoForm(form)) {
-    const esrvcId = form.esrvcId || spcpMyInfoConfig.spEsrvcId
+    const esrvcId = useFormsgEsrvcId
+      ? spcpMyInfoConfig.spEsrvcId
+      : form.esrvcId || spcpMyInfoConfig.spEsrvcId
     return ok([form, esrvcId])
   }
   return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))

@@ -1,5 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
+import { featureFlags } from 'shared/constants'
 
 import { Environment } from '../../../types'
 import config from '../../config/config'
@@ -47,8 +48,9 @@ export const respondWithRedirectURL: ControllerHandler<
   { formId: string; encodedQuery?: string }
 > = async (req, res) => {
   const { formId, encodedQuery } = req.query
+  const useFormsgEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
   return FormService.retrieveFormById(formId)
-    .andThen((form) => getMyInfoEserviceIdInForm(form))
+    .andThen((form) => getMyInfoEserviceIdInForm(form, useFormsgEsrvcId))
     .andThen(([form, eserviceId]) =>
       MyInfoService.createRedirectURL({
         formEsrvcId: eserviceId,

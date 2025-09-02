@@ -2,6 +2,7 @@ import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
+import { featureFlags } from 'shared/constants'
 
 import {
   ErrorCode,
@@ -661,15 +662,19 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
+      const useFormsgEsrvcId = req.growthbook?.isOn(
+        featureFlags.useFormsgEsrvcId,
+      )
       switch (form.authType) {
         case FormAuthType.MyInfo:
-          return getMyInfoEserviceIdInForm(form).andThen(([form, eserviceId]) =>
-            MyInfoService.createRedirectURL({
-              formEsrvcId: eserviceId,
-              formId,
-              requestedAttributes: form.getUniqueMyInfoAttrs(),
-              encodedQuery,
-            }),
+          return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
+            ([form, eserviceId]) =>
+              MyInfoService.createRedirectURL({
+                formEsrvcId: eserviceId,
+                formId,
+                requestedAttributes: form.getUniqueMyInfoAttrs(),
+                encodedQuery,
+              }),
           )
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
