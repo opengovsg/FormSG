@@ -117,7 +117,6 @@ export const SingpassAuthOptionsRadio = ({
                 {[
                   FormAuthType.SGID,
                   FormAuthType.SGID_MyInfo,
-                  FormAuthType.SP,
                   FormAuthType.MyInfo,
                 ].includes(authType) ? (
                   <>

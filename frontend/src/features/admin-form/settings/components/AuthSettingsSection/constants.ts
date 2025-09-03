@@ -6,6 +6,6 @@ export const FORM_SINGPASS_AUTHTYPES: Record<FormSingpassAuthType, string> = {
   [FormAuthType.SGID]: 'Singpass App-only Login',
   [FormAuthType.SGID_MyInfo]: 'Singpass App-only with Myinfo',
   [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.MyInfo]: 'Singpass (to be updated by 5 September)',
-  [FormAuthType.CP]: 'Singpass (Corporate)',
+  [FormAuthType.MyInfo]: 'Singpass',
+  [FormAuthType.CP]: 'Corpass',
 }
