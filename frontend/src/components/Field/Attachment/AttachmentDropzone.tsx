@@ -19,7 +19,7 @@ const DropzoneText = ({ inputProps }: { inputProps: DropzoneInputProps }) => {
   const isDisabled = inputProps.disabled
 
   return (
-    <Text aria-hidden>
+    <Text aria-hidden color="secondary.700">
       {isDisabled ? (
         t('features.publicForm.components.fields.attachment.disabled')
       ) : (
@@ -54,7 +54,9 @@ export const AttachmentDropzone = ({
       <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
 
       {isDragActive ? (
-        <Text aria-hidden>Drop the file here...</Text>
+        <Text aria-hidden color="secondary.700">
+          Drop the file here...
+        </Text>
       ) : (
         <DropzoneText inputProps={inputProps} />
       )}
