@@ -29,6 +29,7 @@ export const VerifiableFieldContainer = ({
   schema,
   colorTheme = FormColorTheme.Blue,
   children,
+  isHighContrast,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -56,7 +57,7 @@ export const VerifiableFieldContainer = ({
 
   return (
     <Box>
-      <FieldContainer schema={schema}>
+      <FieldContainer schema={schema} isHighContrast={isHighContrast}>
         <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
           {children}
           <Box>

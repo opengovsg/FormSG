@@ -43,7 +43,6 @@ const InnerVerifiableEmailField = ({
     }
     return 'This is an input field which requires verification. After entering your email address, please click on the Verify button. You will receive a one-time password, which you can enter in the verification input field.'
   }, [hasSignature])
-
   return (
     <VerifiableFieldContainer schema={schema} {...formContainerProps}>
       <Box w="100%">
@@ -54,6 +53,7 @@ const InnerVerifiableEmailField = ({
           schema={schema}
           disableRequiredValidation={disableRequiredValidation}
           handleInputChange={handleInputChange}
+          isHighContrast={formContainerProps.isHighContrast}
           inputProps={{
             isSuccess: hasSignature,
             onKeyDown: handleKeyDown,

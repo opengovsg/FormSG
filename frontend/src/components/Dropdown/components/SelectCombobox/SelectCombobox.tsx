@@ -86,9 +86,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             direction="row"
             spacing="1rem"
             gridArea="1 / 1 / 2 / 3"
-            {...(!isDisabled && {
-              pointerEvents: 'none',
-            })}
+            pointerEvents="none"
             pl="calc(1rem + 1px)"
             pr="calc(2.75rem + 1px)"
             align="center"
@@ -111,6 +109,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
                 ? {
                     ...hideScrollbarStyles,
                     color: 'neutral.800',
+                    pointerEvents: 'none',
                   }
                 : {})}
             >
@@ -121,7 +120,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             isReadOnly={!isSearchable || isReadOnly}
             isInvalid={isInvalid}
             isDisabled={isDisabled}
-            placeholder={selectedItem ? undefined : placeholder}
+            placeholder={selectedItem || isDisabled ? undefined : placeholder}
             hasInputRightElement
             sx={styles.field}
             {...getInputProps({

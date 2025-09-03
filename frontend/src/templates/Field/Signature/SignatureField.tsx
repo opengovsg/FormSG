@@ -35,6 +35,15 @@ export const SignatureField = ({
   const { getValues, setValue } = formContext
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
+
+  const placeholderString = useMemo(() => {
+    if (schema.disabled) {
+      return 'Signatures are disabled for you'
+    }
+
+    return 'Draw your signature here'
+  }, [schema.disabled])
+
   const signatureErrors = errors?.[schema._id]
 
   const signatureValidationRules = useMemo(
@@ -256,7 +265,7 @@ export const SignatureField = ({
                     align="center"
                     justify="center"
                   >
-                    <Text color="#A0A4AD">Draw your signature here</Text>
+                    <Text color="#A0A4AD">{placeholderString}</Text>
                   </Flex>
                 )}
                 <Box
@@ -278,25 +287,27 @@ export const SignatureField = ({
               </Box>
             </Stack>
           </Flex>
-          <Flex justify="space-between" mt="0.5rem" align="flex-start">
-            {signatureErrors?.message ? (
-              <FormErrorMessage mt="0">
-                {signatureErrors.message}
-              </FormErrorMessage>
-            ) : (
-              <Box /> // placeholder to consistently flush button to the right
-            )}
-            <Button
-              onClick={() => {
-                handleClearPerfectFreehandSignature()
-              }}
-              isLoading={isSubmitting}
-              isDisabled={schema.disabled}
-              variant={'outline'}
-            >
-              Clear
-            </Button>
-          </Flex>
+          {schema.disabled ? null : (
+            <Flex justify="space-between" mt="0.5rem" align="flex-start">
+              {signatureErrors?.message ? (
+                <FormErrorMessage mt="0">
+                  {signatureErrors.message}
+                </FormErrorMessage>
+              ) : (
+                <Box /> // placeholder to consistently flush button to the right
+              )}
+              <Button
+                onClick={() => {
+                  handleClearPerfectFreehandSignature()
+                }}
+                isLoading={isSubmitting}
+                isDisabled={schema.disabled}
+                variant={'outline'}
+              >
+                Clear
+              </Button>
+            </Flex>
+          )}
         </Stack>
       </FormControl>
     </Box>

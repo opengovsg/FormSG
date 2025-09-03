@@ -16,6 +16,7 @@ export interface Fields {
     }
   }
   attachment: {
+    disabled: string
     fileUploaderLink: string
     dragAndDrop: string
     dragActive: string
