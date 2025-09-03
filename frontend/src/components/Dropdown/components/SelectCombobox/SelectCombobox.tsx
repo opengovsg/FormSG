@@ -121,7 +121,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             isReadOnly={!isSearchable || isReadOnly}
             isInvalid={isInvalid}
             isDisabled={isDisabled}
-            placeholder={selectedItem ? undefined : placeholder}
+            placeholder={selectedItem || isDisabled ? undefined : placeholder}
             hasInputRightElement
             sx={styles.field}
             {...getInputProps({
