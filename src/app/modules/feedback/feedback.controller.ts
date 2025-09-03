@@ -62,6 +62,10 @@ const submitFormFeedback: ControllerHandler<
       statsdClient.distribution('formsg.feedback.rating', rating, 1, {
         rating: `${rating}`,
       })
+      logger.info({
+        message: `Feedback submitted for form ${formId} and submission ${submissionId}`,
+        meta: logMeta,
+      })
       return PublicFormService.insertFormFeedback({
         formId: form._id,
         submissionId: submissionId,

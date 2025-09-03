@@ -5,10 +5,10 @@ import getStroke from 'perfect-freehand'
 
 import { SignatureVectorArray } from '~shared/types'
 import {
-  signatureStrokeSize,
-  signatureStrokeSmoothing,
-  signatureStrokeStreamline,
-  signatureStrokeThinning,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
 import { createSignatureValidationRules } from '~utils/fieldValidation'
@@ -76,10 +76,10 @@ export const SignatureField = ({
 
     for (const strokePoints of pfStrokes) {
       const stroke = getStroke(strokePoints, {
-        size: signatureStrokeSize,
-        thinning: signatureStrokeThinning,
-        smoothing: signatureStrokeSmoothing,
-        streamline: signatureStrokeStreamline,
+        size: SIGNATURE_STROKE_SIZE,
+        thinning: SIGNATURE_STROKE_THINNING,
+        smoothing: SIGNATURE_STROKE_SMOOTHING,
+        streamline: SIGNATURE_STROKE_STREAMLINE,
       })
 
       ctx.beginPath()
@@ -161,6 +161,7 @@ export const SignatureField = ({
     }
 
     const handlePointerUp = () => {
+      if (!isDrawing) return
       setIsDrawing(false)
       setValue(
         `${schema._id}`,
@@ -172,11 +173,13 @@ export const SignatureField = ({
     canvas.addEventListener('pointerdown', handlePointerDown)
     canvas.addEventListener('pointermove', handlePointerMove)
     canvas.addEventListener('pointerup', handlePointerUp)
+    canvas.addEventListener('pointerleave', handlePointerUp)
 
     return () => {
       canvas.removeEventListener('pointerdown', handlePointerDown)
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', handlePointerUp)
+      canvas.addEventListener('pointerleave', handlePointerUp)
     }
   }, [
     drawAllStrokes,
@@ -227,13 +230,7 @@ export const SignatureField = ({
                 width="100%"
                 maxWidth="100%"
                 height="11.125rem"
-                border={
-                  signatureErrors
-                    ? '1px solid'
-                    : isDrawing
-                      ? '2px solid'
-                      : '1px solid'
-                }
+                border="1px solid"
                 borderRadius="0.25rem"
                 cursor={schema.disabled ? 'not-allowed' : 'auto'}
                 borderColor={
@@ -247,6 +244,7 @@ export const SignatureField = ({
                 overflow="hidden"
                 _hover={{
                   background: schema.disabled ? 'neutral.200' : 'primary.100',
+                  outline: isDrawing ? '2px solid #445fcd' : 'none',
                 }}
               >
                 {showSignaturePlaceholder && (
@@ -283,20 +281,27 @@ export const SignatureField = ({
               </Box>
             </Stack>
           </Flex>
-          {schema.disabled ? null : (
-            <Box alignSelf="end" marginTop="0.5rem">
-              <Button
-                onClick={() => {
-                  handleClearPerfectFreehandSignature()
-                }}
-                isLoading={isSubmitting}
-                isDisabled={schema.disabled}
-              >
-                Clear
-              </Button>
-            </Box>
-          )}
-          <FormErrorMessage>{signatureErrors?.message}</FormErrorMessage>
+        {schema.disabled ? null : (
+          <Flex justify="space-between" mt="0.5rem" align="flex-start">
+            {signatureErrors?.message ? (
+              <FormErrorMessage mt="0">
+                {signatureErrors.message}
+              </FormErrorMessage>
+            ) : (
+              <Box /> // placeholder to consistently flush button to the right
+            )}
+            <Button
+              onClick={() => {
+                handleClearPerfectFreehandSignature()
+              }}
+              isLoading={isSubmitting}
+              isDisabled={schema.disabled}
+              variant={'outline'}
+            >
+              Clear
+            </Button>
+          </Flex>
+            )}
         </Stack>
       </FormControl>
     </Box>

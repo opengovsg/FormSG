@@ -1,15 +1,15 @@
 import { SignatureVectorArray } from '../types'
 
-export const signatureStrokeSize = 8
-export const signatureStrokeThinning = 0.5
-export const signatureStrokeSmoothing = 0.5
-export const signatureStrokeStreamline = 0.5
+export const SIGNATURE_STROKE_SIZE = 8
+export const SIGNATURE_STROKE_THINNING = 0.5
+export const SIGNATURE_STROKE_SMOOTHING = 0.5
+export const SIGNATURE_STROKE_STREAMLINE = 0.5
 
-export const signatureOutputPaddingDefault = 10
-export const signatureOutputStrokeFillStyle = 'black'
+export const SIGNATURE_OUTPUT_PADDING_DEFAULT = 10
+export const SIGNATURE_OUTPUT_STROKE_FILL_STYLE = 'black'
 
-export const boxHeightDefault = 1
-export const boxWidthDefault = 1
+export const BOX_HEIGHT_DEFAULT = 1
+export const BOX_WIDTH_DEFAULT = 1
 
 /**
  *  converts a vectorArray to a string output

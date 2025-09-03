@@ -38,7 +38,7 @@ export type FormWorkflowStep =
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
 
-export type StatusTrackerWorkflowStep =
+export type StrippedFormWorkflowStep =
   | FormWorkflowStepStaticNoEmails
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
@@ -51,8 +51,8 @@ export type FormWorkflowStepDto = FormWorkflowStep & { _id: string }
 
 export type FormWorkflowDto = Array<FormWorkflowStepDto>
 
-export type StatusTrackerWorkflowStepDto = StatusTrackerWorkflowStep & {
+export type StrippedFormWorkflowStepDto = StrippedFormWorkflowStep & {
   _id: string
 }
 
-export type StatusTrackerWorkflowDto = Array<StatusTrackerWorkflowStepDto>
+export type StrippedFormWorkflowDto = Array<StrippedFormWorkflowStepDto>

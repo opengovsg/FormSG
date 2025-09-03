@@ -7,6 +7,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { WebhookResponse } from '../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
+  IMultirespondentSubmissionSchema,
   ISubmissionSchema,
   WebhookView,
 } from '../../../types'
@@ -246,7 +247,7 @@ export const getWebhookType = (webhookUrl: string) => {
 export const createInitialWebhookSender =
   (producer?: WebhookProducer) =>
   (
-    submission: IEncryptedSubmissionSchema,
+    submission: IEncryptedSubmissionSchema | IMultirespondentSubmissionSchema,
     webhookUrl: string,
     isRetryEnabled: boolean,
   ): ResultAsync<
