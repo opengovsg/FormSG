@@ -70,6 +70,7 @@ export interface CheckboxOthersWrapperProps {
   colorScheme?: FieldColorScheme
   size?: string
   children: ReactNode
+  disabled?: boolean
 }
 
 /**
@@ -86,7 +87,9 @@ const OthersWrapper = ({
 
   return (
     <CheckboxOthersContext.Provider value={{ checkboxRef, inputRef }}>
-      <Box __css={styles.othersContainer}>{children}</Box>
+      <Box __css={styles.othersContainer} aria-disabled={props.disabled}>
+        {children}
+      </Box>
     </CheckboxOthersContext.Provider>
   )
 }

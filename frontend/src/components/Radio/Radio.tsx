@@ -331,6 +331,7 @@ export const OthersInput = forwardRef<InputProps, 'input'>(
 
 export interface OthersProps extends RadioProps {
   children: React.ReactNode
+  disabled?: boolean
 }
 
 const OthersWrapper = forwardRef<OthersProps, 'input'>(
@@ -341,7 +342,7 @@ const OthersWrapper = forwardRef<OthersProps, 'input'>(
     })
 
     return (
-      <Box __css={styles.othersContainer}>
+      <Box __css={styles.othersContainer} aria-disabled={props.disabled}>
         <OthersRadio {...props} ref={ref} />
         {children}
       </Box>

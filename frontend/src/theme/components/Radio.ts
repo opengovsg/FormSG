@@ -105,11 +105,11 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
         boxShadow: `inset 0 0 0 0.125rem ${getColor(theme, `${c}.500`)}`,
       },
       _disabled: {
-        bg: 'white',
+        bg: 'none',
         color: 'neutral.500',
         cursor: 'not-allowed',
         _hover: {
-          bg: 'white',
+          bg: 'none',
         },
       },
     },

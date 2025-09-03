@@ -39,6 +39,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
     _disabled: {
       borderColor: getColor(theme, `neutral.500`),
       bg: 'white',
+      cursor: 'not-allowed',
       _checked: {
         borderColor: getColor(theme, `neutral.500`),
         bg: getColor(theme, `neutral.500`),
@@ -124,6 +125,9 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
       borderRadius: '4px',
       _hover: {
         bg: `${getColor(props.theme, `${props.colorScheme}.100`)}`,
+        _disabled: {
+          bg: 'none',
+        },
       },
       _active: {
         bg: `${getColor(props.theme, `${props.colorScheme}.200`)}`,

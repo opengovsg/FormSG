@@ -132,7 +132,10 @@ export const CheckboxField = ({
                 <input type="checkbox" hidden value="" />
               ) : null}
               {schema.othersRadioButton ? (
-                <Checkbox.OthersWrapper colorScheme={fieldColorScheme}>
+                <Checkbox.OthersWrapper
+                  colorScheme={fieldColorScheme}
+                  disabled={schema.disabled}
+                >
                   <FormControl
                     isRequired={schema.required}
                     isDisabled={schema.disabled}
