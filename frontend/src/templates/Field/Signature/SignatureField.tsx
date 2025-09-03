@@ -34,7 +34,10 @@ export const SignatureField = ({
   const formContext = useFormContext<SignatureFieldInput>()
   const { getValues, setValue } = formContext
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
-  const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
+  const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(
+    !schema.disabled,
+  )
+
   const signatureErrors = errors?.[schema._id]
 
   const signatureValidationRules = useMemo(
@@ -280,17 +283,19 @@ export const SignatureField = ({
               </Box>
             </Stack>
           </Flex>
-          <Box alignSelf="end" marginTop="0.5rem">
-            <Button
-              onClick={() => {
-                handleClearPerfectFreehandSignature()
-              }}
-              isLoading={isSubmitting}
-              isDisabled={schema.disabled}
-            >
-              Clear
-            </Button>
-          </Box>
+          {schema.disabled ? null : (
+            <Box alignSelf="end" marginTop="0.5rem">
+              <Button
+                onClick={() => {
+                  handleClearPerfectFreehandSignature()
+                }}
+                isLoading={isSubmitting}
+                isDisabled={schema.disabled}
+              >
+                Clear
+              </Button>
+            </Box>
+          )}
           <FormErrorMessage>{signatureErrors?.message}</FormErrorMessage>
         </Stack>
       </FormControl>
