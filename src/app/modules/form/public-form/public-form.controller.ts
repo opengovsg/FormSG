@@ -2,8 +2,8 @@ import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { featureFlags } from 'shared/constants'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorCode,
   ErrorDto,
