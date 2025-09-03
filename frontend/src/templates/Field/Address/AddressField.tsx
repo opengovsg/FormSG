@@ -171,7 +171,7 @@ export const AddressCompoundField = ({
                   <Input
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
-                    placeholder="e.g. 650161"
+                    placeholder={schema.disabled ? undefined : "e.g. 650161"}
                     isHighContrast={isHighContrast}
                   />
                   <Button
@@ -211,7 +211,7 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Block Number`}
-                placeholder="e.g. 161"
+                placeholder={schema.disabled ? undefined : "e.g. 161"}
                 isHighContrast={isHighContrast}
               />
               <FormErrorMessage>
@@ -242,7 +242,7 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Street name`}
-                placeholder="e.g. Bukit Batok Street 11"
+                placeholder={schema.disabled ? undefined : "e.g. Bukit Batok Street 11"}
                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
@@ -304,7 +304,7 @@ export const AddressCompoundField = ({
                 <Input
                   {...field}
                   aria-label={`${schema.questionNumber}. Level number`}
-                  placeholder="Level number"
+                  placeholder={schema.disabled ? undefined : "Level number"}
                   isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
@@ -331,7 +331,7 @@ export const AddressCompoundField = ({
                 <Input
                   {...field}
                   aria-label={`${schema.questionNumber}. Unit Number`}
-                  placeholder="Unit number"
+                  placeholder={schema.disabled ? undefined : "Unit number"}
                   isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
