@@ -171,16 +171,18 @@ export const AddressCompoundField = ({
                   <Input
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
-                    placeholder={schema.disabled ? undefined : "e.g. 650161"}
+                    placeholder={schema.disabled ? undefined : 'e.g. 650161'}
                     isHighContrast={isHighContrast}
                   />
-                  <Button
-                    onClick={handleVerifyAddress}
-                    isLoading={isSubmitting}
-                    isDisabled={isButtonDisabled}
-                  >
-                    Find address
-                  </Button>
+                  {schema.disabled ? null : (
+                    <Button
+                      onClick={handleVerifyAddress}
+                      isLoading={isSubmitting}
+                      isDisabled={isButtonDisabled}
+                    >
+                      Find address
+                    </Button>
+                  )}
                 </Flex>
                 <FormErrorMessage>
                   {addressSubFieldErrors?.postalCode?.message}
@@ -211,7 +213,7 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Block Number`}
-                placeholder={schema.disabled ? undefined : "e.g. 161"}
+                placeholder={schema.disabled ? undefined : 'e.g. 161'}
                 isHighContrast={isHighContrast}
               />
               <FormErrorMessage>
@@ -242,7 +244,9 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Street name`}
-                placeholder={schema.disabled ? undefined : "e.g. Bukit Batok Street 11"}
+                placeholder={
+                  schema.disabled ? undefined : 'e.g. Bukit Batok Street 11'
+                }
                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                   const value = e.currentTarget.value
                   e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
@@ -304,7 +308,7 @@ export const AddressCompoundField = ({
                 <Input
                   {...field}
                   aria-label={`${schema.questionNumber}. Level number`}
-                  placeholder={schema.disabled ? undefined : "Level number"}
+                  placeholder={schema.disabled ? undefined : 'Level number'}
                   isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
@@ -331,7 +335,7 @@ export const AddressCompoundField = ({
                 <Input
                   {...field}
                   aria-label={`${schema.questionNumber}. Unit Number`}
-                  placeholder={schema.disabled ? undefined : "Unit number"}
+                  placeholder={schema.disabled ? undefined : 'Unit number'}
                   isHighContrast={isHighContrast}
                 />
                 <FormErrorMessage>
