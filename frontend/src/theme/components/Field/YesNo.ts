@@ -28,7 +28,7 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
     color: 'secondary.700',
     bg: 'neutral.100',
     border: '1px solid',
-    borderColor: 'neutral.500',
+    borderColor: 'neutral.400',
     p: '15px',
     _disabled: {
       bg: 'neutral.200',

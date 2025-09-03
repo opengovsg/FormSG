@@ -108,6 +108,9 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
         bg: 'white',
         color: 'neutral.500',
         cursor: 'not-allowed',
+        _hover: {
+          bg: 'white',
+        },
       },
     },
     // Text label
