@@ -214,21 +214,7 @@ export const FormFields = ({
               {isEmpty(fieldPrefillMap) ? null : hasLockedNormalPrefills ? (
                 // If there are both locked and non-locked prefills, show this message.
                 <InlineMessage variant="warning">
-                  Highlighted fields below have been pre-filled according to the
-                  form link you clicked. You may edit these fields if necessary,
-                  except non-editable fields with a lock icon.
-                </InlineMessage>
-              ) : hasLockedPrefills ? (
-                // If there are only locked prefills, show this message.
-                <InlineMessage variant="warning">
-                  Highlighted fields below have been pre-filled according to the
-                  form link you clicked. These are non-editable fields.
-                </InlineMessage>
-              ) : hasNormalPrefills ? (
-                // If there are only non-locked prefills, show this message.
-                <InlineMessage variant="warning">
-                  Highlighted fields below have been pre-filled according to the
-                  form link you clicked. You may edit these fields if necessary.
+                  Some fields below have been pre-filled.
                 </InlineMessage>
               ) : null}
               <VisibleFormFields
