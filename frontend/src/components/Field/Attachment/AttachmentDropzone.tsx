@@ -14,13 +14,35 @@ interface AttachmentDropzoneProps {
   question?: string
 }
 
+const DropzoneText = ({ inputProps }: { inputProps: DropzoneInputProps }) => {
+  const { t } = useTranslation()
+  const isDisabled = inputProps.disabled
+
+  return (
+    <Text aria-hidden color="secondary.700">
+      {isDisabled ? (
+        t('features.publicForm.components.fields.attachment.disabled')
+      ) : (
+        <>
+          <Link>
+            {t(
+              'features.publicForm.components.fields.attachment.fileUploaderLink',
+            )}
+          </Link>
+
+          {t('features.publicForm.components.fields.attachment.dragAndDrop')}
+        </>
+      )}
+    </Text>
+  )
+}
+
 export const AttachmentDropzone = ({
   inputProps,
   isDragActive,
   readableMaxSize,
   question,
 }: AttachmentDropzoneProps): JSX.Element => {
-  const { t } = useTranslation()
   const styles = useAttachmentStyles()
 
   return (
@@ -32,16 +54,11 @@ export const AttachmentDropzone = ({
       <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
 
       {isDragActive ? (
-        <Text aria-hidden>Drop the file here...</Text>
-      ) : (
-        <Text aria-hidden>
-          <Link isDisabled={inputProps.disabled}>
-            {t(
-              'features.publicForm.components.fields.attachment.fileUploaderLink',
-            )}
-          </Link>
-          {t('features.publicForm.components.fields.attachment.dragAndDrop')}
+        <Text aria-hidden color="secondary.700">
+          Drop the file here...
         </Text>
+      ) : (
+        <DropzoneText inputProps={inputProps} />
       )}
     </>
   )
