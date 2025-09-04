@@ -329,7 +329,7 @@ const addAuthSettings = async (
 
   // Don't need to click if SGID is desired auth type
   // since SGID is the default once Singpass is enabled
-  if (formSettings.authType !== FormAuthType.SGID) {
+  if (formSettings.authType !== FormAuthType.MyInfo) {
     await page
       .locator('label', {
         has: page.locator(
