@@ -131,6 +131,7 @@ export const RadioField = ({
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
                 isHighContrast={isHighContrast}
+                disabled={schema.disabled}
               >
                 <FormControl
                   isRequired={schema.required}

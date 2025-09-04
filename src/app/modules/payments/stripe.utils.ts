@@ -508,8 +508,8 @@ export const convertToProofOfPaymentFormat = (
           `<strong>Amount charged</strong> <i>(includes GST)</i>`,
         )
         .replace(
-          '<strong>Amount paid</strong>',
-          `<strong>Amount paid</strong> <i>(includes GST)</i>`,
+          /(<strong>Amount paid<\/strong>|Amount paid)/g,
+          '$1 <i>(includes GST)</i>',
         )
     : paymentByProductsEdits
         .replace(
