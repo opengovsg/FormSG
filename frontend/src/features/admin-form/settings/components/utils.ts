@@ -9,6 +9,7 @@ import { FormAuthType } from '~shared/types'
 
 export const isEsrvcidRequired = (authType: FormAuthType) => {
   switch (authType) {
+    case FormAuthType.SP:
     case FormAuthType.CP:
       return true
     default:
