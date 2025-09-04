@@ -18,6 +18,7 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { FieldFactory } from './FieldFactory'
 import { PrefillMap } from './FormFields'
 import { useFormSections } from './FormSectionsContext'
+import { isMyInfo } from '~features/myinfo/utils'
 
 interface VisibleFormFieldsProps {
   control: Control<FormFieldValues>
@@ -78,7 +79,7 @@ export const VisibleFormFields = ({
           disableRequiredValidation={
             !isFieldEnabledByWorkflow(workflowStep, field)
           }
-          isHighContrast={!isFieldEnabledByWorkflow(workflowStep, field)}
+          isHighContrast={!isFieldEnabledByWorkflow(workflowStep, field) || isMyInfo(field)}
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
         />
