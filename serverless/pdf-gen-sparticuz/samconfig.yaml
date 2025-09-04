@@ -4,7 +4,7 @@ stg-alt:
   deploy:
     parameters:
       stack_name: pdf-gen-sparticuz-stg-alt
-      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      s3_bucket: pdf-gen-lambda-code-zip-stg-alt-22e601b # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: stg-alt
@@ -17,7 +17,7 @@ stg-alt3:
   deploy:
     parameters:
       stack_name: pdf-gen-sparticuz-stg-alt3
-      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      s3_bucket: pdf-gen-lambda-code-zip-stg-alt3-9f042e3 # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: stg-alt3
@@ -30,7 +30,7 @@ uat:
   deploy: 
     parameters:
       stack_name: pdf-gen-sparticuz-uat
-      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      s3_bucket: pdf-gen-lambda-code-zip-uat-4882a20 # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: uat
@@ -43,7 +43,7 @@ production:
   deploy: 
     parameters:
       stack_name: pdf-gen-sparticuz-production
-      s3_bucket: pdf-gen-lambda-code-zip # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      s3_bucket: pdf-gen-lambda-code-zip-prod-7d04c3d # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: production
