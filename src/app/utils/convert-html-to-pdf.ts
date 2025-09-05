@@ -160,6 +160,17 @@ export const generatePdfFromHtml = async (
     return result
   })
 
+  const isPdfGenerationLambdaConfigured =
+    !!AwsConfig.pdfGeneratorLambdaFunctionName
+  if (!isPdfGenerationLambdaConfigured) {
+    logger.info({
+      message:
+        'Pdf generation lambda is not configured - using result from local pdf generation',
+      meta: logMeta,
+    })
+    return localResult
+  }
+
   const lambdaStopwatch = startStopwatch()
   const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(
     (result) => {
