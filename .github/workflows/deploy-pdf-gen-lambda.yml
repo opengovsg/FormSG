@@ -38,6 +38,7 @@ jobs:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4
         with:
+          lfs: true
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
 
