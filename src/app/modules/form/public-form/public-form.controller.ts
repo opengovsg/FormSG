@@ -207,10 +207,11 @@ export const handleGetPublicForm: ControllerHandler<
         MYINFO_AUTH_CODE_COOKIE_NAME,
         MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
+      const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
       const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
         .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
         .andThen((accessToken) =>
-          MyInfoService.getMyInfoDataForForm(form, accessToken),
+          MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
         )
 
       if (myInfoFieldsResult.isErr()) {
