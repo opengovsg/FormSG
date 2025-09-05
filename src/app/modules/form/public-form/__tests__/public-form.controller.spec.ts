@@ -4,6 +4,7 @@ import { ObjectId } from 'bson'
 import { Request } from 'express'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
+import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
   MOCK_ACCESS_TOKEN,
@@ -67,7 +68,9 @@ jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
 jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../billing/billing.service')
+jest.mock('src/app/config/features/spcp-myinfo.config')
 
+const MockSpCpMyInfoConfig = jest.mocked(spcpMyInfoConfig)
 const MockFormService = jest.mocked(FormService)
 const MockPublicFormService = jest.mocked(PublicFormService)
 const MockAuthService = jest.mocked(AuthService)
@@ -1252,11 +1255,19 @@ describe('public-form.controller', () => {
 
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
       // Arrange
+      const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
       const MOCK_FORM = {
         authType: FormAuthType.MyInfo,
-        esrvcId: '12345',
+        esrvcId: FORM_ESRVC_ID,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
       } as unknown as MyInfoForm<IFormDocument>
+
+      const MOCKED_DEFAULT_ESRVC_ID = 'MOCKED_DEFAULT_ESRVC_ID'
+      MockSpCpMyInfoConfig.spEsrvcId = MOCKED_DEFAULT_ESRVC_ID
+      const createRedirectURLSpy = jest.spyOn(
+        MockMyInfoService,
+        'createRedirectURL',
+      )
 
       const mockRes = expressHandler.mockResponse()
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
@@ -1274,6 +1285,51 @@ describe('public-form.controller', () => {
       )
 
       // Assert
+      expect(createRedirectURLSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          formEsrvcId: FORM_ESRVC_ID,
+        }),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
+    })
+
+    it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo and no esrvcId', async () => {
+      // Arrange
+      const MOCK_FORM = {
+        authType: FormAuthType.MyInfo,
+        esrvcId: undefined,
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      } as unknown as MyInfoForm<IFormDocument>
+
+      const DEFAULT_ESRVC_ID = 'MOCKED_DEFAULT_ESRVC_ID'
+      MockSpCpMyInfoConfig.spEsrvcId = DEFAULT_ESRVC_ID
+      const createRedirectURLSpy = jest.spyOn(
+        MockMyInfoService,
+        'createRedirectURL',
+      )
+
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      createRedirectURLSpy.mockReturnValueOnce(ok(MOCK_REDIRECT_URL))
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(createRedirectURLSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          formEsrvcId: DEFAULT_ESRVC_ID,
+        }),
+      )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,
@@ -1304,58 +1360,6 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         message:
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
-      })
-    })
-
-    it('should return 400 when the form has authType MyInfo and is missing esrvcId', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.MyInfo,
-      } as unknown as MyInfoForm<IFormDocument>
-
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
-          'This form does not have a valid eServiceId. Please refresh and try again.',
-      })
-    })
-
-    it('should return 400 when the form has authType SP and is missing esrvcId', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        authType: FormAuthType.SP,
-      } as unknown as SpcpForm<IFormDocument>
-
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
-          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
     })
 
