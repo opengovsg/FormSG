@@ -180,15 +180,17 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 200 with the redirect URL when the form has no esrvcId', async () => {
+    it('should return 400 with the redirect URL when the form has no esrvcId', async () => {
       // Arrange
-      const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
-      const { form } = await dbHandler.insertEncryptForm({
+      const { form } = await dbHandler.insertEmailForm({
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
-          esrvcId: FORM_ESRVC_ID,
         },
+      })
+      const expectedResponse = jsonParseStringify({
+        message:
+          'This form does not have a valid eServiceId. Please refresh and try again.',
       })
 
       // Act
@@ -197,13 +199,8 @@ describe('public-form.auth.routes', () => {
         .query({ isPersistentLogin: false })
 
       // Assert
-      expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          String(form._id),
-          form.esrvcId!,
-        ]),
-      })
+      expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 404 when the form is not in the database', async () => {

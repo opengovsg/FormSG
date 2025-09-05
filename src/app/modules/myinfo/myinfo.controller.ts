@@ -1,7 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags } from '../../../../shared/constants'
 import { Environment } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -19,7 +18,7 @@ import {
   MyInfoAuthCodeCookieState,
   MyInfoAuthCodeSuccessPayload,
 } from './myinfo.types'
-import { getMyInfoEserviceIdInForm, mapRedirectURLError } from './myinfo.util'
+import { mapRedirectURLError, validateMyInfoForm } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -48,12 +47,11 @@ export const respondWithRedirectURL: ControllerHandler<
   { formId: string; encodedQuery?: string }
 > = async (req, res) => {
   const { formId, encodedQuery } = req.query
-  const useFormsgEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
   return FormService.retrieveFormById(formId)
-    .andThen((form) => getMyInfoEserviceIdInForm(form, useFormsgEsrvcId))
-    .andThen(([form, eserviceId]) =>
+    .andThen((form) => validateMyInfoForm(form))
+    .andThen((form) =>
       MyInfoService.createRedirectURL({
-        formEsrvcId: eserviceId,
+        formEsrvcId: form.esrvcId,
         formId,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
         encodedQuery,

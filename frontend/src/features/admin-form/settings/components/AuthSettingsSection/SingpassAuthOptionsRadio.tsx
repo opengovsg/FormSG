@@ -3,11 +3,9 @@ import {
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
-  useMemo,
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
-import { pickBy } from 'lodash'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types'
 
@@ -15,7 +13,6 @@ import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
 
 import { useMutateFormSettings } from '../../mutations'
-import { isEsrvcidRequired } from '../utils'
 
 import { FORM_SINGPASS_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
@@ -25,16 +22,19 @@ export interface SingpassAuthOptionsRadioProps {
   isDisabled: boolean
 }
 
-type RadioOptionsType = [FormAuthType, string][]
+const isEsrvcidRequired = (authType: FormAuthType) => {
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.MyInfo:
+    case FormAuthType.CP:
+      return true
+    default:
+      return false
+  }
+}
 
-const COLLAPSED_FORM_SINGPASS_AUTHTYPES = pickBy(
+const radioOptions: [FormAuthType, string][] = Object.entries(
   FORM_SINGPASS_AUTHTYPES,
-  (_, key) =>
-    [FormAuthType.MyInfo, FormAuthType.CP].includes(key as FormAuthType),
-)
-
-const baseRadioOptions: RadioOptionsType = Object.entries(
-  COLLAPSED_FORM_SINGPASS_AUTHTYPES,
 ) as [FormAuthType, string][]
 
 export const SingpassAuthOptionsRadio = ({
@@ -51,21 +51,6 @@ export const SingpassAuthOptionsRadio = ({
   const checkIsDisabled = useCallback(() => {
     return isDisabled || mutateFormAuthType.isLoading
   }, [isDisabled, mutateFormAuthType.isLoading])
-
-  const radioOptionsWithInitialChoice: RadioOptionsType = useMemo(() => {
-    if (baseRadioOptions.some(([key, _]) => key === settings.authType)) {
-      return baseRadioOptions
-    }
-    if (settings.authType === FormAuthType.NIL) {
-      return baseRadioOptions
-    }
-
-    // reinsert the initial choice so that admins can see it in the list
-    return [
-      [settings.authType, FORM_SINGPASS_AUTHTYPES[settings.authType]],
-      ...baseRadioOptions,
-    ]
-  }, [settings.authType])
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
@@ -108,17 +93,14 @@ export const SingpassAuthOptionsRadio = ({
       onKeyDown={handleEnterKeyDown}
       onChange={(e: FormAuthType) => setFocusedValue(e)}
     >
-      {radioOptionsWithInitialChoice.map(([authType, text]) => (
+      {radioOptions.map(([authType, text]) => (
         <Fragment key={authType}>
           <Box onClick={handleOptionClick(authType)}>
             <Radio value={authType} isDisabled={checkIsDisabled()}>
               <Flex>
                 {text}
-                {[
-                  FormAuthType.SGID,
-                  FormAuthType.SGID_MyInfo,
-                  FormAuthType.MyInfo,
-                ].includes(authType) ? (
+                {authType === FormAuthType.SGID ||
+                authType === FormAuthType.SGID_MyInfo ? (
                   <>
                     <Spacer w="16px" />
                     <Tag size="sm" variant="subtle">

@@ -329,7 +329,7 @@ const addAuthSettings = async (
 
   // Don't need to click if SGID is desired auth type
   // since SGID is the default once Singpass is enabled
-  if (formSettings.authType !== FormAuthType.MyInfo) {
+  if (formSettings.authType !== FormAuthType.SGID) {
     await page
       .locator('label', {
         has: page.locator(
@@ -343,7 +343,9 @@ const addAuthSettings = async (
   }
 
   switch (formSettings.authType) {
+    case FormAuthType.SP:
     case FormAuthType.CP:
+    case FormAuthType.MyInfo:
       if (!formSettings.esrvcId) throw new Error('No esrvcid provided!')
       await page.locator(`id=esrvcId`).fill(formSettings.esrvcId)
       await page.keyboard.press('Enter')

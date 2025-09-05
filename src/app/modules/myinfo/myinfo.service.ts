@@ -61,12 +61,12 @@ import {
   createRelayState,
   getMyInfoAttr,
   getMyInfoAttributeConstantsList,
-  getMyInfoEserviceIdInForm,
   hashFieldValues,
   isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
   logIfFieldValueNotInMyinfoList,
+  validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -500,13 +500,13 @@ export class MyInfoServiceClass {
     | MyInfoFetchError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return getMyInfoEserviceIdInForm(form).asyncAndThen(([, eserviceId]) =>
+    return validateMyInfoForm(form).asyncAndThen((form) =>
       ResultAsync.fromPromise(
         this.#myInfoPersonBreaker
           .fire(
             accessToken,
             internalAttrListToScopes(requestedAttributes),
-            eserviceId,
+            form.esrvcId,
           )
           .then((response) => new MyInfoData(response)),
         (error) => {
