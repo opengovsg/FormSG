@@ -3,6 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorCode,
   ErrorDto,
@@ -35,7 +36,7 @@ import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
   createMyInfoLoginCookie,
   extractAuthCode,
-  validateMyInfoForm,
+  getMyInfoEserviceIdInForm,
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
@@ -661,15 +662,19 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
+      const useFormsgEsrvcId = req.growthbook?.isOn(
+        featureFlags.useFormsgEsrvcId,
+      )
       switch (form.authType) {
         case FormAuthType.MyInfo:
-          return validateMyInfoForm(form).andThen((form) =>
-            MyInfoService.createRedirectURL({
-              formEsrvcId: form.esrvcId,
-              formId,
-              requestedAttributes: form.getUniqueMyInfoAttrs(),
-              encodedQuery,
-            }),
+          return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
+            ([form, eserviceId]) =>
+              MyInfoService.createRedirectURL({
+                formEsrvcId: eserviceId,
+                formId,
+                requestedAttributes: form.getUniqueMyInfoAttrs(),
+                encodedQuery,
+              }),
           )
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
