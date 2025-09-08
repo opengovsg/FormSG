@@ -1389,14 +1389,6 @@ describe('admin-form.service', () => {
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
       })
 
-    const MULTIRESPONDENT_UPDATE_SPY = jest
-      .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
-
-      // @ts-ignore
-      .mockReturnValue({
-        exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
-      })
-
     beforeEach(() => jest.clearAllMocks())
 
     it('should return updated form settings when successfully updating email form settings', async () => {

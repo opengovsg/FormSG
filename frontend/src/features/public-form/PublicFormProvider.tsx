@@ -796,7 +796,7 @@ export const PublicFormProvider = ({
     [t, toast],
   )
 
-  const hasDraftResponsesToRestore = Boolean(unchangedFieldIds?.length > 0)
+  const hasDraft = Boolean(draftSubmission?.lastUpdated)
   const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
 
   useEffect(() => {
@@ -804,7 +804,7 @@ export const PublicFormProvider = ({
       !hasShownRestoredDraftToast.current &&
       isSaveDraftEnabled &&
       !isAuthRequired &&
-      hasDraftResponsesToRestore
+      hasDraft
     ) {
       showRestoredDraftToast({
         hasChangedDraftFields: hasUnrestorableFields,
@@ -813,7 +813,7 @@ export const PublicFormProvider = ({
     }
   }, [
     isSaveDraftEnabled,
-    hasDraftResponsesToRestore,
+    hasDraft,
     hasUnrestorableFields,
     hasShownRestoredDraftToast.current,
     showRestoredDraftToast,
