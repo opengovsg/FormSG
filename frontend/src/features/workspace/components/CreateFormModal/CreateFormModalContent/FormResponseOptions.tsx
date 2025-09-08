@@ -7,6 +7,10 @@ import { FormResponseMode } from '~shared/types/form/form'
 import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
+import SingleRespondentIllustration
+  from "~features/workspace/components/CreateFormModal/CreateFormModalContent/SingleRespondentIllustration";
+import MultiRespondentIllustration
+  from "~features/workspace/components/CreateFormModal/CreateFormModalContent/MultiRespondentIllustration";
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
@@ -62,7 +66,7 @@ export const FormResponseOptions = forwardRef<
       <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
         <Tile
           variant="complex"
-          icon={BiLockAlt}
+          icon={SingleRespondentIllustration}
           isActive={value === FormResponseMode.Encrypt}
           onClick={() => onChange(FormResponseMode.Encrypt)}
           flex={1}
@@ -79,7 +83,7 @@ export const FormResponseOptions = forwardRef<
         <Tile
           ref={ref}
           variant="complex"
-          icon={MultiParty}
+          icon={MultiRespondentIllustration}
           isActive={value === FormResponseMode.Multirespondent}
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           flex={1}

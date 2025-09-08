@@ -21,11 +21,11 @@ export const enSG: CreateFormModal = {
       message: 'It is advised to use a shorter, more succinct form name.',
     },
     type: {
-      label: 'What type of form do you need?',
+      label: 'How many respondents will a single submission need?',
       description:
         'Both support up to Confidential (Cloud-Eligible) and Sensitive (High) data.',
       storage: {
-        title: 'Storage mode form',
+        title: 'One respondent',
         subtitle:
           'Collect responses from individual respondents. Ideal for one-way submissions.',
         optionDescriptionItems: {
@@ -36,7 +36,7 @@ export const enSG: CreateFormModal = {
         },
       },
       mrf: {
-        title: 'Multi-respondent form',
+        title: 'Two or more respondents',
         subtitle:
           'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions.',
         optionDescriptionItems: {
