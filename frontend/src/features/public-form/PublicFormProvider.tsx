@@ -782,7 +782,7 @@ export const PublicFormProvider = ({
       })
     }, [draftSubmission?.lastUpdated, formFields])
 
-  const hasFieldsToRestore = Boolean(unchangedFieldIds.length > 0)
+  const hasDraft = Boolean(draftSubmission?.lastUpdated)
   const hasShownRestoredDraftToast = useRef<boolean>(false)
   const showRestoredDraftToast = useCallback(
     ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
@@ -804,7 +804,7 @@ export const PublicFormProvider = ({
       !hasShownRestoredDraftToast.current &&
       isSaveDraftEnabled &&
       !isAuthRequired &&
-      hasFieldsToRestore
+      hasDraft
     ) {
       showRestoredDraftToast({
         hasChangedDraftFields: hasUnrestorableFields,
@@ -813,7 +813,7 @@ export const PublicFormProvider = ({
     }
   }, [
     isSaveDraftEnabled,
-    hasFieldsToRestore,
+    hasDraft,
     hasUnrestorableFields,
     hasShownRestoredDraftToast.current,
     showRestoredDraftToast,
