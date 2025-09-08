@@ -26,6 +26,19 @@ stg-alt:
       confirm_changeset: true
       parameter_overrides: Environment=stg-alt
 
+staging-alt2:
+  deploy:
+    parameters:
+      stack_name: pdf-gen-sparticuz-staging-alt2
+      s3_bucket: pdf-gen-lambda-code-zip-uat-4882a20 # Reuse uat bucket as this env is not IACed. 
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
+      s3_prefix: staging-alt2
+      image_repositories: [] 
+      disable_rollback: false # Rolls back to previous version if the deployment fails 
+      confirm_changeset: true
+      parameter_overrides: Environment=staging-alt2
+
 stg-alt3:
   deploy:
     parameters:
