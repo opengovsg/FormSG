@@ -112,7 +112,8 @@ export function useCommonFormProvider(formId: string) {
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { createTransactionMutation } = useTransactionMutations(formId)
-  const toast = useToast({ isClosable: true })
+  const useToastProps = useMemo(() => ({ isClosable: true }), [])
+  const toast = useToast(useToastProps)
   const vfnToastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
@@ -773,7 +774,7 @@ export const PublicFormProvider = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
-  const { draftResponsesToRestore, changedFieldIds, unchangedFieldIds } =
+  const { draftResponsesToRestore, changedFieldIds } =
     useMemo(() => {
       return getRestoreDraftFormValues({
         currentFormFields: formFields,
@@ -781,6 +782,7 @@ export const PublicFormProvider = ({
       })
     }, [draftSubmission?.lastUpdated, formFields])
 
+  const hasDraft = Boolean(draftSubmission?.lastUpdated)
   const hasShownRestoredDraftToast = useRef<boolean>(false)
   const showRestoredDraftToast = useCallback(
     ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
@@ -795,8 +797,6 @@ export const PublicFormProvider = ({
     },
     [t, toast],
   )
-
-  const hasDraft = Boolean(draftSubmission?.lastUpdated)
   const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
 
   useEffect(() => {
@@ -870,6 +870,9 @@ export const PublicFormProvider = ({
     })
 
     setDraftSubmission(draftToSave)
+    
+    // Prevent restore toast from showing if the draft is created in the same session. 
+    hasShownRestoredDraftToast.current = true
 
     toast({
       description: t('features.publicForm.components.saveDraft.toast.success'),
