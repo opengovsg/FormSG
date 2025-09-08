@@ -870,8 +870,8 @@ export const PublicFormProvider = ({
     })
 
     setDraftSubmission(draftToSave)
-    
-    // Prevent restore toast from showing if the draft is created in the same session. 
+
+    // Prevent restore toast from showing if the draft is created in the same session.
     hasShownRestoredDraftToast.current = true
 
     toast({

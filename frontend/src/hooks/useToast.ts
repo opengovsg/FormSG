@@ -28,9 +28,7 @@ export type UseToastReturn = {
   update: ReturnType<typeof useChakraToast>['update']
 }
 
-export const useToast = (
-  useToastProps: UseToastProps | undefined,
-): UseToastReturn => {
+export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
   const memoizedUseToastProps = useMemo(
     () => omit(useToastProps, 'status'),
     [useToastProps],
