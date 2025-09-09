@@ -153,7 +153,10 @@ export const FormEmailSection = ({
               'features.adminForm.settings.emailNotifications.section.regular.label',
             )}
           </FormLabel>
-          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} isDisabled={isDisabled} />
+          <AdminEmailRecipientsInput
+            onSubmit={handleSubmitEmails}
+            isDisabled={isDisabled}
+          />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
           {isEmpty(errors) ? (
             <FormLabel.Description

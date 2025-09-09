@@ -219,9 +219,13 @@ const MrfEmailNotificationsForm = ({
                   values={values}
                   onChange={onChange}
                   onBlur={handleSubmit(onSubmit)}
-                  placeholder={isDisabled ? null : t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
-                  )}
+                  placeholder={
+                    isDisabled
+                      ? null
+                      : t(
+                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
+                        )
+                  }
                   isSelectedItemFullWidth
                   isDisabled={isLoading || isDisabled}
                   {...rest}
@@ -258,7 +262,9 @@ const MrfEmailNotificationsForm = ({
             }
             render={({ field }) => (
               <TagInput
-                placeholder={isDisabled ? undefined : otherPartiesEmailInputPlaceholder}
+                placeholder={
+                  isDisabled ? undefined : otherPartiesEmailInputPlaceholder
+                }
                 {...field}
                 value={field.value as string[]}
                 isDisabled={isDisabled}
@@ -304,7 +310,11 @@ export const MrfFormEmailSection = ({
 }: MrfFormEmailSectionProps): JSX.Element => {
   return (
     <Box opacity={1}>
-      <MrfEmailNotificationsForm settings={settings} isDisabled={isDisabled} isHighContrast={isHighContrast} />
+      <MrfEmailNotificationsForm
+        settings={settings}
+        isDisabled={isDisabled}
+        isHighContrast={isHighContrast}
+      />
     </Box>
   )
 }
