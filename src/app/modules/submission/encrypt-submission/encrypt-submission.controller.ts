@@ -808,29 +808,7 @@ const _createSubmission = async ({
     answer: item.answer,
   }))
 
-  // extract signatures & create a .png for email attachments
-  const signatureAttachments: Mail.Attachment[] = []
-  emailFields.forEach((field) => {
-    if (field.fieldType === BasicField.Signature) {
-      // no signature
-      if (isEmpty(field.answerArray)) return
-
-      const vectorArray = convertToSignatureVectorArray(field.answerArray[1])
-      const signatureData = convertToSignaturePngBuffer(vectorArray)
-      signatureAttachments.push({
-        content: signatureData,
-        filename: getSignatureFileName({
-          fieldId: field._id,
-        }),
-        contentType: 'image/png',
-      })
-    }
-  })
-
-  const emailAttachments = [
-    ...(unencryptedAttachments ?? []),
-    ...signatureAttachments,
-  ]
+  const emailAttachments = [...(unencryptedAttachments ?? [])]
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
