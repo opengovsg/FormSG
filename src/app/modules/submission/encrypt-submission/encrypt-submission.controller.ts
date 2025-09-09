@@ -2,13 +2,10 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
-import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
-import Mail from 'nodemailer/lib/mailer'
 import Stripe from 'stripe'
 
 import {
-  BasicField,
   DateString,
   ErrorCode,
   ErrorDto,
@@ -18,10 +15,6 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
-import {
-  convertToSignatureVectorArray,
-  getSignatureFileName,
-} from '../../../../../shared/utils/signature'
 import {
   IAttachmentInfo,
   IEncryptedForm,
@@ -44,7 +37,6 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
-import { convertToSignaturePngBuffer } from '../../../utils/convert-vector-array-to-png'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
