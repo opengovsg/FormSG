@@ -7,10 +7,9 @@ import { FormResponseMode } from '~shared/types/form/form'
 import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
-import SingleRespondentIllustration
-  from "~features/workspace/components/CreateFormModal/CreateFormModalContent/SingleRespondentIllustration";
-import MultiRespondentIllustration
-  from "~features/workspace/components/CreateFormModal/CreateFormModalContent/MultiRespondentIllustration";
+
+import MultiRespondentIllustration from '~features/workspace/components/CreateFormModal/CreateFormModalContent/MultiRespondentIllustration'
+import SingleRespondentIllustration from '~features/workspace/components/CreateFormModal/CreateFormModalContent/SingleRespondentIllustration'
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
