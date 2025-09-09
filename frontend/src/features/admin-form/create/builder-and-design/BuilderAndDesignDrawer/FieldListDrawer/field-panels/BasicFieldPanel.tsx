@@ -1,5 +1,9 @@
 import { Box } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
+
+import { featureFlags } from '~shared/constants'
+import { BasicField } from '~shared/types'
 
 import {
   BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
@@ -16,6 +20,7 @@ import {
   CREATE_FIELD_PERSONAL_DROP_ID,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableBasicFieldListOption } from '../FieldListOption'
@@ -24,8 +29,10 @@ import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
 
 export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
+  const { user } = useUser()
   const { isLoading } = useCreateTabForm()
 
+  const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
   const filteredCreateBasicFreeTextFields = filterFieldsBySearchValue(
     searchValue,
     BASIC_FIELDS_FREE_TEXT,
@@ -173,6 +180,13 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 {filteredCreateBasicPersonalFields.map(
                   ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
+
+                    if (
+                      fieldType == BasicField.Signature &&
+                      (!isSignatureFieldEnabled ||
+                        !user?.betaFlags?.signatureField)
+                    )
+                      return null
                     return (
                       <DraggableBasicFieldListOption
                         index={originalIndex}
