@@ -459,6 +459,7 @@ const generateAndSendVisionPromptToModel = ({
     messages,
     formId,
     options: {
+      reasoning_effort: 'minimal',
       response_format: {
         type: 'json_object',
       },
