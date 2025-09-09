@@ -294,7 +294,7 @@ const MrfEmailNotificationsForm = ({
 interface MrfFormEmailSectionProps {
   settings: MultirespondentFormSettings
   isDisabled: boolean
-  isHighContrast: boolean
+  isHighContrast?: boolean
 }
 
 export const MrfFormEmailSection = ({
