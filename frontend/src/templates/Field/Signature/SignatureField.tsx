@@ -199,7 +199,11 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, { type: 'draw', value: [] })
+    setValue(
+      `${schema._id}`,
+      { type: 'draw', value: [] },
+      { shouldValidate: true },
+    )
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
