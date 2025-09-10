@@ -288,12 +288,6 @@ const MyInfoText = ({
     [form_fields],
   )
 
-  if (responseMode === FormResponseMode.Multirespondent) {
-    return (
-      <Text>MyInfo fields are not available in multi-respondent forms.</Text>
-    )
-  }
-
   if (isMyInfoDisabled) {
     return (
       <Text>
