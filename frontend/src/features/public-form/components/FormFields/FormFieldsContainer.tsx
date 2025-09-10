@@ -37,7 +37,11 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       return <div>Something went wrong</div>
     }
 
-    if (isAuthRequired && form.authType !== FormAuthType.NIL) {
+    if (
+      isAuthRequired &&
+      form.authType !== FormAuthType.NIL &&
+      (!workflowStep || workflowStep === 0)
+    ) {
       return (
         <FormAuth
           authType={form.authType}

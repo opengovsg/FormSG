@@ -20,11 +20,13 @@ import { EditStepBlockContainer } from './EditStepBlockContainer'
 interface QuestionsBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
+  isFirstStep: boolean
 }
 
 export const QuestionsBlock = ({
   isLoading,
   formMethods,
+  isFirstStep,
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
@@ -37,7 +39,9 @@ export const QuestionsBlock = ({
     .filter(
       (f) =>
         // Only retain actual inputs (exclude header, statement, image)
-        !NON_RESPONSE_FIELD_SET.has(f.fieldType),
+        !NON_RESPONSE_FIELD_SET.has(f.fieldType) &&
+        // Retain MyInfo fields on the first step
+        (!('myInfo' in f) || isFirstStep)
     )
     .map((f) => ({
       value: f._id,
