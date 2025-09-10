@@ -120,7 +120,8 @@
         { "name": "VIRUS_SCANNER_LAMBDA_FUNCTION_NAME", "valueFrom": "/virus-scanner/<ENVIRONMENT_SITE_NAME>/VIRUS_SCANNER_LAMBDA_FUNCTION_NAME" },
         { "name": "GUARDDUTY_QUARANTINE_S3_BUCKET", "valueFrom": "/virus-scanner-guardduty/<ENVIRONMENT_SITE_NAME>/GUARDDUTY_QUARANTINE_S3_BUCKET" },
         { "name": "GUARDDUTY_CLEAN_S3_BUCKET", "valueFrom": "/virus-scanner-guardduty/<ENVIRONMENT_SITE_NAME>/GUARDDUTY_CLEAN_S3_BUCKET" },
-        { "name": "GUARDDUTY_LAMBDA_FUNCTION_NAME", "valueFrom": "/virus-scanner-guardduty/<ENVIRONMENT_SITE_NAME>/GUARDDUTY_LAMBDA_FUNCTION_NAME" }
+        { "name": "GUARDDUTY_LAMBDA_FUNCTION_NAME", "valueFrom": "/virus-scanner-guardduty/<ENVIRONMENT_SITE_NAME>/GUARDDUTY_LAMBDA_FUNCTION_NAME" }, 
+        { "name": "PDF_GENERATOR_LAMBDA_FUNCTION_NAME", "valueFrom": "/pdf-generator/<ENVIRONMENT_SITE_NAME>/PDF_GENERATOR_LAMBDA_FUNCTION_NAME" }
       ], 
       "logConfiguration": {
         "logDriver": "awslogs",

@@ -198,6 +198,7 @@ export enum ErrorCodes {
   // [140100 - 140199] Mail Errors (/services/mail)
   MAIL_SEND_ERROR = 140100,
   MAIL_GENERATION_ERROR = 140101,
+  AUTO_REPLY_PDF_GENERATION_ERROR = 140102,
   // [140200 - 140299] Webhook Errors (/modules/webhook)
   WEBHOOK_VALIDATION = 140200,
   WEBHOOK_FAILED_WITH_PRESIGNED_URL_GENERATION = 140201,
@@ -246,6 +247,9 @@ export enum ErrorCodes {
   SECRETS_MANAGER_NOT_FOUND = 190003,
   SECRETS_MANAGER_CONFLICT = 190004,
   TWILIO_CACHE = 190005,
+  PDF_GENERATION_LAMBDA_INVOCATION = 190006,
+  PDF_GENERATION_LAMBDA_JSON_PARSE = 190007,
+  PDF_GENERATION_LAMBDA_FAILURE = 190008,
   // [190100 - 190199] User Errors (/modules/user)
   USER_INVALID_OTP = 190100,
   USER_MISSING = 190101,
@@ -365,5 +369,32 @@ export class MalformedParametersError extends ApplicationError {
 export class EmptyErrorFieldError extends ApplicationError {
   constructor(message = 'Errors were returned but list is empty.') {
     super(message, undefined, ErrorCodes.EMPTY_ERROR_FIELD)
+  }
+}
+
+export class PdfGenerationLambdaInvocationError extends ApplicationError {
+  constructor(
+    message = 'Error when invoking pdf generator lambda',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.PDF_GENERATION_LAMBDA_INVOCATION)
+  }
+}
+
+export class PdfGenerationLambdaJsonParseError extends ApplicationError {
+  constructor(
+    message = 'Error when parsing pdf generator lambda response',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.PDF_GENERATION_LAMBDA_JSON_PARSE)
+  }
+}
+
+export class PdfGenerationLambdaFailureError extends ApplicationError {
+  constructor(
+    message = 'Pdf generator lambda failed to generate pdf',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.PDF_GENERATION_LAMBDA_FAILURE)
   }
 }

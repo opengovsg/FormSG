@@ -33,6 +33,7 @@ export type SendAutoReplyEmailsArgs = {
     answer?: EmailAdminDataField['answer']
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
+  isUseLambdaOutput: boolean
 }
 
 export type MailServiceParams = {

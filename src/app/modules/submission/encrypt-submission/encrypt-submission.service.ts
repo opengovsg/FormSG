@@ -1,9 +1,11 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
 import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   DateString,
   FormResponseMode,
@@ -23,6 +25,7 @@ import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
+import * as UserService from '../../user/user.service'
 import {
   WebhookPushToQueueError,
   WebhookValidationError,
@@ -142,13 +145,21 @@ export const createEncryptSubmissionWithoutSave = ({
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  * @returns err(PossibleDatabaseError) if error occurs whilst querying the database
  */
-export const performEncryptPostSubmissionActions = (
-  submission: IEncryptedSubmissionSchema,
-  responses: FieldResponse[],
-  emailData?: SubmissionEmailObj,
-  attachments?: Mail.Attachment[],
-  respondentEmails?: string[],
-): ResultAsync<
+export const performEncryptPostSubmissionActions = ({
+  submission,
+  responses,
+  growthbook,
+  emailData,
+  attachments,
+  respondentEmails,
+}: {
+  submission: IEncryptedSubmissionSchema
+  responses: FieldResponse[]
+  growthbook?: GrowthBook
+  emailData?: SubmissionEmailObj
+  attachments?: Mail.Attachment[]
+  respondentEmails?: string[]
+}): ResultAsync<
   true,
   | FormNotFoundError
   | ResponseModeError
@@ -158,49 +169,87 @@ export const performEncryptPostSubmissionActions = (
   | SubmissionNotFoundError
   | PossibleDatabaseError
 > => {
-  return FormService.retrieveFullFormById(submission.form)
-    .andThen(checkFormIsEncryptMode)
-    .andThen((form) => {
-      // Fire webhooks if available
-      // To avoid being coupled to latency of receiving system,
-      // do not await on webhook
-      const webhookUrl = form.webhook?.url
-      if (!webhookUrl) return okAsync(form)
+  const logMeta = {
+    action: 'performEncryptPostSubmissionActions',
+    submissionId: submission.id,
+  }
 
-      return WebhookFactory.sendInitialWebhook(
-        submission,
-        webhookUrl,
-        !!form.webhook?.isRetryEnabled,
-      ).andThen(() => okAsync(form))
-    })
-    .andThen((form) => {
-      const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
-        ? respondentEmails?.map((val) => {
-            return {
-              email: val,
-              includeFormSummary: true,
-            }
-          })
-        : []
+  return (
+    FormService.retrieveFullFormById(submission.form)
+      .andThen(checkFormIsEncryptMode)
+      .andThen((form) => {
+        // Fire webhooks if available
+        // To avoid being coupled to latency of receiving system,
+        // do not await on webhook
+        const webhookUrl = form.webhook?.url
+        if (!webhookUrl) return okAsync(form)
 
-      return sendEmailConfirmations({
-        form,
-        submission,
-        attachments,
-        responsesData: emailData?.autoReplyData,
-        recipientData: [
-          ...extractEmailConfirmationData(responses, form.form_fields),
-          ...respondentCopyEmailData,
-        ],
-      }).mapErr((error) => {
-        logger.error({
-          message: 'Error while sending email confirmations',
-          meta: {
-            action: 'sendEmailAutoReplies',
-          },
-          error,
-        })
-        return error
+        return WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          !!form.webhook?.isRetryEnabled,
+        ).andThen(() => okAsync(form))
       })
-    })
+      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+      .map(async (form) => {
+        await UserService.getPopulatedUserById(form.admin).map(
+          async (admin) => {
+            await growthbook?.setAttributes({
+              ...growthbook?.getAttributes(),
+              formId: submission.form.toString(),
+              adminEmail: admin.email,
+              adminAgency: admin.agency.shortName,
+            })
+          },
+        )
+        return form
+      })
+      .andThen((form) => {
+        const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
+          ? respondentEmails?.map((val) => {
+              return {
+                email: val,
+                includeFormSummary: true,
+              }
+            })
+          : []
+
+        // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
+        const isUseLambdaOutput =
+          growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
+        logger.info({
+          message: 'Growthbook flag for lambda pdf generation',
+          meta: {
+            ...logMeta,
+            isUseLambdaOutput,
+            growthbookAttributes: growthbook?.getAttributes(),
+            lambdaPdfGenerationGrowthbookValue: growthbook?.getFeatureValue(
+              featureFlags.lambdaPdfGeneration,
+              undefined,
+            ),
+          },
+        })
+
+        return sendEmailConfirmations({
+          form,
+          submission,
+          attachments,
+          responsesData: emailData?.autoReplyData,
+          recipientData: [
+            ...extractEmailConfirmationData(responses, form.form_fields),
+            ...respondentCopyEmailData,
+          ],
+          isUseLambdaOutput,
+        }).mapErr((error) => {
+          logger.error({
+            message: 'Error while sending email confirmations',
+            meta: {
+              action: 'sendEmailAutoReplies',
+            },
+            error,
+          })
+          return error
+        })
+      })
+  )
 }

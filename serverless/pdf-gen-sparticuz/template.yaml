@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: PDF Generation Lambda Function using Sparticuz Chromium
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name (eg, production, staging, stg-alt)
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 2048
+    Runtime: nodejs22.x
+
+Resources:
+  PdfGenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Lambda function that generates PDFs from HTML (eg, FormSG payment invoice PDFs, response PDFs)
+      FunctionName: !Sub "pdf-gen-sparticuz-${Environment}"
+      CodeUri: dist/
+      Handler: index.handler
+      Architectures:
+        - x86_64

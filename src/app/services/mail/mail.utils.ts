@@ -9,7 +9,11 @@ import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
-import { MailGenerationError, MailSendError } from './mail.errors'
+import {
+  AutoreplyPdfGenerationError,
+  MailGenerationError,
+  MailSendError,
+} from './mail.errors'
 import {
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
@@ -109,7 +113,8 @@ export const generateBounceNotificationHtml = (
 
 export const generateAutoreplyPdf = (
   renderData: AutoreplySummaryRenderData,
-): ResultAsync<Uint8Array, MailGenerationError> => {
+  isUseLambdaOutput: boolean,
+): ResultAsync<Buffer, AutoreplyPdfGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
 
   logger.info({
@@ -124,7 +129,7 @@ export const generateAutoreplyPdf = (
 
   return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
     return ResultAsync.fromPromise(
-      generatePdfFromHtml(summaryHtml),
+      generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
       (error) => {
         logger.error({
           meta: {
@@ -134,9 +139,7 @@ export const generateAutoreplyPdf = (
           error,
         })
 
-        return new MailGenerationError(
-          'Error occurred whilst generating autoreply PDF',
-        )
+        return new AutoreplyPdfGenerationError()
       },
     )
   })

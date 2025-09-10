@@ -1,0 +1,6 @@
+NotoSansSC-VariableFont_wght.ttf filter=lfs diff=lfs merge=lfs -text
+NotoSansTamil-VariableFont_wdth,wght.ttf filter=lfs diff=lfs merge=lfs -text
+NotoSansThai-VariableFont_wdth,wght.ttf filter=lfs diff=lfs merge=lfs -text
+NotoSans-VariableFont_wdth,wght.ttf filter=lfs diff=lfs merge=lfs -text
+NotoSansKR-VariableFont_wght.ttf filter=lfs diff=lfs merge=lfs -text
+NotoSansMalayalam-VariableFont_wdth,wght.ttf filter=lfs diff=lfs merge=lfs -text

@@ -39,7 +39,11 @@ import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresh
 import { smsThreshold } from '../sms/sms.utils'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
-import { MailGenerationError, MailSendError } from './mail.errors'
+import {
+  AutoreplyPdfGenerationError,
+  MailGenerationError,
+  MailSendError,
+} from './mail.errors'
 import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
@@ -760,6 +764,7 @@ export class MailService {
    * @param args.attachments attachments to append to the email, if any
    * @param args.responsesData the array of response data to use in rendering
    * the mail body or summary pdf
+   * @param args.isUseLambdaOutput whether to use the lambda output for the pdf generation
    * @param args.autoReplyMailDatas array of objects that contains autoreply mail data to override with defaults
    * @param args.autoReplyMailDatas[].email contains the recipient of the mail
    * @param args.autoReplyMailDatas[].subject if available, sends the mail out with this subject instead of the default subject
@@ -772,8 +777,14 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
+    isUseLambdaOutput,
   }: SendAutoReplyEmailsArgs): Promise<
-    PromiseSettledResult<Result<true, MailSendError | MailGenerationError>>[]
+    PromiseSettledResult<
+      Result<
+        true,
+        MailSendError | MailGenerationError | AutoreplyPdfGenerationError
+      >
+    >[]
   > => {
     // Data to render both the submission details mail HTML body and PDF.
 
@@ -802,7 +813,10 @@ export class MailService {
       autoReplyMailDatas.some((data) => data.includeFormSummary) &&
       !isPaymentEnabled
     ) {
-      const pdfBufferResult = await generateAutoreplyPdf(renderData)
+      const pdfBufferResult = await generateAutoreplyPdf(
+        renderData,
+        isUseLambdaOutput,
+      )
       if (pdfBufferResult.isErr()) {
         return Promise.allSettled([err(pdfBufferResult.error)])
       }

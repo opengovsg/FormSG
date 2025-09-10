@@ -23,4 +23,5 @@ export const featureFlags = {
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
+  lambdaPdfGeneration: 'lambda-pdf-generation' as const,
 }

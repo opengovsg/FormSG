@@ -46,7 +46,7 @@ export const checkStripeReceiptIsReady = (
  */
 export const _storePaymentProofInS3 = (
   payment: ICompletedPaymentSchema,
-  pdfBuffer: Uint8Array,
+  pdfBuffer: Buffer,
 ): ResultAsync<true, PaymentProofUploadS3Error> => {
   const objectPath = getPaymentProofS3ObjectPath(payment)
 
@@ -180,7 +180,8 @@ const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
   receiptUrl: string,
-): ResultAsync<Uint8Array, StripeFetchError | InvoicePdfGenerationError> => {
+  isUseLambdaOutput: boolean,
+): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
     return errAsync(new StripeFetchError('Receipt url not ready'))
   }
@@ -227,7 +228,7 @@ const _generatePaymentInvoiceAsPdf = (
     })
 
     return ResultAsync.fromPromise(
-      generatePdfFromHtml(invoiceHtml),
+      generatePdfFromHtml(invoiceHtml, isUseLambdaOutput),
       (error) => new InvoicePdfGenerationError(String(error)),
     )
   })
@@ -236,6 +237,7 @@ const _generatePaymentInvoiceAsPdf = (
 export const generatePaymentInvoiceUrl = (
   payment: IPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
+  isUseLambdaOutput: boolean,
 ): ResultAsync<
   string,
   | StripeFetchError
@@ -251,6 +253,7 @@ export const generatePaymentInvoiceUrl = (
             completedPayment,
             populatedForm,
             receiptUrl,
+            isUseLambdaOutput,
           ),
         )
         .andThen((pdfBuffer) =>
