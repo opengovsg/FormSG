@@ -854,7 +854,6 @@ const _createSubmission = async ({
     emailData,
     emailAttachments,
     respondentEmails,
-    submissionContent.encryptedWebhookContent,
   )
 }
 

@@ -148,7 +148,6 @@ export const performEncryptPostSubmissionActions = (
   emailData?: SubmissionEmailObj,
   attachments?: Mail.Attachment[],
   respondentEmails?: string[],
-  encryptedWebhookContent?: string,
 ): ResultAsync<
   true,
   | FormNotFoundError
@@ -168,12 +167,11 @@ export const performEncryptPostSubmissionActions = (
       const webhookUrl = form.webhook?.url
       if (!webhookUrl) return okAsync(form)
 
-      // replace encryptedContent
-
-      //TODO: error if webhookContent is null
-
+      // replace encryptedContent for webhooks
       const webhookSubmission: IEncryptedSubmissionSchema = submission.$clone()
-      webhookSubmission.encryptedContent = encryptedWebhookContent ?? ''
+      webhookSubmission.encryptedContent =
+        submission.encryptedWebhookContent ?? '' //TODO: error if webhookContent is null
+      delete webhookSubmission.encryptedWebhookContent
 
       return WebhookFactory.sendInitialWebhook(
         webhookSubmission,
