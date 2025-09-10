@@ -1329,9 +1329,9 @@ describe('encrypt-submission.controller', () => {
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
       // Assert
-      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][2]).toEqual(
-        emailData,
-      )
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailData,
+      ).toEqual(emailData)
     })
   })
 

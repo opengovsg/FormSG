@@ -356,6 +356,18 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'GUARDDUTY_LAMBDA_FUNCTION_NAME',
     },
+    pdfGeneratorLambdaEndpoint: {
+      doc: 'Endpoint address for pdf generator lambda function. Specify this if the lambda is hosted neither on AWS nor your local dev environment.',
+      format: String,
+      default: '',
+      env: 'PDF_GENERATOR_LAMBDA_ENDPOINT',
+    },
+    pdfGeneratorLambdaFunctionName: {
+      doc: 'PDF generator lambda function name',
+      format: String,
+      default: '',
+      env: 'PDF_GENERATOR_LAMBDA_FUNCTION_NAME',
+    },
   },
   core: {
     port: {

@@ -48,3 +48,34 @@ export const submitErrorCountMetric = ({
     name: `[${errorCode}] ${errorName}`,
   })
 }
+
+/**
+ * Used to profile latency of a function.
+ * @returns An object containing a stop function that returns the elapsed time in milliseconds
+ */
+export const startStopwatch = () => {
+  const startTime = Date.now()
+  return {
+    stop: () => {
+      const latency = Date.now() - startTime
+      return latency
+    },
+  }
+}
+
+/**
+ * Submits the latency for pdf generation to Datadog.
+ * @param latencyMs The computed latency in milliseconds.
+ * @param isLocal Whether the pdf generation is for current local generation or using Lambda
+ */
+export const submitPdfGenerationLatencyMetric = ({
+  latencyMs,
+  isLocal,
+}: {
+  latencyMs: number
+  isLocal: boolean
+}) => {
+  tracer.dogstatsd.distribution('formsg.pdf.generation.latency', latencyMs, {
+    isLocal: isLocal.toString(),
+  })
+}

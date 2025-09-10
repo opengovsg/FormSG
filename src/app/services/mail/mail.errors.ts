@@ -14,3 +14,9 @@ export class MailGenerationError extends ApplicationError {
     super(message, undefined, ErrorCodes.MAIL_GENERATION_ERROR)
   }
 }
+
+export class AutoreplyPdfGenerationError extends ApplicationError {
+  constructor(message = 'Error when generating autoreply pdf', meta?: unknown) {
+    super(message, meta, ErrorCodes.AUTO_REPLY_PDF_GENERATION_ERROR)
+  }
+}

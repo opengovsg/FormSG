@@ -183,6 +183,7 @@ jobs:
           fail-on-cache-miss: true
       - run: npm ci --prefix serverless/virus-scanner
       - run: npm ci --prefix serverless/virus-scanner-guardduty
+      - run: npm ci --prefix serverless/pdf-gen-sparticuz
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
