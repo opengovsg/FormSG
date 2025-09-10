@@ -534,12 +534,13 @@ export const encryptSubmission = async (
 
   // Webhook payload
   const strippedBodyWebhookResponses = strippedBodyResponses.map((response) => {
-    if (response.fieldType == BasicField.Signature) {
+    if (response.fieldType === BasicField.Signature) {
       return {
         ...response,
         answerArray: [SIGNATURE_CAPTURED_STRING],
       }
     }
+    return response
   })
 
   const encryptedWebhookContent = formsgSdk.crypto.encrypt(

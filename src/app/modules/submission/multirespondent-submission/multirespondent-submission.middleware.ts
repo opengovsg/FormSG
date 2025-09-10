@@ -753,11 +753,23 @@ export const encryptSubmission = async (
     ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
   > = {}
 
+  // const strippedAttachmentWebhookResponses: Record<
+  //   string,
+  //   ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+  // > = {}
+
   const unencryptedAttachments: IAttachmentInfo[] = []
 
   // Populate attachment map
   for (const id of Object.keys(responses)) {
     const response = responses[id]
+    // if (response.fieldType === BasicField.Signature) {
+    //   strippedAttachmentWebhookResponses[id] = {
+    //     ...response,
+    //     answer: { ...response.answer, value: SIGNATURE_CAPTURED_STRING }
+    //   }
+    // }
+
     if (response.fieldType !== BasicField.Attachment) {
       strippedAttachmentResponses[id] = response
       continue
@@ -788,6 +800,21 @@ export const encryptSubmission = async (
     submissionSecretKey,
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+
+  // const strippedAttachmentWebhookResponses = strippedAttachmentResponses.map((response) => {
+  //   if (response.fieldType === BasicField.Signature) {
+  //     return {
+  //       ...response,
+  //       answer:
+  //     }
+
+  //   }
+  // })
+  // const {encryptedContent,
+  //   encryptedSubmissionSecretKey,
+  //   submissionSecretKey,
+  //   submissionPublicKey,
+  // } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(

@@ -680,6 +680,14 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       meta: logMeta,
     })
 
+    // replace encryptedContent for webhooks
+    // const webhookSubmission: IMultirespondentSubmissionSchema =
+    //   submission.$clone()
+
+    // webhookSubmission.encryptedContent =
+    //   submission.encryptedWebhookContent ?? '' //TODO: error if webhookContent is null
+    // delete webhookSubmission.encryptedWebhookContent
+
     WebhookFactory.sendInitialWebhook(
       submission,
       webhookUrl,
