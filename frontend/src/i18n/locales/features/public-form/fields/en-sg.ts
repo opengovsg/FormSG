@@ -13,6 +13,7 @@ export const enSG: Fields = {
     nothingFound: 'No matching results',
   },
   attachment: {
+    disabled: 'Attachment upload is disabled for you',
     fileUploaderLink: 'Choose file',
     dragAndDrop: ' or drag and drop here',
     dragActive: 'Drop the file here',

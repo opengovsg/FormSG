@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
+import { FaRegFilePdf } from 'react-icons/fa6'
 import {
   Link as ReactLink,
   useLocation,
@@ -8,17 +9,25 @@ import {
   useParams,
 } from 'react-router-dom'
 import {
+  Box,
   ButtonGroup,
   Flex,
   Grid,
   Icon,
   Link,
   Skeleton,
+  Stack,
   Text,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
+
+import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
@@ -102,6 +111,21 @@ export const IndividualResponseNavbar = (): JSX.Element => {
 
   const { t } = useTranslation()
 
+  const { user } = useUser()
+  const gb = useGrowthBook()
+
+  useEffect(() => {
+    if (user) {
+      gb?.setAttributes({
+        id: user._id,
+        email: user.email,
+        agency: user.agency,
+      })
+    }
+  }, [gb, user])
+
+  const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
+
   return (
     <Grid
       sx={noPrintCss}
@@ -130,10 +154,34 @@ export const IndividualResponseNavbar = (): JSX.Element => {
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
-          <Text textStyle="h2" as="h2">
-            {t('features.common.response')}
-            {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
-          </Text>
+          <Stack direction="row" justify="center" align="center">
+            <Text textStyle="h2" as="h2">
+              {t('features.common.response')}
+              {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
+            </Text>
+            {isAdminPrintPdfEnabled && (
+              <Box>
+                <IconButton
+                  aria-label="Print"
+                  icon={<FaRegFilePdf />}
+                  onClick={() => {
+                    datadogLogs.logger.info(
+                      `IndividualResponseNavbar: admin printing pdf`,
+                      {
+                        meta: {
+                          action: 'adminPrintPdf',
+                          userId: user?._id,
+                          submissionId: submissionId,
+                        },
+                      },
+                    )
+                    window.print()
+                  }}
+                  variant="clear"
+                />
+              </Box>
+            )}
+          </Stack>
         </Skeleton>
       </Flex>
       <ButtonGroup gridArea="navigate">

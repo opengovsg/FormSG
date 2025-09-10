@@ -14,8 +14,6 @@ import { merge } from 'lodash'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
 
-import { BxLockAlt } from '../../assets/icons/BxLockAlt'
-
 export interface InputProps extends ChakraInputProps {
   /**
    * Whether the input is in a prefilled state.
@@ -44,8 +42,11 @@ export interface InputProps extends ChakraInputProps {
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
-  const inputStyles = useMultiStyleConfig('Input', props)
-
+  // const inputStyles = useMultiStyleConfig('Input', props)
+  const inputStyles = useMultiStyleConfig('Input', {
+    ...props,
+    variant: props.isHighContrast ? 'highContrast' : props.variant,
+  })
   // Omit extra props so they will not be passed into the DOM and trigger
   // React warnings.
   const inputProps = omit(props, [
@@ -85,11 +86,6 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             {...(props.isPrefillLocked ? { isDisabled: true } : {})}
             sx={props.sx ?? inputStyles.field}
           />
-          {props.isPrefillLocked ? (
-            <InputRightElement>
-              <BxLockAlt />
-            </InputRightElement>
-          ) : null}
         </InputGroup>
       )
     } else {
@@ -101,12 +97,8 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
               {...preventDefault}
               {...inputProps}
               isDisabled
-              // Padding to allow for lock icon overflow.
-              sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
+              sx={props.sx ?? inputStyles.field}
             />
-            <InputRightElement>
-              <BxLockAlt />
-            </InputRightElement>
           </InputGroup>
         )
       } else {

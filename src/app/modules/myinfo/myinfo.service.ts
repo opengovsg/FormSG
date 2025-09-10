@@ -61,12 +61,12 @@ import {
   createRelayState,
   getMyInfoAttr,
   getMyInfoAttributeConstantsList,
+  getMyInfoEserviceIdInForm,
   hashFieldValues,
   isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
   logIfFieldValueNotInMyinfoList,
-  validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -492,6 +492,7 @@ export class MyInfoServiceClass {
   getMyInfoDataForForm(
     form: IPopulatedForm,
     accessToken: string,
+    useEsrvcID?: boolean,
   ): ResultAsync<
     MyInfoData,
     | FormAuthNoEsrvcIdError
@@ -500,37 +501,38 @@ export class MyInfoServiceClass {
     | MyInfoFetchError
   > {
     const requestedAttributes = form.getUniqueMyInfoAttrs()
-    return validateMyInfoForm(form).asyncAndThen((form) =>
-      ResultAsync.fromPromise(
-        this.#myInfoPersonBreaker
-          .fire(
-            accessToken,
-            internalAttrListToScopes(requestedAttributes),
-            form.esrvcId,
-          )
-          .then((response) => new MyInfoData(response)),
-        (error) => {
-          const logMeta = {
-            action: 'getMyInfoDataForForm',
-            requestedAttributes,
-          }
-          if (CircuitBreaker.isOurError(error)) {
-            logger.error({
-              message: 'Circuit breaker tripped',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoCircuitBreakerError()
-          } else {
-            logger.error({
-              message: 'Error retrieving data from MyInfo',
-              meta: logMeta,
-              error,
-            })
-            return new MyInfoFetchError()
-          }
-        },
-      ),
+    return getMyInfoEserviceIdInForm(form, useEsrvcID).asyncAndThen(
+      ([, eserviceId]) =>
+        ResultAsync.fromPromise(
+          this.#myInfoPersonBreaker
+            .fire(
+              accessToken,
+              internalAttrListToScopes(requestedAttributes),
+              eserviceId,
+            )
+            .then((response) => new MyInfoData(response)),
+          (error) => {
+            const logMeta = {
+              action: 'getMyInfoDataForForm',
+              requestedAttributes,
+            }
+            if (CircuitBreaker.isOurError(error)) {
+              logger.error({
+                message: 'Circuit breaker tripped',
+                meta: logMeta,
+                error,
+              })
+              return new MyInfoCircuitBreakerError()
+            } else {
+              logger.error({
+                message: 'Error retrieving data from MyInfo',
+                meta: logMeta,
+                error,
+              })
+              return new MyInfoFetchError()
+            }
+          },
+        ),
     )
   }
 }

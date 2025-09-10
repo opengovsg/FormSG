@@ -11,7 +11,7 @@ interface FormSingpassAuthToggleProps {
   isDisabled: boolean
 }
 
-const DEFAULT_FORM_AUTH_TYPE = FormAuthType.SGID
+const DEFAULT_FORM_AUTH_TYPE = FormAuthType.MyInfo
 
 export const FormSingpassAuthToggle = ({
   settings,

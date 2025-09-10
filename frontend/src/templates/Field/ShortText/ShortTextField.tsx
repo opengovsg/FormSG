@@ -46,7 +46,7 @@ export const ShortTextField = ({
         isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true
         isPrefillLocked={isPrefillLocked}
-        isHighContrast={isHighContrast}
+        isHighContrast={isPrefillLocked ? true : isHighContrast}
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
         preventDefaultOnEnter

@@ -2,7 +2,10 @@ import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
 import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
-import { PaymentWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
+import {
+  PaymentWebhookEventObject,
+  WorkflowWebhookEventObject,
+} from 'src/app/modules/webhook/webhook.types'
 
 import {
   EmailModeSubmissionBase,
@@ -26,6 +29,7 @@ export interface WebhookData {
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
   paymentContent?: PaymentWebhookEventObject | object
+  workflowContent?: WorkflowWebhookEventObject | object
 }
 
 export interface WebhookView {
@@ -120,7 +124,7 @@ export interface IMultirespondentSubmissionSchema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
   submissionType: SubmissionType.Multirespondent
-  getWebhookView(): Promise<null>
+  getWebhookView(): Promise<WebhookView>
   mrfVersion: number
 }
 

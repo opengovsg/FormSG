@@ -18,6 +18,9 @@ export const featureFlags = {
   statusTracker: 'status-tracker' as const,
   designDrawerFormTitle: 'design-drawer-form-title' as const,
   signatureField: 'signature-field' as const,
+  adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
+  enableMrfWebhooks: 'enable-mrf-webhooks' as const,
+  useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
 }

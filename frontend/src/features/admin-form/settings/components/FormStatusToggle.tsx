@@ -20,6 +20,7 @@ import { useAdminFormSettings } from '../queries'
 
 import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
+import { isEsrvcidRequired } from './utils'
 
 export const FormStatusToggle = (): JSX.Element => {
   const { t } = useTranslation()
@@ -41,13 +42,7 @@ export const FormStatusToggle = (): JSX.Element => {
     if (status === FormStatus.Public) return
 
     // Prevent form activation if form has authType but no esrvcId.
-    if (
-      authType &&
-      [FormAuthType.CP, FormAuthType.SP, FormAuthType.MyInfo].includes(
-        authType,
-      ) &&
-      !esrvcId
-    ) {
+    if (authType && isEsrvcidRequired(authType) && !esrvcId) {
       return t(
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
