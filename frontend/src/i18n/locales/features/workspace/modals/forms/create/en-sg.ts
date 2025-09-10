@@ -21,15 +21,15 @@ export const enSG: CreateFormModal = {
       message: 'It is advised to use a shorter, more succinct form name.',
     },
     type: {
-      label: 'Form type',
-      description: 'How many respondents will a single submission need?',
+      label: 'Number of respondents',
+      description: 'How many respondents will fill up each form submission?',
       storage: {
         title: 'One respondent',
         subtitle:
           'Forms with just one respondent per submission support the following:',
         optionDescriptionItems: {
-          supportSingpassMyinfo: 'Supports Singpass & Myinfo',
-          supportWebhooks: 'Supports webhooks for integrations',
+          supportSingpassMyinfo: 'Singpass & Myinfo',
+          supportWebhooks: 'Webhooks for integrations',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },
@@ -39,7 +39,8 @@ export const enSG: CreateFormModal = {
         subtitle:
           'Forms with two or more respondents per submission support the following:',
         optionDescriptionItems: {
-          supportApprovalWorkflow: 'Supports approval workflows',
+          supportApprovalWorkflow: 'Approval workflows',
+          supportEmailRouting: 'Email routing',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },

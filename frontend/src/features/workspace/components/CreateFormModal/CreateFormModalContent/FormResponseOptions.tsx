@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { BiLockAlt } from 'react-icons/bi'
-import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
+import { Flex, forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
-import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
 
@@ -78,6 +76,15 @@ export const FormResponseOptions = forwardRef<
               { text: storage.optionDescriptionItems.supportWebhooks },
             ]}
           />
+          <Badge
+            size="md"
+            variant="subtle"
+            h="1.5rem"
+            mt="1.5rem"
+            alignSelf="flex-start"
+          >
+            Storage mode form
+          </Badge>
         </Tile>
         <Tile
           ref={ref}
@@ -88,15 +95,27 @@ export const FormResponseOptions = forwardRef<
           flex={1}
           isDisabled={isSingpass}
         >
-          <Tile.Title>{mrf.title}</Tile.Title>
+          <Tile.Title overflowWrap="anywhere">{mrf.title}</Tile.Title>
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
               },
+              {
+                text: mrf.optionDescriptionItems.supportEmailRouting,
+              },
             ]}
           />
+          <Badge
+            size="md"
+            variant="subtle"
+            h="1.5rem"
+            mt="1.5rem"
+            alignSelf="flex-start"
+          >
+            Multi-respondent form
+          </Badge>
         </Tile>
       </Stack>
     </>
