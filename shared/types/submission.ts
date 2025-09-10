@@ -355,6 +355,7 @@ export type StorageModeSubmissionContentDto = {
   responseMetadata?: ResponseMetadata
   payments?: PaymentFieldsDto
   respondentEmails?: string[]
+  encryptedWebhookContent: string
 }
 
 export type PaymentSubmissionData = {

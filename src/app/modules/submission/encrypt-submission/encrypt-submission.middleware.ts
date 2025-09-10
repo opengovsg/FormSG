@@ -11,6 +11,7 @@ import {
   FormResponseMode,
   isPaymentsProducts,
 } from '../../../../../shared/types'
+import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,
@@ -531,6 +532,21 @@ export const encryptSubmission = async (
     publicKey,
   )
 
+  // Webhook payload
+  const strippedBodyWebhookResponses = strippedBodyResponses.map((response) => {
+    if (response.fieldType == BasicField.Signature) {
+      return {
+        ...response,
+        answerArray: [SIGNATURE_CAPTURED_STRING],
+      }
+    }
+  })
+
+  const encryptedWebhookContent = formsgSdk.crypto.encrypt(
+    strippedBodyWebhookResponses,
+    publicKey,
+  )
+
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responses: req.formsg.filteredResponses,
@@ -539,8 +555,8 @@ export const encryptSubmission = async (
     paymentProducts: req.body.paymentProducts,
     paymentReceiptEmail: req.body.paymentReceiptEmail,
     payments: req.body.payments,
+    encryptedWebhookContent,
   }
-
   return next()
 }
 

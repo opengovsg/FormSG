@@ -143,8 +143,12 @@ const submitEncryptModeForm = async (
   const encryptedPayload = req.formsg.encryptedPayload
 
   // Create Incoming Submission
-  const { encryptedContent, responseMetadata, paymentProducts } =
-    encryptedPayload
+  const {
+    encryptedContent,
+    responseMetadata,
+    paymentProducts,
+    encryptedWebhookContent,
+  } = encryptedPayload
 
   // This is because NRIC masking is done in the controller, but we parse the fields in the
   // middleware for encrypt forms
@@ -410,6 +414,7 @@ const submitEncryptModeForm = async (
     attachmentMetadata,
     version: req.formsg.encryptedPayload.version,
     responseMetadata,
+    encryptedWebhookContent,
   }
 
   // Handle submissions for payments forms
@@ -849,6 +854,7 @@ const _createSubmission = async ({
     emailData,
     emailAttachments,
     respondentEmails,
+    submissionContent.encryptedWebhookContent,
   )
 }
 

@@ -87,4 +87,5 @@ export type EncryptSubmissionContent = {
   attachmentMetadata: Map<string, string>
   version: number
   responseMetadata: EncryptSubmissionDto['responseMetadata']
+  encryptedWebhookContent: string
 }
