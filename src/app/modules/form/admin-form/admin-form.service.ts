@@ -1848,14 +1848,6 @@ export const updateFormSettings = (
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
-  if (
-    originalForm.responseMode === FormResponseMode.Multirespondent &&
-    !!body.authType &&
-    body.authType !== FormAuthType.NIL
-  ) {
-    return errAsync(new MalformedParametersError('Invalid authentication type'))
-  }
-
   if (isFormEmailMode(originalForm)) {
     if (
       originalForm.isForceConvertToStorageMode &&
