@@ -102,22 +102,20 @@ WithoutOthersOption.args = {
   schema: merge({}, baseSchema, { othersRadioButton: false }),
 }
 
-export const DisabledHighContrast = Template.bind({})
-DisabledHighContrast.args = {
+export const Disabled = Template.bind({})
+Disabled.args = {
   schema: {
     ...baseSchema,
     disabled: true,
   },
-  isHighContrast: true,
   defaultValue: {
     value: baseSchema.fieldOptions[0],
   },
 }
 
-export const DisabledHighContrastWithOthersSelected = Template.bind({})
-DisabledHighContrastWithOthersSelected.args = {
+export const DisabledWithOthersSelected = Template.bind({})
+DisabledWithOthersSelected.args = {
   schema: { ...baseSchema, disabled: true },
-  isHighContrast: true,
   defaultValue: {
     value: RADIO_OTHERS_INPUT_VALUE,
     othersInput: 'test',

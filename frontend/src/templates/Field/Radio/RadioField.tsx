@@ -121,7 +121,6 @@ export const RadioField = ({
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
                 isDisabled={schema.disabled}
-                isHighContrast={isHighContrast}
               >
                 {option}
               </Radio>
@@ -130,7 +129,6 @@ export const RadioField = ({
               <Radio.OthersWrapper
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
-                isHighContrast={isHighContrast}
                 disabled={schema.disabled}
               >
                 <FormControl
