@@ -1475,7 +1475,7 @@ describe('encrypt-submission.controller', () => {
         {
           _id: signatureFieldId,
           question: 'Signature Question',
-          answerArray: ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]'],
+          answerArray: ['Signature captured'],
           fieldType: 'signature',
           isVisible: true,
         },
