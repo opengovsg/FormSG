@@ -77,7 +77,6 @@ export const createEncryptedSubmissionData = async ({
     payments,
     version: E2EE_SUBMISSION_VERSION,
     responseMetadata,
-    encryptedWebhookContent: encryptedContent, // TODO: remove this (function is not used anymore?)
   }
 }
 
