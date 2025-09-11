@@ -59,10 +59,10 @@ export const SignatureField = ({
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
 
-const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(() => {
-  const preExistingSignature = getValues(`${schema._id}`)
-  return preExistingSignature?.value ?? []
-})
+  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(() => {
+    const preExistingSignature = getValues(`${schema._id}`)
+    return preExistingSignature?.value ?? []
+  })
 
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
@@ -185,13 +185,7 @@ const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(() => {
       canvas.removeEventListener('pointerup', handlePointerUp)
       canvas.removeEventListener('pointerleave', handlePointerUp)
     }
-  }, [
-    drawAllStrokes,
-    isDrawing,
-    pfStrokes,
-    schema._id,
-    setValue,
-  ])
+  }, [drawAllStrokes, isDrawing, pfStrokes, schema._id, setValue])
 
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
