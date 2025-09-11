@@ -21,6 +21,8 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
+import DataClassificationInfoBox from '~features/admin-form/settings/components/DataClassificationInfoBox'
+
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import {
   CreateFormWizardInputProps,
@@ -170,6 +172,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               <EmailFormRecipientsInput />
             </FormControl>
           )}
+          <DataClassificationInfoBox />
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"

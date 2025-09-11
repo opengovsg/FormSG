@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next'
-import { BiLockAlt } from 'react-icons/bi'
-import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
+import { Flex, forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
-import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
+
+import MultiRespondentIllustration from '~features/workspace/components/CreateFormModal/CreateFormModalContent/MultiRespondentIllustration'
+import SingleRespondentIllustration from '~features/workspace/components/CreateFormModal/CreateFormModalContent/SingleRespondentIllustration'
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
@@ -62,7 +63,7 @@ export const FormResponseOptions = forwardRef<
       <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
         <Tile
           variant="complex"
-          icon={BiLockAlt}
+          icon={SingleRespondentIllustration}
           isActive={value === FormResponseMode.Encrypt}
           onClick={() => onChange(FormResponseMode.Encrypt)}
           flex={1}
@@ -75,25 +76,46 @@ export const FormResponseOptions = forwardRef<
               { text: storage.optionDescriptionItems.supportWebhooks },
             ]}
           />
+          <Badge
+            size="md"
+            variant="subtle"
+            h="1.5rem"
+            mt="1.5rem"
+            alignSelf="flex-start"
+          >
+            Storage mode form
+          </Badge>
         </Tile>
         <Tile
           ref={ref}
           variant="complex"
-          icon={MultiParty}
+          icon={MultiRespondentIllustration}
           isActive={value === FormResponseMode.Multirespondent}
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           flex={1}
           isDisabled={isSingpass}
         >
-          <Tile.Title>{mrf.title}</Tile.Title>
+          <Tile.Title overflowWrap="anywhere">{mrf.title}</Tile.Title>
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
               },
+              {
+                text: mrf.optionDescriptionItems.supportEmailRouting,
+              },
             ]}
           />
+          <Badge
+            size="md"
+            variant="subtle"
+            h="1.5rem"
+            mt="1.5rem"
+            alignSelf="flex-start"
+          >
+            Multi-respondent form
+          </Badge>
         </Tile>
       </Stack>
     </>

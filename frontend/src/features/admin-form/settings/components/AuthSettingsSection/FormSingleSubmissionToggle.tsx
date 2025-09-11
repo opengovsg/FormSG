@@ -39,7 +39,7 @@ export const FormSingleSubmissionToggle = ({
   return (
     <>
       <Toggle
-        containerStyles={{ opacity: isDisabled ? 0.3 : 1 }}
+        containerStyles={{ opacity: isDisabled ? 0.8 : 1 }}
         isDisabled={isDisabled || isPaymentsEnabled}
         isLoading={isLoading}
         isChecked={isSingleSubmission}

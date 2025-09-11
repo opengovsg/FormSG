@@ -35,6 +35,7 @@ export interface CreateFormModal {
         subtitle: string
         optionDescriptionItems: {
           supportApprovalWorkflow: string
+          supportEmailRouting: string
           sensitivity: string
         }
       }
