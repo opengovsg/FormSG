@@ -40,7 +40,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     if (
       isAuthRequired &&
       form.authType !== FormAuthType.NIL &&
-      (!workflowStep || workflowStep === 0)
+      (form.responseMode !== FormResponseMode.Multirespondent ||
+        !previousSubmission)
     ) {
       return (
         <FormAuth

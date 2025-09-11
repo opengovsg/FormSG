@@ -1,5 +1,3 @@
-import { FormResponseMode } from '~shared/types'
-
 import AuthSettingsSection from './components/AuthSettingsSection'
 import { CategoryHeader } from './components/CategoryHeader'
 import { useAdminFormSettings } from './queries'

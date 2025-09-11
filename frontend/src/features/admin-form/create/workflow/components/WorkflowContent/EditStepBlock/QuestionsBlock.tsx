@@ -41,7 +41,7 @@ export const QuestionsBlock = ({
         // Only retain actual inputs (exclude header, statement, image)
         !NON_RESPONSE_FIELD_SET.has(f.fieldType) &&
         // Retain MyInfo fields on the first step
-        (!('myInfo' in f) || isFirstStep)
+        (!('myInfo' in f) || isFirstStep),
     )
     .map((f) => ({
       value: f._id,

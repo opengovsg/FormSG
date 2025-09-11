@@ -29,7 +29,6 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
-  FormAuthType,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
