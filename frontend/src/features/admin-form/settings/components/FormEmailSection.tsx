@@ -162,7 +162,7 @@ export const FormEmailSection = ({
             <FormLabel.Description
               color="secondary.400"
               mt="0.5rem"
-              opacity={'1'}
+              opacity='1'
             >
               {t(
                 'features.adminForm.settings.emailNotifications.section.regular.description',
