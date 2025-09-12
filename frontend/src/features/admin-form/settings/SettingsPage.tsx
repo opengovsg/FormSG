@@ -29,6 +29,7 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 
 interface TabEntry {
   label: string
@@ -49,6 +50,19 @@ export const SettingsPage = (): JSX.Element => {
   const { hasEditAccess, isLoading: isCollabLoading } =
     useAdminFormCollaborators(formId)
   const navigate = useNavigate()
+
+  // Used for feature flagging viewable toggles on settings page
+  const gb = useGrowthBook()
+  useEffect(() => {
+    if (gb) {
+      gb.setAttributes({
+        ...gb.getAttributes(),
+        formId,
+        adminEmail: user?.email,
+        adminAgency: user?.agency.shortName,
+      })
+    }
+  }, [gb, formId, user?.email, user?.agency.shortName])
 
   // Redirect view-only collaborators to results screen.
   useEffect(() => {
