@@ -42,6 +42,8 @@ export const enSG: PublicForm = {
         restoredAllFields: 'Your draft has been successfully restored.',
         restoredOnlyUnchangedFields:
           'Some fields were not restored as the form has been updated.',
+        previewNoDraftSaved:
+          'Since you are in preview mode, there is no draft saved.',
       },
       tooltip: {
         default: 'Save a draft',

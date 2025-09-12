@@ -35,6 +35,7 @@ export interface PublicForm {
         success: string
         restoredAllFields: string
         restoredOnlyUnchangedFields: string
+        previewNoDraftSaved: string
       }
       tooltip: {
         default: string

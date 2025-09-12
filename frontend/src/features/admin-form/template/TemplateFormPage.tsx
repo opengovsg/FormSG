@@ -16,6 +16,7 @@ import { PublicFormWrapper } from '~features/public-form/components/PublicFormWr
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
 
 import { TemplateFormProvider } from './TemplateFormProvider'
+import FloatingToolBar from '~features/public-form/components/FloatingToolBar'
 
 export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
@@ -32,6 +33,7 @@ export const TemplateFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
+            <FloatingToolBar />
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>

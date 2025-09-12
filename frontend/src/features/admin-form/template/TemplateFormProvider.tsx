@@ -86,7 +86,7 @@ export const TemplateFormProvider = ({
   const onSaveDraft = () => {
     toast({
       description:
-        'Since you are in template preview mode, there is no draft saved.',
+        t('features.publicForm.components.saveDraft.toast.previewNoDraftSaved'),
     })
   }
 

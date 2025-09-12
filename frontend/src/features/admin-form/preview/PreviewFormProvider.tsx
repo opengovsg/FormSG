@@ -327,7 +327,7 @@ export const PreviewFormProvider = ({
 
   const onSaveDraft = () => {
     toast({
-      description: 'Since you are in preview mode, there is no draft saved.',
+      description: t('features.publicForm.components.saveDraft.toast.previewNoDraftSaved'),
     })
   }
 
