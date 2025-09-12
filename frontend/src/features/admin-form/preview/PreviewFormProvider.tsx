@@ -327,7 +327,9 @@ export const PreviewFormProvider = ({
 
   const onSaveDraft = () => {
     toast({
-      description: t('features.publicForm.components.saveDraft.toast.previewNoDraftSaved'),
+      description: t(
+        'features.publicForm.components.saveDraft.toast.previewNoDraftSaved',
+      ),
     })
   }
 

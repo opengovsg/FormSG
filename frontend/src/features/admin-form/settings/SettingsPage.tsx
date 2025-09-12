@@ -12,6 +12,7 @@ import {
   TabPanels,
   Tabs,
 } from '@chakra-ui/react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 
 import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -29,7 +30,6 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
-import { useGrowthBook } from '@growthbook/growthbook-react'
 
 interface TabEntry {
   label: string
