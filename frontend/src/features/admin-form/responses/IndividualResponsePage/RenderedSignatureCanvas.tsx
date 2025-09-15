@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Box } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -21,7 +21,33 @@ export const RenderedSignatureCanvas = ({
   row,
 }: DecryptedRowBaseProps): JSX.Element => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [availableWidth, setAvailableWidth] = useState<number | null>(null)
+
+  // Function to measure available width
+  const measureAvailableWidth = useCallback(() => {
+    if (containerRef.current) {
+      const width = containerRef.current.offsetWidth
+      setAvailableWidth(width)
+    }
+  }, [])
+
+  // Effect to measure available width on mount and resize
+  useEffect(() => {
+    measureAvailableWidth()
+    
+    const resizeObserver = new ResizeObserver(() => {
+      measureAvailableWidth()
+    })
+    
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+    
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [measureAvailableWidth])
 
   useEffect(() => {
     const vectorArray: SignatureVectorArray = row.answerArray
@@ -33,23 +59,32 @@ export const RenderedSignatureCanvas = ({
 
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
 
+    // Calculate scale factor based on available width
+    const originalWidth = maxX - minX + SIGNATURE_OUTPUT_PADDING_DEFAULT * 2
+    const originalHeight = maxY - minY + SIGNATURE_OUTPUT_PADDING_DEFAULT * 2
+    
+    // Use availableWidth to scale the signature
+    const scaleFactor = availableWidth ? Math.min(1, availableWidth / originalWidth) : 1
+    
+    const scaledWidth = originalWidth * scaleFactor
+    const scaledHeight = originalHeight * scaleFactor
+
     // apply devicePixelRatio to maintain sharpness
     const dpr = window.devicePixelRatio || 1
-    canvas.width = maxX * dpr
-    canvas.height = maxY * dpr
+    canvas.width = scaledWidth * dpr
+    canvas.height = scaledHeight * dpr
 
     // keep the CSS size same as logical size
-    canvas.style.width = `${maxX}px`
-    canvas.style.height = `${maxY}px`
+    canvas.style.width = `${scaledWidth}px`
+    canvas.style.height = `${scaledHeight}px`
 
     const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
-    setCanvasSize({ width: maxX, height: maxY })
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    // Scale the context to account for dpr
-    ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, maxX - minX + padding * 2, maxY - minY + padding * 2)
+    // Scale the context to account for dpr and scale factor
+    ctx.scale(dpr * scaleFactor, dpr * scaleFactor)
+    ctx.clearRect(0, 0, originalWidth, originalHeight)
 
     // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {
@@ -66,17 +101,24 @@ export const RenderedSignatureCanvas = ({
       })
       drawStroke(ctx, pathData)
     })
-  }, [row.answerArray])
+  }, [row.answerArray, availableWidth])
 
   return (
     <Box
+      ref={containerRef}
       background="white"
-      width={`${canvasSize.width}px`}
-      height={`${canvasSize.height}px`}
+      width="100%"
       borderColor="neutral.400"
       borderRadius="0.25rem"
     >
-      <canvas ref={canvasRef} />
+      <canvas 
+        ref={canvasRef} 
+        style={{ 
+          maxWidth: '100%', 
+          height: 'auto',
+          display: 'block'
+        }} 
+      />
     </Box>
   )
 }
