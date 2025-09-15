@@ -401,7 +401,7 @@ export const PublicFormProvider = ({
   )
 
   // Replace form fields, logic, and workflow with the previous snapshotted form definition for MRF >= 2nd step consistency.
-  // This is safe to use for storage mode and 1st step of MRF which uses the latest form definition, 
+  // This is safe to use for storage mode and 1st step of MRF which uses the latest form definition,
   // while MRF >= 2nd step uses the snapshotted form definition.
   const mrfConsistentFormData =
     latestNonMrfConsistentFormData && encryptedPreviousSubmission
@@ -581,7 +581,10 @@ export const PublicFormProvider = ({
   }, [submissionData])
 
   // Only load catpcha if enabled on form and the user is not on GSIB
-  const enableCaptcha = mrfConsistentFormData && mrfConsistentFormData.form.hasCaptcha && !mrfConsistentFormData.isIntranetUser
+  const enableCaptcha =
+    mrfConsistentFormData &&
+    mrfConsistentFormData.form.hasCaptcha &&
+    !mrfConsistentFormData.isIntranetUser
 
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
@@ -676,7 +679,8 @@ export const PublicFormProvider = ({
     // Non MRFs should not use the :formId/edit/:submissionId path
     const isNonMultirespondentFormWithPreviousSubmissionId =
       !!mrfConsistentFormData &&
-      mrfConsistentFormData.form.responseMode !== FormResponseMode.Multirespondent &&
+      mrfConsistentFormData.form.responseMode !==
+        FormResponseMode.Multirespondent &&
       !!previousSubmissionId
 
     if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
@@ -692,7 +696,13 @@ export const PublicFormProvider = ({
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, mrfConsistentFormData, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
+  }, [
+    error,
+    mrfConsistentFormData,
+    previousSubmissionId,
+    isSubmissionSecretKeyInvalid,
+    t,
+  ])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -745,7 +755,10 @@ export const PublicFormProvider = ({
       : undefined
 
   const isAuthRequired: boolean = useMemo(
-    () => !!form && form.authType !== FormAuthType.NIL && !mrfConsistentFormData.spcpSession,
+    () =>
+      !!form &&
+      form.authType !== FormAuthType.NIL &&
+      !mrfConsistentFormData.spcpSession,
     [form, mrfConsistentFormData?.spcpSession],
   )
 
@@ -895,7 +908,11 @@ export const PublicFormProvider = ({
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const handleLogout = useCallback(() => {
-    if (!mrfConsistentFormData?.form || mrfConsistentFormData.form.authType === FormAuthType.NIL) return
+    if (
+      !mrfConsistentFormData?.form ||
+      mrfConsistentFormData.form.authType === FormAuthType.NIL
+    )
+      return
     return handleLogoutMutation.mutate(mrfConsistentFormData.form.authType)
   }, [mrfConsistentFormData?.form, handleLogoutMutation])
 
@@ -1335,7 +1352,9 @@ export const PublicFormProvider = ({
     >
       <Helmet
         title={
-          formNotFoundMessage ? formNotFoundMessage.title : mrfConsistentFormData?.form.title
+          formNotFoundMessage
+            ? formNotFoundMessage.title
+            : mrfConsistentFormData?.form.title
         }
       />
       {formNotFoundMessage ? (
