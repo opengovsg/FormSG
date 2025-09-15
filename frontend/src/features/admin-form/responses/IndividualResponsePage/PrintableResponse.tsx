@@ -1,13 +1,18 @@
-import { Box, Divider, Text } from '@chakra-ui/react'
 import { forwardRef } from 'react'
-import { showOnlyWhenPrintCss } from '~utils/showOnlyWhenPrintCss'
-import { useIndividualSubmission } from './queries'
-import { useAdminForm } from '~features/admin-form/common/queries'
-import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
+import { Box, Divider, Text } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
+
 import { BasicField } from '~shared/types/field'
-import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
+
+import { showOnlyWhenPrintCss } from '~utils/showOnlyWhenPrintCss'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
+
+import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
+
+import { useIndividualSubmission } from './queries'
+import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
 const PrintableResponseContainer = forwardRef<HTMLDivElement>((props, ref) => {
   return (
@@ -62,7 +67,7 @@ const PrintableDecryptedRow = ({
           <Text textStyle="h3">{row.question}</Text>
         </td>
       )
-    case BasicField.Address:
+    case BasicField.Address: {
       const transformedAddress = handleAddressResponseDisplay(
         row.answerArray as string[],
       ).join(', ')
@@ -72,6 +77,7 @@ const PrintableDecryptedRow = ({
           <td width="50%">{transformedAddress}</td>
         </tr>
       )
+    }
     case BasicField.Table:
       return (
         <>
