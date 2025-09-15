@@ -134,9 +134,11 @@ const PrintableResponseRows = ({
         width: '100%',
       }}
     >
-      {decryptedResponses.map((r, idx) => (
-        <PrintableDecryptedRow row={r} key={idx} />
-      ))}
+      <tbody>
+        {decryptedResponses.map((r, idx) => (
+          <PrintableDecryptedRow row={r} key={idx} />
+        ))}
+      </tbody>
     </table>
   )
 }
