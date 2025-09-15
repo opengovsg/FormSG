@@ -322,7 +322,7 @@ export const DownloadButton = (): JSX.Element => {
                   )}
                 </Menu.Item>
                 {form?.responseMode === FormResponseMode.Encrypt && (
-                  <Menu.Item onClick={handleDownloadAsPdfs}>As PDF</Menu.Item>
+                  <Menu.Item onClick={handleDownloadAsPdfs}>PDFs</Menu.Item>
                 )}
               </Menu.List>
             </>
