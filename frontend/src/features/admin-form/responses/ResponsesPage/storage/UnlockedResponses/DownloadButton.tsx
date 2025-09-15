@@ -155,6 +155,7 @@ export const DownloadButton = (): JSX.Element => {
       <>
       {decryptedSubmissions.map((submission, index) => (
         <PdfResponseContainer
+          key={submission.submissionId}
           ref={printableRef.current[index]}
           title={title}
           formId={formId}
