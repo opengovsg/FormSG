@@ -92,6 +92,7 @@ import {
 } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 
 interface PublicFormProviderProps {
   formId: string
@@ -759,10 +760,14 @@ export const PublicFormProvider = ({
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
   })
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
-    useIndexedDb<DraftSubmission>(formDraftSubmissionKey, {
-      lastUpdated: null,
-      draftResponses: null,
-      fieldDefinitionsChecksum: null,
+    useIndexedDb<DraftSubmission>({
+      key: formDraftSubmissionKey,
+      initialValue: {
+        lastUpdated: null,
+        draftResponses: null,
+        fieldDefinitionsChecksum: null,
+      },
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
 
   // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
