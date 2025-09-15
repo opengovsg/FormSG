@@ -16,7 +16,7 @@ const initDB = ({ storeName }: { storeName: string }): Promise<IDBDatabase> => {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result
-      // If DB version upgrades and the store name is not found, create new empty store.
+      // If DB does not exist or version upgrades and the store name is not found, create new empty store.
       if (!db.objectStoreNames.contains(storeName)) {
         db.createObjectStore(storeName, { keyPath: 'key' })
       }

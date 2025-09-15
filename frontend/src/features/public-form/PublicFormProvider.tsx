@@ -60,6 +60,7 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import { useIsFeatureEnabled } from '~features/feature-flags/queries'
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 import {
   augmentFieldWithMrfWorkflowDisabling,
   isFieldEnabledByMrfWorkflow,
@@ -92,7 +93,6 @@ import {
 } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
-import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 
 interface PublicFormProviderProps {
   formId: string
