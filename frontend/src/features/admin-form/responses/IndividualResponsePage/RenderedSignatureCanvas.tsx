@@ -1,10 +1,21 @@
-import { Box } from "@chakra-ui/react"
-import getStroke from "perfect-freehand"
-import { SIGNATURE_OUTPUT_PADDING_DEFAULT, SIGNATURE_STROKE_SIZE, SIGNATURE_STROKE_SMOOTHING, SIGNATURE_STROKE_STREAMLINE, SIGNATURE_STROKE_THINNING, convertToSignatureVectorArray, getBoundingBox } from "~shared/utils/signature"
-import { drawStroke } from "~utils/convertSignatureOutput"
-import { DecryptedRowBaseProps } from "./DecryptedRow"
-import { useEffect, useRef, useState } from "react"
-import { SignatureVectorArray } from "~shared/types"
+import { useEffect, useRef, useState } from 'react'
+import { Box } from '@chakra-ui/react'
+import getStroke from 'perfect-freehand'
+
+import { SignatureVectorArray } from '~shared/types'
+import {
+  convertToSignatureVectorArray,
+  getBoundingBox,
+  SIGNATURE_OUTPUT_PADDING_DEFAULT,
+  SIGNATURE_STROKE_SIZE,
+  SIGNATURE_STROKE_SMOOTHING,
+  SIGNATURE_STROKE_STREAMLINE,
+  SIGNATURE_STROKE_THINNING,
+} from '~shared/utils/signature'
+
+import { drawStroke } from '~utils/convertSignatureOutput'
+
+import { DecryptedRowBaseProps } from './DecryptedRow'
 
 export const RenderedSignatureCanvas = ({
   row,

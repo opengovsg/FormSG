@@ -2,15 +2,13 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
-import { useReactToPrint } from 'react-to-print'
-import PrintableResponse from './PrintableResponse'
-
 import {
   Link as ReactLink,
   useLocation,
   useNavigate,
   useParams,
 } from 'react-router-dom'
+import { useReactToPrint } from 'react-to-print'
 import {
   Box,
   ButtonGroup,
@@ -30,12 +28,13 @@ import { featureFlags } from '~shared/constants'
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
+import PrintableResponse from './PrintableResponse'
 import { useIndividualSubmission } from './queries'
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
   const { state } = useLocation()
@@ -134,7 +133,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const printableResponseRef = useRef<HTMLDivElement>(null)
   const reactToPrintFn = useReactToPrint({
     contentRef: printableResponseRef,
-    documentTitle: `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`
+    documentTitle: `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`,
   })
 
   return (
