@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
+import { useReactToPrint } from 'react-to-print'
+import PrintableResponse from './PrintableResponse'
+
 import {
   Link as ReactLink,
   useLocation,
@@ -32,6 +35,7 @@ import { useUser } from '~features/user/queries'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { useIndividualSubmission } from './queries'
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
   const { state } = useLocation()
@@ -52,6 +56,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     onNavPreviousSubmissionId,
     isAnyFetching,
   } = useUnlockedResponses()
+  const { data: form, isLoading: isFormLoading } = useAdminForm()
   const { isLoading } = useIndividualSubmission()
 
   const nextSubmissionId = useMemo(
@@ -126,6 +131,12 @@ export const IndividualResponseNavbar = (): JSX.Element => {
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
 
+  const printableResponseRef = useRef<HTMLDivElement>(null)
+  const reactToPrintFn = useReactToPrint({
+    contentRef: printableResponseRef,
+    documentTitle: `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`
+  })
+
   return (
     <Grid
       sx={noPrintCss}
@@ -164,6 +175,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
+                  isLoading={isLoading || isFormLoading}
                   onClick={() => {
                     datadogLogs.logger.info(
                       `IndividualResponseNavbar: admin printing pdf`,
@@ -175,10 +187,11 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                         },
                       },
                     )
-                    window.print()
+                    reactToPrintFn()
                   }}
                   variant="clear"
                 />
+                <PrintableResponse ref={printableResponseRef} />
               </Box>
             )}
           </Stack>
