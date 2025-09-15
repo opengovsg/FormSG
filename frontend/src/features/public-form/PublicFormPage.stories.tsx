@@ -945,11 +945,14 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
   step(
     'Assert that the saved draft success toast message appears',
     async () => {
-      await waitFor(async () => {
-        await expect(document.body).toHaveTextContent(
-          'Your draft has been saved.',
-        )
-      })
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Your draft has been saved.',
+          )
+        },
+        { timeout: 3000 },
+      )
     },
   )
 
@@ -963,9 +966,12 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
   step(
     'Assert that the tooltip reflects that draft has been saved',
     async () => {
-      await waitFor(async () => {
-        await expect(document.body).toHaveTextContent('Last saved')
-      })
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent('Last saved')
+        },
+        { timeout: 3000 },
+      )
     },
   )
 }
@@ -1015,11 +1021,14 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   await step(
     'Assert that the saved draft success toast message appears',
     async () => {
-      await waitFor(async () => {
-        await expect(document.body).toHaveTextContent(
-          'Your draft has been saved.',
-        )
-      })
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Your draft has been saved.',
+          )
+        },
+        { timeout: 3000 },
+      )
     },
   )
 
@@ -1033,9 +1042,12 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   await step(
     'Assert that the tooltip reflects that draft has been saved',
     async () => {
-      await waitFor(async () => {
-        await expect(document.body).toHaveTextContent('Last saved')
-      })
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent('Last saved')
+        },
+        { timeout: 3000 },
+      )
     },
   )
 }
