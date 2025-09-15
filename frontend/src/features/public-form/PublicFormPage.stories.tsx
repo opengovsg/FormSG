@@ -921,14 +921,21 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
 }) => {
   const canvas = within(canvasElement)
 
-  // Wait for the floating save draft button to be available (using aria-label for specificity)
+  // Wait for the floating save draft button to be available (using aria-label for specificity
+  
+  let floatingSaveDraftButton
+
   await waitFor(async () => {
-    await expect(canvas.getByLabelText('Save a draft')).toBeInTheDocument()
+    floatingSaveDraftButton = await canvas.getByLabelText('Save a draft')
+    await expect(floatingSaveDraftButton).toBeInTheDocument()
   })
 
+  if (!floatingSaveDraftButton) {
+    throw new Error('Floating save draft button not found')
+  }
+
   // Click the floating save draft button
-  const saveDraftButton = canvas.getByLabelText('Save a draft')
-  await userEvent.click(saveDraftButton)
+  await userEvent.click(floatingSaveDraftButton)
 
   // Assert that the success toast message appears (toast renders in a portal outside canvas)
   await waitFor(async () => {
@@ -936,7 +943,7 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
   })
 
   // Hover over the save draft button to see the updated tooltip
-  await userEvent.hover(saveDraftButton!)
+  await userEvent.hover(floatingSaveDraftButton)
 
   // Assert that the last saved tooltip appears with updated content
   await waitFor(async () => {
@@ -964,31 +971,21 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
 }) => {
   const canvas = within(canvasElement)
 
+  let mainSaveDraftButton
+
   // Wait for the regular save draft button to be available (the button with text "Save a draft")
   await waitFor(async () => {
-    // Get all buttons with "Save a draft" and find the one that contains the text directly
-    const saveDraftButtons = canvas.getAllByRole('button', {
+    mainSaveDraftButton = canvas.getAllByRole('button', {
       name: 'Save a draft',
-    })
-    const textButton = saveDraftButtons.find((button) =>
-      button.textContent?.includes('Save a draft'),
-    )
-    await expect(textButton).toBeInTheDocument()
+    }).find((button) => button.textContent?.includes('Save a draft'))
+    await expect(mainSaveDraftButton).toBeInTheDocument()
   })
 
-  // Click the specific save draft button (the one that contains the text directly)
-  const saveDraftButtons = canvas.getAllByRole('button', {
-    name: 'Save a draft',
-  })
-  const saveDraftButton = saveDraftButtons.find((button) =>
-    button.textContent?.includes('Save a draft'),
-  )
-  if (!saveDraftButton) {
-    throw new Error(
-      'Save draft button with text content "Save a draft" not found',
-    )
+  if (!mainSaveDraftButton) {
+    throw new Error('Main save draft button not found')
   }
-  await userEvent.click(saveDraftButton)
+
+  await userEvent.click(mainSaveDraftButton)
 
   // Assert that the success toast message appears (toast renders in a portal outside canvas)
   await waitFor(async () => {
@@ -996,7 +993,7 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   })
 
   // Hover over the save draft button to see the updated tooltip
-  await userEvent.hover(saveDraftButton)
+  await userEvent.hover(mainSaveDraftButton)
 
   // Assert that the last saved tooltip appears with updated content
   await waitFor(async () => {
