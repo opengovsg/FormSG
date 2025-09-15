@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { Box, Divider, Text } from '@chakra-ui/react'
+import { Box, Center, Text } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from '~shared/types/field'
@@ -14,12 +14,45 @@ import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augme
 import { useIndividualSubmission } from './queries'
 import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
-const PrintableDivider = () => (
-  <tr>
-    <td colSpan={2}>
-      <Divider color="gray.200" />
-    </td>
+const TableRow = ({ children }: { children: React.ReactNode }) => (
+  <tr
+    style={{
+      width: '100%',
+      pageBreakInside: 'avoid' as const,
+      breakInside: 'avoid' as const,
+      borderTop: '1px solid',
+      borderColor: '#eee',
+    }}
+  >
+    {children}
   </tr>
+)
+
+const PaddingStyle = {
+  paddingTop: '24px',
+  paddingBottom: '24px',
+}
+
+const TableFullItem = ({ children }: { children: React.ReactNode }) => (
+  <td
+    colSpan={2}
+    style={{
+      width: '100%',
+    }}
+  >
+    <Box {...PaddingStyle}>{children}</Box>
+  </td>
+)
+
+const TableSingleColItem = ({ children }: { children: React.ReactNode }) => (
+  <td
+    width="50%"
+    style={{
+      width: '50%',
+    }}
+  >
+    <Box {...PaddingStyle}>{children}</Box>
+  </td>
 )
 
 const PrintableDecryptedRow = ({
@@ -30,63 +63,62 @@ const PrintableDecryptedRow = ({
   switch (row.fieldType as FieldType) {
     case BasicField.Section:
       return (
-        <td colSpan={2} align="center">
-          <Text textStyle="h3">{row.question}</Text>
-        </td>
+        <TableRow>
+          <TableFullItem>
+            <Text align="center" textStyle="h3">
+              {row.question}
+            </Text>
+          </TableFullItem>
+        </TableRow>
       )
     case BasicField.Address: {
       const transformedAddress = handleAddressResponseDisplay(
         row.answerArray as string[],
       ).join(', ')
       return (
-        <tr>
-          <td width="50%">{row.question}</td>
-          <td width="50%">{transformedAddress}</td>
-        </tr>
+        <TableRow>
+          <TableSingleColItem>{row.question}</TableSingleColItem>
+          <TableSingleColItem>{transformedAddress}</TableSingleColItem>
+        </TableRow>
       )
     }
     case BasicField.Table:
       return (
         <>
           {row.answerArray?.map((ans, idx) => (
-            <>
-              {idx > 0 && <PrintableDivider />}
-              {Array.isArray(ans) ? (
-                <tr>
-                  <td width="50%">{row.question}</td>
-                  <td width="50%">{ans.join(', ')}</td>
-                </tr>
-              ) : (
-                <tr>
-                  <td width="50%">{row.question}</td>
-                  <td width="50%">{ans}</td>
-                </tr>
-              )}
-            </>
+            <TableRow key={idx}>
+              <TableSingleColItem>{row.question}</TableSingleColItem>
+              <TableSingleColItem>
+                {Array.isArray(ans) ? ans.join(', ') : ans}
+              </TableSingleColItem>
+            </TableRow>
           ))}
         </>
       )
     case BasicField.Signature:
       return (
-        <>
-          <tr>
-            <td>{row.question}</td>
-          </tr>
-          <tr>
-            <td colSpan={2} align="center">
-              <Box borderWidth="2px" borderColor="secondary.200">
-                <RenderedSignatureCanvas row={row} />
-              </Box>
-            </td>
-          </tr>
-        </>
+        <TableRow>
+          <TableFullItem>
+            <Text mb="12px">{row.question}</Text>
+            <Center
+              width="100%"
+              borderWidth="2px"
+              borderColor="secondary.200"
+              display="inline-block"
+            >
+              <RenderedSignatureCanvas row={row} />
+            </Center>
+          </TableFullItem>
+        </TableRow>
       )
     default:
       return (
-        <tr>
-          <td width="50%">{row.question}</td>
-          <td width="50%">{row.answer || row.answerArray?.join(', ') || ''}</td>
-        </tr>
+        <TableRow>
+          <TableSingleColItem>{row.question}</TableSingleColItem>
+          <TableSingleColItem>
+            {row.answer || row.answerArray?.join(', ') || ''}
+          </TableSingleColItem>
+        </TableRow>
       )
   }
 }
@@ -100,18 +132,11 @@ const PrintableResponseRows = ({
     <table
       style={{
         width: '100%',
-        borderCollapse: 'separate',
-        borderSpacing: '16px',
       }}
     >
-      <tbody>
-        {decryptedResponses.map((r, idx) => (
-          <>
-            <PrintableDivider />
-            <PrintableDecryptedRow row={r} key={idx} />
-          </>
-        ))}
-      </tbody>
+      {decryptedResponses.map((r, idx) => (
+        <PrintableDecryptedRow row={r} key={idx} />
+      ))}
     </table>
   )
 }
