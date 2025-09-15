@@ -14,39 +14,6 @@ import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augme
 import { useIndividualSubmission } from './queries'
 import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
-const PrintableResponseContainer = forwardRef<HTMLDivElement>((props, ref) => {
-  return (
-    <Box ref={ref} sx={showOnlyWhenPrintCss}>
-      <PrintableResponse />
-    </Box>
-  )
-})
-
-export const PrintableResponseRows = ({
-  decryptedResponses,
-}: {
-  decryptedResponses: AugmentedDecryptedResponse[]
-}) => {
-  return (
-    <table
-      style={{
-        width: '100%',
-        borderCollapse: 'separate',
-        borderSpacing: '16px',
-      }}
-    >
-      <tbody>
-        {decryptedResponses.map((r, idx) => (
-          <>
-            <PrintableDivider />
-            <PrintableDecryptedRow row={r} key={idx} />
-          </>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
 const PrintableDivider = () => (
   <tr>
     <td colSpan={2}>
@@ -107,7 +74,7 @@ const PrintableDecryptedRow = ({
           </tr>
           <tr>
             <td colSpan={2} align="center">
-              <Box border="1px solid #eee">
+              <Box borderWidth="2px" borderColor="secondary.200">
                 <RenderedSignatureCanvas row={row} />
               </Box>
             </td>
@@ -122,6 +89,31 @@ const PrintableDecryptedRow = ({
         </tr>
       )
   }
+}
+
+const PrintableResponseRows = ({
+  decryptedResponses,
+}: {
+  decryptedResponses: AugmentedDecryptedResponse[]
+}) => {
+  return (
+    <table
+      style={{
+        width: '100%',
+        borderCollapse: 'separate',
+        borderSpacing: '16px',
+      }}
+    >
+      <tbody>
+        {decryptedResponses.map((r, idx) => (
+          <>
+            <PrintableDivider />
+            <PrintableDecryptedRow row={r} key={idx} />
+          </>
+        ))}
+      </tbody>
+    </table>
+  )
 }
 
 const PrintableResponse = () => {
@@ -147,5 +139,13 @@ const PrintableResponse = () => {
     </Box>
   )
 }
+
+const PrintableResponseContainer = forwardRef<HTMLDivElement>((props, ref) => {
+  return (
+    <Box ref={ref} sx={showOnlyWhenPrintCss}>
+      <PrintableResponse />
+    </Box>
+  )
+})
 
 export default PrintableResponseContainer
