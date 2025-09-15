@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { RefObject, createRef, useCallback, useMemo, useRef, useState } from 'react'
+import { createRoot } from 'react-dom/client'
 import { useTranslation } from 'react-i18next'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
@@ -16,8 +17,14 @@ import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
+import { getAllDecryptedSubmission } from '~features/admin-form/responses/AdminSubmissionsService'
+import { useAdminForm } from '~features/admin-form/common/queries'
+import { useReactToPrint } from 'react-to-print'
+import html2pdf from 'html2pdf.js'
+import  { PdfResponseContainer } from '~features/admin-form/responses/IndividualResponsePage/PrintableResponse'
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
+import { FormResponseMode } from '~shared/types/form'
 
 export const DownloadButton = (): JSX.Element => {
   const {
@@ -36,6 +43,7 @@ export const DownloadButton = (): JSX.Element => {
     // Reset metadata if it exists.
     onOpen: () => setDownloadMetadata(undefined),
   })
+  const { data: form } = useAdminForm()
 
   const toast = useToast({
     isClosable: true,
@@ -44,7 +52,7 @@ export const DownloadButton = (): JSX.Element => {
   const [progressModalTimeout, setProgressModalTimeout] = useState<
     number | null
   >(null)
-  const { downloadParams, dateRangeResponsesCount } =
+  const { secretKey, dateRange, downloadParams, dateRangeResponsesCount } =
     useStorageResponsesContext()
 
   const [_downloadCount, setDownloadCount] = useState(0)
@@ -102,6 +110,95 @@ export const DownloadButton = (): JSX.Element => {
       },
     },
   })
+
+  const printableRef = useRef<RefObject<HTMLDivElement>[]>([])
+  const currentlyPrintingSubmissionId = useRef<string>('')
+  const isReadyForNext = useRef(true)
+  const useReactToPrintFn = useReactToPrint({
+    onAfterPrint: () => {
+      isReadyForNext.current = true
+    },
+    print: async (printIframe: HTMLIFrameElement) => {
+      const HIGH_QUALITY_OPTIONS = {
+        margin: 0,
+        filename: `${form?.title}-${form?._id}-submission-${currentlyPrintingSubmissionId.current}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' },
+      }
+
+      const document = printIframe.contentDocument
+      if (document) {
+				const html = document.getElementsByTagName('html')[0];
+				await html2pdf().from(html).set(HIGH_QUALITY_OPTIONS).save();
+      }
+    },
+  })
+
+  const handleDownloadAsPdfs = useCallback(async () => {
+    if (!form) return
+    const { _id: formId, title } = form
+    const decryptedSubmissions = await getAllDecryptedSubmission({
+      formId,
+      secretKey,
+      startDate: dateRange[0],
+      endDate: dateRange[1],
+    })
+
+    printableRef.current = decryptedSubmissions.map(() => createRef<HTMLDivElement>())
+
+    // Create temporary div to render PrintableResponse
+    const tempDiv = document.createElement('div')
+    const root = createRoot(tempDiv)
+    
+    root.render(
+      <>
+      {decryptedSubmissions.map((submission, index) => (
+        <PdfResponseContainer
+          ref={printableRef.current[index]}
+          title={title}
+          formId={formId}
+          decryptedResponses={submission.responses}
+        />
+      ))}
+      </>
+    )
+
+    // Wait for refs to be populated and forwarded - this indicates that the pdf components have been rendered
+    await Promise.all(printableRef.current.map(ref => new Promise(resolve => {
+      if (ref.current) {
+        resolve(true)
+      } else {
+        const checkRef = () => {
+          if (ref.current) {
+            resolve(true)
+          } else {
+            setTimeout(checkRef, 250)
+          }
+        }
+        checkRef()
+      }
+    })))
+
+    for (const [index, ref] of printableRef.current.entries()) {
+      // Lock and wait for previous pdf to be printed
+      while (!isReadyForNext.current) {
+        await new Promise(resolve => setTimeout(resolve, 250))
+      }      
+      isReadyForNext.current = false
+      currentlyPrintingSubmissionId.current = decryptedSubmissions[index].submissionId
+      // Print each pdf
+      useReactToPrintFn(() => ref.current)
+    }
+    
+    // Cleanup
+    root.unmount()
+    tempDiv.remove()
+
+    toast({
+      description: `${decryptedSubmissions.length} PDFs downloaded successfully`,
+    })
+  }, [form, secretKey, dateRange, toast])
 
   const handleExportCsvNoAttachments = useCallback(() => {
     if (!downloadParams) return
@@ -223,6 +320,9 @@ export const DownloadButton = (): JSX.Element => {
                     'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem.csvWithAttachments',
                   )}
                 </Menu.Item>
+                {form?.responseMode === FormResponseMode.Encrypt && (
+                  <Menu.Item onClick={handleDownloadAsPdfs}>As PDF</Menu.Item>
+                )}
               </Menu.List>
             </>
           )}

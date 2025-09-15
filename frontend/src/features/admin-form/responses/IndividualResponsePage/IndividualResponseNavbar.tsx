@@ -33,7 +33,7 @@ import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
-import PrintableResponse from './PrintableResponse'
+import { PrintableResponseContainer } from './PrintableResponse'
 import { useIndividualSubmission } from './queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
@@ -56,7 +56,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     isAnyFetching,
   } = useUnlockedResponses()
   const { data: form, isLoading: isFormLoading } = useAdminForm()
-  const { isLoading } = useIndividualSubmission()
+  const { data: submission, isLoading: isSubmissionLoading } = useIndividualSubmission()
 
   const nextSubmissionId = useMemo(
     () => getNextSubmissionId(submissionId),
@@ -129,11 +129,11 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   }, [gb, user])
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
-
   const printableResponseRef = useRef<HTMLDivElement>(null)
+  const documentTitle = `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`
   const reactToPrintFn = useReactToPrint({
     contentRef: printableResponseRef,
-    documentTitle: `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`,
+    documentTitle,
   })
 
   return (
@@ -163,7 +163,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
         </Link>
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
-        <Skeleton isLoaded={!isLoading}>
+        <Skeleton isLoaded={!isSubmissionLoading}>
           <Stack direction="row" justify="center" align="center">
             <Text textStyle="h2" as="h2">
               {t('features.common.response')}
@@ -174,7 +174,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
-                  isLoading={isLoading || isFormLoading}
+                  isLoading={isSubmissionLoading || isFormLoading}
                   onClick={() => {
                     datadogLogs.logger.info(
                       `IndividualResponseNavbar: admin printing pdf`,
@@ -190,7 +190,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                   }}
                   variant="clear"
                 />
-                <PrintableResponse ref={printableResponseRef} />
+                <PrintableResponseContainer ref={printableResponseRef} formId={form?._id ?? ''} title={form?.title ?? ''} decryptedResponses={submission?.responses ?? []} />
               </Box>
             )}
           </Stack>

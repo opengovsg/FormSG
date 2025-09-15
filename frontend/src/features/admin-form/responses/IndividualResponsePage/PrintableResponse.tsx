@@ -7,11 +7,8 @@ import { handleAddressResponseDisplay } from '~shared/utils/address'
 
 import { showOnlyWhenPrintCss } from '~utils/showOnlyWhenPrintCss'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
-
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
-import { useIndividualSubmission } from './queries'
 import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
 const TableRow = ({ children }: { children: React.ReactNode }) => (
@@ -143,10 +140,15 @@ const PrintableResponseRows = ({
   )
 }
 
-const PrintableResponse = () => {
-  const { data: form } = useAdminForm()
-  const { data, isLoading, isError } = useIndividualSubmission()
-  if (isLoading || isError || !data?.responses) return null
+const PrintableResponse = ({
+  title,
+  formId,
+  decryptedResponses,
+}: {
+  title: string
+  formId: string
+  decryptedResponses: AugmentedDecryptedResponse[]
+}) => {
   return (
     <Box py="16px" fontFamily="sans-serif">
       <Box
@@ -157,22 +159,44 @@ const PrintableResponse = () => {
         bgColor="#484848"
         color="white"
       >
-        <Text textStyle="h2">{form?.title}</Text>
-        <Text textDecor="underline">{`${window.location.origin}/${form?._id}`}</Text>
+        <Text textStyle="h2">{title}</Text>
+        <Text textDecor="underline">{`${window.location.origin}/${formId}`}</Text>
       </Box>
       <Box mx="32px">
-        <PrintableResponseRows decryptedResponses={data?.responses} />
+        <PrintableResponseRows decryptedResponses={decryptedResponses} />
       </Box>
     </Box>
   )
 }
 
-const PrintableResponseContainer = forwardRef<HTMLDivElement>((props, ref) => {
-  return (
-    <Box ref={ref} sx={showOnlyWhenPrintCss}>
-      <PrintableResponse />
-    </Box>
-  )
-})
+export const PrintableResponseContainer = forwardRef<
+  HTMLDivElement,
+  {
+    title: string
+    formId: string
+    decryptedResponses: AugmentedDecryptedResponse[]
+  }
+>((props, ref) => (
+  <Box
+    ref={ref}
+    data-printable
+    sx={{
+      ...showOnlyWhenPrintCss,
+    }}
+  >
+    <PrintableResponse {...props} />
+  </Box>
+))
 
-export default PrintableResponseContainer
+export const PdfResponseContainer = forwardRef<
+  HTMLDivElement,
+  {
+    title: string
+    formId: string
+    decryptedResponses: AugmentedDecryptedResponse[]
+  }
+>((props, ref) => (
+  <Box ref={ref}>
+    <PrintableResponse {...props} />
+  </Box>
+))
