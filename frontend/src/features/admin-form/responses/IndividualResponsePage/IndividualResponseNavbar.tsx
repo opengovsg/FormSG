@@ -133,7 +133,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const printableResponseRef = useRef<HTMLDivElement>(null)
   const reactToPrintFn = useReactToPrint({
     contentRef: printableResponseRef,
-    documentTitle: `${form?._id ? `formId_${form?._id}` : ''}_submissionId_${submissionId}_response.pdf`,
+    documentTitle: `${form ? `${form.title}_formId_${form._id}_` : ''}submissionId_${submissionId}_response.pdf`,
   })
 
   return (
