@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -35,15 +35,15 @@ export const RenderedSignatureCanvas = ({
   // Effect to measure available width on mount and resize
   useEffect(() => {
     measureAvailableWidth()
-    
+
     const resizeObserver = new ResizeObserver(() => {
       measureAvailableWidth()
     })
-    
+
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current)
     }
-    
+
     return () => {
       resizeObserver.disconnect()
     }
@@ -62,10 +62,12 @@ export const RenderedSignatureCanvas = ({
     // Calculate scale factor based on available width
     const originalWidth = maxX - minX + SIGNATURE_OUTPUT_PADDING_DEFAULT * 2
     const originalHeight = maxY - minY + SIGNATURE_OUTPUT_PADDING_DEFAULT * 2
-    
+
     // Use availableWidth to scale the signature
-    const scaleFactor = availableWidth ? Math.min(1, availableWidth / originalWidth) : 1
-    
+    const scaleFactor = availableWidth
+      ? Math.min(1, availableWidth / originalWidth)
+      : 1
+
     const scaledWidth = originalWidth * scaleFactor
     const scaledHeight = originalHeight * scaleFactor
 
@@ -111,13 +113,13 @@ export const RenderedSignatureCanvas = ({
       borderColor="neutral.400"
       borderRadius="0.25rem"
     >
-      <canvas 
-        ref={canvasRef} 
-        style={{ 
-          maxWidth: '100%', 
+      <canvas
+        ref={canvasRef}
+        style={{
+          maxWidth: '100%',
           height: 'auto',
-          display: 'block'
-        }} 
+          display: 'block',
+        }}
       />
     </Box>
   )
