@@ -98,7 +98,7 @@ const PrintableDecryptedRow = ({
           <TableFullItem>
             <Text mb="12px">{row.question}</Text>
             <Center
-              width="100%"
+              w="100%"
               borderWidth="2px"
               borderColor="secondary.200"
               display="inline-block"
@@ -150,7 +150,7 @@ const PrintableResponse = ({
   decryptedResponses: AugmentedDecryptedResponse[]
 }) => {
   return (
-    <Box py="16px" fontFamily="sans-serif">
+    <Box w='100%' py="16px" fontFamily="sans-serif">
       <Box
         py="24px"
         w="100%"
