@@ -6,6 +6,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isEmpty, times } from 'lodash'
 
 import {
+  CLIENT_RADIO_OTHERS_INPUT_VALUE,
   featureFlags,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
@@ -23,7 +24,11 @@ import { centsToDollars } from '~shared/utils/payments'
 
 import bufferToFile from '~utils/bufferToFile'
 import InlineMessage from '~components/InlineMessage'
-import { FormFieldValue, FormFieldValues } from '~templates/Field'
+import {
+  FormFieldValue,
+  FormFieldValues,
+  RadioFieldValues,
+} from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import { augmentWithWorkflowDisabling } from '~features/form/utils/augmentWithWorkflowDisabling'
@@ -123,6 +128,14 @@ export const FormFields = ({
               acc[field._id] = bufferToFile(fileData, fileName)
             }
 
+            break
+          }
+          case BasicField.Radio: {
+            const radioAnswer = previousResponse.answer as RadioFieldValues
+            if (radioAnswer.othersInput && !radioAnswer.value) {
+              radioAnswer.value = CLIENT_RADIO_OTHERS_INPUT_VALUE
+            }
+            acc[field._id] = radioAnswer
             break
           }
           default:
