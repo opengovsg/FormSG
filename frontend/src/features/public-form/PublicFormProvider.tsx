@@ -720,17 +720,23 @@ export const PublicFormProvider = ({
   const form = data?.form
   const formFields = useMemo(() => {
     if (!form) return []
+    if (form.responseMode === FormResponseMode.Multirespondent) {
+      return encryptedPreviousSubmission?.form_fields ?? form.form_fields
+    }
     return form.form_fields
-  }, [form])
+  }, [encryptedPreviousSubmission?.form_fields, form])
   const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
   const currentWorkflowStepNumber =
     previousWorkflowStepNumber !== undefined
       ? previousWorkflowStepNumber + 1
       : 0
-  const formWorkflow =
-    form?.responseMode === FormResponseMode.Multirespondent
-      ? form.workflow
-      : undefined
+  const formWorkflow = useMemo(() => {
+    if (!form) return undefined
+    if (form.responseMode === FormResponseMode.Multirespondent) {
+      return encryptedPreviousSubmission?.workflow ?? form.workflow
+    }
+    return undefined
+  }, [encryptedPreviousSubmission?.workflow, form])
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
