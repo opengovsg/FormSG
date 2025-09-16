@@ -973,16 +973,19 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
             '[data-testid*="tooltip"]',
             '.chakra-tooltip',
             '[aria-describedby]',
-            '.tooltip'
+            '.tooltip',
           ]
-          
+
           const tooltip = tooltipSelectors
-            .map(selector => document.querySelector(selector))
-            .find(element => element && element.textContent?.includes('Last saved'))
-          
+            .map((selector) => document.querySelector(selector))
+            .find(
+              (element) =>
+                element && element.textContent?.includes('Last saved'),
+            )
+
           expect(tooltip).toBeInTheDocument()
         },
-        { timeout: 5000 }
+        { timeout: 5000 },
       )
     },
   )
@@ -1048,7 +1051,7 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     'Hover over the save draft button to see the save draft tooltip',
     async () => {
       await userEvent.hover(mainSaveDraftButton)
-    }
+    },
   )
 
   await step(
@@ -1061,16 +1064,19 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
             '[data-testid*="tooltip"]',
             '.chakra-tooltip',
             '[aria-describedby]',
-            '.tooltip'
+            '.tooltip',
           ]
-          
+
           const tooltip = tooltipSelectors
-            .map(selector => document.querySelector(selector))
-            .find(element => element && element.textContent?.includes('Last saved'))
-          
+            .map((selector) => document.querySelector(selector))
+            .find(
+              (element) =>
+                element && element.textContent?.includes('Last saved'),
+            )
+
           expect(tooltip).toBeInTheDocument()
         },
-        { timeout: 5000 }
+        { timeout: 5000 },
       )
     },
   )

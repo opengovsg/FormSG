@@ -800,13 +800,12 @@ export const PublicFormProvider = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
-  const { draftResponsesToRestore, changedFieldIds } =
-    useMemo(() => {
-      return getRestoreDraftFormValues({
-        currentFormFields: formFields,
-        savedDraftSubmission: draftSubmission,
-      })
-    }, [draftSubmission?.lastUpdated, formFields])
+  const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
+    return getRestoreDraftFormValues({
+      currentFormFields: formFields,
+      savedDraftSubmission: draftSubmission,
+    })
+  }, [draftSubmission?.lastUpdated, formFields])
 
   const hasDraft = Boolean(draftSubmission?.lastUpdated)
   const hasShownRestoredDraftToast = useRef<boolean>(false)
