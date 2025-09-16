@@ -378,8 +378,12 @@ export const PublicFormProvider = ({
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
   const {
-    // WARNING: This is the latest form definition which should not be used for >= 2nd step of MRF which should use snapshotted form definition.
-    data: latestNonMrfConsistentFormData,
+    /** 
+     * Contains the latest form definition. 
+     * @note The latest form definition should not be used for >= 2nd step of MRF submission which should use snapshotted form definition for consistency. 
+     * @see mrfConsistentFormData For form data that is safe to use for both storage mode/1st step MRF and >= 2nd step MRF
+     */
+    data: latestFormData,
     isLoading: isFormLoading,
     error: publicFormError,
     ...rest
@@ -400,21 +404,27 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  // Replace form fields, logic, and workflow with the previous snapshotted form definition for MRF >= 2nd step consistency.
-  // This is safe to use for storage mode and 1st step of MRF which uses the latest form definition,
-  // while MRF >= 2nd step uses the snapshotted form definition.
-  const mrfConsistentFormData =
-    latestNonMrfConsistentFormData && encryptedPreviousSubmission
+  /**
+   * Replace form fields, logic, and workflow with the previous snapshotted form definition for MRF >= 2nd step consistency.
+   * This makes it safe to use for both: 
+   * - storage mode and 1st step of MRF, which uses the latest form definition. 
+   * - MRF >= 2nd step, which uses the snapshotted form definition from the current submission to maintain consistency. 
+   * 
+   * @returns Form data with latest form definition if Storage mode or 1st step of MRF, otherwise snapshotted form definition for >= 2nd step of MRF. 
+   */
+  const mrfConsistentFormData = useMemo(() => {
+    return latestFormData && encryptedPreviousSubmission
       ? {
-          ...latestNonMrfConsistentFormData,
+          ...latestFormData,
           form: {
-            ...latestNonMrfConsistentFormData.form,
+            ...latestFormData.form,
             form_fields: encryptedPreviousSubmission.form_fields,
             form_logics: encryptedPreviousSubmission.form_logics,
             workflow: encryptedPreviousSubmission.workflow,
           },
         }
-      : latestNonMrfConsistentFormData
+      : latestFormData
+  }, [latestFormData, encryptedPreviousSubmission])
 
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
