@@ -83,7 +83,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
 
       // Populate signature fieldname
       if (content.fieldType === BasicField.Signature) {
-        content.answerArray = [SIGNATURE_CAPTURED_STRING]
+        if (content.answerArray)
+          content.answerArray = [SIGNATURE_CAPTURED_STRING]
       }
 
       const fieldRecord = getDecryptedResponseInstance(content)
