@@ -119,11 +119,11 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const gb = useGrowthBook()
 
   useEffect(() => {
-    if (user) {
-      gb?.setAttributes({
-        id: user._id,
-        email: user.email,
-        agency: user.agency,
+    if (user && gb) {
+      gb.setAttributes({
+        adminEmail: user.email,
+        adminAgency: user.agency,
+        ...gb.getAttributes(),
       })
     }
   }, [gb, user])
