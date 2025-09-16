@@ -976,12 +976,13 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
             '.tooltip',
           ]
 
-          const tooltip = tooltipSelectors
-            .map((selector) => document.querySelector(selector))
-            .find(
-              (element) =>
-                element && element.textContent?.includes('Last saved'),
-            )
+          const tooltip =
+            tooltipSelectors
+              .map((selector) => document.querySelector(selector))
+              .find(
+                (element) =>
+                  element && element.textContent?.includes('Last saved'),
+              ) ?? new Element()
 
           expect(tooltip).toBeInTheDocument()
         },
@@ -1067,12 +1068,13 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
             '.tooltip',
           ]
 
-          const tooltip = tooltipSelectors
-            .map((selector) => document.querySelector(selector))
-            .find(
-              (element) =>
-                element && element.textContent?.includes('Last saved'),
-            )
+          const tooltip =
+            tooltipSelectors
+              .map((selector) => document.querySelector(selector))
+              .find(
+                (element) =>
+                  element && element.textContent?.includes('Last saved'),
+              ) ?? new Element()
 
           expect(tooltip).toBeInTheDocument()
         },
