@@ -405,14 +405,17 @@ export const PublicFormProvider = ({
   )
 
   /**
-   * Replace form fields, logic, and workflow with the previous snapshotted form definition for MRF >= 2nd step consistency.
+   * Form data to render this public form submission.
+   *
+   * The form, logic, and workflow fields are converged by this pre-processing step.
+   *
    * This makes it safe to use for both:
    * - storage mode and 1st step of MRF, which uses the latest form definition.
    * - MRF >= 2nd step, which uses the snapshotted form definition from the current submission to maintain consistency.
    *
    * @returns Form data with latest form definition if Storage mode or 1st step of MRF, otherwise snapshotted form definition for >= 2nd step of MRF.
    */
-  const mrfConsistentFormData = useMemo(() => {
+  const data = useMemo(() => {
     return latestFormData && encryptedPreviousSubmission
       ? {
           ...latestFormData,
@@ -450,7 +453,7 @@ export const PublicFormProvider = ({
 
   useEffect(() => {
     if (
-      mrfConsistentFormData?.errorCodes?.find(
+      data?.errorCodes?.find(
         (errorCode) =>
           errorCode === ErrorCode.respondentSingleSubmissionValidationFailure,
       )
@@ -459,13 +462,13 @@ export const PublicFormProvider = ({
     }
 
     if (
-      mrfConsistentFormData?.errorCodes?.find(
+      data?.errorCodes?.find(
         (errorCode) => errorCode === ErrorCode.respondentNotWhitelisted,
       )
     ) {
       setHasRespondentNotWhitelistedError(true)
     }
-  }, [mrfConsistentFormData?.errorCodes])
+  }, [data?.errorCodes])
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -591,10 +594,7 @@ export const PublicFormProvider = ({
   }, [submissionData])
 
   // Only load catpcha if enabled on form and the user is not on GSIB
-  const enableCaptcha =
-    mrfConsistentFormData &&
-    mrfConsistentFormData.form.hasCaptcha &&
-    !mrfConsistentFormData.isIntranetUser
+  const enableCaptcha = data && data.form.hasCaptcha && !data.isIntranetUser
 
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
@@ -641,10 +641,10 @@ export const PublicFormProvider = ({
   }
 
   const isPaymentEnabled =
-    mrfConsistentFormData?.form.responseMode === FormResponseMode.Encrypt &&
-    mrfConsistentFormData.form.payments_field.enabled
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
 
-  const hasMyInfoError = !!mrfConsistentFormData?.errorCodes?.find(
+  const hasMyInfoError = !!data?.errorCodes?.find(
     (errorCode) => errorCode === ErrorCode.myInfo,
   )
 
@@ -678,8 +678,8 @@ export const PublicFormProvider = ({
   )
 
   useEffect(() => {
-    if (mrfConsistentFormData) trackVisitPublicForm(mrfConsistentFormData.form)
-  }, [mrfConsistentFormData])
+    if (data) trackVisitPublicForm(data.form)
+  }, [data])
 
   const formNotFoundMessage = useMemo(() => {
     // Server response 404 or 410
@@ -688,9 +688,8 @@ export const PublicFormProvider = ({
 
     // Non MRFs should not use the :formId/edit/:submissionId path
     const isNonMultirespondentFormWithPreviousSubmissionId =
-      !!mrfConsistentFormData &&
-      mrfConsistentFormData.form.responseMode !==
-        FormResponseMode.Multirespondent &&
+      !!data &&
+      data.form.responseMode !== FormResponseMode.Multirespondent &&
       !!previousSubmissionId
 
     if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
@@ -706,19 +705,13 @@ export const PublicFormProvider = ({
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [
-    error,
-    mrfConsistentFormData,
-    previousSubmissionId,
-    isSubmissionSecretKeyInvalid,
-    t,
-  ])
+  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
       toast.close(vfnToastIdRef.current)
     }
-    const numVerifiable = mrfConsistentFormData?.form.form_fields.filter((ff) =>
+    const numVerifiable = data?.form.form_fields.filter((ff) =>
       get(ff, 'isVerifiable'),
     ).length
 
@@ -730,7 +723,7 @@ export const PublicFormProvider = ({
         description: t('features.publicForm.errors.verifiedFieldExpired'),
       })
     }
-  }, [mrfConsistentFormData?.form.form_fields, toast, vfnToastIdRef, t])
+  }, [data?.form.form_fields, toast, vfnToastIdRef, t])
 
   const {
     submitEmailModeFormMutation,
@@ -745,7 +738,7 @@ export const PublicFormProvider = ({
     previousSubmission?.submissionSecretKey,
   )
 
-  const form = mrfConsistentFormData?.form
+  const form = data?.form
   const formFields = useMemo(() => {
     if (!form) return []
     return form.form_fields
@@ -765,11 +758,8 @@ export const PublicFormProvider = ({
       : undefined
 
   const isAuthRequired: boolean = useMemo(
-    () =>
-      !!form &&
-      form.authType !== FormAuthType.NIL &&
-      !mrfConsistentFormData.spcpSession,
-    [form, mrfConsistentFormData?.spcpSession],
+    () => !!form && form.authType !== FormAuthType.NIL && !data.spcpSession,
+    [form, data?.spcpSession],
   )
 
   const fieldPrefillMap = useMemo(
@@ -918,13 +908,9 @@ export const PublicFormProvider = ({
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const handleLogout = useCallback(() => {
-    if (
-      !mrfConsistentFormData?.form ||
-      mrfConsistentFormData.form.authType === FormAuthType.NIL
-    )
-      return
-    return handleLogoutMutation.mutate(mrfConsistentFormData.form.authType)
-  }, [mrfConsistentFormData?.form, handleLogoutMutation])
+    if (!data?.form || data.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(data.form.authType)
+  }, [data?.form, handleLogoutMutation])
 
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
@@ -936,7 +922,7 @@ export const PublicFormProvider = ({
       [RESPONDENT_EMAIL_FIELD_ID]: respondentEmails,
       ...formInputs
     }) => {
-      const { form } = mrfConsistentFormData ?? {}
+      const { form } = data ?? {}
       if (!form) return
 
       let captchaResponse: string | null
@@ -995,11 +981,11 @@ export const PublicFormProvider = ({
         timestamp: number
       }) => {
         if (
-          mrfConsistentFormData &&
+          data &&
           form.isSingleSubmission &&
           form.authType !== FormAuthType.NIL
         ) {
-          mrfConsistentFormData.spcpSession = undefined
+          data.spcpSession = undefined
         }
         setSubmissionData({
           id: submissionId,
@@ -1160,11 +1146,11 @@ export const PublicFormProvider = ({
                       return
                     }
                     if (
-                      mrfConsistentFormData &&
+                      data &&
                       form.isSingleSubmission &&
                       form.authType !== FormAuthType.NIL
                     ) {
-                      mrfConsistentFormData.spcpSession = undefined
+                      data.spcpSession = undefined
                     }
                     clearRespondentAccessErrors()
                     setSubmissionData({
@@ -1227,11 +1213,11 @@ export const PublicFormProvider = ({
                     return
                   }
                   if (
-                    mrfConsistentFormData &&
+                    data &&
                     form.isSingleSubmission &&
                     form.authType !== FormAuthType.NIL
                   ) {
-                    mrfConsistentFormData.spcpSession = undefined
+                    data.spcpSession = undefined
                   }
                   clearRespondentAccessErrors()
                   setSubmissionData({
@@ -1289,7 +1275,7 @@ export const PublicFormProvider = ({
       }
     },
     [
-      mrfConsistentFormData,
+      data,
       enableTurnstileFeatureFlag,
       captchaType,
       startTime,
@@ -1356,15 +1342,13 @@ export const PublicFormProvider = ({
         augmentedFormFields,
         fieldPrefillMap,
         ...commonFormValues,
-        ...mrfConsistentFormData,
+        ...data,
         ...rest,
       }}
     >
       <Helmet
         title={
-          formNotFoundMessage
-            ? formNotFoundMessage.title
-            : mrfConsistentFormData?.form.title
+          formNotFoundMessage ? formNotFoundMessage.title : data?.form.title
         }
       />
       {formNotFoundMessage ? (
