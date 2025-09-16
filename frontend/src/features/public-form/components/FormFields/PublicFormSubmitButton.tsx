@@ -1,7 +1,13 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Flex, Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
+import {
+  Flex,
+  Stack,
+  Text,
+  useDisclosure,
+  VisuallyHidden,
+} from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
@@ -33,7 +39,10 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
     : ''
 
   return (
-    <Tooltip placement="top" label={tooltipLabel}>
+    <Tooltip
+      placement="top"
+      label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
+    >
       <Button variant="outline" onClick={onSaveDraft} {...props}>
         {t('features.publicForm.components.saveDraft.button.label')}
       </Button>

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
+import { Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
@@ -22,7 +23,10 @@ export const FloatingSaveDraftButton = ({
     : t('features.publicForm.components.saveDraft.tooltip.default')
 
   return (
-    <Tooltip placement={isMobile ? 'top' : 'left'} label={tooltipLabel}>
+    <Tooltip
+      placement={isMobile ? 'top' : 'left'}
+      label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
+    >
       <IconButton
         variant="outline"
         cursor="pointer"
