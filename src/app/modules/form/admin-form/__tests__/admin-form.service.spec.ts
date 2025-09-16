@@ -41,6 +41,7 @@ import {
   IFormSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
   IUserSchema,
   PickDuplicateForm,
 } from 'src/types'
@@ -1308,6 +1309,7 @@ describe('admin-form.service', () => {
   describe('updateFormSettings', () => {
     const MOCK_UPDATED_SETTINGS = {
       authType: FormAuthType.NIL,
+      isSaveDraftEnabled: true,
       hasCaptcha: false,
       inactiveMessage: 'some inactive message',
       status: FormStatus.Private,
@@ -1356,8 +1358,14 @@ describe('admin-form.service', () => {
           multi_product: false,
         },
       },
+      isSaveDraftEnabled: false,
       getSettings: jest.fn(),
     } as unknown as IPopulatedForm)
+    const MOCK_MULTIRESPONDENT_FORM = jest.mocked({
+      _id: new ObjectId(),
+      status: FormStatus.Public,
+      responseMode: FormResponseMode.Multirespondent,
+    } as unknown as IPopulatedMultirespondentForm)
 
     const EMAIL_UPDATE_SPY = jest
       .spyOn(EmailFormModel, 'findByIdAndUpdate')
@@ -1406,6 +1414,28 @@ describe('admin-form.service', () => {
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
 
+    it('should return updated form settings when successfully updating multirespondent form settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        isSaveDraftEnabled: false,
+      }
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        MOCK_MULTIRESPONDENT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_MULTIRESPONDENT_FORM._id,
+        settingsToUpdate,
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
     it('should return updated form settings when successfully updating encrypt form settings', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
@@ -1425,6 +1455,29 @@ describe('admin-form.service', () => {
         MOCK_ENCRYPT_FORM._id,
         // Should be dotified
         { 'webhook.url': 'https://example.com' },
+        { new: true, runValidators: true },
+      )
+      expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return updated isSaveDraftEnabled when successfully updating encrypt form settings', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        isSaveDraftEnabled: false,
+      }
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        MOCK_ENCRYPT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(MOCK_ENCRYPT_FORM.isSaveDraftEnabled).toBeFalse()
+      expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
+        MOCK_ENCRYPT_FORM._id,
+        settingsToUpdate,
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
