@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { useParams } from 'react-router-dom'
-import { Flex, Skeleton } from '@chakra-ui/react'
+import { Flex, Skeleton, Text } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 

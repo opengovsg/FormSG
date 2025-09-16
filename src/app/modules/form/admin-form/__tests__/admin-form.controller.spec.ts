@@ -5299,7 +5299,6 @@ describe('admin-form.controller', () => {
       const mockUpdatedSettings = {
         authType: FormAuthType.NIL,
         hasCaptcha: false,
-        isSaveDraftEnabled: true,
         inactiveMessage: 'some inactive message',
         status: FormStatus.Private,
         submissionLimit: 42069,

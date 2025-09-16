@@ -58,7 +58,7 @@ export const useUserMutations = () => {
   const transferOwnershipMutation = useMutation(
     (params: TransferOwnershipRequestDto) => transferOwnership(params),
     {
-      onSuccess: () => {
+      onSuccess: (_) => {
         toast({
           description: 'Ownership transferred.',
         })
