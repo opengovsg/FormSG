@@ -231,11 +231,18 @@ export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
   let signatureAnswer: string
+
+  let strokes
   switch (response.answerArray[0]) {
     case 'draw':
-      signatureAnswer = convertToSignaturePngDataUri(
-        convertToSignatureVectorArray(response.answerArray[1]),
-      )
+      strokes = response.answerArray[1]
+      if (Array.isArray(strokes) && strokes.length > 0) {
+        signatureAnswer = convertToSignaturePngDataUri(
+          convertToSignatureVectorArray(strokes),
+        )
+      } else {
+        signatureAnswer = ''
+      }
       break
     default:
       signatureAnswer = ''
@@ -248,7 +255,7 @@ export const getAnswerForSignature = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: signatureAnswer,
-    answerTemplate: [SIGNATURE_CAPTURED_STRING],
+    ...(signatureAnswer ? { answerTemplate: [SIGNATURE_CAPTURED_STRING] } : {}),
   }
 }
 
