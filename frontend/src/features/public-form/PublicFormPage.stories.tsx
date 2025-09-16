@@ -1051,7 +1051,7 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     'Hover over the save draft button to see the save draft tooltip',
     async () => {
       await userEvent.hover(mainSaveDraftButton)
-    }
+    },
   )
 
   await step(
