@@ -27,11 +27,6 @@ export const enSG = {
   customisation: {
     closedFormMessage: 'Set message for closed form',
   },
-  saveDraft: {
-    label: 'Enable saving of draft responses',
-    description:
-      'Respondents will be able to save a draft of their responses on their browser.',
-  },
   captcha: {
     label: 'Enable reCAPTCHA',
     description:
