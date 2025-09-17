@@ -1,31 +1,33 @@
 import { BiQuestionMark } from 'react-icons/bi'
-import { Flex, useDisclosure } from '@chakra-ui/react'
+import { useDisclosure } from '@chakra-ui/react'
 
-import { noPrintCss } from '~utils/noPrintCss'
+import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
-export const FormIssueFeedbackButton = (): JSX.Element | null => {
+export const FloatingIssueFeedbackButton = ({
+  isPreview,
+  formId,
+}: {
+  isPreview: boolean
+  formId: string
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const { isPreview, formId, submissionData } = usePublicFormContext()
-  if (submissionData) return null
+  const isMobile = useIsMobile()
 
   return (
-    <Flex
-      position="fixed"
-      bottom={{ base: '1rem', md: '2.625rem' }}
-      right={{ base: '1rem', md: '2.75rem' }}
-      sx={noPrintCss}
-      zIndex="docked"
-    >
-      <Tooltip placement="left" label="Report an issue">
+    <>
+      <Tooltip placement={isMobile ? 'top' : 'left'} label="Report an issue">
         <IconButton
           variant="outline"
           cursor="pointer"
+          // To implement attached button group vertically
+          mt="-1px"
+          _focus={{
+            boxShadow: 0,
+          }}
           aria-label="issue feedback"
           icon={<BiQuestionMark color="primary.500" />}
           onClick={onOpen}
@@ -37,6 +39,6 @@ export const FormIssueFeedbackButton = (): JSX.Element | null => {
         isPreview={isPreview}
         formId={formId}
       />
-    </Flex>
+    </>
   )
 }

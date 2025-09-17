@@ -878,3 +878,176 @@ WithRespondentCopy.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
+
+export const WithSaveDraftEnabled = Template.bind({})
+WithSaveDraftEnabled.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithSaveDraftEnabledMobile = Template.bind({})
+WithSaveDraftEnabledMobile.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton =
+  Template.bind({})
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  // Wait for the floating save draft button to be available (using aria-label for specificity
+
+  let floatingSaveDraftButton: HTMLElement
+
+  await step('Find the floating save draft button', async () => {
+    await waitFor(async () => {
+      const foundFloatingSaveDraftButton =
+        await canvas.getByLabelText('Save a draft')
+      await expect(foundFloatingSaveDraftButton).toBeInTheDocument()
+      if (!foundFloatingSaveDraftButton) {
+        throw new Error('Floating save draft button not found')
+      }
+      floatingSaveDraftButton = foundFloatingSaveDraftButton
+    })
+  })
+
+  step('Click the floating save draft button', async () => {
+    await userEvent.click(floatingSaveDraftButton)
+  })
+
+  step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Your draft has been saved.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(floatingSaveDraftButton)
+    },
+  )
+
+  step(
+    'Assert that the tooltip reflects that draft has been saved',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent('Last saved')
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+}
+
+export const WithSaveDraftEnabledAndClickSaveDraftButton = Template.bind({})
+WithSaveDraftEnabledAndClickSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  let mainSaveDraftButton: HTMLElement
+
+  await step('Find the main save draft button', async () => {
+    await waitFor(async () => {
+      const foundMainSaveDraftButton = await canvas
+        .getAllByRole('button', {
+          name: 'Save a draft',
+        })
+        .find((button) => button.textContent?.includes('Save a draft'))
+      await expect(foundMainSaveDraftButton).toBeInTheDocument()
+      if (!foundMainSaveDraftButton) {
+        throw new Error('Main save draft button not found')
+      }
+      mainSaveDraftButton = foundMainSaveDraftButton
+    })
+  })
+
+  await step('Click the main save draft button', async () => {
+    await userEvent.click(mainSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Your draft has been saved.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(mainSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that the tooltip reflects that draft has been saved',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent('Last saved')
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+}
