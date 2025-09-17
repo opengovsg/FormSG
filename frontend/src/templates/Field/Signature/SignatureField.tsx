@@ -190,18 +190,14 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(
-      `${schema._id}`,
-      { type: 'draw', value: [] },
-      { shouldValidate: true },
-    )
+    setValue(`${schema._id}`, null, { shouldValidate: true })
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
   }
-
+  console.log(`signature value`, `${JSON.stringify(getValues(schema._id))}`)
   return (
     <Box>
       <FormLabel

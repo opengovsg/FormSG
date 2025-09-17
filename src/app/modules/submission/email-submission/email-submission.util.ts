@@ -232,13 +232,11 @@ export const getAnswerForSignature = (
 ): ResponseFormattedForEmail => {
   let signatureAnswer: string
 
-  let strokes
   switch (response.answerArray[0]) {
     case 'draw':
-      strokes = response.answerArray[1]
-      if (Array.isArray(strokes) && strokes.length > 0) {
+      if (response.answerArray[1].length > 0) {
         signatureAnswer = convertToSignaturePngDataUri(
-          convertToSignatureVectorArray(strokes),
+          convertToSignatureVectorArray(response.answerArray[1]),
         )
       } else {
         signatureAnswer = ''

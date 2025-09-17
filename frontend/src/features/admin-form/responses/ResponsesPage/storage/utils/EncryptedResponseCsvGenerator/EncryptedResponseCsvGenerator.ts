@@ -81,9 +81,9 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
         return //skip to next record in fieldRecords
       }
 
-      // Populate signature fieldname
+      // Populate signature field name with default string
       if (content.fieldType === BasicField.Signature) {
-        if (content.answerArray)
+        if (content.answerArray && content.answerArray.length > 0)
           content.answerArray = [SIGNATURE_CAPTURED_STRING]
       }
 
