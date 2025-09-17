@@ -112,9 +112,7 @@ const mapSuggestedFormFieldToFieldCreateDto = (
   })
 }
 
-const BASIC_FIELD_NAMES = Object.keys(
-  omit(BasicField, ['Children', 'Image', 'Signature']),
-)
+const BASIC_FIELD_NAMES = Object.keys(omit(BasicField, ['Children', 'Image']))
   .map((fieldType) => `"${fieldType}"`)
   .toString()
 
