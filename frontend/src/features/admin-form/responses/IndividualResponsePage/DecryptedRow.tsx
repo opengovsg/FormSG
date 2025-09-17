@@ -139,7 +139,7 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
-  
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -173,7 +173,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     // keep the CSS size same as logical size
     canvas.style.width = `${maxX}px`
     canvas.style.height = `${maxY}px`
-    
+
     setCanvasSize({ width: maxX, height: maxY })
     // Scale the context to account for dpr
     ctx.scale(dpr, dpr)
