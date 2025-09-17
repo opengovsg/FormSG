@@ -104,6 +104,9 @@ export const useIndexedDb = <T>({
   storeName,
 }: {
   key: string | null
+  /**
+   * @note Warning: If the initial value is a object reference, it will cause re-renders.
+   */
   initialValue?: T
   storeName: string
 }): readonly [

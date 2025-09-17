@@ -780,14 +780,19 @@ export const PublicFormProvider = ({
     isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
   })
+
+  const memoizedInitialValue = useMemo(
+    () => ({
+      lastUpdated: null,
+      draftResponses: null,
+      fieldDefinitionsChecksum: null,
+    }),
+    [],
+  )
   const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
     useIndexedDb<DraftSubmission>({
       key: formDraftSubmissionKey,
-      initialValue: {
-        lastUpdated: null,
-        draftResponses: null,
-        fieldDefinitionsChecksum: null,
-      },
+      initialValue: memoizedInitialValue,
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
 
