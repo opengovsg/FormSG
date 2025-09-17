@@ -936,7 +936,7 @@ describe('EncryptedResponseCsvGenerator', () => {
         const expectedSubmissionRow = stringify([
           mockRecord.submissionId,
           getFormattedDate(mockRecord.created),
-          `Signature_Captured_mock1.png`,
+          `Signature captured`,
         ])
 
         expect(generator.records).toEqual([

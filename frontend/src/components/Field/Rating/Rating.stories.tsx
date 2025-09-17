@@ -28,7 +28,7 @@ const ResponsiveGroup: StoryFn<RatingProps> = (args) => (
     <Rating
       {...args}
       name={`${args.name}-1`}
-      value={3}
+      defaultValue={3}
       numberOfRatings={10}
       variant="heart"
     />
@@ -36,14 +36,14 @@ const ResponsiveGroup: StoryFn<RatingProps> = (args) => (
       {...args}
       name={`${args.name}-2`}
       numberOfRatings={4}
-      value={1}
+      defaultValue={1}
       variant="star"
     />
     <Rating
       {...args}
       name={`${args.name}-3`}
       variant="number"
-      value={3}
+      defaultValue={3}
       numberOfRatings={8}
     />
   </Stack>
@@ -60,63 +60,63 @@ const TemplateGroup: StoryFn<RatingProps> = (args) => (
     <Rating
       {...args}
       name={`${args.name}-p`}
-      value={-1}
+      defaultValue={-1}
       colorScheme="primary"
     />
     <Text>theme-green</Text>
     <Rating
       {...args}
       name={`${args.name}-tg`}
-      value={2}
+      defaultValue={2}
       colorScheme="theme-green"
     />
     <Text>theme-teal</Text>
     <Rating
       {...args}
       name={`${args.name}-tt`}
-      value={3}
+      defaultValue={3}
       colorScheme="theme-teal"
     />
     <Text>theme-purple</Text>
     <Rating
       {...args}
       name={`${args.name}-tp`}
-      value={4}
+      defaultValue={4}
       colorScheme="theme-purple"
     />
     <Text>theme-grey</Text>
     <Rating
       {...args}
       name={`${args.name}-tgy`}
-      value={5}
+      defaultValue={5}
       colorScheme="theme-grey"
     />
     <Text>theme-yellow</Text>
     <Rating
       {...args}
       name={`${args.name}-ty`}
-      value={4}
+      defaultValue={4}
       colorScheme="theme-yellow"
     />
     <Text>theme-orange</Text>
     <Rating
       {...args}
       name={`${args.name}-to`}
-      value={3}
+      defaultValue={3}
       colorScheme="theme-orange"
     />
     <Text>theme-red</Text>
     <Rating
       {...args}
       name={`${args.name}-tr`}
-      value={2}
+      defaultValue={2}
       colorScheme="theme-red"
     />
     <Text>theme-brown</Text>
     <Rating
       {...args}
       name={`${args.name}-tb`}
-      value={1}
+      defaultValue={1}
       colorScheme="theme-brown"
     />
   </SimpleGrid>
@@ -214,7 +214,7 @@ export const Playground: StoryFn = ({
   } = useController({
     control,
     name,
-    defaultValue: args.value,
+    defaultValue: args.defaultValue,
     rules: {
       required: isRequired ? { value: true, message: 'Required field' } : false,
     },
@@ -251,7 +251,7 @@ Playground.args = {
   label: 'Rating field label',
   isRequired: false,
   isDisabled: false,
-  value: 3,
+  defaultValue: 3,
   numberOfRatings: 10,
   variant: 'number',
 }

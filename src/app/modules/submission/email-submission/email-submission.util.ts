@@ -8,7 +8,7 @@ import {
 } from '../../../../../shared/utils/address'
 import {
   convertToSignatureVectorArray,
-  getSignatureFileName,
+  SIGNATURE_CAPTURED_STRING,
 } from '../../../../../shared/utils/signature'
 import {
   EmailAdminDataField,
@@ -230,13 +230,17 @@ export const getAnswerForAddress = (
 export const getAnswerForSignature = (
   response: ProcessedSignatureResponse,
 ): ResponseFormattedForEmail => {
-  const signatureFileName = getSignatureFileName({ fieldId: response._id })
   let signatureAnswer: string
+
   switch (response.answerArray[0]) {
     case 'draw':
-      signatureAnswer = convertToSignaturePngDataUri(
-        convertToSignatureVectorArray(response.answerArray[1]),
-      )
+      if (response.answerArray[1].length > 0) {
+        signatureAnswer = convertToSignaturePngDataUri(
+          convertToSignatureVectorArray(response.answerArray[1]),
+        )
+      } else {
+        signatureAnswer = ''
+      }
       break
     default:
       signatureAnswer = ''
@@ -249,7 +253,7 @@ export const getAnswerForSignature = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: signatureAnswer,
-    answerTemplate: [signatureFileName],
+    ...(signatureAnswer ? { answerTemplate: [SIGNATURE_CAPTURED_STRING] } : {}),
   }
 }
 

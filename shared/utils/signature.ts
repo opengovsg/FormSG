@@ -11,6 +11,8 @@ export const SIGNATURE_OUTPUT_STROKE_FILL_STYLE = 'black'
 export const BOX_HEIGHT_DEFAULT = 1
 export const BOX_WIDTH_DEFAULT = 1
 
+export const SIGNATURE_CAPTURED_STRING = 'Signature captured'
+
 /**
  *  converts a vectorArray to a string output
  * @param input - signature vector array

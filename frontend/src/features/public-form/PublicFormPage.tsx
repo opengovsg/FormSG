@@ -3,13 +3,13 @@ import { Flex } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 
-import FloatingToolbar from './components/FloatingToolBar'
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
 import FormFields from './components/FormFields'
 import { FormSectionsProvider } from './components/FormFields/FormSectionsContext'
 import { FormFooter } from './components/FormFooter'
 import FormInstructions from './components/FormInstructions'
+import FormIssueFeedback from './components/FormIssueFeedback'
 import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
 import LanguageControl from './components/LanguageControl'
@@ -39,7 +39,7 @@ export const PublicFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
-            <FloatingToolbar />
+            <FormIssueFeedback />
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>

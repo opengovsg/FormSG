@@ -10,8 +10,8 @@ import {
 import { FormFieldValues } from '~templates/Field'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { augmentFieldWithQuestionNo } from '~features/form/utils'
-import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import { augmentWithQuestionNo } from '~features/form/utils'
+import { isFieldEnabledByWorkflow } from '~features/form/utils/augmentWithWorkflowDisabling'
 import { getVisibleFieldIds } from '~features/logic/utils'
 import { isMyInfo } from '~features/myinfo/utils'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
@@ -55,8 +55,7 @@ export const VisibleFormFields = ({
     const visibleFields = formFields.filter((field) =>
       visibleFieldIds.has(field._id),
     )
-    const visibleFieldsWithQuestionNo =
-      augmentFieldWithQuestionNo(visibleFields)
+    const visibleFieldsWithQuestionNo = augmentWithQuestionNo(visibleFields)
     setVisibleFormFields(visibleFieldsWithQuestionNo)
 
     // set the number of visible fields in the context for public forms
@@ -78,10 +77,10 @@ export const VisibleFormFields = ({
           colorTheme={colorTheme}
           field={field}
           disableRequiredValidation={
-            !isFieldEnabledByMrfWorkflow(workflowStep, field)
+            !isFieldEnabledByWorkflow(workflowStep, field)
           }
           isHighContrast={
-            !isFieldEnabledByMrfWorkflow(workflowStep, field) || isMyInfo(field)
+            !isFieldEnabledByWorkflow(workflowStep, field) || isMyInfo(field)
           }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}

@@ -455,7 +455,7 @@ describe('multirespondent-submission.utils', () => {
       expect(result).toEqual([
         {
           question: '[signature] Signature',
-          answer: 'Signature_Captured_1.png',
+          answer: 'Signature captured',
         },
       ])
     })
