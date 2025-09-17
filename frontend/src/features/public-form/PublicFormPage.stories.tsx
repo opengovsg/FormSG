@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
 import { ErrorCode } from '~shared/types'
@@ -921,28 +921,27 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
   step,
 }) => {
   const canvas = within(canvasElement)
-
-  // Wait for the floating save draft button to be available (using aria-label for specificity
+  const screen = within(document.body)
 
   let floatingSaveDraftButton: HTMLElement
 
   await step('Find the floating save draft button', async () => {
-    await waitFor(async () => {
-      const foundFloatingSaveDraftButton =
-        await canvas.getByLabelText('Save a draft')
-      await expect(foundFloatingSaveDraftButton).toBeInTheDocument()
-      if (!foundFloatingSaveDraftButton) {
-        throw new Error('Floating save draft button not found')
-      }
-      floatingSaveDraftButton = foundFloatingSaveDraftButton
-    })
+    await waitFor(
+      async () => {
+        const foundFloatingSaveDraftButton =
+          canvas.getByLabelText('Save a draft')
+        floatingSaveDraftButton = foundFloatingSaveDraftButton
+        expect(floatingSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 
-  step('Click the floating save draft button', async () => {
+  await step('Click the floating save draft button', async () => {
     await userEvent.click(floatingSaveDraftButton)
   })
 
-  step(
+  await step(
     'Assert that the saved draft success toast message appears',
     async () => {
       await waitFor(
@@ -956,33 +955,20 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
     },
   )
 
-  step(
+  await step(
     'Hover over the save draft button to see the save draft tooltip',
     async () => {
       await userEvent.hover(floatingSaveDraftButton)
     },
   )
 
-  step(
+  await step(
     'Assert that a tooltip appears reflecting that draft has been saved',
     async () => {
+      let tooltip: HTMLElement | null = null
       await waitFor(
         () => {
-          const tooltipSelectors = [
-            '[role="tooltip"]',
-            '[data-testid*="tooltip"]',
-            '.chakra-tooltip',
-            '[aria-describedby]',
-            '.tooltip',
-          ]
-
-          const tooltip = tooltipSelectors
-            .map((selector) => document.querySelector(selector))
-            .find(
-              (element) =>
-                element && element.textContent?.includes('Last saved'),
-            )
-
+          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
           expect(tooltip).toBeInTheDocument()
         },
         { timeout: 5000 },
@@ -1011,22 +997,26 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   step,
 }) => {
   const canvas = within(canvasElement)
+  const screen = within(document.body)
 
   let mainSaveDraftButton: HTMLElement
 
   await step('Find the main save draft button', async () => {
-    await waitFor(async () => {
-      const foundMainSaveDraftButton = await canvas
-        .getAllByRole('button', {
-          name: 'Save a draft',
-        })
-        .find((button) => button.textContent?.includes('Save a draft'))
-      await expect(foundMainSaveDraftButton).toBeInTheDocument()
-      if (!foundMainSaveDraftButton) {
-        throw new Error('Main save draft button not found')
-      }
-      mainSaveDraftButton = foundMainSaveDraftButton
-    })
+    await waitFor(
+      () => {
+        const foundMainSaveDraftButton = canvas
+          .getAllByRole('button', {
+            name: 'Save a draft',
+          })
+          .find((button) => button.textContent?.includes('Save a draft'))
+        if (!foundMainSaveDraftButton) {
+          throw new Error('Main save draft button not found')
+        }
+        mainSaveDraftButton = foundMainSaveDraftButton
+        expect(foundMainSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 
   await step('Click the main save draft button', async () => {
@@ -1037,10 +1027,8 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     'Assert that the saved draft success toast message appears',
     async () => {
       await waitFor(
-        async () => {
-          await expect(document.body).toHaveTextContent(
-            'Your draft has been saved.',
-          )
+        () => {
+          expect(document.body).toHaveTextContent('Your draft has been saved.')
         },
         { timeout: 3000 },
       )
@@ -1058,22 +1046,10 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     'Assert that a tooltip appears reflecting that draft has been saved',
     async () => {
       await waitFor(
-        () => {
-          const tooltipSelectors = [
-            '[role="tooltip"]',
-            '[data-testid*="tooltip"]',
-            '.chakra-tooltip',
-            '[aria-describedby]',
-            '.tooltip',
-          ]
-
-          const tooltip = tooltipSelectors
-            .map((selector) => document.querySelector(selector))
-            .find(
-              (element) =>
-                element && element.textContent?.includes('Last saved'),
-            )
-
+        async () => {
+          const tooltip = await screen.getByRole('tooltip', {
+            name: /Last saved/i,
+          })
           expect(tooltip).toBeInTheDocument()
         },
         { timeout: 5000 },
