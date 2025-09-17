@@ -34,11 +34,6 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
    */
   onChange: (val: string | undefined) => void
   /**
-   * Optional. Callback that will be called when the phone number input field is
-   * blurred.
-   */
-  onBlur?: () => void
-  /**
    * The current value of the controlled component.
    */
   value: string | undefined
@@ -75,8 +70,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       defaultCountry = 'SG',
       allowInternational = true,
       onChange,
-      onBlur,
-      value,
+      value = '',
       examples = defaultExamples,
       examplePlaceholder = 'polite',
       isHighContrast,
@@ -88,8 +82,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       defaultCountry,
       allowInternational,
       onChange,
-      onBlur,
-      defaultValue: value ?? '',
+      value,
       examples,
       examplePlaceholder,
       placeholder: props.placeholder,

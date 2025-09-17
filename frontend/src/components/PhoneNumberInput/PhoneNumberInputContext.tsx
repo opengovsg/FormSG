@@ -4,21 +4,19 @@ import {
   MutableRefObject,
   useCallback,
   useContext,
-  useLayoutEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react'
 import {
   AsYouType,
   CountryCode,
-  getExampleNumber,
+  getCountryCallingCode,
   NationalNumber,
 } from 'libphonenumber-js'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
 
 type PhoneNumberInputContextProps = {
-  defaultValue: string
+  value: string
   defaultCountry: CountryCode
   /**
    * Set the input's placeholder to an example number for the selected country,
@@ -49,11 +47,6 @@ type PhoneNumberInputContextProps = {
    * changes.
    */
   onChange: (val: string | undefined) => void
-  /**
-   * Optional. Callback that will be called when the phone number input field is
-   * blurred.
-   */
-  onBlur?: () => void
 }
 
 type PhoneNumberInputContextReturn = {
@@ -61,7 +54,6 @@ type PhoneNumberInputContextReturn = {
   country: CountryCode
   innerInputRef: MutableRefObject<HTMLInputElement | null>
   handleInputChange: ChangeEventHandler<HTMLInputElement>
-  handleInputBlur: () => void
   handleCountryChange: (newCountry: CountryCode) => void
   inputPlaceholder: string | undefined
   isDisabled?: boolean
@@ -107,170 +99,65 @@ export const usePhoneNumberInput = (): PhoneNumberInputContextReturn => {
 }
 
 const useProvidePhoneNumberInput = ({
-  defaultValue,
+  value,
   defaultCountry,
   examplePlaceholder,
   examples = defaultExamples,
   allowInternational,
   onChange,
-  onBlur,
   ...props
 }: PhoneNumberInputContextProps): PhoneNumberInputContextReturn => {
-  // Internal states of the component.
-  const [inputValue, setInputValue] = useState(defaultValue)
-  const [country, setCountry] = useState(defaultCountry)
-
   // Refs of the phone number input so focus can be passed to the input when
   // the selected country changes.
   const innerInputRef = useRef<HTMLInputElement | null>(null)
 
-  const formatter = useMemo(() => new AsYouType(country), [country])
+  const currentNumber = useMemo(() => {
+    const asYouType = new AsYouType()
+    asYouType.reset()
+    asYouType.input(value)
+    const country = asYouType.getCountry()
+    const inputValue = asYouType.getNationalNumber()
+    return {
+      country,
+      inputValue,
+    }
+  }, [value])
+
+  const { inputValue = '', country = defaultCountry } = currentNumber
 
   const inputPlaceholder = useMemo(() => {
     if (examplePlaceholder === 'off') {
       return props.placeholder
     }
-
-    const exampleNumber = getExampleNumber(country, examples)?.formatNational()
-
-    if (examplePlaceholder === 'aggressive') {
-      return exampleNumber ?? props.placeholder
-    }
-
-    return props.placeholder ?? exampleNumber
-  }, [country, examplePlaceholder, examples, props.placeholder])
-
-  const onInputChange = useCallback(
-    (newValue: string) => {
-      if (inputValue === newValue) return
-
-      // The as-you-type formatter only works with append-only inputs.
-      // Changes other than append require a reset.
-      const isAppend =
-        newValue.length > inputValue.length &&
-        newValue.slice(0, inputValue.length) === inputValue
-
-      if (isAppend) {
-        const appended = newValue.slice(inputValue.length)
-        setInputValue(formatter.input(appended))
-
-        if (allowInternational) {
-          const number = formatter.getNumber()
-          if (number?.country && number.country !== country) {
-            setCountry(number.country)
-          }
-        }
-      } else {
-        // Reset the formatter, but do not reformat.
-        // Doing so now will cause the user to lose their cursor position
-        // Wait until blur or append to reformat.
-        formatter.reset()
-        formatter.input(newValue)
-        setInputValue(newValue)
-      }
-
-      const e164 = formatter.getNumber()?.number ?? ''
-      onChange(e164)
-
-      // On a similar vein, do not set country even if the country has changed
-      // so that the cursor position does not get lost.
-      // Change country on blur instead.
-    },
-    [country, formatter, inputValue, allowInternational, onChange],
-  )
+  }, [examplePlaceholder, props.placeholder])
 
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      let newValue = e.target.value
-      if (!allowInternational) {
-        // Remove all non-numeric, non-space characters so country cannot be
-        // changed.
-        newValue = newValue.replace(/[^\d ]/g, '')
-      }
-      return onInputChange(newValue)
+      const countryToUse = allowInternational ? country : defaultCountry
+      const newValue = e.target.value
+      const nextValue = `+${getCountryCallingCode(countryToUse)}${newValue}`
+      onChange(nextValue)
     },
-    [allowInternational, onInputChange],
+    [allowInternational, onChange, country, defaultCountry],
   )
 
   const handleCountryChange = useCallback(
     (newCountry: CountryCode) => {
-      if (country === newCountry) return
-      onInputChange('')
-      setCountry(newCountry)
+      if (!allowInternational) {
+        return
+      }
+      const nextValue = `+${getCountryCallingCode(newCountry)}${inputValue}`
+      onChange(nextValue)
       innerInputRef?.current?.focus()
     },
-    [country, onInputChange],
+    [inputValue, onChange],
   )
-
-  const handleFormatInput = useCallback(() => {
-    const number = formatter.getNumber()
-    const e164 = number?.number ?? ''
-
-    // Trigger on change again in case formatted number changes.
-    // This can happen in the following scenario:
-    // 1. `onInputChange` gets called when user types for example "65aabvcd123"
-    // 2. `formatter.getNumber().number` will transform that into "65" and cut out the remaining characters since the remaining string is not a valid number
-    // 3. Will need to call onChange on this new number.
-    onChange(e164)
-    // Check and update possibility
-    const possible = number?.isPossible()
-
-    if (number && possible) {
-      // Reformat the phone number as international if international numbers
-      // are enabled.
-      formatter.reset()
-      const nextValue = allowInternational
-        ? number.number
-        : number.nationalNumber
-      setInputValue(formatter.input(nextValue as string))
-      // Update the country if the parsed number belongs to a different
-      // country.
-      if (allowInternational && number?.country && number.country !== country) {
-        setCountry(number.country)
-      }
-    } else {
-      // Format the phone number
-      setInputValue(formatter.input(''))
-    }
-  }, [country, formatter, allowInternational, onChange])
-
-  const handleInputBlur = useCallback(() => {
-    onBlur?.()
-    handleFormatInput()
-  }, [handleFormatInput, onBlur])
-
-  // useLayoutEffect used instead of useEffect so this only runs after
-  // the render cycle has been completed.
-  // This allows the cursor position to be updated after formatting the input
-  // without "jumping" to the end of the input string and disrupting the user.
-  useLayoutEffect(() => {
-    const e164 = formatter.getNumber()?.number ?? ''
-
-    if (e164 !== defaultValue) {
-      // Override the phone number if the field has a number and its e164
-      // representation does not match the prop value.
-      formatter.reset()
-      if (defaultValue) {
-        formatter.input(defaultValue)
-      }
-      handleFormatInput()
-    }
-  }, [
-    defaultValue,
-    formatter,
-    inputValue,
-    onChange,
-    country,
-    allowInternational,
-    handleFormatInput,
-  ])
 
   return {
     inputValue,
     country,
     innerInputRef,
     handleInputChange,
-    handleInputBlur,
     handleCountryChange,
     inputPlaceholder,
   }
