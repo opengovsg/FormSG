@@ -11,6 +11,7 @@ import {
   AsYouType,
   CountryCode,
   getCountryCallingCode,
+  getExampleNumber,
   NationalNumber,
 } from 'libphonenumber-js'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
@@ -129,7 +130,12 @@ const useProvidePhoneNumberInput = ({
     if (examplePlaceholder === 'off') {
       return props.placeholder
     }
-  }, [examplePlaceholder, props.placeholder])
+    const exampleNumber = getExampleNumber(country, examples)?.formatNational()
+    if (examplePlaceholder === 'aggressive') {
+      return exampleNumber ?? props.placeholder
+    }
+    return props.placeholder ?? exampleNumber
+  }, [country, examplePlaceholder, examples, props.placeholder])
 
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
