@@ -141,7 +141,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
-    const vectorArray: SignatureVectorArray = row.answerArray
+    const vectorArray: SignatureVectorArray = row.answerArray && row.answerArray[1]
       ? convertToSignatureVectorArray(row.answerArray[1] as string)
       : []
 
