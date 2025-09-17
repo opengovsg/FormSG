@@ -30,6 +30,21 @@ export interface PublicForm {
       proceedToPay: string
       submitNow: string
     }
+    saveDraft: {
+      toast: {
+        success: string
+        restoredAllFields: string
+        restoredOnlyUnchangedFields: string
+        previewNoDraftSaved: string
+      }
+      tooltip: {
+        default: string
+        lastSaved: string
+      }
+      button: {
+        label: string
+      }
+    }
     table: Table
     fields: Fields
     feedbackBlock: {

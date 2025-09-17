@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   Flex,
   forwardRef,
@@ -36,9 +36,9 @@ export interface RatingProps {
    */
   wrapComponentsPerRow?: number
   /**
-   * The value of the rating to be `checked` initially.
+   * The controlled value of the rating.
    */
-  defaultValue?: number
+  value: number
 
   /**
    * Variant of rating field to render
@@ -75,7 +75,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
   (
     {
       colorScheme = 'primary',
-      defaultValue,
+      value,
       name,
       numberOfRatings,
       onChange,
@@ -90,28 +90,18 @@ export const Rating = forwardRef<RatingProps, 'input'>(
     ref,
   ) => {
     /**
-     * Process given defaultValue and prevents invalid numbers from being used.
+     * Process given value and prevents invalid numbers from being used.
      * @param val the number to process
      * @returns given value if value is in range [1, numberOfRatings], undefined otherwise.
      */
-    const processDefaultValue = (val: number | undefined) => {
+    const processValue = (val: number | undefined) => {
       if (!val || val > numberOfRatings || val < 1) {
         return undefined
       }
       return val
     }
 
-    const [currentValue, setCurrentValue] = useState<number | undefined>(
-      processDefaultValue(defaultValue),
-    )
-
-    const handleRatingChange = useCallback(
-      (newRating?: number) => {
-        setCurrentValue(newRating)
-        onChange?.(newRating)
-      },
-      [onChange],
-    )
+    const currentValue = processValue(value)
 
     /**
      * Used to check whether a new row should be created when rendering rating
@@ -179,7 +169,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                     variant={variant}
                     colorScheme={colorScheme}
                     value={value}
-                    onChange={handleRatingChange}
+                    onChange={onChange}
                     selectedValue={currentValue}
                     isDisabled={isDisabled}
                     key={value}

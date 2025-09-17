@@ -174,6 +174,7 @@ export interface FormBase {
   startPage: FormStartPage
   endPage: FormEndPage
 
+  isSaveDraftEnabled: boolean
   hasCaptcha: boolean
   hasIssueNotification: boolean
   authType: FormAuthType
