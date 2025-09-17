@@ -197,7 +197,6 @@ export const SignatureField = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
   }
-  console.log(`signature value`, `${JSON.stringify(getValues(schema._id))}`)
   return (
     <Box>
       <FormLabel
