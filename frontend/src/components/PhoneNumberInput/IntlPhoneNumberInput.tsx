@@ -40,7 +40,6 @@ export const IntlPhoneNumberInput = forwardRef<
     innerInputRef,
     inputPlaceholder,
     handleInputChange,
-    handleInputBlur,
   } = usePhoneNumberInput()
 
   const styles = useMultiStyleConfig('PhoneNumberInput', props)
@@ -56,7 +55,6 @@ export const IntlPhoneNumberInput = forwardRef<
         isHighContrast={props.variant === 'highContrast'}
       />
       <Input
-        onBlur={handleInputBlur}
         ref={inputRef}
         value={inputValue}
         onChange={handleInputChange}

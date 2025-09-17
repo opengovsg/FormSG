@@ -20,7 +20,6 @@ export const SingleCountryPhoneNumberInput = forwardRef<
     inputValue,
     inputPlaceholder,
     handleInputChange,
-    handleInputBlur,
     country,
   } = usePhoneNumberInput()
 
@@ -31,7 +30,6 @@ export const SingleCountryPhoneNumberInput = forwardRef<
       <Input
         ref={ref}
         onChange={handleInputChange}
-        onBlur={handleInputBlur}
         value={inputValue}
         placeholder={inputPlaceholder}
         preventDefaultOnEnter
