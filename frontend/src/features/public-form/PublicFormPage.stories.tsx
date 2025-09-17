@@ -173,7 +173,7 @@ export const WithPrefilledNormalFields = Template.bind({})
 WithPrefilledNormalFields.parameters = {
   msw: [
     getPublicFormResponse({
-      delay: 0,
+      delay: 100,
       overrides: {
         form: {
           form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
@@ -193,7 +193,7 @@ export const WithPrefilledLockedFields = Template.bind({})
 WithPrefilledLockedFields.parameters = {
   msw: [
     getPublicFormResponse({
-      delay: 0,
+      delay: 100,
       overrides: {
         form: {
           form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
@@ -213,7 +213,7 @@ export const WithPrefilledLockedAndNormalFields = Template.bind({})
 WithPrefilledLockedAndNormalFields.parameters = {
   msw: [
     getPublicFormResponse({
-      delay: 0,
+      delay: 100,
       overrides: {
         form: {
           form_fields: [
