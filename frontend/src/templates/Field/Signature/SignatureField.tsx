@@ -55,7 +55,6 @@ export const SignatureField = ({
   )
 
   useEffect(() => {
-    
     formContext.register(schema._id, signatureValidationRules)
   }, [formContext, schema._id, signatureValidationRules])
 
@@ -201,7 +200,11 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, {type: defaultType, value: []}, { shouldValidate: true })
+    setValue(
+      `${schema._id}`,
+      { type: defaultType, value: [] },
+      { shouldValidate: true },
+    )
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {

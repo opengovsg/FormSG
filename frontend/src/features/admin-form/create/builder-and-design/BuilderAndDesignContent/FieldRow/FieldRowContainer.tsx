@@ -170,7 +170,7 @@ const FieldRowContainer = ({
     if (field.fieldType === BasicField.Signature) {
       const defaultType = 'draw'
       return {
-        [field._id]: {type: defaultType, value: []}
+        [field._id]: { type: defaultType, value: [] },
       }
     }
 

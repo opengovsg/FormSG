@@ -67,6 +67,7 @@ import {
   VerifiableFieldValues,
 } from '~templates/Field/types'
 
+import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import {
@@ -76,7 +77,6 @@ import {
   loadDateFromNormalizedDate,
 } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
-import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
 
 type EmailValidationErrorMessages = Fields['email']['validation']
 

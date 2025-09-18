@@ -316,7 +316,7 @@ const getInitialFormValues = ({
             createTableRow(field),
           )
         } else if (field.fieldType === BasicField.Signature) {
-          acc[field._id] = {type: 'draw', value: []}
+          acc[field._id] = { type: 'draw', value: [] }
         } else {
           // Set a default value for React Hook form to use as initial SSOT for comparing if field is dirty. This is used for Save Draft.
           acc[field._id] = ''
