@@ -58,8 +58,10 @@ export const SignatureField = ({
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
-  
-  const watchedSignature = useWatch({ name: schema._id }) as { value: SignatureVectorArray }
+
+  const watchedSignature = useWatch({ name: schema._id }) as {
+    value: SignatureVectorArray
+  }
   const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
 
   // Sync when form value changes
@@ -68,7 +70,6 @@ export const SignatureField = ({
       setPfStrokes(watchedSignature.value)
     }
   }, [watchedSignature])
-
 
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
