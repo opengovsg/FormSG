@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useFormContext, useFormState } from 'react-hook-form'
+import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -46,6 +46,9 @@ export const SignatureField = ({
 
   const signatureErrors = errors?.[schema._id]
 
+  // Future implementations will expand on signature types (text, cryptographic)
+  const defaultType = 'draw'
+
   const signatureValidationRules = useMemo(
     () => createSignatureValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
@@ -59,10 +62,17 @@ export const SignatureField = ({
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(() => {
-    const preExistingSignature = getValues(`${schema._id}`)
-    return preExistingSignature?.value ?? []
-  })
+  const watchedSignature = useWatch({ name: schema._id }) as {
+    value: SignatureVectorArray
+  }
+  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
+
+  // Sync when form value changes
+  useEffect(() => {
+    if (watchedSignature?.value) {
+      setPfStrokes(watchedSignature.value)
+    }
+  }, [watchedSignature])
 
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
@@ -125,7 +135,7 @@ export const SignatureField = ({
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [drawAllStrokes])
-
+  console.log(`signature value`, `${JSON.stringify(getValues(schema._id))}`)
   // draw signature
   useEffect(() => {
     const canvas = pfCanvasRef.current
@@ -169,7 +179,7 @@ export const SignatureField = ({
       setIsDrawing(false)
       setValue(
         `${schema._id}`,
-        { type: 'draw', value: pfStrokes },
+        { type: defaultType, value: pfStrokes },
         { shouldValidate: true },
       )
     }
@@ -190,7 +200,11 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, null, { shouldValidate: true })
+    setValue(
+      `${schema._id}`,
+      { type: defaultType, value: [] },
+      { shouldValidate: true },
+    )
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
