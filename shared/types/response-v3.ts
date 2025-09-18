@@ -142,5 +142,5 @@ export type AddressCompoundFieldResponseV3 = {
 
 export type SignatureFieldResponseV3 = {
   type: 'draw'
-  value: SignatureVectorArray
+  value: SignatureVectorArray | null
 }

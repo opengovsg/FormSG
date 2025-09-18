@@ -214,7 +214,7 @@ const transformToSignatureOutput = (
   input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
   let answerArray: string[] = []
-  if (input && input.value !== undefined && input.value !== null) {
+  if (input && input.value !== null) {
     answerArray = [input.type, convertToSignatureStringOutput(input.value)]
   }
   return {
