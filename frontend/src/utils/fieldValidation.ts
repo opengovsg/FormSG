@@ -76,6 +76,7 @@ import {
   loadDateFromNormalizedDate,
 } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
+import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
 
 type EmailValidationErrorMessages = Fields['email']['validation']
 
@@ -948,7 +949,6 @@ export const createSignatureValidationRules: ValidationRuleFn<
     validate: {
       required: (val?: SignatureFieldValues) => {
         if (disableRequiredValidation || !schema.required) return true
-
         const strokes = val?.value
         const hasValidStroke = Array.isArray(strokes) && strokes.length > 0
         return hasValidStroke ? true : REQUIRED_ERROR
