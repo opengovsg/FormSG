@@ -63,4 +63,4 @@ production:
       image_repositories: [] 
       disable_rollback: false # Rolls back to previous version if the deployment fails 
       confirm_changeset: true
-      parameter_overrides: Environment=production
+      parameter_overrides: Environment=production ProvisionedConcurrency=5

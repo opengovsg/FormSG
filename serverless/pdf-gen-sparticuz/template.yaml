@@ -7,6 +7,10 @@ Parameters:
     Type: String
     Default: dev
     Description: Environment name (eg, production, staging, stg-alt)
+  ProvisionedConcurrency:
+    Type: Number
+    Default: 0
+    Description: Number of provisioned concurrency units for the Lambda function
 
 Globals:
   Function:
@@ -24,3 +28,6 @@ Resources:
       Handler: index.handler
       Architectures:
         - x86_64
+      AutoPublishAlias: provisioned
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrencyUnits: !Ref ProvisionedConcurrency
