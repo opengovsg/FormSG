@@ -52,6 +52,7 @@ export const SignatureField = ({
   )
 
   useEffect(() => {
+    
     formContext.register(schema._id, signatureValidationRules)
   }, [formContext, schema._id, signatureValidationRules])
 
