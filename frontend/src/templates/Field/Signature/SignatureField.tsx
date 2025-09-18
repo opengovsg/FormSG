@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useFormContext, useFormState } from 'react-hook-form'
+import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -59,10 +59,17 @@ export const SignatureField = ({
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(() => {
-    const preExistingSignature = getValues(`${schema._id}`)
-    return preExistingSignature?.value ?? []
-  })
+  const watchedSignature = useWatch({ name: schema._id }) as {
+    value: SignatureVectorArray
+  }
+  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
+
+  // Sync when form value changes
+  useEffect(() => {
+    if (watchedSignature?.value) {
+      setPfStrokes(watchedSignature.value)
+    }
+  }, [watchedSignature])
 
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
