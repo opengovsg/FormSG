@@ -1,12 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
 import { ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
-import * as UserService from '../user/user.service'
 
 import * as PaymentProofService from './payment-proof.service'
 import * as PaymentService from './payments.service'
@@ -40,45 +38,11 @@ export const downloadPaymentInvoice: ControllerHandler<{
     PaymentService.findPaymentById(paymentId),
     FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
   ])
-    .map(async ([payment, populatedForm]) => {
-      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-      await UserService.getPopulatedUserById(populatedForm.admin).map(
-        async (admin) => {
-          await req.growthbook?.setAttributes({
-            ...req.growthbook?.getAttributes(),
-            formId,
-            adminEmail: admin.email,
-            adminAgency: admin.agency.shortName,
-            isPaymentInvoice: true,
-          })
-        },
-      )
-      const isUseLambdaOutput =
-        req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-      logger.info({
-        message: 'Growthbook flag for lambda pdf generation',
-        meta: {
-          ...logMeta,
-          isUseLambdaOutput,
-          growthbookAttributes: req.growthbook?.getAttributes(),
-          lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
-            featureFlags.lambdaPdfGeneration,
-            undefined,
-          ),
-        },
-      })
-
-      return {
-        payment,
-        populatedForm,
-        isUseLambdaOutput,
-      }
-    })
-    .andThen(({ payment, populatedForm, isUseLambdaOutput }) => {
+    .andThen(([payment, populatedForm]) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
-          action: 'downloadPaymentInvoice',
+          ...logMeta,
           payment,
         },
       })
@@ -86,7 +50,6 @@ export const downloadPaymentInvoice: ControllerHandler<{
       return PaymentProofService.generatePaymentInvoiceUrl(
         payment,
         populatedForm,
-        isUseLambdaOutput,
       )
     })
     .map((pdfUrl) => {

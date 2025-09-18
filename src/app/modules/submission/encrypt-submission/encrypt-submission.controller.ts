@@ -846,7 +846,6 @@ const _createSubmission = async ({
   return await performEncryptPostSubmissionActions({
     submission,
     responses,
-    growthbook: req.growthbook,
     emailData,
     attachments: emailAttachments,
     respondentEmails,

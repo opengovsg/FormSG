@@ -1,55 +1,14 @@
-import { err, ok, ResultAsync } from 'neverthrow'
-import puppeteer from 'puppeteer-core'
+import { err, errAsync, ok, ResultAsync } from 'neverthrow'
 
-import config, { aws as AwsConfig } from '../config/config'
+import { aws as AwsConfig } from '../config/config'
 import { createLoggerWithLabel } from '../config/logger'
 import {
   PdfGenerationLambdaFailureError,
   PdfGenerationLambdaInvocationError,
   PdfGenerationLambdaJsonParseError,
 } from '../modules/core/core.errors'
-import {
-  startStopwatch,
-  submitPdfGenerationLatencyMetric,
-} from '../modules/datadog/datadog.utils'
 
 const logger = createLoggerWithLabel(module)
-
-// TODO [PDF-LAMBDA-GENERATION]: Remove this local invocation function and associated chromium deps in
-// dev and prod Dockerfiles once pdf generation rollout is complete.
-const generatePdfFromHtmlLocally = async (
-  summaryHtml: string,
-): Promise<Buffer> => {
-  const browser = await puppeteer.launch({
-    args: [
-      '--no-sandbox',
-      '--disable-gpu', // See https://github.com/puppeteer/puppeteer/issues/11640#issuecomment-2361858540
-    ],
-    headless: true,
-    executablePath: config.chromiumBin,
-  })
-  const page = await browser.newPage()
-  await page.setContent(summaryHtml, {
-    waitUntil: 'networkidle0',
-  })
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: {
-      top: '20px',
-      bottom: '40px',
-    },
-  })
-  await browser.close()
-
-  logger.info({
-    message: 'Successfully generated pdf from html using local',
-    meta: {
-      action: 'generatePdfFromHtmlLocally',
-    },
-  })
-  return Buffer.from(pdfBuffer)
-}
 
 const generatePdfFromHtmlLambda = (
   summaryHtml: string,
@@ -67,6 +26,14 @@ const generatePdfFromHtmlLambda = (
     message: 'Invoking pdf generator lambda',
     meta: logMeta,
   })
+
+  if (!AwsConfig.pdfGeneratorLambdaFunctionName) {
+    return errAsync(
+      new PdfGenerationLambdaInvocationError(
+        'Pdf generator lambda function name is not configured',
+      ),
+    )
+  }
 
   return ResultAsync.fromPromise(
     AwsConfig.pdfGeneratorLambda.invoke({
@@ -134,11 +101,9 @@ const generatePdfFromHtmlLambda = (
  */
 export const generatePdfFromHtml = async (
   summaryHtml: string,
-  isUseLambdaOutput: boolean,
 ): Promise<Buffer> => {
   const logMeta = {
     action: 'generatePdfFromHtml',
-    isUseLambdaOutput,
   }
 
   logger.info({
@@ -146,73 +111,24 @@ export const generatePdfFromHtml = async (
     meta: logMeta,
   })
 
-  const localStopwatch = startStopwatch()
-  const localResult = generatePdfFromHtmlLocally(summaryHtml).then((result) => {
-    const latencyMs = localStopwatch.stop()
-    logger.info({
-      message: 'Successfully generated pdf from html using local',
-      meta: { ...logMeta, latencyMs },
-    })
-    submitPdfGenerationLatencyMetric({
-      latencyMs,
-      isLocal: true,
-    })
-    return result
-  })
+  const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml)
 
-  const isPdfGenerationLambdaConfigured =
-    !!AwsConfig.pdfGeneratorLambdaFunctionName
-  if (!isPdfGenerationLambdaConfigured) {
-    logger.info({
-      message:
-        'Pdf generation lambda is not configured - using result from local pdf generation',
+  const lambdaResult = await lambdaResultAsync
+  if (lambdaResult.isErr()) {
+    logger.error({
+      message: 'Error generating pdf from html using lambda',
       meta: logMeta,
+      error: lambdaResult.error,
     })
-    return localResult
-  }
-
-  const lambdaStopwatch = startStopwatch()
-  const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(
-    (result) => {
-      const latencyMs = lambdaStopwatch.stop()
-      logger.info({
-        message: 'Successfully generated pdf from html using lambda',
-        meta: { ...logMeta, latencyMs },
-      })
-      submitPdfGenerationLatencyMetric({
-        latencyMs,
-        isLocal: false,
-      })
-      return result
-    },
-  )
-
-  if (isUseLambdaOutput) {
-    const lambdaResult = await lambdaResultAsync
-    if (lambdaResult.isErr()) {
-      logger.error({
-        message: 'Error generating pdf from html using lambda',
-        meta: logMeta,
-        error: lambdaResult.error,
-      })
-      throw lambdaResult.error
-    }
-
-    logger.info({
-      message:
-        'Successfully generated pdf from html - using result from lambda pdf generation',
-      meta: logMeta,
-    })
-    return lambdaResult.value
+    throw lambdaResult.error
   }
 
   logger.info({
-    message:
-      'Successfully generated pdf from html - using result from local pdf generation',
-    meta: logMeta,
+    message: 'Successfully generated pdf from html using lambda',
+    meta: { ...logMeta },
   })
-  return await localResult
+
+  return lambdaResult.value
 }
 
-export const _generatePdfFromHtmlLocallyForTest = generatePdfFromHtmlLocally
 export const _generatePdfFromHtmlLambdaForTest = generatePdfFromHtmlLambda

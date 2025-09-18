@@ -2217,7 +2217,6 @@ export const submitEmailPreview: ControllerHandler<
       parsedResponses.getAllResponses(),
       form.form_fields,
     ),
-    isUseLambdaOutput: false, // TODO: [PDF-LAMBDA-GENERATION]: To remove once pdf lambda rollout is complete. Currently set to false since v2 api is not being used.
   }).mapErr((error) => {
     logger.error({
       message: 'Error while sending email confirmations',
