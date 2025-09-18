@@ -161,7 +161,7 @@ export type AddressCompoundFieldValues = {
 
 export type SignatureFieldValues = {
   type: 'draw'
-  value: SignatureVectorArray | null
+  value: SignatureVectorArray
 }
 
 // Various schemas used by different fields
