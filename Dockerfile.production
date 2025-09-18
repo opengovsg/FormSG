@@ -65,16 +65,7 @@ COPY --from=build /build/dist /opt/formsg/dist
 RUN mv /opt/formsg/dist/backend/src /opt/formsg/
 RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 
-# Install chromium from official docs
-# https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
-# Note that each alpine version supports a specific version of chromium
-# Note that chromium and puppeteer-core are released together and it is the only version
-# that is guaranteed to work. Upgrades must be done in lockstep.
-# https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
-
 RUN apk add --no-cache \
-    # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.19&repo=&arch=&maintainer=
-    chromium=136.0.7103.113-r0 \
     nss \
     freetype \
     freetype-dev \
@@ -85,15 +76,6 @@ RUN apk add --no-cache \
     cairo \
     pango \
     librsvg
-
-# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# This package is needed to render Chinese characters in autoreply PDFs
-RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/edge/community
-
-ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 
 # Run as non-privileged user
 RUN addgroup -S formsguser && adduser -S -g formsguser formsguser
