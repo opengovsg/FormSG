@@ -46,6 +46,9 @@ export const SignatureField = ({
 
   const signatureErrors = errors?.[schema._id]
 
+  // Future implementations will expand on signature types (text, cryptographic)
+  const defaultType = 'draw'
+
   const signatureValidationRules = useMemo(
     () => createSignatureValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
@@ -132,7 +135,7 @@ export const SignatureField = ({
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [drawAllStrokes])
-
+  console.log(`signature value`, `${JSON.stringify(getValues(schema._id))}`)
   // draw signature
   useEffect(() => {
     const canvas = pfCanvasRef.current
@@ -176,7 +179,7 @@ export const SignatureField = ({
       setIsDrawing(false)
       setValue(
         `${schema._id}`,
-        { type: 'draw', value: pfStrokes },
+        { type: defaultType, value: pfStrokes },
         { shouldValidate: true },
       )
     }
@@ -197,7 +200,11 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, null, { shouldValidate: true })
+    setValue(
+      `${schema._id}`,
+      { type: defaultType, value: [] },
+      { shouldValidate: true },
+    )
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
