@@ -122,7 +122,7 @@ export const processDecryptedContentV3 = async (
   form_fields: FormFieldDto[],
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
-  const { responses } = decrypted
+  const { responses, verified } = decrypted
 
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
@@ -140,7 +140,11 @@ export const processDecryptedContentV3 = async (
       }
       return transformInputsToOutputs(ff, response.answer)
     })
-    .filter((output): output is FieldResponse => output !== null)
+    .filter(
+      (output): output is FieldResponse => output !== null,
+    ) as VerifiedFormField[]
 
-  return displayedContent as VerifiedFormField[]
+  return verified
+    ? displayedContent.concat(convertToResponseArray(verified))
+    : displayedContent
 }
