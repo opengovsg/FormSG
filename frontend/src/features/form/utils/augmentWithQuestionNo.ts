@@ -8,7 +8,7 @@ type AugmentedFieldAccumulator = {
   questionNumber: number
 }
 
-export const augmentFieldWithQuestionNo = (
+export const augmentWithQuestionNo = (
   formFields: FormFieldDto[],
 ): FormFieldWithQuestionNo[] => {
   const { fields } = formFields.reduce<AugmentedFieldAccumulator>(

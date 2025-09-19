@@ -2,7 +2,7 @@ import { FormFieldDto, FormWorkflowStep } from '~shared/types'
 
 import { NON_RESPONSE_FIELD_SET } from '../constants'
 
-export const isFieldEnabledByMrfWorkflow = (
+export const isFieldEnabledByWorkflow = (
   workflowStep: FormWorkflowStep | undefined,
   field: FormFieldDto,
 ) => {
@@ -17,16 +17,10 @@ export const isFieldEnabledByMrfWorkflow = (
   return workflowStep.edit.includes(field._id)
 }
 
-/**
- * Disables fields based on if the field is editable in the current workflow step
- * @param workflowStep The current workflow step
- * @param field The field to check if it is editable in the current workflow step
- * @returns The field with the disabled property set based on the workflow step and its previous disabled state
- */
-export const augmentFieldWithMrfWorkflowDisabling = (
+export const augmentWithWorkflowDisabling = (
   workflowStep: FormWorkflowStep | undefined,
   field: FormFieldDto,
 ) => ({
   ...field,
-  disabled: field.disabled || !isFieldEnabledByMrfWorkflow(workflowStep, field),
+  disabled: field.disabled || !isFieldEnabledByWorkflow(workflowStep, field),
 })

@@ -9,9 +9,10 @@ import { AppFooter } from '~/app/AppFooter'
 import { FCC } from '~typings/react'
 
 import BrandLogoSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
-import { LANDING_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 

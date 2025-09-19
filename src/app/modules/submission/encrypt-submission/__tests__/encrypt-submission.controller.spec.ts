@@ -1515,7 +1515,7 @@ describe('encrypt-submission.controller', () => {
             }),
             expect.objectContaining({
               question: '[signature] Signature Question',
-              answer: `Signature captured`,
+              answer: `Signature_Captured_${signatureFieldId}.png`,
             }),
           ]),
         }),
