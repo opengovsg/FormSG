@@ -271,6 +271,7 @@ const createResponsesV3 = (
       case BasicField.Uen:
       case BasicField.Date:
       case BasicField.CountryRegion:
+      case BasicField.Signature:
       case BasicField.YesNo: {
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
@@ -398,19 +399,6 @@ const createResponsesV3 = (
       case BasicField.Section:
       case BasicField.Image:
       case BasicField.Statement: {
-        break
-      }
-      case BasicField.Signature: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        // since default value is {type: '', value: []}, empty array = no input
-        if (input && input?.value.length > 0) {
-          returnedInputs[ff._id] = {
-            fieldType: ff.fieldType,
-            answer: input,
-          } as FieldResponseV3
-        }
         break
       }
       default: {

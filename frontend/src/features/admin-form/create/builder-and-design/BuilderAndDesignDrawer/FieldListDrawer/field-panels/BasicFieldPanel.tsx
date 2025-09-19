@@ -10,11 +10,13 @@ import {
   BASIC_FIELDS_DATES_AND_NUMBER,
   BASIC_FIELDS_FREE_TEXT,
   BASIC_FIELDS_OPTIONS,
+  BASIC_FIELDS_ORDERED,
   BASIC_FIELDS_OTHERS,
   BASIC_FIELDS_PERSONAL,
   CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID,
   CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID,
   CREATE_FIELD_DATES_AND_NUMBER_DROP_ID,
+  CREATE_FIELD_DROP_ID,
   CREATE_FIELD_FREE_TEXT_DROP_ID,
   CREATE_FIELD_OTHERS_DROP_ID,
   CREATE_FIELD_PERSONAL_DROP_ID,
@@ -33,6 +35,13 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { isLoading } = useCreateTabForm()
 
   const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
+
+  const filteredCreateBasicFields = filterFieldsBySearchValue(
+    searchValue,
+    BASIC_FIELDS_ORDERED,
+    BASICFIELD_TO_DRAWER_META,
+  )
+
   const filteredCreateBasicFreeTextFields = filterFieldsBySearchValue(
     searchValue,
     BASIC_FIELDS_FREE_TEXT,
@@ -65,7 +74,38 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
     BASICFIELD_TO_DRAWER_META,
   )
 
-  return (
+  // TODO: FRM-2054 remove when signature field is out of beta
+  return !(user?.betaFlags?.signatureField && isSignatureFieldEnabled) ? (
+    <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
+      {(provided) => (
+        <Box ref={provided.innerRef} {...provided.droppableProps}>
+          <FieldSection>
+            <FieldSection label="Basic">
+              {filteredCreateBasicFields.map(({ fieldType, originalIndex }) => {
+                const shouldDisableField = isLoading
+                // TODO: FRM-2054 remove when signature field is out of beta
+                if (
+                  fieldType === BasicField.Signature &&
+                  !(user?.betaFlags?.signatureField && isSignatureFieldEnabled)
+                )
+                  return null
+
+                return (
+                  <DraggableBasicFieldListOption
+                    index={originalIndex}
+                    isDisabled={shouldDisableField}
+                    key={originalIndex}
+                    fieldType={fieldType}
+                  />
+                )
+              })}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </FieldSection>
+        </Box>
+      )}
+    </Droppable>
+  ) : (
     <>
       <Droppable isDropDisabled droppableId={CREATE_FIELD_FREE_TEXT_DROP_ID}>
         {(provided) => (
@@ -180,13 +220,6 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                 {filteredCreateBasicPersonalFields.map(
                   ({ fieldType, originalIndex }) => {
                     const shouldDisableField = isLoading
-
-                    if (
-                      fieldType == BasicField.Signature &&
-                      (!isSignatureFieldEnabled ||
-                        !user?.betaFlags?.signatureField)
-                    )
-                      return null
                     return (
                       <DraggableBasicFieldListOption
                         index={originalIndex}
