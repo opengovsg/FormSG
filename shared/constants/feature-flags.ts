@@ -14,7 +14,6 @@ export const featureFlags = {
   mfb: 'magic-form-builder' as const,
   mfbVision: 'magic-form-builder-vision' as const,
   guardduty: 'guardduty' as const,
-  saveDraft: 'save-draft' as const,
   respondentCopy: 'respondent-copy' as const,
   statusTracker: 'status-tracker' as const,
   designDrawerFormTitle: 'design-drawer-form-title' as const,

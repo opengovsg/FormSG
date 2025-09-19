@@ -3,7 +3,6 @@ import {
   useToast as useChakraToast,
   UseToastOptions as ChakraUseToastOptions,
 } from '@chakra-ui/react'
-import { omit } from 'lodash'
 
 import { Toast, ToastProps, ToastStatus } from '~/components/Toast/Toast'
 
@@ -28,15 +27,19 @@ export type UseToastReturn = {
   update: ReturnType<typeof useChakraToast>['update']
 }
 
-export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
-  const memoizedUseToastProps = useMemo(
-    () => omit(useToastProps, 'status'),
-    [useToastProps],
-  )
+const DEFAULT_CONTAINER_STYLE = {
+  maxWidth: '100%',
+}
 
-  const toast = useChakraToast(memoizedUseToastProps)
-  const initialStatus = useToastProps?.status ?? 'success'
-  const isClosable = useToastProps?.isClosable
+export const useToast = ({
+  status: initialStatus = 'success',
+  containerStyle: initialContainerStyle = DEFAULT_CONTAINER_STYLE,
+  ...initialProps
+}: UseToastProps = {}): UseToastReturn => {
+  const toast = useChakraToast({
+    ...initialProps,
+    containerStyle: initialContainerStyle,
+  })
 
   const customToastImpl = useMemo(() => {
     const impl = ({
@@ -59,7 +62,7 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
             React.createElement(() =>
               Toast({
                 status: status ?? initialStatus,
-                isClosable,
+                isClosable: initialProps.isClosable,
                 ...rest,
                 ...props,
               }),
@@ -72,7 +75,7 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
     impl.update = toast.update
 
     return impl
-  }, [isClosable, initialStatus, toast])
+  }, [initialProps.isClosable, initialStatus, toast])
 
   return customToastImpl
 }

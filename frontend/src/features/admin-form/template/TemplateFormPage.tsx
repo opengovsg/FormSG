@@ -4,7 +4,6 @@ import { Flex } from '@chakra-ui/react'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
-import FloatingToolBar from '~features/public-form/components/FloatingToolBar'
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
 import { FormSectionsProvider } from '~features/public-form/components/FormFields/FormSectionsContext'
@@ -33,7 +32,6 @@ export const TemplateFormPage = (): JSX.Element => {
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
-            <FloatingToolBar />
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>

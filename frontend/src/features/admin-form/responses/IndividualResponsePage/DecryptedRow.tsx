@@ -141,42 +141,32 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
+    const vectorArray: SignatureVectorArray = row.answerArray
+      ? convertToSignatureVectorArray(row.answerArray[1] as string)
+      : []
+
     const canvas = canvasRef.current
-    if (!canvas) return
-
-    const vectorArray: SignatureVectorArray =
-      row.answerArray && row.answerArray[1]
-        ? convertToSignatureVectorArray(row.answerArray[1] as string)
-        : []
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Clear canvas first
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    if (vectorArray.length === 0) {
-      // No signature - shrink canvas to minimal size
-      setCanvasSize({ width: 0, height: 0 })
-      canvas.width = 0
-      canvas.height = 0
-      return
-    }
+    if (!canvas || vectorArray.length === 0) return
 
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
 
     // apply devicePixelRatio to maintain sharpness
     const dpr = window.devicePixelRatio || 1
     canvas.width = maxX * dpr
     canvas.height = maxY * dpr
+
     // keep the CSS size same as logical size
     canvas.style.width = `${maxX}px`
     canvas.style.height = `${maxY}px`
 
+    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
     setCanvasSize({ width: maxX, height: maxY })
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
     // Scale the context to account for dpr
     ctx.scale(dpr, dpr)
+    ctx.clearRect(0, 0, maxX - minX + padding * 2, maxY - minY + padding * 2)
 
     // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {

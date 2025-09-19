@@ -1,3 +1,4 @@
+import { Address } from 'cluster'
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
@@ -14,7 +15,11 @@ import {
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
 } from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+} from '~shared/types/field'
 import {
   AddressResponse,
   AttachmentResponse,
@@ -214,7 +219,7 @@ const transformToSignatureOutput = (
   input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
   let answerArray: string[] = []
-  if (input && input.value.length > 0) {
+  if (input !== undefined) {
     answerArray = [input.type, convertToSignatureStringOutput(input.value)]
   }
   return {
