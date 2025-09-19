@@ -26,6 +26,8 @@ export interface SignatureFieldProps extends BaseFieldProps {
 
 const strokePressureDefault = 0.5
 
+const defaultType = 'draw'
+
 export const SignatureField = ({
   schema,
   disableRequiredValidation,
@@ -199,7 +201,12 @@ export const SignatureField = ({
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, { type: 'draw', value: [] })
+    setValue(
+      `${schema._id}`,
+      { type: defaultType, value: [] },
+      { shouldValidate: true },
+    )
+
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {

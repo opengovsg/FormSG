@@ -166,7 +166,12 @@ const FieldRowContainer = ({
         [field._id]: times(field.minimumRows || 0, () => createTableRow(field)),
       }
     }
-
+    if (field.fieldType === BasicField.Signature) {
+      const defaultType = 'draw'
+      return {
+        [field._id]: { type: defaultType, value: [] },
+      }
+    }
     const augmentedField = augmentWithMyInfoDisplayValue(field)
 
     if (hasExistingFieldValue(augmentedField)) {
