@@ -85,6 +85,7 @@ export type MultirespondentSubmissionContent = {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
+  verifiedContent: string | undefined
   attachmentMetadata: Map<string, string>
   version: number
   workflowStep: number

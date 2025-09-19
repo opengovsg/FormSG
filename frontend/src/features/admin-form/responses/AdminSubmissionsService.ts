@@ -110,6 +110,7 @@ export const getDecryptedSubmissionById = async ({
         encryptedContent: encryptedSubmission.encryptedContent,
         encryptedSubmissionSecretKey:
           encryptedSubmission.encryptedSubmissionSecretKey,
+        verifiedContent: encryptedSubmission.verifiedContent,
         version: encryptedSubmission.version,
       })
       if (!decryptedContent)

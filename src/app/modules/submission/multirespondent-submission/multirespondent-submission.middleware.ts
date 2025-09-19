@@ -13,6 +13,7 @@ import {
 import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
+  FormAuthType,
   FormDto,
   FormFieldDto,
   FormResponseMode,
@@ -40,6 +41,10 @@ import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
+import { MyInfoService } from '../../myinfo/myinfo.service'
+import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import { getOidcService } from '../../spcp/spcp.oidc.service'
+import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -815,5 +820,120 @@ export const encryptSubmission = async (
     mrfVersion: 1,
   }
 
+  return next()
+}
+
+/**
+ * Add and encrypt Ndi responses to submission content
+ */
+export const handleNdiResponses = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef
+  const { formId } = req.params
+  const { authType, publicKey } = formDef
+
+  const logMeta = {
+    action: 'submitEncryptModeForm',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Checks if user is SPCP-authenticated before allowing submission
+  let userName
+  let userInfo
+  switch (authType) {
+    case FormAuthType.CP: {
+      const oidcService = getOidcService(FormAuthType.CP)
+      const jwtPayloadResult = await oidcService
+        .extractJwt(req.cookies)
+        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: 'Failed to verify Corppass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      userName = jwtPayloadResult.value.userName
+      userInfo = jwtPayloadResult.value.userInfo
+      break
+    }
+    case FormAuthType.MyInfo: {
+      const jwtPayloadResult = await extractMyInfoLoginJwt(
+        req.cookies,
+        authType,
+      )
+        .andThen(MyInfoService.verifyLoginJwt)
+        .map(({ uinFin }) => {
+          return uinFin
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: `Error verifying MyInfo hashes`,
+            meta: logMeta,
+            error,
+          })
+          return error
+        })
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: `Failed to verify Singpass JWT with auth client`,
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      userName = jwtPayloadResult.value
+      break
+    }
+  }
+
+  if (
+    formDef.isSubmitterIdCollectionEnabled &&
+    (authType === FormAuthType.CP || authType === FormAuthType.MyInfo)
+  ) {
+    const encryptVerifiedContentResult =
+      VerifiedContentService.getVerifiedContent({
+        type: authType,
+        data: { uinFin: userName, userInfo },
+      }).andThen((verifiedContent) =>
+        VerifiedContentService.encryptVerifiedContent({
+          verifiedContent,
+          formPublicKey: publicKey,
+        }),
+      )
+
+    if (encryptVerifiedContentResult.isErr()) {
+      const { error } = encryptVerifiedContentResult
+      logger.error({
+        message: 'Unable to encrypt verified content',
+        meta: logMeta,
+        error,
+      })
+
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Invalid data was found. Please submit again.' })
+    } else {
+      // No errors, set local variable to the encrypted string.
+      req.formsg.verifiedContent = encryptVerifiedContentResult.value
+    }
+  }
   return next()
 }

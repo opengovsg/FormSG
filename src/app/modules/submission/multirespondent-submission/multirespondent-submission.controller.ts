@@ -107,11 +107,13 @@ const submitMultirespondentForm = async (
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
+  const verifiedContent = req.formsg.verifiedContent
 
   const createMultiRespondentFormSubmissionResult =
     await createMultiRespondentFormSubmission({
       form,
       encryptedPayload,
+      verifiedContent,
       logMeta,
     })
 
@@ -250,6 +252,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.handleNdiResponses,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   submitMultirespondentForm,
 ] as ControllerHandler[]

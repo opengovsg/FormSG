@@ -49,6 +49,7 @@ export const createMultirespondentSubmissionDto = (
 
     submissionPublicKey: submissionData.submissionPublicKey,
     encryptedContent: submissionData.encryptedContent,
+    verifiedContent: submissionData.verifiedContent,
     encryptedSubmissionSecretKey: submissionData.encryptedSubmissionSecretKey,
     attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,

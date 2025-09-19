@@ -63,6 +63,7 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
+import { EncryptedContent } from '@opengovsg/formsg-sdk/dist/types'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -536,10 +537,12 @@ const saveAttachmentsToDbIfExists = ({
 export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
+  verifiedContent,
   logMeta,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContent?: EncryptedContent
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
@@ -609,6 +612,7 @@ export const createMultiRespondentFormSubmission = ({
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
+        verifiedContent,
         attachmentMetadata,
         version,
         workflowStep: 0,

@@ -130,6 +130,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   submissionPublicKey: z.string(),
   encryptedSubmissionSecretKey: z.string(),
   encryptedContent: z.string(),
+  verifiedContent: z.string().optional(),
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
   workflowStep: z.number(),
@@ -193,6 +194,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
+  verifiedContent?: string
   attachmentMetadata: Record<string, string>
   workflowStep: number
 
@@ -229,6 +231,7 @@ export const MultirespondentSubmissionStreamDto =
     form_logics: true,
     encryptedSubmissionSecretKey: true,
     encryptedContent: true,
+    verifiedContent: true,
     version: true,
     mrfVersion: true,
   }).extend({

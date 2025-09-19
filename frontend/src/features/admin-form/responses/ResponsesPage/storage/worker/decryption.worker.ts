@@ -130,6 +130,7 @@ async function decryptIntoCsv(
             encryptedSubmissionSecretKey:
               submission.encryptedSubmissionSecretKey,
             encryptedContent: submission.encryptedContent,
+            verifiedContent: submission.verifiedContent,
             version: submission.version,
           })
           if (!decryptedObject) {
