@@ -10,6 +10,7 @@ import {
   BasicField,
   FieldResponse,
   FormFieldDto,
+  FormWorkflow,
 } from '~shared/types'
 import {
   CURRENT_VERIFIED_FIELDS,
@@ -123,7 +124,8 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
-
+  console.log('form_fields', form_fields)
+  console.log('decrypted', decrypted)
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {
@@ -138,7 +140,12 @@ export const processDecryptedContentV3 = async (
           answer: answer.answer,
         }
       }
-      return transformInputsToOutputs(ff, response.answer)
+
+      const decryptedResponse = transformInputsToOutputs(ff, response.answer)
+      if (decryptedResponse && 'myInfo' in ff) {
+        decryptedResponse.question = `[MyInfo] ${decryptedResponse.question} `
+      }
+      return decryptedResponse
     })
     .filter(
       (output): output is FieldResponse => output !== null,
