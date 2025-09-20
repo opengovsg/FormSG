@@ -44,6 +44,10 @@ import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
+import {
+  createCorppassResponsesV3,
+  createMyInfoResponsesV3,
+} from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
@@ -824,7 +828,7 @@ export const encryptSubmission = async (
 }
 
 /**
- * Add and encrypt Ndi responses to submission content
+ * Add and encrypt Ndi responses as verifiedContent, and add unencrypted Ndi responses to responses for email responses
  */
 export const handleNdiResponses = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
@@ -904,6 +908,7 @@ export const handleNdiResponses = async (
     }
   }
 
+  // add verifiedContent to req, to be added to submission downstream
   if (
     formDef.isSubmitterIdCollectionEnabled &&
     (authType === FormAuthType.CP || authType === FormAuthType.MyInfo)
@@ -934,6 +939,33 @@ export const handleNdiResponses = async (
       // No errors, set local variable to the encrypted string.
       req.formsg.verifiedContent = encryptVerifiedContentResult.value
     }
+
+    // Add NDI data to responses (used for email payload downstream)
+    let responses = req.formsg.encryptedPayload.responses
+    switch (authType) {
+      case FormAuthType.CP: {
+        if (!userName || !userInfo) break
+
+        const corppassResponseV3 = createCorppassResponsesV3(userName, userInfo)
+        responses = {
+          ...responses,
+          ...corppassResponseV3,
+        }
+        break
+      }
+      case FormAuthType.MyInfo: {
+        if (!userName) break
+
+        const myInfoResponseV3 = createMyInfoResponsesV3(userName)
+        responses = {
+          ...responses,
+          ...myInfoResponseV3,
+        }
+        break
+      }
+    }
+    req.formsg.encryptedPayload.responses = responses
   }
+
   return next()
 }

@@ -1,6 +1,11 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { BasicField, FormAuthType } from '../../../../shared/types'
+import {
+  BasicField,
+  FieldResponsesV3,
+  FieldResponseV3,
+  FormAuthType,
+} from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import { IFormSchema, SPCPFieldTitle } from '../../../types'
 import {
@@ -108,6 +113,44 @@ export const createCorppassParsedResponses = (
     },
   ]
 }
+
+/**
+ * Wraps MyInfo data in the form of parsed form fields for MRF.
+ * @param uinFin CorpPass UEN
+ * @param userInfo CorpPass UID
+ */
+export const createMyInfoResponsesV3 = (uinFin: string): FieldResponsesV3 => {
+  return {
+    [SPCPFieldTitle.SpNric]: {
+      fieldType: BasicField.Nric,
+      answer: uinFin,
+    },
+  }
+}
+
+/**
+ * Wraps CorpPass data in the form of parsed form fields for MRF.
+ * @param uinFin CorpPass UEN
+ * @param userInfo CorpPass UID
+ */
+export const createCorppassResponsesV3 = (
+  uinFin: string,
+  userInfo: string,
+): FieldResponsesV3 => {
+  return {
+    [SPCPFieldTitle.CpUen]: {
+      fieldType: BasicField.ShortText,
+      answer: uinFin,
+    },
+    [SPCPFieldTitle.CpUid]: {
+      fieldType: BasicField.Nric,
+      answer: userInfo,
+    },
+  }
+}
+
+export const isSPCPFieldTitle = (key: string): key is SPCPFieldTitle =>
+  Object.values(SPCPFieldTitle).includes(key as SPCPFieldTitle)
 
 /**
  * Validates that a form is a SPCP form with an e-service ID

@@ -1,3 +1,4 @@
+import { EncryptedContent } from '@opengovsg/formsg-sdk/dist/types'
 import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -63,7 +64,6 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
-import { EncryptedContent } from '@opengovsg/formsg-sdk/dist/types'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -403,7 +403,8 @@ const sendMrfOutcomeEmails = ({
         if (!isWorkflowCompleted && !isRejected) {
           return okAsync(true)
         }
-
+        console.log('form fields', form.form_fields)
+        console.log('responses', responses)
         const formQuestionAnswers = getQuestionTitleAnswerString({
           formFields: form.form_fields,
           responses,

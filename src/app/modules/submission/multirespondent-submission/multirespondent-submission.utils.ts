@@ -8,6 +8,7 @@ import {
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
+  NdiResponseV3,
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
@@ -21,6 +22,7 @@ import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
+import { isSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -339,6 +341,17 @@ export const getQuestionTitleAnswerString = ({
       question: questionTitle,
       answer,
     })
+  }
+
+  // Add Ndi responses if they exist
+  for (const key in responses) {
+    if (isSPCPFieldTitle(key)) {
+      const value = responses[key] as NdiResponseV3
+      questionAnswerPair.push({
+        question: key,
+        answer: value.answer,
+      })
+    }
   }
   return questionAnswerPair
 }

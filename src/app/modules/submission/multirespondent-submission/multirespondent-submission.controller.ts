@@ -252,8 +252,8 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
-  MultirespondentSubmissionMiddleware.handleNdiResponses,
   MultirespondentSubmissionMiddleware.encryptSubmission,
+  MultirespondentSubmissionMiddleware.handleNdiResponses,
   submitMultirespondentForm,
 ] as ControllerHandler[]
 
