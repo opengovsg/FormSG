@@ -10,7 +10,7 @@
     "lodash": "^4.17.21",
     "tweetnacl": "^1.0.3",
     "tweetnacl-util": "^0.15.1",
-    "type-fest": "^4.17.0",
+    "type-fest": "^5.0.1",
     "validator": "^13.7.0",
     "zod": "^3.11.6"
   },
