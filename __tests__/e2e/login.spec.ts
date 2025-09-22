@@ -57,6 +57,14 @@ test.describe('login', () => {
 
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(page).toHaveURL(DASHBOARD_PAGE)
+
+    if (await page.getByText('New feature').isVisible()) {
+      await page.getByRole('button', { name: 'Cancel' }).click()
+    }
+
+    if (await page.getByRole('heading', { name: 'Emergency Contact' }).isVisible()) {
+      await page.locator('button[aria-label="Close"]').click()
+    }
   })
 
   test('Prevent login if OTP is incorrect', async ({ page }) => {
