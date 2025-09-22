@@ -134,6 +134,34 @@ LoadingMobile.parameters = {
 export const Empty = Template.bind({})
 Empty.parameters = {
   msw: [
+    ...envHandlers,
+    http.get<never, never, AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      () => {
+        return HttpResponse.json()
+      },
+    ),
+    getWorkspaces(),
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        _id: 'undefined' as UserId,
+        email: 'meh@example.com',
+      },
+    }),
+  ],
+}
+
+export const EmptyMobile = Template.bind({})
+EmptyMobile.parameters = {
+  ...Empty.parameters,
+  ...Mobile.parameters,
+}
+
+export const EmptyWithAnnouncementModal = Template.bind({})
+EmptyWithAnnouncementModal.parameters = {
+  msw: [
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
       () => {
@@ -144,9 +172,9 @@ Empty.parameters = {
   ],
 }
 
-export const EmptyMobile = Template.bind({})
-EmptyMobile.parameters = {
-  ...Empty.parameters,
+export const EmptyMobileWithAnnouncementModal = Template.bind({})
+EmptyMobileWithAnnouncementModal.parameters = {
+  ...EmptyWithAnnouncementModal.parameters,
   ...Mobile.parameters,
 }
 
