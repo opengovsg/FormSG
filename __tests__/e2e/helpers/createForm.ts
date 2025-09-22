@@ -49,6 +49,7 @@ import {
   getMyInfoAttribute,
   getTitleWithQuestionNumber,
 } from '../utils'
+import { closeModals } from './closeModals';
 
 type CreateFormReturn = {
   form: IFormSchema
@@ -116,11 +117,17 @@ const addForm = async (
 
     await page.goto(`${ADMIN_FORM_PAGE_PREFIX}/${formId}`)
 
+    // Close any modals that may obstruct test flow
+    await closeModals(page)
+
     await page.getByRole('button', { name: 'Next' }).press('Escape')
 
     return { formId, formResponseMode }
   }
   await page.goto(DASHBOARD_PAGE)
+
+  // Close any modals that may obstruct test flow
+  await closeModals(page)
 
   // Press escape 5 times to get rid of any banners
   await page.keyboard.press('Escape')
