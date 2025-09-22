@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useFormContext, useFormState } from 'react-hook-form'
+import { useFormContext, useFormState, useWatch } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -46,6 +46,9 @@ export const SignatureField = ({
 
   const signatureErrors = errors?.[schema._id]
 
+  // Future implementations will expand on signature types (text, cryptographic)
+  const defaultType = 'draw'
+
   const signatureValidationRules = useMemo(
     () => createSignatureValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
@@ -55,17 +58,22 @@ export const SignatureField = ({
     formContext.register(schema._id, signatureValidationRules)
   }, [formContext, schema._id, signatureValidationRules])
 
-  let vectorArray: SignatureVectorArray = []
-  const preExistingSignature = getValues(`${schema._id}`)
-  if (preExistingSignature) {
-    vectorArray = preExistingSignature.value
-  }
-
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
 
-  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>(vectorArray)
+  const watchedSignature = useWatch({ name: schema._id }) as {
+    value: SignatureVectorArray
+  }
+  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
+
+  // Sync when form value changes
+  useEffect(() => {
+    if (watchedSignature?.value) {
+      setPfStrokes(watchedSignature.value)
+    }
+  }, [watchedSignature])
+
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
   >([])
@@ -133,7 +141,7 @@ export const SignatureField = ({
     const canvas = pfCanvasRef.current
     if (!canvas) return
 
-    if (vectorArray.length > 0) {
+    if (pfStrokes.length > 0) {
       drawAllStrokes()
       setShowSignaturePlaceholder(false)
     }
@@ -171,7 +179,7 @@ export const SignatureField = ({
       setIsDrawing(false)
       setValue(
         `${schema._id}`,
-        { type: 'draw', value: pfStrokes },
+        { type: defaultType, value: pfStrokes },
         { shouldValidate: true },
       )
     }
@@ -185,28 +193,24 @@ export const SignatureField = ({
       canvas.removeEventListener('pointerdown', handlePointerDown)
       canvas.removeEventListener('pointermove', handlePointerMove)
       canvas.removeEventListener('pointerup', handlePointerUp)
-      canvas.addEventListener('pointerleave', handlePointerUp)
+      canvas.removeEventListener('pointerleave', handlePointerUp)
     }
-  }, [
-    drawAllStrokes,
-    isDrawing,
-    pfStrokes,
-    schema._id,
-    setValue,
-    vectorArray.length,
-  ])
+  }, [drawAllStrokes, isDrawing, pfStrokes, schema._id, setValue])
 
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(`${schema._id}`, { type: 'draw', value: [] })
+    setValue(
+      `${schema._id}`,
+      { type: defaultType, value: [] },
+      { shouldValidate: true },
+    )
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
   }
-
   return (
     <Box>
       <FormLabel

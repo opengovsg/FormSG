@@ -548,18 +548,6 @@ export const validateMultirespondentSubmission = async (
                   req.body.responses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
 
-                logger.info({
-                  message:
-                    'Logging editable field ids and non-editable field ids with responses',
-                  meta: {
-                    ...logMeta,
-                    action: 'debugSaveDraft',
-                    nonEditableFieldIdsWithResponses:
-                      nonEditableFieldIdsWithResponses.join(','),
-                    editableFieldIds: editableFieldIds.join(','),
-                  },
-                })
-
                 // If it's the first submission, just check that response fields C editable fields
                 if (!previousSubmission) {
                   return nonEditableFieldIdsWithResponses.length === 0
@@ -626,59 +614,6 @@ export const validateMultirespondentSubmission = async (
                     )
 
                     if (!resp) {
-                      logger.info({
-                        message:
-                          'Submitted response on a non-editable field which did not match previous response',
-                        meta: {
-                          ...logMeta,
-                          action: 'debugSaveDraft',
-                          incomingResObjectKeys: Object.keys(
-                            typeof incomingResField.answer === 'object'
-                              ? incomingResField.answer
-                              : {},
-                          ),
-                          prevResObjectKeys: Object.keys(
-                            typeof prevResField.answer === 'object'
-                              ? prevResField.answer
-                              : {},
-                          ),
-                          incomingResFieldType: incomingResField.fieldType,
-                          prevResFieldType: prevResField.fieldType,
-                          incomingResFieldIsUndefined:
-                            incomingResField.answer === undefined,
-                          prevResFieldIsUndefined:
-                            prevResField.answer === undefined,
-                          incomingResFieldIsEmptyString:
-                            incomingResField.answer === '',
-                          prevResFieldIsEmptyString: prevResField.answer === '',
-                          incomingResFieldIsArray: Array.isArray(
-                            incomingResField.answer,
-                          ),
-                          prevResFieldIsArray: Array.isArray(
-                            prevResField.answer,
-                          ),
-                          incomingResFieldIsObject:
-                            typeof incomingResField.answer === 'object',
-                          prevResFieldIsObject:
-                            typeof prevResField.answer === 'object',
-                          incomingResFieldIsNumber:
-                            typeof incomingResField.answer === 'number',
-                          prevResFieldIsNumber:
-                            typeof prevResField.answer === 'number',
-                          incomingResFieldIsString:
-                            typeof incomingResField.answer === 'string',
-                          prevResFieldIsString:
-                            typeof prevResField.answer === 'string',
-                          incomingResFieldIsBoolean:
-                            typeof incomingResField.answer === 'boolean',
-                          prevResFieldIsBoolean:
-                            typeof prevResField.answer === 'boolean',
-                          incomingResFieldIsDate:
-                            incomingResField.answer instanceof Date,
-                          prevResFieldIsDate:
-                            prevResField.answer instanceof Date,
-                        },
-                      })
                       return err(
                         new ProcessingError(
                           'Submitted response on a non-editable field which did not match previous response',

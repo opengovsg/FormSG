@@ -12,7 +12,7 @@ import {
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
-import { getSignatureFileName } from '../../../../../shared/utils/signature'
+import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import {
   FormFieldSchema,
   MultirespondentSubmissionData,
@@ -314,7 +314,7 @@ export const getQuestionTitleAnswerString = ({
       case BasicField.Signature:
         questionAnswerPair.push({
           question: `[signature] ${questionTitle}`,
-          answer: getSignatureFileName({ fieldId: formField._id }),
+          answer: SIGNATURE_CAPTURED_STRING,
         })
         continue
       case BasicField.Children:
