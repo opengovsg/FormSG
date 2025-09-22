@@ -215,7 +215,8 @@ export const getQuestionTitleAnswerString = ({
     return []
   }
   for (const formField of formFields) {
-    const questionTitle = formField.title
+    const MyInfoPrefix = 'myInfo' in formField ? '[MyInfo]' : ''
+    const questionTitle = `${MyInfoPrefix} ${formField.title}`
     const response = responses[formField._id]
 
     if (!response || !questionTitle) continue
