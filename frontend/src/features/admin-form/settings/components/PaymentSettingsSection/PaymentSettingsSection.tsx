@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useParams, useSearchParams } from 'react-router-dom'
 import {
   As,
@@ -51,6 +52,9 @@ const PaymentsDisabledRationaleText = ({
   isSingleSubmission: boolean
   isPDFResponseEnabled: boolean
 }): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.payments.disabledRationaleText',
+  })
   const disabledCount = [
     isAdminEmailsPresent,
     isSingleSubmission,
@@ -63,26 +67,26 @@ const PaymentsDisabledRationaleText = ({
   if (disabledCount > 1) {
     return (
       <Text>
-        To enable payment fields,
+        {t('genericRationale.toEnable')}
         <UnorderedList spacing="0.5rem" mt="1rem">
           {isAdminEmailsPresent ? (
             <ListItem>
               <Link as={ReactLink} to={'email-notifications'}>
-                Remove all recipients from email notifications
+                {t('genericRationale.removeAdminEmail')}
               </Link>
             </ListItem>
           ) : undefined}
           {isPDFResponseEnabled ? (
             <ListItem>
               <Link as={ReactLink} to={`/admin/form/${formId}`}>
-                Turn off "Include PDF responses" in all email fields
+                {t('genericRationale.turnOffPdfResponses')}
               </Link>
             </ListItem>
           ) : undefined}
           {isSingleSubmission ? (
             <ListItem>
               <Link as={ReactLink} to={'singpass'}>
-                Disable only one submission per NRIC/FIN/UEN
+                {t('genericRationale.disableSingleSubmission')}
               </Link>
             </ListItem>
           ) : undefined}
@@ -94,9 +98,9 @@ const PaymentsDisabledRationaleText = ({
   if (isAdminEmailsPresent) {
     return (
       <Text>
-        To enable payment fields, remove all recipients from{' '}
+        {t('adminEmailsPresent.removeToEnable')}{' '}
         <Link as={ReactLink} to={'email-notifications'}>
-          email notifications
+          {t('adminEmailsPresent.emailNotifications')}
         </Link>
         .
       </Text>
@@ -105,9 +109,9 @@ const PaymentsDisabledRationaleText = ({
   if (isSingleSubmission) {
     return (
       <Text>
-        To enable payment fields, disable{' '}
+        {t('singleSubmission.disableSingleSubmission')}{' '}
         <Link as={ReactLink} to={'singpass'}>
-          only one submission per NRIC/FIN/UEN
+          {t('singleSubmission.singleSubmissionPerNricFinUen')}
         </Link>
         .
       </Text>
@@ -116,9 +120,9 @@ const PaymentsDisabledRationaleText = ({
   if (isPDFResponseEnabled) {
     return (
       <Text>
-        To enable payment fields,{' '}
+        {t('pdfResponseEnabled.toEnable')}{' '}
         <Link as={ReactLink} to={`/admin/form/${formId}`}>
-          turn off "Include PDF Responses" in all email fields.
+          {t('pdfResponseEnabled.disablePdfResponses')}
         </Link>
       </Text>
     )
@@ -131,6 +135,10 @@ const BeforeConnectionInstructions = ({
 }: {
   isProductionEnv: boolean
 }): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix:
+      'features.adminForm.settings.payments.beforeConnectionInstructions',
+  })
   const [allowConnect, setAllowConnect] = useState(false)
   const { data: paymentGuideLink } = usePaymentGuideLink()
   const [searchParams] = useSearchParams()
@@ -169,11 +177,7 @@ const BeforeConnectionInstructions = ({
     return (
       <>
         <InlineMessage variant="error" my="2rem">
-          <Text>
-            Your Stripe account could not be connected because it was created
-            with a non-whitelisted email domain. Try reconnecting an account
-            that was created with a whitelisted email domain.
-          </Text>
+          <Text>{t('invalidDomain')}</Text>
         </InlineMessage>
         <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
       </>
@@ -193,22 +197,28 @@ const BeforeConnectionInstructions = ({
             </InlineMessage>
           </Box>
         ) : (
-          <InlineMessage useMarkdown>
-            {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.`}
+          <InlineMessage>
+            <Text>
+              {t('setupGuide.read')}{' '}
+              <Link isExternal variant="inline" href={paymentGuideLink}>
+                {t('setupGuide.ourGuide')}
+              </Link>{' '}
+              {t('setupGuide.setupOrConnectStripeText')}
+            </Text>
           </InlineMessage>
         )}
 
         <Text textStyle="h3" color="secondary.500">
-          Bulk transaction rates
+          {t('bulkTransactionText.bulkTransactionRate')}
         </Text>
         <Text>
-          To request bulk transaction rates for your payments, use{' '}
+          {t('bulkTransactionText.useBulkTransactionRates')}{' '}
           <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
-            this form
+            {t('bulkTransactionText.thisForm')}
           </Link>{' '}
-          to contact us for assistance.{' '}
+          {t('bulkTransactionText.contactForAssistance')}{' '}
           <Text as="b">
-            Without this step, you will be charged default transaction rates.
+            {t('bulkTransactionText.defaultTransactionRatesWarning')}
           </Text>
         </Text>
 
@@ -218,8 +228,7 @@ const BeforeConnectionInstructions = ({
           mb="2rem"
           onChange={(e) => setAllowConnect(e.target.checked)}
         >
-          I understand that I will be paying default transaction rates, unless I
-          have requested bulk transaction rates and received confirmation
+          {t('bulkTransactionText.acknowledgeWarningText')}
         </Checkbox>
         <StripeConnectButton
           connectState={
@@ -247,10 +256,7 @@ const BeforeConnectionInstructions = ({
           </Box>
         ) : (
           <InlineMessage variant="info">
-            <Text>
-              You are currently in test mode. You can choose to skip connecting
-              a Stripe account after clicking the button below.
-            </Text>
+            <Text>{t('testMode')}</Text>
           </InlineMessage>
         )}
         <StripeConnectButton
@@ -297,6 +303,9 @@ const AfterConnectionInfo = ({
   hasPaymentCapabilities: boolean
   adminFormPaymentsError: boolean
 }): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.payments.afterConnectionInfo',
+  })
   let connectionInfo: JSX.Element
 
   if (adminFormPaymentsError) {
@@ -305,7 +314,7 @@ const AfterConnectionInfo = ({
       <ConnectionStatusText
         color="danger.500"
         icon={BxsError}
-        text="Something went wrong when validating the connected Stripe account."
+        text={t('genericPaymentsError')}
       />
     )
   } else if (isProductionEnv) {
@@ -315,7 +324,7 @@ const AfterConnectionInfo = ({
         <ConnectionStatusText
           color="success.700"
           icon={BxsCheckCircle}
-          text="Your Stripe account is connected to this Form."
+          text={t('stripeAccountConnected')}
         />
       )
     } else {
@@ -324,7 +333,7 @@ const AfterConnectionInfo = ({
         <ConnectionStatusText
           color="warning.500"
           icon={BxsInfoCircle}
-          text="The connected account does not have the ability to process payments."
+          text={t('noPaymentCapabilities')}
         />
       )
     }
@@ -335,7 +344,7 @@ const AfterConnectionInfo = ({
         <ConnectionStatusText
           color="success.700"
           icon={BxsCheckCircle}
-          text="Stripe account connected. Payments made on this form will only show in test mode in your Stripe account."
+          text={t('testModeStripeAccountConnected')}
         />
       )
     } else {
@@ -344,7 +353,7 @@ const AfterConnectionInfo = ({
         <ConnectionStatusText
           color="success.700"
           icon={BxsCheckCircle}
-          text="You are connected to a test account."
+          text={t('testModeStripeConnectionSkipped')}
         />
       )
     }
@@ -360,13 +369,14 @@ const PaymentsAccountInformation = ({
   account_id: string
   isLoading: boolean
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix:
+      'features.adminForm.settings.payments.paymentsAccountInformation',
+  })
   return (
     <FormControl mb="2.5rem">
-      <FormLabel
-        description="This is the account ID connected to this form."
-        isRequired
-      >
-        Target Account ID
+      <FormLabel description={t('labelDescription')} isRequired>
+        {t('label')}
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
         <Input isDisabled={true} value={account_id}></Input>

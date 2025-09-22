@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
 import {
@@ -75,6 +76,9 @@ const BusinessInfoBlock = ({
   settings: StorageFormSettings
   agencyDefaults: AgencyBase['business']
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.payments',
+  })
   const { mutateFormBusiness } = useMutateFormSettings()
   const handleAddressMutation = (newAddress: string) => {
     mutateFormBusiness.mutate({ address: newAddress })
@@ -86,7 +90,9 @@ const BusinessInfoBlock = ({
     <>
       {settings.payments_field.gst_enabled ? (
         <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
-          <FormLabel isRequired>GST Registration Number</FormLabel>
+          <FormLabel isRequired>
+            {t('businessInfo.gstRegistrationNumber')}
+          </FormLabel>
           <BusinessFieldInput
             initialValue={
               settings.business?.gstRegNo || agencyDefaults?.gstRegNo || ''
@@ -96,7 +102,7 @@ const BusinessInfoBlock = ({
         </FormControl>
       ) : null}
       <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
-        <FormLabel isRequired>Business Address</FormLabel>
+        <FormLabel isRequired>{t('businessInfo.businessAddress')}</FormLabel>
         <BusinessFieldInput
           initialValue={
             settings.business?.address || agencyDefaults?.address || ''

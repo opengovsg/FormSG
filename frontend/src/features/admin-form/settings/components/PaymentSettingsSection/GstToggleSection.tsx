@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types'
@@ -9,6 +10,9 @@ import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const GstToggleSection = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.payments.gstToggle',
+  })
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -41,8 +45,8 @@ export const GstToggleSection = (): JSX.Element => {
         mb="2.5rem"
         isLoading={mutateGST.isLoading}
         isChecked={hasGST}
-        label="GST applicable"
-        description="GST will be mentioned in proof of payment"
+        label={t('label')}
+        description={t('description')}
         onChange={() => handleToggleGST()}
       />
     </Skeleton>
