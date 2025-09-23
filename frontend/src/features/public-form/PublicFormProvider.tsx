@@ -99,6 +99,11 @@ interface PublicFormProviderProps {
   submissionId?: string
   startTime: number
   children: React.ReactNode
+  /**
+   * Tracks if the current page is the public form page for respondents to fill out.
+   * Used for determining if eg, Save Draft restored toast should be shown.
+   */
+  isPublicFormPage?: boolean
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -370,6 +375,7 @@ export const PublicFormProvider = ({
   submissionId: previousSubmissionId,
   children,
   startTime,
+  isPublicFormPage = false,
 }: PublicFormProviderProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const selectedLanguage = i18n.language as Language
@@ -834,7 +840,8 @@ export const PublicFormProvider = ({
       !hasShownRestoredDraftToast.current &&
       isSaveDraftEnabled &&
       !isAuthRequired &&
-      hasDraft
+      hasDraft &&
+      isPublicFormPage
     ) {
       showRestoredDraftToast({
         hasChangedDraftFields: hasUnrestorableFields,
@@ -847,6 +854,7 @@ export const PublicFormProvider = ({
     hasUnrestorableFields,
     hasShownRestoredDraftToast.current,
     showRestoredDraftToast,
+    isPublicFormPage,
   ])
 
   const defaultFormValues = useMemo(() => {
