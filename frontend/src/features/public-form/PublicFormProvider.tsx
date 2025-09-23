@@ -879,6 +879,17 @@ export const PublicFormProvider = ({
     mode: 'onTouched',
   })
 
+  // Reset default values when they change
+  const {
+    formState: { isDirty },
+    reset,
+  } = formMethods
+  useEffect(() => {
+    if (!isDirty) {
+      reset(defaultFormValues)
+    }
+  }, [defaultFormValues, isDirty, reset])
+
   const onSaveDraft = () => {
     // Used to track save draft usage
     datadogLogs.logger.info('Save draft used', {
