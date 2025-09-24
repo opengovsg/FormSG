@@ -98,17 +98,17 @@ const PrintableDecryptedRow = ({
     case BasicField.Signature:
       return (
         <TableRow>
-          <TableFullItem>
-            <Text mb="12px">{row.question}</Text>
+          <TableSingleColItem>
+            {row.question}
+          </TableSingleColItem>
+          <TableSingleColItem>
             <Center
               width="100%"
-              borderWidth="2px"
-              borderColor="secondary.200"
-              display="inline-block"
+              display="block"
             >
               <RenderedSignatureCanvas row={row} />
             </Center>
-          </TableFullItem>
+          </TableSingleColItem>
         </TableRow>
       )
     default:

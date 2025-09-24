@@ -102,7 +102,7 @@ export const RenderedSignatureCanvas = ({
     const { adjustedLogicalWidth, adjustedLogicalHeight, adjustedScalingFactor, actualWidth, actualHeight } = getHorizontallyFilled({
       maxX,
       maxY,
-      availableWidth: containerWidth,
+      availableWidth: containerWidth || 300,
       dpr
     })
 
@@ -113,7 +113,7 @@ export const RenderedSignatureCanvas = ({
     canvas.style.height = `${actualHeight}px`
 
     ctx.scale(adjustedScalingFactor, adjustedScalingFactor)
-    setCanvasSize({ width: adjustedLogicalWidth, height: adjustedLogicalHeight })
+    setCanvasSize({ width: actualWidth, height: actualHeight })
 
     // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {
