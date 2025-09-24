@@ -176,6 +176,7 @@ WithPrefilledNormalFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
         },
       },
@@ -196,6 +197,7 @@ WithPrefilledLockedFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
         },
       },
@@ -216,6 +218,7 @@ WithPrefilledLockedAndNormalFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [
             PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
             PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
@@ -798,6 +801,7 @@ WithMyInfo.parameters = {
     getPublicFormResponse({
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
         },
       },
