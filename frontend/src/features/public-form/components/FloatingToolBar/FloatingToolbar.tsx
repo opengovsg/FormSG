@@ -23,8 +23,8 @@ export const FloatingToolBar = (): JSX.Element | null => {
       direction={{ base: 'row', md: 'column' }}
       position="fixed"
       spacing="1rem"
-      bottom="2rem"
-      right="2rem"
+      bottom={{ base: '1rem', md: '2.625rem' }}
+      right={{ base: '1rem', md: '2.75rem' }}
       sx={noPrintCss}
       zIndex="docked"
     >
