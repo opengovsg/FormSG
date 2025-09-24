@@ -83,7 +83,6 @@ export const FormResponseOptions = forwardRef<
           isActive={value === FormResponseMode.Multirespondent}
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           flex={1}
-          isDisabled={isSingpass}
         >
           <Tile.Title>{mrf.title}</Tile.Title>
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>

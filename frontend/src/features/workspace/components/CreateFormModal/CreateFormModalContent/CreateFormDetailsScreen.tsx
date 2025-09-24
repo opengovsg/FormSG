@@ -140,13 +140,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-            {isSingpass && (
-              <InlineMessage mt="2rem">
-                {t(
-                  'features.workspace.modals.forms.create.errors.noSingpassInMrf',
-                )}
-              </InlineMessage>
-            )}
           </FormControl>
           {(responseModeValue === FormResponseMode.Encrypt ||
             responseModeValue === FormResponseMode.Email) && (
