@@ -33,6 +33,7 @@ export const RenderedSignatureCanvas = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>()
   const [img, setImg] = useState<string | null>(null)
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -53,6 +54,7 @@ export const RenderedSignatureCanvas = ({
       // No signature - shrink canvas to minimal size
       canvas.width = 0
       canvas.height = 0
+      setCanvasSize({ width: 0, height: 0 })
       return
     }
 
@@ -69,6 +71,7 @@ export const RenderedSignatureCanvas = ({
 
     // Scale the context to account for dpr
     ctx.scale(dpr, dpr)
+    setCanvasSize({ width: maxX, height: maxY })
 
     // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {
@@ -97,10 +100,18 @@ export const RenderedSignatureCanvas = ({
       ref={containerRef}
       background="white"
       width={widthPx ?? '100%'}
+      maxW={canvasSize.width}
+      maxH={canvasSize.height}
       borderColor="neutral.400"
       borderRadius="0.25rem"
     >
-      {img && <img width={widthPx ?? containerWidth} src={img} />}
+      {img && (
+        <img
+          width={widthPx ?? containerWidth}
+          style={{ maxWidth: canvasSize.width, maxHeight: canvasSize.height }}
+          src={img}
+        />
+      )}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
     </Box>
   )
