@@ -483,6 +483,7 @@ export const validateMultirespondentSubmission = async (
           ? ok({
               previousSubmission: {
                 encryptedContent: mrfSubmission.encryptedContent,
+                //TODO: add verifiedContent to be passed from previousSubmission
                 version: mrfSubmission.version,
               },
               workflowStep: mrfSubmission.workflowStep + 1,
@@ -838,7 +839,8 @@ export const handleNdiResponses = async (
 ) => {
   const formDef = req.formsg.formDef
   const { formId } = req.params
-  const { authType, publicKey } = formDef
+  const { authType } = formDef
+  const { submissionPublicKey } = req.formsg.encryptedPayload
 
   const logMeta = {
     action: 'handleNdiResponses',
@@ -923,7 +925,7 @@ export const handleNdiResponses = async (
 
         return VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
-          formPublicKey: publicKey,
+          formPublicKey: submissionPublicKey,
         })
       })
 
@@ -940,7 +942,8 @@ export const handleNdiResponses = async (
         .json({ message: 'Invalid data was found. Please submit again.' })
     } else {
       // No errors, set local variable to the encrypted string.
-      req.formsg.verifiedContent = encryptVerifiedContentResult.value
+      req.formsg.encryptedPayload.verifiedContent =
+        encryptVerifiedContentResult.value
     }
 
     // Add NDI data to responses (used for email payload downstream)

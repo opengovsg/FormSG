@@ -194,7 +194,6 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
-  verifiedContent?: string
   attachmentMetadata: Record<string, string>
   workflowStep: number
 

@@ -3,7 +3,6 @@ import { err, ok, Result } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
-  FieldResponseV3,
   FormAuthType,
 } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'

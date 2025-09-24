@@ -53,6 +53,7 @@ export type MultirespondentSubmissionDto = {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
+  verifiedContent?: string
   submissionSecretKey: string
   attachments?: SubmissionAttachmentsMap
   version: number

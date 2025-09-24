@@ -124,8 +124,7 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
-  console.log('form_fields', form_fields)
-  console.log('decrypted', decrypted)
+
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {

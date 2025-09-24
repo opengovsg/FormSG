@@ -107,13 +107,11 @@ const submitMultirespondentForm = async (
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
-  const verifiedContent = req.formsg.verifiedContent
 
   const createMultiRespondentFormSubmissionResult =
     await createMultiRespondentFormSubmission({
       form,
       encryptedPayload,
-      verifiedContent,
       logMeta,
     })
 
