@@ -7,14 +7,14 @@ import {
   useState,
 } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
-import { differenceInMilliseconds, isPast } from 'date-fns'
-import { flow } from 'lodash'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { differenceInMilliseconds, format, isPast } from 'date-fns'
+import { flow, times } from 'lodash'
 import get from 'lodash/get'
 
 import {
@@ -24,20 +24,22 @@ import {
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
 } from '~shared/constants'
-import { BasicField, PaymentType } from '~shared/types'
+import { BasicField, FormFieldDto, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
 import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
+  FormWorkflowStepDto,
   Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
-import { dollarsToCents } from '~shared/utils/payments'
+import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
+import { useIndexedDb } from '~hooks/useIndexedDb'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { isKeypairValid } from '~utils/secretKeyValidation'
@@ -46,6 +48,7 @@ import {
   SingleSubmissionValidationError,
 } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
+import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import {
@@ -57,6 +60,15 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 import { useIsFeatureEnabled } from '~features/feature-flags/queries'
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
+import {
+  augmentFieldWithMrfWorkflowDisabling,
+  isFieldEnabledByMrfWorkflow,
+} from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
+import { hasExistingFieldValue } from '~features/myinfo/utils'
+import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
+import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
@@ -68,11 +80,17 @@ import {
   useTransactionMutations,
 } from '~features/verifiable-fields'
 
+import { PrefillMap } from './components/FormFields/FormFields'
 import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
+import { getDraftToSave, getRestoreDraftFormValues } from './utils/saveDraft'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
-import { PublicFormContext, SubmissionData } from './PublicFormContext'
+import {
+  DraftSubmission,
+  PublicFormContext,
+  SubmissionData,
+} from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 
@@ -81,6 +99,11 @@ interface PublicFormProviderProps {
   submissionId?: string
   startTime: number
   children: React.ReactNode
+  /**
+   * Tracks if the current page is the public form page for respondents to fill out.
+   * Used for determining if eg, Save Draft restored toast should be shown.
+   */
+  isPublicFormPage?: boolean
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -95,7 +118,8 @@ export function useCommonFormProvider(formId: string) {
     useState<FetchNewTransactionResponse>()
   const miniHeaderRef = useRef<HTMLDivElement>(null)
   const { createTransactionMutation } = useTransactionMutations(formId)
-  const toast = useToast({ isClosable: true })
+  const useToastProps = useMemo(() => ({ isClosable: true }), [])
+  const toast = useToast(useToastProps)
   const vfnToastIdRef = useRef<string | number>()
 
   const getTransactionId = useCallback(async () => {
@@ -184,11 +208,174 @@ const transformFormInputTrimTextInputs =
     )
   }
 
+export const augmentFormFields = (
+  formFields: FormFieldDto[],
+  currentStepNumberWorkflowStep?: FormWorkflowStepDto,
+) => {
+  return formFields
+    .map(augmentWithMyInfo)
+    .map((fields) =>
+      augmentFieldWithMrfWorkflowDisabling(
+        currentStepNumberWorkflowStep,
+        fields,
+      ),
+    )
+}
+
+export const getFieldPrefillMap = (
+  formFields: FormFieldDto[],
+  searchParams: URLSearchParams,
+) => {
+  // Return object containing field id and query param value only if id exists in form fields.
+  return formFields.reduce((acc, field) => {
+    if (
+      field.fieldType === BasicField.ShortText &&
+      field.allowPrefill &&
+      searchParams.has(field._id)
+    ) {
+      acc[field._id] = {
+        prefillValue: searchParams.get(field._id) ?? '',
+        lockPrefill: field.lockPrefill ?? false,
+      }
+    }
+    return acc
+  }, {} as PrefillMap)
+}
+
+const getInitialFormValues = ({
+  formResponseMode,
+  previousSubmission,
+  previousAttachments,
+  currentStepNumberWorkflowStep,
+  augmentedFormFields,
+  fieldPrefillMap,
+  draftResponsesToRestore,
+  searchParams,
+  isSaveDraftEnabled,
+}: {
+  formResponseMode: FormResponseMode
+  previousSubmission?: ReturnType<typeof decryptSubmission>
+  previousAttachments?: Record<string, ArrayBuffer>
+  currentStepNumberWorkflowStep?: FormWorkflowStepDto
+  augmentedFormFields: FormFieldDto[]
+  fieldPrefillMap: PrefillMap
+  draftResponsesToRestore: FormFieldValues
+  searchParams: URLSearchParams
+  isSaveDraftEnabled: boolean
+}): FormFieldValues => {
+  const defaultFormValues = augmentedFormFields.reduce<FormFieldValues>(
+    (acc, field) => {
+      if (formResponseMode === FormResponseMode.Multirespondent) {
+        const previousResponse = previousSubmission?.responses[field._id]
+        const previousAttachmentFieldResponseFileBuffer =
+          previousAttachments?.[field._id]
+        const value = extractMrfPreviousStepResponseValue(
+          field,
+          previousResponse,
+          previousAttachmentFieldResponseFileBuffer,
+        )
+        if (value) {
+          acc[field._id] = value
+        }
+
+        // Only allow overriding of previous submission values if the field can be edited in this step.
+        if (isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field)) {
+          // Reinstate save draft values
+          if (
+            isSaveDraftEnabled &&
+            draftResponsesToRestore &&
+            draftResponsesToRestore[field._id]
+          ) {
+            acc[field._id] = draftResponsesToRestore[field._id]
+          }
+          // Use prefill value if exists
+          if (fieldPrefillMap[field._id]) {
+            acc[field._id] = fieldPrefillMap[field._id].prefillValue
+          }
+        }
+      } else if (formResponseMode === FormResponseMode.Encrypt) {
+        // Reinstate save draft values
+        if (
+          isSaveDraftEnabled &&
+          draftResponsesToRestore &&
+          draftResponsesToRestore[field._id]
+        ) {
+          acc[field._id] = draftResponsesToRestore[field._id]
+        }
+        // Use prefill value if exists.
+        if (fieldPrefillMap[field._id]) {
+          acc[field._id] = fieldPrefillMap[field._id].prefillValue
+        }
+        // Use myinfo server default value if it exists.
+        // Myinfo overrides existing values since myinfo is seen as source of truth.
+        if (hasExistingFieldValue(field)) {
+          acc[field._id] = extractPreviewValue(field)
+        }
+      }
+
+      if (!acc[field._id]) {
+        // Required so table column fields will render due to useFieldArray usage.
+        // See https://react-hook-form.com/api/usefieldarray
+        if (field.fieldType === BasicField.Table) {
+          acc[field._id] = times(field.minimumRows || 0, () =>
+            createTableRow(field),
+          )
+        } else {
+          // Set a default value for React Hook form to use as initial SSOT for comparing if field is dirty. This is used for Save Draft.
+          acc[field._id] = ''
+        }
+      }
+
+      return acc
+    },
+    {},
+  )
+
+  // Payment prefills - only for variable payments
+  if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {
+    const paymentParamValue = Number.parseInt(
+      searchParams.get(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID) ?? '',
+      10,
+    )
+    if (Number.isInteger(paymentParamValue) && paymentParamValue > 0) {
+      const paymentAmount = centsToDollars(Number(paymentParamValue))
+      defaultFormValues[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID] = paymentAmount
+    }
+  }
+
+  defaultFormValues[RESPONDENT_EMAIL_FIELD_ID] = []
+
+  return defaultFormValues
+}
+
+const getSaveDraftKey = ({
+  formId,
+  formSubmissionId,
+  isMrf,
+  currentMrfWorkflowStepNumber,
+}: {
+  formId: string
+  formSubmissionId?: string
+  isMrf: boolean
+  currentMrfWorkflowStepNumber: number
+}) => {
+  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
+  return [
+    FORMSG_SAVE_DRAFT_PREFIX,
+    formId,
+    formSubmissionId,
+    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
+  ]
+    .filter(Boolean)
+    .join('-')
+}
+
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
   children,
   startTime,
+  isPublicFormPage = false,
 }: PublicFormProviderProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const selectedLanguage = i18n.language as Language
@@ -197,7 +384,12 @@ export const PublicFormProvider = ({
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
   const {
-    data,
+    /**
+     * Contains the latest form definition.
+     * @note The latest form definition should not be used for >= 2nd step of MRF submission which should use snapshotted form definition for consistency.
+     * @see mrfConsistentFormData For form data that is safe to use for both storage mode/1st step MRF and >= 2nd step MRF
+     */
+    data: latestFormData,
     isLoading: isFormLoading,
     error: publicFormError,
     ...rest
@@ -206,6 +398,42 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+
+  const {
+    data: encryptedPreviousSubmission,
+    isLoading: isSubmissionLoading,
+    error: encryptedSubmissionError,
+  } = useEncryptedSubmission(
+    formId,
+    previousSubmissionId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
+  )
+
+  /**
+   * Form data to render this public form submission.
+   *
+   * The form, logic, and workflow fields are converged by this pre-processing step.
+   *
+   * This makes it safe to use for both:
+   * - storage mode and 1st step of MRF, which uses the latest form definition.
+   * - MRF >= 2nd step, which uses the snapshotted form definition from the current submission to maintain consistency.
+   *
+   * @returns Form data with latest form definition if Storage mode or 1st step of MRF, otherwise snapshotted form definition for >= 2nd step of MRF.
+   */
+  const data = useMemo(() => {
+    return latestFormData && encryptedPreviousSubmission
+      ? {
+          ...latestFormData,
+          form: {
+            ...latestFormData.form,
+            form_fields: encryptedPreviousSubmission.form_fields,
+            form_logics: encryptedPreviousSubmission.form_logics,
+            workflow: encryptedPreviousSubmission.workflow,
+          },
+        }
+      : latestFormData
+  }, [latestFormData, encryptedPreviousSubmission])
 
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
@@ -250,17 +478,6 @@ export const PublicFormProvider = ({
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
-
-  const {
-    data: encryptedPreviousSubmission,
-    isLoading: isSubmissionLoading,
-    error: encryptedSubmissionError,
-  } = useEncryptedSubmission(
-    formId,
-    previousSubmissionId,
-    // Stop querying once submissionData is present.
-    /* enabled= */ !submissionData,
-  )
 
   const isLoading = isFormLoading || isSubmissionLoading
   const error = publicFormError || encryptedSubmissionError
@@ -360,15 +577,6 @@ export const PublicFormProvider = ({
       )
     } else {
       setIsSubmissionSecretKeyInvalid(true)
-    }
-  }
-
-  // Replace form fields, logic, and workflow with the previous version for MRF consistency.
-  if (data && encryptedPreviousSubmission) {
-    data.form.form_fields = encryptedPreviousSubmission.form_fields
-    data.form.form_logics = encryptedPreviousSubmission.form_logics
-    if (data.form.responseMode === FormResponseMode.Multirespondent) {
-      data.form.workflow = encryptedPreviousSubmission.workflow
     }
   }
 
@@ -536,6 +744,190 @@ export const PublicFormProvider = ({
     previousSubmission?.submissionSecretKey,
   )
 
+  const form = data?.form
+  const formFields = useMemo(() => {
+    if (!form) return []
+    return form.form_fields
+  }, [form])
+  const previousWorkflowStepNumber = encryptedPreviousSubmission?.workflowStep
+  const currentWorkflowStepNumber =
+    previousWorkflowStepNumber !== undefined
+      ? previousWorkflowStepNumber + 1
+      : 0
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+  const currentStepNumberWorkflowStep =
+    formWorkflow && formWorkflow.length > currentWorkflowStepNumber
+      ? formWorkflow[currentWorkflowStepNumber]
+      : undefined
+
+  const isAuthRequired: boolean = useMemo(
+    () => !!form && form.authType !== FormAuthType.NIL && !data.spcpSession,
+    [form, data?.spcpSession],
+  )
+
+  const fieldPrefillMap = useMemo(
+    () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
+    [formFields, searchParams],
+  )
+  const augmentedFormFields = useMemo(
+    () =>
+      formFields
+        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        : [],
+    [formFields, currentStepNumberWorkflowStep],
+  )
+
+  const formDraftSubmissionKey = getSaveDraftKey({
+    formId,
+    formSubmissionId: previousSubmissionId,
+    isMrf: form?.responseMode === FormResponseMode.Multirespondent,
+    currentMrfWorkflowStepNumber: currentWorkflowStepNumber,
+  })
+
+  const memoizedInitialValue = useMemo(
+    () => ({
+      lastUpdated: null,
+      draftResponses: null,
+      fieldDefinitionsChecksum: null,
+    }),
+    [],
+  )
+  const [draftSubmission, setDraftSubmission, clearDraftSubmission] =
+    useIndexedDb<DraftSubmission>({
+      key: formDraftSubmissionKey,
+      initialValue: memoizedInitialValue,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+
+  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+  const isSaveDraftFeatureEnabled =
+    useFeatureIsOn(featureFlags.saveDraft) || isTest
+  const isSaveDraftEnabled =
+    isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
+  const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
+    return getRestoreDraftFormValues({
+      currentFormFields: formFields,
+      savedDraftSubmission: draftSubmission,
+    })
+  }, [draftSubmission?.lastUpdated, formFields])
+
+  const hasDraft = Boolean(draftSubmission?.lastUpdated)
+  const hasShownRestoredDraftToast = useRef<boolean>(false)
+  const showRestoredDraftToast = useCallback(
+    ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
+      const restoreDraftMessage = hasChangedDraftFields
+        ? t(
+            'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+          )
+        : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+      toast({
+        description: restoreDraftMessage,
+      })
+    },
+    [t, toast],
+  )
+  const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
+
+  useEffect(() => {
+    if (
+      !hasShownRestoredDraftToast.current &&
+      isSaveDraftEnabled &&
+      !isAuthRequired &&
+      hasDraft &&
+      isPublicFormPage
+    ) {
+      showRestoredDraftToast({
+        hasChangedDraftFields: hasUnrestorableFields,
+      })
+      hasShownRestoredDraftToast.current = true
+    }
+  }, [
+    isSaveDraftEnabled,
+    hasDraft,
+    hasUnrestorableFields,
+    hasShownRestoredDraftToast.current,
+    showRestoredDraftToast,
+    isPublicFormPage,
+  ])
+
+  const defaultFormValues = useMemo(() => {
+    if (!form?.responseMode) return {}
+    return getInitialFormValues({
+      formResponseMode: form?.responseMode,
+      previousSubmission,
+      previousAttachments,
+      augmentedFormFields,
+      currentStepNumberWorkflowStep,
+      fieldPrefillMap,
+      draftResponsesToRestore,
+      searchParams,
+      isSaveDraftEnabled,
+    })
+  }, [
+    form?.responseMode,
+    previousSubmission,
+    previousAttachments,
+    augmentedFormFields,
+    currentStepNumberWorkflowStep,
+    fieldPrefillMap,
+    draftResponsesToRestore,
+    searchParams,
+    isSaveDraftEnabled,
+  ])
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+    mode: 'onTouched',
+  })
+
+  // Reset default values when they change
+  const {
+    formState: { isDirty },
+    reset,
+  } = formMethods
+  useEffect(() => {
+    if (!isDirty) {
+      reset(defaultFormValues)
+    }
+  }, [defaultFormValues, isDirty, reset])
+
+  const onSaveDraft = () => {
+    // Used to track save draft usage
+    datadogLogs.logger.info('Save draft used', {
+      meta: {
+        action: 'save-draft-used',
+        formId,
+      },
+    })
+
+    const {
+      formState: { dirtyFields },
+    } = formMethods
+
+    const draftToSave = getDraftToSave({
+      previousRestoredDraftResponses: draftResponsesToRestore,
+      currentFormFieldValues: formMethods.getValues(),
+      dirtyFieldIds: Object.keys(dirtyFields),
+      formFields,
+    })
+
+    setDraftSubmission(draftToSave)
+
+    // Prevent restore toast from showing if the draft is created in the same session.
+    hasShownRestoredDraftToast.current = true
+
+    toast({
+      description: t('features.publicForm.components.saveDraft.toast.success'),
+    })
+  }
+
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
   const handleLogout = useCallback(() => {
@@ -675,7 +1067,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitEmailFormWithFetch()
+            return submitEmailFormWithFetch().then(() => clearDraftSubmission())
           } else {
             datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
               meta: {
@@ -694,6 +1086,7 @@ export const PublicFormProvider = ({
                   },
                   { onSuccess },
                 )
+                .then(() => clearDraftSubmission())
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
@@ -810,7 +1203,9 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch()
+            return submitStorageFormWithFetch().then(() =>
+              clearDraftSubmission(),
+            )
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -855,6 +1250,7 @@ export const PublicFormProvider = ({
                 },
               },
             )
+            .then(() => clearDraftSubmission())
             .catch(async (error) => {
               postIFrameMessage({ state: 'submitError' })
               // TODO(#5826): Remove when we have resolved the Network Error
@@ -895,6 +1291,7 @@ export const PublicFormProvider = ({
                 })
               },
             })
+            .then(() => clearDraftSubmission())
             .catch(async (error) => {
               showErrorToast(error, form)
             })
@@ -922,18 +1319,12 @@ export const PublicFormProvider = ({
       formId,
       storePaymentMemory,
       clearRespondentAccessErrors,
+      selectedLanguage,
+      clearDraftSubmission,
     ],
   )
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
-
-  const isAuthRequired = useMemo(
-    () =>
-      !!data?.form &&
-      data.form.authType !== FormAuthType.NIL &&
-      !data.spcpSession,
-    [data?.form, data?.spcpSession],
-  )
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -962,6 +1353,17 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
+        isSaveDraftEnabled,
+        draftLastSavedDateTimeString: draftSubmission?.lastUpdated
+          ? format(
+              new Date(draftSubmission.lastUpdated),
+              'do MMM yyyy, h:mm:ss a',
+            )
+          : undefined,
+        onSaveDraft,
+        defaultFormValues,
+        augmentedFormFields,
+        fieldPrefillMap,
         ...commonFormValues,
         ...data,
         ...rest,
@@ -975,7 +1377,7 @@ export const PublicFormProvider = ({
       {formNotFoundMessage ? (
         <FormNotFound {...formNotFoundMessage} />
       ) : (
-        children
+        <FormProvider {...formMethods}>{children}</FormProvider>
       )}
     </PublicFormContext.Provider>
   )

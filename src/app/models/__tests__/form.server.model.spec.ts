@@ -95,6 +95,7 @@ const FORM_DEFAULTS = {
     titleTranslations: [],
     paragraphTranslations: [],
   },
+  isSaveDraftEnabled: false,
   hasCaptcha: true,
   hasIssueNotification: true,
   hasMultiLang: false,
@@ -2771,6 +2772,7 @@ describe('Form Model', () => {
           authType: FormAuthType.SP,
           isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
+          isSaveDraftEnabled: true,
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
           submissionLimit: 1000,
@@ -2801,6 +2803,9 @@ describe('Form Model', () => {
         )
         expect(duplicatedForm.isSingleSubmission).toEqual(
           MOCK_ALL_FORM_PARAMS.isSingleSubmission,
+        )
+        expect(duplicatedForm.isSaveDraftEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSaveDraftEnabled,
         )
       })
 
