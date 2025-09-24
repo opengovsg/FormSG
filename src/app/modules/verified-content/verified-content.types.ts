@@ -35,8 +35,13 @@ export type SgidVerifiedContent = {
 
 export type VerifiedContentResult<T> = Result<T, MalformedVerifiedContentError>
 
+export type VerifiedContent =
+  | CpVerifiedContent
+  | SpVerifiedContent
+  | SgidVerifiedContent
+
 export type EncryptVerificationContentParams = {
-  verifiedContent: CpVerifiedContent | SpVerifiedContent | SgidVerifiedContent
+  verifiedContent: VerifiedContent | VerifiedContent[]
   formPublicKey: string
 }
 

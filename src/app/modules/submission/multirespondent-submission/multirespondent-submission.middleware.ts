@@ -49,6 +49,7 @@ import {
   createMyInfoResponsesV3,
 } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import { VerifiedContent } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -840,76 +841,76 @@ export const handleNdiResponses = async (
   const { authType, publicKey } = formDef
 
   const logMeta = {
-    action: 'submitEncryptModeForm',
+    action: 'handleNdiResponses',
     ...createReqMeta(req),
     formId,
   }
 
+  const ndiResponses: VerifiedContent[] = []
+  // If there is existing verifiedContent, collect that first
+  const prevVerifiedContent = req.formsg.mrfSubmission?.verifiedContent
+  // if (prevVerifiedContent) {
+  //   ndiResponses.push()
+  // }
+
   // Checks if user is SPCP-authenticated before allowing submission
   let userName
   let userInfo
+  let jwtPayloadResult
   switch (authType) {
     case FormAuthType.CP: {
       const oidcService = getOidcService(FormAuthType.CP)
-      const jwtPayloadResult = await oidcService
+      jwtPayloadResult = await oidcService
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify Corppass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
+
+      if (jwtPayloadResult.isOk()) {
+        userName = jwtPayloadResult.value.userName
+        userInfo = jwtPayloadResult.value.userInfo
       }
-      userName = jwtPayloadResult.value.userName
-      userInfo = jwtPayloadResult.value.userInfo
       break
     }
     case FormAuthType.MyInfo: {
-      const jwtPayloadResult = await extractMyInfoLoginJwt(
-        req.cookies,
-        authType,
-      )
+      jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies, authType)
         .andThen(MyInfoService.verifyLoginJwt)
         .map(({ uinFin }) => {
           return uinFin
         })
-        .mapErr((error) => {
-          logger.error({
-            message: `Error verifying MyInfo hashes`,
-            meta: logMeta,
-            error,
-          })
-          return error
-        })
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: `Failed to verify Singpass JWT with auth client`,
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
+
+      if (jwtPayloadResult.isOk()) {
+        userName = jwtPayloadResult.value
       }
-      userName = jwtPayloadResult.value
       break
+    }
+    default:
+    // TODO: throw an error
+  }
+
+  if (jwtPayloadResult?.isErr()) {
+    // secondary clause check
+    if (!prevVerifiedContent) {
+      const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
+      logger.error({
+        message: `Failed to verify ${authType} JWT with auth client`,
+        meta: logMeta,
+        error: jwtPayloadResult.error,
+      })
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure: true,
+      })
+    } else {
+      // log but continue
+      logger.info({
+        message: `JWT verification failed but continuing because is prevVerifiedContent present`,
+        meta: logMeta,
+      })
     }
   }
 
-  // add verifiedContent to req, to be added to submission downstream
+  // add or get verifiedContent to req, to be added to submission downstream
   if (
+    !jwtPayloadResult?.isErr() &&
     formDef.isSubmitterIdCollectionEnabled &&
     (authType === FormAuthType.CP || authType === FormAuthType.MyInfo)
   ) {
@@ -917,12 +918,14 @@ export const handleNdiResponses = async (
       VerifiedContentService.getVerifiedContent({
         type: authType,
         data: { uinFin: userName, userInfo },
-      }).andThen((verifiedContent) =>
-        VerifiedContentService.encryptVerifiedContent({
+      }).andThen((verifiedContent) => {
+        ndiResponses.push(verifiedContent)
+
+        return VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
           formPublicKey: publicKey,
-        }),
-      )
+        })
+      })
 
     if (encryptVerifiedContentResult.isErr()) {
       const { error } = encryptVerifiedContentResult

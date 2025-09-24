@@ -267,6 +267,7 @@ export const handleUpdateMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
+  MultirespondentSubmissionMiddleware.handleNdiResponses,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
 

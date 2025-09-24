@@ -403,8 +403,7 @@ const sendMrfOutcomeEmails = ({
         if (!isWorkflowCompleted && !isRejected) {
           return okAsync(true)
         }
-        console.log('form fields', form.form_fields)
-        console.log('responses', responses)
+
         const formQuestionAnswers = getQuestionTitleAnswerString({
           formFields: form.form_fields,
           responses,
