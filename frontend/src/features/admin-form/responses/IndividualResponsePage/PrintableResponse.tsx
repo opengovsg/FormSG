@@ -14,7 +14,7 @@ import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augme
 import { useIndividualSubmission } from './queries'
 import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
-const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width 
+const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width
 
 const TableRow = ({ children }: { children: React.ReactNode }) => (
   <tr
@@ -24,6 +24,8 @@ const TableRow = ({ children }: { children: React.ReactNode }) => (
       breakInside: 'avoid' as const,
       borderTop: '1px solid',
       borderColor: '#eee',
+      fontSize: '14px',
+      borderCollapse: 'collapse',
     }}
   >
     {children}
@@ -31,14 +33,14 @@ const TableRow = ({ children }: { children: React.ReactNode }) => (
 )
 
 const PaddingStyle = {
-  paddingTop: '24px',
-  paddingBottom: '24px',
+  padding: '8px 4px',
 }
 
 const TableFullItem = ({ children }: { children: React.ReactNode }) => (
   <td
     colSpan={2}
     style={{
+      verticalAlign: 'top',
       width: '100%',
     }}
   >
@@ -50,6 +52,7 @@ const TableSingleColItem = ({ children }: { children: React.ReactNode }) => (
   <td
     width="50%"
     style={{
+      verticalAlign: 'top',
       width: '50%',
     }}
   >
@@ -67,7 +70,7 @@ const PrintableDecryptedRow = ({
       return (
         <TableRow>
           <TableFullItem>
-            <Text align="center" textStyle="h3">
+            <Text style={{ fontSize: '18px', fontWeight: 500 }}>
               {row.question}
             </Text>
           </TableFullItem>
@@ -100,15 +103,13 @@ const PrintableDecryptedRow = ({
     case BasicField.Signature:
       return (
         <TableRow>
+          <TableSingleColItem>{row.question}</TableSingleColItem>
           <TableSingleColItem>
-            {row.question}
-          </TableSingleColItem>
-          <TableSingleColItem>
-            <Center
-              width="100%"
-              display="block"
-            >
-              <RenderedSignatureCanvas row={row} widthPx={SIGNATURE_PDF_FIXED_WIDTH} />
+            <Center width="100%">
+              <RenderedSignatureCanvas
+                row={row}
+                widthPx={SIGNATURE_PDF_FIXED_WIDTH}
+              />
             </Center>
           </TableSingleColItem>
         </TableRow>
@@ -159,10 +160,15 @@ const PrintableResponse = () => {
         bgColor="#484848"
         color="white"
       >
-        <Text textStyle="h2">{form?.title}</Text>
-        <Text textDecor="underline">{`${window.location.origin}/${form?._id}`}</Text>
+        <Text style={{ fontSize: '30px' }}>{form?.title}</Text>
+        <Text
+          as="a"
+          color="white"
+          textDecor="underline"
+          textDecorationColor="white"
+        >{`${window.location.origin}/${form?._id}`}</Text>
       </Box>
-      <Box mx="32px">
+      <Box mx="5%" my="30px">
         <PrintableResponseRows decryptedResponses={data?.responses} />
       </Box>
     </Box>
