@@ -14,6 +14,8 @@ import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augme
 import { useIndividualSubmission } from './queries'
 import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
 
+const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width 
+
 const TableRow = ({ children }: { children: React.ReactNode }) => (
   <tr
     style={{
@@ -106,7 +108,7 @@ const PrintableDecryptedRow = ({
               width="100%"
               display="block"
             >
-              <RenderedSignatureCanvas row={row} />
+              <RenderedSignatureCanvas row={row} widthPx={SIGNATURE_PDF_FIXED_WIDTH} />
             </Center>
           </TableSingleColItem>
         </TableRow>

@@ -18,57 +18,21 @@ import { drawStroke } from '~utils/convertSignatureOutput'
 import { DecryptedRowBaseProps } from './DecryptedRow'
 import { useMeasure } from '~hooks/useMeasure'
 
-const getHorizontallyFilled = ({
-  maxX, 
-  maxY, 
-  availableWidth,
-  dpr, 
-}: {
-  maxX: number
-  maxY: number
-  availableWidth: number
-  dpr: number 
-}) => {
-  const logicalWidth = maxX * dpr
-  const logicalHeight = maxY * dpr
-  // The scaling factor is the ratio such that the signature fits within the available width. 
-  const scalingFactor = Math.min(availableWidth / logicalWidth, 1) 
-  const scaledWidth = logicalWidth * scalingFactor
-  const scaledHeight = logicalHeight * scalingFactor
-
-  const exceedsMax = scaledWidth > maxX
-
-  if (exceedsMax) {
-    // Then use the maximum 
-    return {
-      // Set the logical size to the scaled dpr size of the signature
-      adjustedLogicalWidth: logicalWidth,
-      adjustedLogicalHeight: logicalHeight,
-      // Scale the context to account for dpr
-      adjustedScalingFactor: dpr,
-      // Set the size of the canvas to the maximum size of the signature 
-      actualWidth: maxX,
-      actualHeight: maxY
-    }
-  } else {
-    return {
-      // Set the logical size to the scaled dpr * scaling factor size of the signature
-      adjustedLogicalWidth: scaledWidth,
-      adjustedLogicalHeight: scaledHeight,
-      // Scale the context to account for dpr and scaling factor
-      adjustedScalingFactor: scalingFactor * dpr,
-      actualWidth: scaledWidth,
-      actualHeight: scaledHeight
-    }
-  }
+interface RenderedSignatureCanvasSizeProps {
+  /**
+   * Size of the signature in pixels.
+   * If not provided, the signature will be scaled to fit the container.
+   */
+  widthPx: number
 }
 
 export const RenderedSignatureCanvas = ({
   row,
-}: DecryptedRowBaseProps): JSX.Element => {
+  widthPx,
+}: DecryptedRowBaseProps & RenderedSignatureCanvasSizeProps): JSX.Element => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>()
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
+  const [img, setImg] = useState<string | null>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -89,31 +53,22 @@ export const RenderedSignatureCanvas = ({
       // No signature - shrink canvas to minimal size
       canvas.width = 0
       canvas.height = 0
-      setCanvasSize({ width: 0, height: 0 })
       return
     }
 
     const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-
     const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
+
     // apply devicePixelRatio to maintain sharpness
     const dpr = window.devicePixelRatio || 1
+    canvas.width = maxX * dpr
+    canvas.height = maxY * dpr
+    // keep the CSS size same as logical size
+    canvas.style.width = `${maxX}px`
+    canvas.style.height = `${maxY}px`
 
-    const { adjustedLogicalWidth, adjustedLogicalHeight, adjustedScalingFactor, actualWidth, actualHeight } = getHorizontallyFilled({
-      maxX,
-      maxY,
-      availableWidth: containerWidth || 300,
-      dpr
-    })
-
-    canvas.width = adjustedLogicalWidth 
-    canvas.height = adjustedLogicalHeight
-
-    canvas.style.width = `${actualWidth}px`
-    canvas.style.height = `${actualHeight}px`
-
-    ctx.scale(adjustedScalingFactor, adjustedScalingFactor)
-    setCanvasSize({ width: actualWidth, height: actualHeight })
+    // Scale the context to account for dpr
+    ctx.scale(dpr, dpr)
 
     // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
     vectorArray.forEach((stroke) => {
@@ -130,20 +85,23 @@ export const RenderedSignatureCanvas = ({
       })
       drawStroke(ctx, pathData)
     })
-  }, [row.answerArray, containerWidth])
+
+    // Convert to image so that it is responsive to screen size and
+    // maintains sharpness of original canvas
+    const img = canvas.toDataURL('image/png', 1)
+    setImg(img)
+  }, [row.answerArray])
 
   return (
-    <Box ref={containerRef} width="100%">
-      <Box
-        background="white"
-        maxWidth="100%"
-        width={`${canvasSize.width}px`}
-        height={`${canvasSize.height}px`}
-        borderColor="neutral.400"
-        borderRadius="0.25rem"
-      >
-        <canvas ref={canvasRef} />
-      </Box>
+    <Box
+      ref={containerRef}
+      background="white"
+      width={widthPx ?? '100%'}
+      borderColor="neutral.400"
+      borderRadius="0.25rem"
+    >
+      {img && <img width={widthPx ?? containerWidth} src={img} />}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </Box>
   )
 }
