@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Stack } from '@chakra-ui/react'
+import { Divider, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -16,7 +16,6 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { EditStepInputs } from '../../../types'
-import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'

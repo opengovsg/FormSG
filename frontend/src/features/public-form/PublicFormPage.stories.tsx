@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
 import { ErrorCode } from '~shared/types'
@@ -176,6 +176,7 @@ WithPrefilledNormalFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
         },
       },
@@ -196,6 +197,7 @@ WithPrefilledLockedFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [PREFILLABLE_LOCKED_SHORTTEXT_FIELD],
         },
       },
@@ -216,6 +218,7 @@ WithPrefilledLockedAndNormalFields.parameters = {
       delay: 0,
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: [
             PREFILLABLE_LOCKED_SHORTTEXT_FIELD,
             PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
@@ -798,6 +801,7 @@ WithMyInfo.parameters = {
     getPublicFormResponse({
       overrides: {
         form: {
+          responseMode: FormResponseMode.Encrypt,
           form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
         },
       },
@@ -877,4 +881,183 @@ WithRespondentCopy.parameters = {
     }),
     ...DEFAULT_MSW_HANDLERS,
   ],
+}
+
+export const WithSaveDraftEnabled = Template.bind({})
+WithSaveDraftEnabled.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const WithSaveDraftEnabledMobile = Template.bind({})
+WithSaveDraftEnabledMobile.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  ...getMobileViewParameters(),
+}
+
+export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton =
+  Template.bind({})
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+  const screen = within(document.body)
+
+  let floatingSaveDraftButton: HTMLElement
+
+  await step('Find the floating save draft button', async () => {
+    await waitFor(
+      async () => {
+        const foundFloatingSaveDraftButton =
+          canvas.getByLabelText('Save a draft')
+        floatingSaveDraftButton = foundFloatingSaveDraftButton
+        expect(floatingSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the floating save draft button', async () => {
+    await userEvent.click(floatingSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Your draft has been saved.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(floatingSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that a tooltip appears reflecting that draft has been saved',
+    async () => {
+      let tooltip: HTMLElement | null = null
+      await waitFor(
+        () => {
+          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
+          expect(tooltip).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+    },
+  )
+}
+
+export const WithSaveDraftEnabledAndClickSaveDraftButton = Template.bind({})
+WithSaveDraftEnabledAndClickSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+  const screen = within(document.body)
+
+  let mainSaveDraftButton: HTMLElement
+
+  await step('Find the main save draft button', async () => {
+    await waitFor(
+      () => {
+        const foundMainSaveDraftButton = canvas
+          .getAllByRole('button', {
+            name: 'Save a draft',
+          })
+          .find((button) => button.textContent?.includes('Save a draft'))
+        if (!foundMainSaveDraftButton) {
+          throw new Error('Main save draft button not found')
+        }
+        mainSaveDraftButton = foundMainSaveDraftButton
+        expect(foundMainSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the main save draft button', async () => {
+    await userEvent.click(mainSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        () => {
+          expect(document.body).toHaveTextContent('Your draft has been saved.')
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(mainSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that a tooltip appears reflecting that draft has been saved',
+    async () => {
+      await waitFor(
+        async () => {
+          const tooltip = await screen.getByRole('tooltip', {
+            name: /Last saved/i,
+          })
+          expect(tooltip).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+    },
+  )
 }

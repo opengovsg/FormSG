@@ -12,13 +12,13 @@ import {
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { augmentWithQuestionNo } from '~features/form/utils'
+import { augmentFieldWithQuestionNo } from '~features/form/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils'
 
 export const useAdminFormWorkflow = () => {
   const { data: form, isLoading } = useAdminForm()
 
-  const augmentedFormFields = augmentWithQuestionNo(
+  const augmentedFormFields = augmentFieldWithQuestionNo(
     form?.form_fields.map(augmentWithMyInfo) ?? [],
   )
 
