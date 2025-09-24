@@ -105,12 +105,10 @@ const PrintableDecryptedRow = ({
         <TableRow>
           <TableSingleColItem>{row.question}</TableSingleColItem>
           <TableSingleColItem>
-            <Center width="100%">
-              <RenderedSignatureCanvas
-                row={row}
-                widthPx={SIGNATURE_PDF_FIXED_WIDTH}
-              />
-            </Center>
+            <RenderedSignatureCanvas
+              row={row}
+              widthPx={SIGNATURE_PDF_FIXED_WIDTH}
+            />
           </TableSingleColItem>
         </TableRow>
       )
