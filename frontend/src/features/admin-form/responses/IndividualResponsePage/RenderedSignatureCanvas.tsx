@@ -23,7 +23,7 @@ interface RenderedSignatureCanvasSizeProps {
    * Size of the signature in pixels.
    * If not provided, the signature will be scaled to fit the container.
    */
-  widthPx: number
+  widthPx?: number
 }
 
 export const RenderedSignatureCanvas = ({
