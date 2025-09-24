@@ -146,10 +146,15 @@ const PrintableResponseRows = ({
   )
 }
 
-const PrintableResponse = () => {
-  const { data: form } = useAdminForm()
-  const { data, isLoading, isError } = useIndividualSubmission()
-  if (isLoading || isError || !data?.responses) return null
+export const PrintableResponse = ({
+  formTitle,
+  formId,
+  decryptedResponses,
+}: {
+  formTitle: string
+  formId: string
+  decryptedResponses: AugmentedDecryptedResponse[]
+}) => {
   return (
     <Box py="16px" fontFamily="sans-serif">
       <Box
@@ -160,25 +165,33 @@ const PrintableResponse = () => {
         bgColor="#484848"
         color="white"
       >
-        <Text style={{ fontSize: '30px' }}>{form?.title}</Text>
+        <Text style={{ fontSize: '30px' }}>{formTitle}</Text>
         <Text
           as="a"
           color="white"
           textDecor="underline"
           textDecorationColor="white"
-        >{`${window.location.origin}/${form?._id}`}</Text>
+        >{`${window.location.origin}/${formId}`}</Text>
       </Box>
       <Box mx="5%" my="30px">
-        <PrintableResponseRows decryptedResponses={data?.responses} />
+        <PrintableResponseRows decryptedResponses={decryptedResponses} />
       </Box>
     </Box>
   )
 }
 
-const PrintableResponseContainer = forwardRef<HTMLDivElement>((props, ref) => {
+const PrintableResponseContainer = forwardRef<HTMLDivElement>((_, ref) => {
+  const { data: form } = useAdminForm()
+  const { data, isLoading, isError } = useIndividualSubmission()
+  if (isLoading || isError || !form || !data?.responses) return null
+
   return (
     <Box ref={ref} sx={showOnlyWhenPrintCss}>
-      <PrintableResponse />
+      <PrintableResponse
+        formTitle={form.title}
+        formId={form._id}
+        decryptedResponses={data?.responses}
+      />
     </Box>
   )
 })
