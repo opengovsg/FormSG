@@ -2,8 +2,9 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { PrintableResponse } from './PrintableResponse'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
+
+import { PrintableResponse } from './PrintableResponse'
 
 export default {
   title: 'Features/AdminForm/Responses/PrintableResponse',

@@ -13,10 +13,10 @@ import {
   SIGNATURE_STROKE_THINNING,
 } from '~shared/utils/signature'
 
+import { useMeasure } from '~hooks/useMeasure'
 import { drawStroke } from '~utils/convertSignatureOutput'
 
 import { DecryptedRowBaseProps } from './DecryptedRow'
-import { useMeasure } from '~hooks/useMeasure'
 
 interface RenderedSignatureCanvasSizeProps {
   /**
