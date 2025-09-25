@@ -36,23 +36,6 @@ export const enSG: PublicForm = {
       proceedToPay: 'Proceed to pay',
       submitNow: 'Submit now',
     },
-    saveDraft: {
-      toast: {
-        success: 'Your draft has been saved.',
-        restoredAllFields: 'Your draft has been successfully restored.',
-        restoredOnlyUnchangedFields:
-          'Some fields were not restored as the form has been updated.',
-        previewNoDraftSaved:
-          'Since you are in preview mode, there is no draft saved.',
-      },
-      tooltip: {
-        default: 'Save a draft',
-        lastSaved: 'Last saved: {lastSavedDateTimeString}',
-      },
-      button: {
-        label: 'Save a draft',
-      },
-    },
     table,
     fields,
     feedbackBlock: {

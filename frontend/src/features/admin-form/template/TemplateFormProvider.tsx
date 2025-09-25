@@ -1,25 +1,18 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router-dom'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, FormResponseMode } from '~shared/types/form'
+import { FormAuthType } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
 import { PublicFormContext } from '~/features/public-form/PublicFormContext'
-import {
-  augmentFormFields,
-  getFieldPrefillMap,
-  useCommonFormProvider,
-} from '~/features/public-form/PublicFormProvider'
+import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
-import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 
@@ -83,51 +76,6 @@ export const TemplateFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  const onSaveDraft = () => {
-    toast({
-      description: t(
-        'features.publicForm.components.saveDraft.toast.previewNoDraftSaved',
-      ),
-    })
-  }
-
-  const [searchParams] = useSearchParams()
-
-  const form = data?.form
-  const formFields = useMemo(() => {
-    if (!form) return []
-    return form.form_fields
-  }, [form])
-  const currentWorkflowStepNumber = 0
-  const formWorkflow =
-    form?.responseMode === FormResponseMode.Multirespondent
-      ? form.workflow
-      : undefined
-  const currentStepNumberWorkflowStep =
-    formWorkflow && formWorkflow.length > currentWorkflowStepNumber
-      ? formWorkflow[currentWorkflowStepNumber]
-      : undefined
-
-  const fieldPrefillMap = useMemo(
-    () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
-    [formFields, searchParams],
-  )
-  const augmentedFormFields = useMemo(
-    () =>
-      formFields
-        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
-        : [],
-    [formFields, currentStepNumberWorkflowStep],
-  )
-
-  const defaultFormValues = useMemo(() => ({}), [])
-
-  const formMethods = useForm<FormFieldValues>({
-    defaultValues: defaultFormValues,
-  })
-
-  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
-
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -144,11 +92,6 @@ export const TemplateFormProvider = ({
         handleLogout: undefined,
         isPreview: true,
         isPaymentEnabled: false,
-        onSaveDraft,
-        isSaveDraftEnabled,
-        defaultFormValues,
-        augmentedFormFields,
-        fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
@@ -163,11 +106,7 @@ export const TemplateFormProvider = ({
             : data?.form.title
         }
       />
-      {isFormNotFound ? (
-        <FormNotFound message={error?.message} />
-      ) : (
-        <FormProvider {...formMethods}>{children}</FormProvider>
-      )}
+      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )
 }
