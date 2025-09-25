@@ -1,3 +1,4 @@
+import { Address } from 'cluster'
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
@@ -14,7 +15,11 @@ import {
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
 } from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+} from '~shared/types/field'
 import {
   AddressResponse,
   AttachmentResponse,
