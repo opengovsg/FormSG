@@ -17,7 +17,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Formats MyInfo attribute as phone number
  * @param phone
- * @example +65 98654321
+ * @example +6598654321
  * @returns Phone number if phone.nbr exists. Else return empty string.
  */
 export const formatPhoneNumber = (
@@ -26,7 +26,7 @@ export const formatPhoneNumber = (
   if (!phone || phone.unavailable || !phone.nbr.value) return ''
 
   return phone.prefix.value && phone.areacode.value
-    ? `${phone.prefix.value}${phone.areacode.value} ${phone.nbr.value}`
+    ? `${phone.prefix.value}${phone.areacode.value}${phone.nbr.value}`
     : phone.nbr.value
 }
 

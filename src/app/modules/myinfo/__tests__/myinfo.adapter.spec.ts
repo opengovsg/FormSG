@@ -74,7 +74,7 @@ describe('myinfo.adapter', () => {
           // code: '65',
           // prefix: '+',
           // nbr: '97324992',
-          const expected = '+65 97324992'
+          const expected = '+6597324992'
           const response: IPersonResponse = {
             uinFin: MOCK_UINFIN,
             data: MYINFO_MOBILENO_AVAILABLE,
