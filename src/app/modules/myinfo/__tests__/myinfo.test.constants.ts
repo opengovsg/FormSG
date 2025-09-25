@@ -91,7 +91,7 @@ export const MOCK_HASHED_FIELD_IDS = new Set(
 
 const populatedValues = [
   { fieldValue: 'TAN XIAO HUI', disabled: true },
-  { fieldValue: '+65 97324992', disabled: false },
+  { fieldValue: '+6597324992', disabled: false },
   {
     fieldValue: '548 BEDOK NORTH AVENUE 1, #09-128, SINGAPORE 460548',
     disabled: false,
