@@ -689,6 +689,16 @@ export const duplicateForm = (
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
+  if (duplicateParams?.form_fields) {
+    duplicateParams.form_fields.forEach((field) => {
+      if (field.fieldType === BasicField.Dropdown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (field as any).optionsToRecipientsMap = undefined
+        console.log(field)
+      }
+    })
+  }
+
   if (workspaceId)
     return ResultAsync.fromPromise(
       createFormInWorkspaceTransaction(duplicateParams, workspaceId),
