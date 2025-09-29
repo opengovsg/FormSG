@@ -692,8 +692,7 @@ export const duplicateForm = (
   if (duplicateParams?.form_fields) {
     duplicateParams.form_fields.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ; (field as any).optionsToRecipientsMap = undefined
+        ;(field as any).optionsToRecipientsMap = undefined
       }
     })
   }
