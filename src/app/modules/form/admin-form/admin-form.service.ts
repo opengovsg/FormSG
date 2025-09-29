@@ -689,9 +689,11 @@ export const duplicateForm = (
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
+  // remove conditional routing mapping from dropdown fields
   if (duplicateParams?.form_fields) {
     duplicateParams.form_fields.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(field as any).optionsToRecipientsMap = undefined
       }
     })
