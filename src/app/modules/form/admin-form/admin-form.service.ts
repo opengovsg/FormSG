@@ -670,6 +670,7 @@ export const duplicateForm = (
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
   workspaceId?: string,
+  duplicateStripped?: boolean,
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
@@ -690,7 +691,7 @@ export const duplicateForm = (
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
   // remove conditional routing mapping from dropdown fields
-  if (duplicateParams?.form_fields) {
+  if (duplicateParams?.form_fields && duplicateStripped) {
     duplicateParams.form_fields.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
