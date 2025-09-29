@@ -3412,7 +3412,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        undefined,
+        { workspaceId: undefined },
       )
     })
 
@@ -3464,7 +3464,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        mockWorkspaceId,
+        { workspaceId: mockWorkspaceId },
       )
     })
 
@@ -3534,7 +3534,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        undefined,
+        { workspaceId: undefined },
       )
     })
 
@@ -3670,7 +3670,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        undefined,
+        { workspaceId: undefined },
       )
     })
   })
@@ -3900,6 +3900,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { duplicateStripped: true },
       )
     })
 
@@ -3971,6 +3972,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { duplicateStripped: true },
       )
     })
 
@@ -4120,6 +4122,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { duplicateStripped: true },
       )
     })
   })

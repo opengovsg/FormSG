@@ -514,7 +514,7 @@ describe('admin-form.service', () => {
         mockForm,
         mockNewAdminId,
         MOCK_EMAIL_OVERRIDE_PARAMS,
-        mockWorkspaceId,
+        { workspaceId: mockWorkspaceId },
       )
 
       // Assert
