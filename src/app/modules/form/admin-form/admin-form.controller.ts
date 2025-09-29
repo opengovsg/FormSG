@@ -1057,7 +1057,7 @@ export const handleCopyTemplateForm: ControllerHandler<
             userId,
             overrideParams,
             undefined,
-            true
+            true,
           )
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
