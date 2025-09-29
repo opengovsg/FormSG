@@ -662,15 +662,16 @@ export const processCreateFormInWorkspace = async (
  * @param originalForm the form to be duplicated
  * @param newAdminId the id of the admin of the duplicated form
  * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
- * @param workspaceId the id of the workspace to duplicate the form into
+ * @param options - Optional configuration for duplication.
+ * @param options.workspaceId - The ID of the workspace to duplicate the form into.
+ * @param options.duplicateStripped - If true, duplicates only a stripped version of the form (without certain metadata or fields).
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
-  workspaceId?: string,
-  duplicateStripped?: boolean,
+  { workspaceId, duplicateStripped }: { workspaceId?: string; duplicateStripped?: boolean } = {},
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
@@ -694,8 +695,7 @@ export const duplicateForm = (
   if (duplicateParams?.form_fields && duplicateStripped) {
     duplicateParams.form_fields.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(field as any).optionsToRecipientsMap = undefined
+        field.optionsToRecipientsMap = undefined
       }
     })
   }

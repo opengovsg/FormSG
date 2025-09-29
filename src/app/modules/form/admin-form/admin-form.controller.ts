@@ -935,7 +935,7 @@ export const duplicateAdminForm: ControllerHandler<
               originalForm,
               userId,
               overrideParams,
-              workspaceId,
+              { workspaceId: workspaceId },
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
@@ -1056,8 +1056,7 @@ export const handleCopyTemplateForm: ControllerHandler<
             originalForm,
             userId,
             overrideParams,
-            undefined,
-            true,
+            {duplicateStripped: true},
           )
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
