@@ -1052,7 +1052,13 @@ export const handleCopyTemplateForm: ControllerHandler<
         // Step 2: Check if form is currently public.
         AuthService.getFormIfPublic(formId).andThen((originalForm) =>
           // Step 3: Duplicate form.
-          AdminFormService.duplicateForm(originalForm, userId, overrideParams, undefined, true)
+          AdminFormService.duplicateForm(
+            originalForm,
+            userId,
+            overrideParams,
+            undefined,
+            true
+          )
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
         ),
