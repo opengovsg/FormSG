@@ -671,7 +671,10 @@ export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
-  { workspaceId, duplicateStripped }: { workspaceId?: string; duplicateStripped?: boolean } = {},
+  {
+    workspaceId,
+    duplicateStripped,
+  }: { workspaceId?: string; duplicateStripped?: boolean } = {},
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,

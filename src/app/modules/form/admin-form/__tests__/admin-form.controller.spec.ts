@@ -3412,6 +3412,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { workspaceId: undefined },
       )
     })
 
@@ -3533,6 +3534,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { workspaceId: undefined },
       )
     })
 
@@ -3668,6 +3670,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { workspaceId: undefined },
       )
     })
   })
