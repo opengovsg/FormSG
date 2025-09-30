@@ -67,15 +67,13 @@ export const getCpVerifiedContent = (
   data: Record<string, unknown>,
 ): VerifiedContentResult<CpVerifiedContent> => {
   // Decide whether to suffix with step number
-  const key =
-    data.stepNumber !== undefined
-      ? `${VerifiedKeys.SpUinFin} (Step ${data.stepNumber})`
-      : VerifiedKeys.SpUinFin
+  const stepNumber =
+    data.stepNumber !== undefined ? ` (Step ${data.stepNumber})` : ``
   // Create new CorpPass verifiedContent object from current data.
   // Extract value of data.uinFin and data.userInfo set to their respective new keys.
   const createdCpVerifiedContent = {
-    [key]: data.uinFin,
-    [key]: data.userInfo,
+    [`${VerifiedKeys.CpUen}${stepNumber}`]: data.uinFin,
+    [`${VerifiedKeys.CpUid}${stepNumber}`]: data.userInfo,
   }
 
   // Check if the newly created object is of expected shape.

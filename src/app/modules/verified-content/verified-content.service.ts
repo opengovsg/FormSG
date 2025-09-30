@@ -7,11 +7,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {
-  CpVerifiedContent,
   EncryptVerificationContentParams,
   GetVerifiedContentParams,
-  SgidVerifiedContent,
-  SpVerifiedContent,
   VerifiedContent,
   VerifiedContentResult,
   VerifiedContentV3,

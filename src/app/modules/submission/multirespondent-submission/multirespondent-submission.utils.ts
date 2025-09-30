@@ -221,8 +221,8 @@ export const getQuestionTitleAnswerString = ({
     return []
   }
   for (const formField of formFields) {
-    const MyInfoPrefix = 'myInfo' in formField ? '[MyInfo]' : ''
-    const questionTitle = `${MyInfoPrefix} ${formField.title}`
+    const MyInfoPrefix = 'myInfo' in formField ? '[MyInfo] ' : ''
+    const questionTitle = `${MyInfoPrefix}${formField.title}`
     const response = responses[formField._id]
 
     if (!response || !questionTitle) continue
@@ -352,7 +352,6 @@ export const getQuestionTitleAnswerString = ({
 
   // Add Ndi responses if they exist
   for (const key in responses) {
-    console.log(`key`, key)
     if (startsWithSPCPFieldTitle(key)) {
       const value = responses[key] as NdiResponseV3
       questionAnswerPair.push({

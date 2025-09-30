@@ -73,10 +73,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import {
-  convertToVerifiedContent,
-  validateMrfFieldResponses,
-} from './multirespondent-submission.utils'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -968,7 +965,7 @@ export const handleNdiResponses = async (
   const emailNdiResponses = createNdiResponsesV3FromRecord(ndiResponses)
   responses = { ...responses, ...emailNdiResponses }
   req.formsg.encryptedPayload.responses = responses
-  console.log(`emailNdiResponses`, emailNdiResponses)
+  console.log(`emailNdiResponses`, responses)
 
   // 4. Encrypt Ndi data with new submissionKey
   if (Object.keys(ndiResponses).length !== 0) {
