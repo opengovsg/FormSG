@@ -89,7 +89,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputProps, 'input'>(
       allowInternational,
       onChange,
       onBlur,
-      defaultValue: value,
+      defaultValue: value ?? '',
       examples,
       examplePlaceholder,
       placeholder: props.placeholder,

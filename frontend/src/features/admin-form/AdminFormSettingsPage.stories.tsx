@@ -138,3 +138,21 @@ StorageModeSettings.parameters = {
     },
   },
 }
+
+export const SaveDraftEnabled = Template.bind({})
+SaveDraftEnabled.parameters = {
+  msw: [
+    ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
+    getAdminFormSettings({
+      mode: FormResponseMode.Encrypt,
+      overrides: { isSaveDraftEnabled: true },
+    }),
+    getAdminFormSubmissions(),
+    patchAdminFormSettings({
+      mode: FormResponseMode.Encrypt,
+      overrides: { isSaveDraftEnabled: true },
+    }),
+    getUser(),
+    getAdminFormCollaborators(),
+  ],
+}
