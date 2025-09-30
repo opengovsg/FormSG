@@ -887,11 +887,13 @@ export const PublicFormProvider = ({
     mode: 'onTouched',
   })
 
-  // Reset default values when they change
   const {
     formState: { isDirty },
     reset,
   } = formMethods
+
+  // Reset cached default values when they change if
+  // the user has not yet changed the form values.
   useEffect(() => {
     if (!isDirty) {
       reset(defaultFormValues)
