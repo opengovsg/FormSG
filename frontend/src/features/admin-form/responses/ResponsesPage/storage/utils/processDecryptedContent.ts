@@ -25,48 +25,57 @@ import {
 } from '~features/public-form/utils'
 
 /**
- * Returns a response matching the given type containing the given value.
+ * Returns a verifiedFormField matching the given type containing the given value.
  * @param type the field type to match
  * @param value the value to insert into the response to be returned
  * @returns the desired response object if type is valid. Else returns null.
  */
-const getResponseFromVerifiedField = (
-  type: VerifiedKeys,
+const getVerifiedFieldFromResponse = (
+  type: VerifiedKeys | string,
   value: string,
 ): VerifiedFormField | null => {
-  switch (type) {
+  // Extract base key and optional step number
+  const match = type.match(
+    /^(uinFin|cpUen|cpUid|sgidUinFin)(?: \(Step (\d+)\))?$/,
+  )
+  if (!match) return null
+
+  const [, baseKey, step] = match
+  const stepSuffix = step ? ` (Step ${step})` : ''
+
+  switch (baseKey as VerifiedKeys) {
     case VerifiedKeys.SpUinFin:
       return {
-        question: SPCPFieldTitle.SpNric,
+        question: SPCPFieldTitle.SpNric + stepSuffix,
         fieldType: BasicField.Nric,
         answer: value,
-        // Just a unique identifier for CSV header uniqueness
-        _id: SPCPFieldTitle.SpNric,
+        _id: SPCPFieldTitle.SpNric + stepSuffix,
       }
 
     case VerifiedKeys.CpUen:
       return {
-        question: SPCPFieldTitle.CpUen,
+        question: SPCPFieldTitle.CpUen + stepSuffix,
         fieldType: BasicField.ShortText,
         answer: value,
-        _id: SPCPFieldTitle.CpUen,
+        _id: SPCPFieldTitle.CpUen + stepSuffix,
       }
 
     case VerifiedKeys.CpUid:
       return {
-        question: SPCPFieldTitle.CpUid,
+        question: SPCPFieldTitle.CpUid + stepSuffix,
         fieldType: BasicField.Nric,
         answer: value,
-        _id: SPCPFieldTitle.CpUid,
+        _id: SPCPFieldTitle.CpUid + stepSuffix,
       }
+
     case VerifiedKeys.SgidUinFin:
       return {
-        question: SgidFieldTitle.SgidNric,
+        question: SgidFieldTitle.SgidNric + stepSuffix,
         fieldType: 'nric',
         answer: value,
-        // Just a unique identifier for CSV header uniqueness
-        _id: SgidFieldTitle.SgidNric,
+        _id: SgidFieldTitle.SgidNric + stepSuffix,
       }
+
     default:
       return null
   }
@@ -83,15 +92,12 @@ const getResponseFromVerifiedField = (
 const convertToResponseArray = (
   verifiedObj: Record<string, string>,
 ): VerifiedFormField[] => {
-  return CURRENT_VERIFIED_FIELDS.filter((fieldType) =>
-    has(verifiedObj, fieldType),
-  )
-    .map((fieldType) =>
-      getResponseFromVerifiedField(fieldType, verifiedObj[fieldType]),
+  return Object.keys(verifiedObj)
+    .filter((key) =>
+      Object.values(VerifiedKeys).some((baseKey) => key.startsWith(baseKey)),
     )
-    .filter((field): field is VerifiedFormField => {
-      return !!field
-    })
+    .map((key) => getVerifiedFieldFromResponse(key, verifiedObj[key]))
+    .filter((field): field is VerifiedFormField => !!field)
 }
 
 /**
@@ -124,7 +130,6 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
-
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {
@@ -149,7 +154,6 @@ export const processDecryptedContentV3 = async (
     .filter(
       (output): output is FieldResponse => output !== null,
     ) as VerifiedFormField[]
-
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent

@@ -190,7 +190,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   form_fields: FormFieldDto[]
   form_logics: LogicDto[]
   workflow: FormWorkflowDto
-
+  verifiedContent?: string
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string

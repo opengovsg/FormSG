@@ -1,4 +1,3 @@
-import { EncryptedContent } from '@opengovsg/formsg-sdk/dist/types'
 import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -682,7 +681,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formId: form._id,
     submissionId,
   }
-
+  console.log(`responses,`, responses)
   if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
@@ -805,6 +804,7 @@ export const updateMultiRespondentFormSubmission = ({
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
+        verifiedContent,
         version,
         workflowStep,
         mrfVersion,
@@ -880,6 +880,7 @@ export const updateMultiRespondentFormSubmission = ({
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
       submission.encryptedContent = encryptedContent
+      submission.verifiedContent = verifiedContent
       submission.version = version
       submission.workflowStep = workflowStep
       submission.attachmentMetadata = attachmentMetadata

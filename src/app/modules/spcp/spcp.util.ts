@@ -6,6 +6,10 @@ import {
   FormAuthType,
 } from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
+import {
+  mapVerifiedKeyToSPCPTitle,
+  VerifiedKeys,
+} from '../../../../shared/utils/verified-content'
 import { IFormSchema, SPCPFieldTitle } from '../../../types'
 import {
   AuthTypeMismatchError,
@@ -113,43 +117,41 @@ export const createCorppassParsedResponses = (
   ]
 }
 
-/**
- * Wraps MyInfo data in the form of parsed form fields for MRF.
- * @param uinFin CorpPass UEN
- * @param userInfo CorpPass UID
- */
-export const createMyInfoResponsesV3 = (uinFin: string): FieldResponsesV3 => {
-  return {
-    [SPCPFieldTitle.SpNric]: {
-      fieldType: BasicField.Nric,
-      answer: uinFin,
-    },
-  }
-}
-
-/**
- * Wraps CorpPass data in the form of parsed form fields for MRF.
- * @param uinFin CorpPass UEN
- * @param userInfo CorpPass UID
- */
-export const createCorppassResponsesV3 = (
-  uinFin: string,
-  userInfo: string,
+export const createNdiResponsesV3FromRecord = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ndiResponses: Record<string, any>,
 ): FieldResponsesV3 => {
-  return {
-    [SPCPFieldTitle.CpUen]: {
-      fieldType: BasicField.ShortText,
-      answer: uinFin,
-    },
-    [SPCPFieldTitle.CpUid]: {
-      fieldType: BasicField.Nric,
-      answer: userInfo,
-    },
-  }
+  const responses: FieldResponsesV3 = {}
+
+  Object.entries(ndiResponses).forEach(([key, value]) => {
+    const title = mapVerifiedKeyToSPCPTitle(key)
+
+    if (key.startsWith(VerifiedKeys.SpUinFin)) {
+      responses[title] = {
+        fieldType: BasicField.Nric,
+        answer: value as string,
+      }
+    } else if (key.startsWith(VerifiedKeys.CpUen)) {
+      responses[title] = {
+        fieldType: BasicField.ShortText,
+        answer: value as string,
+      }
+    } else if (key.startsWith(VerifiedKeys.CpUid)) {
+      responses[title] = {
+        fieldType: BasicField.Nric,
+        answer: value as string,
+      }
+    }
+  })
+
+  return responses
 }
 
 export const isSPCPFieldTitle = (key: string): key is SPCPFieldTitle =>
   Object.values(SPCPFieldTitle).includes(key as SPCPFieldTitle)
+
+export const startsWithSPCPFieldTitle = (key: string): boolean =>
+  Object.values(SPCPFieldTitle).some((title) => key.startsWith(title))
 
 /**
  * Validates that a form is a SPCP form with an e-service ID

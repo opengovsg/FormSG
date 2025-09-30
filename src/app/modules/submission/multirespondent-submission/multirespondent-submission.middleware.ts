@@ -44,12 +44,8 @@ import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import {
-  createCorppassResponsesV3,
-  createMyInfoResponsesV3,
-} from '../../spcp/spcp.util'
+import { createNdiResponsesV3FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import { VerifiedContent } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -77,7 +73,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  convertToVerifiedContent,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -483,7 +482,6 @@ export const validateMultirespondentSubmission = async (
           ? ok({
               previousSubmission: {
                 encryptedContent: mrfSubmission.encryptedContent,
-                //TODO: add verifiedContent to be passed from previousSubmission
                 version: mrfSubmission.version,
               },
               workflowStep: mrfSubmission.workflowStep + 1,
@@ -841,6 +839,13 @@ export const handleNdiResponses = async (
   const { formId } = req.params
   const { authType } = formDef
   const { submissionPublicKey } = req.formsg.encryptedPayload
+  const stepNumber: number = req.body.workflowStep
+    ? req.body.workflowStep + 1
+    : 1
+  let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let ndiResponses: Record<string, any> = {}
 
   const logMeta = {
     action: 'handleNdiResponses',
@@ -848,49 +853,45 @@ export const handleNdiResponses = async (
     formId,
   }
 
-  const ndiResponses: VerifiedContent[] = []
-  // If there is existing verifiedContent, collect that first
-  const prevVerifiedContent = req.formsg.mrfSubmission?.verifiedContent
-  // if (prevVerifiedContent) {
-  //   ndiResponses.push()
-  // }
+  // 1. Handle Ndi data for current step
+  if (
+    formDef.isSubmitterIdCollectionEnabled &&
+    (authType === FormAuthType.CP || authType === FormAuthType.MyInfo) &&
+    stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
+  ) {
+    let userName
+    let userInfo
+    let jwtPayloadResult
+    switch (authType) {
+      case FormAuthType.CP: {
+        const oidcService = getOidcService(FormAuthType.CP)
+        jwtPayloadResult = await oidcService
+          .extractJwt(req.cookies)
+          .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
 
-  // Checks if user is SPCP-authenticated before allowing submission
-  let userName
-  let userInfo
-  let jwtPayloadResult
-  switch (authType) {
-    case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
-      jwtPayloadResult = await oidcService
-        .extractJwt(req.cookies)
-        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-
-      if (jwtPayloadResult.isOk()) {
-        userName = jwtPayloadResult.value.userName
-        userInfo = jwtPayloadResult.value.userInfo
+        if (jwtPayloadResult.isOk()) {
+          userName = jwtPayloadResult.value.userName
+          userInfo = jwtPayloadResult.value.userInfo
+        }
+        break
       }
-      break
-    }
-    case FormAuthType.MyInfo: {
-      jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies, authType)
-        .andThen(MyInfoService.verifyLoginJwt)
-        .map(({ uinFin }) => {
-          return uinFin
-        })
+      case FormAuthType.MyInfo: {
+        jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies, authType)
+          .andThen(MyInfoService.verifyLoginJwt)
+          .map(({ uinFin }) => {
+            return uinFin
+          })
 
-      if (jwtPayloadResult.isOk()) {
-        userName = jwtPayloadResult.value
+        if (jwtPayloadResult.isOk()) {
+          userName = jwtPayloadResult.value
+        }
+        break
       }
-      break
+      default:
+      // TODO: handle default
     }
-    default:
-    // TODO: throw an error
-  }
 
-  if (jwtPayloadResult?.isErr()) {
-    // secondary clause check
-    if (!prevVerifiedContent) {
+    if (jwtPayloadResult?.isErr()) {
       const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
       logger.error({
         message: `Failed to verify ${authType} JWT with auth client`,
@@ -902,31 +903,79 @@ export const handleNdiResponses = async (
         spcpSubmissionFailure: true,
       })
     } else {
-      // log but continue
-      logger.info({
-        message: `JWT verification failed but continuing because is prevVerifiedContent present`,
-        meta: logMeta,
+      const verifiedContent = VerifiedContentService.getVerifiedContent({
+        type: authType,
+        data: {
+          uinFin: userName,
+          userInfo,
+          stepNumber: stepNumber,
+        },
       })
+
+      if (verifiedContent.isErr()) {
+        const { error } = verifiedContent
+        logger.error({
+          message: 'Unable to get verified content',
+          meta: logMeta,
+          error,
+        })
+
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'Invalid data was found. Please submit again.' })
+      } else {
+        ndiResponses = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...(verifiedContent.value as Record<string, any>),
+          ...ndiResponses,
+        }
+      }
     }
   }
 
-  // add or get verifiedContent to req, to be added to submission downstream
-  if (
-    !jwtPayloadResult?.isErr() &&
-    formDef.isSubmitterIdCollectionEnabled &&
-    (authType === FormAuthType.CP || authType === FormAuthType.MyInfo)
-  ) {
-    const encryptVerifiedContentResult =
-      VerifiedContentService.getVerifiedContent({
-        type: authType,
-        data: { uinFin: userName, userInfo },
-      }).andThen((verifiedContent) => {
-        ndiResponses.push(verifiedContent)
+  // 2. Handle Ndi data for previous steps
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mrfSubmission = req.formsg.mrfSubmission
+  const prevSubmissionSecretKey = req.body.submissionSecretKey
 
-        return VerifiedContentService.encryptVerifiedContent({
-          verifiedContent,
-          formPublicKey: submissionPublicKey,
-        })
+  if (mrfSubmission?.verifiedContent && prevSubmissionSecretKey) {
+    const prevDecryptedSubmission = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+      prevSubmissionSecretKey,
+      {
+        encryptedContent: mrfSubmission.encryptedContent,
+        verifiedContent: mrfSubmission.verifiedContent,
+        version: mrfSubmission.version,
+      },
+    )
+
+    if (prevDecryptedSubmission?.verified) {
+      ndiResponses = { ...prevDecryptedSubmission.verified, ...ndiResponses }
+    } else {
+      logger.error({
+        message: 'Unable to get verified content',
+        meta: logMeta,
+        // error,
+      })
+
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Invalid data was found. Please submit again.' })
+    }
+  }
+  console.log(`ndiResponses again`, ndiResponses)
+
+  // 3. Add collected Ndi data to responses for email payload
+  const emailNdiResponses = createNdiResponsesV3FromRecord(ndiResponses)
+  responses = { ...responses, ...emailNdiResponses }
+  req.formsg.encryptedPayload.responses = responses
+  console.log(`emailNdiResponses`, emailNdiResponses)
+
+  // 4. Encrypt Ndi data with new submissionKey
+  if (Object.keys(ndiResponses).length !== 0) {
+    const encryptVerifiedContentResult =
+      VerifiedContentService.encryptVerifiedContent({
+        verifiedContent: ndiResponses,
+        formPublicKey: submissionPublicKey,
       })
 
     if (encryptVerifiedContentResult.isErr()) {
@@ -941,36 +990,9 @@ export const handleNdiResponses = async (
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: 'Invalid data was found. Please submit again.' })
     } else {
-      // No errors, set local variable to the encrypted string.
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value
     }
-
-    // Add NDI data to responses (used for email payload downstream)
-    let responses = req.formsg.encryptedPayload.responses
-    switch (authType) {
-      case FormAuthType.CP: {
-        if (!userName || !userInfo) break
-
-        const corppassResponseV3 = createCorppassResponsesV3(userName, userInfo)
-        responses = {
-          ...responses,
-          ...corppassResponseV3,
-        }
-        break
-      }
-      case FormAuthType.MyInfo: {
-        if (!userName) break
-
-        const myInfoResponseV3 = createMyInfoResponsesV3(userName)
-        responses = {
-          ...responses,
-          ...myInfoResponseV3,
-        }
-        break
-      }
-    }
-    req.formsg.encryptedPayload.responses = responses
   }
 
   return next()

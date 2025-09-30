@@ -20,9 +20,15 @@ const isCpVerifiedContent = (
     VerifiedKeys.CpUen,
     VerifiedKeys.CpUid,
   ]
-  return cpKeys.every(
-    (cpKey) => cpKey in data && typeof data[cpKey] === 'string',
-  )
+  return cpKeys.every((cpKey) => {
+    if (cpKey in data && typeof data[cpKey] === 'string') return true
+
+    // Check for any step-suffixed key
+    const stepKeyPattern = new RegExp(`^${cpKey} \\(Step \\d+\\)$`)
+    return Object.keys(data).some(
+      (k) => stepKeyPattern.test(k) && typeof data[k] === 'string',
+    )
+  })
 }
 
 /**
@@ -31,7 +37,15 @@ const isCpVerifiedContent = (
 const isSpVerifiedContent = (
   data: Record<string, unknown>,
 ): data is SpVerifiedContent => {
-  return typeof data[VerifiedKeys.SpUinFin] === 'string'
+  if (typeof data[VerifiedKeys.SpUinFin] === 'string') return true
+
+  // Check for any step-suffixed key
+  const stepKeyPattern = new RegExp(
+    `^${VerifiedKeys.SpUinFin} \\(Step \\d+\\)$`,
+  )
+  return Object.keys(data).some(
+    (k) => stepKeyPattern.test(k) && typeof data[k] === 'string',
+  )
 }
 
 /**
@@ -52,11 +66,16 @@ const isSgidVerifiedContent = (
 export const getCpVerifiedContent = (
   data: Record<string, unknown>,
 ): VerifiedContentResult<CpVerifiedContent> => {
+  // Decide whether to suffix with step number
+  const key =
+    data.stepNumber !== undefined
+      ? `${VerifiedKeys.SpUinFin} (Step ${data.stepNumber})`
+      : VerifiedKeys.SpUinFin
   // Create new CorpPass verifiedContent object from current data.
   // Extract value of data.uinFin and data.userInfo set to their respective new keys.
   const createdCpVerifiedContent = {
-    [VerifiedKeys.CpUen]: data.uinFin,
-    [VerifiedKeys.CpUid]: data.userInfo,
+    [key]: data.uinFin,
+    [key]: data.userInfo,
   }
 
   // Check if the newly created object is of expected shape.
@@ -74,10 +93,17 @@ export const getCpVerifiedContent = (
 export const getSpVerifiedContent = (
   data: Record<string, unknown>,
 ): VerifiedContentResult<SpVerifiedContent> => {
+  // Decide whether to suffix with step number
+  const key =
+    data.stepNumber !== undefined
+      ? `${VerifiedKeys.SpUinFin} (Step ${data.stepNumber})`
+      : VerifiedKeys.SpUinFin
+
   // Create new SingPass verifiedContent object from current data.
   // Extract value of data.uinFin set to new VerifiedKeys.SpUinFin key.
+
   const createdSpVerifiedContent = {
-    [VerifiedKeys.SpUinFin]: data.uinFin,
+    [key]: data.uinFin,
   }
 
   // Check if the newly created object is of expected shape.

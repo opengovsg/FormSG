@@ -14,6 +14,7 @@ import {
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import { getSignatureFileName } from '../../../../../shared/utils/signature'
+import { VerifiedKeys } from '../../../../../shared/utils/verified-content'
 import {
   FormFieldSchema,
   MultirespondentSubmissionData,
@@ -22,7 +23,12 @@ import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
-import { isSPCPFieldTitle } from '../../spcp/spcp.util'
+import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
+import {
+  CpVerifiedContent,
+  SpVerifiedContent,
+  VerifiedContent,
+} from '../../verified-content/verified-content.types'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -346,7 +352,8 @@ export const getQuestionTitleAnswerString = ({
 
   // Add Ndi responses if they exist
   for (const key in responses) {
-    if (isSPCPFieldTitle(key)) {
+    console.log(`key`, key)
+    if (startsWithSPCPFieldTitle(key)) {
       const value = responses[key] as NdiResponseV3
       questionAnswerPair.push({
         question: key,
@@ -355,4 +362,40 @@ export const getQuestionTitleAnswerString = ({
     }
   }
   return questionAnswerPair
+}
+
+export const convertToVerifiedContent = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decryptedVerifiedContent: Record<string, any>,
+): VerifiedContent | Error => {
+  // CP case: both CpUen and CpUid must exist
+  if (
+    decryptedVerifiedContent[VerifiedKeys.CpUen] &&
+    decryptedVerifiedContent[VerifiedKeys.CpUid]
+  ) {
+    const cpContent: CpVerifiedContent = {
+      [VerifiedKeys.CpUen]: String(
+        decryptedVerifiedContent[VerifiedKeys.CpUen],
+      ),
+      [VerifiedKeys.CpUid]: String(
+        decryptedVerifiedContent[VerifiedKeys.CpUid],
+      ),
+    }
+
+    return cpContent
+  }
+
+  // SP case: SpUinFin exists
+  if (decryptedVerifiedContent[VerifiedKeys.SpUinFin]) {
+    const spContent: SpVerifiedContent = {
+      [VerifiedKeys.SpUinFin]: String(
+        decryptedVerifiedContent[VerifiedKeys.SpUinFin],
+      ),
+    }
+    return spContent
+  }
+
+  return new Error(
+    'Cannot convert decrypted content: no known verified keys found',
+  )
 }

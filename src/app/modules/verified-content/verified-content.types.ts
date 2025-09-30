@@ -33,6 +33,14 @@ export type SgidVerifiedContent = {
   [VerifiedKeys.SgidUinFin]: string
 }
 
+// MRF verifiedContent types
+export type WithStepKeys<T> =
+  | T
+  | { [K in Extract<keyof T, string> as `${K} (Step ${number})`]: T[K] }
+export type CpVerifiedContentWithStep = WithStepKeys<CpVerifiedContent>
+export type SpVerifiedContentWithStep = WithStepKeys<SpVerifiedContent>
+export type SgidVerifiedContentWithStep = WithStepKeys<SgidVerifiedContent>
+
 export type VerifiedContentResult<T> = Result<T, MalformedVerifiedContentError>
 
 export type VerifiedContent =
@@ -40,8 +48,14 @@ export type VerifiedContent =
   | SpVerifiedContent
   | SgidVerifiedContent
 
+export type VerifiedContentV3 =
+  | CpVerifiedContentWithStep
+  | SpVerifiedContentWithStep
+  | SgidVerifiedContentWithStep
+
 export type EncryptVerificationContentParams = {
-  verifiedContent: VerifiedContent | VerifiedContent[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  verifiedContent: VerifiedContent | Record<string, any>
   formPublicKey: string
 }
 
