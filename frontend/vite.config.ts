@@ -61,5 +61,15 @@ export default defineConfig(() => {
       plugins: () => [tsconfigPaths()],
       format: 'es' as const,
     },
+    // other stuff
+    optimizeDeps: {
+      include: ['formsg-javascript-sdk'], // force pre-bundling
+    },
+    ssr: {
+      noExternal: ['formsg-javascript-sdk'], // ensure it’s not treated as external
+    },
+    resolve: {
+      preserveSymlinks: true, // important for linked packages
+    },
   }
 })
