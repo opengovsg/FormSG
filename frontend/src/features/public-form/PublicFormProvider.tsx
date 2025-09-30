@@ -242,7 +242,7 @@ export const getFieldPrefillMap = (
   }, {} as PrefillMap)
 }
 
-const getInitialFormValues = ({
+export const getInitialFormValues = ({
   formResponseMode,
   previousSubmission,
   previousAttachments,
@@ -886,19 +886,6 @@ export const PublicFormProvider = ({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
   })
-
-  const {
-    formState: { isDirty },
-    reset,
-  } = formMethods
-
-  // Reset cached default values when they change if
-  // the user has not yet changed the form values.
-  useEffect(() => {
-    if (!isDirty) {
-      reset(defaultFormValues)
-    }
-  }, [defaultFormValues, isDirty, reset])
 
   const onSaveDraft = () => {
     // Used to track save draft usage

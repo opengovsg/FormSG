@@ -56,9 +56,23 @@ export const FormFields = ({
 
   useFetchPrefillQuery()
 
-  const { fieldPrefillMap, form, augmentedFormFields } = usePublicFormContext()
+  const { defaultFormValues, fieldPrefillMap, form, augmentedFormFields } =
+    usePublicFormContext()
 
-  const { trigger, handleSubmit, control } = useFormContext<FormFieldValues>()
+  const {
+    reset,
+    formState: { isDirty },
+    trigger,
+    handleSubmit,
+    control,
+  } = useFormContext<FormFieldValues>()
+
+  // Reset cached default values when they change
+  useEffect(() => {
+    if (!isDirty) {
+      reset(defaultFormValues)
+    }
+  }, [defaultFormValues, isDirty, reset])
 
   const hasLockedPrefills = Object.values(fieldPrefillMap).some(
     (field) => field.lockPrefill && field.prefillValue,
