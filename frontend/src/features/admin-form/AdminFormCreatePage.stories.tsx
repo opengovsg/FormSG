@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 
 import { PaymentChannel, PaymentType, UserId } from '~shared/types'
 import {
@@ -34,7 +35,6 @@ import {
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 
 import { useMagicFormBuilderStore } from './create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
-import { expect, userEvent, waitFor, within, screen } from '@storybook/test'
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -249,7 +249,7 @@ AdminFormBuilderWithAdditionalRowsTableField.parameters = {
   },
   docs: {
     storyDescription: `Verifies that the table field rows are updated when the minimum rows is updated. Needs to be in lg viewport to work.`,
-  }
+  },
 }
 
 AdminFormBuilderWithAdditionalRowsTableField.play = async ({

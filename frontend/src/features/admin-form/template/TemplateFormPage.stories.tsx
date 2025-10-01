@@ -1,5 +1,8 @@
 import { Meta, StoryFn } from '@storybook/react'
 
+import { FormResponseMode } from '~shared/types'
+
+import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 import {
   getTemplateFormErrorResponse,
   getTemplateFormResponse,
@@ -15,8 +18,6 @@ import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
-import { FormResponseMode } from '~shared/types'
-import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,

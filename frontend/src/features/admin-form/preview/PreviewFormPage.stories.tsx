@@ -9,6 +9,7 @@ import {
   FormResponseMode,
 } from '~shared/types/form'
 
+import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 import {
   getPreviewFormErrorResponse,
   getPreviewFormResponse,
@@ -26,7 +27,6 @@ import { ADMINFORM_PREVIEW_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import PreviewFormPage from './PreviewFormPage'
-import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,

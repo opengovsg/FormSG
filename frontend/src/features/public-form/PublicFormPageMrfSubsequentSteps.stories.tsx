@@ -1,20 +1,21 @@
-import { StoryRouter } from '~utils/storybook'
-import PublicFormPage from './PublicFormPage'
 import { Meta, StoryFn } from '@storybook/react/*'
+
+import { FormResponseMode, WorkflowType } from '~shared/types'
+
+import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
+import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getEncryptedSubmissionResponse,
   getPublicFormResponse,
-  postVfnTransactionResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
+  postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
-import { envHandlers } from '~/mocks/msw/handlers/env'
-import { FormResponseMode, WorkflowType } from '~shared/types'
-import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
-import { useIndexedDb } from '~hooks/useIndexedDb'
-import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
-import { DraftSubmission } from './PublicFormContext'
-import { useLayoutEffect } from 'react'
+
+import { StoryRouter } from '~utils/storybook'
+
+import PublicFormPage from './PublicFormPage'
+import { DraftSetupWrapper } from './PublicFormPage.stories'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,
@@ -43,35 +44,6 @@ export default {
     msw: DEFAULT_MSW_HANDLERS,
   },
 } as Meta
-
-// Component that sets up draft data using hooks
-const DraftSetupWrapper = ({
-  children,
-  draftKey,
-  draftValue,
-}: {
-  children: React.ReactNode
-  draftKey: string
-  draftValue: DraftSubmission
-}) => {
-  // Use the useIndexedDb hook to set draft value
-  const [, setDraftSubmission] = useIndexedDb<DraftSubmission>({
-    key: draftKey,
-    initialValue: {
-      lastUpdated: null,
-      draftResponses: null,
-      fieldDefinitionsChecksum: null,
-    },
-    storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
-  })
-
-  // Set the draft value when component mounts
-  useLayoutEffect(() => {
-    setDraftSubmission(draftValue)
-  }, [setDraftSubmission, draftValue])
-
-  return <>{children}</>
-}
 
 const Template: StoryFn = () => <PublicFormPage />
 

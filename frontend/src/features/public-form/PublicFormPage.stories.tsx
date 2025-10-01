@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
@@ -28,6 +29,7 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
+import { useIndexedDb } from '~hooks/useIndexedDb'
 import {
   getMobileViewParameters,
   getTabletViewParameters,
@@ -35,6 +37,9 @@ import {
 } from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
+
+import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 
 const DEFAULT_MSW_HANDLERS = [
@@ -96,6 +101,35 @@ const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
     postGenerateVfnOtpResponse(),
     postVerifyVfnOtpResponse(),
   ]
+}
+
+// Component that sets up draft data using hooks
+export const DraftSetupWrapper = ({
+  children,
+  draftKey,
+  draftValue,
+}: {
+  children: React.ReactNode
+  draftKey: string
+  draftValue: DraftSubmission
+}) => {
+  // Use the useIndexedDb hook to set draft value
+  const [, setDraftSubmission] = useIndexedDb<DraftSubmission>({
+    key: draftKey,
+    initialValue: {
+      lastUpdated: null,
+      draftResponses: null,
+      fieldDefinitionsChecksum: null,
+    },
+    storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+  })
+
+  // Set the draft value when component mounts
+  useLayoutEffect(() => {
+    setDraftSubmission(draftValue)
+  }, [setDraftSubmission, draftValue])
+
+  return <>{children}</>
 }
 
 export default {
@@ -1065,6 +1099,117 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     },
   )
 }
+
+const DRAFT_TO_RESTORE = {
+  lastUpdated: 1759305125679,
+  draftResponses: {
+    '5da04eb5e397fc0013f63c7e': 'Yes',
+    '5da0290b4073c800128388b4': {
+      value: 'kevin.foong@washere.com',
+    },
+    '5da0290b4073c800128388z4': {
+      value: 'open@open.gov.sg',
+    },
+    '5da04ea3e397fc0013f63c78': {
+      value: '+6590008000',
+    },
+    '5da04ea3e397fc0013f63c11': {
+      value: '+6562223535',
+    },
+    '5da04ea9e397fc0013f63c7b': '321',
+    '5da04eab3738d10012607734': '3.21',
+    '5da04eafe397fc0013f63c7c': '<Start>This is a short text.</End>',
+    '5da04eb1e397fc0013f63c7d': '<Start>This is a long text.</End>',
+    '5da04eb23738d10012607737': 'Option 2',
+    '5da04eb7e397fc0013f63c80': {
+      value: ['Option 1', 'Option 3', 'Option 2'],
+    },
+    '5da04eb93738d10012607738': {
+      value: 'Option 3',
+    },
+    '5da04ebfe397fc0013f63c83': '01/10/2025',
+    '5da04ec13738d1001260773a': '3',
+    '5da04ec43738d1001260773b': 'T2546896H',
+    '5da04f833738d1001260777f': [
+      {
+        '5da04f833738d10012607781': 'Row 1/2',
+        '5dadaeb719eccb0012364550': 'Option 1',
+      },
+      {
+        '5da04f833738d10012607781': 'Row 2/2',
+        '5dadaeb719eccb0012364550': 'Option 2',
+      },
+    ],
+  },
+  fieldDefinitionsChecksum: {
+    '5da04eb5e397fc0013f63c7e':
+      '{"title":"Yes/No","description":"This is a\\n\\nmultiline description\\r\\nanother line","required":true,"disabled":false,"fieldType":"yes_no","_id":"5da04eb5e397fc0013f63c7e","globalId":"CnGRpTpnqSrISnk28yLDvKt8MI2HCFJuYbk72ie0l56"}',
+    '5da0290b4073c800128388b4':
+      '{"autoReplyOptions":{"hasAutoReply":true,"autoReplySubject":"my subject","autoReplySender":"my name","autoReplyMessage":"my email","includeFormSummary":true},"isVerifiable":false,"hasAllowedEmailDomains":false,"allowedEmailDomains":[],"title":"Email","description":"","required":true,"disabled":false,"fieldType":"email","_id":"5da0290b4073c800128388b4","globalId":"nhTtR59j90TGAxKCIdSQ7FFFjF5z0d6ifKDIxr2IfgO"}',
+    '5da0290b4073c800128388z4':
+      '{"autoReplyOptions":{"hasAutoReply":true,"autoReplySubject":"my subject","autoReplySender":"my name","autoReplyMessage":"my email","includeFormSummary":true},"isVerifiable":true,"hasAllowedEmailDomains":true,"allowedEmailDomains":["@open.gov.sg"],"title":"Verifiable Email","description":"Only allows @open.gov.sg email domains","required":true,"disabled":false,"fieldType":"email","_id":"5da0290b4073c800128388z4","globalId":"nhTtR59j90TGAxKCIdSQ7FFFjF5z0d6ifKDIxr2Ifg1"}',
+    '5da04ea3e397fc0013f63c78':
+      '{"allowIntlNumbers":false,"isVerifiable":false,"title":"Mobile Number","description":"","required":true,"disabled":false,"fieldType":"mobile","_id":"5da04ea3e397fc0013f63c78","globalId":"IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuJ"}',
+    '5da04ea3e397fc0013f63c11':
+      '{"allowIntlNumbers":true,"isVerifiable":true,"title":"Verifiable Mobile Number","description":"","required":true,"disabled":false,"fieldType":"mobile","_id":"5da04ea3e397fc0013f63c11","globalId":"IsZAjzS1J2AJqsUnAnCSQStxoknyIdUEXam6cPlNYuY"}',
+    '5da04ea9e397fc0013f63c7b':
+      '{"ValidationOptions":{"_id":"6148614ee2fb650012928dd9","selectedValidation":null,"LengthValidationOptions":{"selectedLengthValidation":null,"customVal":null},"RangeValidationOptions":{"customMin":null,"customMax":null},"id":"6148614ee2fb650012928dd9"},"title":"Number","description":"","required":true,"disabled":false,"fieldType":"number","_id":"5da04ea9e397fc0013f63c7b","globalId":"TUAlegPQaX1L5kzEBtNWNlohV0eUoFsZ7WL2m3IMbFv"}',
+    '5da04eab3738d10012607734':
+      '{"ValidationOptions":{"customMax":null,"customMin":null},"validateByValue":false,"title":"Decimal","description":"","required":true,"disabled":false,"fieldType":"decimal","_id":"5da04eab3738d10012607734","globalId":"bRvL9Y3syNYSZDUI09lbMM0ET1nAaDoJNXxGEYH5P4S"}',
+    '5da04eafe397fc0013f63c7c':
+      '{"ValidationOptions":{"_id":"6148614ee2fb650012928ddb","customVal":null,"selectedValidation":null,"customMin":null,"customMax":null,"id":"6148614ee2fb650012928ddb"},"allowPrefill":false,"title":"Short Text","description":"","required":true,"disabled":false,"fieldType":"textfield","_id":"5da04eafe397fc0013f63c7c","globalId":"gi588V2s1fBk7BcWOHoqnFy1by7KIxjw8njXV5NeC3g"}',
+    '5da04eb1e397fc0013f63c7d':
+      '{"ValidationOptions":{"_id":"6148614ee2fb650012928ddd","customVal":null,"selectedValidation":null,"customMin":null,"customMax":null,"id":"6148614ee2fb650012928ddd"},"title":"Long Text","description":"","required":true,"disabled":false,"fieldType":"textarea","_id":"5da04eb1e397fc0013f63c7d","globalId":"iJpZkr9GasJrAvQHOYAyRiGRGNhDJAzRw6FwTLaQImS"}',
+    '5da04eb23738d10012607737':
+      '{"fieldOptions":["Option 1","Option 2","Option 3"],"title":"Dropdown","description":"","required":true,"disabled":false,"fieldType":"dropdown","_id":"5da04eb23738d10012607737","globalId":"wzV4A56NIxpfdjdB0WJO0vcovDOiY7wjuE8ZH4Pr9at"}',
+    '5da04eb7e397fc0013f63c80':
+      '{"ValidationOptions":{"customMax":null,"customMin":null},"fieldOptions":["Option 1","Option 2","Option 3"],"othersRadioButton":false,"validateByValue":false,"title":"Checkbox","description":"","required":true,"disabled":false,"fieldType":"checkbox","_id":"5da04eb7e397fc0013f63c80","globalId":"l4gMDfFhA1ITmhUPQCjA05aUAOROUOwlNAjMJMkwmJ7"}',
+    '5da04eb93738d10012607738':
+      '{"fieldOptions":["Option 1","Option 2","Option 3"],"othersRadioButton":false,"title":"Radio","description":"","required":true,"disabled":false,"fieldType":"radiobutton","_id":"5da04eb93738d10012607738","globalId":"pJc2jhdmSk0auIes9O4Y1Wwq3xLVab1e3D3VrMWuJVt"}',
+    '5da04ebfe397fc0013f63c83':
+      '{"dateValidation":{"customMinDate":null,"customMaxDate":null,"selectedDateValidation":null},"title":"Date","description":"","required":true,"disabled":false,"fieldType":"date","_id":"5da04ebfe397fc0013f63c83","globalId":"pq8tWED4Jf6FkuWr9VKUqz5Ea6rCASbx73aO6T2LhAN"}',
+    '5da04ec13738d1001260773a':
+      '{"ratingOptions":{"steps":5,"shape":"Heart"},"title":"Rating","description":"","required":true,"disabled":false,"fieldType":"rating","_id":"5da04ec13738d1001260773a","globalId":"1KjTqMp582fiF9oChFxmw6De7B2U1zQGvJ0TLm5rcZu"}',
+    '5da04ec43738d1001260773b':
+      '{"title":"NRIC","description":"","required":true,"disabled":false,"fieldType":"nric","_id":"5da04ec43738d1001260773b","globalId":"0KHU4aNnFVS5y8CLqkXWf9A0RknGIqzNoVfOUlqNRDl"}',
+    '5da04f833738d1001260777f':
+      '{"addMoreRows":false,"title":"Table","description":"","required":true,"disabled":false,"fieldType":"table","_id":"5da04f833738d1001260777f","columns":[{"ValidationOptions":{"_id":"6148614ee2fb650012928ddf","customMax":null,"customMin":null,"customVal":null,"selectedValidation":null,"id":"6148614ee2fb650012928ddf"},"allowPrefill":false,"columnType":"textfield","_id":"5da04f833738d10012607781","title":"Text Field","required":true},{"fieldOptions":["Option 1","Option 2"],"columnType":"dropdown","_id":"5dadaeb719eccb0012364550","title":"Db","required":true}],"minimumRows":2,"globalId":"E7udA19YGZOZuiFhlDSm5FwmogBiz9DaUulRFe9ygGD"}',
+    '5da04f873738d10012607783':
+      '{"title":"Attachment","description":"","required":false,"disabled":false,"fieldType":"attachment","_id":"5da04f873738d10012607783","attachmentSize":"1","globalId":"gE8XOqZA6MA3Rl7bQbrSOKpxjfeVSeYSfMZhRSitEn1"}',
+  },
+}
+
+export const WithSaveDraftRestored = Template.bind({})
+WithSaveDraftRestored.parameters = {
+  docs: {
+    storyDescription:
+      'This story asserts that the saved draft is restored when the page is loaded.' +
+      'Note that the attachment field is not stored and will not be restored.',
+  },
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftRestored.decorators = [
+  (Story) => {
+    return (
+      <DraftSetupWrapper
+        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftValue={DRAFT_TO_RESTORE}
+      >
+        <Story />
+      </DraftSetupWrapper>
+    )
+  },
+]
 
 export const WithStorageModeTableFieldAdditionalRows = Template.bind({})
 WithStorageModeTableFieldAdditionalRows.parameters = {
