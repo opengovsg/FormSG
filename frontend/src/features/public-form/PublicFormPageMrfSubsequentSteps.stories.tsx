@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react/*'
+import { expect, waitFor } from '@storybook/test'
 
 import { FormResponseMode, WorkflowType } from '~shared/types'
 
@@ -12,8 +13,15 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
+import {
+  _getFromIndexedDBForTest,
+  _removeFromIndexedDBForTest,
+} from '~hooks/useIndexedDb'
 import { StoryRouter } from '~utils/storybook'
 
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
+
+import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
 
@@ -154,6 +162,9 @@ const STEP_2_TABLE_FIELD_ONLY_CHECKSUM = {
     '{"title":"Table field for test","description":"No more table field regressions please","required":true,"disabled":false,"fieldType":"table","_id":"table-field-for-test-id","globalId":"not-used","minimumRows":2,"columns":[{"title":"Short text column","required":true,"columnType":"textfield","ValidationOptions":{"customVal":null,"selectedValidation":null},"_id":"table-field-for-test-id-col-1"},{"title":"Dropdown column","required":true,"columnType":"dropdown","fieldOptions":["cool beans","see ya later alligator","far out man"],"_id":"table-field-for-test-id-col-2"}],"addMoreRows":true,"maximumRows":4}',
 }
 
+const MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY =
+  'formsg-save-draft-61540ece3d4a6e50ac0cc6ff-68d4b9900415e65225fd3e4e-step1'
+
 export const WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft =
   Template.bind({})
 
@@ -202,7 +213,7 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.dec
   [
     (Story) => (
       <SaveDraftSetupWrapper
-        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff-68d4b9900415e65225fd3e4e-step1"
+        draftKey={MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY}
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
           draftResponses: STEP_2_SAVED_DRAFT_RESPONSES,
@@ -213,6 +224,41 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.dec
       </SaveDraftSetupWrapper>
     ),
   ]
+
+WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.play =
+  async ({ step }) => {
+    await step(
+      'Assert that the saved draft is created in IndexedDB',
+      async () => {
+        const savedDraft = (await _getFromIndexedDBForTest({
+          key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+          storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+        })) as DraftSubmission | undefined
+        expect(savedDraft?.draftResponses).toBeTruthy()
+      },
+    )
+
+    await step(
+      'Assert that the save draft restored toast message appears',
+      async () => {
+        await waitFor(
+          () => {
+            expect(document.body).toHaveTextContent(
+              'Your draft has been successfully restored.',
+            )
+          },
+          { timeout: 3000 },
+        )
+      },
+    )
+
+    await step('Cleanup saved draft', async () => {
+      await _removeFromIndexedDBForTest({
+        key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })
+    })
+  }
 
 export const WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft =
   Template.bind({})
@@ -262,7 +308,7 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decora
   [
     (Story) => (
       <SaveDraftSetupWrapper
-        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff-68d4b9900415e65225fd3e4e-step1"
+        draftKey={MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY}
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
           draftResponses: STEP_2_SAVED_DRAFT_RESPONSES,
@@ -273,3 +319,38 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decora
       </SaveDraftSetupWrapper>
     ),
   ]
+
+WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.play =
+  async ({ step }) => {
+    await step(
+      'Assert that the saved draft is created in IndexedDB',
+      async () => {
+        const savedDraft = (await _getFromIndexedDBForTest({
+          key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+          storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+        })) as DraftSubmission | undefined
+        expect(savedDraft?.draftResponses).toBeTruthy()
+      },
+    )
+
+    await step(
+      'Assert that the save draft restored toast message appears',
+      async () => {
+        await waitFor(
+          () => {
+            expect(document.body).toHaveTextContent(
+              'Your draft has been successfully restored.',
+            )
+          },
+          { timeout: 3000 },
+        )
+      },
+    )
+
+    await step('Cleanup saved draft', async () => {
+      await _removeFromIndexedDBForTest({
+        key: MULTIRESPONDENT_MODE_PUBLIC_FORM_STEP_1_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })
+    })
+  }

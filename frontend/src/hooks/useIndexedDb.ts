@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 // For testing, use a different database name to avoid conflicts with the main database.
 const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-const DB_NAME = isTest ? 'TestFormSG' : 'FormSG'
+export const DB_NAME = isTest ? 'TestFormSG' : 'FormSG'
 const DB_VERSION = 1 // Update this version when you make changes to the database schema
 
 const initDB = ({ storeName }: { storeName: string }): Promise<IDBDatabase> => {
@@ -52,6 +52,8 @@ const getFromIndexedDB = async ({
   }
 }
 
+export const _getFromIndexedDBForTest = getFromIndexedDB
+
 const setInIndexedDB = async ({
   key,
   value,
@@ -99,6 +101,8 @@ const removeFromIndexedDB = async ({
     throw error
   }
 }
+
+export const _removeFromIndexedDBForTest = removeFromIndexedDB
 
 export const useIndexedDb = <T>({
   key,

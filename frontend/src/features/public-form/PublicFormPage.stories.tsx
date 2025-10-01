@@ -29,12 +29,19 @@ import {
 } from '~/mocks/msw/handlers/public-form'
 
 import {
+  _getFromIndexedDBForTest,
+  _removeFromIndexedDBForTest,
+} from '~hooks/useIndexedDb'
+import {
   getMobileViewParameters,
   getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
+import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
+
+import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
 import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
 
@@ -909,6 +916,9 @@ WithSaveDraftEnabledMobile.parameters = {
   ...getMobileViewParameters(),
 }
 
+const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
+  'formsg-save-draft-61540ece3d4a6e50ac0cc6ff'
+
 export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton =
   Template.bind({})
 WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
@@ -984,6 +994,24 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
       )
     },
   )
+
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft).toBeDefined()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
 }
 
 export const WithSaveDraftEnabledAndClickSaveDraftButton = Template.bind({})
@@ -1009,6 +1037,19 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
   const screen = within(document.body)
 
   let mainSaveDraftButton: HTMLElement
+
+  await step('Find the first short text field and fill it in', async () => {
+    await waitFor(
+      async () => {
+        const shortTextField = within(document.body).getByText('Short Text')
+        await userEvent.type(
+          shortTextField,
+          'Save draft test input for short text field',
+        )
+      },
+      { timeout: 3000 },
+    )
+  })
 
   await step('Find the main save draft button', async () => {
     await waitFor(
@@ -1065,6 +1106,116 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
       )
     },
   )
+
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft?.draftResponses).toBeTruthy()
+      expect(savedDraft?.draftResponses?.['5da04eafe397fc0013f63c7c']).toEqual(
+        'Save draft test input for short text field',
+      )
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
+export const WithSaveDraftExcludingSavingMyInfoFields = Template.bind({})
+
+WithSaveDraftExcludingSavingMyInfoFields.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          form_fields: MOCK_PREFILLED_MYINFO_FIELDS,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+WithSaveDraftExcludingSavingMyInfoFields.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  let mainSaveDraftButton: HTMLElement
+
+  await step('Find the main save draft button', async () => {
+    await waitFor(
+      () => {
+        const foundMainSaveDraftButton = canvas
+          .getAllByRole('button', {
+            name: 'Save a draft',
+          })
+          .find((button) => button.textContent?.includes('Save a draft'))
+        if (!foundMainSaveDraftButton) {
+          throw new Error('Main save draft button not found')
+        }
+        mainSaveDraftButton = foundMainSaveDraftButton
+        expect(foundMainSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the main save draft button', async () => {
+    await userEvent.click(mainSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        () => {
+          expect(document.body).toHaveTextContent('Your draft has been saved.')
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step('Assert that the MyInfo fields are not saved', async () => {
+    const savedDraft = (await _getFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })) as DraftSubmission | undefined
+    expect(savedDraft?.draftResponses).toBeNull()
+    expect(savedDraft?.fieldDefinitionsChecksum).toBeNull()
+    const draftResponses = savedDraft?.draftResponses
+      ? Object.keys(savedDraft.draftResponses)
+      : []
+    const savedDraftChecksum = savedDraft?.fieldDefinitionsChecksum
+      ? Object.keys(savedDraft.fieldDefinitionsChecksum)
+      : []
+
+    const myInfoFieldIds = MOCK_PREFILLED_MYINFO_FIELDS.map(
+      (field) => field._id,
+    )
+
+    expect(draftResponses).not.toContain(myInfoFieldIds)
+    expect(savedDraftChecksum).not.toContain(myInfoFieldIds)
+  })
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
 }
 
 const DRAFT_TO_RESTORE = {
@@ -1169,7 +1320,7 @@ WithSaveDraftRestored.decorators = [
   (Story) => {
     return (
       <SaveDraftSetupWrapper
-        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftKey={STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY}
         draftValue={DRAFT_TO_RESTORE}
       >
         <Story />
@@ -1177,6 +1328,25 @@ WithSaveDraftRestored.decorators = [
     )
   },
 ]
+WithSaveDraftRestored.play = async ({ step }) => {
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft?.draftResponses).toBeTruthy()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
 
 export const WithSaveDraftRestoredYesNoFieldSchemaChanged = Template.bind({})
 WithSaveDraftRestoredYesNoFieldSchemaChanged.parameters = {
@@ -1200,7 +1370,7 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
   (Story) => {
     return (
       <SaveDraftSetupWrapper
-        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftKey={STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY}
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
           draftResponses: {
@@ -1217,6 +1387,30 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
     )
   },
 ]
+
+WithSaveDraftRestoredYesNoFieldSchemaChanged.play = async ({ step }) => {
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft?.draftResponses).toBeTruthy()
+      expect(savedDraft?.draftResponses).toBeDefined()
+      expect(savedDraft?.draftResponses!['5da04eb5e397fc0013f63c7e']).toEqual(
+        DRAFT_TO_RESTORE.draftResponses!['5da04eb5e397fc0013f63c7e'],
+      )
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
 
 export const WithPrefilledNormalFieldsWithSaveDraftRestored = Template.bind({})
 WithPrefilledNormalFieldsWithSaveDraftRestored.parameters = {
@@ -1237,7 +1431,7 @@ WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
   (Story) => {
     return (
       <SaveDraftSetupWrapper
-        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftKey={STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY}
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
           draftResponses: {
@@ -1252,6 +1446,37 @@ WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
             ...DRAFT_TO_RESTORE.fieldDefinitionsChecksum,
           },
         }}
+      >
+        <Story />
+      </SaveDraftSetupWrapper>
+    )
+  },
+]
+WithPrefilledNormalFieldsWithSaveDraftRestored.play = async ({ step }) => {
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft?.draftResponses).toBeTruthy()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
+  (Story) => {
+    return (
+      <SaveDraftSetupWrapper
+        draftKey={STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY}
+        draftValue={DRAFT_TO_RESTORE}
       >
         <Story />
       </SaveDraftSetupWrapper>
