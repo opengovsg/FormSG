@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
 import {
   IAttachmentInfo,
@@ -16,6 +17,7 @@ import {
   FormDto,
   FormFieldDto,
   FormResponseMode,
+  SignatureFieldWebhookResponseV3,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
@@ -795,6 +797,30 @@ export const encryptSubmission = async (
       submissionPublicKey,
       req.body.version,
     )
+
+  // Modify response data for webhook responses and encrypt separately
+  const strippedResponsesWebhook = Object.entries(
+    strippedAttachmentResponses,
+  ).map(([key, value]) => {
+    if (
+      value.fieldType === BasicField.Signature &&
+      value.answer.value.length > 0
+    ) {
+      const webhookValue: SignatureFieldWebhookResponseV3 = {
+        value: [SIGNATURE_CAPTURED_STRING],
+      }
+
+      return [key, webhookValue]
+    }
+    return [key, value]
+  })
+
+  const encryptedWebhookContent = formsgSdk.crypto.encrypt(
+    strippedResponsesWebhook,
+    submissionPublicKey,
+  )
+
+  req.formsg.encryptedWebhookContent = encryptedWebhookContent
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,

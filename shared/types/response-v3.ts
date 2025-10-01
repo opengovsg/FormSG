@@ -144,3 +144,7 @@ export type SignatureFieldResponseV3 = {
   type: 'draw'
   value: SignatureVectorArray
 }
+
+export type SignatureFieldWebhookResponseV3 = {
+  value: string[]
+}
