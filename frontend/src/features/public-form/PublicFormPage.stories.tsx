@@ -1126,7 +1126,10 @@ WithStorageModeTableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 2 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(2)
       })
     },
@@ -1143,7 +1146,10 @@ WithStorageModeTableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 3 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(3)
       })
     },
@@ -1160,7 +1166,10 @@ WithStorageModeTableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 4 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(4)
       })
     },
@@ -1245,7 +1254,10 @@ WithMultiRespondentFormStep1TableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 2 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(2)
       })
     },
@@ -1262,7 +1274,10 @@ WithMultiRespondentFormStep1TableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 3 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(3)
       })
     },
@@ -1279,7 +1294,10 @@ WithMultiRespondentFormStep1TableFieldAdditionalRows.play = async ({
     'Assert that the table is initiated with 4 rows which is the minimum rows',
     async () => {
       await waitFor(async () => {
-        const rows = within(tableFieldTable).getAllByRole('row')
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
         expect(rows).toHaveLength(4)
       })
     },

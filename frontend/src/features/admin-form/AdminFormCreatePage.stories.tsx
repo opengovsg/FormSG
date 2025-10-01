@@ -17,6 +17,7 @@ import {
   MOCK_FORM_FIELDS,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
+  TABLE_FIELD_ADDITIONAL_ROWS_FIELD,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
@@ -33,6 +34,7 @@ import {
 import { CreatePage } from '~features/admin-form/create/CreatePage'
 
 import { useMagicFormBuilderStore } from './create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
+import { expect, userEvent, waitFor, within, screen } from '@storybook/test'
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -235,4 +237,124 @@ export const FormWithPaymentMobile = Template.bind({})
 FormWithPaymentMobile.parameters = {
   ...FormWithPayment.parameters,
   ...getMobileViewParameters(),
+}
+
+export const AdminFormBuilderWithAdditionalRowsTableField = Template.bind({})
+AdminFormBuilderWithAdditionalRowsTableField.parameters = {
+  msw: buildMswRoutes({
+    form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+  }),
+  viewport: {
+    defaultViewport: 'lg',
+  },
+}
+
+AdminFormBuilderWithAdditionalRowsTableField.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  let tableFieldTable: HTMLElement
+
+  await step(
+    'Find the table field table and add another row button',
+    async () => {
+      await waitFor(async () => {
+        const foundTableFieldGroup = canvas.getByRole('group', {
+          name: (_, element) => {
+            const label = element.querySelector(
+              '#table-field-for-test-id-label',
+            )
+            return !!label
+          },
+        })
+        if (!foundTableFieldGroup)
+          throw new Error('Table field group not found')
+        const foundTableFieldTable =
+          within(foundTableFieldGroup).getByRole('table')
+        if (!foundTableFieldTable)
+          throw new Error('Table field table not found')
+        tableFieldTable = foundTableFieldTable
+      })
+    },
+  )
+
+  await step(
+    `Assert that the table is initiated with ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows} rows which is the minimum rows`,
+    async () => {
+      await waitFor(async () => {
+        const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+        const tbody = rowGroups.find((group) => group.localName === 'tbody')
+        if (!tbody) throw new Error('Table field table body not found')
+        const rows = within(tbody).getAllByRole('row')
+        expect(rows).toHaveLength(
+          Number(TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows),
+        )
+      })
+    },
+  )
+
+  await step(
+    'Find and click on the HighlightableFlex component surrounding the table field',
+    async () => {
+      await waitFor(async () => {
+        // Find the HighlightableFlex by looking for the field container that contains the table field
+        // The HighlightableFlex is the clickable wrapper around the field with role="button"
+        const highlightableFlex = canvas.getByRole('button', {
+          name: (content, element) => {
+            // Look for a button that contains the table field title
+            // The HighlightableFlex wraps the entire field including its title
+            return content.includes('Table field for test')
+          },
+        })
+
+        if (!highlightableFlex) {
+          throw new Error('HighlightableFlex component not found')
+        }
+
+        await userEvent.click(highlightableFlex)
+      })
+    },
+  )
+
+  await step('Update the minimum rows to 4', async () => {
+    await waitFor(async () => {
+      const minimumRowsInput = screen.getByText('Minimum rows')
+      console.log('minimumRowsInput', minimumRowsInput.outerHTML)
+      if (!minimumRowsInput) throw new Error('Minimum rows input not found')
+      await userEvent.click(minimumRowsInput)
+      await userEvent.keyboard('{arrowright}{backspace}4')
+    })
+  })
+
+  await step(`Assert that the table is updated to have 4 rows`, async () => {
+    await waitFor(async () => {
+      const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+      const tbody = rowGroups.find((group) => group.localName === 'tbody')
+      if (!tbody) throw new Error('Table field table body not found')
+      const rows = within(tbody).getAllByRole('row')
+      expect(rows).toHaveLength(4)
+    })
+  })
+
+  await step('Update the minimum rows to 1', async () => {
+    await waitFor(async () => {
+      const minimumRowsInput = screen.getByText('Minimum rows')
+      console.log('minimumRowsInput', minimumRowsInput.outerHTML)
+      if (!minimumRowsInput) throw new Error('Minimum rows input not found')
+      await userEvent.click(minimumRowsInput)
+      await userEvent.keyboard('{arrowright}{backspace}1')
+    })
+  })
+
+  await step(`Assert that the table is updated to have 1 rows`, async () => {
+    await waitFor(async () => {
+      const rowGroups = within(tableFieldTable).getAllByRole('rowgroup')
+      const tbody = rowGroups.find((group) => group.localName === 'tbody')
+      if (!tbody) throw new Error('Table field table body not found')
+      const rows = within(tbody).getAllByRole('row')
+      expect(rows).toHaveLength(1)
+    })
+  })
 }
