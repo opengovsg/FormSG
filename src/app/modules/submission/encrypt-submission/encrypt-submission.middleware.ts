@@ -533,7 +533,7 @@ export const encryptSubmission = async (
   )
 
   // Modify response data for webhook responses and encrypt separately
-  const strippedBodyResponsesWebhook = strippedBodyResponses.map((response) => {
+  const strippedResponsesWebhook = strippedBodyResponses.map((response) => {
     if (
       response.fieldType === BasicField.Signature &&
       response.answerArray.length > 0
@@ -546,7 +546,7 @@ export const encryptSubmission = async (
   })
 
   const encryptedWebhookContent = formsgSdk.crypto.encrypt(
-    strippedBodyResponsesWebhook,
+    strippedResponsesWebhook,
     publicKey,
   )
   req.formsg.encryptedWebhookContent = encryptedWebhookContent
