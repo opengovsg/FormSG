@@ -21,26 +21,26 @@ export const enSG: CreateFormModal = {
       message: 'It is advised to use a shorter, more succinct form name.',
     },
     type: {
-      label: 'What type of form do you need?',
-      description:
-        'Both support up to Confidential (Cloud-Eligible) and Sensitive (High) data.',
+      label: 'Number of respondents',
+      description: 'How many respondents will fill up each form submission?',
       storage: {
-        title: 'Storage mode form',
+        title: 'One respondent',
         subtitle:
-          'Collect responses from individual respondents. Ideal for one-way submissions.',
+          'Forms with just one respondent per submission support the following:',
         optionDescriptionItems: {
-          supportSingpassMyinfo: 'Supports Singpass & Myinfo',
-          supportWebhooks: 'Supports webhooks for integrations',
+          supportSingpassMyinfo: 'Singpass & Myinfo',
+          supportWebhooks: 'Webhooks for integrations',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },
       },
       mrf: {
-        title: 'Multi-respondent form',
+        title: 'Two or more respondents',
         subtitle:
-          'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions.',
+          'Forms with two or more respondents per submission support the following:',
         optionDescriptionItems: {
-          supportApprovalWorkflow: 'Supports approval workflows',
+          supportApprovalWorkflow: 'Approval workflows',
+          supportEmailRouting: 'Email routing',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },

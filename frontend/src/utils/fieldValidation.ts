@@ -67,6 +67,7 @@ import {
   VerifiableFieldValues,
 } from '~templates/Field/types'
 
+import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import {
@@ -948,7 +949,6 @@ export const createSignatureValidationRules: ValidationRuleFn<
     validate: {
       required: (val?: SignatureFieldValues) => {
         if (disableRequiredValidation || !schema.required) return true
-
         const strokes = val?.value
         const hasValidStroke = Array.isArray(strokes) && strokes.length > 0
         return hasValidStroke ? true : REQUIRED_ERROR

@@ -49,6 +49,10 @@ export const WorkspaceContent = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
+      <RolloutAnnouncementModal
+        onClose={() => setHasSeenAnnouncement(true)}
+        isOpen={isAnnouncementModalOpen}
+      />
       {totalFormsCount === 0 && isDefaultWorkspace ? (
         <EmptyDefaultWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
@@ -88,10 +92,6 @@ export const WorkspaceContent = (): JSX.Element => {
             <EmptyNewWorkspace isLoading={isLoading} />
           ) : (
             <Box gridArea="main">
-              <RolloutAnnouncementModal
-                onClose={() => setHasSeenAnnouncement(true)}
-                isOpen={isAnnouncementModalOpen}
-              />
               <WorkspaceFormRows />
             </Box>
           )}

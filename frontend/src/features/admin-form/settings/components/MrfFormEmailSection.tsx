@@ -29,6 +29,7 @@ import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopy
 interface MrfEmailNotificationsFormProps {
   settings: MultirespondentFormSettings
   isDisabled: boolean
+  isHighContrast: boolean
 }
 
 const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
@@ -45,6 +46,7 @@ interface FormData {
 const MrfEmailNotificationsForm = ({
   settings,
   isDisabled,
+  isHighContrast,
 }: MrfEmailNotificationsFormProps) => {
   const { t } = useTranslation()
   const {
@@ -217,9 +219,13 @@ const MrfEmailNotificationsForm = ({
                   values={values}
                   onChange={onChange}
                   onBlur={handleSubmit(onSubmit)}
-                  placeholder={t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
-                  )}
+                  placeholder={
+                    isDisabled
+                      ? null
+                      : t(
+                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
+                        )
+                  }
                   isSelectedItemFullWidth
                   isDisabled={isLoading || isDisabled}
                   {...rest}
@@ -242,6 +248,7 @@ const MrfEmailNotificationsForm = ({
             tooltipText={t(
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
             )}
+            isHighContrast={isHighContrast}
           >
             {t(
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
@@ -255,7 +262,9 @@ const MrfEmailNotificationsForm = ({
             }
             render={({ field }) => (
               <TagInput
-                placeholder={otherPartiesEmailInputPlaceholder}
+                placeholder={
+                  isDisabled ? undefined : otherPartiesEmailInputPlaceholder
+                }
                 {...field}
                 value={field.value as string[]}
                 isDisabled={isDisabled}
@@ -291,15 +300,21 @@ const MrfEmailNotificationsForm = ({
 interface MrfFormEmailSectionProps {
   settings: MultirespondentFormSettings
   isDisabled: boolean
+  isHighContrast?: boolean
 }
 
 export const MrfFormEmailSection = ({
   settings,
   isDisabled,
+  isHighContrast = true,
 }: MrfFormEmailSectionProps): JSX.Element => {
   return (
-    <Box opacity={isDisabled ? 0.3 : 1}>
-      <MrfEmailNotificationsForm settings={settings} isDisabled={isDisabled} />
+    <Box opacity={1}>
+      <MrfEmailNotificationsForm
+        settings={settings}
+        isDisabled={isDisabled}
+        isHighContrast={isHighContrast}
+      />
     </Box>
   )
 }

@@ -155,9 +155,9 @@ export const FormWhitelistAttachmentField = ({
         formId={formId!}
         downloadFileName={standardCsvDownloadFileName}
       />
-      <Box opacity={isDisabled ? 0.3 : 1}>
+      <Box opacity={isDisabled ? 0.8 : 1}>
         <FormProvider {...methods}>
-          <FieldContainer schema={fieldContainerSchema}>
+          <FieldContainer schema={fieldContainerSchema} isHighContrast={true}>
             <Controller
               name={FormWhitelistAttachmentFieldName}
               control={control}

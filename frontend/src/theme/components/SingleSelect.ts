@@ -71,6 +71,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       color: 'secondary.500',
       borderRightRadius: '4px',
       borderLeftRadius: 0,
+      _hover: {
+        bg: 'white',
+      },
     },
     icon: {
       transitionProperty: 'common',

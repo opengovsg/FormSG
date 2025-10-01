@@ -77,7 +77,7 @@ export type SingleAnswerFieldInput = FieldInput<SingleAnswerValue>
 export type VerifiableFieldInput = FieldInput<VerifiableFieldValues>
 export type ChildrenCompoundFieldInputs =
   FieldInput<ChildrenCompoundFieldValues>
-export type SignatureFieldInput = FieldInput<SignatureFieldValues>
+export type SignatureFieldInput = FieldInput<SignatureFieldValues | null>
 
 export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.Number

@@ -2,14 +2,6 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
-import { BasicField } from '~shared/types'
-import { isStringArray } from '~shared/utils/is-string-array'
-import {
-  convertToSignatureVectorArray,
-  getSignatureFileName,
-} from '~shared/utils/signature'
-
-import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -189,25 +181,6 @@ async function decryptIntoCsv(
               url: submission.attachmentMetadata[field._id],
               filename: field.answer,
             })
-          }
-
-          if (
-            field.fieldType === BasicField.Signature &&
-            isStringArray(field.answerArray)
-          ) {
-            const signatureSvgBuffer = convertToSignatureSvgString(
-              convertToSignatureVectorArray(field.answerArray[1]),
-            )
-            const svgBlob = new Blob([signatureSvgBuffer], {
-              type: 'image/svg+xml',
-            })
-
-            const filename = getSignatureFileName({
-              fieldId: field._id,
-              isSvg: true,
-            })
-
-            extraAttachments.push({ filename: filename, blob: svgBlob })
           }
         })
 
