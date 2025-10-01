@@ -1211,6 +1211,87 @@ WithSaveDraftRestored.decorators = [
   },
 ]
 
+export const WithSaveDraftRestoredYesNoFieldSchemaChanged = Template.bind({})
+WithSaveDraftRestoredYesNoFieldSchemaChanged.parameters = {
+  docs: {
+    storyDescription:
+      'This story asserts that the saved draft does not restore fields where the schema has changed. In particular, the Yes no field definition has changed and hence is not restored.',
+  },
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
+  (Story) => {
+    return (
+      <DraftSetupWrapper
+        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftValue={{
+          lastUpdated: new Date().getTime() - 10,
+          draftResponses: {
+            ...DRAFT_TO_RESTORE.draftResponses,
+          },
+          fieldDefinitionsChecksum: {
+            ...DRAFT_TO_RESTORE.fieldDefinitionsChecksum,
+            '5da04eb5e397fc0013f63c7e': '{}', // Emulates Yes no field definition change
+          },
+        }}
+      >
+        <Story />
+      </DraftSetupWrapper>
+    )
+  },
+]
+
+export const WithPrefilledNormalFieldsWithSaveDraftRestored = Template.bind({})
+WithPrefilledNormalFieldsWithSaveDraftRestored.parameters = {
+  msw: [
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          isSaveDraftEnabled: true,
+          responseMode: FormResponseMode.Encrypt,
+          form_fields: [PREFILLABLE_NORMAL_SHORTTEXT_FIELD],
+        },
+      },
+    }),
+  ],
+}
+WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
+  (Story) => {
+    return (
+      <DraftSetupWrapper
+        draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
+        draftValue={{
+          lastUpdated: new Date().getTime() - 10,
+          draftResponses: {
+            '5da04eafe397fc0013f63b22':
+              'This draft value should not be restored since prefills have higher precedence.',
+            ...DRAFT_TO_RESTORE.draftResponses,
+          },
+          fieldDefinitionsChecksum: {
+            '5da04eafe397fc0013f63b22': JSON.stringify(
+              PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+            ),
+            ...DRAFT_TO_RESTORE.fieldDefinitionsChecksum,
+          },
+        }}
+      >
+        <Story />
+      </DraftSetupWrapper>
+    )
+  },
+]
+
 export const WithStorageModeTableFieldAdditionalRows = Template.bind({})
 WithStorageModeTableFieldAdditionalRows.parameters = {
   msw: [
