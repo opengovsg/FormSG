@@ -15,7 +15,7 @@ import {
 import { StoryRouter } from '~utils/storybook'
 
 import PublicFormPage from './PublicFormPage'
-import { DraftSetupWrapper } from './PublicFormPage.stories'
+import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,
@@ -201,7 +201,7 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.par
 WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.decorators =
   [
     (Story) => (
-      <DraftSetupWrapper
+      <SaveDraftSetupWrapper
         draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff-68d4b9900415e65225fd3e4e-step1"
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
@@ -210,7 +210,7 @@ WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRowsWithSaveDraft.dec
         }}
       >
         <Story />
-      </DraftSetupWrapper>
+      </SaveDraftSetupWrapper>
     ),
   ]
 
@@ -261,7 +261,7 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.parame
 WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decorators =
   [
     (Story) => (
-      <DraftSetupWrapper
+      <SaveDraftSetupWrapper
         draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff-68d4b9900415e65225fd3e4e-step1"
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
@@ -270,6 +270,6 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.decora
         }}
       >
         <Story />
-      </DraftSetupWrapper>
+      </SaveDraftSetupWrapper>
     ),
   ]

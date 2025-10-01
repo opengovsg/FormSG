@@ -1,4 +1,3 @@
-import { useLayoutEffect } from 'react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
@@ -29,7 +28,6 @@ import {
   SHOW_FIELDS_ON_YES_LOGIC,
 } from '~/mocks/msw/handlers/public-form'
 
-import { useIndexedDb } from '~hooks/useIndexedDb'
 import {
   getMobileViewParameters,
   getTabletViewParameters,
@@ -37,10 +35,8 @@ import {
 } from '~utils/storybook'
 import { ShortTextFieldSchema } from '~templates/Field'
 
-import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
-
-import { DraftSubmission } from './PublicFormContext'
 import PublicFormPage from './PublicFormPage'
+import SaveDraftSetupWrapper from './SaveDraftSetupWrapper'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,
@@ -101,35 +97,6 @@ const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
     postGenerateVfnOtpResponse(),
     postVerifyVfnOtpResponse(),
   ]
-}
-
-// Component that sets up draft data using hooks
-export const DraftSetupWrapper = ({
-  children,
-  draftKey,
-  draftValue,
-}: {
-  children: React.ReactNode
-  draftKey: string
-  draftValue: DraftSubmission
-}) => {
-  // Use the useIndexedDb hook to set draft value
-  const [, setDraftSubmission] = useIndexedDb<DraftSubmission>({
-    key: draftKey,
-    initialValue: {
-      lastUpdated: null,
-      draftResponses: null,
-      fieldDefinitionsChecksum: null,
-    },
-    storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
-  })
-
-  // Set the draft value when component mounts
-  useLayoutEffect(() => {
-    setDraftSubmission(draftValue)
-  }, [setDraftSubmission, draftValue])
-
-  return <>{children}</>
 }
 
 export default {
@@ -1201,12 +1168,12 @@ WithSaveDraftRestored.parameters = {
 WithSaveDraftRestored.decorators = [
   (Story) => {
     return (
-      <DraftSetupWrapper
+      <SaveDraftSetupWrapper
         draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
         draftValue={DRAFT_TO_RESTORE}
       >
         <Story />
-      </DraftSetupWrapper>
+      </SaveDraftSetupWrapper>
     )
   },
 ]
@@ -1232,7 +1199,7 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.parameters = {
 WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
   (Story) => {
     return (
-      <DraftSetupWrapper
+      <SaveDraftSetupWrapper
         draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
@@ -1246,7 +1213,7 @@ WithSaveDraftRestoredYesNoFieldSchemaChanged.decorators = [
         }}
       >
         <Story />
-      </DraftSetupWrapper>
+      </SaveDraftSetupWrapper>
     )
   },
 ]
@@ -1269,7 +1236,7 @@ WithPrefilledNormalFieldsWithSaveDraftRestored.parameters = {
 WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
   (Story) => {
     return (
-      <DraftSetupWrapper
+      <SaveDraftSetupWrapper
         draftKey="formsg-save-draft-61540ece3d4a6e50ac0cc6ff"
         draftValue={{
           lastUpdated: new Date().getTime() - 10,
@@ -1287,7 +1254,7 @@ WithPrefilledNormalFieldsWithSaveDraftRestored.decorators = [
         }}
       >
         <Story />
-      </DraftSetupWrapper>
+      </SaveDraftSetupWrapper>
     )
   },
 ]
