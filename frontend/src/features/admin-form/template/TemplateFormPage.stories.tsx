@@ -15,6 +15,8 @@ import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import TemplateFormPage from './TemplateFormPage'
+import { FormResponseMode } from '~shared/types'
+import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,
@@ -56,4 +58,22 @@ export const FormNotFoundMobile = Template.bind({})
 FormNotFoundMobile.parameters = {
   ...FormNotFound.parameters,
   ...getMobileViewParameters(),
+}
+
+export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})
+MultirespondentFormWithAdditionalRowsTableField.parameters = {
+  docs: {
+    storyDescription: `There should be ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows} rows since the minimum rows is ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows}`,
+  },
+  msw: [
+    getTemplateFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [],
+          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+        },
+      },
+    }),
+  ],
 }

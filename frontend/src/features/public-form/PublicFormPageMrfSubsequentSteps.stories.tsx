@@ -76,11 +76,11 @@ const DraftSetupWrapper = ({
 const Template: StoryFn = () => <PublicFormPage />
 
 const PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ADDITIONAL_ROWS =
-  '{"table-field-for-test-id":{"fieldType":"table","answer":[{"table-field-for-test-id-col-1":"start 1/3","table-field-for-test-id-col-2":"cool beans"},{"table-field-for-test-id-col-1":"mid 2/3","table-field-for-test-id-col-2":"see ya later alligator"},{"table-field-for-test-id-col-1":"end 3/3","table-field-for-test-id-col-2":"far out man"}]}}'
+  '{"table-field-for-test-id":{"fieldType":"table","answer":[{"table-field-for-test-id-col-1":"prev submission start 1/3","table-field-for-test-id-col-2":"cool beans"},{"table-field-for-test-id-col-1":"prev submission mid 2/3","table-field-for-test-id-col-2":"see ya later alligator"},{"table-field-for-test-id-col-1":"prev submission end 3/3","table-field-for-test-id-col-2":"far out man"}]}}'
 
 // Only contains 1 row, while the minimum is 2.
 const PREVIOUS_SUBMISSION_TABLE_FIELD_WITH_ONE_ROW =
-  '{"table-field-for-test-id":{"fieldType":"table","answer":[{"table-field-for-test-id-col-1":"start and end 1/1","table-field-for-test-id-col-2":"cool beans"}]}}'
+  '{"table-field-for-test-id":{"fieldType":"table","answer":[{"table-field-for-test-id-col-1":"prev submission start and end 1/1","table-field-for-test-id-col-2":"cool beans"}]}}'
 
 export const WithMultiRespondentFormStep2NonEditableTableFieldAdditionalRows =
   Template.bind({})
