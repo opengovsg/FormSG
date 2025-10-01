@@ -1,5 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
 import { ErrorCode } from '~shared/types'
@@ -8,9 +8,13 @@ import {
   FormAuthType,
   FormColorTheme,
   FormResponseMode,
+  WorkflowType,
 } from '~shared/types/form'
 
-import { MOCK_PREFILLED_MYINFO_FIELDS } from '~/mocks/msw/handlers/admin-form'
+import {
+  MOCK_PREFILLED_MYINFO_FIELDS,
+  TABLE_FIELD_ADDITIONAL_ROWS_FIELD,
+} from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
@@ -1058,6 +1062,235 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
         },
         { timeout: 5000 },
       )
+    },
+  )
+}
+
+export const WithStorageModeTableFieldAdditionalRows = Template.bind({})
+WithStorageModeTableFieldAdditionalRows.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+// Assert that the table field additional rows limits and add another row buttons are working as expected
+WithStorageModeTableFieldAdditionalRows.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  let tableFieldTable: HTMLElement
+  let tableFieldAddAnotherRowButton: HTMLElement
+
+  await step(
+    'Find the table field table and add another row button',
+    async () => {
+      await waitFor(async () => {
+        const foundTableFieldGroup = canvas.getByRole('group', {
+          name: (_, element) => {
+            const label = element.querySelector(
+              '#table-field-for-test-id-label',
+            )
+            return !!label
+          },
+        })
+        if (!foundTableFieldGroup)
+          throw new Error('Table field group not found')
+
+        const foundTableFieldTable =
+          within(foundTableFieldGroup).getByRole('table')
+        if (!foundTableFieldTable)
+          throw new Error('Table field table not found')
+        tableFieldTable = foundTableFieldTable
+
+        const foundTableFieldAddAnotherRowButton = within(
+          foundTableFieldGroup,
+        ).getByRole('button', { name: /Add another row/i })
+        if (!foundTableFieldAddAnotherRowButton)
+          throw new Error('Table field add another row button not found')
+        tableFieldAddAnotherRowButton = foundTableFieldAddAnotherRowButton
+      })
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 2 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(2)
+      })
+    },
+  )
+
+  await step(
+    'Click the add another row button for the table field so there is 3 rows',
+    async () => {
+      await userEvent.click(tableFieldAddAnotherRowButton)
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 3 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(3)
+      })
+    },
+  )
+
+  await step(
+    'Click the add another row button for the table field so there is 4 rows',
+    async () => {
+      await userEvent.click(tableFieldAddAnotherRowButton)
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 4 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(4)
+      })
+    },
+  )
+
+  await step(
+    'Assert the add another row button is disabled since number of rows is maximum ',
+    async () => {
+      await waitFor(async () => {
+        expect(tableFieldAddAnotherRowButton).toBeDisabled()
+      })
+    },
+  )
+}
+
+export const WithMultiRespondentFormStep1TableFieldAdditionalRows =
+  Template.bind({})
+WithMultiRespondentFormStep1TableFieldAdditionalRows.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [
+            {
+              _id: 'step-1',
+              edit: ['table-field-for-test-id'],
+              workflow_type: WorkflowType.Static,
+              emails: [],
+            },
+          ],
+          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+// Assert that the table field additional rows limits and add another row buttons are working as expected
+WithMultiRespondentFormStep1TableFieldAdditionalRows.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+
+  let tableFieldTable: HTMLElement
+  let tableFieldAddAnotherRowButton: HTMLElement
+
+  await step(
+    'Find the table field table and add another row button',
+    async () => {
+      await waitFor(async () => {
+        const foundTableFieldGroup = canvas.getByRole('group', {
+          name: (_, element) => {
+            const label = element.querySelector(
+              '#table-field-for-test-id-label',
+            )
+            return !!label
+          },
+        })
+        if (!foundTableFieldGroup)
+          throw new Error('Table field group not found')
+
+        const foundTableFieldTable =
+          within(foundTableFieldGroup).getByRole('table')
+        if (!foundTableFieldTable)
+          throw new Error('Table field table not found')
+        tableFieldTable = foundTableFieldTable
+
+        const foundTableFieldAddAnotherRowButton = within(
+          foundTableFieldGroup,
+        ).getByRole('button', { name: /Add another row/i })
+        if (!foundTableFieldAddAnotherRowButton)
+          throw new Error('Table field add another row button not found')
+        tableFieldAddAnotherRowButton = foundTableFieldAddAnotherRowButton
+      })
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 2 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(2)
+      })
+    },
+  )
+
+  await step(
+    'Click the add another row button for the table field so there is 3 rows',
+    async () => {
+      await userEvent.click(tableFieldAddAnotherRowButton)
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 3 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(3)
+      })
+    },
+  )
+
+  await step(
+    'Click the add another row button for the table field so there is 4 rows',
+    async () => {
+      await userEvent.click(tableFieldAddAnotherRowButton)
+    },
+  )
+
+  await step(
+    'Assert that the table is initiated with 4 rows which is the minimum rows',
+    async () => {
+      await waitFor(async () => {
+        const rows = within(tableFieldTable).getAllByRole('row')
+        expect(rows).toHaveLength(4)
+      })
+    },
+  )
+
+  await step(
+    'Assert the add another row button is disabled since number of rows is maximum ',
+    async () => {
+      await waitFor(async () => {
+        expect(tableFieldAddAnotherRowButton).toBeDisabled()
+      })
     },
   )
 }

@@ -380,6 +380,8 @@ export const PublicFormProvider = ({
   const { t, i18n } = useTranslation()
   const selectedLanguage = i18n.language as Language
 
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
@@ -563,10 +565,12 @@ export const PublicFormProvider = ({
     !previousSubmission &&
     !isSubmissionSecretKeyInvalid
   ) {
-    const isValid = isKeypairValid(
-      encryptedPreviousSubmission.submissionPublicKey,
-      submissionSecretKey,
-    )
+    // During test, we want to bypass the secret key validation
+    const isValid =
+      isKeypairValid(
+        encryptedPreviousSubmission.submissionPublicKey,
+        submissionSecretKey,
+      ) || isTest
 
     if (isValid) {
       setPreviousSubmission(
@@ -803,7 +807,6 @@ export const PublicFormProvider = ({
     })
 
   // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isSaveDraftFeatureEnabled =
     useFeatureIsOn(featureFlags.saveDraft) || isTest
   const isSaveDraftEnabled =
