@@ -592,6 +592,7 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     formId,
     submissionId: String(this._id),
     encryptedContent: this.encryptedContent,
+    encryptedSubmissionSecretKey: this.encryptedSubmissionSecretKey,
     verifiedContent: '',
     version: this.version,
     created: this.created,
