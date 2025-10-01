@@ -3,7 +3,6 @@ import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
 import {
   IAttachmentInfo,
@@ -17,7 +16,6 @@ import {
   FormDto,
   FormFieldDto,
   FormResponseMode,
-  SignatureFieldWebhookResponseV3,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
@@ -69,7 +67,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  prepareWebhookResponseContent,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -799,21 +800,9 @@ export const encryptSubmission = async (
     )
 
   // Modify response data for webhook responses and encrypt separately
-  const strippedResponsesWebhook = Object.entries(
+  const strippedResponsesWebhook = prepareWebhookResponseContent(
     strippedAttachmentResponses,
-  ).map(([key, value]) => {
-    if (
-      value.fieldType === BasicField.Signature &&
-      value.answer.value.length > 0
-    ) {
-      const webhookValue: SignatureFieldWebhookResponseV3 = {
-        value: [SIGNATURE_CAPTURED_STRING],
-      }
-
-      return [key, webhookValue]
-    }
-    return [key, value]
-  })
+  )
 
   const encryptedWebhookContent = formsgSdk.crypto.encrypt(
     strippedResponsesWebhook,

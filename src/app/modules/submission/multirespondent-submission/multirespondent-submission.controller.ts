@@ -156,6 +156,7 @@ const submitMultirespondentForm = async (
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
     respondentEmails: req.formsg.respondentEmails,
+    encryptedWebhookContent: req.formsg.encryptedWebhookContent,
   })
 }
 
@@ -252,6 +253,7 @@ const updateMultirespondentSubmission = async (
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
     respondentEmails: req.formsg.respondentEmails,
+    encryptedWebhookContent: req.formsg.encryptedWebhookContent,
   })
 }
 

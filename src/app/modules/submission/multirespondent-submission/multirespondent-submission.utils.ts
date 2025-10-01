@@ -8,6 +8,7 @@ import {
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
+  SignatureFieldWebhookResponseV3,
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
@@ -17,7 +18,10 @@ import {
   FormFieldSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponsesV3,
+  ParsedClearFormFieldResponseV3,
+} from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
@@ -27,6 +31,8 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
+
+import { StrippedAttachmentResponseV3 } from './multirespondent-submission.types'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -340,4 +346,42 @@ export const getQuestionTitleAnswerString = ({
     })
   }
   return questionAnswerPair
+}
+
+/**
+ * Converts responses to webhook desired outputs before encryption (again)
+ */
+export const prepareWebhookResponseContent = (
+  input: Record<
+    string,
+    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+  >,
+): Record<
+  string,
+  | ParsedClearFormFieldResponseV3
+  | StrippedAttachmentResponseV3
+  | SignatureFieldWebhookResponseV3
+> => {
+  const result: Record<
+    string,
+    | ParsedClearFormFieldResponseV3
+    | StrippedAttachmentResponseV3
+    | SignatureFieldWebhookResponseV3
+  > = {}
+
+  for (const [key, value] of Object.entries(input)) {
+    if (
+      value.fieldType === BasicField.Signature &&
+      value.answer.value.length > 0
+    ) {
+      result[key] = {
+        ...value,
+        answer: [SIGNATURE_CAPTURED_STRING],
+      }
+    } else {
+      result[key] = value
+    }
+  }
+
+  return result
 }
