@@ -51,8 +51,6 @@ export const decryptSubmission = ({
   )
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 
-  console.log('decryptedContent:', JSON.stringify(decryptedContent.responses))
-
   // Add metadata for display.
   return {
     ...rest,

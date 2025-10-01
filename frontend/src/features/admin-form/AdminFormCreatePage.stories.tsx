@@ -324,7 +324,6 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
   await step('Update the minimum rows to 4', async () => {
     await waitFor(async () => {
       const minimumRowsInput = screen.getByText('Minimum rows')
-      console.log('minimumRowsInput', minimumRowsInput.outerHTML)
       if (!minimumRowsInput) throw new Error('Minimum rows input not found')
       await userEvent.click(minimumRowsInput)
       await userEvent.keyboard('{arrowright}{backspace}4')
@@ -344,7 +343,6 @@ AdminFormBuilderWithAdditionalRowsTableField.play = async ({
   await step('Update the minimum rows to 1', async () => {
     await waitFor(async () => {
       const minimumRowsInput = screen.getByText('Minimum rows')
-      console.log('minimumRowsInput', minimumRowsInput.outerHTML)
       if (!minimumRowsInput) throw new Error('Minimum rows input not found')
       await userEvent.click(minimumRowsInput)
       await userEvent.keyboard('{arrowright}{backspace}1')
