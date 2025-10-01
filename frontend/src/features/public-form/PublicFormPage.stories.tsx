@@ -1186,7 +1186,7 @@ WithMultiRespondentFormStep1TableFieldAdditionalRows.parameters = {
           responseMode: FormResponseMode.Multirespondent,
           workflow: [
             {
-              _id: 'step-1',
+              _id: 'step-0',
               edit: ['table-field-for-test-id'],
               workflow_type: WorkflowType.Static,
               emails: [],

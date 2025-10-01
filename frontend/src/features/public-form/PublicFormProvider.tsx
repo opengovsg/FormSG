@@ -47,7 +47,7 @@ import {
   HttpError,
   SingleSubmissionValidationError,
 } from '~services/ApiService'
-import { FormFieldValues } from '~templates/Field'
+import { FormFieldValues, TableFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -313,6 +313,20 @@ export const getInitialFormValues = ({
         }
       }
 
+      // Append extra empty rows to existing value until the minimum is met. 
+      if (field.fieldType === BasicField.Table && acc[field._id]) {
+        const currentValue = acc[field._id] as TableFieldValues 
+        if (currentValue.length < (field.minimumRows || 0)) {
+          acc[field._id] = [
+            ...currentValue,
+            ...times(
+              (field.minimumRows || 0) - currentValue.length,
+              () => createTableRow(field),
+            ),
+          ]
+        }
+      }
+
       if (!acc[field._id]) {
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
@@ -357,6 +371,9 @@ const getSaveDraftKey = ({
   formId: string
   formSubmissionId?: string
   isMrf: boolean
+  /**
+   * @note currentMrfWorkflowStepNumber is 0-indexed.
+   */ 
   currentMrfWorkflowStepNumber: number
 }) => {
   const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
