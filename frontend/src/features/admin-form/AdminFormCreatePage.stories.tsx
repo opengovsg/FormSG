@@ -245,8 +245,11 @@ AdminFormBuilderWithAdditionalRowsTableField.parameters = {
     form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
   }),
   viewport: {
-    defaultViewport: 'lg',
+    value: 'lg', // Forces to desktop view so that the edit drawer opens when the table field is clicked
   },
+  docs: {
+    storyDescription: `Verifies that the table field rows are updated when the minimum rows is updated. Needs to be in lg viewport to work.`,
+  }
 }
 
 AdminFormBuilderWithAdditionalRowsTableField.play = async ({
