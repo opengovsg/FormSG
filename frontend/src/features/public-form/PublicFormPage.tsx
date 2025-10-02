@@ -29,6 +29,7 @@ export const PublicFormPage = (): JSX.Element => {
       formId={formId}
       submissionId={submissionId}
       startTime={startTime}
+      isPublicFormPage
     >
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>

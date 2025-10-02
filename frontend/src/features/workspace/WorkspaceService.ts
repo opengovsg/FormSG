@@ -2,7 +2,6 @@ import {
   AdminFeedbackDto,
   AdminFeedbackRating,
   AdminUseEmailModeFeedbackDto,
-  BasicField,
   ErrorDto,
 } from '~shared/types'
 import {

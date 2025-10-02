@@ -8,9 +8,12 @@ import {
 } from 'react'
 import { UseQueryResult } from 'react-query'
 
-import { MultirespondentSubmissionDto } from '~shared/types'
+import { FormFieldDto, MultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
+import { FormFieldValues } from '~templates/Field'
+
+import { PrefillMap } from './components/FormFields/FormFields'
 import { decryptSubmission } from './utils/decryptSubmission'
 
 export type SubmissionData = {
@@ -19,6 +22,17 @@ export type SubmissionData = {
   /** Submission time in ms from epoch  */
   timestamp: number
   mrfStep?: number
+}
+
+export interface DraftSubmission {
+  lastUpdated: number | null
+  draftResponses: FormFieldValues | null
+  /*
+    Map of field id to checksum (hash) of the field definition.
+    This is used to check if the field definition has changed since the last save draft.
+    If it has changed, the saved field value will not be used.
+  */
+  fieldDefinitionsChecksum: Record<string, string> | null
 }
 
 export interface PublicFormContextProps
@@ -77,6 +91,12 @@ export interface PublicFormContextProps
   setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
+  draftLastSavedDateTimeString?: string
+  onSaveDraft: () => void
+  isSaveDraftEnabled: boolean
+  defaultFormValues: FormFieldValues
+  augmentedFormFields: FormFieldDto[]
+  fieldPrefillMap: PrefillMap
 }
 
 export const PublicFormContext = createContext<

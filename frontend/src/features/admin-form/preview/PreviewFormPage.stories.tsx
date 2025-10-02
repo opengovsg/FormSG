@@ -9,6 +9,7 @@ import {
   FormResponseMode,
 } from '~shared/types/form'
 
+import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 import {
   getPreviewFormErrorResponse,
   getPreviewFormResponse,
@@ -397,5 +398,23 @@ WithPayment.parameters = {
       },
     }),
     ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+
+export const MultirespondentFormWithAdditionalRowsTableField = Template.bind({})
+MultirespondentFormWithAdditionalRowsTableField.parameters = {
+  docs: {
+    storyDescription: `There should be ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows} rows since the minimum rows is ${TABLE_FIELD_ADDITIONAL_ROWS_FIELD.minimumRows}`,
+  },
+  msw: [
+    getPreviewFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [],
+          form_fields: [TABLE_FIELD_ADDITIONAL_ROWS_FIELD],
+        },
+      },
+    }),
   ],
 }

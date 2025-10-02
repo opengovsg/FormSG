@@ -65,7 +65,7 @@ const createMockContext = (
     isPreviousData: false,
     isRefetchError: false,
     isStale: false,
-    refetch: () => Promise.resolve({} as unknown),
+    refetch: () => Promise.resolve({}),
     remove: () => {},
     status: 'success' as const,
   } as PublicFormContextProps
