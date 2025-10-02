@@ -47,7 +47,7 @@ import {
   HttpError,
   SingleSubmissionValidationError,
 } from '~services/ApiService'
-import { FormFieldValues } from '~templates/Field'
+import { FormFieldValues, TableFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -242,7 +242,7 @@ export const getFieldPrefillMap = (
   }, {} as PrefillMap)
 }
 
-const getInitialFormValues = ({
+export const getInitialFormValues = ({
   formResponseMode,
   previousSubmission,
   previousAttachments,
@@ -313,6 +313,19 @@ const getInitialFormValues = ({
         }
       }
 
+      // Append extra empty rows to existing value until the minimum is met.
+      if (field.fieldType === BasicField.Table && acc[field._id]) {
+        const currentValue = acc[field._id] as TableFieldValues
+        if (currentValue.length < (field.minimumRows || 0)) {
+          acc[field._id] = [
+            ...currentValue,
+            ...times((field.minimumRows || 0) - currentValue.length, () =>
+              createTableRow(field),
+            ),
+          ]
+        }
+      }
+
       if (!acc[field._id]) {
         // Required so table column fields will render due to useFieldArray usage.
         // See https://react-hook-form.com/api/usefieldarray
@@ -357,6 +370,9 @@ const getSaveDraftKey = ({
   formId: string
   formSubmissionId?: string
   isMrf: boolean
+  /**
+   * @note currentMrfWorkflowStepNumber is 0-indexed.
+   */
   currentMrfWorkflowStepNumber: number
 }) => {
   const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
@@ -379,6 +395,8 @@ export const PublicFormProvider = ({
 }: PublicFormProviderProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const selectedLanguage = i18n.language as Language
+
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
@@ -563,10 +581,12 @@ export const PublicFormProvider = ({
     !previousSubmission &&
     !isSubmissionSecretKeyInvalid
   ) {
-    const isValid = isKeypairValid(
-      encryptedPreviousSubmission.submissionPublicKey,
-      submissionSecretKey,
-    )
+    // During test, we want to bypass the secret key validation
+    const isValid =
+      isKeypairValid(
+        encryptedPreviousSubmission.submissionPublicKey,
+        submissionSecretKey,
+      ) || isTest
 
     if (isValid) {
       setPreviousSubmission(
@@ -803,7 +823,6 @@ export const PublicFormProvider = ({
     })
 
   // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isSaveDraftFeatureEnabled =
     useFeatureIsOn(featureFlags.saveDraft) || isTest
   const isSaveDraftEnabled =
@@ -886,17 +905,6 @@ export const PublicFormProvider = ({
     defaultValues: defaultFormValues,
     mode: 'onTouched',
   })
-
-  // Reset default values when they change
-  const {
-    formState: { isDirty },
-    reset,
-  } = formMethods
-  useEffect(() => {
-    if (!isDirty) {
-      reset(defaultFormValues)
-    }
-  }, [defaultFormValues, isDirty, reset])
 
   const onSaveDraft = () => {
     // Used to track save draft usage

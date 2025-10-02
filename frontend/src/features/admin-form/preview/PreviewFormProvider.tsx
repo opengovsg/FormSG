@@ -18,6 +18,7 @@ import {
 import {
   augmentFormFields,
   getFieldPrefillMap,
+  getInitialFormValues,
   useCommonFormProvider,
 } from '~/features/public-form/PublicFormProvider'
 
@@ -359,13 +360,31 @@ export const PreviewFormProvider = ({
     [formFields, currentStepNumberWorkflowStep],
   )
 
-  const defaultFormValues = useMemo(() => ({}), [])
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
+  const defaultFormValues = useMemo(() => {
+    if (!form?.responseMode) return {}
+    return getInitialFormValues({
+      formResponseMode: form?.responseMode,
+      currentStepNumberWorkflowStep,
+      augmentedFormFields,
+      fieldPrefillMap,
+      draftResponsesToRestore: {},
+      searchParams,
+      isSaveDraftEnabled,
+    })
+  }, [
+    form?.responseMode,
+    currentStepNumberWorkflowStep,
+    augmentedFormFields,
+    fieldPrefillMap,
+    isSaveDraftEnabled,
+    searchParams,
+  ])
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
   })
-
-  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   if (isNotFormId) {
     return <NotFoundErrorPage />

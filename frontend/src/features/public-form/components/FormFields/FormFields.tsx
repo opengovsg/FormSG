@@ -67,7 +67,7 @@ export const FormFields = ({
     control,
   } = useFormContext<FormFieldValues>()
 
-  // Reset default values when they change
+  // Reset cached default values when they change
   useEffect(() => {
     if (!isDirty) {
       reset(defaultFormValues)
