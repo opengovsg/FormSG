@@ -14,7 +14,6 @@ import {
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
-import { getSignatureFileName } from '../../../../../shared/utils/signature'
 import { VerifiedKeys } from '../../../../../shared/utils/verified-content'
 import {
   FormFieldSchema,
