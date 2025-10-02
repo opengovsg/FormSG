@@ -157,7 +157,7 @@ services:
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:
-    image: 'bitnami/mongodb:4.4'
+    image: 'bitnamilegacy/mongodb:4.4'
     environment:
       - MONGODB_DATABASE=formsg
       - MONGODB_ADVERTISED_HOSTNAME=database
