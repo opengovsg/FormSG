@@ -1,4 +1,4 @@
-import { Divider } from '@chakra-ui/react'
+import { Divider, Stack } from '@chakra-ui/react'
 
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
@@ -10,17 +10,16 @@ import { GeneralTabHeader } from './components/GeneralTabHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
   return (
-    <>
-      <GeneralTabHeader />
-      <FormStatusToggle />
-      <FormLimitToggle />
-      <FormCustomisationSection />
-      <Divider my="2.5rem" />
+    <Stack divider={<Divider />} spacing="2.5rem">
+      <>
+        <GeneralTabHeader />
+        <FormStatusToggle />
+        <FormLimitToggle />
+        <FormCustomisationSection />
+      </>
       <FormCaptchaToggle />
-      <Divider my="2.5rem" />
       <FormIssueNotificationToggle />
-      <Divider my="2.5rem" />
       <FormDetailsSection />
-    </>
+    </Stack>
   )
 }
