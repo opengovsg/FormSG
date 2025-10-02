@@ -244,7 +244,8 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           </Box>
         )}
       </Droppable>
-      {user?.betaFlags?.children ? (
+      {user?.betaFlags?.children &&
+      form?.responseMode === FormResponseMode.Encrypt ? (
         <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
