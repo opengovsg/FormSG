@@ -40,6 +40,9 @@ export const useDupeFormWizardContext = (
   const { reset, getValues } = formMethods
 
   const isSingpass = !!previewFormData?.spcpSession
+  const hasMyInfoChildren = !!previewFormData?.form.form_fields.some(
+    (field) => field.fieldType === 'children',
+  )
 
   // Async set defaultValues onto modal inputs.
   useEffect(() => {
@@ -193,6 +196,7 @@ export const useDupeFormWizardContext = (
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
+    hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),
     onClose,
   }
