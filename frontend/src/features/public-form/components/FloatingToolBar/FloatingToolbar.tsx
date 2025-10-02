@@ -5,9 +5,17 @@ import { noPrintCss } from '~utils/noPrintCss'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FloatingIssueFeedbackButton } from './FloatingIssueFeedbackButton'
+import { FloatingSaveDraftButton } from './FloatingSaveDraftButton'
 
 export const FloatingToolBar = (): JSX.Element | null => {
-  const { isPreview, formId, submissionData } = usePublicFormContext()
+  const {
+    isPreview,
+    formId,
+    submissionData,
+    isSaveDraftEnabled,
+    onSaveDraft,
+    draftLastSavedDateTimeString,
+  } = usePublicFormContext()
   if (submissionData) return null
 
   return (
@@ -21,6 +29,12 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
+      {isSaveDraftEnabled && (
+        <FloatingSaveDraftButton
+          onSaveDraft={onSaveDraft}
+          draftLastSavedDateTimeString={draftLastSavedDateTimeString}
+        />
+      )}
     </Stack>
   )
 }

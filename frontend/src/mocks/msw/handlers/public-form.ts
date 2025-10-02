@@ -7,6 +7,7 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
+  MultirespondentSubmissionDto,
   PaymentChannel,
   PreventSubmitLogicDto,
   ShowFieldLogicDto,
@@ -578,6 +579,51 @@ export const postVerifyVfnOtpResponse = ({
   )
 }
 
+export const getEncryptedSubmissionResponse = ({
+  delay = 0,
+  overrides,
+}: {
+  delay?: number | 'infinite'
+  overrides?: PartialDeep<MultirespondentSubmissionDto>
+} = {}) => {
+  return http.get<
+    { formId: string; submissionId: string },
+    never,
+    MultirespondentSubmissionDto
+  >('/api/v3/forms/:formId/submissions/:submissionId', async ({ params }) => {
+    const {
+      formId = '61540ece3d4a6e50ac0cc6ff',
+      submissionId = '68d4b9900415e65225fd3e4e',
+    } = params
+
+    const response = mergeWith(
+      {},
+      {
+        _id: submissionId,
+        form: formId,
+        workflowStep: 0,
+        submissionPublicKey: 'mock-public-key',
+        encryptedContent: '{}', // Store the decrypted responses as a JSON string
+        version: 1,
+        mrfVersion: 1,
+        attachmentMetadata: {},
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+      },
+      overrides,
+      (objValue, srcValue) => {
+        if (Array.isArray(objValue)) {
+          return [...srcValue, ...objValue]
+        }
+      },
+    ) as MultirespondentSubmissionDto
+
+    await MswDelay(delay)
+    return HttpResponse.json(response)
+  })
+}
+
 export const publicFormHandlers = [
   getPublicFormResponse(),
   getPublicFormWithoutSectionsResponse(),
@@ -585,4 +631,5 @@ export const publicFormHandlers = [
   postVfnTransactionResponse(),
   postGenerateVfnOtpResponse(),
   postVerifyVfnOtpResponse(),
+  getEncryptedSubmissionResponse(),
 ]

@@ -1,7 +1,7 @@
 import { AdminFormDto } from '~shared/types/form'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { augmentWithQuestionNo } from '~features/form/utils'
+import { augmentFieldWithQuestionNo } from '~features/form/utils'
 import { FieldIdSet } from '~features/logic/types'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -30,7 +30,7 @@ export const BuilderFields = ({
   highlightFieldIds,
   isDraggingOver,
 }: BuilderFieldsProps) => {
-  const fieldsWithQuestionNos = augmentWithQuestionNo(fields)
+  const fieldsWithQuestionNos = augmentFieldWithQuestionNo(fields)
   const stateData = useFieldBuilderStore(stateDataSelector)
 
   const { handleBuilderClick } = useCreatePageSidebar()

@@ -10,6 +10,7 @@ import {
   FieldCreateDto,
   FormFieldDto,
   RatingShape,
+  TableFieldBase,
   TableFieldDto,
 } from '~shared/types/field'
 import {
@@ -961,6 +962,38 @@ export const createMockForm = (
       },
     ) as AdminFormDto,
   }
+}
+
+export const TABLE_FIELD_ADDITIONAL_ROWS_FIELD: FormFieldDto<TableFieldBase> = {
+  title: 'Table field for test',
+  description: 'No more table field regressions please',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Table,
+  _id: 'table-field-for-test-id',
+  globalId: 'not-used',
+  minimumRows: 2,
+  columns: [
+    {
+      title: 'Short text column',
+      required: true,
+      columnType: BasicField.ShortText,
+      ValidationOptions: {
+        customVal: null,
+        selectedValidation: null,
+      },
+      _id: 'table-field-for-test-id-col-1',
+    },
+    {
+      title: 'Dropdown column',
+      required: true,
+      columnType: BasicField.Dropdown,
+      fieldOptions: ['cool beans', 'see ya later alligator', 'far out man'],
+      _id: 'table-field-for-test-id-col-2',
+    },
+  ],
+  addMoreRows: true,
+  maximumRows: 4,
 }
 
 export const createFormBuilderMocks = (

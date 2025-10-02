@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { SubmitHandler } from 'react-hook-form'
+import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -14,7 +15,12 @@ import {
   PublicFormContext,
   SubmissionData,
 } from '~/features/public-form/PublicFormContext'
-import { useCommonFormProvider } from '~/features/public-form/PublicFormProvider'
+import {
+  augmentFormFields,
+  getFieldPrefillMap,
+  getInitialFormValues,
+  useCommonFormProvider,
+} from '~/features/public-form/PublicFormProvider'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { HttpError } from '~services/ApiService'
@@ -320,6 +326,66 @@ export const PreviewFormProvider = ({
     data?.form.responseMode === FormResponseMode.Encrypt &&
     data.form.payments_field.enabled
 
+  const onSaveDraft = () => {
+    toast({
+      description: t(
+        'features.publicForm.components.saveDraft.toast.previewNoDraftSaved',
+      ),
+    })
+  }
+
+  const [searchParams] = useSearchParams()
+
+  const form = data?.form
+  const formFields = form?.form_fields
+  const currentWorkflowStepNumber = 0
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+  const currentStepNumberWorkflowStep =
+    formWorkflow && formWorkflow.length > currentWorkflowStepNumber
+      ? formWorkflow[currentWorkflowStepNumber]
+      : undefined
+
+  const fieldPrefillMap = useMemo(
+    () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
+    [formFields, searchParams],
+  )
+  const augmentedFormFields = useMemo(
+    () =>
+      formFields
+        ? augmentFormFields(formFields, currentStepNumberWorkflowStep)
+        : [],
+    [formFields, currentStepNumberWorkflowStep],
+  )
+
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
+
+  const defaultFormValues = useMemo(() => {
+    if (!form?.responseMode) return {}
+    return getInitialFormValues({
+      formResponseMode: form?.responseMode,
+      currentStepNumberWorkflowStep,
+      augmentedFormFields,
+      fieldPrefillMap,
+      draftResponsesToRestore: {},
+      searchParams,
+      isSaveDraftEnabled,
+    })
+  }, [
+    form?.responseMode,
+    currentStepNumberWorkflowStep,
+    augmentedFormFields,
+    fieldPrefillMap,
+    isSaveDraftEnabled,
+    searchParams,
+  ])
+
+  const formMethods = useForm<FormFieldValues>({
+    defaultValues: defaultFormValues,
+  })
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -337,6 +403,12 @@ export const PreviewFormProvider = ({
         handleLogout: undefined,
         isPaymentEnabled,
         isPreview: true,
+        onSaveDraft,
+        isSaveDraftEnabled,
+        draftLastSavedDateTimeString: undefined,
+        augmentedFormFields,
+        defaultFormValues,
+        fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
@@ -351,7 +423,11 @@ export const PreviewFormProvider = ({
             : data?.form.title
         }
       />
-      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
+      {isFormNotFound ? (
+        <FormNotFound message={error?.message} />
+      ) : (
+        <FormProvider {...formMethods}>{children}</FormProvider>
+      )}
     </PublicFormContext.Provider>
   )
 }
