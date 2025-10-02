@@ -14,6 +14,8 @@ export const enSG: CreateFormModal = {
       'useCreateFormWizard must be used within a CreateFormWizardProvider component',
     noSingpassInMrf:
       'The form you are trying to duplicate has Singpass authentication which is not supported for Multi-respondent forms.',
+    noMyInfoChildrenInMrf:
+      'The form you are trying to duplicate has MyInfo Children field(s) which is not supported for Multi-respondent forms.',
   },
   details: {
     name: {
