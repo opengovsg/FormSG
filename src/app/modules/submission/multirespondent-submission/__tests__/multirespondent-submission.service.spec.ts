@@ -9,6 +9,7 @@ import {
   WorkflowType,
 } from 'shared/types'
 
+import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import MailService from 'src/app/services/mail/mail.service'
 import {
   IMultirespondentSubmissionSchema,
@@ -27,7 +28,6 @@ import {
   sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
-import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -1645,7 +1645,7 @@ describe('multirespondent-submission.service', () => {
       )
     })
 
-    it('should call fire webhook with the correct arguments', async () => {
+    it('should fire webhook with the correct arguments for first submission', async () => {
       const encryptedWebhookContent = 'mockEncryptedWebhookContent'
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
@@ -1664,6 +1664,76 @@ describe('multirespondent-submission.service', () => {
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        encryptedWebhookContent,
+      })
+
+      expect(webhookSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: mockSubmissionId,
+          encryptedContent: encryptedWebhookContent,
+        }),
+        MOCK_WEBHOOK_URL,
+        true,
+      )
+    })
+
+    it('should fire webhook with the correct arguments for subsequent submission', async () => {
+      const encryptedWebhookContent = 'mockEncryptedWebhookContent'
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
+      const stepOneEditEmailFieldId = new ObjectId().toHexString()
+      const staticEmail = 'expected_static_email@example.com'
+      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Dynamic,
+          field: stepOneEditEmailFieldId,
+          edit: [stepOneEditEmailFieldId],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [expectedStepTwoEmail],
+          edit: [],
+        },
+      ]
+      const snapshottedFormDef = {
+        _id: mockFormId,
+        workflow,
+        emails: [staticEmail],
+        stepsToNotify: [stepTwoId],
+        stepOneEmailNotificationFieldId,
+        webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
+      } as SnapshottedFormDef
+
+      const submissionResponses: FieldResponsesV3 = {
+        // stepOneEmailNotificationFieldId is not present in responses
+      }
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submission: {
+          _id: mockSubmissionId,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        snapshottedFormDef,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: submissionResponses,
+          workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
         encryptedWebhookContent,
