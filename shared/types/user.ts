@@ -30,6 +30,7 @@ export const UserBase = z.object({
       respondentCopy: z.boolean().optional(),
       statusTracker: z.boolean().optional(),
       signatureField: z.boolean().optional(),
+      singpassMrf: z.boolean().optional(),
     })
     .optional(),
   flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
