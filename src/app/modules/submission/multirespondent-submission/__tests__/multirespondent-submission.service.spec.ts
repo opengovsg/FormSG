@@ -27,6 +27,7 @@ import {
   sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
+import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -1429,22 +1430,28 @@ describe('multirespondent-submission.service', () => {
     })
   })
 
-  describe('sendRespondentCopyEmail', () => {
+  describe('postSubmissionActions', () => {
+    const singleStepWorkflow: FormWorkflowStepDto[] = [
+      {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+      },
+    ]
+    const webhookSpy = jest
+      .spyOn(WebhookFactory, 'sendInitialWebhook')
+      .mockReturnValue(okAsync(true))
+
+    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
+    const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
+
     it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionCreateActions', async () => {
       // Arrange
       const sendMrfRespondentCopyEmailSpy = jest.spyOn(
         MailService,
         'sendMrfRespondentCopyEmail',
       )
-
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
 
       const emptyRespondentEmails: string[] = []
 
@@ -1460,7 +1467,7 @@ describe('multirespondent-submission.service', () => {
           emails: ['email1@example.com'],
         } as IPopulatedMultirespondentForm,
         encryptedPayload: {
-          encryptedContent: 'encryptedContent',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1480,15 +1487,6 @@ describe('multirespondent-submission.service', () => {
         'sendMrfRespondentCopyEmail',
       )
 
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
-
       const emptyRespondentEmails: string[] = []
 
       // Act
@@ -1504,7 +1502,7 @@ describe('multirespondent-submission.service', () => {
         } as SnapshottedFormDef,
         currentStepNumber: 1,
         encryptedPayload: {
-          encryptedContent: 'encryptedContent',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1524,15 +1522,6 @@ describe('multirespondent-submission.service', () => {
         'sendMrfRespondentCopyEmail',
       )
 
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
-
       const respondentEmails = ['test@example.com', 'test1@example.com']
 
       // Act
@@ -1547,7 +1536,7 @@ describe('multirespondent-submission.service', () => {
           emails: ['email1@example.com'],
         } as IPopulatedMultirespondentForm,
         encryptedPayload: {
-          encryptedContent: 'encryptedContent',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1635,7 +1624,7 @@ describe('multirespondent-submission.service', () => {
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
-          encryptedContent: 'encryptedContent',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1653,6 +1642,40 @@ describe('multirespondent-submission.service', () => {
       ).toContainValues(respondentEmails)
       expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
         2,
+      )
+    })
+
+    it('should call fire webhook with the correct arguments', async () => {
+      const encryptedWebhookContent = 'mockEncryptedWebhookContent'
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          _id: mockSubmissionId,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        encryptedWebhookContent,
+      })
+
+      expect(webhookSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _id: mockSubmissionId,
+          encryptedContent: encryptedWebhookContent,
+        }),
+        MOCK_WEBHOOK_URL,
+        true,
       )
     })
   })
