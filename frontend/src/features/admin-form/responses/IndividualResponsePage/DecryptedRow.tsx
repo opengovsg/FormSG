@@ -1,24 +1,12 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
-import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
-import getStroke from 'perfect-freehand'
 
 import { BasicField } from '~shared/types'
-import { SignatureVectorArray } from '~shared/types/field'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
-import {
-  convertToSignatureVectorArray,
-  getBoundingBox,
-  SIGNATURE_OUTPUT_PADDING_DEFAULT,
-  SIGNATURE_STROKE_SIZE,
-  SIGNATURE_STROKE_SMOOTHING,
-  SIGNATURE_STROKE_STREAMLINE,
-  SIGNATURE_STROKE_THINNING,
-} from '~shared/utils/signature'
 
-import { drawStroke } from '~utils/convertSignatureOutput'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
@@ -26,6 +14,7 @@ import Spinner from '~components/Spinner'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
+import { SignatureCanvas } from './SignatureCanvas'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -137,76 +126,10 @@ const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
 }
 
 const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const vectorArray: SignatureVectorArray =
-      row.answerArray && row.answerArray[1]
-        ? convertToSignatureVectorArray(row.answerArray[1] as string)
-        : []
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Clear canvas first
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    if (vectorArray.length === 0) {
-      // No signature - shrink canvas to minimal size
-      setCanvasSize({ width: 0, height: 0 })
-      canvas.width = 0
-      canvas.height = 0
-      return
-    }
-
-    const { minX, minY, maxX, maxY } = getBoundingBox(vectorArray)
-    const padding = SIGNATURE_OUTPUT_PADDING_DEFAULT
-
-    // apply devicePixelRatio to maintain sharpness
-    const dpr = window.devicePixelRatio || 1
-    canvas.width = maxX * dpr
-    canvas.height = maxY * dpr
-    // keep the CSS size same as logical size
-    canvas.style.width = `${maxX}px`
-    canvas.style.height = `${maxY}px`
-
-    setCanvasSize({ width: maxX, height: maxY })
-    // Scale the context to account for dpr
-    ctx.scale(dpr, dpr)
-
-    // Draw strokes using original coordinates but shift by minX and minY to remove whitespace
-    vectorArray.forEach((stroke) => {
-      const shiftedStroke = stroke.map(([x, y, pressure]) => [
-        x - minX + padding,
-        y - minY + padding,
-        pressure,
-      ])
-      const pathData = getStroke(shiftedStroke, {
-        size: SIGNATURE_STROKE_SIZE,
-        thinning: SIGNATURE_STROKE_THINNING,
-        smoothing: SIGNATURE_STROKE_SMOOTHING,
-        streamline: SIGNATURE_STROKE_STREAMLINE,
-      })
-      drawStroke(ctx, pathData)
-    })
-  }, [row.answerArray])
-
   return (
     <Stack>
       <DecryptedQuestionLabel row={row} />
-      <Box
-        background="white"
-        width={`${canvasSize.width}px`}
-        height={`${canvasSize.height}px`}
-        borderColor="neutral.400"
-        borderRadius="0.25rem"
-      >
-        <canvas ref={canvasRef} />
-      </Box>
+      <SignatureCanvas row={row} />
     </Stack>
   )
 }
