@@ -166,7 +166,10 @@ export const PrintableResponse = ({
           color="white"
           textDecor="underline"
           textDecorationColor="white"
-        >{`${window.location.origin}/${formId}`}</Text>
+        >
+          <span data-chromatic="ignore">{window.location.origin}</span>
+          <span>{`/${formId}`}</span>
+        </Text>
       </Box>
       <Box mx="5%" my="30px">
         <PrintableResponseRows decryptedResponses={decryptedResponses} />

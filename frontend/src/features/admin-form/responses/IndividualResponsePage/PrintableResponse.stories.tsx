@@ -256,20 +256,26 @@ LongTextForm.args = {
 
 export const OptionalSignature = Template.bind({})
 OptionalSignature.args = {
-  formTitle: 'Optional Signature with and without answer',
+  formTitle: 'Optional signature with and without answer',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
     {
       _id: 'signature-with-answer',
       fieldType: BasicField.Signature,
-      question: 'Digital Signature',
+      question: 'Signature with answer',
       answerArray: SAMPLE_SIGNATURE_ANSWER_ARRAY,
     },
     {
       _id: 'signature-no-answer',
       fieldType: BasicField.Signature,
-      question: 'Digital Signature with no answer',
+      question: 'Signature with no answer',
       answerArray: [],
+    },
+    {
+      _id: 'shorttext-1',
+      fieldType: BasicField.ShortText,
+      question: 'Short text question',
+      answer: 'Purpose is to assert empty signature row size',
     },
   ],
 }
