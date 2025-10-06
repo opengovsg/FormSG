@@ -23,6 +23,7 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from 'shared/types'
+import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
 import {
   FormFieldSchema,
@@ -38,11 +39,13 @@ import {
   MultirespondentSubmissionData,
 } from 'src/types'
 
+import { ParsedClearFormFieldResponseV3 } from '../../../../../types/api'
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   getQuestionTitleAnswerString,
+  prepareWebhookResponseContent,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -702,5 +705,27 @@ describe('multirespondent-submission.utils', () => {
       responses: null as unknown as FieldResponsesV3,
     })
     expect(nullResult).toEqual([])
+  })
+
+  it('should return desired webhook response value changes', () => {
+    const mockResponses: Record<string, ParsedClearFormFieldResponseV3> = {
+      ['mockId1']: {
+        fieldType: BasicField.Dropdown,
+        answer: 'Option C', // Option not in mapping
+      },
+      ['mockId2']: {
+        fieldType: BasicField.Signature,
+        answer: {
+          type: 'draw',
+          value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
+        },
+      },
+    }
+
+    const webhookResponses = prepareWebhookResponseContent(mockResponses)
+
+    expect(webhookResponses['mockId2'].answer).toEqual(
+      expect.arrayContaining([SIGNATURE_CAPTURED_STRING]),
+    )
   })
 })
