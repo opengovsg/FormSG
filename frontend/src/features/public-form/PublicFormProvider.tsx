@@ -492,7 +492,15 @@ export const PublicFormProvider = ({
       data.form.responseMode !== FormResponseMode.Multirespondent &&
       !!previousSubmissionId
 
-    if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
+    //TODO: FRM-2151 remove when SingpassMRF is out of beta
+    const isSingpassMrfDisabled =
+      !enableSingpassMrfFeatureFlag && data?.form?.authType !== FormAuthType.NIL
+
+    if (
+      isFormNotFound ||
+      isNonMultirespondentFormWithPreviousSubmissionId ||
+      isSingpassMrfDisabled
+    ) {
       const title = t('features.publicForm.errors.notFound')
       return {
         title,
