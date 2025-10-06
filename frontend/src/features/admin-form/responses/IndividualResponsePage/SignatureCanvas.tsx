@@ -26,10 +26,27 @@ interface RenderedSignatureCanvasSizeProps {
   widthPx?: number
 }
 
-export const RenderedSignatureCanvas = ({
+export const SignatureCanvas = ({
   row,
   widthPx,
-}: DecryptedRowBaseProps & RenderedSignatureCanvasSizeProps): JSX.Element => {
+}: Pick<DecryptedRowBaseProps, 'row'> &
+  RenderedSignatureCanvasSizeProps): JSX.Element => {
+  const signatureAnswer = row.answerArray?.[1]
+  if (!signatureAnswer) return <></>
+  return (
+    <RenderedSignatureCanvas
+      signatureAnswer={signatureAnswer as string}
+      widthPx={widthPx}
+    />
+  )
+}
+
+const RenderedSignatureCanvas = ({
+  signatureAnswer,
+  widthPx,
+}: {
+  signatureAnswer: string
+} & RenderedSignatureCanvasSizeProps): JSX.Element => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [containerRef, { width: containerWidth }] = useMeasure<HTMLDivElement>()
   const [img, setImg] = useState<string | null>(null)
@@ -39,10 +56,9 @@ export const RenderedSignatureCanvas = ({
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const vectorArray: SignatureVectorArray =
-      row.answerArray && row.answerArray[1]
-        ? convertToSignatureVectorArray(row.answerArray[1] as string)
-        : []
+    const vectorArray: SignatureVectorArray = convertToSignatureVectorArray(
+      signatureAnswer as string,
+    )
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -93,7 +109,7 @@ export const RenderedSignatureCanvas = ({
     // maintains sharpness of original canvas
     const img = canvas.toDataURL('image/png', 1)
     setImg(img)
-  }, [row.answerArray])
+  }, [signatureAnswer])
 
   return (
     <Box

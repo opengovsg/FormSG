@@ -14,7 +14,7 @@ import Spinner from '~components/Spinner'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
-import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
+import { SignatureCanvas } from './SignatureCanvas'
 
 export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
@@ -129,7 +129,7 @@ const DecryptedSignatureRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   return (
     <Stack>
       <DecryptedQuestionLabel row={row} />
-      <RenderedSignatureCanvas row={row} />
+      <SignatureCanvas row={row} />
     </Stack>
   )
 }

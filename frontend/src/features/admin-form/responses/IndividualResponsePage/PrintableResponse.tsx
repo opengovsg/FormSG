@@ -12,7 +12,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useIndividualSubmission } from './queries'
-import { RenderedSignatureCanvas } from './RenderedSignatureCanvas'
+import { SignatureCanvas } from './SignatureCanvas'
 
 const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width
 
@@ -105,10 +105,7 @@ const PrintableDecryptedRow = ({
         <TableRow>
           <TableSingleColItem>{row.question}</TableSingleColItem>
           <TableSingleColItem>
-            <RenderedSignatureCanvas
-              row={row}
-              widthPx={SIGNATURE_PDF_FIXED_WIDTH}
-            />
+            <SignatureCanvas row={row} widthPx={SIGNATURE_PDF_FIXED_WIDTH} />
           </TableSingleColItem>
         </TableRow>
       )
