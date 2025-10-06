@@ -65,16 +65,18 @@ describe('encrypt-submission.service', () => {
       .spyOn(WebhookFactory, 'sendInitialWebhook')
       .mockReturnValue(okAsync(true))
 
+    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
+    const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
+    const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
+
     const MOCK_FORM = {
       admin: new ObjectId(),
       _id: new ObjectId(),
       title: 'mock title',
       getUniqueMyInfoAttrs: () => [],
       authType: 'NIL',
-      webhook: { url: 'https://example.com/webhook', isRetryEnabled: true },
+      webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
     } as unknown as IPopulatedEncryptedForm
-    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
-    const MOCK_VERIFIED_CONTENT = 'mockVerifiedContent'
 
     const MOCK_SUBMISSION = {
       _id: 'submission123',
@@ -89,7 +91,7 @@ describe('encrypt-submission.service', () => {
       jest
         .spyOn(FormService, 'retrieveFullFormById')
         .mockReturnValue(okAsync(MOCK_FORM))
-      const result = await performEncryptPostSubmissionActions({
+      await performEncryptPostSubmissionActions({
         submission: { ...MOCK_SUBMISSION } as IEncryptedSubmissionSchema,
         responses: [],
         encryptedWebhookContent,
@@ -100,7 +102,7 @@ describe('encrypt-submission.service', () => {
             encryptedContent: encryptedWebhookContent,
             verifiedContent: MOCK_VERIFIED_CONTENT,
           }),
-          'https://example.com/webhook',
+          MOCK_WEBHOOK_URL,
           true,
         )
       })
