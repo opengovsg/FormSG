@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
+import { useReactToPrint } from 'react-to-print'
 import {
   Box,
   ButtonGroup,
@@ -27,10 +28,12 @@ import { featureFlags } from '~shared/constants'
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
+import PrintableResponse from './PrintableResponse'
 import { useIndividualSubmission } from './queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
@@ -52,6 +55,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     onNavPreviousSubmissionId,
     isAnyFetching,
   } = useUnlockedResponses()
+  const { data: form, isLoading: isFormLoading } = useAdminForm()
   const { isLoading } = useIndividualSubmission()
 
   const nextSubmissionId = useMemo(
@@ -115,16 +119,22 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const gb = useGrowthBook()
 
   useEffect(() => {
-    if (user) {
-      gb?.setAttributes({
-        id: user._id,
-        email: user.email,
-        agency: user.agency,
+    if (user && gb) {
+      gb.setAttributes({
+        adminEmail: user.email,
+        adminAgency: user.agency,
+        ...gb.getAttributes(),
       })
     }
   }, [gb, user])
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
+
+  const printableResponseRef = useRef<HTMLDivElement>(null)
+  const reactToPrintFn = useReactToPrint({
+    contentRef: printableResponseRef,
+    documentTitle: `${form ? `${form.title}_formId_${form._id}_` : ''}submissionId_${submissionId}_response.pdf`,
+  })
 
   return (
     <Grid
@@ -164,6 +174,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
+                  isLoading={isLoading || isFormLoading}
                   onClick={() => {
                     datadogLogs.logger.info(
                       `IndividualResponseNavbar: admin printing pdf`,
@@ -175,10 +186,11 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                         },
                       },
                     )
-                    window.print()
+                    reactToPrintFn()
                   }}
                   variant="clear"
                 />
+                <PrintableResponse ref={printableResponseRef} />
               </Box>
             )}
           </Stack>
