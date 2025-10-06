@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import { flow } from 'lodash'
 import get from 'lodash/get'
@@ -405,6 +405,8 @@ export const PublicFormProvider = ({
     featureFlags.turnstile,
     false,
   )
+
+  const enableSingpassMrfFeatureFlag = useFeatureIsOn(featureFlags.singpassMrf)
 
   let hasLoaded: boolean
   let containerID: string
@@ -880,6 +882,20 @@ export const PublicFormProvider = ({
             })
         }
         case FormResponseMode.Multirespondent:
+          //TODO: FRM-2151 remove when SingpassMRF is out of beta
+          // if mrf form is singpass-enabled & feature flag is off, prevent submission
+
+          if (
+            !enableSingpassMrfFeatureFlag &&
+            form?.authType !== FormAuthType.NIL
+          ) {
+            const singpassMrfError = new Error(
+              'Submission not allowed: Singpass MRF current is disabled.',
+            )
+            showErrorToast(singpassMrfError, form)
+            return singpassMrfError
+          }
+
           return (
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation
