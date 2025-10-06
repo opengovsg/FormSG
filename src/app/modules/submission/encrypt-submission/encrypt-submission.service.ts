@@ -194,6 +194,7 @@ export const performEncryptPostSubmissionActions = ({
             message:
               'Error while sending webhook, no encryptedWebhookContent found',
             meta: {
+              ...logMeta,
               action: 'useEncryptedWebhookContent',
             },
           })

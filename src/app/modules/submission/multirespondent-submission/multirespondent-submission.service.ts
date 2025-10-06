@@ -679,7 +679,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
 
   if (webhookUrl) {
     logger.info({
-      message: 'Sending update webhook for multirespondent submission',
+      message: 'Sending webhook for multirespondent submission',
       meta: logMeta,
     })
 
@@ -687,7 +687,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       logger.error({
         message:
           'Error while sending webhook, no encryptedWebhookContent found',
-        meta: { action: 'useEncryptedWebhookContentMrf' },
+        meta: logMeta,
       })
     } else {
       submission.encryptedContent = encryptedWebhookContent
@@ -974,7 +974,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   if (webhookUrl) {
     logger.info({
-      message: 'Sending update webhook for multirespondent submission',
+      message: 'Sending webhook for multirespondent submission',
       meta: logMeta,
     })
 
@@ -982,7 +982,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       logger.error({
         message:
           'Error while sending webhook, no encryptedWebhookContent found',
-        meta: { action: 'useEncryptedWebhookContentMrf' },
+        meta: logMeta,
       })
     } else {
       submission.encryptedContent = encryptedWebhookContent

@@ -146,6 +146,6 @@ export type SignatureFieldResponseV3 = {
 }
 
 export type SignatureFieldWebhookResponseV3 = {
-  fieldType: BasicField
+  fieldType: BasicField.Signature
   answer: string[]
 }
