@@ -1648,6 +1648,33 @@ describe('multirespondent-submission.service', () => {
       )
     })
 
+    it('should not fire webhook if the encryptedWebhookContent is undefined', async () => {
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          _id: mockSubmissionId,
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+        encryptedWebhookContent: undefined,
+      })
+
+      expect(webhookSpy).not.toHaveBeenCalled()
+    })
+
     it('should fire webhook with the correct arguments for first submission', async () => {
       // Act
       await performMultiRespondentPostSubmissionCreateActions({

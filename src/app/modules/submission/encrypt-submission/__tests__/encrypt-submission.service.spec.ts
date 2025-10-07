@@ -107,5 +107,20 @@ describe('encrypt-submission.service', () => {
         )
       })
     })
+
+    it('should not call WebhookFactory.sendInitialWebhook if encryptedWebhookContent is undefined', async () => {
+      const encryptedWebhookContent = undefined
+
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(okAsync(MOCK_FORM))
+      await performEncryptPostSubmissionActions({
+        submission: { ...MOCK_SUBMISSION } as IEncryptedSubmissionSchema,
+        responses: [],
+        encryptedWebhookContent,
+      }).map(() => {
+        expect(webhookSpy).not.toHaveBeenCalled()
+      })
+    })
   })
 })
