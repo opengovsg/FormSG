@@ -850,6 +850,7 @@ const _createSubmission = async ({
     emailData,
     attachments: emailAttachments,
     respondentEmails,
+    encryptedWebhookContent: req.formsg?.encryptedWebhookContent,
   })
 }
 
