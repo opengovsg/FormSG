@@ -60,6 +60,21 @@ const TableSingleColItem = ({ children }: { children: React.ReactNode }) => (
   </td>
 )
 
+const StandardPrintableRow = ({
+  question,
+  answer,
+}: {
+  question: string
+  answer: string
+}) => {
+  return (
+    <TableRow>
+      <TableSingleColItem>{question}</TableSingleColItem>
+      <TableSingleColItem>{answer}</TableSingleColItem>
+    </TableRow>
+  )
+}
+
 const PrintableDecryptedRow = ({
   row,
 }: {
@@ -81,22 +96,21 @@ const PrintableDecryptedRow = ({
         row.answerArray as string[],
       ).join(', ')
       return (
-        <TableRow>
-          <TableSingleColItem>{row.question}</TableSingleColItem>
-          <TableSingleColItem>{transformedAddress}</TableSingleColItem>
-        </TableRow>
+        <StandardPrintableRow
+          question={row.question}
+          answer={transformedAddress}
+        />
       )
     }
     case BasicField.Table:
       return (
         <>
           {row.answerArray?.map((ans, idx) => (
-            <TableRow key={idx}>
-              <TableSingleColItem>{row.question}</TableSingleColItem>
-              <TableSingleColItem>
-                {Array.isArray(ans) ? ans.join(', ') : ans}
-              </TableSingleColItem>
-            </TableRow>
+            <StandardPrintableRow
+              question={row.question}
+              answer={Array.isArray(ans) ? ans.join(', ') : ans}
+              key={idx}
+            />
           ))}
         </>
       )
@@ -111,20 +125,39 @@ const PrintableDecryptedRow = ({
       )
     default:
       return (
-        <TableRow>
-          <TableSingleColItem>{row.question}</TableSingleColItem>
-          <TableSingleColItem>
-            {row.answer || row.answerArray?.join(', ') || ''}
-          </TableSingleColItem>
-        </TableRow>
+        <StandardPrintableRow
+          question={row.question}
+          answer={row.answer || row.answerArray?.join(', ') || ''}
+        />
       )
   }
 }
 
+const getDefaultRows = ({
+  responseId,
+  submissionTime,
+}: {
+  responseId: string
+  submissionTime: string
+}) => [
+  {
+    question: 'Response ID',
+    answer: responseId,
+  },
+  {
+    question: 'Time Submitted',
+    answer: submissionTime,
+  },
+]
+
 const PrintableResponseRows = ({
   decryptedResponses,
+  responseId,
+  submissionTime,
 }: {
   decryptedResponses: AugmentedDecryptedResponse[]
+  responseId: string
+  submissionTime: string
 }) => {
   return (
     <table
@@ -133,6 +166,13 @@ const PrintableResponseRows = ({
       }}
     >
       <tbody>
+        {getDefaultRows({ responseId, submissionTime }).map((r, idx) => (
+          <StandardPrintableRow
+            question={r.question}
+            answer={r.answer}
+            key={idx}
+          />
+        ))}
         {decryptedResponses.map((r, idx) => (
           <PrintableDecryptedRow row={r} key={idx} />
         ))}
@@ -145,10 +185,14 @@ export const PrintableResponse = ({
   formTitle,
   formId,
   decryptedResponses,
+  responseId,
+  submissionTime,
 }: {
   formTitle: string
   formId: string
   decryptedResponses: AugmentedDecryptedResponse[]
+  responseId: string
+  submissionTime: string
 }) => {
   return (
     <Box py="16px" fontFamily="sans-serif">
@@ -172,7 +216,11 @@ export const PrintableResponse = ({
         </Text>
       </Box>
       <Box mx="5%" my="30px">
-        <PrintableResponseRows decryptedResponses={decryptedResponses} />
+        <PrintableResponseRows
+          decryptedResponses={decryptedResponses}
+          responseId={responseId}
+          submissionTime={submissionTime}
+        />
       </Box>
     </Box>
   )
@@ -189,6 +237,8 @@ const PrintableResponseContainer = forwardRef<HTMLDivElement>((_, ref) => {
         formTitle={form.title}
         formId={form._id}
         decryptedResponses={data?.responses}
+        responseId={data.refNo}
+        submissionTime={data.submissionTime}
       />
     </Box>
   )

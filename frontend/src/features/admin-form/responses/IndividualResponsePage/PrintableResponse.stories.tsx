@@ -145,10 +145,13 @@ Default.args = {
   formTitle: 'Default Form Submission',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: mockResponses,
+  responseId: '68e4a1b6aa7e70297d82e8e2',
+  submissionTime: 'Mon, 6 Oct 2025, 02:00:31 PM',
 }
 
 export const MinimalForm = Template.bind({})
 MinimalForm.args = {
+  ...Default.args,
   formTitle: 'Minimal Form Submission',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
@@ -169,6 +172,7 @@ MinimalForm.args = {
 
 export const LongFormTitle = Template.bind({})
 LongFormTitle.args = {
+  ...Default.args,
   formTitle:
     'Comprehensive Employee Onboarding and Information Collection Form for New Hires',
   formId: '61540ece3d4a6e50ac0cc6ff',
@@ -177,6 +181,7 @@ LongFormTitle.args = {
 
 export const EmptyResponses = Template.bind({})
 EmptyResponses.args = {
+  ...Default.args,
   formTitle: 'Empty Form',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [],
@@ -184,6 +189,7 @@ EmptyResponses.args = {
 
 export const OnlySections = Template.bind({})
 OnlySections.args = {
+  ...Default.args,
   formTitle: 'Form with Headings Only',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
@@ -204,6 +210,7 @@ OnlySections.args = {
 
 export const TableHeavyForm = Template.bind({})
 TableHeavyForm.args = {
+  ...Default.args,
   formTitle: 'Table Heavy Form',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
@@ -234,6 +241,7 @@ TableHeavyForm.args = {
 
 export const LongTextForm = Template.bind({})
 LongTextForm.args = {
+  ...Default.args,
   formTitle: 'Feedback Form',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
@@ -256,6 +264,7 @@ LongTextForm.args = {
 
 export const OptionalSignature = Template.bind({})
 OptionalSignature.args = {
+  ...Default.args,
   formTitle: 'Optional signature with and without answer',
   formId: '61540ece3d4a6e50ac0cc6ff',
   decryptedResponses: [
