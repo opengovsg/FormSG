@@ -190,6 +190,7 @@ const useCreateFormWizardContext = (
     handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     isSingpass: false,
+    hasMyInfoChildren: false,
     modalHeader: t('features.workspace.modals.forms.create.title.setup'),
     onClose,
   }
