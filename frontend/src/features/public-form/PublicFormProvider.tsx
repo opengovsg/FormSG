@@ -722,7 +722,9 @@ export const PublicFormProvider = ({
 
     //TODO: FRM-2151 remove when SingpassMRF is out of beta
     const isSingpassMrfDisabled =
-      !enableSingpassMrfFeatureFlag && data?.form?.authType !== FormAuthType.NIL
+      data?.form?.responseMode === FormResponseMode.Multirespondent &&
+      data?.form?.authType !== FormAuthType.NIL &&
+      !enableSingpassMrfFeatureFlag 
 
     if (
       isFormNotFound ||
