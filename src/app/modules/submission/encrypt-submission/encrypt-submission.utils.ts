@@ -24,7 +24,6 @@ import {
 } from '../../../../types'
 import {
   EncryptFormFieldResponse,
-  ParsedClearAttachmentResponse,
   ParsedClearAttachmentWebhookResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'

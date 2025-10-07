@@ -11,7 +11,6 @@ import {
   FormResponseMode,
   isPaymentsProducts,
 } from '../../../../../shared/types'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,
