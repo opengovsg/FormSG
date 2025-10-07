@@ -19,6 +19,7 @@ export const SettingsAuthPage = (): JSX.Element => {
   ) {
     return <AuthUnsupportedMsg />
   }
+
   return (
     <>
       <CategoryHeader>Singpass</CategoryHeader>

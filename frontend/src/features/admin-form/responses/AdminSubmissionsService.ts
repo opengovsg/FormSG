@@ -113,7 +113,6 @@ export const getDecryptedSubmissionById = async ({
         verifiedContent: encryptedSubmission.verifiedContent,
         version: encryptedSubmission.version,
       })
-
       if (!decryptedContent)
         throw new Error('Could not decrypt the multirespondent form response')
       processedContent = await processDecryptedContentV3(
