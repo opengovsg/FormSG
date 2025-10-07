@@ -187,9 +187,14 @@ export const performEncryptPostSubmissionActions = ({
         if (!webhookUrl) return okAsync(form)
 
         // replace encryptedContent with encryptedWebhookContent before firing
-        if (encryptedWebhookContent)
+        if (encryptedWebhookContent) {
           submission.encryptedContent = encryptedWebhookContent
-        else {
+          return WebhookFactory.sendInitialWebhook(
+            submission,
+            webhookUrl,
+            !!form.webhook?.isRetryEnabled,
+          ).andThen(() => okAsync(form))
+        } else {
           logger.error({
             message:
               'Error while sending webhook, no encryptedWebhookContent found',
@@ -198,13 +203,8 @@ export const performEncryptPostSubmissionActions = ({
               action: 'useEncryptedWebhookContent',
             },
           })
+          return okAsync(form)
         }
-
-        return WebhookFactory.sendInitialWebhook(
-          submission,
-          webhookUrl,
-          !!form.webhook?.isRetryEnabled,
-        ).andThen(() => okAsync(form))
       })
       // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
       .map(async (form) => {
