@@ -293,8 +293,8 @@ export const getInitialFormValues = ({
             acc[field._id] = fieldPrefillMap[field._id].prefillValue
           }
 
-        // Use myinfo server default value if it exists.
-        // Myinfo overrides existing values since myinfo is seen as source of truth.
+          // Use myinfo server default value if it exists.
+          // Myinfo overrides existing values since myinfo is seen as source of truth.
           if (hasExistingFieldValue(field)) {
             acc[field._id] = extractPreviewValue(field)
           }
@@ -730,7 +730,7 @@ export const PublicFormProvider = ({
     const isSingpassMrfDisabled =
       data?.form?.responseMode === FormResponseMode.Multirespondent &&
       data?.form?.authType !== FormAuthType.NIL &&
-      !enableSingpassMrfFeatureFlag 
+      !enableSingpassMrfFeatureFlag
 
     if (
       isFormNotFound ||
@@ -749,7 +749,14 @@ export const PublicFormProvider = ({
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
+  }, [
+    error,
+    data,
+    previousSubmissionId,
+    isSubmissionSecretKeyInvalid,
+    enableSingpassMrfFeatureFlag,
+    t,
+  ])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
