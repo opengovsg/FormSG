@@ -969,13 +969,11 @@ export const handleNdiResponses = async (
         .json({ message: 'Invalid data was found. Please submit again.' })
     }
   }
-  console.log(`ndiResponses again`, ndiResponses)
 
   // 3. Add collected Ndi data to responses for email payload
   const emailNdiResponses = createNdiResponsesV3FromRecord(ndiResponses)
   responses = { ...responses, ...emailNdiResponses }
   req.formsg.encryptedPayload.responses = responses
-  console.log(`emailNdiResponses`, responses)
 
   // 4. Encrypt Ndi data with new submissionKey
   if (Object.keys(ndiResponses).length !== 0) {

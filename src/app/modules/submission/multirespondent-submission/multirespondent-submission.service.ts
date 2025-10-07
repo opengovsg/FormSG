@@ -657,7 +657,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     formId: form._id,
     submissionId,
   }
-  console.log(`responses,`, responses)
+
   if (respondentEmails && respondentEmails.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
