@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { Box, Center, Text } from '@chakra-ui/react'
+import { Box, Text } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from '~shared/types/field'
@@ -166,9 +166,9 @@ export const PrintableResponse = ({
           color="white"
           textDecor="underline"
           textDecorationColor="white"
+          data-chromatic="ignore"
         >
-          <span data-chromatic="ignore">{window.location.origin}</span>
-          <span>{`/${formId}`}</span>
+          {window.location.origin}/{formId}
         </Text>
       </Box>
       <Box mx="5%" my="30px">

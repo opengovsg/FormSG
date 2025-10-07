@@ -40,6 +40,7 @@ declare global {
             encryptedPayload?: EncryptSubmissionDto
             encryptedFormDef?: IPopulatedEncryptedForm
             unencryptedAttachments?: IAttachmentInfo[]
+            encryptedWebhookContent?: string
           }
         | {
             responseMode: FormResponseMode.Multirespondent
@@ -47,6 +48,7 @@ declare global {
             featureFlags?: string[]
             encryptedPayload?: MultirespondentSubmissionDto
             unencryptedAttachments?: IAttachmentInfo[]
+            encryptedWebhookContent?: string
           }
     }
   }
