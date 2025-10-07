@@ -222,11 +222,11 @@ describe('encrypt-submission.utils', () => {
       const output = prepareWebhookResponseContent(updatedInput)
 
       // Non-signature fields remain unchanged
-      expect(output[0]).toEqual(input[0])
-      expect(output[2]).toEqual(input[2])
+      expect(output[0]).toEqual(updatedInput[0])
+      expect(output[2]).toEqual(updatedInput[2])
 
       //Empty signature field to also remain unchanged
-      expect(output[1]).toEqual(input[1])
+      expect(output[1]).toEqual(updatedInput[1])
     })
   })
 })

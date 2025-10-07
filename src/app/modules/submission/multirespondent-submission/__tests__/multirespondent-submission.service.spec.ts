@@ -1443,6 +1443,9 @@ describe('multirespondent-submission.service', () => {
       .spyOn(WebhookFactory, 'sendInitialWebhook')
       .mockReturnValue(okAsync(true))
 
+    const encryptedWebhookContent = 'mockEncryptedWebhookContent'
+    const encryptedSubmissionSecretKey = 'encryptedSubmissionSecretKey'
+
     const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
     const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
 
@@ -1646,12 +1649,11 @@ describe('multirespondent-submission.service', () => {
     })
 
     it('should fire webhook with the correct arguments for first submission', async () => {
-      const encryptedWebhookContent = 'mockEncryptedWebhookContent'
-      const encryptedSubmissionSecretKey = 'encryptedSubmissionSecretKey'
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
         submission: {
           _id: mockSubmissionId,
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
@@ -1725,6 +1727,7 @@ describe('multirespondent-submission.service', () => {
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
           _id: mockSubmissionId,
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
@@ -1733,7 +1736,7 @@ describe('multirespondent-submission.service', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
           responses: submissionResponses,
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
@@ -1745,6 +1748,7 @@ describe('multirespondent-submission.service', () => {
         expect.objectContaining({
           _id: mockSubmissionId,
           encryptedContent: encryptedWebhookContent,
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
         }),
         MOCK_WEBHOOK_URL,
         true,
