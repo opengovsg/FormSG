@@ -45,7 +45,7 @@ import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   getQuestionTitleAnswerString,
-  prepareWebhookResponseContent,
+  prepareWebhookResponseContentV3,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -711,7 +711,7 @@ describe('multirespondent-submission.utils', () => {
     const mockResponses: Record<string, ParsedClearFormFieldResponseV3> = {
       ['mockId1']: {
         fieldType: BasicField.Dropdown,
-        answer: 'Option C', // Option not in mapping
+        answer: 'Option C',
       },
       ['mockId2']: {
         fieldType: BasicField.Signature,
@@ -722,10 +722,34 @@ describe('multirespondent-submission.utils', () => {
       },
     }
 
-    const webhookResponses = prepareWebhookResponseContent(mockResponses)
+    const webhookResponses = prepareWebhookResponseContentV3(mockResponses)
 
+    expect(webhookResponses['mockId1']).toEqual(mockResponses['mockId1'])
     expect(webhookResponses['mockId2'].answer).toEqual(
       expect.arrayContaining([SIGNATURE_CAPTURED_STRING]),
+    )
+
+    const mockResponsesEmptySignature: Record<
+      string,
+      ParsedClearFormFieldResponseV3
+    > = {
+      ['mockId1']: {
+        fieldType: BasicField.Dropdown,
+        answer: 'Option C',
+      },
+      ['mockId2']: {
+        fieldType: BasicField.Signature,
+        answer: {
+          type: 'draw',
+          value: [],
+        },
+      },
+    }
+    expect(mockResponsesEmptySignature['mockId1']).toEqual(
+      mockResponsesEmptySignature['mockId1'],
+    )
+    expect(mockResponsesEmptySignature['mockId2'].answer).toEqual(
+      expect.arrayContaining([]),
     )
   })
 })

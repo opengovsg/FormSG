@@ -58,6 +58,7 @@ import {
 import {
   formatMyInfoStorageResponseData,
   omitResponseKeys,
+  prepareWebhookResponseContent,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
@@ -533,17 +534,9 @@ export const encryptSubmission = async (
   )
 
   // Modify response data for webhook responses and encrypt separately
-  const strippedResponsesWebhook = strippedBodyResponses.map((response) => {
-    if (
-      response.fieldType === BasicField.Signature &&
-      response.answerArray.length > 0
-    )
-      return {
-        ...response,
-        answerArray: [SIGNATURE_CAPTURED_STRING],
-      }
-    return response
-  })
+  const strippedResponsesWebhook = prepareWebhookResponseContent(
+    strippedBodyResponses,
+  )
 
   const encryptedWebhookContent = formsgSdk.crypto.encrypt(
     strippedResponsesWebhook,

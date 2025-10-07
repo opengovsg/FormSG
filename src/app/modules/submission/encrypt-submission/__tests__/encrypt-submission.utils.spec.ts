@@ -1,13 +1,29 @@
 import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
-import { FormPaymentsField, PaymentType, SubmissionType } from 'shared/types'
+import {
+  BasicField,
+  FormPaymentsField,
+  PaymentType,
+  SubmissionType,
+} from 'shared/types'
+import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
 import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
+import {
+  EncryptFormFieldResponse,
+  ParsedClearAttachmentWebhookResponse,
+  ParsedClearFormFieldResponse,
+} from 'src/types/api'
 
+import {
+  ProcessedFieldResponse,
+  ProcessedSignatureResponse,
+} from '../../submission.types'
 import {
   createStorageModeSubmissionDto,
   getPaymentAmount,
   getPaymentIntentDescription,
+  prepareWebhookResponseContent,
 } from '../encrypt-submission.utils'
 
 describe('encrypt-submission.utils', () => {
@@ -148,6 +164,69 @@ describe('encrypt-submission.utils', () => {
       const result = getPaymentIntentDescription(formData, products)
 
       expect(result).toContain(expectedValue)
+    })
+  })
+
+  describe('prepareWebhookResponseContent', () => {
+    const input: Array<
+      | ProcessedFieldResponse
+      | ParsedClearFormFieldResponse
+      | EncryptFormFieldResponse
+      | ParsedClearAttachmentWebhookResponse
+    > = [
+      {
+        _id: 'field1',
+        fieldType: BasicField.Dropdown,
+        answer: 'Option A',
+      } as ParsedClearFormFieldResponse,
+      {
+        _id: 'field2',
+        fieldType: BasicField.Signature,
+        answerArray: ['draw', '[[[0,0,0],[0,0,1]]]'],
+      } as ProcessedSignatureResponse,
+      {
+        _id: 'field3',
+        fieldType: BasicField.Attachment,
+        filename: undefined,
+        content: undefined,
+      } as ParsedClearAttachmentWebhookResponse,
+    ]
+
+    it('should replace signature answerArray with SIGNATURE_CAPTURED_STRING', () => {
+      const output = prepareWebhookResponseContent(input)
+
+      // Non-signature fields remain unchanged
+      expect(output[0]).toEqual(input[0])
+      expect(output[2]).toEqual(input[2])
+
+      // Signature field answerArray is replaced
+      const sigResponse = output.find(
+        (r): r is ProcessedSignatureResponse =>
+          r.fieldType === BasicField.Signature,
+      )
+      expect(sigResponse).toBeDefined()
+      expect(sigResponse!.answerArray).toEqual([SIGNATURE_CAPTURED_STRING])
+    })
+
+    it('should leave signature fields with empty answerArray unchanged', () => {
+      const updatedInput = input.map((field) => {
+        if (
+          field._id === 'field2' &&
+          field.fieldType === BasicField.Signature
+        ) {
+          return { ...field, answerArray: [] } // replace with empty array
+        }
+        return field
+      })
+
+      const output = prepareWebhookResponseContent(updatedInput)
+
+      // Non-signature fields remain unchanged
+      expect(output[0]).toEqual(input[0])
+      expect(output[2]).toEqual(input[2])
+
+      //Empty signature field to also remain unchanged
+      expect(output[1]).toEqual(input[1])
     })
   })
 })

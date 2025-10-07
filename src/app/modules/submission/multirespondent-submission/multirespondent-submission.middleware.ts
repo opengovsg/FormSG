@@ -68,7 +68,7 @@ import {
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
 import {
-  prepareWebhookResponseContent,
+  prepareWebhookResponseContentV3,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 
@@ -800,7 +800,7 @@ export const encryptSubmission = async (
     )
 
   // Modify response data for webhook responses and encrypt separately
-  const strippedResponsesWebhook = prepareWebhookResponseContent(
+  const strippedResponsesWebhook = prepareWebhookResponseContentV3(
     strippedAttachmentResponses,
   )
 

@@ -1647,6 +1647,7 @@ describe('multirespondent-submission.service', () => {
 
     it('should fire webhook with the correct arguments for first submission', async () => {
       const encryptedWebhookContent = 'mockEncryptedWebhookContent'
+      const encryptedSubmissionSecretKey = 'encryptedSubmissionSecretKey'
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
         submission: {
@@ -1663,7 +1664,7 @@ describe('multirespondent-submission.service', () => {
           encryptedContent: 'encryptedContent',
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
         encryptedWebhookContent,
@@ -1673,6 +1674,7 @@ describe('multirespondent-submission.service', () => {
         expect.objectContaining({
           _id: mockSubmissionId,
           encryptedContent: encryptedWebhookContent,
+          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
         }),
         MOCK_WEBHOOK_URL,
         true,

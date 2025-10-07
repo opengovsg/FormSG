@@ -351,7 +351,7 @@ export const getQuestionTitleAnswerString = ({
 /**
  * Converts responses to webhook desired outputs before encryption (again)
  */
-export const prepareWebhookResponseContent = (
+export const prepareWebhookResponseContentV3 = (
   input: Record<
     string,
     ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
