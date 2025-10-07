@@ -395,6 +395,7 @@ export type DuplicateFormOverwriteDto = {
   | {
       responseMode: FormResponseMode.Multirespondent
       publicKey: string
+      workflow?: FormWorkflowDto
     }
 )
 

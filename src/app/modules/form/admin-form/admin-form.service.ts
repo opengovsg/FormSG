@@ -657,29 +657,32 @@ export const processCreateFormInWorkspace = async (
   return form
 }
 
+type DuplicateFormOpts = {
+  // The ID of the workspace to duplicate the form into.
+  workspaceId?: string
+  // If true, overrides the emails of MRF workflows and dropdown fields with the given overrideEmails
+  overrideEmails?: string[]
+}
+
 /**
  * Duplicates given formId and replace owner with newAdminId.
  * @param originalForm the form to be duplicated
  * @param newAdminId the id of the admin of the duplicated form
  * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
- * @param options - Optional configuration for duplication.
- * @param options.workspaceId - The ID of the workspace to duplicate the form into.
- * @param options.duplicateStripped - If true, duplicates only a stripped version of the form (without certain metadata or fields).
+ * @param opts - Optional configuration for duplication.
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormOverwriteDto,
-  {
-    workspaceId,
-    duplicateStripped,
-  }: { workspaceId?: string; duplicateStripped?: boolean } = {},
+  opts?: DuplicateFormOpts,
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
     newAdminId,
   )
+  const { workspaceId, overrideEmails } = opts ?? {}
 
   // Set startPage.logo to default irregardless.
   overrideProps.startPage = {
@@ -692,13 +695,45 @@ export const duplicateForm = (
     overrideProps.endPage = omit(originalForm.endPage, 'buttonLink')
   }
 
+  // If the form is an MRF, copy the workflow as well
+  if (
+    originalForm.responseMode === FormResponseMode.Multirespondent &&
+    overrideProps.responseMode === FormResponseMode.Multirespondent
+  ) {
+    overrideProps.workflow = (
+      originalForm as IPopulatedMultirespondentForm
+    ).workflow.map((step) => {
+      switch (step.workflow_type) {
+        case WorkflowType.Static: {
+          return {
+            ...step,
+            // Override the emails if the option is specified
+            emails: overrideEmails ?? step.emails,
+          }
+        }
+        case WorkflowType.Conditional:
+        case WorkflowType.Dynamic:
+          // Duplication preserves dropdown and Email Field IDs
+          return step
+      }
+    })
+  }
+
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
   // remove conditional routing mapping from dropdown fields
-  if (duplicateParams?.form_fields && duplicateStripped) {
+  if (duplicateParams?.form_fields && overrideEmails) {
     duplicateParams.form_fields.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
-        field.optionsToRecipientsMap = undefined
+        field.optionsToRecipientsMap = Object.keys(
+          field.optionsToRecipientsMap ?? {},
+        ).reduce(
+          (acc, curr) => {
+            acc[curr] = overrideEmails
+            return acc
+          },
+          {} as Record<string, string[]>,
+        )
       }
     })
   }

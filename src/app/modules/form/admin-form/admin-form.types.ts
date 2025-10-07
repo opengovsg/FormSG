@@ -4,6 +4,7 @@ import { FormResponseMode } from '../../../../../shared/types'
 import {
   FormFieldSchema,
   IForm,
+  IMultirespondentForm,
   IPopulatedForm,
   IUserSchema,
 } from '../../../../types'
@@ -31,6 +32,7 @@ export type OverrideProps = {
   emails?: string | string[]
   publicKey?: string
   submissionLimit?: number | null
+  workflow?: IMultirespondentForm['workflow']
 }
 
 export type EditFormFieldResult = Result<FormFieldSchema[], EditFieldError>
