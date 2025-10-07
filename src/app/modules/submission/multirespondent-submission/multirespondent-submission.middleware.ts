@@ -73,7 +73,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  prepareWebhookResponseContentV3,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -811,6 +814,18 @@ export const encryptSubmission = async (
       submissionPublicKey,
       req.body.version,
     )
+
+  // Modify response data for webhook responses and encrypt separately
+  const strippedResponsesWebhook = prepareWebhookResponseContentV3(
+    strippedAttachmentResponses,
+  )
+
+  const encryptedWebhookContent = formsgSdk.crypto.encrypt(
+    strippedResponsesWebhook,
+    submissionPublicKey,
+  )
+
+  req.formsg.encryptedWebhookContent = encryptedWebhookContent
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,

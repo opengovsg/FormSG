@@ -57,6 +57,7 @@ import {
 import {
   formatMyInfoStorageResponseData,
   omitResponseKeys,
+  prepareWebhookResponseContent,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
@@ -530,6 +531,17 @@ export const encryptSubmission = async (
     strippedBodyResponses,
     publicKey,
   )
+
+  // Modify response data for webhook responses and encrypt separately
+  const strippedResponsesWebhook = prepareWebhookResponseContent(
+    strippedBodyResponses,
+  )
+
+  const encryptedWebhookContent = formsgSdk.crypto.encrypt(
+    strippedResponsesWebhook,
+    publicKey,
+  )
+  req.formsg.encryptedWebhookContent = encryptedWebhookContent
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
