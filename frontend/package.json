@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.251.0",
+  "version": "6.254.0",
   "homepage": ".",
   "type": "module",
   "private": true,
@@ -73,6 +73,7 @@
     "react-swipeable": "^7.0.0",
     "react-table": "^7.7.0",
     "react-textarea-autosize": "^8.3.3",
+    "react-to-print": "^3.1.1",
     "react-use": "^17.3.1",
     "react-use-scrollspy": "^3.0.2",
     "react-virtuoso": "^2.14.0",

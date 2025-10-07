@@ -50,7 +50,11 @@ export const TableField = ({
   isHighContrast,
 }: TableFieldProps): JSX.Element => {
   const { i18n } = useTranslation()
-  const hasMinRowsChanged = useHasChanged(schema.minimumRows)
+  // RATIONALE for setting isIgnoreUndefined to true:
+  // Since schema.minimumRows is always defined, we should ignore undefined values.
+  // This prevents unwanted update of rows for public form page while
+  // still detecting minimum row schema changes for the admin form builder page.
+  const hasMinRowsChanged = useHasChanged(schema.minimumRows, true)
   const isMobile = useIsMobile()
 
   const selectedLanguage = i18n.language as Language

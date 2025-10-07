@@ -620,6 +620,16 @@ export const validateMultirespondentSubmission = async (
                     )
 
                     if (!resp) {
+                      logger.info({
+                        message:
+                          'Submitted response on a non-editable field which did not match previous response',
+                        meta: {
+                          ...logMeta,
+                          incomingResFieldType: incomingResField.fieldType,
+                          prevResFieldType: prevResField.fieldType,
+                        },
+                      })
+
                       return err(
                         new ProcessingError(
                           'Submitted response on a non-editable field which did not match previous response',

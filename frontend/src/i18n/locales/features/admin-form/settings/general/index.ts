@@ -26,6 +26,10 @@ export interface General extends HasTitle {
   customisation: {
     closedFormMessage: string
   }
+  saveDraft: {
+    label: string
+    description: string
+  }
   captcha: {
     label: string
     description: string
