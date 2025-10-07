@@ -292,6 +292,12 @@ export const getInitialFormValues = ({
           if (fieldPrefillMap[field._id]) {
             acc[field._id] = fieldPrefillMap[field._id].prefillValue
           }
+
+        // Use myinfo server default value if it exists.
+        // Myinfo overrides existing values since myinfo is seen as source of truth.
+          if (hasExistingFieldValue(field)) {
+            acc[field._id] = extractPreviewValue(field)
+          }
         }
       } else if (formResponseMode === FormResponseMode.Encrypt) {
         // Reinstate save draft values
@@ -1298,7 +1304,6 @@ export const PublicFormProvider = ({
         case FormResponseMode.Multirespondent:
           //TODO: FRM-2151 remove when SingpassMRF is out of beta
           // if mrf form is singpass-enabled & feature flag is off, prevent submission
-
           if (
             !enableSingpassMrfFeatureFlag &&
             form?.authType !== FormAuthType.NIL
