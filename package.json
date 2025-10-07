@@ -127,7 +127,7 @@
     "nan": "^2.22.2",
     "neverthrow": "^8.0.0",
     "node-cache": "^5.1.2",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^7.0.7",
     "oauth4webapi": "^3.6.0",
     "openai": "^4.70.3",
     "openid-client": "^6.6.2",
