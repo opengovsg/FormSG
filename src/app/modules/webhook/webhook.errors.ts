@@ -114,3 +114,13 @@ export class WebhookRetriesNotEnabledError extends ApplicationError {
     }
   }
 }
+/**
+ * Cannot send webhook because there is no encrypted content.
+ */
+export class WebhookNoEncryptedContentError extends ApplicationError {
+  constructor(
+    message = 'Did not send webhook because there is no encrypted content',
+  ) {
+    super(message, undefined, ErrorCodes.WEBHOOK_NO_ENCRYPTED_CONTENT)
+  }
+}

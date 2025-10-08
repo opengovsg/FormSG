@@ -27,6 +27,7 @@ import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
 import * as UserService from '../../user/user.service'
 import {
+  WebhookNoEncryptedContentError,
   WebhookPushToQueueError,
   WebhookValidationError,
 } from '../../webhook/webhook.errors'
@@ -195,13 +196,13 @@ export const performEncryptPostSubmissionActions = ({
             !!form.webhook?.isRetryEnabled,
           ).andThen(() => okAsync(form))
         } else {
+          // RATIONALE: To send error metric to Datadog
+          const webhookNoEncryptedContentError =
+            new WebhookNoEncryptedContentError()
           logger.error({
-            message:
-              'Error while sending webhook, no encryptedWebhookContent found',
-            meta: {
-              ...logMeta,
-              action: 'useEncryptedWebhookContent',
-            },
+            message: 'Did not send webhook as no encryptedWebhookContent found',
+            meta: logMeta,
+            error: webhookNoEncryptedContentError,
           })
           return okAsync(form)
         }

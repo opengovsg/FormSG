@@ -37,6 +37,7 @@ import MailService from '../../../services/mail/mail.service'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookNoEncryptedContentError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
   AttachmentUploadError,
@@ -684,10 +685,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     })
 
     if (!encryptedWebhookContent) {
+      // RATIONALE: To send error metric to Datadog
+      const webhookNoEncryptedContentError =
+        new WebhookNoEncryptedContentError()
       logger.error({
-        message:
-          'Error while sending webhook, no encryptedWebhookContent found',
+        message: 'Did not send webhook as no encryptedWebhookContent found',
         meta: logMeta,
+        error: webhookNoEncryptedContentError,
       })
     } else {
       submission.encryptedContent = encryptedWebhookContent
@@ -979,10 +983,13 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     })
 
     if (!encryptedWebhookContent) {
+      // RATIONALE: To send error metric to Datadog
+      const webhookNoEncryptedContentError =
+        new WebhookNoEncryptedContentError()
       logger.error({
-        message:
-          'Error while sending webhook, no encryptedWebhookContent found',
+        message: 'Did not send webhook as no encryptedWebhookContent found',
         meta: logMeta,
+        error: webhookNoEncryptedContentError,
       })
     } else {
       submission.encryptedContent = encryptedWebhookContent
