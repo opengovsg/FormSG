@@ -9,7 +9,6 @@ import {
   WorkflowType,
 } from 'shared/types'
 
-import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import MailService from 'src/app/services/mail/mail.service'
 import {
   IMultirespondentSubmissionSchema,
@@ -126,9 +125,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -238,9 +234,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -356,9 +349,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -470,9 +460,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -579,9 +566,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -706,9 +690,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -820,9 +801,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -876,9 +854,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
           _id: mockFormId,
@@ -972,9 +947,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -1074,9 +1046,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -1169,9 +1138,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
@@ -1238,9 +1204,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
@@ -1307,9 +1270,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
@@ -1397,9 +1357,6 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
@@ -1430,25 +1387,7 @@ describe('multirespondent-submission.service', () => {
     })
   })
 
-  describe('postSubmissionActions', () => {
-    const singleStepWorkflow: FormWorkflowStepDto[] = [
-      {
-        _id: new ObjectId().toHexString(),
-        workflow_type: WorkflowType.Static,
-        emails: [],
-        edit: [],
-      },
-    ]
-    const webhookSpy = jest
-      .spyOn(WebhookFactory, 'sendInitialWebhook')
-      .mockReturnValue(okAsync(true))
-
-    const encryptedWebhookContent = 'mockEncryptedWebhookContent'
-    const encryptedSubmissionSecretKey = 'encryptedSubmissionSecretKey'
-
-    const MOCK_ENCRYPTED_CONTENT = 'mockEncryptedContent'
-    const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
-
+  describe('sendRespondentCopyEmail', () => {
     it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionCreateActions', async () => {
       // Arrange
       const sendMrfRespondentCopyEmailSpy = jest.spyOn(
@@ -1456,13 +1395,19 @@ describe('multirespondent-submission.service', () => {
         'sendMrfRespondentCopyEmail',
       )
 
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
       const emptyRespondentEmails: string[] = []
 
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
           _id: mockFormId,
@@ -1470,7 +1415,7 @@ describe('multirespondent-submission.service', () => {
           emails: ['email1@example.com'],
         } as IPopulatedMultirespondentForm,
         encryptedPayload: {
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          encryptedContent: 'encryptedContent',
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1490,13 +1435,19 @@ describe('multirespondent-submission.service', () => {
         'sendMrfRespondentCopyEmail',
       )
 
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
       const emptyRespondentEmails: string[] = []
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
           _id: mockFormId,
@@ -1505,7 +1456,7 @@ describe('multirespondent-submission.service', () => {
         } as SnapshottedFormDef,
         currentStepNumber: 1,
         encryptedPayload: {
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          encryptedContent: 'encryptedContent',
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1525,13 +1476,19 @@ describe('multirespondent-submission.service', () => {
         'sendMrfRespondentCopyEmail',
       )
 
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
       const respondentEmails = ['test@example.com', 'test1@example.com']
 
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
           _id: mockFormId,
@@ -1539,7 +1496,7 @@ describe('multirespondent-submission.service', () => {
           emails: ['email1@example.com'],
         } as IPopulatedMultirespondentForm,
         encryptedPayload: {
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          encryptedContent: 'encryptedContent',
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1620,14 +1577,11 @@ describe('multirespondent-submission.service', () => {
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
         currentStepNumber: workflow.length - 1,
         encryptedPayload: {
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          encryptedContent: 'encryptedContent',
           version: 1,
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
@@ -1645,140 +1599,6 @@ describe('multirespondent-submission.service', () => {
       ).toContainValues(respondentEmails)
       expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
         2,
-      )
-    })
-
-    it('should not fire webhook if the encryptedWebhookContent is undefined', async () => {
-      // Act
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        form: {
-          _id: mockFormId,
-          workflow: singleStepWorkflow,
-          emails: ['email1@example.com'],
-          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
-        } as IPopulatedMultirespondentForm,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        encryptedWebhookContent: undefined,
-      })
-
-      expect(webhookSpy).not.toHaveBeenCalled()
-    })
-
-    it('should fire webhook with the correct arguments for first submission', async () => {
-      // Act
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        form: {
-          _id: mockFormId,
-          workflow: singleStepWorkflow,
-          emails: ['email1@example.com'],
-          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
-        } as IPopulatedMultirespondentForm,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        encryptedWebhookContent,
-      })
-
-      expect(webhookSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: mockSubmissionId,
-          encryptedContent: encryptedWebhookContent,
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        }),
-        MOCK_WEBHOOK_URL,
-        true,
-      )
-    })
-
-    it('should fire webhook with the correct arguments for subsequent submission', async () => {
-      const encryptedWebhookContent = 'mockEncryptedWebhookContent'
-      const mockFormId = new ObjectId().toHexString()
-      const mockSubmissionId = new ObjectId().toHexString()
-
-      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
-      const stepOneEditEmailFieldId = new ObjectId().toHexString()
-      const staticEmail = 'expected_static_email@example.com'
-      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
-
-      const stepOneId = new ObjectId().toHexString()
-      const stepTwoId = new ObjectId().toHexString()
-
-      const workflow: FormWorkflowStepDto[] = [
-        {
-          _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: stepOneEditEmailFieldId,
-          edit: [stepOneEditEmailFieldId],
-        },
-        {
-          _id: stepTwoId,
-          workflow_type: WorkflowType.Static,
-          emails: [expectedStepTwoEmail],
-          edit: [],
-        },
-      ]
-      const snapshottedFormDef = {
-        _id: mockFormId,
-        workflow,
-        emails: [staticEmail],
-        stepsToNotify: [stepTwoId],
-        stepOneEmailNotificationFieldId,
-        webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
-      } as SnapshottedFormDef
-
-      const submissionResponses: FieldResponsesV3 = {
-        // stepOneEmailNotificationFieldId is not present in responses
-      }
-
-      // Act
-      await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        snapshottedFormDef,
-        currentStepNumber: workflow.length - 1,
-        encryptedPayload: {
-          encryptedContent: MOCK_ENCRYPTED_CONTENT,
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-          responses: submissionResponses,
-          workflowStep: workflow.length - 1,
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        encryptedWebhookContent,
-      })
-
-      expect(webhookSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: mockSubmissionId,
-          encryptedContent: encryptedWebhookContent,
-          encryptedSubmissionSecretKey: encryptedSubmissionSecretKey,
-        }),
-        MOCK_WEBHOOK_URL,
-        true,
       )
     })
   })

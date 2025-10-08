@@ -1,26 +1,19 @@
 import { ObjectId } from 'bson'
 import { errAsync, ok, okAsync } from 'neverthrow'
 
-import { BasicField, FormResponseMode } from '../../../../../../shared/types'
-import formsgSdk from '../../../../config/formsg-sdk'
+import { FormResponseMode } from '../../../../../../shared/types'
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
-import {
-  createFormsgAndRetrieveForm,
-  encryptSubmission,
-} from '../multirespondent-submission.middleware'
+import { createFormsgAndRetrieveForm } from '../multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
-import { prepareWebhookResponseContentV3 } from '../multirespondent-submission.utils'
 
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
 jest.mock('../multirespondent-submission.service')
-jest.mock('../multirespondent-submission.utils')
-jest.mock('../../../../config/formsg-sdk')
 
 describe('createFormsgAndRetrieveForm', () => {
   const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -271,152 +264,5 @@ describe('createFormsgAndRetrieveForm', () => {
 
     // Verify that getMultirespondentSubmission was NOT called
     expect(getMultirespondentSubmission).not.toHaveBeenCalled()
-  })
-})
-
-describe('encryptSubmission', () => {
-  const MOCK_FORM_ID = new ObjectId().toHexString()
-  const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
-  const MOCK_PUBLIC_KEY = 'mock-public-key'
-  const MOCK_SUBMISSION_PUBLIC_KEY = 'mock-submission-public-key'
-  const MOCK_ENCRYPTED_WEBHOOK_CONTENT = 'mock-encrypted-webhook-content'
-  const MOCK_WEBHOOK_RESPONSES: ReturnType<
-    typeof prepareWebhookResponseContentV3
-  > = {
-    field1: {
-      fieldType: BasicField.ShortText,
-      answer: 'test answer',
-    },
-    field2: {
-      fieldType: BasicField.Email,
-      answer: {
-        value: 'test@example.com',
-      },
-    },
-  }
-
-  const MOCK_FORM_DEF = {
-    _id: MOCK_FORM_ID,
-    publicKey: MOCK_PUBLIC_KEY,
-    title: 'Test Form',
-  }
-
-  const MOCK_RESPONSES = {
-    field1: {
-      fieldType: BasicField.ShortText,
-      answer: 'test answer',
-    },
-    field2: {
-      fieldType: BasicField.Email,
-      answer: 'test@example.com',
-    },
-  }
-
-  const MOCK_STRIPPED_ATTACHMENT_RESPONSES = {
-    field1: {
-      fieldType: BasicField.ShortText,
-      answer: 'test answer',
-    },
-    field2: {
-      fieldType: BasicField.Email,
-      answer: 'test@example.com',
-    },
-  }
-
-  const createMockReq = (params: { formId: string; submissionId?: string }) =>
-    ({
-      params,
-      body: {
-        responses: MOCK_RESPONSES,
-        version: 1,
-        workflowStep: 1,
-        responseMetadata: {},
-      },
-      formsg: {
-        formDef: MOCK_FORM_DEF,
-      },
-      get: jest.fn((name: string) => {
-        if (name === 'cf-connecting-ip') return '127.0.0.1'
-        if (name === 'cf-ray') return 'mock-cf-ray'
-        return undefined
-      }),
-      ip: '127.0.0.1',
-      id: 'mock-request-id',
-      headers: {
-        'cf-connecting-ip': '127.0.0.1',
-        'cf-ray': 'mock-cf-ray',
-        'x-request-id': 'mock-request-id',
-      },
-      baseUrl: '/api/v3',
-      path: '/forms/mock-form-id/submissions',
-      originalUrl: '/api/v3/forms/mock-form-id/submissions?param=value',
-    }) as any
-
-  const createMockRes = () => ({
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
-    send: jest.fn().mockReturnThis(),
-  })
-
-  const mockNext = jest.fn()
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-    jest.resetAllMocks()
-
-    // Mock formsgSdk.cryptoV3.encrypt
-    jest.mocked(formsgSdk.cryptoV3.encrypt).mockReturnValue({
-      encryptedContent: 'mock-encrypted-content',
-      encryptedSubmissionSecretKey: 'mock-encrypted-secret-key',
-      submissionSecretKey: 'mock-secret-key',
-      submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
-    })
-
-    // Mock formsgSdk.crypto.encrypt
-    jest
-      .mocked(formsgSdk.crypto.encrypt)
-      .mockReturnValue(MOCK_ENCRYPTED_WEBHOOK_CONTENT)
-
-    // Mock prepareWebhookResponseContentV3
-    jest
-      .mocked(prepareWebhookResponseContentV3)
-      .mockReturnValue(MOCK_WEBHOOK_RESPONSES)
-
-    // Mock getEncryptedAttachmentsMapFromAttachmentsMap
-    jest.doMock('../multirespondent-submission.utils', () => ({
-      ...jest.requireActual('../multirespondent-submission.utils'),
-      getEncryptedAttachmentsMapFromAttachmentsMap: jest
-        .fn()
-        .mockResolvedValue({}),
-    }))
-  })
-
-  it('should include encryptedWebhookContent in req.formsg', async () => {
-    const mockReq = createMockReq({
-      formId: MOCK_FORM_ID,
-      submissionId: MOCK_SUBMISSION_ID,
-    })
-    const mockRes = createMockRes()
-
-    // Act
-    await encryptSubmission(mockReq, mockRes as any, mockNext)
-
-    // Assert
-    expect(mockNext).toHaveBeenCalled()
-    expect(mockReq.formsg).toHaveProperty('encryptedWebhookContent')
-    expect(mockReq.formsg.encryptedWebhookContent).toBe(
-      MOCK_ENCRYPTED_WEBHOOK_CONTENT,
-    )
-
-    // Verify that prepareWebhookResponseContentV3 was called with correct parameters
-    expect(prepareWebhookResponseContentV3).toHaveBeenCalledWith(
-      MOCK_STRIPPED_ATTACHMENT_RESPONSES,
-    )
-
-    // Verify that formsgSdk.crypto.encrypt was called with correct parameters
-    expect(formsgSdk.crypto.encrypt).toHaveBeenCalledWith(
-      MOCK_WEBHOOK_RESPONSES,
-      MOCK_SUBMISSION_PUBLIC_KEY,
-    )
   })
 })

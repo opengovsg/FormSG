@@ -152,7 +152,6 @@ export const performEncryptPostSubmissionActions = ({
   emailData,
   attachments,
   respondentEmails,
-  encryptedWebhookContent,
 }: {
   submission: IEncryptedSubmissionSchema
   responses: FieldResponse[]
@@ -160,7 +159,6 @@ export const performEncryptPostSubmissionActions = ({
   emailData?: SubmissionEmailObj
   attachments?: Mail.Attachment[]
   respondentEmails?: string[]
-  encryptedWebhookContent?: string
 }): ResultAsync<
   true,
   | FormNotFoundError
@@ -186,25 +184,11 @@ export const performEncryptPostSubmissionActions = ({
         const webhookUrl = form.webhook?.url
         if (!webhookUrl) return okAsync(form)
 
-        // replace encryptedContent with encryptedWebhookContent before firing
-        if (encryptedWebhookContent) {
-          submission.encryptedContent = encryptedWebhookContent
-          return WebhookFactory.sendInitialWebhook(
-            submission,
-            webhookUrl,
-            !!form.webhook?.isRetryEnabled,
-          ).andThen(() => okAsync(form))
-        } else {
-          logger.error({
-            message:
-              'Error while sending webhook, no encryptedWebhookContent found',
-            meta: {
-              ...logMeta,
-              action: 'useEncryptedWebhookContent',
-            },
-          })
-          return okAsync(form)
-        }
+        return WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          !!form.webhook?.isRetryEnabled,
+        ).andThen(() => okAsync(form))
       })
       // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
       .map(async (form) => {

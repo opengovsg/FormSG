@@ -30,7 +30,6 @@ export interface WebhookData {
   attachmentDownloadUrls: Record<string, string>
   paymentContent?: PaymentWebhookEventObject | object
   workflowContent?: WorkflowWebhookEventObject | object
-  encryptedSubmissionSecretKey?: string
 }
 
 export interface WebhookView {

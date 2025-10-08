@@ -636,7 +636,6 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   logMeta,
   attachments,
   respondentEmails,
-  encryptedWebhookContent,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -645,7 +644,6 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
   respondentEmails?: string[]
-  encryptedWebhookContent?: string
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
@@ -676,36 +674,25 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   }
 
   const webhookUrl = form.webhook?.url
-
   if (webhookUrl) {
     logger.info({
-      message: 'Sending webhook for multirespondent submission',
+      message: 'Sending initial webhook for multirespondent submission',
       meta: logMeta,
     })
 
-    if (!encryptedWebhookContent) {
-      logger.error({
-        message:
-          'Error while sending webhook, no encryptedWebhookContent found',
-        meta: logMeta,
-      })
-    } else {
-      submission.encryptedContent = encryptedWebhookContent
-
-      WebhookFactory.sendInitialWebhook(
-        submission,
-        webhookUrl,
-        !!form.webhook?.isRetryEnabled,
-      )
-        .andThen(() => okAsync(form))
-        .mapErr((error) => {
-          logger.error({
-            message: 'Multirespondent submission webhook error',
-            meta: logMeta,
-            error,
-          })
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!form.webhook?.isRetryEnabled,
+    )
+      .andThen(() => okAsync(form))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Multirespondent submission webhook error',
+          meta: logMeta,
+          error,
         })
-    }
+      })
   }
 
   return sendNextStepEmail({
@@ -902,7 +889,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta,
   attachments,
   respondentEmails,
-  encryptedWebhookContent,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -912,7 +898,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
   respondentEmails?: string[]
-  encryptedWebhookContent?: string
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -971,36 +956,25 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   const isStepRejected = isStepRejectedResult.value
 
   const webhookUrl = snapshottedFormDef.webhook?.url
-
   if (webhookUrl) {
     logger.info({
-      message: 'Sending webhook for multirespondent submission',
+      message: 'Sending update webhook for multirespondent submission',
       meta: logMeta,
     })
 
-    if (!encryptedWebhookContent) {
-      logger.error({
-        message:
-          'Error while sending webhook, no encryptedWebhookContent found',
-        meta: logMeta,
-      })
-    } else {
-      submission.encryptedContent = encryptedWebhookContent
-
-      WebhookFactory.sendInitialWebhook(
-        submission,
-        webhookUrl,
-        !!snapshottedFormDef.webhook?.isRetryEnabled,
-      )
-        .andThen(() => okAsync(snapshottedFormDef))
-        .mapErr((error) => {
-          logger.error({
-            message: 'Multirespondent submission webhook error',
-            meta: logMeta,
-            error,
-          })
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!snapshottedFormDef.webhook?.isRetryEnabled,
+    )
+      .andThen(() => okAsync(undefined))
+      .mapErr((error) => {
+        logger.error({
+          message: 'Multirespondent submission webhook error',
+          meta: logMeta,
+          error,
         })
-    }
+      })
   }
 
   if (isStepRejected) {
