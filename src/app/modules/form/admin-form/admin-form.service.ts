@@ -660,7 +660,7 @@ export const processCreateFormInWorkspace = async (
 type DuplicateFormOpts = {
   // The ID of the workspace to duplicate the form into.
   workspaceId?: string
-  // If true, overrides the emails of MRF workflows and dropdown fields with the given overrideEmails
+  // If defined, overrides the emails of MRF workflows and dropdown fields with the given overrideEmails
   overrideEmails?: string[]
 }
 
