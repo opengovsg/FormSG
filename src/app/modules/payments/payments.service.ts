@@ -210,6 +210,7 @@ export const confirmPaymentPendingSubmission = (
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
   growthbook: GrowthBook | undefined,
+  encryptedWebhookContent?: string,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -245,6 +246,7 @@ export const performPaymentPostSubmissionActions = (
                   submission,
                   responses: payment.responses,
                   growthbook,
+                  encryptedWebhookContent,
                 })
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.

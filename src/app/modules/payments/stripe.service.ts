@@ -452,6 +452,7 @@ type HandleStripeEventResultError =
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
   growthbook: GrowthBook | undefined,
+  encryptedWebhookContent?: string,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -499,6 +500,7 @@ export const handleStripeEvent = (
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
               growthbook,
+              encryptedWebhookContent,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {

@@ -307,6 +307,7 @@ export const reconcileAccount: ControllerHandler<
       await StripeService.handleStripeEvent(
         event as Stripe.DiscriminatedEvent,
         req.growthbook,
+        req.formsg?.encryptedWebhookContent
       )
         .andThen(() => {
           logger.warn({
