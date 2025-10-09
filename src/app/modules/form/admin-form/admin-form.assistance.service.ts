@@ -175,7 +175,7 @@ const generateFormCreationPrompt = (userPrompt: string) => {
  * Field types supported by Mfb.
  */
 const supportedFieldTypes = Object.keys(
-  omit(BasicField, ['Children', 'Image', 'Signature']),
+  omit(BasicField, ['Children', 'Image']),
 ) as [string, ...string[]]
 
 /**
