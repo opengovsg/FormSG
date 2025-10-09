@@ -15,14 +15,6 @@ export type ParsedClearAttachmentResponse = AttachmentResponse & {
   content: Buffer
 }
 
-export type ParsedClearAttachmentWebhookResponse = Omit<
-  ParsedClearAttachmentResponse,
-  'filename' | 'content'
-> & {
-  filename?: string
-  content?: Buffer
-}
-
 export type ParsedClearFormFieldResponse =
   | Exclude<FieldResponse, AttachmentResponse>
   | ParsedClearAttachmentResponse
