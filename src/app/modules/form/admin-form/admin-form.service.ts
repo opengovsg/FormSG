@@ -695,35 +695,18 @@ export const duplicateForm = (
     overrideProps.endPage = omit(originalForm.endPage, 'buttonLink')
   }
 
-  // If the form is an MRF, copy the workflow as well
-  if (
-    originalForm.responseMode === FormResponseMode.Multirespondent &&
-    overrideProps.responseMode === FormResponseMode.Multirespondent
-  ) {
-    overrideProps.workflow = (
-      originalForm as IPopulatedMultirespondentForm
-    ).workflow.map((step) => {
-      switch (step.workflow_type) {
-        case WorkflowType.Static: {
-          return {
-            ...step,
-            // Override the emails if the option is specified
-            emails: overrideEmails ?? step.emails,
-          }
-        }
-        case WorkflowType.Conditional:
-        case WorkflowType.Dynamic:
-          // Duplication preserves dropdown and Email Field IDs
-          return step
-      }
-    })
-  }
-
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
-  // remove conditional routing mapping from dropdown fields
-  if (duplicateParams?.form_fields && overrideEmails) {
-    duplicateParams.form_fields.forEach((field) => {
+  if (overrideEmails) {
+    // override emails for static workflow steps
+    duplicateParams.workflow?.forEach((step) => {
+      if (step.workflow_type === WorkflowType.Static) {
+        step.emails = overrideEmails
+      }
+    })
+
+    // remove conditional routing mapping from dropdown fields
+    duplicateParams.form_fields?.forEach((field) => {
       if (field.fieldType === BasicField.Dropdown) {
         field.optionsToRecipientsMap = Object.keys(
           field.optionsToRecipientsMap ?? {},

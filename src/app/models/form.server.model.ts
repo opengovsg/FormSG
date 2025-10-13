@@ -122,6 +122,20 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
+const FORM_SCHEMA_COMMON_DUPLICATE_PARAMS = [
+  'form_fields',
+  'form_logics',
+  'startPage',
+  'endPage',
+  'authType',
+  'isSaveDraftEnabled',
+  'isSubmitterIdCollectionEnabled',
+  'isSingleSubmission',
+  'inactiveMessage',
+  'responseMode',
+  'submissionLimit',
+] as const
+
 const formSchemaOptions: SchemaOptions<IFormSchema> = {
   id: false,
   toJSON: {
@@ -443,6 +457,16 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     default: false,
   },
 })
+
+MultirespondentFormSchema.methods.getDuplicateParams = function (
+  overrideProps: OverrideProps,
+) {
+  const newForm = pick(this, [
+    ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
+    'workflow',
+  ]) as PickDuplicateForm
+  return { ...newForm, ...overrideProps }
+}
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
   'workflow',
@@ -923,19 +947,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.methods.getDuplicateParams = function (
     overrideProps: OverrideProps,
   ) {
-    const newForm = pick(this, [
-      'form_fields',
-      'form_logics',
-      'startPage',
-      'endPage',
-      'authType',
-      'isSaveDraftEnabled',
-      'isSubmitterIdCollectionEnabled',
-      'isSingleSubmission',
-      'inactiveMessage',
-      'responseMode',
-      'submissionLimit',
-    ]) as PickDuplicateForm
+    const newForm = pick(
+      this,
+      FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
+    ) as PickDuplicateForm
     return { ...newForm, ...overrideProps }
   }
 
