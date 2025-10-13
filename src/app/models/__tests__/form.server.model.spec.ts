@@ -2830,6 +2830,118 @@ describe('Form Model', () => {
         )
 
         expect(duplicatedForm).not.toHaveProperty('whitelistedSubmitterIds')
+        expect(duplicatedForm.workflow).toBeUndefined()
+      })
+
+      describe('for multirespondent form', () => {
+        const MOCK_EMAIL_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.Email,
+        }
+        const MOCK_DROPDOWN_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.Dropdown,
+          optionsToRecipientsMap: {
+            'Option 1': ['initial_option1@example.com'],
+          },
+        }
+        const MOCK_YES_NO_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.YesNo,
+        }
+        const MOCK_FORM_FIELDS = [
+          MOCK_EMAIL_FIELD,
+          MOCK_DROPDOWN_FIELD,
+          MOCK_YES_NO_FIELD,
+        ]
+        const MOCK_WORKFLOW = [
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Static,
+            emails: ['step1email@gmail.com'],
+            edit: [MOCK_EMAIL_FIELD._id],
+          },
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Dynamic,
+            field: new ObjectId().toString(),
+            edit: [MOCK_DROPDOWN_FIELD._id],
+          },
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Conditional,
+            conditional_field: new ObjectId().toString(),
+            edit: [MOCK_YES_NO_FIELD._id],
+          },
+        ]
+
+        it('should duplicate all required fields, including workflow', () => {
+          const MOCK_ALL_OVERRIDE_PARAMS = {
+            admin: 'duplicated admin',
+            title: 'duplicated mrf form title',
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: 'duplicated public key',
+          }
+          const MOCK_ALL_FORM_PARAMS = {
+            title: 'Test Form',
+            admin: MOCK_ADMIN_OBJ_ID,
+            isSubmitterIdCollectionEnabled: true,
+            isSingleSubmission: true,
+            isSaveDraftEnabled: true,
+            inactiveMessage: 'inactive_test',
+            responseMode: FormResponseMode.Multirespondent,
+            submissionLimit: 1000,
+            publicKey: 'initial public key',
+            workflow: MOCK_WORKFLOW,
+            form_fields: MOCK_FORM_FIELDS,
+          }
+
+          const sourceForm = new MultirespondentForm(MOCK_ALL_FORM_PARAMS)
+          const duplicatedForm = sourceForm.getDuplicateParams(
+            MOCK_ALL_OVERRIDE_PARAMS,
+          )
+
+          // Assert overriden fields
+          expect(duplicatedForm.title).toEqual(MOCK_ALL_OVERRIDE_PARAMS.title)
+          expect(duplicatedForm.admin).toEqual(MOCK_ALL_OVERRIDE_PARAMS.admin)
+          expect(duplicatedForm.responseMode).toEqual(
+            MOCK_ALL_OVERRIDE_PARAMS.responseMode,
+          )
+          expect(duplicatedForm.publicKey).toEqual(
+            MOCK_ALL_OVERRIDE_PARAMS.publicKey,
+          )
+
+          // Assert unoverriden fields
+          // Assert workflow is duplicated
+          const duplicatedWorkflow = JSON.parse(
+            JSON.stringify(duplicatedForm.workflow),
+          )
+          expect(duplicatedWorkflow).toEqual(MOCK_ALL_FORM_PARAMS.workflow)
+
+          const duplicatedFormFieldIds = JSON.parse(
+            JSON.stringify(duplicatedForm.form_fields),
+          ).map((field: FormFieldDto) => field._id)
+          const expectedFormFieldIds = MOCK_ALL_FORM_PARAMS.form_fields.map(
+            (field) => field._id,
+          )
+          expect(duplicatedFormFieldIds).toEqual(expectedFormFieldIds)
+
+          expect(duplicatedForm.submissionLimit).toEqual(
+            MOCK_ALL_FORM_PARAMS.submissionLimit,
+          )
+          expect(duplicatedForm.isSubmitterIdCollectionEnabled).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSubmitterIdCollectionEnabled,
+          )
+          expect(duplicatedForm.isSingleSubmission).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSingleSubmission,
+          )
+          expect(duplicatedForm.isSaveDraftEnabled).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSaveDraftEnabled,
+          )
+          expect(duplicatedForm.inactiveMessage).toEqual(
+            MOCK_ALL_FORM_PARAMS.inactiveMessage,
+          )
+        })
       })
     })
 
