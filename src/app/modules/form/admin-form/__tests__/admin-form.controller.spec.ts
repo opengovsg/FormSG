@@ -3412,7 +3412,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
 
@@ -3464,7 +3464,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: mockWorkspaceId },
+        { workspaceId: mockWorkspaceId, overrideEmails: undefined },
       )
     })
 
@@ -3534,7 +3534,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
 
@@ -3670,7 +3670,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
   })
@@ -3900,7 +3900,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
 
@@ -3972,7 +3972,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
 
@@ -4122,7 +4122,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
   })
