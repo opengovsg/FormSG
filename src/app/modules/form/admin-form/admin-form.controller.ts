@@ -1053,7 +1053,7 @@ export const handleCopyTemplateForm: ControllerHandler<
         AuthService.getFormIfPublic(formId).andThen((originalForm) =>
           // Step 3: Duplicate form.
           AdminFormService.duplicateForm(originalForm, userId, overrideParams, {
-            duplicateStripped: true,
+            overrideEmails: [user.email],
           })
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
