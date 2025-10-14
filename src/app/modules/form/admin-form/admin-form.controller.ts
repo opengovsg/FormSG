@@ -929,13 +929,31 @@ export const duplicateAdminForm: ControllerHandler<
           formId,
           level: PermissionLevel.Read,
         })
-          .andThen((originalForm) =>
+          .map((originalForm) => {
+            // Step 2b: Override emails in workflow if admin is allowed to view workflow details - which is only if admin has write permissions.
+            const hasWritePermissions = AuthService.checkFormForPermissions(
+              PermissionLevel.Write,
+            )({
+              user,
+              form: originalForm,
+            })
+            const isAdminAllowedToViewWorkflowDetails =
+              hasWritePermissions.isOk()
+
+            const overrideWithDuplicatingAdminEmail =
+              !isAdminAllowedToViewWorkflowDetails ? [user.email] : undefined
+            return {
+              originalForm,
+              overrideEmails: overrideWithDuplicatingAdminEmail,
+            }
+          })
+          .andThen(({ originalForm, overrideEmails }) =>
             // Step 3: Duplicate form.
             AdminFormService.duplicateForm(
               originalForm,
               userId,
               overrideParams,
-              { workspaceId: workspaceId },
+              { workspaceId: workspaceId, overrideEmails },
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
