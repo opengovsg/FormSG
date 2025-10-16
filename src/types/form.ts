@@ -329,6 +329,8 @@ interface IFormBaseDocument<T extends IFormSchema> {
 }
 
 export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
+export type IMultirespondentFormDocument =
+  IFormBaseDocument<IMultirespondentFormSchema> & IMultirespondentFormSchema
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser

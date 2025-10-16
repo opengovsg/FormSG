@@ -48,11 +48,15 @@ import {
   MultirespondentFormSettings,
   PaymentChannel,
   PaymentType,
+  PublicMultirespondentFormDto,
+  PublicStorageFormDto,
   StorageFormSettings,
   WorkflowType,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../../shared/utils/logic'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../shared/utils/strip-workflow-emails'
 import {
   FormFieldSchema,
   FormLogicSchema,
@@ -67,6 +71,7 @@ import {
   IFormModel,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormDocument,
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
   IPopulatedForm,
@@ -1006,35 +1011,72 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return formSettings
     }
 
-  FormDocumentSchema.method<IFormDocument>(
+  MultirespondentFormSchema.method<IMultirespondentFormDocument>(
     'getPublicView',
     function (): PublicForm {
-      let basePublicView
-      switch (this.responseMode) {
-        case FormResponseMode.Encrypt:
-          basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
-          break
-        case FormResponseMode.Email:
-          basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
-          break
-        case FormResponseMode.Multirespondent:
-          basePublicView = pick(
-            this,
-            MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
-          ) as PublicForm
-          break
-      }
+      const mrfPublicViewFields = pick(
+        this.toObject(),
+        MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+      ) as PublicMultirespondentFormDto
 
-      // Return non-populated public fields of form if not populated.
-      if (!this.populated('admin')) {
-        return basePublicView
-      }
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        mrfPublicViewFields.form_fields,
+      )
+      const strippedWorkflow = stripWorkflowEmails(mrfPublicViewFields.workflow)
+      const isAdminPopulated = this.populated('admin')
+      const mrfPublicView = {
+        ...mrfPublicViewFields,
+        workflow: strippedWorkflow,
+        form_fields: strippedFormFields,
+        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
+      } as PublicForm
 
-      // Populated, return public view with user's public view.
-      return {
-        ...basePublicView,
-        admin: (this.admin as IUserSchema).getPublicView(),
-      }
+      return mrfPublicView
+    },
+  )
+
+  EncryptedFormSchema.method<IEncryptedFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const encryptFormPublicViewFields = pick(
+        this,
+        STORAGE_PUBLIC_FORM_FIELDS,
+      ) as PublicStorageFormDto
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        encryptFormPublicViewFields.form_fields,
+      )
+      const isAdminPopulated = this.populated('admin')
+
+      const encryptedFormPublicView = {
+        ...encryptFormPublicViewFields,
+        form_fields: strippedFormFields,
+        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
+      } as PublicForm
+
+      return encryptedFormPublicView
+    },
+  )
+
+  EmailFormSchema.method<IFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const emailFormPublicViewFields = pick(
+        this,
+        EMAIL_PUBLIC_FORM_FIELDS,
+      ) as PublicForm
+
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        emailFormPublicViewFields.form_fields,
+      )
+      const isAdminPopulated = this.populated('admin')
+
+      const emailFormPublicView = {
+        ...emailFormPublicViewFields,
+        form_fields: strippedFormFields,
+        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
+      } as PublicForm
+
+      return emailFormPublicView
     },
   )
 
