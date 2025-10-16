@@ -321,7 +321,10 @@ export type StrippedPublicMultirespondentFormDto =
     workflow: StrippedFormWorkflowDto
   }
 
-// Conditional type that omits optionsToRecipientsMap only for Dropdown field types
+/**
+ * Used for public form view to redact sensitive information.
+ * Specifically, it omits optionsToRecipientsMap for Dropdown field types.
+ */
 export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
   T extends {
     fieldType: BasicField.Dropdown
