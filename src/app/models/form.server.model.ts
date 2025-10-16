@@ -1011,6 +1011,61 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return formSettings
     }
 
+  EmailFormSchema.method<IFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const emailFormPublicViewFields = pick(
+        this,
+        EMAIL_PUBLIC_FORM_FIELDS,
+      ) as PublicForm
+
+      // NOTE: While email mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
+      // it is still possible for optionsToRecipientsMap to be defined if the form was duplicated from a multirespondent form.
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        emailFormPublicViewFields.form_fields,
+      )
+      const emailFormPublicView = {
+        ...emailFormPublicViewFields,
+        form_fields: strippedFormFields,
+      } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        emailFormPublicView.admin = this.admin.getPublicView()
+      }
+
+      return emailFormPublicView
+    },
+  )
+
+  EncryptedFormSchema.method<IEncryptedFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const encryptFormPublicViewFields = pick(
+        this,
+        STORAGE_PUBLIC_FORM_FIELDS,
+      ) as PublicStorageFormDto
+      // NOTE: While encrypt mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
+      // it is still possible for optionsToRecipientsMap to be defined if the form was duplicated from a multirespondent form.
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        encryptFormPublicViewFields.form_fields,
+      )
+      const encryptedFormPublicView = {
+        ...encryptFormPublicViewFields,
+        form_fields: strippedFormFields,
+      } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        encryptedFormPublicView.admin = this.admin.getPublicView()
+      }
+
+      return encryptedFormPublicView
+    },
+  )
+
   MultirespondentFormSchema.method<IMultirespondentFormDocument>(
     'getPublicView',
     function (): PublicForm {
@@ -1023,60 +1078,19 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         mrfPublicViewFields.form_fields,
       )
       const strippedWorkflow = stripWorkflowEmails(mrfPublicViewFields.workflow)
-      const isAdminPopulated = this.populated('admin')
       const mrfPublicView = {
         ...mrfPublicViewFields,
         workflow: strippedWorkflow,
         form_fields: strippedFormFields,
-        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
       } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        mrfPublicView.admin = this.admin.getPublicView()
+      }
 
       return mrfPublicView
-    },
-  )
-
-  EncryptedFormSchema.method<IEncryptedFormDocument>(
-    'getPublicView',
-    function (): PublicForm {
-      const encryptFormPublicViewFields = pick(
-        this,
-        STORAGE_PUBLIC_FORM_FIELDS,
-      ) as PublicStorageFormDto
-      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
-        encryptFormPublicViewFields.form_fields,
-      )
-      const isAdminPopulated = this.populated('admin')
-
-      const encryptedFormPublicView = {
-        ...encryptFormPublicViewFields,
-        form_fields: strippedFormFields,
-        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
-      } as PublicForm
-
-      return encryptedFormPublicView
-    },
-  )
-
-  EmailFormSchema.method<IFormDocument>(
-    'getPublicView',
-    function (): PublicForm {
-      const emailFormPublicViewFields = pick(
-        this,
-        EMAIL_PUBLIC_FORM_FIELDS,
-      ) as PublicForm
-
-      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
-        emailFormPublicViewFields.form_fields,
-      )
-      const isAdminPopulated = this.populated('admin')
-
-      const emailFormPublicView = {
-        ...emailFormPublicViewFields,
-        form_fields: strippedFormFields,
-        admin: isAdminPopulated ? this.admin.getPublicView() : undefined,
-      } as PublicForm
-
-      return emailFormPublicView
     },
   )
 
