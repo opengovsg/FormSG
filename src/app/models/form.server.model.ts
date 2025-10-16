@@ -1015,7 +1015,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     'getPublicView',
     function (): PublicForm {
       const emailFormPublicViewFields = pick(
-        this,
+        this.toObject(),
         EMAIL_PUBLIC_FORM_FIELDS,
       ) as PublicForm
 
@@ -1043,7 +1043,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     'getPublicView',
     function (): PublicForm {
       const encryptFormPublicViewFields = pick(
-        this,
+        this.toObject(),
         STORAGE_PUBLIC_FORM_FIELDS,
       ) as PublicStorageFormDto
       // NOTE: While encrypt mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
@@ -1254,12 +1254,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       })
       return data
         ? ({
-            form: data._id,
-            formAdmin: {
-              email: data.admin.email,
-              userId: data.admin._id,
-            },
-          } as FormOtpData)
+          form: data._id,
+          formAdmin: {
+            email: data.admin.email,
+            userId: data.admin._id,
+          },
+        } as FormOtpData)
         : null
     } catch {
       return null
