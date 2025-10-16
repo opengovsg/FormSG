@@ -1254,12 +1254,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       })
       return data
         ? ({
-          form: data._id,
-          formAdmin: {
-            email: data.admin.email,
-            userId: data.admin._id,
-          },
-        } as FormOtpData)
+            form: data._id,
+            formAdmin: {
+              email: data.admin.email,
+              userId: data.admin._id,
+            },
+          } as FormOtpData)
         : null
     } catch {
       return null
