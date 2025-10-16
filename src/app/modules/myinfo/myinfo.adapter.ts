@@ -203,31 +203,49 @@ export const internalAttrListToScopes = (
 }
 
 /**
+ * This is derived from the MyInfo API v4.
+ * @see https://public.cloud.myinfo.gov.sg/myinfo/api/myinfo-kyc-v4.0.html#childrenbirthrecords
+ */
+interface MyInfoChildVaccinationRequirement {
+  requirement: { code: string; desc: string }
+  fulfilled: { value: boolean }
+}
+
+/**
  * Converts whatever preschool vaccination data
  * we get directly from MyInfo to out internal representation.
  *
- * NOTE: As of the time of writing this, there is only one possible
- * vaccination status code. So the array input doesn't matter
- * and we can just output a single enum. However, if this changes
- * in the future, we need to support multiple vaccination statuses.
+ * NOTE (Support for only one vaccination requirement code): As of the time of writing this,
+ * there is only one possible vaccination requirement status code (which is 1M3D).
+ * So the array input doesn't matter and we can just output a single enum.
+ * However, if this changes in the future, we need to support multiple vaccination statuses.
+ *
+ * NOTE (Missing data is treated as not fulfilled):
+ * All children should have the vaccination requirement 1M3D.
+ * The official National Immunisation Registry (NIR), synced with MyInfo, must be used to mark the 1M3D requirement as fulfilled.
+ * Hence, if the vaccination requirement is not present in MyInfo, we enforce the not fulfilled status by default.
+ * This is instead of unknown returned previously before this PR change, which allowed the respondent to edit the value.
  *
  * @param vaccinationRequirement The preschool child records vaccination requirements.
- * @returns Vaccination status of the child. Unknown status should be treated as missing data.
+ * @returns Vaccination status of the child. Missing data should be treated as not fulfilled for the reason noted below.
  */
 const requirementToVaccinationEnum = (
-  vaccinationRequirement:
-    | undefined
-    | {
-        requirement: { code: string; desc: string }
-        fulfilled: { value: boolean }
-      }[],
+  vaccinationRequirement: undefined | MyInfoChildVaccinationRequirement[],
 ): MyInfoChildVaxxStatus => {
   if (vaccinationRequirement === undefined || !vaccinationRequirement.length) {
-    return MyInfoChildVaxxStatus.Unknown
+    return MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
   }
-  return vaccinationRequirement.some((req) => req?.requirement?.code === '1M3D')
-    ? MyInfoChildVaxxStatus.ONEM3D
-    : MyInfoChildVaxxStatus.Unknown
+  const oneM3DVaccinationRequirement = vaccinationRequirement.find(
+    (req) => req?.requirement?.code === '1M3D',
+  )
+  if (!oneM3DVaccinationRequirement) {
+    return MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
+  }
+
+  const isOneM3DFulfilled = oneM3DVaccinationRequirement.fulfilled.value
+  return isOneM3DFulfilled
+    ? MyInfoChildVaxxStatus.ONEM3D_FULFILLED
+    : MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
 }
 
 const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
