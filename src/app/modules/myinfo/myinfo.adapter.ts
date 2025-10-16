@@ -225,9 +225,17 @@ const requirementToVaccinationEnum = (
   if (vaccinationRequirement === undefined || !vaccinationRequirement.length) {
     return MyInfoChildVaxxStatus.Unknown
   }
-  return vaccinationRequirement.some((req) => req?.requirement?.code === '1M3D')
-    ? MyInfoChildVaxxStatus.ONEM3D
-    : MyInfoChildVaxxStatus.Unknown
+  const oneM3DVaccinationRequirement = vaccinationRequirement.find(
+    (req) => req?.requirement?.code === '1M3D',
+  )
+  if (!oneM3DVaccinationRequirement) {
+    return MyInfoChildVaxxStatus.Unknown
+  }
+
+  const isOneM3DFulfilled = oneM3DVaccinationRequirement.fulfilled.value
+  return isOneM3DFulfilled
+    ? MyInfoChildVaxxStatus.ONEM3D_FULFILLED
+    : MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
 }
 
 const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
