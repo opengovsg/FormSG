@@ -2594,7 +2594,7 @@ describe('Form Model', () => {
         const actual = emailFormWithAllFieldTypes?.getPublicView()
 
         // Assert
-        const expected = { ...pick(emailFormWithAllFieldTypes.toObject(), EMAIL_PUBLIC_FORM_FIELDS) }
+        const expected = pick(emailFormWithAllFieldTypes.toObject(), EMAIL_PUBLIC_FORM_FIELDS)
         expected.form_fields = expected.form_fields?.map((field) => {
           if (field.fieldType === BasicField.Dropdown) {
             return omit(field, 'optionsToRecipientsMap')
@@ -2664,7 +2664,7 @@ describe('Form Model', () => {
         const actual = encryptedFormWithAllFieldTypes?.getPublicView()
 
         // Assert
-        const expected = { ...pick(encryptedFormWithAllFieldTypes.toObject(), STORAGE_PUBLIC_FORM_FIELDS) }
+        const expected = pick(encryptedFormWithAllFieldTypes.toObject(), STORAGE_PUBLIC_FORM_FIELDS)
         expected.form_fields = expected.form_fields?.map((field) => {
           if (field.fieldType === BasicField.Dropdown) {
             return omit(field, 'optionsToRecipientsMap')
