@@ -6,6 +6,7 @@ import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
+  MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from 'shared/constants/form'
 import {
@@ -20,6 +21,8 @@ import {
   FormResponseMode,
   FormStartPage,
   FormStatus,
+  FormWorkflowStepConditional,
+  FormWorkflowStepDto,
   LogicDto,
   LogicType,
   PaymentChannel,
@@ -28,6 +31,7 @@ import {
   WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'shared/types'
+import { aws } from 'src/app/config/config'
 
 import getFormModel, {
   getEmailFormModel,
@@ -2557,6 +2561,49 @@ describe('Form Model', () => {
     })
 
     describe('getPublicView', () => {
+      const getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap = () => {
+        return Object.values(BasicField).map((fieldType) => {
+          if (fieldType === BasicField.Dropdown) {
+            return generateDefaultField(BasicField.Dropdown, {
+              optionsToRecipientsMap: {
+                'Option 1': ['recipient1@example.com', 'recipient2@example.com'],
+                'Option 2': ['recipient3@example.com'],
+              }
+            })
+          }
+          if (fieldType === BasicField.Image) {
+            return generateDefaultField(fieldType, {
+              url: `${aws.imageBucketUrl}/test-image.jpg`,
+            })
+          }
+          return generateDefaultField(fieldType)
+        })
+      }
+
+      it('should correctly strip optionsToRecipientMap for dropdown field for email mode form', async () => {
+        // Arrange
+        const emailFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields: getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap(),
+        })
+
+        // Act
+        const actual = emailFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected = { ...pick(emailFormWithAllFieldTypes.toObject(), EMAIL_PUBLIC_FORM_FIELDS) }
+        expected.form_fields = expected.form_fields?.map((field) => {
+          if (field.fieldType === BasicField.Dropdown) {
+            return omit(field, 'optionsToRecipientsMap')
+          }
+          return field
+        })
+        expect(actual).toEqual(expected)
+      })
+
       it('should correctly return public view of unpopulated email mode form', async () => {
         // Arrange
         const emailForm = await Form.create({
@@ -2570,7 +2617,7 @@ describe('Form Model', () => {
         const actual = emailForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
+        expect(actual).toEqual(pick(emailForm.toObject(), EMAIL_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -2603,6 +2650,30 @@ describe('Form Model', () => {
         )
       })
 
+      it('should correctly strip optionsToRecipientMap for dropdown field for encrypt mode form', async () => {
+        // Arrange
+        const encryptedFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          publicKey: 'mock public key',
+          form_fields: getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap(),
+        })
+
+        // Act
+        const actual = encryptedFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected = { ...pick(encryptedFormWithAllFieldTypes.toObject(), STORAGE_PUBLIC_FORM_FIELDS) }
+        expected.form_fields = expected.form_fields?.map((field) => {
+          if (field.fieldType === BasicField.Dropdown) {
+            return omit(field, 'optionsToRecipientsMap')
+          }
+          return field
+        })
+        expect(actual).toEqual(expected)
+      })
+
       it('should correctly return public view of unpopulated encrypt mode form', async () => {
         // Arrange
         const encryptForm = await Form.create({
@@ -2616,7 +2687,7 @@ describe('Form Model', () => {
         const actual = encryptForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS))
+        expect(actual).toEqual(pick(encryptForm.toObject(), STORAGE_PUBLIC_FORM_FIELDS))
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -2641,6 +2712,116 @@ describe('Form Model', () => {
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
             ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
+            // Admin should only contain public view of agency since agency is populated.
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
+      })
+
+      it('should correctly strip emails in static workflow step and strip optionsToRecipientMap for dropdown field for multirespondent mode form', async () => {
+        // Arrange
+        const formFields = getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap()
+        const dropdownField = formFields.find((field) => field.fieldType === BasicField.Dropdown)
+        const emailField = formFields.find((field) => field.fieldType === BasicField.Email)
+        const yesNoField = formFields.find((field) => field.fieldType === BasicField.YesNo)
+        const shortTextField = formFields.find((field) => field.fieldType === BasicField.ShortText)
+
+        const multirespondentFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form',
+          publicKey: 'mock public key',
+          form_fields: formFields,
+          workflow: [
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Static,
+              emails: [], // Step 1 does not have emails, since anyone with form link is the step 
+              edit: [],
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Static,
+              emails: ['test@open.gov.sg', 'test2@open.gov.sg'],
+              edit: [emailField?.id],
+              step_name: 'Static step where emails should be stripped',
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Dynamic,
+              field: emailField?._id,
+              edit: [dropdownField?._id],
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Conditional,
+              conditional_field: dropdownField?._id,
+              edit: [yesNoField?._id, shortTextField?._id],
+              approval_field: yesNoField?._id,
+            } as FormWorkflowStepConditional
+          ]
+        })
+
+        // Act
+        const actual = multirespondentFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected: any = pick(multirespondentFormWithAllFieldTypes.toObject(), MULTIRESPONDENT_PUBLIC_FORM_FIELDS)
+        expected.workflow = expected.workflow?.map((step: FormWorkflowStepDto) => {
+          if (step.workflow_type === WorkflowType.Static) {
+            return omit(step, 'emails')
+          }
+          return step
+        })
+        expected.form_fields = expected.form_fields?.map((field: FormFieldDto) => {
+          if (field.fieldType === BasicField.Dropdown) {
+            return omit(field, 'optionsToRecipientsMap')
+          }
+          return field
+        })
+        expect(actual).toEqual(expected)
+      })
+
+      it('should correctly return public view of unpopulated multirespondent mode form', async () => {
+        // Arrange
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form',
+          publicKey: 'mock public key',
+        })
+
+        // Act
+        const actual = multirespondentForm.getPublicView()
+
+        // Assert
+        expect(actual).toEqual(pick(multirespondentForm.toObject(), MULTIRESPONDENT_PUBLIC_FORM_FIELDS))
+        // Admin should be plain admin id since form is not populated.
+        expect(actual.admin).toBeInstanceOf(ObjectId)
+      })
+
+      it('should correctly return public view of populated multirespondent mode form', async () => {
+        // Arrange
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form electric boogaloo',
+          publicKey: 'some public key again',
+        })
+        const populatedMultirespondentForm = await Form.getFullFormById(multirespondentForm._id)
+        expect(populatedMultirespondentForm).not.toBeNull()
+
+        // Act
+        const actual = populatedMultirespondentForm?.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = populatedAdmin.agency.getPublicView()
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(populatedMultirespondentForm, MULTIRESPONDENT_PUBLIC_FORM_FIELDS),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,
@@ -2811,10 +2992,10 @@ describe('Form Model', () => {
 
       it('should not duplicate unwanted fields', () => {
         const whitelistedSubmitterIdsParam: WhitelistedSubmitterIdsWithReferenceOid =
-          {
-            isWhitelistEnabled: true,
-            encryptedWhitelistedSubmitterIds: 'some object id',
-          }
+        {
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: 'some object id',
+        }
         const MOCK_ALL_FORM_PARAMS = {
           whitelistedSubmitterIds: whitelistedSubmitterIdsParam,
         }
