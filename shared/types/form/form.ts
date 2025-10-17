@@ -284,6 +284,7 @@ export type AdminFormDto =
 
 type PublicFormBase = {
   admin: PublicUserDto
+  form_fields: StrippedFormFieldDto[]
 }
 
 export type PublicStorageFormDto = Merge<
@@ -329,15 +330,13 @@ export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
   T extends {
     fieldType: BasicField.Dropdown
   }
-    ? Except<T, 'optionsToRecipientsMap'>
-    : T
+  ? Except<T, 'optionsToRecipientsMap'>
+  : T
 
-export type PublicFormDto = Merge<
+export type PublicFormDto =
   | PublicStorageFormDto
   | PublicEmailFormDto
-  | StrippedPublicMultirespondentFormDto,
-  { form_fields: StrippedFormFieldDto[] }
->
+  | StrippedPublicMultirespondentFormDto
 
 export type EmailFormSettings = Pick<
   EmailFormDto,
@@ -407,21 +406,21 @@ export type AdminDashboardFormMetaDto = Pick<
 export type DuplicateFormOverwriteDto = {
   title: string
 } & (
-  | {
+    | {
       responseMode: FormResponseMode.Email
       emails: string | string[]
     }
-  | {
+    | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
       emails: string[]
     }
-  | {
+    | {
       responseMode: FormResponseMode.Multirespondent
       publicKey: string
       workflow?: FormWorkflowDto
     }
-)
+  )
 
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string

@@ -11,7 +11,7 @@ import {
   getMultirespondentSubmissionById,
   getPublicFormView,
 } from './PublicFormService'
-import { MultirespondentSubmissionDtoWithAttachments } from './types'
+import { PublicMultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const publicFormKeys = {
   // All keys map to either an array or function returning an array for
@@ -46,7 +46,7 @@ export const useEncryptedSubmission = (
   submissionId?: string,
   /** Extra override to determine whether query is enabled */
   enabled = true,
-): UseQueryResult<MultirespondentSubmissionDtoWithAttachments, ApiError> => {
+): UseQueryResult<PublicMultirespondentSubmissionDtoWithAttachments, ApiError> => {
   return useQuery(
     publicFormKeys.submission(formId, submissionId),
     () =>

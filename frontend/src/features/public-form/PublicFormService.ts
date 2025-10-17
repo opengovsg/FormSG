@@ -25,7 +25,7 @@ import {
   PublicFormViewDto,
 } from '~shared/types/form/form'
 import {
-  MultirespondentSubmissionDto,
+  PublicMultirespondentSubmissionDto,
   ResponseMetadata,
   SubmissionResponseDto,
 } from '~shared/types/submission'
@@ -46,7 +46,7 @@ import {
 } from './utils/createSubmission'
 import { convertEncryptedAttachmentToFileContent } from './utils/decryptSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
-import { MultirespondentSubmissionDtoWithAttachments } from './types'
+import { PublicMultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -122,11 +122,11 @@ export const getMultirespondentSubmissionById = async ({
 }: {
   formId: string
   submissionId: string
-}): Promise<MultirespondentSubmissionDtoWithAttachments> => {
-  return ApiService.get<MultirespondentSubmissionDto>(
+}): Promise<PublicMultirespondentSubmissionDtoWithAttachments> => {
+  return ApiService.get<PublicMultirespondentSubmissionDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
   ).then(async ({ data }) => {
-    const encryptedAttachments: MultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
+    const encryptedAttachments: PublicMultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
       {}
     const downloadTasks = Object.keys(data.attachmentMetadata).map(
       async (id) => {
