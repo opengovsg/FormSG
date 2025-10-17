@@ -28,8 +28,8 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-import { stripDropdownFieldOptionsToRecipientsMap } from 'shared/utils/strip-dropdown-field-optionsToRecipientsMap'
-import { stripWorkflowEmails } from 'shared/utils/strip-workflow-emails'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
