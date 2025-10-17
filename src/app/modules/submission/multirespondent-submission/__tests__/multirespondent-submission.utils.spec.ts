@@ -13,6 +13,7 @@ import {
   EmailResponseV3,
   FieldResponsesV3,
   FormFieldDto,
+  FormWorkflowStepConditional,
   FormWorkflowStepDto,
   LongTextResponseV3,
   NumberResponseV3,
@@ -42,10 +43,12 @@ import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
+  createPublicMultirespondentSubmissionDto,
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
+import { omit } from 'lodash'
 
 describe('multirespondent-submission.utils', () => {
   const WORKFLOW_STEP_1: FormWorkflowStepDto = {
@@ -54,6 +57,143 @@ describe('multirespondent-submission.utils', () => {
     emails: ['example@example.com'],
     edit: [],
   }
+
+  describe('createPublicMultirespondentSubmissionDto', () => {
+    const getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap = () => {
+      return Object.values(BasicField).map((fieldType) => {
+        if (fieldType === BasicField.Dropdown) {
+          return generateDefaultField(BasicField.Dropdown, {
+            optionsToRecipientsMap: {
+              'Option 1': [
+                'recipient1@example.com',
+                'recipient2@example.com',
+              ],
+              'Option 2': ['recipient3@example.com'],
+            },
+          })
+        }
+        return generateDefaultField(fieldType)
+      })
+    }
+
+    it('should create a public multirespondent submission DTO sucessfully with workflow and form fields stripped', () => {
+      // Arrange
+      const formFields =
+        getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap()
+      const dropdownField = formFields.find(
+        (field) => field.fieldType === BasicField.Dropdown,
+      )
+      const emailField = formFields.find(
+        (field) => field.fieldType === BasicField.Email,
+      )
+      const yesNoField = formFields.find(
+        (field) => field.fieldType === BasicField.YesNo,
+      )
+      const shortTextField = formFields.find(
+        (field) => field.fieldType === BasicField.ShortText,
+      )
+      const workflow = [
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Static,
+          emails: [], // Step 1 does not have emails, since anyone with form link is the step
+          edit: [],
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Static,
+          emails: ['test@open.gov.sg', 'test2@open.gov.sg'],
+          edit: [emailField?.id],
+          step_name: 'Static step where emails should be stripped',
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Dynamic,
+          field: emailField?._id,
+          edit: [dropdownField?._id],
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: dropdownField?._id,
+          edit: [yesNoField?._id, shortTextField?._id],
+          approval_field: yesNoField?._id,
+        } as FormWorkflowStepConditional,
+      ]
+      const submittedSteps = [
+        {
+          isApproval: false,
+          submittedAt: '2024-01-01T00:00:00.000Z',
+        },
+        {
+          isApproval: false,
+          submittedAt: '2024-01-02T00:00:00.000Z',
+        }
+      ]
+      const createdDate = new Date()
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: createdDate,
+        submissionPublicKey: 'some public key',
+        encryptedSubmissionSecretKey: 'some encrypted secret key',
+        encryptedContent: 'some encrypted content',
+        workflow,
+        workflowStep: 1,
+        form_fields: formFields,
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        submittedSteps,
+      } as unknown as MultirespondentSubmissionData
+      const attachmentPresignedUrls = {
+        someSubmissionId: 'some presigned url',
+      }
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        attachmentPresignedUrls,
+      )
+
+      // Assert
+      expect(actual).toEqual({
+        refNo: submissionData._id,
+        submissionTime: moment(submissionData.created)
+          .tz('Asia/Singapore')
+          .format('ddd, D MMM YYYY, hh:mm:ss A'),
+        submissionPublicKey: submissionData.submissionPublicKey,
+        encryptedContent: submissionData.encryptedContent,
+        encryptedSubmissionSecretKey:
+          submissionData.encryptedSubmissionSecretKey,
+        attachmentMetadata: attachmentPresignedUrls,
+        submissionType: SubmissionType.Multirespondent,
+        workflow: submissionData.workflow.map(step => step.workflow_type === WorkflowType.Static ? omit(step, 'emails') : step),
+        form_fields: submissionData.form_fields.map((field) => field.fieldType === BasicField.Dropdown ? omit(field, 'optionsToRecipientsMap') : field),
+        form_logics: submissionData.form_logics,
+        version: submissionData.version,
+        workflowStep: submissionData.workflowStep,
+        mrfVersion: submissionData.mrfVersion,
+        mrfMeta: {
+          workflowCurrentStepNumber: submittedSteps.length,
+          workflowNumTotalSteps: 4,
+          workflowStatus: WorkflowStatus.PENDING,
+          lastSubmittedAt:
+            submittedSteps[submittedSteps.length - 1].submittedAt,
+          hasNextStepRecipientEmails: false,
+        },
+      })
+
+      const dropdownFf = actual.form_fields.find(field => field.fieldType === BasicField.Dropdown)
+      expect(dropdownFf).toBeDefined()
+      expect(dropdownFf).not.toContainKey('optionsToRecipientsMap')
+
+      const staticWorkflowStep = actual.workflow.find(step => step.workflow_type === WorkflowType.Static)
+      expect(staticWorkflowStep).toBeDefined()
+      expect(staticWorkflowStep).not.toContainKey('emails')
+    })
+  })
 
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {

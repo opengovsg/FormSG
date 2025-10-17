@@ -286,7 +286,7 @@ export const handleUpdateMultirespondentSubmission = [
 /**
  * Handler for GET /forms/:formId/submissions/:submissionId
  * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
+ * @returns 400 when form is not an multirespondent mode form
  * @returns 404 when submissionId cannot be found in the database
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived

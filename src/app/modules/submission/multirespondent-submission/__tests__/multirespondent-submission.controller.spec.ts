@@ -3,7 +3,7 @@ import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
 import { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { FormAuthType, FormMetadata, FormResponseMode } from 'shared/types'
+import { FormAuthType, FormMetadata, FormResponseMode, FormStatus, PublicMultirespondentSubmissionDto } from 'shared/types'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -16,7 +16,7 @@ import * as FormService from 'src/app/modules/form/form.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
-import { IMultirespondentSubmissionSchema } from 'src/types'
+import { IMultirespondentSubmissionSchema, MultirespondentSubmissionData } from 'src/types'
 import { SnapshottedFormDef } from 'src/types/api'
 
 import {
@@ -28,6 +28,7 @@ import {
   SubmissionSaveError,
 } from '../../submission.errors'
 import {
+  handleGetMultirespondentSubmissionForRespondent,
   sendPendingMrfSubmissionReminderForTest,
   submitMultirespondentFormForTest,
   updateMultirespondentSubmissionForTest,
@@ -90,6 +91,57 @@ describe('multirespondent-submision.controller', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('handleGetMultirespondentSubmissionForRespondent', () => {
+    it('returns 200 ok with public multirespondent submission data response and invokes createPublicMultirespondentSubmissionDto to strip the sensitive information', async () => {
+      // Arrange 
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockSubmissionData = {
+        _id: mockSubmissionId,
+        form_fields: [],
+        workflow: [],
+        attachmentMetadata: {},
+        version: 1,
+        mrfVersion: 1,
+      } as unknown as MultirespondentSubmissionData
+      const mockPresignedUrls = {
+        mockSubmissionId: 'mockPresignedUrl',
+      }
+      const mockPublicMultirespondentSubmissionDto = {
+        _id: mockSubmissionId,
+        form_fields: [],
+        workflow: [],
+      } as unknown as PublicMultirespondentSubmissionDto
+      
+      MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+          status: FormStatus.Public,
+        }),
+      )
+      const mockCreatePublicMultirespondentSubmissionDto = jest.fn().mockReturnValue(mockPublicMultirespondentSubmissionDto)
+      jest.mock('src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils', () => ({
+        ...jest.requireActual('src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils'),
+        createPublicMultirespondentSubmissionDto: mockCreatePublicMultirespondentSubmissionDto,
+      }))
+      // Act
+      await handleGetMultirespondentSubmissionForRespondent(mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockPublicMultirespondentSubmissionDto)
+      expect(mockCreatePublicMultirespondentSubmissionDto).toHaveBeenCalledWith(mockSubmissionData, mockPresignedUrls)
+    })
   })
 
   describe('submitMultirespondentForm', () => {
@@ -392,6 +444,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
@@ -477,6 +533,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
@@ -530,6 +590,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
@@ -583,6 +647,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
@@ -636,6 +704,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
@@ -686,6 +758,10 @@ describe('multirespondent-submision.controller', () => {
             stepsToNotify: [],
             hasRespondentCopy: false,
             title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
           } as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
