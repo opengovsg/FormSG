@@ -318,7 +318,7 @@ export type PublicMultirespondentFormDto = Merge<
 >
 
 export type StrippedPublicMultirespondentFormDto =
-  PublicMultirespondentFormDto & {
+  Omit<PublicMultirespondentFormDto, 'workflow'> & {
     workflow: StrippedFormWorkflowDto
   }
 

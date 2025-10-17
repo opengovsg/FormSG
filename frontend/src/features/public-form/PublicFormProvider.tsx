@@ -30,13 +30,10 @@ import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
-  FormWorkflowDto,
   Language,
   ProductItem,
   PublicFormDto,
-  PublicFormViewDto,
   StrippedFormWorkflowStepDto,
-  StrippedPublicMultirespondentFormDto,
 } from '~shared/types/form'
 import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 
@@ -451,7 +448,7 @@ export const PublicFormProvider = ({
           form_fields: encryptedPreviousSubmission.form_fields,
           form_logics: encryptedPreviousSubmission.form_logics,
           workflow: encryptedPreviousSubmission.workflow,
-        } as StrippedPublicMultirespondentFormDto,
+        }
       }
       : latestFormData
   }, [latestFormData, encryptedPreviousSubmission])
