@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
-import { FormAuthType } from './form/form'
+import { FormAuthType, StrippedFormFieldDto } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
@@ -202,6 +202,11 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfMeta: SubmissionMrfMetadata
 }
 
+export type PublicMultirespondentSubmissionDto = Omit<MultirespondentSubmissionDto, 'workflow' | 'form_fields'> & {
+  form_fields: StrippedFormFieldDto[]
+  workflow: StrippedFormWorkflowDto
+}
+
 export type SubmissionDto =
   | StorageModeSubmissionDto
   | MultirespondentSubmissionDto
@@ -264,12 +269,12 @@ export type SubmissionPaymentMetadata = {
 
 export type SubmissionMrfMetadata =
   | {
-      workflowCurrentStepNumber: number
-      workflowNumTotalSteps: number
-      workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
-      lastSubmittedAt: string | undefined
-      hasNextStepRecipientEmails: boolean
-    }
+    workflowCurrentStepNumber: number
+    workflowNumTotalSteps: number
+    workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
+    lastSubmittedAt: string | undefined
+    hasNextStepRecipientEmails: boolean
+  }
   | undefined
 
 export type SubmissionMetadata = {
@@ -306,9 +311,9 @@ export type SubmissionErrorDto = ErrorDto & {
 
 export type SubmissionCountQueryDto =
   | {
-      startDate: DateString
-      endDate: DateString
-    }
+    startDate: DateString
+    endDate: DateString
+  }
   | undefined
 
 export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
