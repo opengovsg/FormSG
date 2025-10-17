@@ -1,5 +1,6 @@
 import { PublicUserDto, UserDto } from '../user'
 import {
+  BasicField,
   FormField,
   FormFieldDto,
   MyInfoChildData,
@@ -7,7 +8,7 @@ import {
 } from '../field'
 
 import { FormLogo } from './form_logo'
-import type { Merge, Tagged, PartialDeep } from 'type-fest'
+import type { Except, Merge, Tagged, PartialDeep } from 'type-fest'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -21,7 +22,12 @@ import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
-import { FormWorkflow, FormWorkflowDto, FormWorkflowStepDto } from './workflow'
+import {
+  FormWorkflow,
+  FormWorkflowDto,
+  FormWorkflowStepDto,
+  StrippedFormWorkflowDto,
+} from './workflow'
 import { ErrorCode } from '../errorCodes'
 
 export type FormId = Tagged<string, 'FormId'>
@@ -310,10 +316,28 @@ export type PublicMultirespondentFormDto = Merge<
   PublicFormBase
 >
 
-export type PublicFormDto =
+export type StrippedPublicMultirespondentFormDto =
+  PublicMultirespondentFormDto & {
+    workflow: StrippedFormWorkflowDto
+  }
+
+/**
+ * Used for public form view to redact sensitive information.
+ * Specifically, it omits optionsToRecipientsMap for Dropdown field types.
+ */
+export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
+  T extends {
+    fieldType: BasicField.Dropdown
+  }
+    ? Except<T, 'optionsToRecipientsMap'>
+    : T
+
+export type PublicFormDto = Merge<
   | PublicStorageFormDto
   | PublicEmailFormDto
-  | PublicMultirespondentFormDto
+  | StrippedPublicMultirespondentFormDto,
+  { form_fields: StrippedFormFieldDto[] }
+>
 
 export type EmailFormSettings = Pick<
   EmailFormDto,

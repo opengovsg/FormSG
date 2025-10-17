@@ -30,10 +30,10 @@ import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
-  FormWorkflowStepDto,
   Language,
   ProductItem,
   PublicFormDto,
+  StrippedFormWorkflowStepDto,
 } from '~shared/types/form'
 import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 
@@ -210,7 +210,7 @@ const transformFormInputTrimTextInputs =
 
 export const augmentFormFields = (
   formFields: FormFieldDto[],
-  currentStepNumberWorkflowStep?: FormWorkflowStepDto,
+  currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto,
 ) => {
   return formFields
     .map(augmentWithMyInfo)
@@ -256,7 +256,7 @@ export const getInitialFormValues = ({
   formResponseMode: FormResponseMode
   previousSubmission?: ReturnType<typeof decryptSubmission>
   previousAttachments?: Record<string, ArrayBuffer>
-  currentStepNumberWorkflowStep?: FormWorkflowStepDto
+  currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
   draftResponsesToRestore: FormFieldValues

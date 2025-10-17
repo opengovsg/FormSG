@@ -1,9 +1,9 @@
-import { FormFieldDto, FormWorkflowStep } from '~shared/types'
+import { FormFieldDto, StrippedFormWorkflowStepDto } from '~shared/types'
 
 import { NON_RESPONSE_FIELD_SET } from '../constants'
 
 export const isFieldEnabledByMrfWorkflow = (
-  workflowStep: FormWorkflowStep | undefined,
+  workflowStep: StrippedFormWorkflowStepDto | undefined,
   field: FormFieldDto,
 ) => {
   // If no workflow, default to enabled
@@ -24,7 +24,7 @@ export const isFieldEnabledByMrfWorkflow = (
  * @returns The field with the disabled property set based on the workflow step and its previous disabled state
  */
 export const augmentFieldWithMrfWorkflowDisabling = (
-  workflowStep: FormWorkflowStep | undefined,
+  workflowStep: StrippedFormWorkflowStepDto | undefined,
   field: FormFieldDto,
 ) => ({
   ...field,
