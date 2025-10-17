@@ -48,11 +48,15 @@ import {
   MultirespondentFormSettings,
   PaymentChannel,
   PaymentType,
+  PublicMultirespondentFormDto,
+  PublicStorageFormDto,
   StorageFormSettings,
   WorkflowType,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../../shared/utils/logic'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../shared/utils/strip-workflow-emails'
 import {
   FormFieldSchema,
   FormLogicSchema,
@@ -67,6 +71,7 @@ import {
   IFormModel,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormDocument,
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
   IPopulatedForm,
@@ -1006,35 +1011,86 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return formSettings
     }
 
-  FormDocumentSchema.method<IFormDocument>(
+  EmailFormSchema.method<IFormDocument>(
     'getPublicView',
     function (): PublicForm {
-      let basePublicView
-      switch (this.responseMode) {
-        case FormResponseMode.Encrypt:
-          basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
-          break
-        case FormResponseMode.Email:
-          basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
-          break
-        case FormResponseMode.Multirespondent:
-          basePublicView = pick(
-            this,
-            MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
-          ) as PublicForm
-          break
+      const emailFormPublicViewFields = pick(
+        this.toObject(),
+        EMAIL_PUBLIC_FORM_FIELDS,
+      ) as PublicForm
+
+      // NOTE: While email mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
+      // it is still possible for optionsToRecipientsMap to be defined if the form was duplicated from a multirespondent form.
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        emailFormPublicViewFields.form_fields,
+      )
+      const emailFormPublicView = {
+        ...emailFormPublicViewFields,
+        form_fields: strippedFormFields,
+      } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        emailFormPublicView.admin = this.admin.getPublicView()
       }
 
-      // Return non-populated public fields of form if not populated.
-      if (!this.populated('admin')) {
-        return basePublicView
+      return emailFormPublicView
+    },
+  )
+
+  EncryptedFormSchema.method<IEncryptedFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const encryptFormPublicViewFields = pick(
+        this.toObject(),
+        STORAGE_PUBLIC_FORM_FIELDS,
+      ) as PublicStorageFormDto
+      // NOTE: While encrypt mode forms do not allow adding optionsToRecipient mapping for dropdown fields,
+      // it is still possible for optionsToRecipientsMap to be defined if the form was duplicated from a multirespondent form.
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        encryptFormPublicViewFields.form_fields,
+      )
+      const encryptedFormPublicView = {
+        ...encryptFormPublicViewFields,
+        form_fields: strippedFormFields,
+      } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        encryptedFormPublicView.admin = this.admin.getPublicView()
       }
 
-      // Populated, return public view with user's public view.
-      return {
-        ...basePublicView,
-        admin: (this.admin as IUserSchema).getPublicView(),
+      return encryptedFormPublicView
+    },
+  )
+
+  MultirespondentFormSchema.method<IMultirespondentFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      const mrfPublicViewFields = pick(
+        this.toObject(),
+        MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+      ) as PublicMultirespondentFormDto
+
+      const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
+        mrfPublicViewFields.form_fields,
+      )
+      const strippedWorkflow = stripWorkflowEmails(mrfPublicViewFields.workflow)
+      const mrfPublicView = {
+        ...mrfPublicViewFields,
+        workflow: strippedWorkflow,
+        form_fields: strippedFormFields,
+      } as PublicForm
+
+      const isAdminPopulated = this.populated('admin')
+      if (isAdminPopulated) {
+        // Override admin id with public view of admin
+        mrfPublicView.admin = this.admin.getPublicView()
       }
+
+      return mrfPublicView
     },
   )
 
