@@ -4,7 +4,10 @@ import {
 } from '@opengovsg/formsg-sdk/dist/types'
 import { decode as decodeBase64 } from '@stablelib/base64'
 
-import { FieldResponsesV3, MultirespondentSubmissionDto } from '~shared/types'
+import {
+  FieldResponsesV3,
+  PublicMultirespondentSubmissionDto,
+} from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -19,10 +22,13 @@ export const decryptSubmission = ({
   submission,
   secretKey,
 }: {
-  submission?: MultirespondentSubmissionDto
+  submission?: PublicMultirespondentSubmissionDto
   secretKey?: string
 }):
-  | (Omit<MultirespondentSubmissionDto, 'encryptedContent' | 'version'> & {
+  | (Omit<
+      PublicMultirespondentSubmissionDto,
+      'encryptedContent' | 'version'
+    > & {
       responses: FieldResponsesV3
       submissionSecretKey: string
     })

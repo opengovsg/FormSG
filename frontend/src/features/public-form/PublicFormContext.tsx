@@ -8,7 +8,7 @@ import {
 } from 'react'
 import { UseQueryResult } from 'react-query'
 
-import { FormFieldDto, MultirespondentSubmissionDto } from '~shared/types'
+import { FormFieldDto, PublicMultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
@@ -85,7 +85,7 @@ export interface PublicFormContextProps
   setHasSingleSubmissionValidationError?: Dispatch<SetStateAction<boolean>>
   hasRespondentNotWhitelistedError: boolean
 
-  encryptedPreviousSubmission?: MultirespondentSubmissionDto
+  encryptedPreviousSubmission?: PublicMultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>
   previousAttachments?: Record<string, ArrayBuffer>
   setPreviousSubmission?: (

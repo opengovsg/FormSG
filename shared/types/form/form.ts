@@ -284,6 +284,7 @@ export type AdminFormDto =
 
 type PublicFormBase = {
   admin: PublicUserDto
+  form_fields: StrippedFormFieldDto[]
 }
 
 export type PublicStorageFormDto = Merge<
@@ -316,10 +317,12 @@ export type PublicMultirespondentFormDto = Merge<
   PublicFormBase
 >
 
-export type StrippedPublicMultirespondentFormDto =
-  PublicMultirespondentFormDto & {
-    workflow: StrippedFormWorkflowDto
-  }
+export type StrippedPublicMultirespondentFormDto = Omit<
+  PublicMultirespondentFormDto,
+  'workflow'
+> & {
+  workflow: StrippedFormWorkflowDto
+}
 
 /**
  * Used for public form view to redact sensitive information.
@@ -332,12 +335,10 @@ export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
     ? Except<T, 'optionsToRecipientsMap'>
     : T
 
-export type PublicFormDto = Merge<
+export type PublicFormDto =
   | PublicStorageFormDto
   | PublicEmailFormDto
-  | StrippedPublicMultirespondentFormDto,
-  { form_fields: StrippedFormFieldDto[] }
->
+  | StrippedPublicMultirespondentFormDto
 
 export type EmailFormSettings = Pick<
   EmailFormDto,

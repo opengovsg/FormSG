@@ -8,11 +8,14 @@ import {
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
+  PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
   FormFieldSchema,
   MultirespondentSubmissionData,
@@ -59,6 +62,29 @@ export const createMultirespondentSubmissionDto = (
       workflowStep: submissionData.workflowStep,
       submittedSteps: submissionData.submittedSteps,
     }),
+  }
+}
+
+/**
+ * Strips sensitive information from multirespondent submission data for public view
+ * @param submissionData Multirespondent submission data to strip sensitive information from
+ * @param attachmentPresignedUrls Attachment presigned URLs to include in the public multirespondent submission data
+ * @returns Public multirespondent submission data with stripped sensitive information
+ */
+export const createPublicMultirespondentSubmissionDto = (
+  submissionData: MultirespondentSubmissionData,
+  attachmentPresignedUrls: Record<string, string>,
+): PublicMultirespondentSubmissionDto => {
+  const multirespondentSubmissionDto = createMultirespondentSubmissionDto(
+    submissionData,
+    attachmentPresignedUrls,
+  )
+  return {
+    ...multirespondentSubmissionDto,
+    form_fields: stripDropdownFieldOptionsToRecipientsMap(
+      submissionData.form_fields,
+    ),
+    workflow: stripWorkflowEmails(submissionData.workflow),
   }
 }
 
