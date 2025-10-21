@@ -7,9 +7,9 @@ import {
   LogicConditionState,
   LogicIfValue,
   LogicType,
-  MultirespondentSubmissionDto,
   PaymentChannel,
   PreventSubmitLogicDto,
+  PublicMultirespondentSubmissionDto,
   ShowFieldLogicDto,
 } from '~shared/types'
 import { FormId, PublicFormViewDto } from '~shared/types/form/form'
@@ -584,12 +584,12 @@ export const getEncryptedSubmissionResponse = ({
   overrides,
 }: {
   delay?: number | 'infinite'
-  overrides?: PartialDeep<MultirespondentSubmissionDto>
+  overrides?: PartialDeep<PublicMultirespondentSubmissionDto>
 } = {}) => {
   return http.get<
     { formId: string; submissionId: string },
     never,
-    MultirespondentSubmissionDto
+    PublicMultirespondentSubmissionDto
   >('/api/v3/forms/:formId/submissions/:submissionId', async ({ params }) => {
     const {
       formId = '61540ece3d4a6e50ac0cc6ff',
@@ -617,7 +617,7 @@ export const getEncryptedSubmissionResponse = ({
           return [...srcValue, ...objValue]
         }
       },
-    ) as MultirespondentSubmissionDto
+    ) as PublicMultirespondentSubmissionDto
 
     await MswDelay(delay)
     return HttpResponse.json(response)

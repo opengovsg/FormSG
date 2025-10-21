@@ -3,8 +3,8 @@ import { Control, useWatch } from 'react-hook-form'
 
 import {
   FormColorTheme,
-  FormWorkflowStepDto,
   LogicDto,
+  StrippedFormWorkflowStepDto,
 } from '~shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
@@ -24,7 +24,7 @@ interface VisibleFormFieldsProps {
   control: Control<FormFieldValues>
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
-  workflowStep?: FormWorkflowStepDto
+  workflowStep?: StrippedFormWorkflowStepDto
   colorTheme: FormColorTheme
   fieldPrefillMap: PrefillMap
 }
