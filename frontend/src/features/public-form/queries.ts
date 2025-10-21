@@ -46,7 +46,10 @@ export const useEncryptedSubmission = (
   submissionId?: string,
   /** Extra override to determine whether query is enabled */
   enabled = true,
-): UseQueryResult<PublicMultirespondentSubmissionDtoWithAttachments, ApiError> => {
+): UseQueryResult<
+  PublicMultirespondentSubmissionDtoWithAttachments,
+  ApiError
+> => {
   return useQuery(
     publicFormKeys.submission(formId, submissionId),
     () =>

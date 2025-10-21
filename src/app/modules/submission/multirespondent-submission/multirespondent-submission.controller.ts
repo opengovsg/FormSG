@@ -333,7 +333,10 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createPublicMultirespondentSubmissionDto(submissionData, presignedUrls),
+          createPublicMultirespondentSubmissionDto(
+            submissionData,
+            presignedUrls,
+          ),
         )
       })
       .map((responseData) => {

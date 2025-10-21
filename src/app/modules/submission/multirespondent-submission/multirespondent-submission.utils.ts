@@ -14,6 +14,8 @@ import {
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
   FormFieldSchema,
   MultirespondentSubmissionData,
@@ -28,8 +30,6 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
-import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -75,10 +75,15 @@ export const createPublicMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
 ): PublicMultirespondentSubmissionDto => {
-  const multirespondentSubmissionDto = createMultirespondentSubmissionDto(submissionData, attachmentPresignedUrls)
+  const multirespondentSubmissionDto = createMultirespondentSubmissionDto(
+    submissionData,
+    attachmentPresignedUrls,
+  )
   return {
     ...multirespondentSubmissionDto,
-    form_fields: stripDropdownFieldOptionsToRecipientsMap(submissionData.form_fields),
+    form_fields: stripDropdownFieldOptionsToRecipientsMap(
+      submissionData.form_fields,
+    ),
     workflow: stripWorkflowEmails(submissionData.workflow),
   }
 }
@@ -117,7 +122,7 @@ const getConditionalFieldEmailRecipient = (
 
   const emailRecipients =
     conditionalField?.optionsToRecipientsMap?.[
-    conditionalFieldResponse.answer
+      conditionalFieldResponse.answer
     ] ?? []
 
   return emailRecipients

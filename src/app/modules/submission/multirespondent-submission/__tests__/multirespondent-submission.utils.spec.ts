@@ -1,5 +1,6 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
+import { omit } from 'lodash'
 import moment from 'moment-timezone'
 import { ok } from 'neverthrow'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
@@ -48,7 +49,6 @@ import {
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
-import { omit } from 'lodash'
 
 describe('multirespondent-submission.utils', () => {
   const WORKFLOW_STEP_1: FormWorkflowStepDto = {
@@ -64,10 +64,7 @@ describe('multirespondent-submission.utils', () => {
         if (fieldType === BasicField.Dropdown) {
           return generateDefaultField(BasicField.Dropdown, {
             optionsToRecipientsMap: {
-              'Option 1': [
-                'recipient1@example.com',
-                'recipient2@example.com',
-              ],
+              'Option 1': ['recipient1@example.com', 'recipient2@example.com'],
               'Option 2': ['recipient3@example.com'],
             },
           })
@@ -128,7 +125,7 @@ describe('multirespondent-submission.utils', () => {
         {
           isApproval: false,
           submittedAt: '2024-01-02T00:00:00.000Z',
-        }
+        },
       ]
       const createdDate = new Date()
       const submissionData = {
@@ -169,8 +166,16 @@ describe('multirespondent-submission.utils', () => {
           submissionData.encryptedSubmissionSecretKey,
         attachmentMetadata: attachmentPresignedUrls,
         submissionType: SubmissionType.Multirespondent,
-        workflow: submissionData.workflow.map(step => step.workflow_type === WorkflowType.Static ? omit(step, 'emails') : step),
-        form_fields: submissionData.form_fields.map((field) => field.fieldType === BasicField.Dropdown ? omit(field, 'optionsToRecipientsMap') : field),
+        workflow: submissionData.workflow.map((step) =>
+          step.workflow_type === WorkflowType.Static
+            ? omit(step, 'emails')
+            : step,
+        ),
+        form_fields: submissionData.form_fields.map((field) =>
+          field.fieldType === BasicField.Dropdown
+            ? omit(field, 'optionsToRecipientsMap')
+            : field,
+        ),
         form_logics: submissionData.form_logics,
         version: submissionData.version,
         workflowStep: submissionData.workflowStep,
@@ -185,11 +190,15 @@ describe('multirespondent-submission.utils', () => {
         },
       })
 
-      const dropdownFf = actual.form_fields.find(field => field.fieldType === BasicField.Dropdown)
+      const dropdownFf = actual.form_fields.find(
+        (field) => field.fieldType === BasicField.Dropdown,
+      )
       expect(dropdownFf).toBeDefined()
       expect(dropdownFf).not.toContainKey('optionsToRecipientsMap')
 
-      const staticWorkflowStep = actual.workflow.find(step => step.workflow_type === WorkflowType.Static)
+      const staticWorkflowStep = actual.workflow.find(
+        (step) => step.workflow_type === WorkflowType.Static,
+      )
       expect(staticWorkflowStep).toBeDefined()
       expect(staticWorkflowStep).not.toContainKey('emails')
     })

@@ -202,7 +202,10 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfMeta: SubmissionMrfMetadata
 }
 
-export type PublicMultirespondentSubmissionDto = Omit<MultirespondentSubmissionDto, 'workflow' | 'form_fields'> & {
+export type PublicMultirespondentSubmissionDto = Omit<
+  MultirespondentSubmissionDto,
+  'workflow' | 'form_fields'
+> & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
 }
@@ -269,12 +272,12 @@ export type SubmissionPaymentMetadata = {
 
 export type SubmissionMrfMetadata =
   | {
-    workflowCurrentStepNumber: number
-    workflowNumTotalSteps: number
-    workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
-    lastSubmittedAt: string | undefined
-    hasNextStepRecipientEmails: boolean
-  }
+      workflowCurrentStepNumber: number
+      workflowNumTotalSteps: number
+      workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
+      lastSubmittedAt: string | undefined
+      hasNextStepRecipientEmails: boolean
+    }
   | undefined
 
 export type SubmissionMetadata = {
@@ -311,9 +314,9 @@ export type SubmissionErrorDto = ErrorDto & {
 
 export type SubmissionCountQueryDto =
   | {
-    startDate: DateString
-    endDate: DateString
-  }
+      startDate: DateString
+      endDate: DateString
+    }
   | undefined
 
 export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<

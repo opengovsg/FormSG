@@ -3,7 +3,13 @@ import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
 import { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { FormAuthType, FormMetadata, FormResponseMode, FormStatus, PublicMultirespondentSubmissionDto } from 'shared/types'
+import {
+  FormAuthType,
+  FormMetadata,
+  FormResponseMode,
+  FormStatus,
+  PublicMultirespondentSubmissionDto,
+} from 'shared/types'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -16,7 +22,10 @@ import * as FormService from 'src/app/modules/form/form.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
-import { IMultirespondentSubmissionSchema, MultirespondentSubmissionData } from 'src/types'
+import {
+  IMultirespondentSubmissionSchema,
+  MultirespondentSubmissionData,
+} from 'src/types'
 import { SnapshottedFormDef } from 'src/types/api'
 
 import {
@@ -95,7 +104,7 @@ describe('multirespondent-submision.controller', () => {
 
   describe('handleGetMultirespondentSubmissionForRespondent', () => {
     it('returns 200 ok with public multirespondent submission data response and invokes createPublicMultirespondentSubmissionDto to strip the sensitive information', async () => {
-      // Arrange 
+      // Arrange
       const mockReq = expressHandler.mockRequest({
         params: {
           formId: mockFormId,
@@ -120,7 +129,7 @@ describe('multirespondent-submision.controller', () => {
         form_fields: [],
         workflow: [],
       } as unknown as PublicMultirespondentSubmissionDto
-      
+
       MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
         okAsync({
           _id: mockFormId,
@@ -129,18 +138,35 @@ describe('multirespondent-submision.controller', () => {
           status: FormStatus.Public,
         }),
       )
-      const mockCreatePublicMultirespondentSubmissionDto = jest.fn().mockReturnValue(mockPublicMultirespondentSubmissionDto)
-      jest.mock('src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils', () => ({
-        ...jest.requireActual('src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils'),
-        createPublicMultirespondentSubmissionDto: mockCreatePublicMultirespondentSubmissionDto,
-      }))
+      const mockCreatePublicMultirespondentSubmissionDto = jest
+        .fn()
+        .mockReturnValue(mockPublicMultirespondentSubmissionDto)
+      jest.mock(
+        'src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils',
+        () => ({
+          ...jest.requireActual(
+            'src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils',
+          ),
+          createPublicMultirespondentSubmissionDto:
+            mockCreatePublicMultirespondentSubmissionDto,
+        }),
+      )
       // Act
-      await handleGetMultirespondentSubmissionForRespondent(mockReq, mockRes, jest.fn())
+      await handleGetMultirespondentSubmissionForRespondent(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith(mockPublicMultirespondentSubmissionDto)
-      expect(mockCreatePublicMultirespondentSubmissionDto).toHaveBeenCalledWith(mockSubmissionData, mockPresignedUrls)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        mockPublicMultirespondentSubmissionDto,
+      )
+      expect(mockCreatePublicMultirespondentSubmissionDto).toHaveBeenCalledWith(
+        mockSubmissionData,
+        mockPresignedUrls,
+      )
     })
   })
 

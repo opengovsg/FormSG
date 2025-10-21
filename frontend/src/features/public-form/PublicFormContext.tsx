@@ -37,7 +37,7 @@ export interface DraftSubmission {
 
 export interface PublicFormContextProps
   extends Partial<PublicFormViewDto>,
-  Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
+    Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
   previousSubmissionId?: string

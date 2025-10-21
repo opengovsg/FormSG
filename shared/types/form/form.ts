@@ -317,10 +317,12 @@ export type PublicMultirespondentFormDto = Merge<
   PublicFormBase
 >
 
-export type StrippedPublicMultirespondentFormDto =
-  Omit<PublicMultirespondentFormDto, 'workflow'> & {
-    workflow: StrippedFormWorkflowDto
-  }
+export type StrippedPublicMultirespondentFormDto = Omit<
+  PublicMultirespondentFormDto,
+  'workflow'
+> & {
+  workflow: StrippedFormWorkflowDto
+}
 
 /**
  * Used for public form view to redact sensitive information.
@@ -330,8 +332,8 @@ export type StrippedFormFieldDto<T extends FormFieldDto = FormFieldDto> =
   T extends {
     fieldType: BasicField.Dropdown
   }
-  ? Except<T, 'optionsToRecipientsMap'>
-  : T
+    ? Except<T, 'optionsToRecipientsMap'>
+    : T
 
 export type PublicFormDto =
   | PublicStorageFormDto
@@ -406,21 +408,21 @@ export type AdminDashboardFormMetaDto = Pick<
 export type DuplicateFormOverwriteDto = {
   title: string
 } & (
-    | {
+  | {
       responseMode: FormResponseMode.Email
       emails: string | string[]
     }
-    | {
+  | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
       emails: string[]
     }
-    | {
+  | {
       responseMode: FormResponseMode.Multirespondent
       publicKey: string
       workflow?: FormWorkflowDto
     }
-  )
+)
 
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string

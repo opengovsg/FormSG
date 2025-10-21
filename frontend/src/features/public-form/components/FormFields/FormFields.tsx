@@ -10,8 +10,8 @@ import { FormFieldDto } from '~shared/types/field'
 import {
   FormColorTheme,
   FormResponseMode,
-  FormWorkflowStepDto,
   LogicDto,
+  StrippedFormWorkflowStepDto,
 } from '~shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
@@ -32,7 +32,7 @@ export interface FormFieldsProps {
   previousAttachments?: Record<string, ArrayBuffer>
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
-  workflowStep?: FormWorkflowStepDto
+  workflowStep?: StrippedFormWorkflowStepDto
   colorTheme: FormColorTheme
   onSubmit: SubmitHandler<FormFieldValues> | undefined
 }
