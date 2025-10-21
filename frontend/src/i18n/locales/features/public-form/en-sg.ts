@@ -38,7 +38,7 @@ export const enSG: PublicForm = {
     },
     saveDraft: {
       toast: {
-        success: 'Your draft has been saved.',
+        success: 'Draft saved. Reopen this link in this browser to resume filling it.',
         restoredAllFields: 'Your draft has been successfully restored.',
         restoredOnlyUnchangedFields:
           'Some fields were not restored as the form has been updated.',
