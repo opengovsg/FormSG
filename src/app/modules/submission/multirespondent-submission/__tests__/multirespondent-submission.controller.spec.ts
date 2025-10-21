@@ -1,15 +1,21 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
-import { Types } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import {
+  BasicField,
+  DropdownFieldBase,
   FormAuthType,
+  FormFieldDto,
   FormMetadata,
   FormResponseMode,
   FormStatus,
   PublicMultirespondentSubmissionDto,
+  SubmissionType,
+  WorkflowType,
 } from 'shared/types'
+import { Except } from 'type-fest'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -19,6 +25,7 @@ import {
   FormNotFoundError,
 } from 'src/app/modules/form/form.errors'
 import * as FormService from 'src/app/modules/form/form.service'
+import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
@@ -43,11 +50,18 @@ import {
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
+import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
+
+jest.mock('src/app/modules/submission/submission.service', () => ({
+  ...jest.requireActual('src/app/modules/submission/submission.service'),
+  getEncryptedSubmissionData: jest.fn(),
+}))
+const MockSubmissionService = jest.mocked(SubmissionService)
 
 jest.mock('src/app/modules/form/admin-form/admin-form.service', () => ({
   ...jest.requireActual('src/app/modules/form/admin-form/admin-form.service'),
@@ -88,6 +102,10 @@ describe('multirespondent-submision.controller', () => {
       .fn()
       .mockReturnValue(okAsync(mockMrfForm))
 
+    MockMultiRespondentSubmissionService.checkFormIsMultirespondent = jest
+      .fn()
+      .mockReturnValue(ok(mockMrfForm))
+
     MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
       jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
     MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
@@ -110,25 +128,72 @@ describe('multirespondent-submision.controller', () => {
           formId: mockFormId,
           submissionId: mockSubmissionId,
         },
+        session: {
+          cookie: {
+            maxAge: 1000,
+          },
+        },
         body: {} as any,
       })
       const mockRes = expressHandler.mockResponse()
+
+      const staticWorkflowStep = {
+        workflow_type: WorkflowType.Static,
+        edit: [],
+        emails: [],
+        _id: new ObjectId().toHexString(),
+      }
+      const dynamicWorkflowStep = {
+        workflow_type: WorkflowType.Dynamic,
+        edit: [],
+        field: new ObjectId().toHexString(),
+        _id: new ObjectId().toHexString(),
+      }
+      const dropdownField = {
+        _id: new ObjectId().toHexString(),
+        fieldType: BasicField.Dropdown,
+        title: 'Dropdown Field',
+        description: 'Dropdown Field Description',
+        required: true,
+        disabled: false,
+        fieldOptions: ['Option 1', 'Option 2'],
+        optionsToRecipientsMap: {
+          'Option 1': ['recipient1@example.com', 'recipient2@example.com'],
+          'Option 2': ['recipient3@example.com'],
+        },
+      } as FormFieldDto<DropdownFieldBase>
       const mockSubmissionData = {
         _id: mockSubmissionId,
-        form_fields: [],
-        workflow: [],
-        attachmentMetadata: {},
+        form_fields: [dropdownField],
+        form_logics: [],
+        workflow: [staticWorkflowStep, dynamicWorkflowStep],
+        attachmentMetadata: undefined,
         version: 1,
         mrfVersion: 1,
-      } as unknown as MultirespondentSubmissionData
-      const mockPresignedUrls = {
-        mockSubmissionId: 'mockPresignedUrl',
-      }
-      const mockPublicMultirespondentSubmissionDto = {
-        _id: mockSubmissionId,
-        form_fields: [],
-        workflow: [],
-      } as unknown as PublicMultirespondentSubmissionDto
+        submissionType: SubmissionType.Multirespondent,
+        encryptedContent: 'encryptedContent',
+        encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        submissionPublicKey: 'submissionPublicKey',
+        workflowStep: 0,
+        submittedSteps: [],
+        created: new Date('2025-10-21T06:19:33.527Z'),
+      } as Except<MultirespondentSubmissionData, keyof Document>
+
+      const mockStrippedPublicMultirespondentSubmissionDto = {
+        ...omit(mockSubmissionData, ['_id', 'created', 'submittedSteps']),
+        refNo: mockSubmissionId as any,
+        submissionTime: 'Tue, 21 Oct 2025, 02:19:33 PM',
+        attachmentMetadata: {},
+        mrfMeta: {
+          workflowCurrentStepNumber: 1,
+          workflowNumTotalSteps: 2,
+          workflowStatus: undefined,
+          lastSubmittedAt: undefined,
+          hasNextStepRecipientEmails: false,
+        },
+        workflow: [omit(staticWorkflowStep, 'emails'), dynamicWorkflowStep],
+        form_fields: [omit(dropdownField, 'optionsToRecipientsMap')],
+      } as PublicMultirespondentSubmissionDto
 
       MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
         okAsync({
@@ -138,19 +203,15 @@ describe('multirespondent-submision.controller', () => {
           status: FormStatus.Public,
         }),
       )
-      const mockCreatePublicMultirespondentSubmissionDto = jest
-        .fn()
-        .mockReturnValue(mockPublicMultirespondentSubmissionDto)
-      jest.mock(
-        'src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils',
-        () => ({
-          ...jest.requireActual(
-            'src/app/modules/submission/multirespondent-submission/multirespondent-submission.utils',
-          ),
-          createPublicMultirespondentSubmissionDto:
-            mockCreatePublicMultirespondentSubmissionDto,
-        }),
+
+      MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+        okAsync(mockSubmissionData as MultirespondentSubmissionData),
       )
+      const createPublicMultirespondentSubmissionDtoSpy = jest.spyOn(
+        MultirespondentSubmissionUtils,
+        'createPublicMultirespondentSubmissionDto',
+      )
+
       // Act
       await handleGetMultirespondentSubmissionForRespondent(
         mockReq,
@@ -159,13 +220,14 @@ describe('multirespondent-submision.controller', () => {
       )
 
       // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(200)
+      // Public multirespondent submission data response is stripped of sensitive information
       expect(mockRes.json).toHaveBeenCalledWith(
-        mockPublicMultirespondentSubmissionDto,
+        mockStrippedPublicMultirespondentSubmissionDto,
       )
-      expect(mockCreatePublicMultirespondentSubmissionDto).toHaveBeenCalledWith(
+      // createPublicMultirespondentSubmissionDto is invoked to perform the stripping of sensitive information
+      expect(createPublicMultirespondentSubmissionDtoSpy).toHaveBeenCalledWith(
         mockSubmissionData,
-        mockPresignedUrls,
+        {},
       )
     })
   })
