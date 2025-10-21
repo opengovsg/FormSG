@@ -1078,7 +1078,9 @@ WithSaveDraftEnabledAndClickSaveDraftButton.play = async ({
     async () => {
       await waitFor(
         () => {
-          expect(document.body).toHaveTextContent('Draft saved. Reopen this link in this browser to resume filling it.')
+          expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
         },
         { timeout: 3000 },
       )
@@ -1181,7 +1183,9 @@ WithSaveDraftExcludingSavingMyInfoFields.play = async ({
     async () => {
       await waitFor(
         () => {
-          expect(document.body).toHaveTextContent('Draft saved. Reopen this link in this browser to resume filling it.')
+          expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
         },
         { timeout: 3000 },
       )
