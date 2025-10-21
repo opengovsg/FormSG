@@ -30,7 +30,7 @@ export const enSG = {
   saveDraft: {
     label: 'Enable saving of draft responses',
     description:
-      'Respondents will be able to save a draft of their responses on their browser.',
+      "Respondents can save what they've filled in and continue later on the same browser.",
   },
   captcha: {
     label: 'Enable reCAPTCHA',
