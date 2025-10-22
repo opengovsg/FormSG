@@ -30,7 +30,7 @@ stg-alt3:
   deploy:
     parameters:
       stack_name: pdf-gen-sparticuz-stg-alt3
-      s3_bucket: pdf-gen-lambda-code-zip-stg-alt3-9f042e3 # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      s3_bucket: pdf-gen-lambda-code-zip-stg-alt3-acccdd3 # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: stg-alt3
