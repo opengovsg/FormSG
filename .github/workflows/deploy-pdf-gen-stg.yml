@@ -1,4 +1,4 @@
-name: Deploy PDF Generator Lambda to staging
+name: Deploy PDF Generator Lambda to stg
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,15 +11,15 @@ permissions:
 on:
   push:
     branches:
-      - staging
+      - stg
 
 jobs:
   deploy-pdf-gen-lambda: 
     name: Deploy PDF Generator Lambda
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
-      gha-environment: 'staging'
-      checkoutBranch: 'staging'
-      environment: 'staging'
+      gha-environment: 'stg'
+      checkoutBranch: 'stg'
+      environment: 'stg'
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
