@@ -1,6 +1,6 @@
 version: 0.1
 
-staging: 
+stg: 
   deploy: 
     parameters:
       stack_name: pdf-gen-sparticuz-stg
