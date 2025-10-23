@@ -3,15 +3,15 @@ version: 0.1
 staging: 
   deploy: 
     parameters:
-      stack_name: pdf-gen-sparticuz-staging
+      stack_name: pdf-gen-sparticuz-stg
       s3_bucket: pdf-gen-lambda-code-zip-uat-4882a20 # Reuse uat bucket as this env is not IACed. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
-      s3_prefix: staging
+      s3_prefix: stg
       image_repositories: [] 
       disable_rollback: false # Rolls back to previous version if the deployment fails 
       confirm_changeset: true
-      parameter_overrides: Environment=staging
+      parameter_overrides: Environment=stg
 
 stg-alt:
   deploy:
