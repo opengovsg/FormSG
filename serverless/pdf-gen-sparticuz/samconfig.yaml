@@ -4,7 +4,7 @@ stg:
   deploy: 
     parameters:
       stack_name: pdf-gen-sparticuz-stg
-      s3_bucket: pdf-gen-lambda-code-zip-uat-4882a20 # Reuse uat bucket as this env is not IACed. 
+      s3_bucket: pdf-gen-lambda-code-zip-stg-2d429c2 # Created by pulumi in formsg-infra to store AWS SAM builds. 
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
       s3_prefix: stg
