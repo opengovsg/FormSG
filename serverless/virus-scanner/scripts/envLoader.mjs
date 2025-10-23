@@ -22,7 +22,7 @@ const SHORT_ENV_MAP = {
   vapt: 'vapt',
 }
 
-const IAC_MIGRATED_SHORT_ENVS = ['uat', 'prod', 'stg', 'stg-alt', 'stg-alt3']
+const IAC_MIGRATED_SHORT_ENVS = ['uat', 'prod', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']
 /**
  * Returns true if the environment is an IaC migrated environment.
  * IaC migrated environments use new SSM keys and format that are different from the legacy ones.

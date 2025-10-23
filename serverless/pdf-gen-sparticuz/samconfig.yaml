@@ -26,6 +26,19 @@ stg-alt:
       confirm_changeset: true
       parameter_overrides: Environment=stg-alt
 
+stg-alt2:
+  deploy:
+    parameters:
+      stack_name: pdf-gen-sparticuz-stg-alt2
+      s3_bucket: # Created by pulumi in formsg-infra to store AWS SAM builds. 
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM # Allows the deployment to create IAM resources 
+      s3_prefix: stg-alt2
+      image_repositories: [] 
+      disable_rollback: false # Rolls back to previous version if the deployment fails 
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt2
+
 stg-alt3:
   deploy:
     parameters:

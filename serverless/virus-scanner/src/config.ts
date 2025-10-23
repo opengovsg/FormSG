@@ -7,7 +7,7 @@ const isTest = process.env.NODE_ENV === 'test'
 export const config = convict({
   environment: {
     env: 'NODE_ENV',
-    format: ['development', 'stg', 'stg-alt', 'stg-alt3', 'uat', 'production', 'test'],
+    format: ['development', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3', 'uat', 'production', 'test'],
     default: 'development',
   },
   isTestOrDev: {
