@@ -1,4 +1,4 @@
-name: Deploy Virus Scanner GuardDuty to stg-alt
+name: Deploy Legacy Virus Scanner to stg-alt
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,11 +12,14 @@ on:
   push:
     branches:
       - stg-alt
+  # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
+  schedule:
+    - cron: '0 16 * * *'
 
 jobs:
-  deploy-scanner-guardduty:
-    name: Deploy Scanner GuardDuty
-    uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
+  deploy-scanner:
+    name: Deploy Scanner
+    uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
     with:
       checkoutBranch: 'stg-alt'
       gha-environment: 'stg-alt'

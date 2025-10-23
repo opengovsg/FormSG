@@ -1,4 +1,4 @@
-name: Deploy Legacy Virus Scanner to new OGP AWS production account
+name: Deploy Legacy Virus Scanner to uat
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

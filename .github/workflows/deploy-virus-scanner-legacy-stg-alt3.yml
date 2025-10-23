@@ -1,4 +1,4 @@
-name: Deploy Legacy Virus Scanner to new OGP AWS environment
+name: Deploy Legacy Virus Scanner to stg-alt3
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1,4 +1,4 @@
-name: Deploy FormSG app to stg (main staging environment)
+name: Deploy FormSG app to stg
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

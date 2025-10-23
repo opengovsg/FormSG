@@ -1,4 +1,4 @@
-name: Deploy PDF Generator Lambda to stg (main staging environment)
+name: Deploy PDF Generator Lambda to stg
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

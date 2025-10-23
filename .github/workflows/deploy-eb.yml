@@ -1,3 +1,4 @@
+# TODO: Remove this once stg-alt2 is migrated to IAC. Since elastic beanstalk is no longer used in favour of ECS. 
 name: Deploy to AWS Elastic Beanstalk
 on:
   push:
