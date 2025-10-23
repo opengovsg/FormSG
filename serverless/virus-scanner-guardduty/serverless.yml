@@ -75,7 +75,7 @@ functions:
     memorySize: 128 # Usage of the smallest memory size is possible since the lambda function does not load the file content into memory and simply makes API calls to S3.
     # Provision concurrency so at least one instance always hot
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
-    # 1 for staging, 5 for prod
+    # 1 for staging environments, 5 for prod
     provisionedConcurrency: ${param:provisionedConcurrency}
 
 plugins:

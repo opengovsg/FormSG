@@ -3,8 +3,7 @@ name: CI
 on:
   push:
     branches-ignore:
-      - staging
-      - staging-alt
+      - stg
       - staging-alt2
       - stg-alt
       - stg-alt3
@@ -12,8 +11,7 @@ on:
   pull_request:
     types: [opened, reopened]
     branches-ignore:
-      - staging
-      - staging-alt
+      - stg
       - staging-alt2
       - stg-alt
       - stg-alt3

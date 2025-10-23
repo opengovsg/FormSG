@@ -1,0 +1,51 @@
+name: Deploy FormSG app to stg (main staging environment)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - stg
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy-ecs.yml
+    with:
+      gha-environment: 'stg'
+      # Environment configuration
+      environment: 'stg'
+      environment-site-name: 'stg'
+      app-version: ${{ github.sha }}
+      app-url: 'https://stg.form.gov.sg'
+      react-app-form-sg-sdk-mode: 'staging'
+      # AWS configuration
+      aws-region: 'ap-southeast-1'
+      ecr-repository: 'formsg'
+      # ECS configuration
+      ecs-cpu: 1024
+      ecs-memory: 2048
+      ecs-cluster-name: 'formsg-stg-ecs'
+      ecs-service-name: 'formsg-stg-ecs-service'
+      ecs-task-definition: 'formsg-stg-ecs'
+      ecs-task-definition-path: 'deploy/ecs-task-definition.json'
+      ecs-container-name: 'formsg-app'
+      # CodeDeploy configuration
+      codedeploy-application: 'formsg-stg-ecs-app'
+      codedeploy-appspec-path: deploy/appspec.yml
+      codedeploy-deployment-group: 'formsg-stg-ecs-dg'
+      # Datadog config
+      dd-env: 'stg'
+    secrets:
+      # AWS credentials and configuration
+      aws-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
+      # Monitoring and analytics configuration
+      ga-tracking-id: ${{ secrets.GA_TRACKING_ID }}
+      dd-rum-app-id: ${{ secrets.DD_RUM_APP_ID }}
+      dd-rum-client-token: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
+      dd-sample-rate: ${{ secrets.DD_SAMPLE_RATE }}
+      DD_API_KEY: ${{ secrets.DD_API_KEY }}
+      S3_STATIC_ASSETS_BUCKET_NAME: ${{ secrets.S3_STATIC_ASSETS_BUCKET_NAME }}
