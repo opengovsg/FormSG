@@ -1,0 +1,25 @@
+name: Deploy PDF Generator Lambda to stg-alt2
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - stg-alt2
+
+jobs:
+  deploy-pdf-gen-lambda:
+    name: Deploy PDF Generator Lambda
+    uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
+    with:
+      gha-environment: 'stg-alt2'
+      checkoutBranch: 'stg-alt2'
+      environment: 'stg-alt2'
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

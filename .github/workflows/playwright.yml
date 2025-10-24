@@ -4,16 +4,16 @@ on:
   push:
     branches-ignore:
       - stg
-      - staging-alt2
       - stg-alt
+      - stg-alt2
       - stg-alt3
       - uat
   pull_request:
     types: [opened, reopened]
     branches-ignore:
       - stg
-      - staging-alt2
       - stg-alt
+      - stg-alt2
       - stg-alt3
       - uat
 
