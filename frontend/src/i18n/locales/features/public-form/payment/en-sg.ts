@@ -22,22 +22,22 @@ export const enSG: Payment = {
       decrement: 'Decrement',
     },
     errors: {
-      minQuantity: 'Minimum quantity is {{minQty}}',
+      minQuantity: 'Minimum quantity is {minQty}',
       wholeNumber: 'Please enter a whole number',
-      maxQuantity: 'Maximum quantity is {{maxQty}}',
+      maxQuantity: 'Maximum quantity is {maxQty}',
     },
   },
   productCard: {
-    quantity: 'Qty: {{quantity}}',
+    quantity: 'Qty: {quantity}',
     change: 'Change',
   },
   error: {
     header: 'There was an error preparing the payment.',
     body: 'For assistance, share the response ID with the agency that gave you the form link. No payment has been taken.',
-    responseId: 'Response ID: {{submissionId}}',
+    responseId: 'Response ID: {submissionId}',
     ariaLabel:
-      'Error preparing payment for {{formTitle}}. Please contact the form creator for assistance and provide them the Response ID: {{submissionId}}.',
+      'Error preparing payment for {formTitle}. Please contact the form creator for assistance and provide them the Response ID: {submissionId}.',
     ariaLabelNoTitle:
-      'Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: {{submissionId}}.',
+      'Error preparing payment. Please contact the form creator for assistance and provide them the Response ID: {submissionId}.',
   },
 }
