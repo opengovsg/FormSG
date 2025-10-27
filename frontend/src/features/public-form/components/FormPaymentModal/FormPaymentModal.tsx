@@ -1,4 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -24,6 +25,9 @@ export const FormPaymentModal = ({
   onClose,
   isSubmitting,
 }: FormPaymentModalProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.publicForm.components.payment.modal',
+  })
   // We need to dismiss the FormPaymentModal to release the scroll lock that affects the captcha
   const closeAndSubmit = (event: MouseEvent<HTMLButtonElement>) => {
     onClose()
@@ -41,24 +45,21 @@ export const FormPaymentModal = ({
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader pb={'2rem'} w="90%">
-            You are about to make payment
+            {t('header')}
           </ModalHeader>
-          <ModalBody flexGrow={0}>
-            Please ensure that your form information is accurate. You will not
-            be able to edit your form after you proceed.
-          </ModalBody>
+          <ModalBody flexGrow={0}>{t('body')}</ModalBody>
           <ModalFooter>
             <ButtonGroup isFullWidth={isMobile}>
               <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
-                Cancel
+                {t('buttons.cancel')}
               </Button>
               <Button
                 isLoading={isSubmitting}
-                loadingText="Submitting"
+                loadingText={t('buttons.submitting')}
                 onClick={closeAndSubmit}
                 isFullWidth={isMobile}
               >
-                Proceed to pay
+                {t('buttons.proceed')}
               </Button>
             </ButtonGroup>
           </ModalFooter>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 
 import { FormColorTheme, ProductItem } from '~shared/types'
@@ -17,6 +18,10 @@ const ItemQuantityButton = ({
   product: ProductItem
   onClick: () => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.publicForm.components.payment.productCard',
+  })
+
   if (!product.data.multi_qty) {
     return <></>
   }
@@ -25,10 +30,10 @@ const ItemQuantityButton = ({
       <Button
         rightIcon={<BxsChevronDown fontSize="1.5rem" />}
         colorScheme="secondary"
-        aria-label="Change"
+        aria-label={t('change')}
         variant="clear"
       >
-        Qty: {product.quantity}
+        {t('quantity', { quantity: product.quantity })}
       </Button>
     </Box>
   )
