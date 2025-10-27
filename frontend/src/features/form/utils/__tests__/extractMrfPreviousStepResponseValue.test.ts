@@ -7,18 +7,21 @@ import {
   FormFieldDto,
 } from '~shared/types'
 
+import bufferToFile from '~utils/bufferToFile'
 import { RadioFieldValues } from '~templates/Field'
 
 import { extractMrfPreviousStepResponseValue } from '../extractMrfPreviousStepResponseValue'
 
-jest.mock('~utils/bufferToFile', () => ({
-  bufferToFile: jest.fn((buffer, name) => ({ buffer, name })),
-}))
+vi.mock('~utils/bufferToFile')
 
 describe('extractMrfPreviousStepResponseValue', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should return the correct CountryRegion enum value if matches', () => {
     const field: FormFieldDto = { fieldType: BasicField.CountryRegion } as any
-    const previousResponse: FieldResponseV3 = { answer: 'Singapore' } as any
+    const previousResponse: FieldResponseV3 = { answer: 'SINGAPORE' } as any
 
     const result = extractMrfPreviousStepResponseValue(field, previousResponse)
 
@@ -35,6 +38,9 @@ describe('extractMrfPreviousStepResponseValue', () => {
   })
 
   it('should return a file object for Attachment if buffer is provided', () => {
+    const mockFile = new File([''], 'file.txt')
+    vi.mocked(bufferToFile).mockReturnValue(mockFile)
+
     const field: FormFieldDto = { fieldType: BasicField.Attachment } as any
     const previousResponse: FieldResponseV3 = {
       answer: { answer: 'file.txt' } as AttachmentFieldResponseV3,
@@ -47,7 +53,7 @@ describe('extractMrfPreviousStepResponseValue', () => {
       buffer,
     )
 
-    expect(result).toEqual({ buffer, name: 'file.txt' })
+    expect(result).toEqual(mockFile)
   })
 
   it('should return undefined for Attachment if buffer is not provided', () => {
