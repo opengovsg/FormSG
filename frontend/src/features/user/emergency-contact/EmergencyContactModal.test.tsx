@@ -3,9 +3,8 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import parsePhoneNumber from 'libphonenumber-js'
 
-import { MOCK_USER } from '~/mocks/msw/handlers/user'
-
 import { enSG as emergencyContactEnSG } from '~/i18n/locales/features/user/emergency-contact'
+import { MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import * as stories from './EmergencyContactModal.stories'
 
