@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiLinkExternal } from 'react-icons/bi'
 import { RemoveScroll } from 'react-remove-scroll'
 import { useNavigate } from 'react-router-dom'
@@ -65,24 +66,24 @@ type goLinkHelperTextType = {
   text: JSX.Element
 }
 
-const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
-  color: 'success.700',
-  icon: <BxsCheckCircle fontSize="1rem" />,
-  text: (
-    <Text>
-      You have successfully claimed this link. This link will appear in your{' '}
-      <Link isExternal href="https://go.gov.sg">
-        Go account
-      </Link>
-    </Text>
-  ),
+const getGoLinkClaimSuccessHelperText = (
+  t: (key: string) => string,
+): goLinkHelperTextType => {
+  return {
+    color: 'success.700',
+    icon: <BxsCheckCircle fontSize="1rem" />,
+    text: (
+      <Text>
+        <Trans
+          i18nKey="features.adminForm.share.goLink.success.text"
+          components={{
+            goAccountLink: <Link isExternal href="https://go.gov.sg" />,
+          }}
+        />
+      </Text>
+    ),
+  }
 }
-
-const GO_VALIDATION_FAILED_HELPER_TEXT =
-  'Short links should only consist of lowercase letters, numbers and hyphens.'
-const GO_ALREADY_EXIST_HELPER_TEXT = 'Short link is already in use.'
-const GO_UNEXPECTED_ERROR_HELPER_TEXT =
-  'Something went wrong. Try refreshing this page. If this issue persists, contact support@form.gov.sg.'
 
 const getGoLinkClaimFailureHelperText = (
   text: string,
@@ -114,6 +115,9 @@ const FormActivationMessage = ({
   onClose: () => void
   formId: string | undefined
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.share',
+  })
   const navigate = useNavigate()
   const handleRedirectToSettings = useCallback(() => {
     onClose()
@@ -125,11 +129,14 @@ const FormActivationMessage = ({
   return (
     <InlineMessage variant="warning" mb="1rem">
       <Box>
-        This form is currently closed to new responses. Activate your form in{' '}
-        <Button p={0} variant="link" onClick={handleRedirectToSettings}>
-          Settings
-        </Button>{' '}
-        to allow new responses or to share it as a template.
+        <Trans
+          i18nKey="features.adminForm.share.formActivation.message"
+          components={{
+            settingsLink: (
+              <Button p={0} variant="link" onClick={handleRedirectToSettings} />
+            ),
+          }}
+        />
       </Box>
     </InlineMessage>
   )
@@ -141,6 +148,9 @@ export const ShareFormModal = ({
   formId,
   isFormPrivate,
 }: ShareFormModalProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.share',
+  })
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -183,8 +193,8 @@ export const ShareFormModal = ({
           padding-bottom: 8px;
         "
       >
-        If the form below is not loaded, you can also fill it in at
-        <a href="${shareLink}">here</a>.
+        ${t('embed.fallbackText')}
+        <a href="${shareLink}">${t('embed.here')}</a>.
       </div>
 
       <!-- Change the width and height values to suit you best -->
@@ -203,10 +213,10 @@ export const ShareFormModal = ({
           padding-top: 5px;
         "
       >
-        Powered by <a href="${window.location.origin}" style="color: #999">Form</a>
+        ${t('embed.poweredBy')} <a href="${window.location.origin}" style="color: #999">Form</a>
       </div>
     `)
-  }, [shareLink])
+  }, [shareLink, t])
 
   const { data: goLinkSuffixData } = useGoLink(formId ?? '')
   const [goLinkSuffixInput, setGoLinkSuffixInput] = useState('')
@@ -217,7 +227,7 @@ export const ShareFormModal = ({
     if (goLinkSuffixData?.goLinkSuffix) {
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
-      setGoLinkHelperText(goLinkClaimSuccessHelperText)
+      setGoLinkHelperText(getGoLinkClaimSuccessHelperText(t))
     }
     return () => {
       // before unmount or after any changes to goLinkSuffix, will reset the states first
@@ -225,7 +235,7 @@ export const ShareFormModal = ({
       setGoLinkSuffixInput('')
       setGoLinkHelperText(undefined)
     }
-  }, [goLinkSuffixData?.goLinkSuffix])
+  }, [goLinkSuffixData?.goLinkSuffix, t])
 
   const { claimGoLinkMutation } = useListShortenerMutations(formId ?? '')
 
@@ -244,20 +254,20 @@ export const ShareFormModal = ({
       })
       setClaimGoLoading(false)
       setGoLinkSaved(true)
-      setGoLinkHelperText(goLinkClaimSuccessHelperText)
+      setGoLinkHelperText(getGoLinkClaimSuccessHelperText(t))
       return
     } catch (err) {
       setClaimGoLoading(false)
 
-      let errMessage = GO_UNEXPECTED_ERROR_HELPER_TEXT
+      let errMessage = t('goLink.errors.unexpected')
 
       if (err instanceof HttpError && err.code === StatusCodes.BAD_REQUEST)
         switch (err.message) {
           case GO_VALIDATION_ERROR_MESSAGE:
-            errMessage = GO_VALIDATION_FAILED_HELPER_TEXT
+            errMessage = t('goLink.errors.validation')
             break
           case GO_ALREADY_EXIST_ERROR_MESSAGE:
-            errMessage = GO_ALREADY_EXIST_HELPER_TEXT
+            errMessage = t('goLink.errors.alreadyExists')
             break
           default:
           // will use unexpected error text
@@ -266,11 +276,11 @@ export const ShareFormModal = ({
       setGoLinkHelperText(getGoLinkClaimFailureHelperText(errMessage))
       return
     }
-  }, [user, claimGoLinkMutation, goLinkSuffixInput])
+  }, [user, claimGoLinkMutation, goLinkSuffixInput, t])
 
   const FormLinkSection = () => (
     <FormControl isReadOnly>
-      <FormLabel isRequired>Form link</FormLabel>
+      <FormLabel isRequired>{t('formLink.label')}</FormLabel>
       <Skeleton isLoaded={!!formId}>
         <Stack direction="row" align="center">
           <InputGroup>
@@ -286,7 +296,7 @@ export const ShareFormModal = ({
                 <CopyButton
                   colorScheme="secondary"
                   stringToCopy={shareLink}
-                  aria-label="Copy respondent form link"
+                  aria-label={t('formLink.copyAriaLabel')}
                 />
               </InputRightElement>
             ) : null}
@@ -297,7 +307,7 @@ export const ShareFormModal = ({
             href={shareLink}
             target="_blank"
             rel="noopener"
-            aria-label="Open link in new tab"
+            aria-label={t('formLink.openAriaLabel')}
           />
         </Stack>
       </Skeleton>
@@ -306,7 +316,7 @@ export const ShareFormModal = ({
 
   const TemplateSection = () => (
     <FormControl isReadOnly>
-      <FormLabel isRequired>Share template</FormLabel>
+      <FormLabel isRequired>{t('template.label')}</FormLabel>
       <Skeleton isLoaded={!!formId}>
         <InputGroup>
           <Input
@@ -322,7 +332,7 @@ export const ShareFormModal = ({
               <CopyButton
                 colorScheme="secondary"
                 stringToCopy={`${templateLink}`}
-                aria-label="Copy link to use this form as a template"
+                aria-label={t('template.copyAriaLabel')}
                 isDisabled={isFormPrivate}
               />
             </InputRightElement>
@@ -334,7 +344,7 @@ export const ShareFormModal = ({
 
   const EmbedSection = () => (
     <FormControl isReadOnly>
-      <FormLabel isRequired>Embed HTML</FormLabel>
+      <FormLabel isRequired>{t('embed.label')}</FormLabel>
       <Skeleton isLoaded={!!formId}>
         <InputGroup>
           <Textarea
@@ -350,7 +360,7 @@ export const ShareFormModal = ({
                 bg="white"
                 colorScheme="secondary"
                 stringToCopy={embeddedHtml}
-                aria-label="Copy HTML code for embedding this form"
+                aria-label={t('embed.copyAriaLabel')}
               />
             </InputRightElement>
           ) : null}
@@ -361,14 +371,14 @@ export const ShareFormModal = ({
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
-      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723 
-          We'll override chakra's <RemoveScroll /> manually as react-remove-scroll give priority to the latest mounted instance 
+      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723
+          We'll override chakra's <RemoveScroll /> manually as react-remove-scroll give priority to the latest mounted instance
       */}
       <RemoveScroll>
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
-          <ModalHeader color="secondary.700">Share form</ModalHeader>
+          <ModalHeader color="secondary.700">{t('modal.header')}</ModalHeader>
           <ModalBody whiteSpace="pre-wrap">
             <Tabs
               pos="relative"
@@ -379,9 +389,9 @@ export const ShareFormModal = ({
             >
               <Box bg="white">
                 <TabList mx="-0.25rem" w="100%">
-                  <Tab>Link</Tab>
-                  <Tab>Template</Tab>
-                  <Tab>Embed</Tab>
+                  <Tab>{t('tabs.link')}</Tab>
+                  <Tab>{t('tabs.template')}</Tab>
+                  <Tab>{t('tabs.embed')}</Tab>
                 </TabList>
                 <Divider w="auto" />
               </Box>
@@ -399,9 +409,9 @@ export const ShareFormModal = ({
                     <FormControl mt="1rem">
                       <FormLabel
                         isRequired
-                        description="Create an official short link and share it over the Internet."
+                        description={t('goLink.description')}
                       >
-                        Go link
+                        {t('goLink.label')}
                       </FormLabel>
                       <Skeleton isLoaded={!!formId}>
                         <Stack direction="row" align="center">
@@ -421,19 +431,19 @@ export const ShareFormModal = ({
                                 <CopyButton
                                   colorScheme="secondary"
                                   stringToCopy={`${goGovBaseUrl}/${goLinkSuffixInput}`}
-                                  aria-label="Copy respondent form link"
+                                  aria-label={t('goLink.copyAriaLabel')}
                                 />
                               </InputRightElement>
                             ) : null}
                           </InputGroup>
                           {goLinkSaved ? null : (
                             <Button
-                              aria-label="Claim Go link"
+                              aria-label={t('goLink.claimAriaLabel')}
                               onClick={handleClaimGoLinkClick}
                               isDisabled={!goLinkSuffixInput}
                               isLoading={claimGoLoading}
                             >
-                              Claim
+                              {t('goLink.claim')}
                             </Button>
                           )}
                         </Stack>

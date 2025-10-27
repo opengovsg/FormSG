@@ -21,6 +21,7 @@ import {
   ResponsesIndividualResponse,
   ResponsesResponsesPage,
   Settings,
+  Share,
   ThankYou,
   Toasts,
   TransferOwnership,
@@ -47,6 +48,7 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
         feedback?: Feedback
+        share?: Share
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents

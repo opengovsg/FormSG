@@ -11,6 +11,7 @@ export {
   type ResponsesIndividualResponse,
   type ResponsesResponsesPage,
   type Settings,
+  type Share,
   type ThankYou,
   type Toasts,
   type Workflow,

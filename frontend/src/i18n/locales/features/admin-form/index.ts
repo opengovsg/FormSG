@@ -8,6 +8,7 @@ export { type ResponsesComponents } from './responses/components'
 export { type ResponsesIndividualResponse } from './responses/individual-response'
 export { type ResponsesResponsesPage } from './responses/responses-page'
 export { type Settings } from './settings'
+export { type Share } from './share'
 export {
   type Fields,
   type HeaderAndInstructions,
