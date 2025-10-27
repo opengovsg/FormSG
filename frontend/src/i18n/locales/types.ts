@@ -5,6 +5,7 @@ import { ValidationConstants } from './constants'
 import {
   App,
   Common,
+  EmergencyContact,
   Feedback,
   Fields,
   HeaderAndInstructions,
@@ -61,6 +62,7 @@ interface Translation {
       workspace?: Workspace
       whatsNew?: WhatsNew
       user?: {
+        emergencyContact: EmergencyContact
         transferOwnership: TransferOwnership
       }
     }

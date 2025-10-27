@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
 
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
-import { REQUIRED_ERROR } from '~constants/validation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -20,9 +20,8 @@ type ContactNumberFormInputs = {
   contact: string
 }
 
-export const INVALID_NUMBER_ERROR_MSG = 'Please enter a valid mobile number'
-
 const useContactNumberInput = () => {
+  const { t } = useTranslation()
   const { user } = useUser()
   const [isSuccess, setIsSuccess] = useState(false)
   const [isVfnBoxOpen, setIsVfnBoxOpen] = useState(false)
@@ -89,14 +88,18 @@ const useContactNumberInput = () => {
 
   const contactNumberValidationRules = useMemo(() => {
     return {
-      required: REQUIRED_ERROR,
+      required: t('features.common.errors.required'),
       validate: {
         validPhoneNumber: (val?: string) => {
-          return !val || isMobilePhoneNumber(val) || INVALID_NUMBER_ERROR_MSG
+          return (
+            !val ||
+            isMobilePhoneNumber(val) ||
+            t('features.user.emergencyContact.contactNumber.errors.invalid')
+          )
         },
       },
     }
-  }, [])
+  }, [t])
 
   const isInputReadOnly = useMemo(
     () => (isValid && isSubmitting) || !user,
@@ -131,6 +134,7 @@ const useContactNumberInput = () => {
 }
 
 export const ContactNumberInput = (): JSX.Element => {
+  const { t } = useTranslation()
   const {
     handleInputChange,
     handleSubmitContact,
@@ -157,7 +161,9 @@ export const ContactNumberInput = (): JSX.Element => {
           isReadOnly={isInputReadOnly}
           isInvalid={!!contactInputError}
         >
-          <FormLabel>Mobile number</FormLabel>
+          <FormLabel>
+            {t('features.user.emergencyContact.contactNumber.label')}
+          </FormLabel>
           <Skeleton isLoaded={!!userId}>
             <Stack direction={{ base: 'column', md: 'row' }} spacing="0.5rem">
               <Controller
@@ -188,7 +194,9 @@ export const ContactNumberInput = (): JSX.Element => {
                     isVerified ? <BiCheck fontSize="1.5rem" /> : undefined
                   }
                 >
-                  {isVerified ? 'Verified' : 'Verify'}
+                  {isVerified
+                    ? t('features.common.verified')
+                    : t('features.common.verify')}
                 </Button>
               </Box>
             </Stack>

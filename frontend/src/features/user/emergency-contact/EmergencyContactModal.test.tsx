@@ -5,7 +5,8 @@ import parsePhoneNumber from 'libphonenumber-js'
 
 import { MOCK_USER } from '~/mocks/msw/handlers/user'
 
-import { INVALID_NUMBER_ERROR_MSG } from './components/ContactNumberInput'
+import { enSG as emergencyContactEnSG } from '~/i18n/locales/features/user/emergency-contact'
+
 import * as stories from './EmergencyContactModal.stories'
 
 const { NoContact, WithContact } = composeStories(stories)
@@ -129,6 +130,8 @@ describe('User has verified contact number', () => {
     await act(async () => userEvent.click(vfnButton))
 
     // Assert
-    expect(screen.getByText(INVALID_NUMBER_ERROR_MSG)).toBeInTheDocument()
+    expect(
+      screen.getByText(emergencyContactEnSG.contactNumber.errors.invalid),
+    ).toBeInTheDocument()
   })
 })
