@@ -4,6 +4,7 @@ import { Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
   App,
+  Collaborator,
   Common,
   EmergencyContact,
   FeatureTour,
@@ -51,6 +52,7 @@ interface Translation {
         feedback?: Feedback
         share?: Share
         featureTour?: FeatureTour
+        collaborator?: Collaborator
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents

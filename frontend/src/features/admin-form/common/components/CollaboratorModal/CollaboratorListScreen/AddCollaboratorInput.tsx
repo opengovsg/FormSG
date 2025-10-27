@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -27,6 +28,9 @@ export type AddCollaboratorInputs = {
 }
 
 const useAddCollaboratorInput = () => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator.addInput',
+  })
   const { handleForwardToTransferOwnership, formId } = useCollaboratorWizard()
   const { isLoading, collaborators, form, isFormAdmin } =
     useAdminFormCollaborators(formId)
@@ -76,23 +80,23 @@ const useAddCollaboratorInput = () => {
   const validationRules: RegisterOptions<AddCollaboratorInputs, 'email'> =
     useMemo(() => {
       return {
-        required: 'Collaborator email is required',
+        required: t('errors.required'),
         validate: {
           validEmail: (value: string) =>
-            !value || isEmail(value) || 'Please enter a valid email',
+            !value || isEmail(value) || t('errors.invalidEmail'),
           duplicateEmail: (value: string) =>
             !value ||
             !collaborators?.find(
               (c) => c.email.toLowerCase() === value.toLowerCase(),
             ) ||
-            'This user is an existing collaborator. Edit role below.',
+            t('errors.duplicate'),
           ownerEmail: (value: string) =>
             !value ||
             form?.admin.email?.toLowerCase() !== value.toLowerCase() ||
-            'You cannot add the form owner as a collaborator',
+            t('errors.ownerEmail'),
         },
       }
-    }, [collaborators, form?.admin.email])
+    }, [collaborators, form?.admin.email, t])
 
   const isMobile = useIsMobile()
 
@@ -114,6 +118,9 @@ const useAddCollaboratorInput = () => {
 }
 
 export const AddCollaboratorInput = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator.addInput',
+  })
   const {
     formMethods: {
       control,
@@ -132,11 +139,8 @@ export const AddCollaboratorInput = (): JSX.Element => {
   return (
     <form noValidate onSubmit={handleInputSubmission}>
       <FormControl isInvalid={!isEmpty(errors)} isReadOnly={isMutationLoading}>
-        <FormLabel
-          isRequired
-          description="Share your secret key with users who need to access response data"
-        >
-          Add collaborators or transfer form ownership
+        <FormLabel isRequired description={t('description')}>
+          {t('label')}
         </FormLabel>
         <Skeleton isLoaded={!isQueryLoading}>
           <Stack direction={{ base: 'column', md: 'row' }}>
@@ -144,7 +148,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
               isDisabled={isQueryLoading}
               type="email"
               {...register('email', validationRules)}
-              placeholder="me@example.com"
+              placeholder={t('email.placeholder')}
             />
             <Controller
               name="role"
@@ -172,9 +176,7 @@ export const AddCollaboratorInput = (): JSX.Element => {
         mt="1rem"
         type="submit"
       >
-        {isTransferOwnershipSelected
-          ? 'Transfer form ownership'
-          : 'Add collaborator'}
+        {isTransferOwnershipSelected ? t('button.transfer') : t('button.add')}
       </Button>
     </form>
   )

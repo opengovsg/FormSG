@@ -1,4 +1,5 @@
 export {
+  type Collaborator,
   type FeatureTour,
   type Feedback,
   type Fields,

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { Spacer, Stack, StackDivider } from '@chakra-ui/react'
 
@@ -23,20 +24,26 @@ type CollaboratorRowMeta = {
 }
 
 const RemoveCollaboratorButton = (
-  props: Pick<IconButtonProps, 'isDisabled' | 'isLoading' | 'onClick'>,
+  props: Pick<IconButtonProps, 'isDisabled' | 'isLoading' | 'onClick'> & {
+    ariaLabel: string
+  },
 ) => {
+  const { ariaLabel, ...rest } = props
   return (
     <IconButton
       icon={<BiTrash />}
       variant="clear"
       colorScheme="danger"
-      aria-label="Remove collaborator"
-      {...props}
+      aria-label={ariaLabel}
+      {...rest}
     />
   )
 }
 
 export const CollaboratorList = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator',
+  })
   const isMobile = useIsMobile()
   // Admin form data required for checking for duplicate emails.
   const {
@@ -166,6 +173,7 @@ export const CollaboratorList = (): JSX.Element => {
                   onChange={handleUpdateRole(row)}
                 />
                 <RemoveCollaboratorButton
+                  ariaLabel={t('list.removeButton.ariaLabel')}
                   isLoading={
                     areMutationsLoading &&
                     mutateRemoveCollaborator.variables?.permissionToRemove
@@ -179,6 +187,7 @@ export const CollaboratorList = (): JSX.Element => {
               <ViewOnlyPermission role={row.role}>
                 {isCurrentUser ? (
                   <RemoveCollaboratorButton
+                    ariaLabel={t('list.removeButton.ariaLabel')}
                     isDisabled={areMutationsLoading}
                     onClick={handleForwardToRemoveSelf}
                   />
