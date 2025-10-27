@@ -31,7 +31,7 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
-import { FEATURE_TOUR } from '../../featureTour/constants'
+import { FEATURE_TOUR_IDS } from '../../featureTour/constants'
 
 import { DrawerTabIcon } from './DrawerTabIcon'
 
@@ -116,7 +116,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}
-          id={FEATURE_TOUR[0].id}
+          id={FEATURE_TOUR_IDS[0].id}
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.headerAndInstructions.title')}
@@ -124,7 +124,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
-          id={FEATURE_TOUR[1].id}
+          id={FEATURE_TOUR_IDS[1].id}
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.logic.addLogicBtn')}
@@ -132,7 +132,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
-          id={FEATURE_TOUR[2].id}
+          id={FEATURE_TOUR_IDS[2].id}
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
@@ -140,7 +140,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
-          id={FEATURE_TOUR[3].id}
+          id={FEATURE_TOUR_IDS[3].id}
         />
         {data?.responseMode === FormResponseMode.Multirespondent && (
           <>

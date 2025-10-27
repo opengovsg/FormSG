@@ -1,43 +1,44 @@
 import { Step } from 'react-joyride'
 
+import i18n from '~/i18n/i18n'
+
 interface FeatureTourStepAttributes {
   id: string
-  title: string
-  content: string
+  stepIndex: number
 }
 
-export const FEATURE_TOUR: FeatureTourStepAttributes[] = [
+export const FEATURE_TOUR_IDS: FeatureTourStepAttributes[] = [
   {
     id: 'feature_tour_first_step',
-    title: 'Add fields',
-    content: 'Add fields to your form by dragging and dropping them.',
+    stepIndex: 0,
   },
   {
     id: 'feature_tour_second_step',
-    title: 'Edit header and instructions',
-    content:
-      'Change your agency logo, theme colours, layout and add instructions to your form.',
+    stepIndex: 1,
   },
   {
     id: 'feature_tour_third_step',
-    title: 'Add logic',
-    content: 'Decide what fields or sections a user sees based on their input.',
+    stepIndex: 2,
   },
   {
     id: 'feature_tour_fourth_step',
-    title: 'Edit Thank you page',
-    content:
-      'Customise your thank you message and add follow-up instructions that users can see after they submit your form.',
+    stepIndex: 3,
   },
 ]
 
-export const FEATURE_STEPS: Step[] = FEATURE_TOUR.map(
-  ({ id, title, content }) => {
+export const getFeatureSteps = (): Step[] => {
+  return FEATURE_TOUR_IDS.map(({ id, stepIndex }) => {
     return {
       target: `#${id}`,
-      title: title,
-      content: content,
+      title: i18n.t(
+        `features.adminForm.featureTour.steps.${stepIndex}.title`,
+      ) as string,
+      content: i18n.t(
+        `features.adminForm.featureTour.steps.${stepIndex}.content`,
+      ) as string,
       disableBeacon: true,
     }
-  },
-)
+  })
+}
+
+export const FEATURE_STEPS_COUNT = FEATURE_TOUR_IDS.length

@@ -2,6 +2,7 @@ import { enSG as responsesCharts } from './responses/charts'
 import { enSG as responsesComponents } from './responses/components'
 import { enSG as responsesIndividualResponse } from './responses/individual-response'
 import { enSG as responsesResponsesPage } from './responses/responses-page'
+import { enSG as featureTour } from './feature-tour'
 import { enSG as feedback } from './feedback'
 import { enSG as meta } from './meta'
 import { enSG as modals } from './modals'
@@ -26,4 +27,5 @@ export const enSG = {
   settings,
   feedback,
   share,
+  featureTour,
 }

@@ -1,4 +1,5 @@
 export {
+  type FeatureTour,
   type Feedback,
   type Fields,
   type HeaderAndInstructions,

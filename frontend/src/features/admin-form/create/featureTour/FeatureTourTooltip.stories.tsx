@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator } from '~utils/storybook'
 import { ButtonProps } from '~components/Button'
 
-import { FEATURE_STEPS } from './constants'
+import { getFeatureSteps } from './constants'
 import { FeatureTourContext } from './FeatureTourContext'
 import {
   FeatureTourStep,
@@ -23,9 +23,10 @@ export default {
 
 const Template: StoryFn<FeatureTourTooltipProps> = (args) => {
   const [featureStep, setFeatureStep] = useState<number>(args.index ?? 0)
+  const featureSteps = useMemo(() => getFeatureSteps(), [])
 
   const handleNextClick = () => {
-    featureStep === FEATURE_STEPS.length - 1
+    featureStep === featureSteps.length - 1
       ? setFeatureStep(featureStep)
       : setFeatureStep(featureStep + 1)
   }
@@ -34,13 +35,13 @@ const Template: StoryFn<FeatureTourTooltipProps> = (args) => {
     featureStep: number,
   ): FeatureTourStep => {
     return {
-      title: FEATURE_STEPS[featureStep].title,
-      content: FEATURE_STEPS[featureStep].content,
+      title: featureSteps[featureStep].title,
+      content: featureSteps[featureStep].content,
     }
   }
 
   const featureTourTooltipContent = getFeatureTourTooltipContent(featureStep)
-  const isLastStep = args.isLastStep ?? featureStep === FEATURE_STEPS.length - 1
+  const isLastStep = args.isLastStep ?? featureStep === featureSteps.length - 1
   const mockPrimaryProps: ButtonProps = {
     onClick: handleNextClick,
   }
@@ -67,6 +68,6 @@ export const BasicUsage = Template.bind({})
 
 export const LastFeatureStep = Template.bind({})
 LastFeatureStep.args = {
-  index: FEATURE_STEPS.length - 1,
+  index: getFeatureSteps().length - 1,
   isLastStep: true,
 }

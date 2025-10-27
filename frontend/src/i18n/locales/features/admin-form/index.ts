@@ -1,4 +1,5 @@
 export * from './en-sg'
+export { type FeatureTour } from './feature-tour'
 export { type Feedback } from './feedback'
 export { type Meta } from './meta'
 export { type Modals } from './modals'

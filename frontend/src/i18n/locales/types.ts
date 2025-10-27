@@ -6,6 +6,7 @@ import {
   App,
   Common,
   EmergencyContact,
+  FeatureTour,
   Feedback,
   Fields,
   HeaderAndInstructions,
@@ -49,6 +50,7 @@ interface Translation {
         settings?: Settings
         feedback?: Feedback
         share?: Share
+        featureTour?: FeatureTour
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents

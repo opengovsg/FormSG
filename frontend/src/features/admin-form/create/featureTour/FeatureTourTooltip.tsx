@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiBulb, BiRightArrowAlt } from 'react-icons/bi'
 import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
@@ -5,7 +6,7 @@ import Badge from '~components/Badge'
 import Button, { ButtonProps } from '~components/Button'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import { FEATURE_STEPS } from './constants'
+import { FEATURE_STEPS_COUNT } from './constants'
 import { useFeatureTourContext } from './FeatureTourContext'
 
 export interface FeatureTourStep {
@@ -30,6 +31,9 @@ export const FeatureTourTooltip = ({
   isLastStep,
   index,
 }: FeatureTourTooltipProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.featureTour',
+  })
   const { paginationCallback } = useFeatureTourContext()
   return (
     <Box
@@ -58,7 +62,7 @@ export const FeatureTourTooltip = ({
         width="fit-content"
       >
         <Icon as={BiBulb} mr="0.25rem" fontSize="1rem" />
-        <Text textStyle="caption-1">Tip</Text>
+        <Text textStyle="caption-1">{t('tooltip.badge')}</Text>
       </Badge>
       <Text textStyle="subhead-1" color="secondary.500" marginTop="1.25rem">
         {step.title}
@@ -73,17 +77,17 @@ export const FeatureTourTooltip = ({
         justifyContent="space-between"
       >
         <ProgressIndicator
-          numIndicators={FEATURE_STEPS.length}
+          numIndicators={FEATURE_STEPS_COUNT}
           currActiveIdx={index}
           onClick={paginationCallback}
         />
         {isLastStep ? (
-          <Button {...primaryProps} title="Done">
-            Done
+          <Button {...primaryProps} title={t('tooltip.done')}>
+            {t('tooltip.done')}
           </Button>
         ) : (
           <Button rightIcon={<BiRightArrowAlt />} {...primaryProps}>
-            Next
+            {t('tooltip.next')}
           </Button>
         )}
       </Flex>
