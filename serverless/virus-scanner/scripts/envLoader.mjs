@@ -22,12 +22,13 @@ const SHORT_ENV_MAP = {
   vapt: 'vapt',
 }
 
+const IAC_MIGRATED_SHORT_ENVS = ['uat', 'prod', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']
 /**
  * Returns true if the environment is an IaC migrated environment.
  * IaC migrated environments use new SSM keys and format that are different from the legacy ones.
  */
-const isIacMigratedSsmKeys = (env) => {
-  return env === SHORT_ENV_MAP['stg-alt3']
+const isIacMigratedSsmKeys = (shortEnv) => {
+  return IAC_MIGRATED_SHORT_ENVS.includes(shortEnv)
 }
 
 const PARAM_KEYS = [
@@ -44,7 +45,7 @@ const getParamString = async (env) => {
   if (isIacMigratedSsmKeys(env)) {
     console.log('Running on IaC migrated environment...')
     const PARAM_KEY_PREFIX = `/virus-scanner/${SHORT_ENV_MAP[env]}/`
-    
+
     const keyValuePromises = PARAM_KEYS.map(async key => {
       console.log(`Fetching ${PARAM_KEY_PREFIX}${key} from SSM...`)
       const res = await client.send(

@@ -1,4 +1,4 @@
-name: Deploy Legacy Virus Scanner to production
+name: Deploy Legacy Virus Scanner to stg-alt2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,7 +11,7 @@ permissions:
 on:
   push:
     branches:
-      - release-al2
+      - stg-alt2
   # For legacy virus scanner: schedule builds for 12:00AM GMT+8 everyday to get latest ClamAV virus definitions
   schedule:
     - cron: '0 16 * * *'
@@ -21,9 +21,9 @@ jobs:
     name: Deploy Scanner
     uses: ./.github/workflows/aws-deploy-scanner-legacy.yml
     with:
-      checkoutBranch: 'release-al2'
-      gha-environment: 'release-al2'
-      environment: 'production'
-      provisionedConcurrency: 10
+      checkoutBranch: 'stg-alt2'
+      gha-environment: 'stg-alt2'
+      environment: 'stg-alt2'
+      provisionedConcurrency: 1
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
