@@ -20,7 +20,6 @@ import {
   CREATE_FIELD_PERSONAL_DROP_ID,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableBasicFieldListOption } from '../FieldListOption'
@@ -29,7 +28,6 @@ import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
 
 export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
-  const { user } = useUser()
   const { isLoading } = useCreateTabForm()
 
   const isSignatureFieldEnabled = useFeatureIsOn(featureFlags.signatureField)
