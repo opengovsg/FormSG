@@ -180,7 +180,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
                     const shouldDisableField = isLoading
 
                     if (
-                      fieldType == BasicField.Signature &&
+                      fieldType === BasicField.Signature &&
                       !isSignatureFieldEnabled
                     )
                       return null
