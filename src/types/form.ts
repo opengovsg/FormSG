@@ -97,20 +97,36 @@ export type IForm = Merge<
 /**
  * Typing for duplicate form with specific keys.
  */
-export type PickDuplicateForm = Pick<
-  IFormSchema,
-  | 'form_fields'
-  | 'form_logics'
-  | 'startPage'
-  | 'endPage'
-  | 'authType'
-  | 'isSubmitterIdCollectionEnabled'
-  | 'isSingleSubmission'
-  | 'isSaveDraftEnabled'
-  | 'inactiveMessage'
-  | 'submissionLimit'
-  | 'responseMode'
->
+export type PickDuplicateForm =
+  | Pick<
+      IFormSchema,
+      | 'form_fields'
+      | 'form_logics'
+      | 'startPage'
+      | 'endPage'
+      | 'authType'
+      | 'isSubmitterIdCollectionEnabled'
+      | 'isSingleSubmission'
+      | 'isSaveDraftEnabled'
+      | 'inactiveMessage'
+      | 'submissionLimit'
+      | 'responseMode'
+    >
+  | Pick<
+      IMultirespondentFormSchema,
+      | 'form_fields'
+      | 'form_logics'
+      | 'startPage'
+      | 'endPage'
+      | 'authType'
+      | 'isSubmitterIdCollectionEnabled'
+      | 'isSingleSubmission'
+      | 'isSaveDraftEnabled'
+      | 'inactiveMessage'
+      | 'submissionLimit'
+      | 'responseMode'
+      | 'workflow'
+    >
 
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   form_fields?: FormFieldSchema[]
@@ -313,6 +329,8 @@ interface IFormBaseDocument<T extends IFormSchema> {
 }
 
 export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
+export type IMultirespondentFormDocument =
+  IFormBaseDocument<IMultirespondentFormSchema> & IMultirespondentFormSchema
 
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser

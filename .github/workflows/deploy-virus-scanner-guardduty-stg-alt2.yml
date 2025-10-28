@@ -1,4 +1,4 @@
-name: Deploy Virus Scanner GuardDuty to stg-alt
+name: Deploy Virus Scanner GuardDuty to stg-alt2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,16 +11,16 @@ permissions:
 on:
   push:
     branches:
-      - stg-alt
+      - stg-alt2
 
 jobs:
   deploy-scanner-guardduty:
     name: Deploy Scanner GuardDuty
     uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
     with:
-      checkoutBranch: 'stg-alt'
-      gha-environment: 'stg-alt'
-      environment: 'stg-alt'
+      checkoutBranch: 'stg-alt2'
+      gha-environment: 'stg-alt2'
+      environment: 'stg-alt2'
       provisionedConcurrency: 1
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

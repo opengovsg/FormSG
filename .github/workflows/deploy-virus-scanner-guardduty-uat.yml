@@ -1,4 +1,4 @@
-name: Deploy Virus Scanner GuardDuty to new OGP AWS production account
+name: Deploy Virus Scanner GuardDuty to uat
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

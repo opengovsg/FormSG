@@ -5,7 +5,7 @@ import { errAsync, okAsync } from 'neverthrow'
 import {
   ErrorDto,
   FormResponseMode,
-  MultirespondentSubmissionDto,
+  PublicMultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
@@ -58,7 +58,7 @@ import {
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
+import { createPublicMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -140,7 +140,6 @@ const submitMultirespondentForm = async (
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
     respondentEmails: req.formsg.respondentEmails,
-    encryptedWebhookContent: req.formsg.encryptedWebhookContent,
   })
 }
 
@@ -237,7 +236,6 @@ const updateMultirespondentSubmission = async (
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
     respondentEmails: req.formsg.respondentEmails,
-    encryptedWebhookContent: req.formsg.encryptedWebhookContent,
   })
 }
 
@@ -274,7 +272,7 @@ export const handleUpdateMultirespondentSubmission = [
 /**
  * Handler for GET /forms/:formId/submissions/:submissionId
  * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
+ * @returns 400 when form is not an multirespondent mode form
  * @returns 404 when submissionId cannot be found in the database
  * @returns 404 when form cannot be found
  * @returns 410 when form is archived
@@ -282,7 +280,7 @@ export const handleUpdateMultirespondentSubmission = [
  */
 export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   { formId: string; submissionId: string },
-  MultirespondentSubmissionDto | ErrorDto
+  PublicMultirespondentSubmissionDto | ErrorDto
 > = async (req, res) => {
   const { formId, submissionId } = req.params
 
@@ -321,7 +319,10 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createMultirespondentSubmissionDto(submissionData, presignedUrls),
+          createPublicMultirespondentSubmissionDto(
+            submissionData,
+            presignedUrls,
+          ),
         )
       })
       .map((responseData) => {

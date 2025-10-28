@@ -2,7 +2,6 @@ import moment from 'moment-timezone'
 import Stripe from 'stripe'
 
 import {
-  BasicField,
   FormPaymentsField,
   PaymentChannel,
   PaymentFieldsDto,
@@ -14,7 +13,6 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
@@ -24,7 +22,6 @@ import {
 } from '../../../../types'
 import {
   EncryptFormFieldResponse,
-  ParsedClearAttachmentWebhookResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
@@ -186,30 +183,4 @@ export const getStripePaymentMethod = (
       enabled: true,
     },
   }
-}
-
-export const prepareWebhookResponseContent = (
-  input: Array<
-    | ProcessedFieldResponse
-    | ParsedClearFormFieldResponse
-    | EncryptFormFieldResponse
-    | ParsedClearAttachmentWebhookResponse
-  >,
-): Array<
-  | ProcessedFieldResponse
-  | ParsedClearFormFieldResponse
-  | EncryptFormFieldResponse
-  | ParsedClearAttachmentWebhookResponse
-> => {
-  return input.map((response) => {
-    if (
-      response.fieldType === BasicField.Signature &&
-      response.answerArray.length > 0
-    )
-      return {
-        ...response,
-        answerArray: [SIGNATURE_CAPTURED_STRING],
-      }
-    return response
-  })
 }

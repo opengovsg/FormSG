@@ -1,5 +1,6 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
+import { omit } from 'lodash'
 import moment from 'moment-timezone'
 import { ok } from 'neverthrow'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
@@ -13,6 +14,7 @@ import {
   EmailResponseV3,
   FieldResponsesV3,
   FormFieldDto,
+  FormWorkflowStepConditional,
   FormWorkflowStepDto,
   LongTextResponseV3,
   NumberResponseV3,
@@ -23,7 +25,6 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from 'shared/types'
-import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
 import {
   FormFieldSchema,
@@ -39,13 +40,12 @@ import {
   MultirespondentSubmissionData,
 } from 'src/types'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../../types/api'
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
+  createPublicMultirespondentSubmissionDto,
   getQuestionTitleAnswerString,
-  prepareWebhookResponseContentV3,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -57,6 +57,152 @@ describe('multirespondent-submission.utils', () => {
     emails: ['example@example.com'],
     edit: [],
   }
+
+  describe('createPublicMultirespondentSubmissionDto', () => {
+    const getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap = () => {
+      return Object.values(BasicField).map((fieldType) => {
+        if (fieldType === BasicField.Dropdown) {
+          return generateDefaultField(BasicField.Dropdown, {
+            optionsToRecipientsMap: {
+              'Option 1': ['recipient1@example.com', 'recipient2@example.com'],
+              'Option 2': ['recipient3@example.com'],
+            },
+          })
+        }
+        return generateDefaultField(fieldType)
+      })
+    }
+
+    it('should create a public multirespondent submission DTO sucessfully with workflow and form fields stripped', () => {
+      // Arrange
+      const formFields =
+        getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap()
+      const dropdownField = formFields.find(
+        (field) => field.fieldType === BasicField.Dropdown,
+      )
+      const emailField = formFields.find(
+        (field) => field.fieldType === BasicField.Email,
+      )
+      const yesNoField = formFields.find(
+        (field) => field.fieldType === BasicField.YesNo,
+      )
+      const shortTextField = formFields.find(
+        (field) => field.fieldType === BasicField.ShortText,
+      )
+      const workflow = [
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Static,
+          emails: [], // Step 1 does not have emails, since anyone with form link is the step
+          edit: [],
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Static,
+          emails: ['test@open.gov.sg', 'test2@open.gov.sg'],
+          edit: [emailField?.id],
+          step_name: 'Static step where emails should be stripped',
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Dynamic,
+          field: emailField?._id,
+          edit: [dropdownField?._id],
+        },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: dropdownField?._id,
+          edit: [yesNoField?._id, shortTextField?._id],
+          approval_field: yesNoField?._id,
+        } as FormWorkflowStepConditional,
+      ]
+      const submittedSteps = [
+        {
+          isApproval: false,
+          submittedAt: '2024-01-01T00:00:00.000Z',
+        },
+        {
+          isApproval: false,
+          submittedAt: '2024-01-02T00:00:00.000Z',
+        },
+      ]
+      const createdDate = new Date()
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: createdDate,
+        submissionPublicKey: 'some public key',
+        encryptedSubmissionSecretKey: 'some encrypted secret key',
+        encryptedContent: 'some encrypted content',
+        workflow,
+        workflowStep: 1,
+        form_fields: formFields,
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        submittedSteps,
+      } as unknown as MultirespondentSubmissionData
+      const attachmentPresignedUrls = {
+        someSubmissionId: 'some presigned url',
+      }
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        attachmentPresignedUrls,
+      )
+
+      // Assert
+      expect(actual).toEqual({
+        refNo: submissionData._id,
+        submissionTime: moment(submissionData.created)
+          .tz('Asia/Singapore')
+          .format('ddd, D MMM YYYY, hh:mm:ss A'),
+        submissionPublicKey: submissionData.submissionPublicKey,
+        encryptedContent: submissionData.encryptedContent,
+        encryptedSubmissionSecretKey:
+          submissionData.encryptedSubmissionSecretKey,
+        attachmentMetadata: attachmentPresignedUrls,
+        submissionType: SubmissionType.Multirespondent,
+        workflow: submissionData.workflow.map((step) =>
+          step.workflow_type === WorkflowType.Static
+            ? omit(step, 'emails')
+            : step,
+        ),
+        form_fields: submissionData.form_fields.map((field) =>
+          field.fieldType === BasicField.Dropdown
+            ? omit(field, 'optionsToRecipientsMap')
+            : field,
+        ),
+        form_logics: submissionData.form_logics,
+        version: submissionData.version,
+        workflowStep: submissionData.workflowStep,
+        mrfVersion: submissionData.mrfVersion,
+        mrfMeta: {
+          workflowCurrentStepNumber: submittedSteps.length,
+          workflowNumTotalSteps: 4,
+          workflowStatus: WorkflowStatus.PENDING,
+          lastSubmittedAt:
+            submittedSteps[submittedSteps.length - 1].submittedAt,
+          hasNextStepRecipientEmails: false,
+        },
+      })
+
+      const dropdownFf = actual.form_fields.find(
+        (field) => field.fieldType === BasicField.Dropdown,
+      )
+      expect(dropdownFf).toBeDefined()
+      expect(dropdownFf).not.toContainKey('optionsToRecipientsMap')
+
+      const staticWorkflowStep = actual.workflow.find(
+        (step) => step.workflow_type === WorkflowType.Static,
+      )
+      expect(staticWorkflowStep).toBeDefined()
+      expect(staticWorkflowStep).not.toContainKey('emails')
+    })
+  })
 
   describe('createMultirespondentSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
@@ -705,51 +851,5 @@ describe('multirespondent-submission.utils', () => {
       responses: null as unknown as FieldResponsesV3,
     })
     expect(nullResult).toEqual([])
-  })
-
-  it('should return desired webhook response value changes', () => {
-    const mockResponses: Record<string, ParsedClearFormFieldResponseV3> = {
-      ['mockId1']: {
-        fieldType: BasicField.Dropdown,
-        answer: 'Option C',
-      },
-      ['mockId2']: {
-        fieldType: BasicField.Signature,
-        answer: {
-          type: 'draw',
-          value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
-        },
-      },
-    }
-
-    const webhookResponses = prepareWebhookResponseContentV3(mockResponses)
-
-    expect(webhookResponses['mockId1']).toEqual(mockResponses['mockId1'])
-    expect(webhookResponses['mockId2'].answer).toEqual(
-      expect.arrayContaining([SIGNATURE_CAPTURED_STRING]),
-    )
-
-    const mockResponsesEmptySignature: Record<
-      string,
-      ParsedClearFormFieldResponseV3
-    > = {
-      ['mockId1']: {
-        fieldType: BasicField.Dropdown,
-        answer: 'Option C',
-      },
-      ['mockId2']: {
-        fieldType: BasicField.Signature,
-        answer: {
-          type: 'draw',
-          value: [],
-        },
-      },
-    }
-    expect(mockResponsesEmptySignature['mockId1']).toEqual(
-      mockResponsesEmptySignature['mockId1'],
-    )
-    expect(mockResponsesEmptySignature['mockId2'].answer).toEqual(
-      expect.arrayContaining([]),
-    )
   })
 })

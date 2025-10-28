@@ -6,6 +6,7 @@ import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
+  MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from 'shared/constants/form'
 import {
@@ -20,6 +21,8 @@ import {
   FormResponseMode,
   FormStartPage,
   FormStatus,
+  FormWorkflowStepConditional,
+  FormWorkflowStepDto,
   LogicDto,
   LogicType,
   PaymentChannel,
@@ -29,6 +32,7 @@ import {
   WorkflowType,
 } from 'shared/types'
 
+import { aws } from 'src/app/config/config'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -2557,6 +2561,56 @@ describe('Form Model', () => {
     })
 
     describe('getPublicView', () => {
+      const getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap = () => {
+        return Object.values(BasicField).map((fieldType) => {
+          if (fieldType === BasicField.Dropdown) {
+            return generateDefaultField(BasicField.Dropdown, {
+              optionsToRecipientsMap: {
+                'Option 1': [
+                  'recipient1@example.com',
+                  'recipient2@example.com',
+                ],
+                'Option 2': ['recipient3@example.com'],
+              },
+            })
+          }
+          if (fieldType === BasicField.Image) {
+            return generateDefaultField(fieldType, {
+              url: `${aws.imageBucketUrl}/test-image.jpg`,
+            })
+          }
+          return generateDefaultField(fieldType)
+        })
+      }
+
+      it('should correctly strip optionsToRecipientMap for dropdown field for email mode form', async () => {
+        // Arrange
+        const emailFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Email,
+          title: 'mock email form',
+          emails: [populatedAdmin.email],
+          form_fields:
+            getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap(),
+        })
+
+        // Act
+        const actual = emailFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected = pick(
+          emailFormWithAllFieldTypes.toObject(),
+          EMAIL_PUBLIC_FORM_FIELDS,
+        )
+        expected.form_fields = expected.form_fields?.map((field) => {
+          if (field.fieldType === BasicField.Dropdown) {
+            return omit(field, 'optionsToRecipientsMap')
+          }
+          return field
+        })
+        expect(actual).toEqual(expected)
+      })
+
       it('should correctly return public view of unpopulated email mode form', async () => {
         // Arrange
         const emailForm = await Form.create({
@@ -2570,7 +2624,9 @@ describe('Form Model', () => {
         const actual = emailForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(emailForm, EMAIL_PUBLIC_FORM_FIELDS))
+        expect(actual).toEqual(
+          pick(emailForm.toObject(), EMAIL_PUBLIC_FORM_FIELDS),
+        )
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -2603,6 +2659,34 @@ describe('Form Model', () => {
         )
       })
 
+      it('should correctly strip optionsToRecipientMap for dropdown field for encrypt mode form', async () => {
+        // Arrange
+        const encryptedFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Encrypt,
+          title: 'mock encrypt form',
+          publicKey: 'mock public key',
+          form_fields:
+            getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap(),
+        })
+
+        // Act
+        const actual = encryptedFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected = pick(
+          encryptedFormWithAllFieldTypes.toObject(),
+          STORAGE_PUBLIC_FORM_FIELDS,
+        )
+        expected.form_fields = expected.form_fields?.map((field) => {
+          if (field.fieldType === BasicField.Dropdown) {
+            return omit(field, 'optionsToRecipientsMap')
+          }
+          return field
+        })
+        expect(actual).toEqual(expected)
+      })
+
       it('should correctly return public view of unpopulated encrypt mode form', async () => {
         // Arrange
         const encryptForm = await Form.create({
@@ -2616,7 +2700,9 @@ describe('Form Model', () => {
         const actual = encryptForm.getPublicView()
 
         // Assert
-        expect(actual).toEqual(pick(encryptForm, STORAGE_PUBLIC_FORM_FIELDS))
+        expect(actual).toEqual(
+          pick(encryptForm.toObject(), STORAGE_PUBLIC_FORM_FIELDS),
+        )
         // Admin should be plain admin id since form is not populated.
         expect(actual.admin).toBeInstanceOf(ObjectId)
       })
@@ -2641,6 +2727,142 @@ describe('Form Model', () => {
         expect(JSON.stringify(actual)).toEqual(
           JSON.stringify({
             ...pick(populatedEncryptForm, STORAGE_PUBLIC_FORM_FIELDS),
+            // Admin should only contain public view of agency since agency is populated.
+            admin: {
+              agency: expectedPublicAgencyView,
+            },
+          }),
+        )
+      })
+
+      it('should correctly strip emails in static workflow step and strip optionsToRecipientMap for dropdown field for multirespondent mode form', async () => {
+        // Arrange
+        const formFields =
+          getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap()
+        const dropdownField = formFields.find(
+          (field) => field.fieldType === BasicField.Dropdown,
+        )
+        const emailField = formFields.find(
+          (field) => field.fieldType === BasicField.Email,
+        )
+        const yesNoField = formFields.find(
+          (field) => field.fieldType === BasicField.YesNo,
+        )
+        const shortTextField = formFields.find(
+          (field) => field.fieldType === BasicField.ShortText,
+        )
+
+        const multirespondentFormWithAllFieldTypes = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form',
+          publicKey: 'mock public key',
+          form_fields: formFields,
+          workflow: [
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Static,
+              emails: [], // Step 1 does not have emails, since anyone with form link is the step
+              edit: [],
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Static,
+              emails: ['test@open.gov.sg', 'test2@open.gov.sg'],
+              edit: [emailField?.id],
+              step_name: 'Static step where emails should be stripped',
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Dynamic,
+              field: emailField?._id,
+              edit: [dropdownField?._id],
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Conditional,
+              conditional_field: dropdownField?._id,
+              edit: [yesNoField?._id, shortTextField?._id],
+              approval_field: yesNoField?._id,
+            } as FormWorkflowStepConditional,
+          ],
+        })
+
+        // Act
+        const actual = multirespondentFormWithAllFieldTypes?.getPublicView()
+
+        // Assert
+        const expected: any = pick(
+          multirespondentFormWithAllFieldTypes.toObject(),
+          MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+        )
+        expected.workflow = expected.workflow?.map(
+          (step: FormWorkflowStepDto) => {
+            if (step.workflow_type === WorkflowType.Static) {
+              return omit(step, 'emails')
+            }
+            return step
+          },
+        )
+        expected.form_fields = expected.form_fields?.map(
+          (field: FormFieldDto) => {
+            if (field.fieldType === BasicField.Dropdown) {
+              return omit(field, 'optionsToRecipientsMap')
+            }
+            return field
+          },
+        )
+        expect(actual).toEqual(expected)
+      })
+
+      it('should correctly return public view of unpopulated multirespondent mode form', async () => {
+        // Arrange
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form',
+          publicKey: 'mock public key',
+        })
+
+        // Act
+        const actual = multirespondentForm.getPublicView()
+
+        // Assert
+        expect(actual).toEqual(
+          pick(
+            multirespondentForm.toObject(),
+            MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+          ),
+        )
+        // Admin should be plain admin id since form is not populated.
+        expect(actual.admin).toBeInstanceOf(ObjectId)
+      })
+
+      it('should correctly return public view of populated multirespondent mode form', async () => {
+        // Arrange
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form electric boogaloo',
+          publicKey: 'some public key again',
+        })
+        const populatedMultirespondentForm = await Form.getFullFormById(
+          multirespondentForm._id,
+        )
+        expect(populatedMultirespondentForm).not.toBeNull()
+
+        // Act
+        const actual = populatedMultirespondentForm?.getPublicView()
+
+        // Assert
+        const expectedPublicAgencyView = populatedAdmin.agency.getPublicView()
+
+        expect(JSON.stringify(actual)).toEqual(
+          JSON.stringify({
+            ...pick(
+              populatedMultirespondentForm,
+              MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+            ),
             // Admin should only contain public view of agency since agency is populated.
             admin: {
               agency: expectedPublicAgencyView,
@@ -2830,6 +3052,118 @@ describe('Form Model', () => {
         )
 
         expect(duplicatedForm).not.toHaveProperty('whitelistedSubmitterIds')
+        expect(duplicatedForm.workflow).toBeUndefined()
+      })
+
+      describe('for multirespondent form', () => {
+        const MOCK_EMAIL_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.Email,
+        }
+        const MOCK_DROPDOWN_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.Dropdown,
+          optionsToRecipientsMap: {
+            'Option 1': ['initial_option1@example.com'],
+          },
+        }
+        const MOCK_YES_NO_FIELD = {
+          _id: new ObjectId().toString(),
+          fieldType: BasicField.YesNo,
+        }
+        const MOCK_FORM_FIELDS = [
+          MOCK_EMAIL_FIELD,
+          MOCK_DROPDOWN_FIELD,
+          MOCK_YES_NO_FIELD,
+        ]
+        const MOCK_WORKFLOW = [
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Static,
+            emails: ['step1email@gmail.com'],
+            edit: [MOCK_EMAIL_FIELD._id],
+          },
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Dynamic,
+            field: new ObjectId().toString(),
+            edit: [MOCK_DROPDOWN_FIELD._id],
+          },
+          {
+            _id: new ObjectId().toString(),
+            workflow_type: WorkflowType.Conditional,
+            conditional_field: new ObjectId().toString(),
+            edit: [MOCK_YES_NO_FIELD._id],
+          },
+        ]
+
+        it('should duplicate all required fields, including workflow', () => {
+          const MOCK_ALL_OVERRIDE_PARAMS = {
+            admin: 'duplicated admin',
+            title: 'duplicated mrf form title',
+            responseMode: FormResponseMode.Multirespondent,
+            publicKey: 'duplicated public key',
+          }
+          const MOCK_ALL_FORM_PARAMS = {
+            title: 'Test Form',
+            admin: MOCK_ADMIN_OBJ_ID,
+            isSubmitterIdCollectionEnabled: true,
+            isSingleSubmission: true,
+            isSaveDraftEnabled: true,
+            inactiveMessage: 'inactive_test',
+            responseMode: FormResponseMode.Multirespondent,
+            submissionLimit: 1000,
+            publicKey: 'initial public key',
+            workflow: MOCK_WORKFLOW,
+            form_fields: MOCK_FORM_FIELDS,
+          }
+
+          const sourceForm = new MultirespondentForm(MOCK_ALL_FORM_PARAMS)
+          const duplicatedForm = sourceForm.getDuplicateParams(
+            MOCK_ALL_OVERRIDE_PARAMS,
+          )
+
+          // Assert overriden fields
+          expect(duplicatedForm.title).toEqual(MOCK_ALL_OVERRIDE_PARAMS.title)
+          expect(duplicatedForm.admin).toEqual(MOCK_ALL_OVERRIDE_PARAMS.admin)
+          expect(duplicatedForm.responseMode).toEqual(
+            MOCK_ALL_OVERRIDE_PARAMS.responseMode,
+          )
+          expect(duplicatedForm.publicKey).toEqual(
+            MOCK_ALL_OVERRIDE_PARAMS.publicKey,
+          )
+
+          // Assert unoverriden fields
+          // Assert workflow is duplicated
+          const duplicatedWorkflow = JSON.parse(
+            JSON.stringify(duplicatedForm.workflow),
+          )
+          expect(duplicatedWorkflow).toEqual(MOCK_ALL_FORM_PARAMS.workflow)
+
+          const duplicatedFormFieldIds = JSON.parse(
+            JSON.stringify(duplicatedForm.form_fields),
+          ).map((field: FormFieldDto) => field._id)
+          const expectedFormFieldIds = MOCK_ALL_FORM_PARAMS.form_fields.map(
+            (field) => field._id,
+          )
+          expect(duplicatedFormFieldIds).toEqual(expectedFormFieldIds)
+
+          expect(duplicatedForm.submissionLimit).toEqual(
+            MOCK_ALL_FORM_PARAMS.submissionLimit,
+          )
+          expect(duplicatedForm.isSubmitterIdCollectionEnabled).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSubmitterIdCollectionEnabled,
+          )
+          expect(duplicatedForm.isSingleSubmission).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSingleSubmission,
+          )
+          expect(duplicatedForm.isSaveDraftEnabled).toEqual(
+            MOCK_ALL_FORM_PARAMS.isSaveDraftEnabled,
+          )
+          expect(duplicatedForm.inactiveMessage).toEqual(
+            MOCK_ALL_FORM_PARAMS.inactiveMessage,
+          )
+        })
       })
     })
 

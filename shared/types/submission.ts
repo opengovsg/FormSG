@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
-import { FormAuthType } from './form/form'
+import { FormAuthType, StrippedFormFieldDto } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
@@ -201,6 +201,14 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfVersion: number
 
   mrfMeta: SubmissionMrfMetadata
+}
+
+export type PublicMultirespondentSubmissionDto = Omit<
+  MultirespondentSubmissionDto,
+  'workflow' | 'form_fields'
+> & {
+  form_fields: StrippedFormFieldDto[]
+  workflow: StrippedFormWorkflowDto
 }
 
 export type SubmissionDto =

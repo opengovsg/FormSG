@@ -150,8 +150,3 @@ export type SignatureFieldResponseV3 = {
   type: 'draw'
   value: SignatureVectorArray
 }
-
-export type SignatureFieldWebhookResponseV3 = {
-  fieldType: BasicField.Signature
-  answer: string[]
-}

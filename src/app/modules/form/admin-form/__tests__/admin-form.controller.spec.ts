@@ -3365,6 +3365,146 @@ describe('admin-form.controller', () => {
       body: {} as CreateFormBodyDto,
     })
 
+    describe('multirespondent form', () => {
+      it('should override emails in workflow when admin is viewer collaborator', async () => {
+        // Arrange
+        const expectedParams: DuplicateFormBodyDto = {
+          responseMode: FormResponseMode.Multirespondent,
+          publicKey: 'some public key',
+          title: 'mock title',
+        }
+        const mockDupedFormView = {
+          title: 'mock view',
+        } as AdminDashboardFormMetaDto
+        const mockDupedForm = merge({}, MOCK_FORM, {
+          title: 'duped form with new title',
+          _id: new ObjectId(),
+          getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+        })
+        const mockRes = expressHandler.mockResponse()
+        const mockReqWithParams = merge({}, MOCK_REQ, {
+          body: expectedParams,
+        })
+        MockUserService.getPopulatedUserById.mockReturnValueOnce(
+          okAsync(MOCK_USER),
+        )
+        MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+          okAsync(MOCK_FORM),
+        )
+        MockAdminFormService.duplicateForm.mockReturnValueOnce(
+          okAsync(mockDupedForm),
+        )
+
+        // Mock admin that is duplicating form not having WRITE permissions to form.
+        const mockCheckFormForPermissions = jest
+          .fn()
+          .mockReturnValue(
+            err(new ForbiddenFormError('User does not have write access')),
+          )
+        MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+          mockCheckFormForPermissions,
+        )
+
+        // Act
+        await AdminFormController.duplicateAdminForm(
+          mockReqWithParams,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        // Form is still duplicated
+        expect(mockRes.status).not.toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+        expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+          MOCK_USER_ID,
+        )
+        // The user's permissions are being checked for given form.
+        expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
+          PermissionLevel.Write,
+        )
+        expect(mockCheckFormForPermissions).toHaveBeenCalledWith({
+          user: MOCK_USER,
+          form: MOCK_FORM,
+        })
+        // The form is duplicated with the admin's email being used in the workflow routing.
+        expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+          MOCK_FORM,
+          MOCK_USER_ID,
+          expectedParams,
+          { workspaceId: undefined, overrideEmails: [MOCK_USER.email] },
+        )
+      })
+
+      it('should not override emails in workflow when admin is editor collaborator or form owner', async () => {
+        // Arrange
+        const expectedParams: DuplicateFormBodyDto = {
+          responseMode: FormResponseMode.Multirespondent,
+          publicKey: 'some public key',
+          title: 'mock title',
+        }
+        const mockDupedFormView = {
+          title: 'mock view',
+        } as AdminDashboardFormMetaDto
+        const mockDupedForm = merge({}, MOCK_FORM, {
+          title: 'duped form with new title',
+          _id: new ObjectId(),
+          getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+        })
+        const mockRes = expressHandler.mockResponse()
+        const mockReqWithParams = merge({}, MOCK_REQ, {
+          body: expectedParams,
+        })
+        MockUserService.getPopulatedUserById.mockReturnValueOnce(
+          okAsync(MOCK_USER),
+        )
+        MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+          okAsync(MOCK_FORM),
+        )
+        MockAdminFormService.duplicateForm.mockReturnValueOnce(
+          okAsync(mockDupedForm),
+        )
+
+        // Mock admin that is duplicating form has WRITE permissions to form.
+        const mockCheckFormForPermissions = jest
+          .fn()
+          .mockReturnValue(ok(MOCK_FORM))
+        MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+          mockCheckFormForPermissions,
+        )
+
+        // Act
+        await AdminFormController.duplicateAdminForm(
+          mockReqWithParams,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        // Form is still duplicated
+        expect(mockRes.status).not.toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+        expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+          MOCK_USER_ID,
+        )
+        // The user's permissions are being checked for given form.
+        expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
+          PermissionLevel.Write,
+        )
+        expect(mockCheckFormForPermissions).toHaveBeenCalledWith({
+          user: MOCK_USER,
+          form: MOCK_FORM,
+        })
+        // The form is duplicated and the admin's email is not being used in the workflow routing.
+        expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+          MOCK_FORM,
+          MOCK_USER_ID,
+          expectedParams,
+          { workspaceId: undefined, overrideEmails: undefined },
+        )
+      })
+    })
+
     it('should return duplicated form view on duplicate success', async () => {
       // Arrange
       const expectedParams: DuplicateFormBodyDto = {
@@ -3391,6 +3531,12 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
+      const mockCheckFormForPermissions = jest
+        .fn()
+        .mockReturnValue(ok(MOCK_FORM))
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+        mockCheckFormForPermissions,
+      )
       MockAdminFormService.duplicateForm.mockReturnValueOnce(
         okAsync(mockDupedForm),
       )
@@ -3412,7 +3558,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
 
@@ -3443,6 +3589,12 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
+      const mockCheckFormForPermissions = jest
+        .fn()
+        .mockReturnValue(ok(MOCK_FORM))
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+        mockCheckFormForPermissions,
+      )
       MockAdminFormService.duplicateForm.mockReturnValueOnce(
         okAsync(mockDupedForm),
       )
@@ -3464,7 +3616,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: mockWorkspaceId },
+        { workspaceId: mockWorkspaceId, overrideEmails: undefined },
       )
     })
 
@@ -3511,6 +3663,12 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
+      const mockCheckFormForPermissions = jest
+        .fn()
+        .mockReturnValue(ok(MOCK_FORM))
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+        mockCheckFormForPermissions,
+      )
       MockAdminFormService.duplicateForm.mockReturnValueOnce(
         errAsync(new FormNotFoundError(mockErrorString)),
       )
@@ -3534,7 +3692,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
 
@@ -3647,6 +3805,12 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
+      const mockCheckFormForPermissions = jest
+        .fn()
+        .mockReturnValue(ok(MOCK_FORM))
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+        mockCheckFormForPermissions,
+      )
       MockAdminFormService.duplicateForm.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
       )
@@ -3670,7 +3834,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { workspaceId: undefined },
+        { workspaceId: undefined, overrideEmails: undefined },
       )
     })
   })
@@ -3900,7 +4064,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
 
@@ -3972,7 +4136,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
 
@@ -4122,7 +4286,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { duplicateStripped: true },
+        { overrideEmails: ['andanother@example.com'] },
       )
     })
   })

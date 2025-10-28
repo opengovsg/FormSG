@@ -1,4 +1,4 @@
-name: Deploy Virus Scanner GuardDuty to IaC OGP AWS environment
+name: Deploy Virus Scanner GuardDuty to stg-alt3
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

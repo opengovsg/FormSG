@@ -20,10 +20,7 @@ import {
   FormFieldSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import {
-  ParsedClearFormFieldResponsesV3,
-  ParsedClearFormFieldResponseV3,
-} from '../../../../types/api'
+import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
@@ -39,8 +36,6 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-
-import { StrippedAttachmentResponseV3 } from './multirespondent-submission.types'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -74,6 +69,29 @@ export const createMultirespondentSubmissionDto = (
       workflowStep: submissionData.workflowStep,
       submittedSteps: submissionData.submittedSteps,
     }),
+  }
+}
+
+/**
+ * Strips sensitive information from multirespondent submission data for public view
+ * @param submissionData Multirespondent submission data to strip sensitive information from
+ * @param attachmentPresignedUrls Attachment presigned URLs to include in the public multirespondent submission data
+ * @returns Public multirespondent submission data with stripped sensitive information
+ */
+export const createPublicMultirespondentSubmissionDto = (
+  submissionData: MultirespondentSubmissionData,
+  attachmentPresignedUrls: Record<string, string>,
+): PublicMultirespondentSubmissionDto => {
+  const multirespondentSubmissionDto = createMultirespondentSubmissionDto(
+    submissionData,
+    attachmentPresignedUrls,
+  )
+  return {
+    ...multirespondentSubmissionDto,
+    form_fields: stripDropdownFieldOptionsToRecipientsMap(
+      submissionData.form_fields,
+    ),
+    workflow: stripWorkflowEmails(submissionData.workflow),
   }
 }
 

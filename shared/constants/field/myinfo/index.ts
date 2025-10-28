@@ -487,7 +487,7 @@ export const types: MyInfoFieldBlock[] = [
     description: 'Vaccination status',
     fieldType: BasicField.Dropdown,
     fieldOptions: Object.values(MyInfoChildVaxxStatus),
-    previewValue: MyInfoChildVaxxStatus.ONEM3D,
+    previewValue: MyInfoChildVaxxStatus.ONEM3D_FULFILLED,
     // TODO: Get title translations
   },
   {
