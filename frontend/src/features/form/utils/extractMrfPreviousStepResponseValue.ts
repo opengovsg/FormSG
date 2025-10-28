@@ -1,3 +1,4 @@
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
 import {
   AttachmentFieldResponseV3,
@@ -7,7 +8,7 @@ import {
 } from '~shared/types'
 
 import bufferToFile from '~utils/bufferToFile'
-import { FormFieldValue } from '~templates/Field'
+import { FormFieldValue, RadioFieldValues } from '~templates/Field'
 
 /**
  * Retrieves the filled value for a field from the previous step response for MRF.
@@ -42,6 +43,13 @@ export const extractMrfPreviousStepResponseValue = (
             return bufferToFile(fileData, fileName)
           }
           return
+        }
+        case BasicField.Radio: {
+          const radioAnswer = previousFieldResponse.answer as RadioFieldValues
+          if (radioAnswer.othersInput && !radioAnswer.value) {
+            radioAnswer.value = CLIENT_RADIO_OTHERS_INPUT_VALUE
+          }
+          return radioAnswer
         }
         default:
           return previousFieldResponse.answer as FormFieldValue
