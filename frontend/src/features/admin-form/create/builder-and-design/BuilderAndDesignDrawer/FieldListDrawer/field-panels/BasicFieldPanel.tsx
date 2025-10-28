@@ -183,8 +183,7 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
                     if (
                       fieldType == BasicField.Signature &&
-                      (!isSignatureFieldEnabled ||
-                        !user?.betaFlags?.signatureField)
+                      !isSignatureFieldEnabled
                     )
                       return null
                     return (
