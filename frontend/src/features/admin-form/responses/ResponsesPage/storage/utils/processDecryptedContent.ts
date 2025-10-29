@@ -3,17 +3,14 @@ import {
   DecryptedContentV3,
   FormField as VerifiedFormField,
 } from '@opengovsg/formsg-sdk/dist/types'
-import { has } from 'lodash'
 
 import {
   AttachmentFieldResponseV3,
   BasicField,
   FieldResponse,
   FormFieldDto,
-  FormWorkflow,
 } from '~shared/types'
 import {
-  CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
