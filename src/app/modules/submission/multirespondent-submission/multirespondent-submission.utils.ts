@@ -9,12 +9,14 @@ import {
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   NdiResponseV3,
-  SignatureFieldWebhookResponseV3,
+  PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
+import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import { VerifiedKeys } from '../../../../../shared/utils/verified-content'
 import {
   FormFieldSchema,
@@ -421,42 +423,4 @@ export const convertToVerifiedContent = (
   return new Error(
     'Cannot convert decrypted content: no known verified keys found',
   )
-}
-
-/**
- * Converts responses to webhook desired outputs before encryption (again)
- */
-export const prepareWebhookResponseContentV3 = (
-  input: Record<
-    string,
-    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
-  >,
-): Record<
-  string,
-  | ParsedClearFormFieldResponseV3
-  | StrippedAttachmentResponseV3
-  | SignatureFieldWebhookResponseV3
-> => {
-  const result: Record<
-    string,
-    | ParsedClearFormFieldResponseV3
-    | StrippedAttachmentResponseV3
-    | SignatureFieldWebhookResponseV3
-  > = {}
-
-  for (const [key, value] of Object.entries(input)) {
-    if (
-      value.fieldType === BasicField.Signature &&
-      value.answer.value.length > 0
-    ) {
-      result[key] = {
-        ...value,
-        answer: [SIGNATURE_CAPTURED_STRING],
-      }
-    } else {
-      result[key] = value
-    }
-  }
-
-  return result
 }
