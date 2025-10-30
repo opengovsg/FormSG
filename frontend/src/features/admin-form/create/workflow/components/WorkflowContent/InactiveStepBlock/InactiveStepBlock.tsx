@@ -80,7 +80,9 @@ const SubsequentStepRespondentBadges = ({
             <FieldLogicBadge
               defaults={{
                 variant: 'error',
-                message: 'Please update your CSV options and emails',
+                message: t(
+                  'features.adminForm.sidebar.workflow.fieldBadges.updateCsvOptionsEmails',
+                ),
               }}
             />
           ) : null}
@@ -122,7 +124,9 @@ export const InactiveStepBlock = ({
         <FieldLogicBadge
           defaults={{
             variant: 'info',
-            message: 'No fields selected',
+            message: t(
+              'features.adminForm.sidebar.workflow.fieldBadges.noFieldsSelected',
+            ),
           }}
         />
       )
@@ -135,8 +139,9 @@ export const InactiveStepBlock = ({
         <FieldLogicBadge
           defaults={{
             variant: 'error',
-            message:
-              'All fields were deleted, please select at least one field',
+            message: t(
+              'features.adminForm.sidebar.workflow.fieldBadges.allFieldsDeleted',
+            ),
           }}
         />
       )
@@ -148,11 +153,13 @@ export const InactiveStepBlock = ({
         field={idToFieldMap[fieldId]}
         defaults={{
           variant: 'info',
-          message: 'This field was deleted, please select another field',
+          message: t(
+            'features.adminForm.sidebar.workflow.fieldBadges.fieldDeleted',
+          ),
         }}
       />
     ))
-  }, [idToFieldMap, step.edit])
+  }, [idToFieldMap, step.edit, t])
 
   return (
     <Box pos="relative">

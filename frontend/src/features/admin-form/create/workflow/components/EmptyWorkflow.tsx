@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Flex, Text } from '@chakra-ui/react'
 
@@ -13,6 +14,9 @@ import {
 import { WorkflowSvgr } from './WorkflowSvgr'
 
 export const EmptyWorkflow = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.workflow.emptyWorkflow',
+  })
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
 
   return (
@@ -24,14 +28,12 @@ export const EmptyWorkflow = (): JSX.Element => {
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
       <Text textStyle="h2" as="h2">
-        Create a workflow to collect responses from multiple respondents in the
-        same form submission
+        {t('title')}
       </Text>
       <Text textStyle="body-1" mt="1rem">
-        Assign respondents to specific steps, and control which fields they can
-        fill.{' '}
+        {t('description')}{' '}
         <Link isExternal href={GUIDE_FORM_MRF}>
-          Learn how to create a workflow
+          {t('learnMore')}
         </Link>
       </Text>
       <Button
@@ -39,7 +41,7 @@ export const EmptyWorkflow = (): JSX.Element => {
         leftIcon={<BiPlus fontSize="1.5rem" />}
         onClick={setToCreating}
       >
-        Create workflow
+        {t('createButton')}
       </Button>
       <WorkflowSvgr maxW="292px" />
     </Flex>

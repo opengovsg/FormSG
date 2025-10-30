@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -17,6 +18,9 @@ export const StaticRespondentOption = ({
   formMethods,
   selectedWorkflowType,
 }: RespondentOptionProps) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.workflow.staticRespondent',
+  })
   const {
     register,
     control,
@@ -40,7 +44,7 @@ export const StaticRespondentOption = ({
           },
         }}
       >
-        <Text>Specific email(s)</Text>
+        <Text>{t('title')}</Text>
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
@@ -57,18 +61,18 @@ export const StaticRespondentOption = ({
                 validate: {
                   required: (emails) =>
                     !emails || emails.length === 0
-                      ? 'You must enter at least one email to receive responses'
+                      ? t('validation.required')
                       : true,
                   isEmails: (emails) =>
                     !emails ||
                     emails.every((email) => isEmail(email)) ||
-                    'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+                    t('validation.invalidEmails'),
                 },
               }}
               render={({ field }) => (
                 <TagInput
                   isDisabled={isLoading}
-                  placeholder="me@example.com"
+                  placeholder={t('placeholder')}
                   tagValidation={isEmail}
                   {...field}
                 />
@@ -77,7 +81,7 @@ export const StaticRespondentOption = ({
             <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
             {!staticTagInputErrorMessage ? (
               <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
-                Separate multiple emails with a comma
+                {t('helperText')}
               </Text>
             ) : null}
           </FormControl>

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormWorkflowStep, FormWorkflowStepDto } from '~shared/types'
 
@@ -43,6 +44,9 @@ export const ActiveStepBlock = ({
   step,
   handleOpenDeleteModal,
 }: ActiveStepBlockProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.workflow',
+  })
   const { updateStepMutation } = useWorkflowMutations()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
 
@@ -69,7 +73,7 @@ export const ActiveStepBlock = ({
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
       defaultValues={step}
-      submitButtonLabel="Save step"
+      submitButtonLabel={t('saveStep')}
     />
   )
 }

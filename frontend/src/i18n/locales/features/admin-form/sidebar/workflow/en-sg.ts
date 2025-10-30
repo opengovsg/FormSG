@@ -10,12 +10,38 @@ import { Workflow } from '.'
 
 export const enSG: Workflow = {
   title: 'Add workflow',
+  saveStep: 'Save step',
+  emptyWorkflow: {
+    title:
+      'Create a workflow to collect responses from multiple respondents in the same form submission',
+    description:
+      'Assign respondents to specific steps, and control which fields they can fill.',
+    learnMore: 'Learn how to create a workflow',
+    createButton: 'Create workflow',
+  },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
     anyone: 'Anyone who has access to your form',
     select: 'Select a respondent',
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
+  },
+  staticRespondent: {
+    title: 'Specific email(s)',
+    placeholder: 'me@example.com',
+    helperText: 'Separate multiple emails with a comma',
+    validation: {
+      required: 'You must enter at least one email to receive responses',
+      invalidEmails:
+        'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+    },
+  },
+  fieldBadges: {
+    updateCsvOptionsEmails: 'Please update your CSV options and emails',
+    noFieldsSelected: 'No fields selected',
+    allFieldsDeleted:
+      'All fields were deleted, please select at least one field',
+    fieldDeleted: 'This field was deleted, please select another field',
   },
   dynamicRespondent: {
     title: 'An email field from the form',

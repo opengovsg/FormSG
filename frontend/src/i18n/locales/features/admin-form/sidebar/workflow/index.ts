@@ -8,12 +8,34 @@ interface CsvColumnText {
 
 export interface Workflow {
   title: string
+  saveStep: string
+  emptyWorkflow: {
+    title: string
+    description: string
+    learnMore: string
+    createButton: string
+  }
   respondentBlock: {
     stepRespondent: string
     anyone: string
     select: string
     fieldsToFill: string
     clickToEdit: string
+  }
+  staticRespondent: {
+    title: string
+    placeholder: string
+    helperText: string
+    validation: {
+      required: string
+      invalidEmails: string
+    }
+  }
+  fieldBadges: {
+    updateCsvOptionsEmails: string
+    noFieldsSelected: string
+    allFieldsDeleted: string
+    fieldDeleted: string
   }
   dynamicRespondent: {
     title: string
