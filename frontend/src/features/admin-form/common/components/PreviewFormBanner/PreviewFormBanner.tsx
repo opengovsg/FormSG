@@ -57,7 +57,10 @@ const textProps: TextProps = {
 export const PreviewFormBanner = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.previewFormBanner',
+  })
+  const { t: tCommon } = useTranslation()
   const { formId, isPaymentEnabled } = usePublicFormContext()
   const { data: { secretEnv } = {} } = useEnv()
   const {
@@ -99,7 +102,7 @@ export const PreviewFormBanner = ({
               mr={{ base: '0.5rem', md: '1rem' }}
             />
             <Text textStyle="subhead-3">
-              {isTemplate ? 'Template Preview' : 'Form Preview'}
+              {isTemplate ? t('templatePreview') : t('formPreview')}
             </Text>
           </Flex>
           {isTemplate ? (
@@ -111,35 +114,35 @@ export const PreviewFormBanner = ({
               >
                 <Link
                   variant="standalone"
-                  aria-label="Click to return to the admin dashboard"
+                  aria-label={t('backToDashboardAriaLabel')}
                   as={ReactLink}
                   to={DASHBOARD_ROUTE}
                 >
-                  Back to FormSG
+                  {t('backToFormSG')}
                 </Link>
                 <Button
-                  aria-label="Click to use this template"
+                  aria-label={t('useTemplateAriaLabel')}
                   onClick={onModalOpen}
                 >
-                  Use this template
+                  {t('useTemplate')}
                 </Button>
               </Stack>
               <IconButton
                 color="primary.500"
                 variant="clear"
                 display={{ base: 'flex', md: 'none' }}
-                aria-label="Template preview actions"
+                aria-label={t('templateActionsAriaLabel')}
                 onClick={onDrawerOpen}
                 icon={<BiDotsHorizontalRounded />}
               />
             </>
           ) : (
             <Button
-              aria-label={t('features.common.editForm.ariaLabel')}
+              aria-label={tCommon('features.common.editForm.ariaLabel')}
               as={ReactLink}
               to={`${ADMINFORM_ROUTE}/${formId}`}
             >
-              {t('features.common.editForm.text')}
+              {tCommon('features.common.editForm.text')}
             </Button>
           )}
         </Flex>
@@ -165,7 +168,7 @@ export const PreviewFormBanner = ({
                 isFullWidth={true}
                 {...mobileDrawerButtonProps}
               >
-                Use this template
+                {t('useTemplate')}
               </Button>
               <Divider />
               <Button
@@ -174,7 +177,7 @@ export const PreviewFormBanner = ({
                 leftIcon={<BiArrowBack fontSize="1.25rem" />}
                 {...mobileDrawerButtonProps}
               >
-                Back to FormSG
+                {t('backToFormSG')}
               </Button>
             </DrawerBody>
           </DrawerContent>
@@ -184,27 +187,20 @@ export const PreviewFormBanner = ({
         <Flex backgroundColor="neutral.900">
           {secretEnv === 'production' ? (
             <Text {...textProps}>
-              To test your payment form, replicate this form on our{' '}
+              {t('paymentWarning.production.prefix')}
               <Link isExternal color="white" href={FORMSG_UAT}>
-                testing platform.
+                {t('paymentWarning.production.linkText')}
               </Link>
             </Text>
           ) : (
-            <Text {...textProps}>
-              You will not be able to make a test payment, or view submitted
-              answers or attachments in Form Preview mode. Open your form to
-              make a test payment or form submission.
-            </Text>
+            <Text {...textProps}>{t('paymentWarning.nonProduction')}</Text>
           )}
         </Flex>
       )}
       {!isPaymentEnabled && (
         <Flex backgroundColor="neutral.900">
           {!(secretEnv === 'production') && (
-            <Text {...textProps}>
-              You will not be able to view submitted answers or attachments in
-              Form Preview mode. Open your form to test a form submission.
-            </Text>
+            <Text {...textProps}>{t('previewWarning.withoutPayment')}</Text>
           )}
         </Flex>
       )}
