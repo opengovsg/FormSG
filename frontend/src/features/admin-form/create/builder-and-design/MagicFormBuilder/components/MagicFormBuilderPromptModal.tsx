@@ -9,6 +9,7 @@ import {
   UseFormSetError,
   UseFormSetValue,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
@@ -75,9 +76,13 @@ const PromptSelectorBar = ({
   }[]
   onClick: (prompt: string) => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.promptModal.textTab',
+  })
+
   return (
     <Flex direction="column">
-      <Text textStyle="subhead-1">Need inspiration? Try one of these:</Text>
+      <Text textStyle="subhead-1">{t('inspirationLabel')}</Text>
       <HStack
         display="flex"
         justifyContent="space-between"
@@ -111,9 +116,6 @@ const PromptSelectorBar = ({
   )
 }
 
-const GENERATE_FORM_PLACEHOLDER =
-  'Describe your form, including fields and sections to create'
-
 export interface TextPromptInputs {
   prompt: string
 }
@@ -127,21 +129,23 @@ const TextPromptModalBodyContent = ({
   setValue: UseFormSetValue<TextPromptInputs>
   errors: FieldErrors<TextPromptInputs>
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.promptModal.textTab',
+  })
+
   return (
     <>
       <FormControl isInvalid={!!errors.prompt?.message}>
-        <FormLabel textStyle="subhead-1">
-          I want to create a form that collects...
-        </FormLabel>
+        <FormLabel textStyle="subhead-1">{t('promptLabel')}</FormLabel>
         <Textarea
           minH="9rem"
           borderRadius="4px"
-          placeholder={GENERATE_FORM_PLACEHOLDER}
+          placeholder={t('promptPlaceholder')}
           {...register('prompt', {
-            required: 'Please enter a prompt',
+            required: t('validation.required'),
             maxLength: {
               value: 500,
-              message: 'Please enter at most 500 characters',
+              message: t('validation.maxLength'),
             },
           })}
         />
@@ -174,16 +178,18 @@ const VisionPromptModalBodyContent = ({
   setError: UseFormSetError<VisionPromptInputs>
   isVisionPromptSubmitLoading: boolean
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.promptModal.pdfTab',
+  })
+
   return (
     <>
       <FormControl isInvalid={!!errors.attachment?.message}>
-        <FormLabel textStyle="subhead-1">
-          Create a form based on this pdf
-        </FormLabel>
+        <FormLabel textStyle="subhead-1">{t('uploadLabel')}</FormLabel>
         <Controller
           name="attachment"
           control={control}
-          rules={{ required: 'Please upload a pdf file' }}
+          rules={{ required: t('uploadError') }}
           render={({ field: { onChange, ...rest } }) => (
             <Attachment
               {...rest}
@@ -193,7 +199,9 @@ const VisionPromptModalBodyContent = ({
               }}
               accept=".pdf"
               showFileSize
-              fileConstraintsText={`Files should not be more than ${MFB_VISION_MAX_IMAGES_COUNT} pages long.`}
+              fileConstraintsText={t('fileConstraints', {
+                maxPages: MFB_VISION_MAX_IMAGES_COUNT,
+              })}
               showRemove
               isRemoveDisabled={isVisionPromptSubmitLoading}
               onError={(message) => setError('attachment', { message })}
@@ -224,6 +232,13 @@ const MagicFormBuilderCreateFormPrompt = ({
   isVisionPromptSubmitLoading: MagicFormBuilderPromptModalProps['isVisionPromptSubmitLoading']
   onCancel: () => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.promptModal',
+  })
+  const { t: tPdf } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.promptModal.pdfTab',
+  })
+
   const {
     register,
     handleSubmit,
@@ -251,7 +266,7 @@ const MagicFormBuilderCreateFormPrompt = ({
   return (
     <>
       <ModalHeader display="flex" alignItems="center">
-        <Text textStyle="h2">Create fields with AI</Text>
+        <Text textStyle="h2">{t('header')}</Text>
       </ModalHeader>
       <ModalBody>
         <>
@@ -262,13 +277,13 @@ const MagicFormBuilderCreateFormPrompt = ({
                   isDisabled={isVisionPromptSubmitLoading}
                   value={PROMPT_TYPE.TEXT}
                 >
-                  Text
+                  {t('tabs.text')}
                 </Tab>
                 <Tab
                   isDisabled={isTextPromptSubmitLoading}
                   value={PROMPT_TYPE.VISION}
                 >
-                  Pdf
+                  {t('tabs.pdf')}
                 </Tab>
               </TabList>
               <TabPanels>
@@ -324,7 +339,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                     if (imageDataUrls.length > MFB_VISION_MAX_IMAGES_COUNT) {
                       setVisionError('attachment', {
                         type: 'manual',
-                        message: `Your pdf file must have less than or equal ${MFB_VISION_MAX_IMAGES_COUNT} pages.`,
+                        message: tPdf('conversionError.fileSizeTooLarge'),
                       })
                       return
                     }
@@ -333,7 +348,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                   } catch (error) {
                     setVisionError('attachment', {
                       type: 'manual',
-                      message: 'Failed to convert PDF file to images.',
+                      message: tPdf('conversionError.unknown'),
                     })
                   }
                 })
@@ -345,8 +360,8 @@ const MagicFormBuilderCreateFormPrompt = ({
             isTextPromptSubmitLoading || isVisionPromptSubmitLoading
           }
           handleBack={onCancel}
-          nextButtonLabel="Create fields"
-          backButtonLabel="Cancel"
+          nextButtonLabel={t('actions.create')}
+          backButtonLabel={t('actions.cancel')}
         />
       </ModalFooter>
     </>

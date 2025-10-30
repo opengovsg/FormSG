@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import { Button, Icon, Tooltip } from '@chakra-ui/react'
 
@@ -8,8 +9,12 @@ const MagicFormBuilderSmallButton = ({
 }: { isActive: boolean; onClick: () => void } & React.ComponentProps<
   typeof Button
 >) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.smallButton',
+  })
+
   return (
-    <Tooltip openDelay={500} hasArrow label="Create fields with AI">
+    <Tooltip openDelay={500} hasArrow label={t('tooltip')}>
       <Button
         variant="outline"
         onClick={onClick}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Flex, Portal, Text } from '@chakra-ui/react'
 
 import { NextAndBackButtonGroup } from '~components/Button'
@@ -12,20 +13,22 @@ const MagicFormBuilderAcceptDeny = ({
   onAccept: () => void
   onDeny: () => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.acceptDeny',
+  })
+
   return isOpen ? (
     <Portal>
       <BottomHugBox>
         <Flex direction="column" gap="1rem">
-          <Text textStyle="h6">
-            The created fields have been saved.
-            <br />
-            Keep them?
+          <Text textStyle="h6" whiteSpace="pre-line">
+            {t('message')}
           </Text>
           <NextAndBackButtonGroup
             handleBack={onDeny}
             handleNext={onAccept}
-            nextButtonLabel="Yes, keep them"
-            backButtonLabel="No, delete them"
+            nextButtonLabel={t('keepButton')}
+            backButtonLabel={t('deleteButton')}
           />
         </Flex>
       </BottomHugBox>

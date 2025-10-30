@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
 
 import Button from '~components/Button'
@@ -7,6 +8,10 @@ const MagicFormBuilderButton = ({
 }: {
   onClick: () => void
 }): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.magicFormBuilder.button',
+  })
+
   return (
     <Button
       maxW="100%"
@@ -14,7 +19,7 @@ const MagicFormBuilderButton = ({
       onClick={onClick}
       isTruncated
     >
-      Create fields with AI
+      {t('createFields')}
     </Button>
   )
 }
