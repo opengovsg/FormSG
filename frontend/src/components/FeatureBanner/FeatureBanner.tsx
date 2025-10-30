@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Center,
@@ -28,6 +29,9 @@ export const FeatureBanner = ({
   body,
   learnMoreLink,
 }: FeatureBannerProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.featureBanner',
+  })
   const isMobile = useIsMobile()
   const styles = useMultiStyleConfig('Banner', { variant })
 
@@ -44,7 +48,7 @@ export const FeatureBanner = ({
       href={learnMoreLink}
       target="_blank"
     >
-      Learn more
+      {t('learnMore')}
     </Button>
   )
 

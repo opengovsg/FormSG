@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Divider, Flex, Link, Stack, Text, Wrap } from '@chakra-ui/react'
 
 import {
@@ -16,6 +17,9 @@ export const FullFooter = ({
   textColorScheme = 'secondary',
   containerProps,
 }: FooterVariantProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.footer',
+  })
   const currentYear = new Date().getFullYear()
 
   return (
@@ -73,7 +77,7 @@ export const FullFooter = ({
             color={`${textColorScheme}.500`}
             mb="0.5rem"
           >
-            Built by
+            {t('builtBy')}
           </Text>
           <Link
             isExternal
@@ -108,7 +112,7 @@ export const FullFooter = ({
             ))}
           </Stack>
           <Text textStyle="legal" color={`${textColorScheme}.500`}>
-            ©{currentYear} Open Government Products
+            {t('copyright', { year: currentYear })}
           </Text>
         </Box>
       </FullFooter.Section>

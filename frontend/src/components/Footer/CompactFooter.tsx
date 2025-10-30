@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
 import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
@@ -21,13 +22,17 @@ export const CompactFooter = ({
   appLink,
   containerProps,
 }: CompactedFooterProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.footer',
+  })
+
   return (
     <CompactFooter.Container {...containerProps}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">
         <Link
           colorScheme={compactMonochromeLogos ? 'white' : textColorScheme}
           isExternal
-          title="Link to application homepage"
+          title={t('appHomepage.ariaLabel')}
           href={appLink}
         >
           {compactMonochromeLogos ? (

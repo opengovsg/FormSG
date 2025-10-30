@@ -41,7 +41,9 @@ export const EndPageBlock = ({
   form,
   isPreview,
 }: EndPageBlockProps): JSX.Element => {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('translation', {
+    keyPrefix: 'components.formEndPage',
+  })
   const focusRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -80,10 +82,10 @@ export const EndPageBlock = ({
 
   const submittedAriaText = useMemo(() => {
     if (formTitle) {
-      return `You have successfully submitted your response for ${formTitle}.`
+      return t('submittedAria.withTitle', { formTitle })
     }
-    return 'You have successfully submitted your response.'
-  }, [formTitle])
+    return t('submittedAria.withoutTitle')
+  }, [formTitle, t])
 
   return (
     <>
@@ -103,7 +105,7 @@ export const EndPageBlock = ({
       <Box mt="1rem">
         <Box>
           <Text textColor="secondary.300" textStyle="caption-2">
-            Response ID: {submissionData.id}
+            {t('responseId', { submissionId: submissionData.id })}
           </Text>
           <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
             {submissionTimestamp}

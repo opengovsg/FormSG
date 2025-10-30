@@ -1,3 +1,7 @@
+import { enSG as featureBanner } from './components/feature-banner/en-sg'
+import { enSG as footer } from './components/footer/en-sg'
+import { enSG as formEndPage } from './components/form-end-page/en-sg'
+import { enSG as govtMasthead } from './components/govt-masthead/en-sg'
 import { enSG as pagination } from './components/pagination'
 import { enSG as validationConstants } from './constants/validation'
 import { enSG as adminForbiddenError } from './features/admin-forbidden-error/en-sg'
@@ -35,6 +39,10 @@ export const enSG: FallbackTranslation = {
       fieldValidation,
     },
     components: {
+      featureBanner,
+      footer,
+      formEndPage,
+      govtMasthead,
       pagination,
     },
     constants: {

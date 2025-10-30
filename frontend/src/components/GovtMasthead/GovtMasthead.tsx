@@ -1,4 +1,5 @@
 import React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiChevronDown, BiChevronUp, BiSolidErrorCircle } from 'react-icons/bi'
 import {
   Box,
@@ -45,6 +46,10 @@ const HeaderBar = ({
   isOpen,
   ariaControlId,
 }: HeaderBarProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.govtMasthead',
+  })
+
   const styleProps = {
     bg: 'neutral.200',
     py: { base: '0.5rem', md: '0.375rem' },
@@ -68,9 +73,7 @@ const HeaderBar = ({
         onClick={onToggle}
       >
         <VisuallyHidden id="masthead-aria">
-          {isOpen
-            ? 'Collapse masthead'
-            : 'Expand masthead to find out how to identify an official government website'}
+          {isOpen ? t('aria.collapseLabel') : t('aria.expandLabel')}
         </VisuallyHidden>
         {children}
       </chakra.button>
@@ -87,6 +90,10 @@ const HowToIdentify = ({
   children,
   onToggle,
 }: GovtMastheadChildrenProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.govtMasthead',
+  })
+
   // Mobile
   if (isMobile) {
     return (
@@ -96,7 +103,7 @@ const HowToIdentify = ({
         color="primary.500"
         textDecorationLine="underline"
       >
-        How to identify
+        {t('howToIdentify')}
       </Text>
     )
   }
@@ -106,14 +113,10 @@ const HowToIdentify = ({
     <Link
       as="button"
       tabIndex={0}
-      aria-label={
-        isOpen
-          ? 'Collapse masthead'
-          : 'Expand masthead to find out how to identify an official government website'
-      }
+      aria-label={isOpen ? t('aria.collapseLabel') : t('aria.expandLabel')}
       onClick={onToggle}
     >
-      How to identify {children}
+      {t('howToIdentify')} {children}
     </Link>
   )
 }
@@ -121,6 +124,9 @@ const HowToIdentify = ({
 export const GovtMasthead = ({
   defaultIsOpen,
 }: GovtMastheadProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'components.govtMasthead',
+  })
   const { onToggle, isOpen } = useDisclosure({ defaultIsOpen })
   const isMobile = useIsMobile()
 
@@ -143,10 +149,7 @@ export const GovtMasthead = ({
         />
         <Flex alignItems="center" flexWrap="wrap">
           <Box>
-            <Text as="span">
-              A Singapore Government Agency Website. Beware of government
-              impersonation scams.&ensp;
-            </Text>
+            <Text as="span">{t('mainText')}&ensp;</Text>
             <HowToIdentify
               isOpen={isOpen}
               onToggle={onToggle}
@@ -187,25 +190,27 @@ export const GovtMasthead = ({
         >
           <GovtMastheadItem
             icon={BxsBank}
-            header="Official website links end with .gov.sg"
+            header={t('officialWebsiteLinks.header')}
           >
             <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
-              <Text as="span">
-                Government agencies communicate via <b>.gov.sg</b> websites
-                (e.g. go.gov.sg/open).{' '}
-              </Text>
+              <Trans
+                i18nKey="components.govtMasthead.officialWebsiteLinks.description"
+                components={{
+                  bold: <Text as="b" />,
+                }}
+              />{' '}
               <Link
-                aria-label="Click to open a list of trusted sites in a new window"
+                aria-label={t('officialWebsiteLinks.trustedWebsitesLink.ariaLabel')}
                 href="https://go.gov.sg/trusted-sites"
                 isExternal
               >
-                Trusted websites
+                {t('officialWebsiteLinks.trustedWebsitesLink.text')}
               </Link>
             </Box>
           </GovtMastheadItem>
           <GovtMastheadItem
             icon={BxsLockAlt}
-            header="Secure websites use HTTPS"
+            header={t('secureWebsites.header')}
           >
             <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
               <Text as="span">Look for a lock (</Text>
@@ -215,20 +220,20 @@ export const GovtMasthead = ({
                 height={{ base: '1rem', md: '1.5rem' }}
                 verticalAlign="bottom"
               />
-              <Text as="span">
-                ) or https:// as an added precaution.
-                <br></br>Share sensitive information only on official, secure
-                websites.
-              </Text>
+              <Text as="span">) {t('secureWebsites.description')}</Text>
             </Box>
           </GovtMastheadItem>
-          <GovtMastheadItem icon={BiSolidErrorCircle} header="Scam alert">
+          <GovtMastheadItem
+            icon={BiSolidErrorCircle}
+            header={t('scamAlert.header')}
+          >
             <Box textStyle={{ base: 'caption-2', md: 'body-1' }}>
-              <Text as="span">
-                Government officers will never ask you to send money or share
-                your details over the phone.{' '}
-                <b>When unsure, hang up and call Scamshield at 1799.</b>
-              </Text>
+              <Trans
+                i18nKey="components.govtMasthead.scamAlert.description"
+                components={{
+                  bold: <Text as="b" />,
+                }}
+              />
             </Box>
           </GovtMastheadItem>
         </Stack>
