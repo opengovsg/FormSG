@@ -36,13 +36,12 @@ export const QuestionsBlock = ({
   } = formMethods
 
   const items = formFields
-    .filter(
-      (f) =>
-        // Only retain actual inputs (exclude header, statement, image)
-        !NON_RESPONSE_FIELD_SET.has(f.fieldType) &&
-        // Retain MyInfo fields on the first step
-        (!('myInfo' in f) || isFirstStep),
-    )
+    .filter((f) => {
+      // Only retain actual inputs (exclude header, statement, image)
+      const isFillableField = !NON_RESPONSE_FIELD_SET.has(f.fieldType)
+      const isMyInfoField = 'myInfo' in f
+      return isFillableField && (isMyInfoField || isFirstStep)
+    })
     .map((f) => ({
       value: f._id,
       label: getLogicFieldLabel(idToFieldMap[f._id]),
