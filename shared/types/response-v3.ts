@@ -10,8 +10,6 @@ export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3> & {
   [key: string]: FieldResponseV3 | NdiResponseV3
 }
 
-// export type NdiResponsesV3 = [key: string]: NdiResponseV3
-
 export type FieldResponseV3 =
   | HeaderResponseV3
   | RadioResponseV3

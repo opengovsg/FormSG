@@ -272,10 +272,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 }
 
-type MyInfoTextProps = Pick<
-  AdminFormDto,
-  'authType' | 'form_fields'
->
+type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
 
 const MyInfoText = ({
   authType,

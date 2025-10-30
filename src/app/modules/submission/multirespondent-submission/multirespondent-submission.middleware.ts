@@ -961,7 +961,6 @@ export const handleNdiResponses = async (
       logger.error({
         message: 'Unable to get verified content',
         meta: logMeta,
-        // error,
       })
 
       return res

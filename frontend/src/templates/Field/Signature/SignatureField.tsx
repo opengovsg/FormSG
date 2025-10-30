@@ -26,8 +26,6 @@ export interface SignatureFieldProps extends BaseFieldProps {
 
 const strokePressureDefault = 0.5
 
-const defaultType = 'draw'
-
 export const SignatureField = ({
   schema,
   disableRequiredValidation,
