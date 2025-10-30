@@ -53,7 +53,7 @@ export const SingleSelectProvider = ({
   name,
   filter = defaultFilter,
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear selection',
+  clearButtonLabel,
   isClearable = true,
   isSearchable = true,
   initialIsOpen,
@@ -93,6 +93,10 @@ export const SingleSelectProvider = ({
   const nothingFoundLabel = t(
     'features.publicForm.components.fields.dropdown.nothingFound',
   )
+
+  const clearButtonLabelTranslated =
+    clearButtonLabel ??
+    t('features.publicForm.components.fields.dropdown.clearSelection')
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>
@@ -274,7 +278,7 @@ export const SingleSelectProvider = ({
         isReadOnly,
         isRequired,
         name,
-        clearButtonLabel,
+        clearButtonLabel: clearButtonLabelTranslated,
         placeholder,
         styles,
         isFocused,

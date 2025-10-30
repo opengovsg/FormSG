@@ -9,6 +9,8 @@ export interface Fields {
   dropdown: {
     placeholder: string
     nothingFound: string
+    clearSelection: string
+    selectOptions: string
   }
   email: {
     validation: {

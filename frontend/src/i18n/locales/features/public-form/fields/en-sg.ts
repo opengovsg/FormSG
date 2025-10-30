@@ -11,6 +11,8 @@ export const enSG: Fields = {
   dropdown: {
     placeholder: 'Select an option',
     nothingFound: 'No matching results',
+    clearSelection: 'Clear selection',
+    selectOptions: 'Select options',
   },
   attachment: {
     disabled: 'Attachment upload is disabled for you',

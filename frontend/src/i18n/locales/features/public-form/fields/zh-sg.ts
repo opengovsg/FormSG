@@ -13,6 +13,8 @@ export const zhSG: PartialDeep<Fields> = {
   dropdown: {
     placeholder: '请选择一个选项',
     nothingFound: '没有匹配结果',
+    clearSelection: '清除选择',
+    selectOptions: '选择选项',
   },
   attachment: {
     maxFileSize: '文件限制：不超过 {readableMaxSize}',

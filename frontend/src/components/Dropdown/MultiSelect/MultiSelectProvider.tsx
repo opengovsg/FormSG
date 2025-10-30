@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
@@ -73,9 +74,9 @@ export const MultiSelectProvider = ({
   onBlur,
   name,
   filter = defaultFilter,
-  nothingFoundLabel = 'No matching results',
+  nothingFoundLabel,
   placeholder: placeholderProp,
-  clearButtonLabel = 'Clear selection',
+  clearButtonLabel,
   isSearchable = true,
   defaultIsOpen,
   isInvalid: isInvalidProp,
@@ -92,6 +93,7 @@ export const MultiSelectProvider = ({
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
+  const { t } = useTranslation()
 
   // Inject for components to manipulate
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -171,8 +173,19 @@ export const MultiSelectProvider = ({
 
   const dynamicPlaceholder = useMemo(() => {
     if (placeholderProp === null || selectedItems.length > 0) return ''
-    return placeholderProp ?? 'Select options'
-  }, [placeholderProp, selectedItems.length])
+    return (
+      placeholderProp ??
+      t('features.publicForm.components.fields.dropdown.selectOptions')
+    )
+  }, [placeholderProp, selectedItems.length, t])
+
+  const nothingFoundLabelTranslated =
+    nothingFoundLabel ??
+    t('features.publicForm.components.fields.dropdown.nothingFound')
+
+  const clearButtonLabelTranslated =
+    clearButtonLabel ??
+    t('features.publicForm.components.fields.dropdown.clearSelection')
 
   const {
     toggleMenu,
@@ -313,11 +326,11 @@ export const MultiSelectProvider = ({
         selectItem,
         highlightedIndex,
         items: filteredItems,
-        nothingFoundLabel,
+        nothingFoundLabel: nothingFoundLabelTranslated,
         inputValue,
         isSearchable,
         name,
-        clearButtonLabel,
+        clearButtonLabel: clearButtonLabelTranslated,
         placeholder: dynamicPlaceholder,
         styles,
         isFocused,

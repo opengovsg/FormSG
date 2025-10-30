@@ -13,6 +13,8 @@ export const msSG: PartialDeep<Fields> = {
   dropdown: {
     placeholder: 'Pilih satu pilihan',
     nothingFound: 'Tiada hasil yang sepadan',
+    clearSelection: 'Kosongkan pilihan',
+    selectOptions: 'Pilih pilihan',
   },
   attachment: {
     maxFileSize: 'Saiz fail maksimum: {readableMaxSize}',

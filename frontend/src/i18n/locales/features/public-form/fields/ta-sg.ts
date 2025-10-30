@@ -13,6 +13,8 @@ export const taSG: PartialDeep<Fields> = {
   dropdown: {
     placeholder: 'ஒரு விருப்பத்தை தேர்வு செய்யவும்',
     nothingFound: 'முடிவுகள் எதுவும் பொருந்தவில்லை',
+    clearSelection: 'தேர்வை அழிக்கவும்',
+    selectOptions: 'விருப்பங்களைத் தேர்ந்தெடுக்கவும்',
   },
   attachment: {
     maxFileSize: 'கோப்பின் அதிகபட்ச அளவு: {readableMaxSize}',
