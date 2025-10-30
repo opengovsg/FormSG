@@ -107,7 +107,9 @@ export const FormEmailSection = ({
   const { user } = useUser()
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.emailNotifications',
+  })
   const initialEmailSet = useMemo(
     () => new Set(settings.emails),
     [settings.emails],
@@ -136,8 +138,6 @@ export const FormEmailSection = ({
 
   const isEmailMode = settings.responseMode === FormResponseMode.Email
 
-  const DESCRIPTION_TEXT = `All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.`
-
   return (
     <>
       <FormProvider {...formMethods}>
@@ -145,12 +145,10 @@ export const FormEmailSection = ({
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
-            description={DESCRIPTION_TEXT}
+            description={t('section.regular.labelDescription')}
             isHighContrast={isHighContrast}
           >
-            {t(
-              'features.adminForm.settings.emailNotifications.section.regular.label',
-            )}
+            {t('section.regular.label')}
           </FormLabel>
           <AdminEmailRecipientsInput
             onSubmit={handleSubmitEmails}
@@ -163,9 +161,7 @@ export const FormEmailSection = ({
               mt="0.5rem"
               opacity="1"
             >
-              {t(
-                'features.adminForm.settings.emailNotifications.section.regular.description',
-              )}
+              {t('section.regular.description')}
             </FormLabel.Description>
           ) : null}
         </FormControl>

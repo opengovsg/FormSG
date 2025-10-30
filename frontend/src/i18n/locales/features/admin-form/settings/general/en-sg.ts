@@ -42,4 +42,18 @@ export const enSG = {
     description:
       'You will receive a maximum of one email per form, per day if there are any issues reported.',
   },
+  formName: 'Form name',
+  dataClassificationInfo:
+    'All forms support up to Confidential (Cloud-Eligible) and Sensitive (High) data.',
+  secretKeyModal: {
+    activationTitle: 'Activate your form',
+    activateButton: 'Activate form',
+    secretKeyLabel: 'Enter or upload Secret Key',
+    secretKeyRequired: "Please enter the form's secret key",
+    secretKeyInvalid: 'The secret key provided is invalid',
+    dropSecretKey: 'Drop your Secret Key here',
+    enterOrDropSecretKey: 'Enter or drop your Secret Key to continue',
+    acknowledgement:
+      'If I lose my key, I will not be able to activate my form and all my responses will be lost permanently',
+  },
 }

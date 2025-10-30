@@ -1,4 +1,5 @@
 import { FormProvider, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiChevronLeft } from 'react-icons/bi'
 import { Button, Flex, Skeleton } from '@chakra-ui/react'
 
@@ -40,13 +41,15 @@ export const TranslationSection = ({
   isEndPageTranslations = false,
   isFormLogicTranslations = false,
 }: TranslationSectionProps) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const { data: form, isLoading } = useAdminForm()
   const toast = useToast({ status: 'danger' })
 
   if (!isLoading && !form) {
     toast({
-      description:
-        'There was an error retrieving your form. Please try again later.',
+      description: t('retrievalError'),
     })
   }
 
@@ -86,7 +89,7 @@ export const TranslationSection = ({
           onClick={handleOnBackClick}
           marginRight="2.25rem"
         >
-          Back to all questions
+          {t('backToQuestions')}
         </Button>
       </Flex>
       <FormProvider {...methods}>
@@ -121,7 +124,7 @@ export const TranslationSection = ({
             />
           )}
           <Button variant="solid" width="30%" onClick={handleOnSaveClick}>
-            Save Translation
+            {t('saveTranslation')}
           </Button>
         </Flex>
       </FormProvider>

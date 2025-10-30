@@ -1,4 +1,5 @@
 import { useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
 import { Language, PreventSubmitLogicDto } from '~shared/types'
@@ -18,6 +19,9 @@ export const FormLogicTranslationContainer = ({
   unicodeLocale,
   formLogics,
 }: TableTranslationContainerProps) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const { register } = useFormContext<TranslationInput>()
 
   return (
@@ -44,7 +48,7 @@ export const FormLogicTranslationContainer = ({
               fontWeight="600"
               mb="1rem"
             >
-              Disable Submission
+              {t('formLogic.disableSubmission')}
             </Text>
             <Flex direction="column" width="100%">
               <Flex alignItems="flex-start" mb="2rem">

@@ -1,5 +1,7 @@
 export const enSG = {
   title: 'Email notifications',
+  mrfAdvertising:
+    'Require routing and approval? [Check out our new feature: Multi-respondent forms!]({url})',
   header: {
     closeFormFirst:
       'To change email recipients, close your form to new responses.',
@@ -31,10 +33,13 @@ export const enSG = {
     },
     regular: {
       label: 'Notifications for new responses',
+      labelDescription:
+        'All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.',
       info: 'Allow respondents to receive a copy of their submission',
       description: 'Separate multiple email addresses with a comma',
       statusTrackerInfo: 'Allow respondents to track their submission status',
       statusTrackerDescription: 'View a sample status tracking link',
+      statusTrackerLink: 'here',
     },
   },
 }

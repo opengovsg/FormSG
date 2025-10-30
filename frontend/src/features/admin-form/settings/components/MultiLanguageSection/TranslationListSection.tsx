@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiCheck, BiError, BiGitMerge } from 'react-icons/bi'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
@@ -62,6 +63,9 @@ export const QuestionRow = ({
   isEndPage = false,
   isFormLogic = false,
 }: QuestionRowProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const [, setSearchParams] = useSearchParams()
 
   const isTranslationRowDisabled = isMyInfoField
@@ -81,7 +85,7 @@ export const QuestionRow = ({
   return (
     <Flex direction="row">
       <Tooltip
-        label={isMyInfoField ? 'Myinfo fields cannot be translated' : ''}
+        label={isMyInfoField ? t('myinfoTooltip') : ''}
         hasArrow
         placement="top"
       >
@@ -176,6 +180,9 @@ export const TranslationListSection = ({
 }: {
   language: string
 }): JSX.Element | null => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const { formId } = useParams()
   const { data: form, isLoading } = useAdminForm()
   const navigate = useNavigate()
@@ -342,7 +349,7 @@ export const TranslationListSection = ({
             <>
               <QuestionRow
                 key="Instructions"
-                questionTitle="Instructions"
+                questionTitle={t('instructions')}
                 icon={BxsDockTop}
                 isMyInfoField={false}
                 hasTranslations={hasStartPageTranslations}
@@ -380,7 +387,7 @@ export const TranslationListSection = ({
             <>
               <QuestionRow
                 key="Form Logic"
-                questionTitle="Logic"
+                questionTitle={t('logic')}
                 icon={BiGitMerge}
                 isMyInfoField={false}
                 hasTranslations={hasFormLogicTranslations}

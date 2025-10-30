@@ -12,7 +12,9 @@ import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const StatusTrackerToggle = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.emailNotifications',
+  })
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings<MultirespondentFormSettings>()
 
@@ -26,11 +28,9 @@ export const StatusTrackerToggle = (): JSX.Element => {
   const ToggleDescription = () => {
     return (
       <Text textStyle="body-2" color="secondary.400">
-        {t(
-          'features.adminForm.settings.emailNotifications.section.regular.statusTrackerDescription',
-        )}{' '}
+        {t('section.regular.statusTrackerDescription')}{' '}
         <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
-          here
+          {t('section.regular.statusTrackerLink')}
         </Link>{' '}
         <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
           <Icon as={BiLinkExternal} verticalAlign="middle" />
@@ -51,9 +51,7 @@ export const StatusTrackerToggle = (): JSX.Element => {
       <Toggle
         isLoading={mutateMrfStatusTracker.isLoading}
         isChecked={hasStatusTracker}
-        label={t(
-          'features.adminForm.settings.emailNotifications.section.regular.statusTrackerInfo',
-        )}
+        label={t('section.regular.statusTrackerInfo')}
         onChange={() => handleToggleStatusTracker()}
       />
       <ToggleDescription />

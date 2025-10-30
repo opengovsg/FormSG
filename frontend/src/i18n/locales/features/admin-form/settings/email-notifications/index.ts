@@ -3,6 +3,7 @@ import { type HasTitle } from '..'
 export * from './en-sg'
 
 export interface EmailNotifications extends HasTitle {
+  mrfAdvertising: string
   header: {
     closeFormFirst: string
     noEmailsForPaymentForms: string
@@ -31,10 +32,12 @@ export interface EmailNotifications extends HasTitle {
     }
     regular: {
       label: string
+      labelDescription: string
       info: string
       description: string
       statusTrackerInfo: string
       statusTrackerDescription: string
+      statusTrackerLink: string
     }
   }
 }

@@ -38,4 +38,16 @@ export interface General extends HasTitle {
     label: string
     description: string
   }
+  formName: string
+  dataClassificationInfo: string
+  secretKeyModal: {
+    activationTitle: string
+    activateButton: string
+    secretKeyLabel: string
+    secretKeyRequired: string
+    secretKeyInvalid: string
+    dropSecretKey: string
+    enterOrDropSecretKey: string
+    acknowledgement: string
+  }
 }

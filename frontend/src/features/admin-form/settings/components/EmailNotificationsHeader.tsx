@@ -8,14 +8,17 @@ import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText'
 
 const MRFAdvertisingInfobox = () => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.emailNotifications',
+  })
   const mdComponents = useMdComponents()
 
   return (
     <Flex bg="primary.100" p="1rem" marginBottom="40px">
       <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
-      <MarkdownText
-        components={mdComponents}
-      >{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>
+      <MarkdownText components={mdComponents}>
+        {t('mrfAdvertising', { url: GUIDE_FORM_MRF })}
+      </MarkdownText>
     </Flex>
   )
 }

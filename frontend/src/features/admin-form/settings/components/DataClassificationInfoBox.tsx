@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiSolidInfoCircle } from 'react-icons/bi'
 import { Flex, Icon } from '@chakra-ui/react'
 
@@ -5,6 +6,9 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 
 export default function DataClassificationInfoBox() {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.general',
+  })
   const mdComponents = useMdComponents({})
 
   return (
@@ -15,9 +19,9 @@ export default function DataClassificationInfoBox() {
         fontSize="1.5rem"
         mr="0.5rem"
       />
-      <MarkdownText
-        components={mdComponents}
-      >{`All forms support up to Confidential (Cloud-Eligible) and Sensitive (High) data.`}</MarkdownText>
+      <MarkdownText components={mdComponents}>
+        {t('dataClassificationInfo')}
+      </MarkdownText>
     </Flex>
   )
 }

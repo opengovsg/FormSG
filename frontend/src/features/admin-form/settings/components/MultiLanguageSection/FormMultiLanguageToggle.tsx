@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -41,6 +42,9 @@ const LanguageTranslationRow = ({
   isDefaultLanguage,
   isLast,
 }: LanguageTranslationRowProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const { formId } = useParams()
   const { data: settings } = useAdminFormSettings()
   const [, setSearchParams] = useSearchParams()
@@ -99,7 +103,7 @@ const LanguageTranslationRow = ({
         </Flex>
         {!isDefaultLanguage && (
           <HStack spacing="0.75rem">
-            <Tooltip label="Hide/show language on form">
+            <Tooltip label={t('languageRow.hideShowTooltip')}>
               <IconButton
                 variant="clear"
                 icon={
@@ -114,7 +118,7 @@ const LanguageTranslationRow = ({
                 onClick={() => handleToggleSupportedLanguage(unicodeLocale)}
               />
             </Tooltip>
-            <Tooltip label="Edit translation">
+            <Tooltip label={t('languageRow.editTooltip')}>
               <IconButton
                 variant="clear"
                 icon={<BiEditAlt width="44px" />}
@@ -160,6 +164,9 @@ const LanguageTranslationSection = ({
 }
 
 export const FormMultiLanguageToggle = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.multiLanguage',
+  })
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -196,8 +203,8 @@ export const FormMultiLanguageToggle = (): JSX.Element => {
       <Toggle
         onChange={handleToggleMultiLang}
         isChecked={hasMultiLang}
-        label="Enable multi-language"
-        description="This will allow respondents to select a language they prefer to view your form in. Translations are not automated."
+        label={t('toggle.label')}
+        description={t('toggle.description')}
       />
       {settings && hasMultiLang ? (
         <Skeleton isLoaded={true}>

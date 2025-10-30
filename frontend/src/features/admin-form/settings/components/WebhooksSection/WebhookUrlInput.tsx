@@ -19,7 +19,9 @@ import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const WebhookUrlInput = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.webhooks',
+  })
   const { data: settings, isLoading } = useAdminFormSettings()
   const { mutateFormWebhookUrl } = useMutateFormSettings()
   const {
@@ -62,7 +64,7 @@ export const WebhookUrlInput = (): JSX.Element => {
           protocols: ['https'],
           require_protocol: true,
         }) ||
-        'Please enter a valid URL (starting with https://)'
+        t('input.validationError')
       )
     },
   })
@@ -88,12 +90,8 @@ export const WebhookUrlInput = (): JSX.Element => {
       isReadOnly={mutateFormWebhookUrl.isLoading}
       isInvalid={!!errors.url}
     >
-      <FormLabel
-        description={t(
-          'features.adminForm.settings.webhooks.input.description',
-        )}
-      >
-        {t('features.adminForm.settings.webhooks.input.label')}
+      <FormLabel description={t('input.description')}>
+        {t('input.label')}
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
         <InputGroup>
@@ -103,7 +101,7 @@ export const WebhookUrlInput = (): JSX.Element => {
             </InputRightElement>
           ) : null}
           <Input
-            placeholder="https://your-webhook.com/url"
+            placeholder={t('input.placeholder')}
             onKeyDown={handleWebhookUrlEnterKeyDown}
             {...urlRegister}
             ref={mergedRefs}

@@ -1,5 +1,6 @@
 import { EmailNotifications } from './email-notifications'
 import { General } from './general'
+import { MultiLanguage } from './multi-language'
 import { Payments } from './payments'
 import { Webhooks } from './webhooks'
 
@@ -15,4 +16,5 @@ export interface Settings {
   emailNotifications: EmailNotifications
   webhooks: Webhooks
   payments: Payments
+  multiLanguage: MultiLanguage
 }

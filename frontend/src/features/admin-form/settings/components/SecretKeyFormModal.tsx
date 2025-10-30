@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
   Container,
@@ -49,6 +50,9 @@ export const SecretKeyFormModal = ({
   onSubmit,
   hasAck = false,
 }: SecretKeyFormModalProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.general.secretKeyModal',
+  })
   const {
     dragging,
     errors,
@@ -102,22 +106,20 @@ export const SecretKeyFormModal = ({
                 mb="1rem"
                 isDisabled={isLoading}
               >
-                <FormLabel>Enter or upload Secret Key</FormLabel>
+                <FormLabel>{t('secretKeyLabel')}</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
                     type="password"
                     {...register(SECRET_KEY_NAME, {
-                      required: "Please enter the form's secret key",
+                      required: t('secretKeyRequired'),
                       pattern: {
                         value: SECRET_KEY_REGEX,
-                        message: 'The secret key provided is invalid',
+                        message: t('secretKeyInvalid'),
                       },
                       setValueAs: (v) => v.trim(),
                     })}
                     placeholder={
-                      dragging
-                        ? 'Drop your Secret Key here'
-                        : 'Enter or drop your Secret Key to continue'
+                      dragging ? t('dropSecretKey') : t('enterOrDropSecretKey')
                     }
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
@@ -143,8 +145,7 @@ export const SecretKeyFormModal = ({
                       required: true,
                     })}
                   >
-                    If I lose my key, I will not be able to activate my form and
-                    all my responses will be lost permanently
+                    {t('acknowledgement')}
                   </Checkbox>
                 </FormControl>
               ) : null}

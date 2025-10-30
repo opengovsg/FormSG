@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { UseDisclosureReturn } from '@chakra-ui/react'
 
 import { FormStatus } from '~shared/types/form/form'
@@ -16,6 +17,9 @@ export const SecretKeyActivationModal = ({
   isOpen,
   publicKey,
 }: SecretKeyActivationModalProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.general.secretKeyModal',
+  })
   const { mutateFormStatus } = useMutateFormSettings()
 
   const onSubmit = () => {
@@ -29,8 +33,8 @@ export const SecretKeyActivationModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText="Activate your form"
-      submitButtonText="Activate form"
+      modalActionText={t('activationTitle')}
+      submitButtonText={t('activateButton')}
       onSubmit={onSubmit}
       hasAck
     />
