@@ -44,7 +44,7 @@ export const enSG: LandingPayments = {
     flexible: {
       title: 'Flexible',
       description:
-        'We've got you covered whether you are collecting fixed amounts or varying amounts from respondents.',
+        "We've got you covered whether you are collecting fixed amounts or varying amounts from respondents.",
     },
   },
   helpCenter: {
