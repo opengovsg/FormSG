@@ -1,5 +1,6 @@
 import { enSG as pagination } from './components/pagination'
 import { enSG as validationConstants } from './constants/validation'
+import { enSG as adminForbiddenError } from './features/admin-forbidden-error/en-sg'
 import { enSG as adminForm } from './features/admin-form'
 import { enSG as app } from './features/app'
 import { enSG as common } from './features/common'
@@ -18,6 +19,7 @@ export const enSG: FallbackTranslation = {
   translation: {
     features: {
       adminForm,
+      adminForbiddenError,
       app,
       common,
       landingPage,

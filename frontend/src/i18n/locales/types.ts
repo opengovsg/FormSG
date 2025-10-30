@@ -3,6 +3,7 @@ import { RequiredDeep } from 'type-fest'
 import { Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
+  AdminForbiddenError,
   App,
   Common,
   Feedback,
@@ -53,6 +54,7 @@ interface Translation {
           responsesPage?: ResponsesResponsesPage
         }
       }
+      adminForbiddenError?: AdminForbiddenError
       app?: App
       common?: Common
       landingPage?: LandingPage

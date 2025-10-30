@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
@@ -19,13 +20,16 @@ export interface AdminForbiddenErrorPageProps {
 export const AdminForbiddenErrorPage = ({
   message,
 }: AdminForbiddenErrorPageProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForbiddenError',
+  })
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
   return (
     <>
-      <Helmet title="Forbidden" />
+      <Helmet title={t('title')} />
       <Flex flex={1} flexDir="column" h="100%">
         <Flex
           justify="center"
@@ -57,13 +61,12 @@ export const AdminForbiddenErrorPage = ({
               textAlign="center"
             >
               <Text as="h2" textStyle="h2">
-                You do not have access to this page.
+                {t('header')}
               </Text>
               <Text textStyle="body-1">
                 {isAuthenticated
                   ? message
-                  : message ??
-                    'Log in, or contact the owner of the form for more information.'}
+                  : message ?? t('description.unauthenticated')}
               </Text>
             </Stack>
             <Stack
@@ -74,7 +77,7 @@ export const AdminForbiddenErrorPage = ({
               justify="center"
             >
               <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
-                Back
+                {t('buttons.back')}
               </Button>
 
               <Link
@@ -82,7 +85,7 @@ export const AdminForbiddenErrorPage = ({
                 as={ReactLink}
                 to={isAuthenticated ? DASHBOARD_ROUTE : LOGIN_ROUTE}
               >
-                {isAuthenticated ? 'Go to dashboard' : 'Log in'}
+                {isAuthenticated ? t('buttons.dashboard') : t('buttons.login')}
               </Link>
             </Stack>
           </Stack>

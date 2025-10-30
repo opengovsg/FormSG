@@ -1,3 +1,4 @@
+export { type AdminForbiddenError } from './admin-forbidden-error'
 export {
   type Feedback,
   type Fields,
