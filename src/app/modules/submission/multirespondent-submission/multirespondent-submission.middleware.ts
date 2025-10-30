@@ -895,7 +895,10 @@ export const handleNdiResponses = async (
         break
       }
       default:
-      // TODO: handle default
+        logger.error({
+          message: `AuthType: ${authType} unsupported for handling NdiResponses (supported: [MyInfo, CP])`,
+          meta: logMeta,
+        })
     }
 
     if (jwtPayloadResult?.isErr()) {
