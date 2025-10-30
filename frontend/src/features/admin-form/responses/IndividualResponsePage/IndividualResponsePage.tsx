@@ -113,7 +113,9 @@ const StackRow = ({
 }
 
 export const IndividualResponsePage = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.individualResponse',
+  })
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
@@ -168,12 +170,8 @@ export const IndividualResponsePage = (): JSX.Element => {
     return (
       <SecretKeyVerification
         heroSvg={<FormActivationSvg />}
-        ctaText={t(
-          'features.adminForm.responses.individualResponse.secretKeyVerification.ctaText',
-        )}
-        label={t(
-          'features.adminForm.responses.individualResponse.secretKeyVerification.label',
-        )}
+        ctaText={t('secretKeyVerification.ctaText')}
+        label={t('secretKeyVerification.label')}
       />
     )
 
@@ -210,15 +208,15 @@ export const IndividualResponsePage = (): JSX.Element => {
       >
         <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
           <StackRow
-            label="Response ID"
+            label={t('labels.responseId')}
             value={submissionId}
             isLoading={isLoading}
             isError={isError}
           />
           <StackRow
-            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : t('labels.timestamp')}
             value={
-              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+              data?.submissionTime ?? t('features.common.loadingWithEllipsis', { ns: 'translation', keyPrefix: '' })
             }
             isLoading={isLoading}
             isError={isError}
@@ -238,11 +236,14 @@ export const IndividualResponsePage = (): JSX.Element => {
                   workflowCurrentStepNumber === undefined ||
                   workflowNumTotalSteps === undefined
                     ? '-'
-                    : getPendingResponseAtString({
-                        workflowStatus,
-                        workflowCurrentStepNumber,
-                        workflowNumTotalSteps,
-                      })
+                    : getPendingResponseAtString(
+                        {
+                          workflowStatus,
+                          workflowCurrentStepNumber,
+                          workflowNumTotalSteps,
+                        },
+                        t,
+                      )
                 }
                 isLoading={isLoading}
                 isError={isError}
@@ -266,7 +267,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                 textStyle="subhead-1"
                 py={{ base: '0', md: '0.25rem' }}
               >
-                {t('features.common.attachments')}:
+                {t('features.common.attachments', { ns: 'translation', keyPrefix: '' })}:
               </Text>
               <Skeleton isLoaded={!isLoading && !isError}>
                 <Button
@@ -281,10 +282,9 @@ export const IndividualResponsePage = (): JSX.Element => {
                     )
                   }
                 >
-                  {t(
-                    'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
-                    { attachmentSize: attachmentDownloadUrls.size },
-                  )}
+                  {t('downloadAttachmentsAsZip', {
+                    attachmentSize: attachmentDownloadUrls.size,
+                  })}
                 </Button>
               </Skeleton>
             </Stack>
@@ -292,9 +292,7 @@ export const IndividualResponsePage = (): JSX.Element => {
           {form?.responseMode === FormResponseMode.Multirespondent &&
             user?.betaFlags?.mrfAdminSubmissionKey && (
               <StackRow
-                label={t(
-                  'features.adminForm.responses.individualResponse.responseLinkLabel',
-                )}
+                label={t('responseLinkLabel')}
                 value={responseLinkWithKey}
                 isLoading={isLoading}
                 isError={isError}

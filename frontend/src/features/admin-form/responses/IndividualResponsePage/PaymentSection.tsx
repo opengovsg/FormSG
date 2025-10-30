@@ -20,41 +20,37 @@ export const PaymentSection = ({
   payment,
   formId,
 }: PaymentSectionProps): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.individualResponse',
+  })
 
   if (!payment) return null
 
   const paymentDataMap = keyBy(
-    getPaymentDataView(window.location.origin, payment, formId),
+    getPaymentDataView(window.location.origin, payment, formId, t),
     'key',
   )
 
   const paymentTagProps =
     payment.status === PaymentStatus.Succeeded
       ? {
-          label: t('features.common.success'),
+          label: t('features.common.success', { ns: 'translation', keyPrefix: '' }),
           colorScheme: 'success',
           rightIcon: BiCheck,
         }
       : payment.status === PaymentStatus.PartiallyRefunded
         ? {
-            label: t(
-              'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.partiallyRefunded',
-            ),
+            label: t('paymentSection.paymentStatusLabel.partiallyRefunded'),
             colorScheme: 'secondary',
           }
         : payment.status === PaymentStatus.FullyRefunded
           ? {
-              label: t(
-                'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.fullyRefunded',
-              ),
+              label: t('paymentSection.paymentStatusLabel.fullyRefunded'),
               colorScheme: 'secondary',
             }
           : payment.status === PaymentStatus.Disputed
             ? {
-                label: t(
-                  'features.adminForm.responses.individualResponse.paymentSection.paymentStatusLabel.disputed',
-                ),
+                label: t('paymentSection.paymentStatusLabel.disputed'),
                 colorScheme: 'warning',
               }
             : undefined // The remaining options should never appear.
@@ -62,12 +58,12 @@ export const PaymentSection = ({
   const payoutTagProps =
     payment.payoutId || payment.payoutDate
       ? {
-          label: t('features.common.success'),
+          label: t('features.common.success', { ns: 'translation', keyPrefix: '' }),
           colorScheme: 'success',
           rightIcon: BiCheck,
         }
       : {
-          label: t('features.common.pending'),
+          label: t('features.common.pending', { ns: 'translation', keyPrefix: '' }),
           colorScheme: 'secondary',
         }
 
@@ -77,7 +73,10 @@ export const PaymentSection = ({
   return (
     <Flex flexDir="column" gap="4rem">
       <Flex flexDir="column" gap="1.25rem">
-        <PaymentDataHeader name="Payment" {...paymentTagProps} />
+        <PaymentDataHeader
+          name={t('paymentSection.headers.payment')}
+          {...paymentTagProps}
+        />
         <Flex flexDir="column" gap="0.75rem">
           <PaymentDataItem {...paymentDataMap['email']} />
           <PaymentDataItem {...paymentDataMap['receiptUrl']} isUrl />
@@ -95,7 +94,10 @@ export const PaymentSection = ({
         </Flex>
       </Flex>
       <Flex flexDir="column" gap="1.25rem">
-        <PayoutDataHeader name="Payout to bank account" {...payoutTagProps} />
+        <PayoutDataHeader
+          name={t('paymentSection.headers.payout')}
+          {...payoutTagProps}
+        />
         <Flex flexDir="column" gap="0.75rem">
           <PaymentDataItem {...paymentDataMap['payoutId']} isMonospace />
           <PaymentDataItem {...paymentDataMap['payoutDate']} />
@@ -118,7 +120,9 @@ function PayoutDataHeader({
   colorScheme,
   rightIcon,
 }: PaymentDataHeaderProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.individualResponse',
+  })
 
   return (
     <Flex gap="1rem" align="center">
@@ -127,12 +131,7 @@ function PayoutDataHeader({
           {name}
         </Text>
 
-        <Tooltip
-          placement="top"
-          label={t(
-            'features.adminForm.responses.individualResponse.paymentSection.tooltipLabel',
-          )}
-        >
+        <Tooltip placement="top" label={t('paymentSection.tooltipLabel')}>
           <Flex justify="center" align="center">
             <Icon as={BiInfoCircle} fontSize="1.25rem" ml="0.5rem" />
           </Flex>
@@ -186,16 +185,16 @@ function PaymentDataItem({
   isMonospace,
   isUrl,
 }: PaymentDataItemProps): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.individualResponse',
+  })
   return (
     <Flex flexDir={{ base: 'column', md: 'row' }} gap="0.25rem">
       <Text textStyle="subhead-1">{name}:</Text>
       <Text textStyle={isMonospace ? 'monospace' : undefined}>
         {isUrl ? (
           <Link href={value} target="_blank">
-            {t(
-              'features.adminForm.responses.individualResponse.paymentSection.paymentDataItemPdfDownloadLabel',
-            )}
+            {t('paymentSection.paymentDataItemPdfDownloadLabel')}
           </Link>
         ) : (
           value

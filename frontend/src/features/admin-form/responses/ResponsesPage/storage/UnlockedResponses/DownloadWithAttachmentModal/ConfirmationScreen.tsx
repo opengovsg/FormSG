@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import {
   Badge,
@@ -46,7 +46,9 @@ export const ConfirmationScreen = ({
   responsesCount,
 }: ConfirmationScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
 
   return (
     <>
@@ -54,9 +56,7 @@ export const ConfirmationScreen = ({
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.title',
-            )}
+            {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.title')}
           </Text>
           <Badge w="fit-content" colorScheme="success">
             {t('features.common.betaBadgeLabel')}
@@ -66,59 +66,46 @@ export const ConfirmationScreen = ({
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
           <Text>
-            Separate zip files will be downloaded, <b>one for each response</b>.
-            You can adjust the date range before proceeding.
+            <Trans
+              i18nKey="storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.description"
+              t={t}
+              components={{ b: <b /> }}
+            />
             <br />
             <br />
             <b>
-              {t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.numberOfResponsesAndAttachments',
-              )}
+              {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.numberOfResponsesAndAttachments')}
               :
             </b>{' '}
             {responsesCount.toLocaleString()}
             <br />
             <b>
-              {t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTime',
-              )}
+              {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTime')}
               :
             </b>{' '}
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTimeReference',
-            )}
+            {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.estimatedTimeReference')}
           </Text>
           <InlineMessage>
             <Stack>
               <Text textStyle="subhead-1">
-                {t(
-                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.title',
-                )}
+                {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.title')}
               </Text>
               <List>
                 <InlineTextListItem>
-                  {t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.doNotUseIE',
-                  )}
+                  {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.doNotUseIE')}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  {t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureStrongNetworkConnectivity',
-                  )}
+                  {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureStrongNetworkConnectivity')}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  {t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureEnoughDiskSpace',
-                  )}
+                  {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.intensiveOperationWarning.ensureEnoughDiskSpace')}
                 </InlineTextListItem>
               </List>
             </Stack>
           </InlineMessage>
           {responsesCount === 0 && (
             <InlineMessage variant="warning">
-              {t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.noResponsesInSelectedDateRange',
-              )}
+              {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.noResponsesInSelectedDateRange')}
             </InlineMessage>
           )}
         </Stack>
@@ -135,9 +122,7 @@ export const ConfirmationScreen = ({
             isLoading={isDownloading}
             isDisabled={responsesCount === 0}
           >
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.startDownload',
-            )}
+            {t('storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen.startDownload')}
           </Button>
           <Button
             isFullWidth={isMobile}

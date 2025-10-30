@@ -10,7 +10,6 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -32,7 +31,9 @@ export const CompleteScreen = ({
   onClose,
   downloadMetadata,
 }: CompleteScreenProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
   const isMobile = useIsMobile()
   const mdComponents = useMdComponents()
 
@@ -40,34 +41,40 @@ export const CompleteScreen = ({
     if (!downloadMetadata) return ''
     const { successCount, expectedCount } = downloadMetadata
     if (successCount >= expectedCount) {
-      return `All responses${
-        isWithAttachments ? ' and attachments' : ''
-      } have been downloaded successfully.`
+      return isWithAttachments
+        ? t('storage.unlockedResponses.progressModal.completeScreen.successMessages.allResponsesWithAttachments')
+        : t('storage.unlockedResponses.progressModal.completeScreen.successMessages.allResponses')
     }
     // Success count is less than expected count.
     // This means some responses were not downloaded successfully.
     // Show the user the number of responses that were not downloaded.
-    // Not inlining conditional since simplur seems to not work with inlined conditionals.
     if (isWithAttachments) {
-      return simplur`**${successCount.toLocaleString()}** ${[
-        successCount,
-      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+      return t('storage.unlockedResponses.progressModal.completeScreen.successMessages.partialSuccessWithAttachments', {
+        successCount: successCount.toLocaleString(),
+        count: successCount,
+      })
     }
-    return simplur`**${successCount.toLocaleString()}** ${[
-      successCount,
-    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
-  }, [downloadMetadata, isWithAttachments])
+    return t('storage.unlockedResponses.progressModal.completeScreen.successMessages.partialSuccess', {
+      successCount: successCount.toLocaleString(),
+      count: successCount,
+    })
+  }, [downloadMetadata, isWithAttachments, t])
 
   const attachmentErrorMessage = useMemo(() => {
     if (!downloadMetadata?.errorCount) return ''
 
-    // Not inlining conditional since simplur seems to not work with inlined conditionals.
     if (isWithAttachments) {
-      return simplur`**${downloadMetadata.errorCount}** response[|s] and attachment[|s] could not be downloaded.`
+      return t('storage.unlockedResponses.progressModal.completeScreen.errorMessages.withAttachments', {
+        errorCount: downloadMetadata.errorCount,
+        count: downloadMetadata.errorCount,
+      })
     }
 
-    return simplur`**${downloadMetadata.errorCount}** response[|s] could not be downloaded.`
-  }, [downloadMetadata?.errorCount, isWithAttachments])
+    return t('storage.unlockedResponses.progressModal.completeScreen.errorMessages.withoutAttachments', {
+      errorCount: downloadMetadata.errorCount,
+      count: downloadMetadata.errorCount,
+    })
+  }, [downloadMetadata?.errorCount, isWithAttachments, t])
 
   return (
     <>
@@ -75,9 +82,7 @@ export const CompleteScreen = ({
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
-            )}
+            {t('storage.unlockedResponses.progressModal.completeScreen.downloadComplete')}
           </Text>
           <Badge w="fit-content" colorScheme="success">
             {t('features.common.betaBadgeLabel')}
@@ -116,9 +121,7 @@ export const CompleteScreen = ({
       </ModalBody>
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
-          {t(
-            'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.backToResponses',
-          )}
+          {t('storage.unlockedResponses.progressModal.completeScreen.backToResponses')}
         </Button>
       </ModalFooter>
     </>

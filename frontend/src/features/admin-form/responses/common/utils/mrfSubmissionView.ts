@@ -1,3 +1,5 @@
+import { TFunction } from 'i18next'
+
 import {
   StrippedFormWorkflowDto,
   SubmittedStep,
@@ -18,11 +20,14 @@ interface CurrentWorkflowInfo {
 }
 
 /** Gets the business friendly message for the current pending step of the workflow.  */
-export const getPendingResponseAtString = ({
-  workflowStatus,
-  workflowCurrentStepNumber,
-  workflowNumTotalSteps,
-}: CurrentWorkflowInfo) => {
+export const getPendingResponseAtString = (
+  {
+    workflowStatus,
+    workflowCurrentStepNumber,
+    workflowNumTotalSteps,
+  }: CurrentWorkflowInfo,
+  t?: TFunction,
+) => {
   const isPending =
     workflowStatus === WorkflowStatus.PENDING &&
     workflowCurrentStepNumber < workflowNumTotalSteps
@@ -34,23 +39,36 @@ export const getPendingResponseAtString = ({
   // Thus, it should mean that it is pending the response of N+1
   const pendingStep = workflowCurrentStepNumber + 1
 
-  return getCurrentStepString({
-    workflowCurrentStepNumber: pendingStep,
-    workflowNumTotalSteps,
-  })
+  return getCurrentStepString(
+    {
+      workflowCurrentStepNumber: pendingStep,
+      workflowNumTotalSteps,
+    },
+    t,
+  )
 }
 
 /** Gets the business friendly string for current step of workflow. */
-const getCurrentStepString = ({
-  workflowCurrentStepNumber,
-  workflowNumTotalSteps,
-}: Pick<
-  CurrentWorkflowInfo,
-  'workflowNumTotalSteps' | 'workflowCurrentStepNumber'
->) => {
-  return workflowCurrentStepNumber && workflowNumTotalSteps
-    ? `Step ${workflowCurrentStepNumber} of ${workflowNumTotalSteps}`
-    : ''
+const getCurrentStepString = (
+  {
+    workflowCurrentStepNumber,
+    workflowNumTotalSteps,
+  }: Pick<
+    CurrentWorkflowInfo,
+    'workflowNumTotalSteps' | 'workflowCurrentStepNumber'
+  >,
+  t?: TFunction,
+) => {
+  if (!workflowCurrentStepNumber || !workflowNumTotalSteps) {
+    return ''
+  }
+
+  return t
+    ? t('mrf.workflowStep', {
+        currentStep: workflowCurrentStepNumber,
+        totalSteps: workflowNumTotalSteps,
+      })
+    : `Step ${workflowCurrentStepNumber} of ${workflowNumTotalSteps}`
 }
 
 /** Gets the business friendly string for MRF submission status. */

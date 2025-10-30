@@ -30,12 +30,6 @@ import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
-import {
-  MRF_PENDING_RESPONSE_AT_LABEL,
-  MRF_REMINDERS_LABEL,
-  MRF_RESPONSE_TIMESTAMP_LABEL,
-  MRF_WORKFLOW_STATUS_LABEL,
-} from '~features/admin-form/responses/constants'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
@@ -75,6 +69,13 @@ function PendingBadge() {
   )
 }
 
+function PayoutPendingText() {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
+  return t('storage.unlockedResponses.responsesTable.status.payoutPending')
+}
+
 function CompletedBadge() {
   const { t } = useTranslation()
   return (
@@ -108,23 +109,24 @@ function NotApprovedBadge() {
   )
 }
 
-const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+// Helper function to create base columns with translations
+const createBaseColumns = (t: (key: string) => string): Column<ResponseColumnData>[] => [
   {
-    Header: '#',
+    Header: t('storage.unlockedResponses.responsesTable.headers.number'),
     accessor: 'number',
-    width: 80, // width is used for both the flex-basis and flex-grow
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    maxWidth: 100, // maxWidth is only used as a limit for resizing
+    width: 80,
+    minWidth: 80,
+    maxWidth: 100,
   },
   {
-    Header: 'Response ID',
+    Header: t('storage.unlockedResponses.responsesTable.headers.responseId'),
     accessor: 'refNo',
     width: 300,
     minWidth: 300,
     maxWidth: 300,
   },
   {
-    Header: 'Timestamp',
+    Header: t('storage.unlockedResponses.responsesTable.headers.timestamp'),
     accessor: 'submissionTime',
     width: 250,
     minWidth: 250,
@@ -132,9 +134,10 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
+// Helper function to create payment columns with translations
+const createPaymentColumns = (t: (key: string) => string): Column<ResponseColumnData>[] => [
   {
-    Header: 'Email',
+    Header: t('storage.unlockedResponses.responsesTable.headers.email'),
     accessor: ({ payments }) => {
       if (!payments?.email) {
         return ''
@@ -144,9 +147,8 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 250,
     width: 250,
   },
-
   {
-    Header: 'Paid Amount (S$)', //  (amt responder paid)
+    Header: t('storage.unlockedResponses.responsesTable.headers.paidAmount'),
     accessor: ({ payments }) => {
       if (!payments) {
         return ''
@@ -156,9 +158,8 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
     minWidth: 150,
     width: 150,
   },
-
   {
-    Header: 'Fees (S$)', //  (paid - net)
+    Header: t('storage.unlockedResponses.responsesTable.headers.fees'),
     accessor: ({ payments }) => {
       if (!payments?.transactionFee) {
         return ''
@@ -166,25 +167,22 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       if (payments.transactionFee < 0) {
         return ''
       }
-
       return `${centsToDollars(payments.transactionFee)}`
     },
     minWidth: 150,
     width: 150,
   },
-
   {
-    Header: 'Net Amount (S$)', //  (amt they receive in bank)
+    Header: t('storage.unlockedResponses.responsesTable.headers.netAmount'),
     accessor: ({ payments }) => getNetAmount(payments),
     minWidth: 150,
     width: 150,
   },
-
   {
-    Header: 'Payout Date',
+    Header: t('storage.unlockedResponses.responsesTable.headers.payoutDate'),
     accessor: ({ payments }) => {
       if (!payments) {
-        return 'Pending'
+        return <PayoutPendingText />
       }
       return payments.payoutDate
     },
@@ -194,23 +192,24 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+// Helper function to create MRF columns with translations
+const createMrfColumns = (t: (key: string) => string): Column<ResponseColumnData>[] => [
   {
-    Header: '#',
+    Header: t('storage.unlockedResponses.responsesTable.headers.number'),
     accessor: 'number',
     width: 80,
     minWidth: 80,
     maxWidth: 100,
   },
   {
-    Header: 'Response ID',
+    Header: t('storage.unlockedResponses.responsesTable.headers.responseId'),
     accessor: 'refNo',
     width: 240,
     minWidth: 240,
     maxWidth: 240,
   },
   {
-    Header: MRF_WORKFLOW_STATUS_LABEL,
+    Header: t('storage.unlockedResponses.responsesTable.mrf.workflowStatus'),
     accessor: ({ mrf }) => {
       if (!mrf?.workflowStatus) {
         return ''
@@ -233,7 +232,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 160,
   },
   {
-    Header: MRF_PENDING_RESPONSE_AT_LABEL,
+    Header: t('storage.unlockedResponses.responsesTable.mrf.pendingResponseAt'),
     accessor: ({ mrf }) => {
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
@@ -256,23 +255,14 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 180,
   },
   {
-    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    Header: t('storage.unlockedResponses.responsesTable.mrf.responseTimestamp'),
     accessor: 'submissionTime',
-    // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
-    // accessor: ({ mrf }) =>
-    //   mrf?.lastSubmittedAt
-    //     ? formatInTimeZone(
-    //         mrf.lastSubmittedAt,
-    //         'Asia/Singapore',
-    //         'do MMM yyyy, hh:mm:ss a',
-    //       )
-    //     : '',
     width: 240,
     minWidth: 240,
     maxWidth: 240,
   },
   {
-    Header: MRF_REMINDERS_LABEL,
+    Header: t('storage.unlockedResponses.responsesTable.mrf.reminders'),
     Cell: ({ row }) => {
       const isPending =
         row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
@@ -288,10 +278,10 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
-const PAYMENT_RESPONSE_TABLE_COLUMNS =
-  BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
-
 export const ResponsesTable = () => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
   const { data: form } = useAdminForm()
   const isPaymentsForm =
     form?.responseMode === FormResponseMode.Encrypt
@@ -325,13 +315,13 @@ export const ResponsesTable = () => {
 
   const columns = useMemo(() => {
     if (isMultiRespondentForm) {
-      return MRF_RESPONSE_TABLE_COLUMNS
+      return createMrfColumns(t)
     }
     if (isPaymentsForm) {
-      return PAYMENT_RESPONSE_TABLE_COLUMNS
+      return createBaseColumns(t).concat(createPaymentColumns(t))
     }
-    return BASE_RESPONSE_TABLE_COLUMNS
-  }, [isMultiRespondentForm, isPaymentsForm])
+    return createBaseColumns(t)
+  }, [isMultiRespondentForm, isPaymentsForm, t])
 
   const {
     prepareRow,

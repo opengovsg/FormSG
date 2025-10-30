@@ -1,6 +1,9 @@
 export * from './en-sg'
 
 export interface ResponsesResponsesPage {
+  errors: {
+    formRetrievalError: string
+  }
   emptyResponses: {
     title: string
     subtitle: string
@@ -19,6 +22,7 @@ export interface ResponsesResponsesPage {
         }
         confirmationScreen: {
           title: string
+          description: string
           numberOfResponsesAndAttachments: string
           estimatedTime: string
           estimatedTimeReference: string
@@ -39,6 +43,16 @@ export interface ResponsesResponsesPage {
         completeScreen: {
           downloadComplete: string
           backToResponses: string
+          successMessages: {
+            allResponses: string
+            allResponsesWithAttachments: string
+            partialSuccessWithAttachments: string
+            partialSuccess: string
+          }
+          errorMessages: {
+            withAttachments: string
+            withoutAttachments: string
+          }
         }
         content: {
           title: string
@@ -47,6 +61,26 @@ export interface ResponsesResponsesPage {
         }
       }
       responsesTable: {
+        headers: {
+          number: string
+          responseId: string
+          timestamp: string
+          email: string
+          paidAmount: string
+          fees: string
+          netAmount: string
+          payoutDate: string
+        }
+        status: {
+          payoutPending: string
+        }
+        mrf: {
+          responseTimestamp: string
+          pendingResponseAt: string
+          workflowStatus: string
+          reminders: string
+          statusTrackingLink: string
+        }
         sendReminderButton: {
           sendReminder: string
           reminderSent: string
@@ -64,6 +98,13 @@ export interface ResponsesResponsesPage {
         menuItem: {
           csvOnly: string
           csvWithAttachments: string
+        }
+        toasts: {
+          noResponses: string
+          partialSuccess: string
+          success: string
+          failedToStart: string
+          downloadCanceled: string
         }
       }
       unlockedResponses: {

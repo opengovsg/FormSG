@@ -10,7 +10,15 @@ export interface ResponsesIndividualResponse {
   }
   downloadAttachmentsAsZip: string
   responseLinkLabel: string
+  labels: {
+    responseId: string
+    timestamp: string
+  }
   paymentSection: {
+    headers: {
+      payment: string
+      payout: string
+    }
     paymentStatusLabel: {
       partiallyRefunded: string
       fullyRefunded: string
@@ -18,6 +26,26 @@ export interface ResponsesIndividualResponse {
     }
     tooltipLabel: string
     paymentDataItemPdfDownloadLabel: string
+  }
+  paymentDataView: {
+    fields: {
+      paymentStatus: string
+      payer: string
+      proofOfPayment: string
+      paymentIntentId: string
+      paymentAmount: string
+      productService: string
+      paymentDateTime: string
+      transactionFee: string
+      payoutId: string
+      payoutDateTime: string
+    }
+  }
+  mrf: {
+    workflowStep: string
+  }
+  individualResponseNavbar: {
+    printAriaLabel: string
   }
   decryptedAttachment: {
     aria: string

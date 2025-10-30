@@ -1,3 +1,5 @@
+import { TFunction } from 'i18next'
+
 import { SubmissionPaymentDto } from '~shared/types'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
@@ -36,42 +38,52 @@ const getFullInvoiceDownloadUrl = (
 /**
  * Helper function to obtain the payment field data that we want to display to
  * admins, used both in the individual response page and the exported CSV.
+ * @param hostOrigin the origin of the host
  * @param payment the payment data object returned within the submission object
+ * @param formId the form ID
+ * @param t optional translation function. If not provided, uses English defaults
  * @returns payment data view with an array of names and values, ordered in CSV column order.
  */
 export const getPaymentDataView = (
   hostOrigin: string,
   payment: SubmissionPaymentDto,
   formId: string,
+  t?: TFunction,
 ): PaymentDataViewItem[] =>
   // Payment data association of keys to values, in CSV column order
   [
     {
       key: 'status',
-      name: 'Payment status',
+      name: t ? t('paymentDataView.fields.paymentStatus') : 'Payment status',
       value: toSentenceCase(payment.status),
     },
 
-    { key: 'email', name: 'Payer', value: payment.email },
+    {
+      key: 'email',
+      name: t ? t('paymentDataView.fields.payer') : 'Payer',
+      value: payment.email,
+    },
     {
       key: 'receiptUrl',
-      name: 'Proof of Payment',
+      name: t ? t('paymentDataView.fields.proofOfPayment') : 'Proof of Payment',
       value: getFullInvoiceDownloadUrl(hostOrigin, formId, payment.id),
     },
 
     {
       key: 'paymentIntentId',
-      name: 'Payment intent ID',
+      name: t
+        ? t('paymentDataView.fields.paymentIntentId')
+        : 'Payment intent ID',
       value: payment.paymentIntentId,
     },
     {
       key: 'amount',
-      name: 'Payment amount',
+      name: t ? t('paymentDataView.fields.paymentAmount') : 'Payment amount',
       value: centsToDollarString(payment.amount),
     },
     {
       key: 'products',
-      name: 'Product/service',
+      name: t ? t('paymentDataView.fields.productService') : 'Product/service',
       value:
         payment.products
           ?.map(({ name, quantity }) => `${name} x ${quantity}`)
@@ -79,24 +91,28 @@ export const getPaymentDataView = (
     },
     {
       key: 'paymentDate',
-      name: 'Payment date and time',
+      name: t
+        ? t('paymentDataView.fields.paymentDateTime')
+        : 'Payment date and time',
       value: payment.paymentDate,
     },
 
     {
       key: 'transactionFee',
-      name: 'Transaction fee',
+      name: t ? t('paymentDataView.fields.transactionFee') : 'Transaction fee',
       value: centsToDollarString(payment.transactionFee),
     },
 
     {
       key: 'payoutId',
-      name: 'Payout ID',
+      name: t ? t('paymentDataView.fields.payoutId') : 'Payout ID',
       value: payment.payoutId ?? '-',
     },
     {
       key: 'payoutDate',
-      name: 'Payout date and time',
+      name: t
+        ? t('paymentDataView.fields.payoutDateTime')
+        : 'Payout date and time',
       value: payment.payoutDate ?? '-',
     },
   ]

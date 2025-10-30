@@ -113,7 +113,9 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     return `..?${searchParams}`
   }, [lastNavPage, lastNavSubmissionId])
 
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.individualResponse',
+  })
 
   const { user } = useUser()
   const gb = useGrowthBook()
@@ -159,20 +161,20 @@ export const IndividualResponseNavbar = (): JSX.Element => {
           to={backLink}
         >
           <Icon as={BiLeftArrowAlt} fontSize="1.5rem" mr="0.5rem" />
-          {t('features.adminForm.responses.individualResponse.backToList')}
+          {t('backToList')}
         </Link>
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
           <Stack direction="row" justify="center" align="center">
             <Text textStyle="h2" as="h2">
-              {t('features.common.response')}
+              {t('features.common.response', { ns: 'translation', keyPrefix: '' })}
               {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
             </Text>
             {isAdminPrintPdfEnabled && (
               <Box>
                 <IconButton
-                  aria-label="Print"
+                  aria-label={t('individualResponseNavbar.printAriaLabel')}
                   icon={<FaRegFilePdf />}
                   isLoading={isLoading || isFormLoading}
                   onClick={() => {
@@ -201,17 +203,13 @@ export const IndividualResponseNavbar = (): JSX.Element => {
           isDisabled={!prevSubmissionId || isAnyFetching}
           onClick={handleNavigatePrev}
           icon={<BiChevronLeft />}
-          aria-label={t(
-            'features.adminForm.responses.individualResponse.previousSubmission',
-          )}
+          aria-label={t('previousSubmission')}
         />
         <IconButton
           isDisabled={!nextSubmissionId || isAnyFetching}
           onClick={handleNavigateNext}
           icon={<BiChevronRight />}
-          aria-label={t(
-            'features.adminForm.responses.individualResponse.nextSubmission',
-          )}
+          aria-label={t('nextSubmission')}
         />
       </ButtonGroup>
     </Grid>

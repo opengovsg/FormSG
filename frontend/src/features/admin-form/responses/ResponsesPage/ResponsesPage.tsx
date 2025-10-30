@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -9,6 +10,9 @@ import { ResponsesPageSkeleton } from './ResponsesPageSkeleton'
 import { StorageResponsesTab } from './storage'
 
 export const ResponsesPage = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
   const { data: form, isLoading } = useAdminForm()
 
   const toast = useToast({ status: 'danger' })
@@ -17,8 +21,7 @@ export const ResponsesPage = (): JSX.Element => {
 
   if (!form) {
     toast({
-      description:
-        'There was an error retrieving your form. Please try again later.',
+      description: t('errors.formRetrievalError'),
     })
     return <ResponsesPageSkeleton />
   }

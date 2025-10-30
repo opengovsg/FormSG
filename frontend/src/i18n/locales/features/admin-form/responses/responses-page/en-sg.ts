@@ -1,6 +1,10 @@
 import { ResponsesResponsesPage } from '.'
 
 export const enSG: ResponsesResponsesPage = {
+  errors: {
+    formRetrievalError:
+      'There was an error retrieving your form. Please try again later.',
+  },
   emptyResponses: {
     title: "You don't have any responses yet.",
     subtitle: 'Try using {link} to send out your form links!',
@@ -22,6 +26,8 @@ export const enSG: ResponsesResponsesPage = {
         },
         confirmationScreen: {
           title: 'Download responses and attachments',
+          description:
+            'Separate zip files will be downloaded, <b>one for each response</b>. You can adjust the date range before proceeding.',
           numberOfResponsesAndAttachments:
             'Number of responses and attachments',
           estimatedTime: 'Estimated time',
@@ -48,6 +54,21 @@ export const enSG: ResponsesResponsesPage = {
         completeScreen: {
           downloadComplete: 'Download complete',
           backToResponses: 'Back to responses',
+          successMessages: {
+            allResponses: 'All responses have been downloaded successfully.',
+            allResponsesWithAttachments:
+              'All responses and attachments have been downloaded successfully.',
+            partialSuccessWithAttachments:
+              '**{successCount}** {count, plural, =1 {response and attachment has} other {responses and attachments have}} been downloaded successfully, refer to the downloaded CSV file for more details',
+            partialSuccess:
+              '**{successCount}** {count, plural, =1 {response has} other {responses have}} been downloaded successfully, refer to the downloaded CSV file for more details',
+          },
+          errorMessages: {
+            withAttachments:
+              '**{errorCount}** {count, plural, =1 {response and attachment} other {responses and attachments}} could not be downloaded.',
+            withoutAttachments:
+              '**{errorCount}** {count, plural, =1 {response} other {responses}} could not be downloaded.',
+          },
         },
         content: {
           title: 'Downloading...',
@@ -56,6 +77,26 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       responsesTable: {
+        headers: {
+          number: '#',
+          responseId: 'Response ID',
+          timestamp: 'Timestamp',
+          email: 'Email',
+          paidAmount: 'Paid Amount (S$)',
+          fees: 'Fees (S$)',
+          netAmount: 'Net Amount (S$)',
+          payoutDate: 'Payout Date',
+        },
+        status: {
+          payoutPending: 'Pending',
+        },
+        mrf: {
+          responseTimestamp: 'Response timestamp',
+          pendingResponseAt: 'Pending response at',
+          workflowStatus: 'Workflow status',
+          reminders: 'Reminders',
+          statusTrackingLink: 'Status tracking link',
+        },
         sendReminderButton: {
           sendReminder: 'Send reminder',
           reminderSent: 'Reminder sent',
@@ -75,6 +116,15 @@ export const enSG: ResponsesResponsesPage = {
         menuItem: {
           csvOnly: 'CSV only',
           csvWithAttachments: 'CSV with attachments',
+        },
+        toasts: {
+          noResponses: 'No responses to download',
+          partialSuccess:
+            'Partial success. {successCount}/{expectedCount} {count, plural, =1 {response was} other {responses were}} decrypted. {errorCount} failed.',
+          success:
+            'Success. {successCount}/{expectedCount} {count, plural, =1 {response was} other {responses were}} decrypted.',
+          failedToStart: 'Failed to start download. Please try again later.',
+          downloadCanceled: 'Responses download has been canceled.',
         },
       },
       unlockedResponses: {

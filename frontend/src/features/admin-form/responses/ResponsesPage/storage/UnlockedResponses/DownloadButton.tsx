@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -71,29 +70,34 @@ export const DownloadButton = (): JSX.Element => {
       onSuccess: ({ successCount, expectedCount, errorCount }) => {
         if (downloadParams?.responsesCount === 0) {
           toast({
-            description: 'No responses to download',
+            description: t('storage.unlockedResponses.downloadButton.toasts.noResponses'),
           })
           return
         }
         if (errorCount > 0) {
           toast({
             status: 'warning',
-            description: simplur`Partial success. ${successCount}/${expectedCount} ${[
+            description: t('storage.unlockedResponses.downloadButton.toasts.partialSuccess', {
               successCount,
-            ]}response[|s] [was|were] decrypted. ${errorCount} failed.`,
+              expectedCount,
+              count: successCount,
+              errorCount,
+            }),
           })
           return
         }
         toast({
-          description: simplur`Success. ${successCount}/${expectedCount} ${[
+          description: t('storage.unlockedResponses.downloadButton.toasts.success', {
             successCount,
-          ]}response[|s] [was|were] decrypted.`,
+            expectedCount,
+            count: successCount,
+          }),
         })
       },
       onError: () => {
         toast({
           status: 'danger',
-          description: 'Failed to start download. Please try again later.',
+          description: t('storage.unlockedResponses.downloadButton.toasts.failedToStart'),
         })
       },
       onSettled: (decryptResult) => {
@@ -138,17 +142,19 @@ export const DownloadButton = (): JSX.Element => {
     handleModalClose()
     toast({
       status: 'warning',
-      description: 'Responses download has been canceled.',
+      description: t('storage.unlockedResponses.downloadButton.toasts.downloadCanceled'),
     })
     setDownloadMetadata({ isCanceled: true })
-  }, [handleModalClose, toast])
+  }, [handleModalClose, t, toast])
 
   const handleAttachmentsDownloadCancel = useCallback(() => {
     resetDownload()
     setDownloadMetadata({ isCanceled: true })
   }, [resetDownload])
 
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.responses.responsesPage',
+  })
 
   return (
     <>
