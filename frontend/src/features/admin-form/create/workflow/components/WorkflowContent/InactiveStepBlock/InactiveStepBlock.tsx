@@ -33,11 +33,13 @@ interface InactiveStepBlockProps {
 interface RespondentBadgeProps {
   step: FormWorkflowStepDto
   idToFieldMap: Dictionary<FormFieldWithQuestionNo<FormField>>
+  t: (key: string) => string
 }
 
 const SubsequentStepRespondentBadges = ({
   step,
   idToFieldMap,
+  t,
 }: RespondentBadgeProps): JSX.Element => {
   switch (step.workflow_type) {
     case WorkflowType.Static:
@@ -202,6 +204,7 @@ export const InactiveStepBlock = ({
                 <SubsequentStepRespondentBadges
                   step={step}
                   idToFieldMap={idToFieldMap}
+                  t={t}
                 />
               </Flex>
             )}
