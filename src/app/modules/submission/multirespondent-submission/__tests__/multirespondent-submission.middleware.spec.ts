@@ -266,3 +266,23 @@ describe('createFormsgAndRetrieveForm', () => {
     expect(getMultirespondentSubmission).not.toHaveBeenCalled()
   })
 })
+
+describe('handleNdiResponses', () => {
+  it('should handle NDI responses for the first step correctly', async () => {
+    // Arrange
+    const mockReq = createMockReq({
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+    })
+    const mockRes = createMockRes()
+
+    // Act
+    await handleNdiResponses(mockReq, mockRes as any)
+
+    // Assert
+    expect(mockRes.status).toHaveBeenCalledWith(200)
+    expect(mockRes.json).toHaveBeenCalledWith({
+      message: 'NDI response handled successfully',
+    })
+  })
+})
