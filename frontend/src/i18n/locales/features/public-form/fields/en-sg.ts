@@ -66,4 +66,13 @@ export const enSG: Fields = {
     title: 'Send the following emails a copy of my responses upon submission',
     info: 'Separate multiple email addresses with a comma',
   },
+  calendar: {
+    today: 'Today',
+    todayAriaLabel: "Focus on today's date",
+  },
+  datePicker: {
+    selectFromDatePicker: 'Select from date picker. ',
+    selectedDateIs: 'Selected date is {date}.',
+    invalidDate: 'The current selected date is invalid.',
+  },
 }

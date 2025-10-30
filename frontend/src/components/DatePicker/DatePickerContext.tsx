@@ -10,6 +10,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CSSObject,
   FormControlProps,
@@ -101,6 +102,9 @@ const useProvideDatePicker = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const isMobile = useIsMobile()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.publicForm.components.fields.datePicker',
+  })
 
   const disclosureProps = useDisclosure({
     onClose: () => {
@@ -161,16 +165,18 @@ const useProvideDatePicker = ({
   )
 
   const calendarButtonAria = useMemo(() => {
-    let ariaLabel = 'Select from date picker. '
+    let ariaLabel = t('selectFromDatePicker')
     if (internalValue) {
       if (isValid(internalValue)) {
-        ariaLabel += `Selected date is ${internalValue.toLocaleDateString()}.`
+        ariaLabel += t('selectedDateIs', {
+          date: internalValue.toLocaleDateString(),
+        })
       } else {
-        ariaLabel += 'The current selected date is invalid.'
+        ariaLabel += t('invalidDate')
       }
     }
     return ariaLabel
-  }, [internalValue])
+  }, [internalValue, t])
 
   const handleDateChange = useCallback(
     (date: Date | null) => {

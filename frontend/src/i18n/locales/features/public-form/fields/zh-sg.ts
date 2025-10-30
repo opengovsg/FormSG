@@ -42,4 +42,13 @@ export const zhSG: PartialDeep<Fields> = {
       },
     },
   },
+  calendar: {
+    today: '今天',
+    todayAriaLabel: '专注于今天的日期',
+  },
+  datePicker: {
+    selectFromDatePicker: '从日期选择器中选择。',
+    selectedDateIs: '选择的日期是 {date}。',
+    invalidDate: '当前选择的日期无效。',
+  },
 }

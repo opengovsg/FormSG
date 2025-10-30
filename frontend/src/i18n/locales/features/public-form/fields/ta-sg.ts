@@ -45,4 +45,13 @@ export const taSG: PartialDeep<Fields> = {
       },
     },
   },
+  calendar: {
+    today: 'இன்று',
+    todayAriaLabel: 'இன்றைய தேதியைக் கவனியுங்கள்',
+  },
+  datePicker: {
+    selectFromDatePicker: 'தேதி தேர்வியிலிருந்து தேர்ந்தெடுக்கவும். ',
+    selectedDateIs: 'தேர்ந்தெடுக்கப்பட்ட தேதி {date}.',
+    invalidDate: 'தற்போது தேர்ந்தெடுக்கப்பட்ட தேதி தவறானது.',
+  },
 }

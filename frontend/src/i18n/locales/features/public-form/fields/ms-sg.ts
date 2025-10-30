@@ -45,4 +45,13 @@ export const msSG: PartialDeep<Fields> = {
       },
     },
   },
+  calendar: {
+    today: 'Hari ini',
+    todayAriaLabel: 'Fokus pada tarikh hari ini',
+  },
+  datePicker: {
+    selectFromDatePicker: 'Pilih dari pemilih tarikh. ',
+    selectedDateIs: 'Tarikh yang dipilih ialah {date}.',
+    invalidDate: 'Tarikh yang dipilih semasa tidak sah.',
+  },
 }

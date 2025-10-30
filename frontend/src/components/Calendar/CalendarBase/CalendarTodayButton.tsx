@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -8,16 +9,20 @@ import { useCalendarStyles } from './CalendarStyleProvider'
 export const CalendarTodayButton = (): JSX.Element => {
   const styles = useCalendarStyles()
   const { handleTodayClick, colorScheme } = useCalendar()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.publicForm.components.fields.calendar',
+  })
+
   return (
     <Box sx={styles.todayLinkContainer}>
       <Button
-        aria-label="Focus on today's date"
+        aria-label={t('todayAriaLabel')}
         colorScheme={colorScheme}
         variant="link"
         type="button"
         onClick={handleTodayClick}
       >
-        Today
+        {t('today')}
       </Button>
     </Box>
   )

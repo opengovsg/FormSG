@@ -57,6 +57,15 @@ export interface Fields {
     title: string
     info: string
   }
+  calendar: {
+    today: string
+    todayAriaLabel: string
+  }
+  datePicker: {
+    selectFromDatePicker: string
+    selectedDateIs: string
+    invalidDate: string
+  }
 }
 
 export * from './en-sg'
