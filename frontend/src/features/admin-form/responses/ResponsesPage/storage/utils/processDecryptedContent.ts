@@ -22,25 +22,25 @@ import {
 } from '~features/public-form/utils'
 
 /**
- * Returns a verifiedFormField matching the given type containing the given value.
- * @param type the field type to match
+ * Returns a verifiedFormField matching the given verifiedKey containing the given value.
+ * @param verifiedKey the field type to match
  * @param value the value to insert into the response to be returned
  * @returns the desired response object if type is valid. Else returns null.
  */
 const getVerifiedFieldFromResponse = (
-  type: VerifiedKeys | string,
+  singpassAuthType: VerifiedKeys | string,
   value: string,
 ): VerifiedFormField | null => {
-  // Extract base key and optional step number
-  const match = type.match(
+  // Extract verifiedKey and optional step number (for MRF cases) from singpassAuthType
+  const verifiedKeyMatch = singpassAuthType.match(
     /^(uinFin|cpUen|cpUid|sgidUinFin)(?: \(Step (\d+)\))?$/,
   )
-  if (!match) return null
+  if (!verifiedKeyMatch) return null
 
-  const [, baseKey, step] = match
-  const stepSuffix = step ? ` (Step ${step})` : ''
+  const [, verifiedKey, stepNumber] = verifiedKeyMatch
+  const stepSuffix = stepNumber ? ` (Step ${stepNumber})` : ''
 
-  switch (baseKey as VerifiedKeys) {
+  switch (verifiedKey as VerifiedKeys) {
     case VerifiedKeys.SpUinFin:
       return {
         question: SPCPFieldTitle.SpNric + stepSuffix,
