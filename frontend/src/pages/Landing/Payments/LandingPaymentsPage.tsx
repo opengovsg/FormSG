@@ -189,7 +189,9 @@ export const LandingPaymentsPage = (): JSX.Element => {
               {t('helpCenter.faq.whatDoINeed.answer')} <LinkToBottomCTA />
             </Text>
           </HelpAccordionItem>
-          <HelpAccordionItem title={t('helpCenter.faq.transactionFees.question')}>
+          <HelpAccordionItem
+            title={t('helpCenter.faq.transactionFees.question')}
+          >
             <Text>
               {t('helpCenter.faq.transactionFees.answer')} <LinkToBottomCTA />
             </Text>
@@ -197,7 +199,9 @@ export const LandingPaymentsPage = (): JSX.Element => {
           <HelpAccordionItem title={t('helpCenter.faq.invoice.question')}>
             <Text>{t('helpCenter.faq.invoice.answer')}</Text>
           </HelpAccordionItem>
-          <HelpAccordionItem title={t('helpCenter.faq.reconciliation.question')}>
+          <HelpAccordionItem
+            title={t('helpCenter.faq.reconciliation.question')}
+          >
             <Text>{t('helpCenter.faq.reconciliation.answer')}</Text>
           </HelpAccordionItem>
         </Accordion>
