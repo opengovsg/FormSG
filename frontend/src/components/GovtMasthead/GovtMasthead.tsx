@@ -200,7 +200,9 @@ export const GovtMasthead = ({
                 }}
               />{' '}
               <Link
-                aria-label={t('officialWebsiteLinks.trustedWebsitesLink.ariaLabel')}
+                aria-label={t(
+                  'officialWebsiteLinks.trustedWebsitesLink.ariaLabel',
+                )}
                 href="https://go.gov.sg/trusted-sites"
                 isExternal
               >
