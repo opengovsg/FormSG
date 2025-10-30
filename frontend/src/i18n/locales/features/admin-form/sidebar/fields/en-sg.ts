@@ -88,9 +88,11 @@ export const enSG: Fields = {
         title: 'Content',
         placeholder: 'Default email body',
       },
-      includePdfResponse: 'Include PDF response',
+      includeResponse: 'Include a copy of their responses',
       includePdfResponseWarning:
         'PDF responses are not available for payment forms.',
+      includeResponseDescription:
+        'Responses are included in the email and as a PDF attachment',
     },
   },
   mobileNo: {
