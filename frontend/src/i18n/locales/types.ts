@@ -1,12 +1,6 @@
 import { RequiredDeep } from 'type-fest'
 
-import {
-  FeatureBanner,
-  Footer,
-  FormEndPage,
-  GovtMasthead,
-  Pagination,
-} from './components'
+import { FeatureBanner, Footer, FormEndPage, Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
   AdminForbiddenError,
@@ -85,7 +79,6 @@ interface Translation {
       featureBanner?: FeatureBanner
       footer?: Footer
       formEndPage?: FormEndPage
-      govtMasthead?: GovtMasthead
       pagination?: Pagination
     }
     constants: {
