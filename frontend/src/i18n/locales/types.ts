@@ -16,11 +16,13 @@ import {
   Fields,
   HeaderAndInstructions,
   LandingPage,
+  LandingPayments,
   Logic,
   Login,
   Meta,
   Modals,
   Navbar,
+  NotFoundError,
   PublicForm,
   ResponsesCharts,
   ResponsesComponents,
@@ -64,8 +66,10 @@ interface Translation {
       app?: App
       common?: Common
       landingPage?: LandingPage
+      landingPayments?: LandingPayments
       publicForm?: PublicForm
       login?: Login
+      notFoundError?: NotFoundError
       workspace?: Workspace
       whatsNew?: WhatsNew
       user?: {

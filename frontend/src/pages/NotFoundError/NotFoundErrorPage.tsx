@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
@@ -13,13 +14,16 @@ import Link from '~components/Link'
 import { NotFoundSvgr } from './NotFoundSvgr'
 
 export const NotFoundErrorPage = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.notFoundError',
+  })
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
   return (
     <>
-      <Helmet title="Not found" />
+      <Helmet title={t('title')} />
       <Flex flex={1} flexDir="column" h="100%">
         <Flex
           justify="center"
@@ -45,7 +49,7 @@ export const NotFoundErrorPage = (): JSX.Element => {
             textAlign="center"
           >
             <Text as="h2" textStyle="h2">
-              This page could not be found.
+              {t('header')}
             </Text>
             <Stack
               align="center"
@@ -54,11 +58,11 @@ export const NotFoundErrorPage = (): JSX.Element => {
               justify="center"
             >
               <Button isFullWidth={isMobile} onClick={() => navigate(-1)}>
-                Back
+                {t('buttons.back')}
               </Button>
               {isAuthenticated ? (
                 <Link variant="standalone" as={ReactLink} to={DASHBOARD_ROUTE}>
-                  Go to dashboard
+                  {t('buttons.dashboard')}
                 </Link>
               ) : null}
             </Stack>
