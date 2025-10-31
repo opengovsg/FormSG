@@ -12,6 +12,7 @@ import Input, { InputProps } from '~components/Input'
 
 import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
+import { Text } from '@chakra-ui/react'
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema
   disableRequiredValidation?: boolean
@@ -59,20 +60,34 @@ export const EmailFieldInput = ({
       name={schema._id}
       defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
-        <Input
-          autoComplete="email"
-          value={value?.value ?? ''}
-          onChange={(event) => {
-            const value = event.target.value.trim().toLowerCase()
-            return handleInputChange
-              ? handleInputChange(onChange)(value)
-              : onChange({ value })
-          }}
-          isHighContrast={isHighContrast}
-          preventDefaultOnEnter
-          {...field}
-          {...inputProps}
-        />
+        <>
+          <Input
+            autoComplete="email"
+            value={value?.value ?? ''}
+            onChange={(event) => {
+              const value = event.target.value.trim().toLowerCase()
+              return handleInputChange
+                ? handleInputChange(onChange)(value)
+                : onChange({ value })
+            }}
+            isHighContrast={isHighContrast}
+            preventDefaultOnEnter
+            {...field}
+            {...inputProps}
+          />
+          {schema.autoReplyOptions?.includeFormSummary ? 
+          <Text
+            color="secondary.400"
+            textStyle="body-2"
+            aria-hidden
+            my="0.5rem"
+          >
+            {t(
+              'features.publicForm.components.fields.email.respondentCopyHelperText',
+            )}
+            </Text>
+            : null}
+        </>
       )}
     />
   )
