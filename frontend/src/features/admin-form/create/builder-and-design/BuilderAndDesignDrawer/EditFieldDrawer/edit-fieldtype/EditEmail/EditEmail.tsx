@@ -187,7 +187,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
           )}
         />
       </FormControl>
-            <Box>
+      <Box>
         <FormControl
           isReadOnly={isLoading}
           isDisabled={isToggleEmailConfirmationDisabled}
