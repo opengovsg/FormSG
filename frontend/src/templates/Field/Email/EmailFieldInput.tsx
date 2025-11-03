@@ -1,9 +1,12 @@
 import {
   Controller,
   ControllerRenderProps,
+  get,
   useFormContext,
+  useFormState,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Text } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
@@ -12,7 +15,6 @@ import Input, { InputProps } from '~components/Input'
 
 import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
-import { Text } from '@chakra-ui/react'
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema
   disableRequiredValidation?: boolean
@@ -39,6 +41,7 @@ export const EmailFieldInput = ({
   isHighContrast,
 }: EmailFieldInputProps): JSX.Element => {
   const { t } = useTranslation()
+  const { errors } = useFormState({ name: schema._id })
   // TODO: decide how to combine with field-validations en-sg.ts
   const validationErrorMessages = t(
     'features.publicForm.components.fields.email.validation',
@@ -52,6 +55,7 @@ export const EmailFieldInput = ({
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()
+  const error = !!get(errors, schema._id)
 
   return (
     <Controller
@@ -75,18 +79,18 @@ export const EmailFieldInput = ({
             {...field}
             {...inputProps}
           />
-          {schema.autoReplyOptions?.includeFormSummary ? 
-          <Text
-            color="secondary.400"
-            textStyle="body-2"
-            aria-hidden
-            my="0.5rem"
-          >
-            {t(
-              'features.publicForm.components.fields.email.respondentCopyHelperText',
-            )}
+          {schema.autoReplyOptions?.includeFormSummary && !error ? (
+            <Text
+              color="secondary.400"
+              textStyle="body-2"
+              aria-hidden
+              my="0.5rem"
+            >
+              {t(
+                'features.publicForm.components.fields.email.respondentCopyHelperText',
+              )}
             </Text>
-            : null}
+          ) : null}
         </>
       )}
     />
