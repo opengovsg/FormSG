@@ -937,7 +937,6 @@ export const handleNdiResponses = async (
         ndiResponses = {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...(verifiedContent.value as Record<string, any>),
-          ...ndiResponses,
         }
       }
     }
