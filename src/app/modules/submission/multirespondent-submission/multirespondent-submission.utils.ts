@@ -388,39 +388,3 @@ export const getQuestionTitleAnswerString = ({
   }
   return questionAnswerPair
 }
-
-export const convertToVerifiedContent = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  decryptedVerifiedContent: Record<string, any>,
-): VerifiedContent | Error => {
-  // CP case: both CpUen and CpUid must exist
-  if (
-    decryptedVerifiedContent[VerifiedKeys.CpUen] &&
-    decryptedVerifiedContent[VerifiedKeys.CpUid]
-  ) {
-    const cpContent: CpVerifiedContent = {
-      [VerifiedKeys.CpUen]: String(
-        decryptedVerifiedContent[VerifiedKeys.CpUen],
-      ),
-      [VerifiedKeys.CpUid]: String(
-        decryptedVerifiedContent[VerifiedKeys.CpUid],
-      ),
-    }
-
-    return cpContent
-  }
-
-  // SP case: SpUinFin exists
-  if (decryptedVerifiedContent[VerifiedKeys.SpUinFin]) {
-    const spContent: SpVerifiedContent = {
-      [VerifiedKeys.SpUinFin]: String(
-        decryptedVerifiedContent[VerifiedKeys.SpUinFin],
-      ),
-    }
-    return spContent
-  }
-
-  return new Error(
-    'Cannot convert decrypted content: no known verified keys found',
-  )
-}
