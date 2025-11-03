@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Divider, Flex, Text } from '@chakra-ui/react'
 
 import {
@@ -37,6 +38,8 @@ const ProductsPaymentSummary = ({
   colorTheme: FormColorTheme
   paymentAmount: number // explicitly use the payment amount listed in the payment intent instead of calculation
 }) => {
+  const { t } = useTranslation()
+
   if (!paymentInfoData.products) {
     return <></>
   }
@@ -55,7 +58,7 @@ const ProductsPaymentSummary = ({
       <Divider my="1rem" />
       <Flex justifyContent="end" alignItems="baseline">
         <Text textAlign="right" mr="0.5rem" justifySelf="end">
-          Total:
+          {t('features.publicForm.components.payment.summary.total')}
         </Text>
         <Text textStyle="h2">S${centsToDollars(paymentAmount ?? 0)}</Text>
       </Flex>

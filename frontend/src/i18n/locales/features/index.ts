@@ -1,4 +1,6 @@
 export {
+  type Collaborator,
+  type FeatureTour,
   type Feedback,
   type Fields,
   type HeaderAndInstructions,
@@ -11,6 +13,7 @@ export {
   type ResponsesIndividualResponse,
   type ResponsesResponsesPage,
   type Settings,
+  type Share,
   type ThankYou,
   type Toasts,
   type Workflow,
@@ -20,6 +23,6 @@ export { type Common } from './common'
 export { type LandingPage } from './landing-page'
 export { type Login } from './login'
 export { type PublicForm } from './public-form'
-export { type TransferOwnership } from './user'
+export { type EmergencyContact, type TransferOwnership } from './user'
 export { type WhatsNew } from './whats-new'
 export { type Workspace } from './workspace'

@@ -1,4 +1,5 @@
 import { Fields } from './fields'
+import { Payment } from './payment'
 import { Table } from './table'
 
 export * from './en-sg'
@@ -47,6 +48,7 @@ export interface PublicForm {
     }
     table: Table
     fields: Fields
+    payment: Payment
     feedbackBlock: {
       title: {
         payment: string

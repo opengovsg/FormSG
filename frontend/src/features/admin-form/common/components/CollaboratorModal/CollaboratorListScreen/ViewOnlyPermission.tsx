@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Stack, StackProps, Text } from '@chakra-ui/react'
 
 import { DropdownRole } from '../constants'
@@ -12,6 +13,21 @@ export const ViewOnlyPermission = ({
   children,
   ...stackProps
 }: ViewOnlyPermissionProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator.roles',
+  })
+
+  const getRoleLabel = (role: DropdownRole): string => {
+    switch (role) {
+      case DropdownRole.Owner:
+        return t('owner')
+      case DropdownRole.Editor:
+        return t('editor')
+      case DropdownRole.Viewer:
+        return t('viewer')
+    }
+  }
+
   return (
     <Stack
       direction="row"
@@ -26,7 +42,7 @@ export const ViewOnlyPermission = ({
         textStyle="body-2"
         color="secondary.500"
       >
-        {role}
+        {getRoleLabel(role)}
       </Text>
       {children}
     </Stack>
