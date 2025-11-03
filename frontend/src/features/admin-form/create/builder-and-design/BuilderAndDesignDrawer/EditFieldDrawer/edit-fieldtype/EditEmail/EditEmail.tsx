@@ -143,7 +143,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const isPaymentDisabledForm =
     isEncryptMode &&
-    form.payments_channel.channel === PaymentChannel.Unconnected
+    form.payments_channel.channel !== PaymentChannel.Unconnected
 
   const isPdfResponseEnabled =
     form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
