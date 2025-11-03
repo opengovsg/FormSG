@@ -1,3 +1,4 @@
+import { BasicField } from '../../../../../shared/types'
 import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
 import {
   extractNricOrForeignIdFromParsedSub,
@@ -5,6 +6,7 @@ import {
   retryPromiseForever,
   retryPromiseThreeAttempts,
 } from '../spcp.oidc.util'
+import { createNdiResponsesV3FromRecord } from '../spcp.util'
 
 const MOCK_PROMISE_NAME = 'promise'
 
@@ -221,6 +223,43 @@ describe('SpOidcUtil', () => {
 
       // Assert
       expect(result).toBeUndefined()
+    })
+  })
+
+  describe('createNdiResponsesV3FromRecord', () => {
+    it('should map SingPass verified keys to Nric fields', () => {
+      const ndiResponses = {
+        [`uinFin (Step 1)`]: 'S1234567A',
+      }
+
+      const result = createNdiResponsesV3FromRecord(ndiResponses)
+
+      expect(result).toEqual({
+        'SingPass Validated NRIC (Step 1)': {
+          fieldType: BasicField.Nric,
+          answer: 'S1234567A',
+        },
+      })
+    })
+
+    it('should map CorpPass UEN verified keys to ShortText fields', () => {
+      const ndiResponses = {
+        [`cpUen (Step 1)`]: 'UEN12345',
+        [`cpUid (Step 1)`]: 'S1234567A',
+      }
+
+      const result = createNdiResponsesV3FromRecord(ndiResponses)
+
+      expect(result).toEqual({
+        'CorpPass Validated UEN (Step 1)': {
+          fieldType: BasicField.ShortText,
+          answer: 'UEN12345',
+        },
+        'CorpPass Validated UID (Step 1)': {
+          fieldType: BasicField.Nric,
+          answer: 'S1234567A',
+        },
+      })
     })
   })
 })
