@@ -17,7 +17,6 @@ import { handleAddressResponseDisplay } from '../../../../../shared/utils/addres
 import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
-import { VerifiedKeys } from '../../../../../shared/utils/verified-content'
 import {
   FormFieldSchema,
   MultirespondentSubmissionData,
@@ -27,11 +26,6 @@ import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
-import {
-  CpVerifiedContent,
-  SpVerifiedContent,
-  VerifiedContent,
-} from '../../verified-content/verified-content.types'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
