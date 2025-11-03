@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride'
 import { useToken } from '@chakra-ui/react'
 
-import { FEATURE_STEPS } from './constants'
+import { getFeatureSteps } from './constants'
 import { FeatureTourContext } from './FeatureTourContext'
 import { FeatureTourTooltip } from './FeatureTourTooltip'
 
@@ -14,6 +14,7 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
   const [stepIndex, setStepIndex] = useState<number>(0)
   const [arrowColor] = useToken('colors', ['primary.100'])
   const [isPaginationClicked, setIsPaginationClicked] = useState(false)
+  const featureSteps = useMemo(() => getFeatureSteps(), [])
 
   const handleJoyrideCallback = ({
     index,
@@ -49,7 +50,7 @@ export const FeatureTour = ({ onClose }: FeatureTourProps): JSX.Element => {
       }}
     >
       <Joyride
-        steps={FEATURE_STEPS}
+        steps={featureSteps}
         callback={handleJoyrideCallback}
         stepIndex={stepIndex}
         continuous

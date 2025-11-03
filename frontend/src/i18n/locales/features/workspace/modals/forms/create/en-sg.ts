@@ -86,15 +86,15 @@ export const enSG: CreateFormModal = {
       subject: 'Shared Secret Key for {titleInputValue}',
       body: `
           Dear collaborator,
-  
+
           I am sharing my form's secret key with you for safekeeping and backup. This is an important key that is needed to access all form responses.
-  
+
           Form title: {titleInputValue}
-  
+
           Secret key: {secretKey}
-  
+
           All you need to do is keep this email as a record, and please do not share this key with anyone else.
-  
+
           Thank you for helping to safekeep my form!`,
     },
     warning: {
@@ -108,5 +108,29 @@ export const enSG: CreateFormModal = {
   },
   emailFormRecipient: {
     placeholder: 'Separate emails with a comma',
+  },
+  emailModeFeedback: {
+    header: 'Before you get started',
+    description:
+      "We'd love to understand why you chose to create an Email mode form. This will help us ensure a smooth transition once we phase out Email mode.",
+    question: {
+      title: 'Why are you creating an Email mode form?',
+      options: {
+        sensitiveHigh: 'I need to collect Sensitive High data',
+      },
+    },
+    next: 'Next: Set up your form',
+  },
+  emailModeCreation: {
+    header: 'Set up your form in Email mode',
+    formName: {
+      label: 'Form name',
+    },
+    notifications: {
+      label: 'Notifications for new responses',
+      description:
+        'All email addresses below will be notified. Learn more on [how to guard against email bounces]({GUIDE_PREVENT_EMAIL_BOUNCE}).',
+    },
+    create: 'Create form',
   },
 }
