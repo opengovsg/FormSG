@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
   FormControl,
@@ -40,6 +41,10 @@ const PaymentQuantityModal = ({
   minQty,
   maxQty,
 }: PaymentQuantityModalProps) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.publicForm.components.payment.quantityModal',
+  })
+  const { t: tCommon } = useTranslation()
   const {
     formState: { errors },
     control,
@@ -56,16 +61,16 @@ const PaymentQuantityModal = ({
   const positiveIntegerValidationRule = {
     validate: (val: number | '') => {
       if (!val) {
-        return `Minimum quantity is ${minQty}`
+        return t('errors.minQuantity', { minQty })
       }
       if (!Number.isInteger(val)) {
-        return 'Please enter a whole number'
+        return t('errors.wholeNumber')
       }
       if (val < minQty) {
-        return `Minimum quantity is ${minQty}`
+        return t('errors.minQuantity', { minQty })
       }
       if (val > maxQty) {
-        return `Maximum quantity is ${maxQty}`
+        return t('errors.maxQuantity', { maxQty })
       }
       return true
     },
@@ -87,7 +92,7 @@ const PaymentQuantityModal = ({
         <ModalCloseButton />
         <ModalHeader>
           <Text textStyle={isMobile ? 'h3' : 'h2'} mb="1rem">
-            Update quantity
+            {t('header')}
           </Text>
           <Text textStyle="body-2" color="content.medium">
             {itemName}
@@ -99,7 +104,7 @@ const PaymentQuantityModal = ({
               <IconButton
                 icon={<BiMinus />}
                 variant="clear"
-                aria-label="Decrement"
+                aria-label={t('buttons.decrement')}
                 colorScheme="secondary"
                 isDisabled={(quantity || 0) <= minQty}
                 onClick={() => {
@@ -131,7 +136,7 @@ const PaymentQuantityModal = ({
               <IconButton
                 icon={<BiPlus />}
                 variant="clear"
-                aria-label="Increment"
+                aria-label={t('buttons.increment')}
                 colorScheme="secondary"
                 isDisabled={(quantity || 0) >= maxQty}
                 onClick={() => {
@@ -153,15 +158,15 @@ const PaymentQuantityModal = ({
           >
             <Button
               isDisabled={Boolean(errors.quantity)}
-              loadingText="Saving"
+              loadingText={t('buttons.saving')}
               onClick={() => onSubmit(quantity || 1)}
               isFullWidth={isMobile}
             >
-              Update
+              {t('buttons.update')}
             </Button>
             {!isMobile ? (
               <Button variant="clear" onClick={onClose} colorScheme="secondary">
-                Cancel
+                {tCommon('features.common.cancel')}
               </Button>
             ) : null}
           </Stack>

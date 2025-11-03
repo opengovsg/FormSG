@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Flex, FormControl } from '@chakra-ui/react'
 
 import { UserDto } from '~shared/types/user'
@@ -29,6 +30,7 @@ const useVerificationBox = ({
   onSuccess,
   contact,
 }: VerificationBoxProps) => {
+  const { t } = useTranslation()
   const {
     register,
     setError,
@@ -76,14 +78,20 @@ const useVerificationBox = ({
 
   const otpValidationRules: RegisterOptions<VfnFieldValues> = useMemo(() => {
     return {
-      required: 'OTP is required.',
+      required: t(
+        'features.user.emergencyContact.verification.errors.required',
+      ),
       pattern: {
         value: /^[0-9\b]+$/,
-        message: 'Only numbers are allowed.',
+        message: t(
+          'features.user.emergencyContact.verification.errors.numbersOnly',
+        ),
       },
-      validate: (value) => value.length === 6 || 'Please enter a 6 digit OTP.',
+      validate: (value) =>
+        value.length === 6 ||
+        t('features.user.emergencyContact.verification.errors.invalid'),
     }
-  }, [])
+  }, [t])
 
   return {
     onSubmitForm,
@@ -97,6 +105,7 @@ const useVerificationBox = ({
 }
 
 export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     onResendOtp,
     onSubmitForm,
@@ -128,8 +137,12 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
             isInvalid={!!otpInputError}
             mb={6}
           >
-            <FormLabel description="A text message with a verification code was just sent to you. The code will be valid for 10 minutes.">
-              Verify your mobile number
+            <FormLabel
+              description={t(
+                'features.user.emergencyContact.verification.description',
+              )}
+            >
+              {t('features.user.emergencyContact.verification.label')}
             </FormLabel>
             <Flex>
               <Input
@@ -148,7 +161,7 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
                 isLoading={isOtpButtonLoading}
                 onClick={onSubmitForm}
               >
-                Submit
+                {t('features.common.submit')}
               </Button>
             </Flex>
             <FormErrorMessage>{otpInputError?.message}</FormErrorMessage>

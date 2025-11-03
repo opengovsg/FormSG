@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Text } from '@chakra-ui/react'
 
 import Menu from '~components/Menu'
@@ -20,6 +21,21 @@ export const PermissionDropdown = ({
   allowTransferOwnership,
   buttonVariant = 'outline',
 }: PermissionDropdownProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator.roles',
+  })
+
+  const getRoleLabel = (role: DropdownRole): string => {
+    switch (role) {
+      case DropdownRole.Owner:
+        return t('owner')
+      case DropdownRole.Editor:
+        return t('editor')
+      case DropdownRole.Viewer:
+        return t('viewer')
+    }
+  }
+
   const availableRoles = useMemo(() => {
     return Object.values(DropdownRole).filter((role) => {
       // Either not owner role, or owner role and allowTransferOwnership is true.
@@ -39,7 +55,7 @@ export const PermissionDropdown = ({
             isActive={isOpen}
             iconSpacing="1.5rem"
           >
-            {value}
+            {getRoleLabel(value)}
           </Menu.Button>
           <Menu.List defaultValue={value}>
             {availableRoles.map((role) => (
@@ -48,7 +64,7 @@ export const PermissionDropdown = ({
                   // Styling to hint to user the current active choice
                   fontWeight={role === value ? 500 : 400}
                 >
-                  {role}
+                  {getRoleLabel(role)}
                 </Text>
               </Menu.Item>
             ))}

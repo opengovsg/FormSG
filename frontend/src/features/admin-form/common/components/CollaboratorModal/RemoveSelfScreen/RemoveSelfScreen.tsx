@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ModalBody,
   ModalFooter,
@@ -15,6 +16,10 @@ import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 
 export const RemoveSelfScreen = (): JSX.Element | null => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.collaborator',
+  })
+  const { t: tCommon } = useTranslation()
   const isMobile = useIsMobile()
   const { mutateRemoveSelf } = useMutateCollaborators()
   const { handleBackToList, onClose } = useCollaboratorWizard()
@@ -25,14 +30,9 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
 
   return (
     <>
-      <ModalHeader color="secondary.700">
-        Remove myself as collaborator
-      </ModalHeader>
+      <ModalHeader color="secondary.700">{t('removeSelf.header')}</ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
-        <Text>
-          You are removing yourself as a collaborator and will lose all access
-          to this form. This action cannot be undone.
-        </Text>
+        <Text>{t('removeSelf.message')}</Text>
       </ModalBody>
       <ModalFooter>
         <Stack
@@ -46,7 +46,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
             colorScheme="danger"
             onClick={handleRemoveSelf}
           >
-            Yes, remove myself
+            {t('removeSelf.button.confirm')}
           </Button>
           <Button
             isFullWidth={isMobile}
@@ -55,7 +55,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
             colorScheme="secondary"
             onClick={handleBackToList}
           >
-            Cancel
+            {tCommon('features.common.cancel')}
           </Button>
         </Stack>
       </ModalFooter>

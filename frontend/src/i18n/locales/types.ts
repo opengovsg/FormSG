@@ -4,7 +4,10 @@ import { Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
   App,
+  Collaborator,
   Common,
+  EmergencyContact,
+  FeatureTour,
   Feedback,
   Fields,
   HeaderAndInstructions,
@@ -20,6 +23,7 @@ import {
   ResponsesIndividualResponse,
   ResponsesResponsesPage,
   Settings,
+  Share,
   ThankYou,
   Toasts,
   TransferOwnership,
@@ -46,6 +50,9 @@ interface Translation {
         toasts?: Toasts
         settings?: Settings
         feedback?: Feedback
+        share?: Share
+        featureTour?: FeatureTour
+        collaborator?: Collaborator
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents
@@ -61,6 +68,7 @@ interface Translation {
       workspace?: Workspace
       whatsNew?: WhatsNew
       user?: {
+        emergencyContact: EmergencyContact
         transferOwnership: TransferOwnership
       }
     }

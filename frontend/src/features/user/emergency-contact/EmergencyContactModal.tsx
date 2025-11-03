@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   ModalBody,
@@ -21,6 +22,7 @@ export const EmergencyContactModal = ({
   isOpen,
   onClose,
 }: EmergencyContactModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -32,12 +34,12 @@ export const EmergencyContactModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Emergency contact</ModalHeader>
+        <ModalHeader color="secondary.700">
+          {t('features.user.emergencyContact.modal.header')}
+        </ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
           <Text textStyle="body-2" color="secondary.500">
-            Update your mobile number and verify it so we can contact you in the
-            unlikely case of an urgent form issue. This number can be changed at
-            any time in your user settings.
+            {t('features.user.emergencyContact.modal.description')}
           </Text>
           <ContactNumberInput />
         </ModalBody>
