@@ -25,7 +25,6 @@ export interface Share {
     label: string
     copyAriaLabel: string
     fallbackText: string
-    here: string
     poweredBy: string
   }
   goLink: {

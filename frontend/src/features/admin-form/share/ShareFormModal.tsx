@@ -193,8 +193,7 @@ export const ShareFormModal = ({
           padding-bottom: 8px;
         "
       >
-        ${t('embed.fallbackText')}
-        <a href="${shareLink}">${t('embed.here')}</a>.
+        ${t('embed.fallbackText', { link: shareLink })}
       </div>
 
       <!-- Change the width and height values to suit you best -->
@@ -213,7 +212,7 @@ export const ShareFormModal = ({
           padding-top: 5px;
         "
       >
-        ${t('embed.poweredBy')} <a href="${window.location.origin}" style="color: #999">Form</a>
+        ${t('embed.poweredBy', { origin: window.location.origin })}
       </div>
     `)
   }, [shareLink, t])

@@ -25,9 +25,9 @@ export const enSG: Share = {
   embed: {
     label: 'Embed HTML',
     copyAriaLabel: 'Copy HTML code for embedding this form',
-    fallbackText: 'If the form below is not loaded, you can also fill it in at',
-    here: 'here',
-    poweredBy: 'Powered by',
+    fallbackText:
+      'If the form below is not loaded, you can also fill it in at <a href="{link}">here</a>.',
+    poweredBy: 'Powered by <a href="{origin}" style="color: #999">Form</a>',
   },
   goLink: {
     label: 'Go link',
