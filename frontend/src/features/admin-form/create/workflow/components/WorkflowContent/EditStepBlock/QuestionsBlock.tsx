@@ -40,7 +40,13 @@ export const QuestionsBlock = ({
       // Only retain actual inputs (exclude header, statement, image)
       const isFillableField = !NON_RESPONSE_FIELD_SET.has(f.fieldType)
       const isMyInfoField = 'myInfo' in f
-      return isFillableField && (isMyInfoField || isFirstStep)
+      if (!isFillableField) {
+        return false
+      }
+      if (isMyInfoField && !isFirstStep) {
+        return false
+      }
+      return true
     })
     .map((f) => ({
       value: f._id,
