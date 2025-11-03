@@ -1,4 +1,7 @@
 import { Stack } from '@chakra-ui/react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 
@@ -16,6 +19,12 @@ export const FloatingToolBar = (): JSX.Element | null => {
     onSaveDraft,
     draftLastSavedDateTimeString,
   } = usePublicFormContext()
+
+  const gb = useGrowthBook()
+  const enableSaveDraftButton = gb?.isOn(
+    featureFlags.enableSaveDraftButtonFloating,
+  )
+
   if (submissionData) return null
 
   return (
@@ -29,7 +38,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
-      {isSaveDraftEnabled && (
+      {isSaveDraftEnabled && enableSaveDraftButton && (
         <FloatingSaveDraftButton
           onSaveDraft={onSaveDraft}
           draftLastSavedDateTimeString={draftLastSavedDateTimeString}
