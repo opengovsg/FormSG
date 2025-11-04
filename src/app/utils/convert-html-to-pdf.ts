@@ -146,31 +146,6 @@ export const generatePdfFromHtml = async (
     meta: logMeta,
   })
 
-  const localStopwatch = startStopwatch()
-  const localResult = generatePdfFromHtmlLocally(summaryHtml).then((result) => {
-    const latencyMs = localStopwatch.stop()
-    logger.info({
-      message: 'Successfully generated pdf from html using local',
-      meta: { ...logMeta, latencyMs },
-    })
-    submitPdfGenerationLatencyMetric({
-      latencyMs,
-      isLocal: true,
-    })
-    return result
-  })
-
-  const isPdfGenerationLambdaConfigured =
-    !!AwsConfig.pdfGeneratorLambdaFunctionName
-  if (!isPdfGenerationLambdaConfigured) {
-    logger.info({
-      message:
-        'Pdf generation lambda is not configured - using result from local pdf generation',
-      meta: logMeta,
-    })
-    return localResult
-  }
-
   const lambdaStopwatch = startStopwatch()
   const lambdaResultAsync = generatePdfFromHtmlLambda(summaryHtml).map(
     (result) => {
@@ -187,31 +162,22 @@ export const generatePdfFromHtml = async (
     },
   )
 
-  if (isUseLambdaOutput) {
-    const lambdaResult = await lambdaResultAsync
-    if (lambdaResult.isErr()) {
-      logger.error({
-        message: 'Error generating pdf from html using lambda',
-        meta: logMeta,
-        error: lambdaResult.error,
-      })
-      throw lambdaResult.error
-    }
-
-    logger.info({
-      message:
-        'Successfully generated pdf from html - using result from lambda pdf generation',
+  const lambdaResult = await lambdaResultAsync
+  if (lambdaResult.isErr()) {
+    logger.error({
+      message: 'Error generating pdf from html using lambda',
       meta: logMeta,
+      error: lambdaResult.error,
     })
-    return lambdaResult.value
+    throw lambdaResult.error
   }
 
   logger.info({
     message:
-      'Successfully generated pdf from html - using result from local pdf generation',
+      'Successfully generated pdf from html - using result from lambda pdf generation',
     meta: logMeta,
   })
-  return await localResult
+  return lambdaResult.value
 }
 
 export const _generatePdfFromHtmlLocallyForTest = generatePdfFromHtmlLocally
