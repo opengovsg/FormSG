@@ -1,5 +1,8 @@
+import { keyBy } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
+
+import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
@@ -381,4 +384,37 @@ export const getQuestionTitleAnswerString = ({
     }
   }
   return questionAnswerPair
+}
+
+// '69031bf600ab799b70e1bd56': { fieldType: 'email', answer: { value: 'scott@open.gov.sg' } }
+export const extractRespondentCopyEmails = ({
+  responses,
+  formFields,
+}: {
+  responses: ParsedClearFormFieldResponsesV3
+  formFields: FormFieldSchema[]
+}): AutoReplyMailData[] => {
+  const fieldsById = keyBy(formFields, '_id')
+  return Object.entries(responses).flatMap(([fieldId, response]) => {
+    const field = fieldsById[fieldId]
+    if (
+      field &&
+      field.fieldType === BasicField.Email &&
+      field.autoReplyOptions?.hasAutoReply &&
+      typeof response.answer === 'object' &&
+      'value' in response.answer &&
+      typeof response.answer.value === 'string'
+    ) {
+      const options = field.autoReplyOptions
+      return [
+        {
+          email: response.answer.value,
+          subject: options.autoReplySubject,
+          body: options.autoReplyMessage,
+          includeFormSummary: options.includeFormSummary,
+        },
+      ]
+    }
+    return [] // no respondent copy emails found
+  })
 }
