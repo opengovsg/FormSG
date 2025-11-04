@@ -734,14 +734,22 @@ export const PublicFormProvider = ({
 
     if (
       isFormNotFound ||
-      isNonMultirespondentFormWithPreviousSubmissionId ||
-      isSingpassMrfDisabled
+      isNonMultirespondentFormWithPreviousSubmissionId
     ) {
       const title = t('features.publicForm.errors.notFound')
       return {
         title,
         header: t('features.publicForm.errors.notAvailable'),
         message: error?.message ?? title,
+      }
+    }
+
+    if (isSingpassMrfDisabled) {
+      const title = t('features.publicForm.errors.notAvailable')
+      return {
+        title,
+        header: t('features.publicForm.errors.notAvailable'),
+        message: t('features.publicForm.errors.private'),
       }
     }
 
