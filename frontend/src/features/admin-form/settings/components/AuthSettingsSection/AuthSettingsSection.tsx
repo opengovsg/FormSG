@@ -38,16 +38,12 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
-      {form?.responseMode === FormResponseMode.Multirespondent ? (
-        <InlineMessage variant="info" mt="0.5rem">
-          {t('features.adminForm.settings.general.singpass.mrfFirstStep')}
-        </InlineMessage>
-      ) : null}
-      <AuthSettingsDescriptionText />
       <AuthSettingsDisabledExplanationText
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
+        formResponseMode={form?.responseMode}
       />
+      <AuthSettingsDescriptionText />
       <FormSingpassAuthToggle
         settings={settings!}
         isDisabled={isFormPublic || containsMyInfoFields}
