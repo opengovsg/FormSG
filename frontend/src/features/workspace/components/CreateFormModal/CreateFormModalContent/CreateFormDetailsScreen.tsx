@@ -63,6 +63,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isFetching,
     modalHeader,
     isSingpass,
+    hasMyInfoChildren,
   } = useCreateFormWizard()
   const {
     register,
@@ -129,7 +130,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                   <WorkspaceRowsProvider>
                     <FormResponseOptions
                       {...field}
-                      isSingpass={isSingpass}
+                      hasMyInfoChildren={hasMyInfoChildren}
                       handleEmailButtonPress={handleEmailButtonPress}
                     />
                   </WorkspaceRowsProvider>
@@ -142,10 +143,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-            {isSingpass && (
+            {hasMyInfoChildren && (
               <InlineMessage mt="2rem">
                 {t(
-                  'features.workspace.modals.forms.create.errors.noSingpassInMrf',
+                  'features.workspace.modals.forms.create.errors.noMyInfoChildrenInMrf',
                 )}
               </InlineMessage>
             )}

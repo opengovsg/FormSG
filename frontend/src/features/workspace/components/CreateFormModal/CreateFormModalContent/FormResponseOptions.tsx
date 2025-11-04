@@ -13,7 +13,7 @@ export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   handleEmailButtonPress: () => void
   value: FormResponseMode
-  isSingpass: boolean
+  hasMyInfoChildren: boolean
 }
 
 interface optionDescriptionIem {
@@ -50,7 +50,7 @@ const OptionDescription = ({
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, isSingpass }, ref) => {
+>(({ value, onChange, hasMyInfoChildren }, ref) => {
   const { t } = useTranslation()
   const { storage, mrf } = t(
     'features.workspace.modals.forms.create.details.type',
@@ -93,7 +93,7 @@ export const FormResponseOptions = forwardRef<
           isActive={value === FormResponseMode.Multirespondent}
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           flex={1}
-          isDisabled={isSingpass}
+          isDisabled={hasMyInfoChildren}
         >
           <Tile.Title overflowWrap="anywhere">{mrf.title}</Tile.Title>
           <Tile.Subtitle>{mrf.subtitle}</Tile.Subtitle>

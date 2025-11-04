@@ -6,7 +6,9 @@ import {
   SignatureVectorArray,
 } from './field'
 
-export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
+export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3> & {
+  [key: string]: FieldResponseV3 | NdiResponseV3
+}
 
 export type FieldResponseV3 =
   | HeaderResponseV3
@@ -34,6 +36,8 @@ export type GenericStringAnswerFieldResponseV3 =
   | UenResponseV3
   | DateResponseV3
   | CountryRegionResponseV3
+
+export type NdiResponseV3 = NricResponseV3 | ShortTextResponseV3
 
 export type HeaderResponseV3 = FieldResponseFactoryV3<BasicField.Section>
 export type EmailResponseV3 = FieldResponseFactoryV3<BasicField.Email>

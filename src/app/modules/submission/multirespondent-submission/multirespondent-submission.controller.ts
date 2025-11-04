@@ -4,7 +4,6 @@ import { errAsync, okAsync } from 'neverthrow'
 
 import {
   ErrorDto,
-  FormAuthType,
   FormResponseMode,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
@@ -18,7 +17,6 @@ import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.midd
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
-import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { updateFormMetadata } from '../../form/admin-form/admin-form.service'
@@ -106,20 +104,6 @@ const submitMultirespondentForm = async (
       return res.status(statusCode).json({ message: errorMessage })
     }
     return // required to stop submission processing
-  }
-
-  // Disallow form authentication for multirespondent forms
-  if (form.authType !== FormAuthType.NIL) {
-    logger.error({
-      message: 'Multirespondent form is not allowed to have authorization',
-      meta: logMeta,
-    })
-    const { errorMessage, statusCode } = mapRouteError(
-      new MalformedParametersError(
-        'Multirespondent form is not allowed to have authType',
-      ),
-    )
-    return res.status(statusCode).json({ message: errorMessage })
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
@@ -267,6 +251,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
+  MultirespondentSubmissionMiddleware.handleNdiResponses,
   submitMultirespondentForm,
 ] as ControllerHandler[]
 
@@ -280,6 +265,7 @@ export const handleUpdateMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
+  MultirespondentSubmissionMiddleware.handleNdiResponses,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
 

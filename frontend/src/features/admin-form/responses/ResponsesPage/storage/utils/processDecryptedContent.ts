@@ -3,7 +3,6 @@ import {
   DecryptedContentV3,
   FormField as VerifiedFormField,
 } from '@opengovsg/formsg-sdk/dist/types'
-import { has } from 'lodash'
 
 import {
   AttachmentFieldResponseV3,
@@ -12,7 +11,6 @@ import {
   FormFieldDto,
 } from '~shared/types'
 import {
-  CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
@@ -24,48 +22,57 @@ import {
 } from '~features/public-form/utils'
 
 /**
- * Returns a response matching the given type containing the given value.
- * @param type the field type to match
+ * Returns a verifiedFormField matching the given verifiedKey containing the given value.
+ * @param verifiedKey the field type to match
  * @param value the value to insert into the response to be returned
  * @returns the desired response object if type is valid. Else returns null.
  */
-const getResponseFromVerifiedField = (
-  type: VerifiedKeys,
+const getVerifiedFieldFromResponse = (
+  singpassAuthType: VerifiedKeys | string,
   value: string,
 ): VerifiedFormField | null => {
-  switch (type) {
+  // Extract verifiedKey and optional step number (for MRF cases) from singpassAuthType
+  const verifiedKeyMatch = singpassAuthType.match(
+    /^(uinFin|cpUen|cpUid|sgidUinFin)(?: \(Step (\d+)\))?$/,
+  )
+  if (!verifiedKeyMatch) return null
+
+  const [, verifiedKey, stepNumber] = verifiedKeyMatch
+  const stepSuffix = stepNumber ? ` (Step ${stepNumber})` : ''
+
+  switch (verifiedKey as VerifiedKeys) {
     case VerifiedKeys.SpUinFin:
       return {
-        question: SPCPFieldTitle.SpNric,
+        question: SPCPFieldTitle.SpNric + stepSuffix,
         fieldType: BasicField.Nric,
         answer: value,
-        // Just a unique identifier for CSV header uniqueness
-        _id: SPCPFieldTitle.SpNric,
+        _id: SPCPFieldTitle.SpNric + stepSuffix,
       }
 
     case VerifiedKeys.CpUen:
       return {
-        question: SPCPFieldTitle.CpUen,
+        question: SPCPFieldTitle.CpUen + stepSuffix,
         fieldType: BasicField.ShortText,
         answer: value,
-        _id: SPCPFieldTitle.CpUen,
+        _id: SPCPFieldTitle.CpUen + stepSuffix,
       }
 
     case VerifiedKeys.CpUid:
       return {
-        question: SPCPFieldTitle.CpUid,
+        question: SPCPFieldTitle.CpUid + stepSuffix,
         fieldType: BasicField.Nric,
         answer: value,
-        _id: SPCPFieldTitle.CpUid,
+        _id: SPCPFieldTitle.CpUid + stepSuffix,
       }
+
     case VerifiedKeys.SgidUinFin:
       return {
-        question: SgidFieldTitle.SgidNric,
+        question: SgidFieldTitle.SgidNric + stepSuffix,
         fieldType: 'nric',
         answer: value,
-        // Just a unique identifier for CSV header uniqueness
-        _id: SgidFieldTitle.SgidNric,
+        _id: SgidFieldTitle.SgidNric + stepSuffix,
       }
+
     default:
       return null
   }
@@ -82,15 +89,12 @@ const getResponseFromVerifiedField = (
 const convertToResponseArray = (
   verifiedObj: Record<string, string>,
 ): VerifiedFormField[] => {
-  return CURRENT_VERIFIED_FIELDS.filter((fieldType) =>
-    has(verifiedObj, fieldType),
-  )
-    .map((fieldType) =>
-      getResponseFromVerifiedField(fieldType, verifiedObj[fieldType]),
+  return Object.keys(verifiedObj)
+    .filter((key) =>
+      Object.values(VerifiedKeys).some((baseKey) => key.startsWith(baseKey)),
     )
-    .filter((field): field is VerifiedFormField => {
-      return !!field
-    })
+    .map((key) => getVerifiedFieldFromResponse(key, verifiedObj[key]))
+    .filter((field): field is VerifiedFormField => !!field)
 }
 
 /**
@@ -122,8 +126,7 @@ export const processDecryptedContentV3 = async (
   form_fields: FormFieldDto[],
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
-  const { responses } = decrypted
-
+  const { responses, verified } = decrypted
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {
@@ -138,9 +141,17 @@ export const processDecryptedContentV3 = async (
           answer: answer.answer,
         }
       }
-      return transformInputsToOutputs(ff, response.answer)
-    })
-    .filter((output): output is FieldResponse => output !== null)
 
-  return displayedContent as VerifiedFormField[]
+      const decryptedResponse = transformInputsToOutputs(ff, response.answer)
+      if (decryptedResponse && 'myInfo' in ff) {
+        decryptedResponse.question = `[MyInfo] ${decryptedResponse.question} `
+      }
+      return decryptedResponse
+    })
+    .filter(
+      (output): output is FieldResponse => output !== null,
+    ) as VerifiedFormField[]
+  return verified
+    ? displayedContent.concat(convertToResponseArray(verified))
+    : displayedContent
 }

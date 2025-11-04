@@ -42,4 +42,8 @@ export const enSG = {
     description:
       'You will receive a maximum of one email per form, per day if there are any issues reported.',
   },
+  singpass: {
+    mrfFirstStep:
+      'Only the first step in a workflow will have Singpass authentication enabled.',
+  },
 }

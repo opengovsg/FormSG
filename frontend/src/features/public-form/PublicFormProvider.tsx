@@ -292,6 +292,12 @@ export const getInitialFormValues = ({
           if (fieldPrefillMap[field._id]) {
             acc[field._id] = fieldPrefillMap[field._id].prefillValue
           }
+
+          // Use myinfo server default value if it exists.
+          // Myinfo overrides existing values since myinfo is seen as source of truth.
+          if (hasExistingFieldValue(field)) {
+            acc[field._id] = extractPreviewValue(field)
+          }
         }
       } else if (formResponseMode === FormResponseMode.Encrypt) {
         // Reinstate save draft values
@@ -634,6 +640,8 @@ export const PublicFormProvider = ({
     false,
   )
 
+  const enableSingpassMrfFeatureFlag = useFeatureIsOn(featureFlags.singpassMrf)
+
   let hasLoaded: boolean
   let containerID: string
   let captchaType: CaptchaTypes
@@ -718,6 +726,12 @@ export const PublicFormProvider = ({
       data.form.responseMode !== FormResponseMode.Multirespondent &&
       !!previousSubmissionId
 
+    //TODO: FRM-2151 remove when SingpassMRF is out of beta
+    const isSingpassMrfDisabled =
+      data?.form?.responseMode === FormResponseMode.Multirespondent &&
+      data?.form?.authType !== FormAuthType.NIL &&
+      !enableSingpassMrfFeatureFlag
+
     if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
       const title = t('features.publicForm.errors.notFound')
       return {
@@ -727,11 +741,27 @@ export const PublicFormProvider = ({
       }
     }
 
+    if (isSingpassMrfDisabled) {
+      const title = t('features.publicForm.errors.notAvailable')
+      return {
+        title,
+        header: t('features.publicForm.errors.notAvailable'),
+        message: t('features.publicForm.errors.private'),
+      }
+    }
+
     // Decryption failed for previous submission
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
+  }, [
+    error,
+    data,
+    previousSubmissionId,
+    isSubmissionSecretKeyInvalid,
+    enableSingpassMrfFeatureFlag,
+    t,
+  ])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -1284,6 +1314,19 @@ export const PublicFormProvider = ({
             })
         }
         case FormResponseMode.Multirespondent:
+          //TODO: FRM-2151 remove when SingpassMRF is out of beta
+          // if mrf form is singpass-enabled & feature flag is off, prevent submission
+          if (
+            !enableSingpassMrfFeatureFlag &&
+            form?.authType !== FormAuthType.NIL
+          ) {
+            const singpassMrfError = new Error(
+              'Submission not allowed: Singpass MRF current is disabled.',
+            )
+            showErrorToast(singpassMrfError, form)
+            return singpassMrfError
+          }
+
           return (
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation

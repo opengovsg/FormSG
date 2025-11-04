@@ -608,6 +608,25 @@ describe('multirespondent-submission.utils', () => {
         },
       ])
     })
+
+    it('should handle Ndi fields correctly', () => {
+      const formFields: FormFieldSchema[] = []
+      const responses: FieldResponsesV3 = {
+        'SingPass Validated NRIC (Step 1)': {
+          fieldType: BasicField.Nric,
+          answer: 'S1234567A',
+        },
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        {
+          question: 'SingPass Validated NRIC (Step 1)',
+          answer: 'S1234567A',
+        },
+      ])
+    })
   })
 
   describe('retrieveWorkflowStepEmailAddresses', () => {

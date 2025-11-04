@@ -159,7 +159,11 @@ export const EditStepBlock = ({
         isLoading={_isLoading}
       />
       <Divider />
-      <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
+      <QuestionsBlock
+        formMethods={formMethods}
+        isLoading={_isLoading}
+        isFirstStep={isFirstStep}
+      />
       {!isFirstStep ? (
         <>
           <Divider />

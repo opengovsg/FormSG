@@ -536,6 +536,7 @@ export const createMultiRespondentFormSubmission = ({
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
+        verifiedContent,
         responseMetadata,
         version,
         mrfVersion,
@@ -585,6 +586,7 @@ export const createMultiRespondentFormSubmission = ({
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
+        verifiedContent,
         attachmentMetadata,
         version,
         workflowStep: 0,
@@ -778,6 +780,7 @@ export const updateMultiRespondentFormSubmission = ({
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
+        verifiedContent,
         version,
         workflowStep,
         mrfVersion,
@@ -853,6 +856,7 @@ export const updateMultiRespondentFormSubmission = ({
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
       submission.encryptedContent = encryptedContent
+      submission.verifiedContent = verifiedContent
       submission.version = version
       submission.workflowStep = workflowStep
       submission.attachmentMetadata = attachmentMetadata
