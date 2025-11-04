@@ -28,6 +28,9 @@ export const useUseTemplateWizardContext = (
     )
 
   const isSingpass = !!templateFormData?.spcpSession
+  const hasMyInfoChildren = !!templateFormData?.form.form_fields.some(
+    (field) => field.fieldType === 'children',
+  )
 
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider()
@@ -162,6 +165,7 @@ export const useUseTemplateWizardContext = (
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
     isSingpass,
+    hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),
     onClose,
   }

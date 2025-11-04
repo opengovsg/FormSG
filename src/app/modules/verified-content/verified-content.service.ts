@@ -7,12 +7,11 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {
-  CpVerifiedContent,
   EncryptVerificationContentParams,
   GetVerifiedContentParams,
-  SgidVerifiedContent,
-  SpVerifiedContent,
+  VerifiedContent,
   VerifiedContentResult,
+  VerifiedContentV3,
 } from './verified-content.types'
 import {
   getCpVerifiedContent,
@@ -31,7 +30,7 @@ export const getVerifiedContent = ({
   type,
   data,
 }: GetVerifiedContentParams): VerifiedContentResult<
-  CpVerifiedContent | SpVerifiedContent | SgidVerifiedContent
+  VerifiedContent | VerifiedContentV3
 > => {
   switch (type) {
     case FormAuthType.MyInfo:

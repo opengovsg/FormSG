@@ -12,6 +12,7 @@ export interface CreateFormModal {
     }
     useWizardWithinContext: string
     noSingpassInMrf: string
+    noMyInfoChildrenInMrf: string
   }
   details: {
     name: {

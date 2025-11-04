@@ -25,4 +25,5 @@ export const featureFlags = {
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
+  singpassMrf: 'singpass-mrf' as const,
 }

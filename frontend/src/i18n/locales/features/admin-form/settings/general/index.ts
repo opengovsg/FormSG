@@ -38,4 +38,7 @@ export interface General extends HasTitle {
     label: string
     description: string
   }
+  singpass: {
+    mrfFirstStep: string
+  }
 }

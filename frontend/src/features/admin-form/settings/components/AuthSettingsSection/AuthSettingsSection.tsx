@@ -1,7 +1,15 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
-import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+} from '~shared/types/form'
+
+import InlineMessage from '~components/InlineMessage'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -18,6 +26,7 @@ interface AuthSettingsSectionProps {
 export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
+  const { t } = useTranslation()
   const { data: form } = useAdminForm()
 
   const containsMyInfoFields = useMemo(
@@ -29,11 +38,12 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
-      <AuthSettingsDescriptionText />
       <AuthSettingsDisabledExplanationText
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
+        formResponseMode={form?.responseMode}
       />
+      <AuthSettingsDescriptionText />
       <FormSingpassAuthToggle
         settings={settings!}
         isDisabled={isFormPublic || containsMyInfoFields}
