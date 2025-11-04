@@ -34,9 +34,10 @@ export const AuthSettingsDisabledExplanationText = ({
 
   if (isFormPublic) {
     infoboxTextArray.push(FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT)
-    if (containsMyInfoFields) {
-      infoboxTextArray.push(FORM_HAS_MYINFO_FIELDS)
-    }
+  }
+
+  if (containsMyInfoFields) {
+    infoboxTextArray.push(FORM_HAS_MYINFO_FIELDS)
   }
 
   const infoboxTextComponent = infoboxTextArray.length ? (
