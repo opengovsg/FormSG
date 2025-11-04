@@ -732,10 +732,7 @@ export const PublicFormProvider = ({
       data?.form?.authType !== FormAuthType.NIL &&
       !enableSingpassMrfFeatureFlag
 
-    if (
-      isFormNotFound ||
-      isNonMultirespondentFormWithPreviousSubmissionId
-    ) {
+    if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
       const title = t('features.publicForm.errors.notFound')
       return {
         title,
