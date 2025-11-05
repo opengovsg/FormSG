@@ -34,6 +34,7 @@ import {
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import { MailSendError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
+import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -56,6 +57,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
+  extractRespondentCopyEmails,
   getEmailFromResponses,
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
@@ -457,7 +459,7 @@ const sendMrfRespondentCopyEmails = ({
   responses,
   submissionId,
   attachments,
-  respondentEmails,
+  recipientData,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
@@ -468,21 +470,23 @@ const sendMrfRespondentCopyEmails = ({
   responses: FieldResponsesV3
   submissionId: string
   attachments?: IAttachmentInfo[]
-  respondentEmails: string[]
+  recipientData: AutoReplyMailData[]
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
   })
 
+  //TODO: remove and loop
+  const autoreplyMailData = recipientData[0]
+
   return MailService.sendMrfRespondentCopyEmail({
-    emails: respondentEmails,
     formId: form._id,
     formTitle: form.title,
     responseId: submissionId,
     formQuestionAnswers,
     attachments: attachments,
-    respondentCopy: form.hasRespondentCopy,
+    autoReplyMailData: autoreplyMailData,
   }).orElse((error) => {
     logger.error({
       message: 'Failed to send respondent copy email',
@@ -637,7 +641,6 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
-  respondentEmails,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -645,7 +648,6 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
-  respondentEmails?: string[]
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
@@ -658,13 +660,19 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  if (respondentEmails && respondentEmails.length > 0) {
+  // Find respondent copy recipient data
+  const recipientData = extractRespondentCopyEmails({
+    responses: encryptedPayload.responses,
+    formFields: form.form_fields,
+  })
+
+  if (recipientData && recipientData.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,
       submissionId,
       attachments,
-      respondentEmails,
+      recipientData,
     }).mapErr((error) => {
       logger.error({
         message: 'Send multirespondent respondent copy email error',
