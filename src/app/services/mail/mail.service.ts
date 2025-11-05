@@ -303,7 +303,10 @@ export class MailService {
 
     const autoReplyBody = (
       autoReplyMailData.body ||
-      DEFAULT_RESPONDENT_COPY_EMAIL.content.replace('{agencyName}', emailSender)
+      DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
+        '{agencyName}',
+        form.admin.agency.fullName,
+      )
     ).split('\n')
 
     const templateData = {
