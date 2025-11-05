@@ -391,7 +391,7 @@ export const extractRespondentCopyEmails = ({
   responses,
   formFields,
 }: {
-  responses: ParsedClearFormFieldResponsesV3
+  responses: FieldResponsesV3
   formFields: FormFieldSchema[]
 }): AutoReplyMailData[] => {
   const fieldsById = keyBy(formFields, '_id')
