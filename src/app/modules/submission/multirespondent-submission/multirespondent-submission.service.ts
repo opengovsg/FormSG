@@ -678,8 +678,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         message: 'Send multirespondent respondent copy email error',
         meta: logMeta,
         error,
-      })
-      return error
+      }) // return nothing; since successful submission does not depend on this respondent copy emails sent
     })
   }
 
@@ -900,7 +899,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
-  respondentEmails,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -909,7 +907,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
-  respondentEmails?: string[]
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -927,13 +924,19 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  if (respondentEmails && respondentEmails.length > 0) {
+  // Find respondent copy recipient data
+  const recipientData = extractRespondentCopyEmails({
+    responses: encryptedPayload.responses,
+    formFields: snapshottedFormDef.form_fields,
+  })
+
+  if (recipientData && recipientData.length > 0) {
     sendMrfRespondentCopyEmails({
       form: snapshottedFormDef,
       responses,
       submissionId,
       attachments,
-      respondentEmails,
+      recipientData,
     }).mapErr((error) => {
       logger.error({
         message: 'Send multirespondent respondent copy email error',
