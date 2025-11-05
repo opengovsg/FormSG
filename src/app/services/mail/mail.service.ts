@@ -7,6 +7,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { DEFAULT_RESPONDENT_COPY_EMAIL } from '../../../../shared/constants/mail'
 import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
@@ -291,15 +292,19 @@ export class MailService {
     MailSendError | MailGenerationError
   > => {
     const emailSubject =
-      autoReplyMailData.subject || `Thank you for submitting ${form.title}`
+      autoReplyMailData.subject ||
+      DEFAULT_RESPONDENT_COPY_EMAIL.subject.replace('{formTitle}', form.title)
+
     // Sender's name appearing after "("" symbol gets truncated. Escaping it
     // solves the problem.
     const emailSender = (
       autoReplyMailData.sender || form.admin.agency.fullName
     ).replace('(', '\\(')
 
-    const defaultBody = `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${form.admin.agency.fullName}`
-    const autoReplyBody = (autoReplyMailData.body || defaultBody).split('\n')
+    const autoReplyBody = (
+      autoReplyMailData.body ||
+      DEFAULT_RESPONDENT_COPY_EMAIL.content.replace('{agencyName}', emailSender)
+    ).split('\n')
 
     const templateData = {
       submissionId: submission.id,

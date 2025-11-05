@@ -78,7 +78,7 @@ export const enSG: Fields = {
       description: 'Customise an email acknowledgement to respondents',
       subject: {
         title: 'Subject',
-        placeholder: 'Default email subject',
+        placeholder: 'Thank you for submitting {formTitle}',
       },
       senderName: {
         title: 'Sender name',
@@ -86,7 +86,8 @@ export const enSG: Fields = {
       },
       content: {
         title: 'Content',
-        placeholder: 'Default email body',
+        placeholder:
+          'To whom it may concern,\n\nThank you for submitting this form.\n\nRegards,\n{agencyName}',
       },
       includeResponse: 'Include a copy of their responses',
       includePdfResponseWarning:
