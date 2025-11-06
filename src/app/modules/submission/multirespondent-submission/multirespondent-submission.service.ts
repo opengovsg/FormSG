@@ -463,7 +463,7 @@ const sendMrfRespondentCopyEmails = ({
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
-    '_id' | 'title' | 'hasRespondentCopy'
+    '_id' | 'title' | 'hasRespondentCopy' | 'admin'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -486,6 +486,7 @@ const sendMrfRespondentCopyEmails = ({
         formQuestionAnswers,
         attachments,
         autoReplyMailData,
+        agencyName: form.admin.agency.fullName,
       }).orElse((error) => {
         logger.error({
           message: 'Failed to send respondent copy email',
@@ -927,11 +928,6 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  // console.log('responses')
-  // console.log(responses)
-
-  // console.log(`snapshottedFormDef`)
-  // console.log(snapshottedFormDef)
   //Find respondent copy recipient data
   const respondentCopyRecipientData = extractRespondentCopyEmails({
     responses: responses,

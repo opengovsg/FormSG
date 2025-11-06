@@ -22,7 +22,6 @@ import {
   questionMargin,
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
-import { DEFAULT_RESPONDENT_COPY_EMAIL } from '../../../../shared/constants/mail'
 
 export type QuestionAnswer = {
   question: string
@@ -33,7 +32,7 @@ export type RespondentCopyEmilData = {
     formTitle: string
     responseId: string
     formQuestionAnswers: QuestionAnswer[] | undefined
-    body?: string
+    body: string
 }
 
 export const MrfRespondentCopyEmail = ({
@@ -43,7 +42,6 @@ export const MrfRespondentCopyEmail = ({
     body,
 }: RespondentCopyEmilData): JSX.Element => {
     let headingText = 'Thank you for submitting this form'
-    let emailBody = body || DEFAULT_RESPONDENT_COPY_EMAIL.content.replace('{agencyName}', 'FormSG') //TODO: add agency name
   
     const renderQuestionAnswer = (qa: QuestionAnswer) => (
         <>
@@ -73,7 +71,7 @@ export const MrfRespondentCopyEmail = ({
               {headingText}
             </Heading>
             <Text style={{ ...secondaryTextStyle, marginBottom: '40px', whiteSpace: 'pre-line' }}>
-              {emailBody}
+              {body}
             </Text>
             {renderResponseId()}
               {formQuestionAnswers ? (

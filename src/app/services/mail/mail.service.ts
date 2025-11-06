@@ -1179,6 +1179,7 @@ export class MailService {
     formQuestionAnswers,
     attachments,
     autoReplyMailData,
+    agencyName,
   }: {
     formId: string
     formTitle: string
@@ -1186,12 +1187,18 @@ export class MailService {
     formQuestionAnswers?: QuestionAnswer[]
     attachments?: Mail.Attachment[]
     autoReplyMailData: AutoReplyMailData
+    agencyName: string
   }) => {
     const htmlData = {
       formTitle,
       responseId: responseId.toString(),
       formQuestionAnswers,
-      body: autoReplyMailData.body,
+      body:
+        autoReplyMailData.body ||
+        DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
+          '{agencyName}',
+          agencyName,
+        ),
     }
 
     const generatedHtml = fromPromise(
