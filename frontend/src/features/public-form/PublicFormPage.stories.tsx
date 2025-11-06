@@ -919,6 +919,323 @@ WithSaveDraftEnabledMobile.parameters = {
 const STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY =
   'formsg-save-draft-61540ece3d4a6e50ac0cc6ff'
 
+export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton =
+  Template.bind({})
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.play = async ({
+  step,
+}) => {
+  const screen = within(document.body)
+
+  let formHeaderSaveDraftButton: HTMLElement
+
+  await step('Scroll down the page to reveal the form header save draft button', async () => {
+    await window.scrollBy(0, 500);
+  })
+
+  await step('Find the form header save draft button', async () => {
+    await waitFor(
+      async () => {
+        const allSaveDraftButtons = screen.getAllByLabelText('Save a draft')
+        // Find the button that's inside the chakra-slide component (form header)
+        const foundFormHeaderSaveDraftButton = allSaveDraftButtons.find(
+          (button) => {
+            const slideParent = button.closest('.chakra-slide')
+            return slideParent !== null
+          },
+        )
+        if (!foundFormHeaderSaveDraftButton) {
+          throw new Error('Form header save draft button not found')
+        }
+        formHeaderSaveDraftButton = foundFormHeaderSaveDraftButton
+        expect(formHeaderSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the form header save draft button', async () => {
+    await userEvent.click(formHeaderSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(formHeaderSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that a tooltip appears reflecting that draft has been saved',
+    async () => {
+      let tooltip: HTMLElement | null = null
+      await waitFor(
+        () => {
+          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
+          expect(tooltip).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+    },
+  )
+
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft).toBeDefined()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
+export const WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile =
+  Template.bind({})
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  ...getMobileViewParameters(),
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({
+  step,
+}) => {
+  const screen = within(document.body)
+
+  let formHeaderSaveDraftButton: HTMLElement
+
+  await step('Scroll down the page to reveal the form header save draft button', async () => {
+    await window.scrollBy(0, 500);
+  })
+
+  await step('Find the form header save draft button', async () => {
+    await waitFor(
+      async () => {
+        const allSaveDraftButtons = screen.getAllByLabelText('Save a draft')
+        // Find the button that's inside the chakra-slide component (form header)
+        const foundFormHeaderSaveDraftButton = allSaveDraftButtons.find(
+          (button) => {
+            const slideParent = button.closest('.chakra-slide')
+            return slideParent !== null
+          },
+        )
+        if (!foundFormHeaderSaveDraftButton) {
+          throw new Error('Form header save draft button not found')
+        }
+        formHeaderSaveDraftButton = foundFormHeaderSaveDraftButton
+        expect(formHeaderSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the form header save draft button', async () => {
+    await userEvent.click(formHeaderSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(formHeaderSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that a tooltip appears reflecting that draft has been saved',
+    async () => {
+      let tooltip: HTMLElement | null = null
+      await waitFor(
+        () => {
+          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
+          expect(tooltip).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+    },
+  )
+
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft).toBeDefined()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
+export const WithSaveDraftEnabledAndClickFloatingSaveDraftButton =
+  Template.bind({})
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
+  ...WithSaveDraftEnabled.parameters,
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
+  canvasElement,
+  step,
+}) => {
+  const canvas = within(canvasElement)
+  const screen = within(document.body)
+
+  let floatingSaveDraftButton: HTMLElement
+
+  await step('Find the floating save draft button', async () => {
+    await waitFor(
+      async () => {
+        const allSaveDraftButtons = screen.getAllByLabelText('Save a draft')
+        // Find the button that's not inside the chakra-slide component (form header), which is the floating save draft button
+        const foundFloatingSaveDraftButton = allSaveDraftButtons.find(
+          (button) => {
+            const slideParent = button.closest('.chakra-slide')
+            return slideParent === null
+          },
+        )
+        if (!foundFloatingSaveDraftButton) {
+          throw new Error('Floating save draft button not found')
+        }
+        floatingSaveDraftButton = foundFloatingSaveDraftButton
+        expect(floatingSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the floating save draft button', async () => {
+    await userEvent.click(floatingSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Hover over the save draft button to see the save draft tooltip',
+    async () => {
+      await userEvent.hover(floatingSaveDraftButton)
+    },
+  )
+
+  await step(
+    'Assert that a tooltip appears reflecting that draft has been saved',
+    async () => {
+      let tooltip: HTMLElement | null = null
+      await waitFor(
+        () => {
+          tooltip = screen.getByRole('tooltip', { name: /Last saved/i })
+          expect(tooltip).toBeInTheDocument()
+        },
+        { timeout: 5000 },
+      )
+    },
+  )
+
+  await step(
+    'Assert that the saved draft is created in IndexedDB',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft).toBeDefined()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
 export const WithSaveDraftEnabledAndClickSaveDraftButton = Template.bind({})
 WithSaveDraftEnabledAndClickSaveDraftButton.parameters = {
   ...WithSaveDraftEnabled.parameters,

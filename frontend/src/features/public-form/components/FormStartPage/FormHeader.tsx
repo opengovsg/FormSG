@@ -49,10 +49,11 @@ export const MiniHeader = ({
   const { isSaveDraftEnabled, onSaveDraft, draftLastSavedDateTimeString } =
     usePublicFormContext()
 
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
-  const enableSaveDraftButton = gb?.isOn(
+  const enableFormHeaderSaveDraftButton = gb?.isOn(
     featureFlags.enableSaveDraftButtonHeader,
-  )
+  ) || isTest
 
   return (
     <Slide
@@ -94,7 +95,7 @@ export const MiniHeader = ({
                 {title ?? 'Loading title'}
               </Text>
             </Flex>
-            {isSaveDraftEnabled && enableSaveDraftButton && (
+            {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
               <FormHeaderSaveDraftButton
                 onSaveDraft={onSaveDraft}
                 draftLastSavedDateTimeString={draftLastSavedDateTimeString}

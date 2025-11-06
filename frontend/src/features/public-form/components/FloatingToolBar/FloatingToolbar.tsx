@@ -20,10 +20,11 @@ export const FloatingToolBar = (): JSX.Element | null => {
     draftLastSavedDateTimeString,
   } = usePublicFormContext()
 
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
-  const enableSaveDraftButton = gb?.isOn(
+  const enableFloatingSaveDraftButton = gb?.isOn(
     featureFlags.enableSaveDraftButtonFloating,
-  )
+  ) || isTest
 
   if (submissionData) return null
 
@@ -38,7 +39,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
-      {isSaveDraftEnabled && enableSaveDraftButton && (
+      {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
         <FloatingSaveDraftButton
           onSaveDraft={onSaveDraft}
           draftLastSavedDateTimeString={draftLastSavedDateTimeString}
