@@ -459,7 +459,7 @@ const sendMrfRespondentCopyEmails = ({
   responses,
   submissionId,
   attachments,
-  recipientData,
+  respondentCopyRecipientData,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm,
@@ -470,35 +470,37 @@ const sendMrfRespondentCopyEmails = ({
   responses: FieldResponsesV3
   submissionId: string
   attachments?: IAttachmentInfo[]
-  recipientData: AutoReplyMailData[]
+  respondentCopyRecipientData: AutoReplyMailData[]
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
   })
 
-  //TODO: remove and loop
-  const autoreplyMailData = recipientData[0]
-
-  return MailService.sendMrfRespondentCopyEmail({
-    formId: form._id,
-    formTitle: form.title,
-    responseId: submissionId,
-    formQuestionAnswers,
-    attachments: attachments,
-    autoReplyMailData: autoreplyMailData,
-  }).orElse((error) => {
-    logger.error({
-      message: 'Failed to send respondent copy email',
-      meta: {
-        action: 'sendMrfRespondentCopyEmail',
+  return ResultAsync.combine(
+    respondentCopyRecipientData.map((autoReplyMailData) =>
+      MailService.sendMrfRespondentCopyEmail({
         formId: form._id,
-        submissionId,
-      },
-      error,
-    })
-    return errAsync(error)
-  })
+        formTitle: form.title,
+        responseId: submissionId,
+        formQuestionAnswers,
+        attachments,
+        autoReplyMailData,
+      }).orElse((error) => {
+        logger.error({
+          message: 'Failed to send respondent copy email',
+          meta: {
+            action: 'sendMrfRespondentCopyEmail',
+            formId: form._id,
+            submissionId,
+            autoReplyMailData,
+          },
+          error,
+        })
+        return okAsync(false)
+      }),
+    ),
+  ).map(() => true)
 }
 
 const saveAttachmentsToDbIfExists = ({
@@ -661,18 +663,19 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   }
 
   // Find respondent copy recipient data
-  const recipientData = extractRespondentCopyEmails({
+  const respondentCopyRecipientData = extractRespondentCopyEmails({
     responses: encryptedPayload.responses,
     formFields: form.form_fields,
+    activeFields: form.workflow[currentStepNumber].edit,
   })
 
-  if (recipientData && recipientData.length > 0) {
+  if (respondentCopyRecipientData && respondentCopyRecipientData.length > 0) {
     sendMrfRespondentCopyEmails({
       form,
       responses,
       submissionId,
       attachments,
-      recipientData,
+      respondentCopyRecipientData,
     }).mapErr((error) => {
       logger.error({
         message: 'Send multirespondent respondent copy email error',
@@ -924,19 +927,25 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  // Find respondent copy recipient data
-  const recipientData = extractRespondentCopyEmails({
-    responses: encryptedPayload.responses,
+  // console.log('responses')
+  // console.log(responses)
+
+  // console.log(`snapshottedFormDef`)
+  // console.log(snapshottedFormDef)
+  //Find respondent copy recipient data
+  const respondentCopyRecipientData = extractRespondentCopyEmails({
+    responses: responses,
     formFields: snapshottedFormDef.form_fields,
+    activeFields: snapshottedFormDef.workflow[currentStepNumber].edit,
   })
 
-  if (recipientData && recipientData.length > 0) {
+  if (respondentCopyRecipientData && respondentCopyRecipientData.length > 0) {
     sendMrfRespondentCopyEmails({
       form: snapshottedFormDef,
       responses,
       submissionId,
       attachments,
-      recipientData,
+      respondentCopyRecipientData,
     }).mapErr((error) => {
       logger.error({
         message: 'Send multirespondent respondent copy email error',
