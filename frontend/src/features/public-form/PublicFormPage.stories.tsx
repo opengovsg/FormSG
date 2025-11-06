@@ -942,9 +942,12 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.play = async ({
 
   let formHeaderSaveDraftButton: HTMLElement
 
-  await step('Scroll down the page to reveal the form header save draft button', async () => {
-    await window.scrollBy(0, 500);
-  })
+  await step(
+    'Scroll down the page to reveal the form header save draft button',
+    async () => {
+      await window.scrollBy(0, 500)
+    },
+  )
 
   await step('Find the form header save draft button', async () => {
     await waitFor(
@@ -1049,9 +1052,12 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({
 
   let formHeaderSaveDraftButton: HTMLElement
 
-  await step('Scroll down the page to reveal the form header save draft button', async () => {
-    await window.scrollBy(0, 500);
-  })
+  await step(
+    'Scroll down the page to reveal the form header save draft button',
+    async () => {
+      await window.scrollBy(0, 500)
+    },
+  )
 
   await step('Find the form header save draft button', async () => {
     await waitFor(
@@ -1148,9 +1154,7 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
-WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
-  step,
-}) => {
+WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({ step }) => {
   const screen = within(document.body)
 
   let floatingSaveDraftButton: HTMLElement

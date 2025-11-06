@@ -22,9 +22,8 @@ export const FloatingToolBar = (): JSX.Element | null => {
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
-  const enableFloatingSaveDraftButton = gb?.isOn(
-    featureFlags.enableSaveDraftButtonFloating,
-  ) || isTest
+  const enableFloatingSaveDraftButton =
+    gb?.isOn(featureFlags.enableSaveDraftButtonFloating) || isTest
 
   if (submissionData) return null
 
