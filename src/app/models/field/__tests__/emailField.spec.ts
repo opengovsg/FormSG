@@ -102,7 +102,7 @@ describe('models.fields.emailField', () => {
     expect(actual.field.toObject()).toEqual(expected)
   })
 
-  it('should set includeFormSummary to false on ResponseMode.Multirespondent forms', async () => {
+  it('should set includeFormSummary to given on ResponseMode.Multirespondent forms', async () => {
     // Arrange
     const mockEmailField = {
       autoReplyOptions: {
@@ -125,7 +125,7 @@ describe('models.fields.emailField', () => {
       _id: expect.anything(),
       autoReplyOptions: {
         // Should be always set to false for MRF forms
-        includeFormSummary: false,
+        includeFormSummary: true,
       },
     })
     expect(actual.field.toObject()).toEqual(expected)

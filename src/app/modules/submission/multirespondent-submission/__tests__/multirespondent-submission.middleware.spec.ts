@@ -81,7 +81,22 @@ describe('Multirespondent Submission Middleware', () => {
     const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
     const MOCK_FEATURE_FLAGS = ['flag1', 'flag2']
 
-    const MOCK_FORM = {
+  const MOCK_FORM = {
+    _id: MOCK_FORM_ID,
+    responseMode: FormResponseMode.Multirespondent,
+    title: 'mock form title',
+    publicKey: 'mockPublicKey',
+    form_fields: [
+      { _id: 'field1', fieldType: 'textfield', title: 'Field 1' },
+      { _id: 'field2', fieldType: 'email', title: 'Field 2' },
+    ],
+    form_logics: [{ _id: 'logic1', logicType: 'showFields' }],
+    workflow: [{ step: 1, edit: ['field1', 'field2'] }],
+    hasRespondentCopy: true,
+    emails: ['test@example.com'],
+    stepOneEmailNotificationFieldId: 'field1',
+    stepsToNotify: [new ObjectId().toHexString()],
+    toObject: jest.fn().mockReturnValue({
       _id: MOCK_FORM_ID,
       responseMode: FormResponseMode.Multirespondent,
       title: 'mock form title',
@@ -96,39 +111,29 @@ describe('Multirespondent Submission Middleware', () => {
       emails: ['test@example.com'],
       stepOneEmailNotificationFieldId: 'field1',
       stepsToNotify: [new ObjectId().toHexString()],
-      toObject: jest.fn().mockReturnValue({
-        _id: MOCK_FORM_ID,
-        responseMode: FormResponseMode.Multirespondent,
-        title: 'mock form title',
-        publicKey: 'mockPublicKey',
-        form_fields: [
-          { _id: 'field1', fieldType: 'textfield', title: 'Field 1' },
-          { _id: 'field2', fieldType: 'email', title: 'Field 2' },
-        ],
-        form_logics: [{ _id: 'logic1', logicType: 'showFields' }],
-        workflow: [{ step: 1, edit: ['field1', 'field2'] }],
-        hasRespondentCopy: true,
-        emails: ['test@example.com'],
-        stepOneEmailNotificationFieldId: 'field1',
-        stepsToNotify: [new ObjectId().toHexString()],
-      }),
-      // Add other required properties to satisfy IPopulatedForm interface
-      admin: { _id: new ObjectId() },
-      permissionList: [],
-      startPage: { title: 'Start', paragraph: 'Start page' },
-      endPage: { title: 'End', paragraph: 'End page' },
-      hasCaptcha: false,
-      hasIssueNotification: false,
-      authType: FormResponseMode.Multirespondent,
-      isSubmitterIdCollectionEnabled: false,
-      isSingleSubmission: false,
-      status: 'ACTIVE',
-      inactiveMessage: '',
-      submissionLimit: null,
-      isListed: true,
-      webhook: { url: '', isRetryEnabled: false },
-      getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-    } as any
+    }),
+    // Add other required properties to satisfy IPopulatedForm interface
+    admin: {
+      _id: new ObjectId(),
+      agency: {
+        fullName: 'Government Technology Agency',
+      },
+    },
+    permissionList: [],
+    startPage: { title: 'Start', paragraph: 'Start page' },
+    endPage: { title: 'End', paragraph: 'End page' },
+    hasCaptcha: false,
+    hasIssueNotification: false,
+    authType: FormResponseMode.Multirespondent,
+    isSubmitterIdCollectionEnabled: false,
+    isSingleSubmission: false,
+    status: 'ACTIVE',
+    inactiveMessage: '',
+    submissionLimit: null,
+    isListed: true,
+    webhook: { url: '', isRetryEnabled: false },
+    getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+  } as any
 
     const MOCK_MRF_SUBMISSION = {
       form: MOCK_FORM_ID,
@@ -204,20 +209,20 @@ describe('Multirespondent Submission Middleware', () => {
       // Verify that formDef (latestFormDef) is set
       expect(mockReq.formsg.formDef).toEqual(MOCK_FORM)
 
-      // Verify that snapshottedFormDef is set with correct structure
-      expect(mockReq.formsg.snapshottedFormDef).toEqual({
-        _id: MOCK_FORM_ID,
-        title: MOCK_FORM.title,
-        form_fields: MOCK_MRF_SUBMISSION.form_fields, // Should use snapshot from submission
-        form_logics: MOCK_MRF_SUBMISSION.form_logics, // Should use snapshot from submission
-        webhook: MOCK_FORM.webhook, // Should use current form data
-        workflow: MOCK_MRF_SUBMISSION.workflow, // Should use snapshot from submission
-        hasRespondentCopy: MOCK_FORM.hasRespondentCopy, // Should use current form data
-        emails: MOCK_FORM.emails, // Should use current form data
-        stepOneEmailNotificationFieldId:
-          MOCK_FORM.stepOneEmailNotificationFieldId, // Should use current form data
-        stepsToNotify: MOCK_FORM.stepsToNotify, // Should use current form data
-      })
+    // Verify that snapshottedFormDef is set with correct structure
+    expect(mockReq.formsg.snapshottedFormDef).toEqual({
+      _id: MOCK_FORM_ID,
+      title: MOCK_FORM.title,
+      form_fields: MOCK_MRF_SUBMISSION.form_fields, // Should use snapshot from submission
+      form_logics: MOCK_MRF_SUBMISSION.form_logics, // Should use snapshot from submission
+      webhook: MOCK_FORM.webhook, // Should use current form data
+      workflow: MOCK_MRF_SUBMISSION.workflow, // Should use snapshot from submission
+      admin: MOCK_FORM.admin, // Should use current form data
+      emails: MOCK_FORM.emails, // Should use current form data
+      stepOneEmailNotificationFieldId:
+        MOCK_FORM.stepOneEmailNotificationFieldId, // Should use current form data
+      stepsToNotify: MOCK_FORM.stepsToNotify, // Should use current form data
+    })
 
       // Verify that getMultirespondentSubmission was called with the correct submissionId
       expect(getMultirespondentSubmission).toHaveBeenCalledWith(
