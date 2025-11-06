@@ -1149,10 +1149,8 @@ WithSaveDraftEnabledAndClickFloatingSaveDraftButton.parameters = {
   ],
 }
 WithSaveDraftEnabledAndClickFloatingSaveDraftButton.play = async ({
-  canvasElement,
   step,
 }) => {
-  const canvas = within(canvasElement)
   const screen = within(document.body)
 
   let floatingSaveDraftButton: HTMLElement
