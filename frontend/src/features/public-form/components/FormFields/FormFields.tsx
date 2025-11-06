@@ -24,7 +24,6 @@ import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/Payme
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
-import { PublicRespondentEmailField } from './PublicRespondentEmailField'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
