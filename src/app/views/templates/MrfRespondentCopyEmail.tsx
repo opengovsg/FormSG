@@ -31,7 +31,7 @@ export type QuestionAnswer = {
 export type RespondentCopyEmilData = {
     formTitle: string
     responseId: string
-    formQuestionAnswers: QuestionAnswer[] | undefined
+    formQuestionAnswers?: QuestionAnswer[]
     body: string
 }
 
