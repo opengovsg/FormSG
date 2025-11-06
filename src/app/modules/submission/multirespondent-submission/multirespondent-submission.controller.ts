@@ -58,7 +58,7 @@ import {
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import { createPublicMultirespondentSubmissionDto, extractRespondentCopyEmails } from './multirespondent-submission.utils'
+import { createPublicMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -132,12 +132,6 @@ const submitMultirespondentForm = async (
     mrfStep: submission.workflowStep,
   })
 
-  // Find respondent copy emails
-  const respondentEmails = extractRespondentCopyEmails({
-    responses: req.body.responses,
-    formFields: form.form_fields,
-  })
-
   await performMultiRespondentPostSubmissionCreateActions({
     submission,
     submissionId: submission._id.toString(),
@@ -145,7 +139,6 @@ const submitMultirespondentForm = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
-    respondentEmails,
   })
 }
 
@@ -241,7 +234,6 @@ const updateMultirespondentSubmission = async (
     encryptedPayload,
     logMeta,
     attachments: req.formsg.unencryptedAttachments,
-    respondentEmails: req.formsg.respondentEmails,
   })
 }
 
