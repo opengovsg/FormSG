@@ -145,15 +145,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     isEncryptMode &&
     form.payments_channel.channel !== PaymentChannel.Unconnected
 
-  const isPdfResponseEnabled =
-    form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
-
-  const pdfResponseToggleDescription = isPdfResponseEnabled
+  const pdfResponseToggleDescription = isPaymentDisabledForm
     ? t(
-        'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
+        'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',
       )
     : t(
-        'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',
+        'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
       )
 
   // TODO: FRM-2172 Remove when respondent copy is out of beta
@@ -214,7 +211,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponse',
                 )}
                 description={pdfResponseToggleDescription}
-                isDisabled={!isPdfResponseEnabled}
+                isDisabled={isPaymentDisabledForm}
               />
             </FormControl>
             <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
