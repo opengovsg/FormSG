@@ -1,4 +1,3 @@
-import { keyBy } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -386,21 +385,27 @@ export const getQuestionTitleAnswerString = ({
   return questionAnswerPair
 }
 
-// '69031bf600ab799b70e1bd56': { fieldType: 'email', answer: { value: 'scott@open.gov.sg' } }
 export const extractRespondentCopyEmails = ({
   responses,
   formFields,
+  activeFields,
 }: {
   responses: FieldResponsesV3
-  formFields: FormFieldSchema[]
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  activeFields: string[]
 }): AutoReplyMailData[] => {
-  const fieldsById = keyBy(formFields, '_id')
-  return Object.entries(responses).flatMap(([fieldId, response]) => {
-    const field = fieldsById[fieldId]
+  return activeFields.flatMap((fieldId) => {
+    const fieldIdString = fieldId.toString()
+    const field = formFields.find((f) => f._id.toString() === fieldIdString)
+    const response = responses[fieldIdString]
+
     if (
+      // checks if field is an email field
       field &&
       field.fieldType === BasicField.Email &&
       field.autoReplyOptions?.hasAutoReply &&
+      response &&
+      // checks if response has an answer (email)
       typeof response.answer === 'object' &&
       'value' in response.answer &&
       typeof response.answer.value === 'string'
