@@ -462,8 +462,8 @@ const sendMrfRespondentCopyEmails = ({
   respondentCopyRecipientData,
 }: {
   form: Pick<
-    IPopulatedMultirespondentForm,
-    '_id' | 'title' | 'hasRespondentCopy' | 'admin'
+    IPopulatedMultirespondentForm | SnapshottedFormDef,
+    '_id' | 'title' | 'admin'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -476,7 +476,6 @@ const sendMrfRespondentCopyEmails = ({
     formFields: form.form_fields,
     responses,
   })
-
   return ResultAsync.combine(
     respondentCopyRecipientData.map((autoReplyMailData) =>
       MailService.sendMrfRespondentCopyEmail({
