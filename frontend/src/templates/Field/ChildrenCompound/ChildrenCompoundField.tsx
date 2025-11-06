@@ -263,13 +263,14 @@ const ChildrenBody = ({
     return allChildren.filter((name) => !temp.has(name))
   }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
 
-  const childNameValues = useMemo(() => {
-    return [childName, ...namesNotSelected()].filter((name) => {
-      if (name === '' || name === undefined) {
-        return false
-      } else return true
-    })
-  }, [childName, namesNotSelected])
+  // const childNameValues = useMemo(() => {
+  //   return [childName, ...namesNotSelected()].filter((name) => {
+  //     if (name === '' || name === undefined) {
+  //       return false
+  //     } else return true
+  //   })
+  // }, [childName, namesNotSelected])
+  const childNameValues = ['scott']
 
   const indexOfChild: number = useMemo(() => {
     return (

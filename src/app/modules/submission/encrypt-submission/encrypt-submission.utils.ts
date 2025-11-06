@@ -144,14 +144,19 @@ export const formatMyInfoStorageResponseData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields?: Set<MyInfoKey>,
 ) => {
+  console.log(`formatMyInfoStorageResponseData`)
   if (!hashedFields) {
     return parsedResponses
   } else {
     return parsedResponses.flatMap((response) => {
       if (isProcessedChildResponse(response)) {
+        console.log(`isProcessedChildResponse)`)
         return getAnswersForChild(response).map((childField) => {
+          console.log(`childField`)
+          console.log(childField)
           const myInfoPrefix = getMyInfoPrefix(childField, hashedFields)
           childField.question = `${myInfoPrefix}${childField.question}`
+          console.log(childField.question)
           return childField
         })
       } else {

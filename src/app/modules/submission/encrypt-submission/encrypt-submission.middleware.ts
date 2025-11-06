@@ -420,17 +420,23 @@ export const validateStorageSubmission = async (
             .andThen(MyInfoService.verifyLoginJwt)
             .asyncAndThen(({ uinFin }) =>
               MyInfoService.fetchMyInfoHashes(uinFin, form._id)
-                .andThen((hashes) =>
-                  MyInfoService.checkMyInfoHashes(
+                .andThen((hashes) => {
+                  console.log('hashes')
+                  console.log(hashes)
+                  return MyInfoService.checkMyInfoHashes(
                     parsedResponses.responses,
                     hashes,
-                  ),
-                )
+                  )
+                })
                 .map<IPopulatedStorageFormWithResponsesAndHash>(
-                  (hashedFields) => ({
-                    hashedFields,
-                    parsedResponses,
-                  }),
+                  (hashedFields) => {
+                    console.log('hashedFields')
+                    console.log(hashedFields)
+                    return {
+                      hashedFields,
+                      parsedResponses,
+                    }
+                  },
                 ),
             )
             .mapErr((error) => {

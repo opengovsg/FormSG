@@ -776,6 +776,10 @@ export const getMyInfoPrefix = (
   response: ResponseFormattedForEmail | ProcessedFieldResponse,
   hashedFields: Set<MyInfoKey>,
 ): string => {
+  console.log(!!response.myInfo?.attr)
+  console.log(hashedFields.has(response._id))
+  console.log(hashedFields)
+  console.log(response._id)
   return !!response.myInfo?.attr && hashedFields.has(response._id)
     ? MYINFO_PREFIX
     : ''
