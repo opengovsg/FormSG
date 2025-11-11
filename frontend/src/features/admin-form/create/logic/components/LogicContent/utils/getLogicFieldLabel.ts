@@ -13,6 +13,12 @@ export const getLogicFieldLabel = (field: FormFieldWithQuestionNo) => {
     case BasicField.Image:
       title = field.name
       break
+    case BasicField.Email:
+      // Inform admins if email confirmation will be sent
+      if (field.autoReplyOptions.hasAutoReply) {
+        title = title + " (confirmation will be sent)"
+      }
+      break
     default:
       break
   }
