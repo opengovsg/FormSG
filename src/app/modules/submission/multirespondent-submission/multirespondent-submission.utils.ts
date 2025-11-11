@@ -1,8 +1,6 @@
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
-import { AutoReplyMailData } from '../../../services/mail/mail.types'
-
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
   BasicField,
@@ -25,6 +23,8 @@ import {
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import { AutoReplyMailData } from '../../../services/mail/mail.types'
+import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
@@ -35,7 +35,6 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -393,8 +392,7 @@ export const getPdfFormData = ({
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
-  }): EmailRespondentConfirmationField[] => {
-  
+}): EmailRespondentConfirmationField[] => {
   const pdfFormData: EmailRespondentConfirmationField[] = []
   if (!formFields || !responses) return []
 
@@ -408,27 +406,28 @@ export const getPdfFormData = ({
 
     switch (response.fieldType) {
       case BasicField.Signature:
-        const signatureAnswer = convertToSignaturePngDataUri(response.answer.value)
-        
         pdfFormData.push({
           question: questionTitle,
-          answer: signatureAnswer,
+          answer: convertToSignaturePngDataUri(response.answer.value),
           fieldType,
-          answerTemplate: [SIGNATURE_CAPTURED_STRING]
+          answerTemplate: [SIGNATURE_CAPTURED_STRING],
         })
         break
-      default:
+      default: {
         const x = [formField] as FormFieldSchema[] | FormFieldDto[]
-        const y = getQuestionTitleAnswerString({ formFields: x, responses: responses })[0]
+        const y = getQuestionTitleAnswerString({
+          formFields: x,
+          responses: responses,
+        })[0]
         pdfFormData.push({
           question: y.question,
           answerTemplate: [y.answer],
         })
+      }
     }
   }
 
   return pdfFormData
-
 }
 
 export const extractRespondentCopyEmails = ({

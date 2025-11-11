@@ -1,6 +1,7 @@
 import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
 
 import {
   BasicField,
@@ -32,9 +33,16 @@ import {
   CustomLoggerParams,
 } from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
-import { AutoreplyPdfGenerationError, MailSendError } from '../../../services/mail/mail.errors'
+import {
+  AutoreplyPdfGenerationError,
+  MailSendError,
+} from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
-import { AutoReplyMailData, AutoreplySummaryRenderData } from '../../../services/mail/mail.types'
+import {
+  AutoReplyMailData,
+  AutoreplySummaryRenderData,
+} from '../../../services/mail/mail.types'
+import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -63,8 +71,6 @@ import {
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
-import Mail from 'nodemailer/lib/mailer'
-import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -474,15 +480,23 @@ const sendMrfRespondentCopyEmails = ({
   submissionId: string
   attachments?: IAttachmentInfo[]
   respondentCopyRecipientData: AutoReplyMailData[]
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError> => {
+}): ResultAsync<
+  true,
+  InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
+> => {
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
   })
 
   // function to prepare answers for pdf html
-  const pdfFormData = getPdfFormData({ formFields: form.form_fields, responses })
-  const hasFormSummary = respondentCopyRecipientData.some((autoReplyMailData) => autoReplyMailData.includeFormSummary)
+  const pdfFormData = getPdfFormData({
+    formFields: form.form_fields,
+    responses,
+  })
+  const hasFormSummary = respondentCopyRecipientData.some(
+    (autoReplyMailData) => autoReplyMailData.includeFormSummary,
+  )
   const renderData: AutoreplySummaryRenderData = {
     refNo: submissionId,
     formTitle: form.title,
@@ -492,7 +506,10 @@ const sendMrfRespondentCopyEmails = ({
   }
 
   // Step 1: generate PDF if needed
-  const pdfResult: ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> = hasFormSummary
+  const pdfResult: ResultAsync<
+    Mail.Attachment | undefined,
+    AutoreplyPdfGenerationError
+  > = hasFormSummary
     ? generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
         filename: 'response.pdf',
         content: Buffer.copyBytesFrom(pdfBuffer),
@@ -503,14 +520,16 @@ const sendMrfRespondentCopyEmails = ({
     const recipientAttachments = [
       ...(attachments ?? []),
       ...(responsePdf ? [responsePdf] : []),
-]
+    ]
     return ResultAsync.combine(
       respondentCopyRecipientData.map((autoReplyMailData) => {
         return MailService.sendMrfRespondentCopyEmail({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
-          attachments:autoReplyMailData.includeFormSummary ? recipientAttachments : [],
+          attachments: autoReplyMailData.includeFormSummary
+            ? recipientAttachments
+            : [],
           autoReplyMailData,
           agencyName: form.admin.agency.fullName,
           ...(autoReplyMailData.includeFormSummary && { formQuestionAnswers }),
@@ -527,7 +546,7 @@ const sendMrfRespondentCopyEmails = ({
           })
           return okAsync(true) //continue even if one email fails
         })
-      })
+      }),
     ).map(() => true) as ResultAsync<
       true,
       InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
