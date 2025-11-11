@@ -1184,7 +1184,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
-    formQuestionAnswers: QuestionAnswer[]
+    formQuestionAnswers?: QuestionAnswer[]
     attachments?: Mail.Attachment[]
     autoReplyMailData: AutoReplyMailData
     agencyName: string
@@ -1198,7 +1198,7 @@ export class MailService {
           '{agencyName}',
           agencyName,
         ),
-      ...(autoReplyMailData.includeFormSummary && { formQuestionAnswers }),
+      formQuestionAnswers,
     }
 
     const generatedHtml = fromPromise(
