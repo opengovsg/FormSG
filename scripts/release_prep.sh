@@ -33,6 +33,7 @@ git pull
 git checkout develop
 git reset --hard origin/develop
 
+hotfix_branch=$(git branch --show-current)
 short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
 
@@ -60,7 +61,7 @@ git push origin ${may_force_push} HEAD:${release_branch}
 git push -f origin HEAD:stg
 git push origin ${release_version}
 
-# extract changelog to inject into the PR
+# Extract changelog to inject into the PR
 pr_body_file=.pr_body_${release_version}
 pr_body_file_groupped=.pr_body_${release_version}_groupped
 
@@ -103,5 +104,5 @@ gh pr create \
 # cleanup
 rm ${pr_body_file}
 rm ${pr_body_file_groupped}
-git checkout develop
+git checkout ${hotfix_branch}
 git branch -D ${release_branch}
