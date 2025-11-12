@@ -84,6 +84,7 @@ git branch -D ${temp_release_branch}
 
 echo -e "\033[34mCreating the release branch to remote\033[0m" 
 git push origin ${may_force_push} HEAD:${release_branch}
+echo -e "\033[34mPushing to stg for verification\033[0m"
 git push -f origin HEAD:stg
 git push origin ${release_version}
 
@@ -98,8 +99,6 @@ awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md 
 echo "## New" > ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
 grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-echo "pr_body_file_groupped: ${pr_body_file_groupped}"
 
 # Extract production dependencies
 echo "" >> ${pr_body_file_groupped}
@@ -141,7 +140,7 @@ gh pr create \
 # Perform cleanup of temporary files and local release branch
 echo -e "\033[34mCleaning up temporary files and local release branch\033[0m"
 rm ${pr_body_file}
-# rm ${pr_body_file_groupped}
+rm ${pr_body_file_groupped}
 git checkout ${hotfix_branch}
 git branch -D ${release_branch}
 
