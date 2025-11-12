@@ -47,6 +47,13 @@ short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
+# Squash the commit history into single commit titled the branch name, unless --nosquash is provided
+if [[ "$1" != "--nosquash" && "$2" != "--nosquash" ]]; then
+  echo -e "\033[34mSquashing commit history into single commit titled the branch name\033[0m"
+  git reset --soft release-al2
+  git commit -a -n -m "fix: changes from ${hotfix_branch}"
+fi
+
 echo -e "\033[34mBumping version to next patch version\033[0m"
 # Update the version in the root directory
 release_version=$(npm --no-git-tag-version version patch | grep -E '^v\d')
@@ -64,13 +71,6 @@ if [[ "$1" == "--recut" || "$2" == "--recut" ]]; then
   # Delete the local release branch for this release version if it exists.
   git branch -D ${release_branch}
   may_force_push=-f
-fi
-
-# Squash the commit history into single commit titled the branch name, unless --nosquash is provided
-if [[ "$1" != "--nosquash" && "$2" != "--nosquash" ]]; then
-  echo -e "\033[34mSquashing commit history into single commit titled the branch name\033[0m"
-  git reset --soft release-al2
-  git commit -a -n -m "fix: changes from ${hotfix_branch}"
 fi
 
 git commit -a -n -m "chore: bump version to ${release_version}"
