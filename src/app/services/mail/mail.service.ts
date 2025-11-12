@@ -1191,7 +1191,7 @@ export class MailService {
   }) => {
     const htmlData = {
       formTitle,
-      responseId: responseId.toString(),
+      responseId,
       body:
         autoReplyMailData.body ||
         DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
@@ -1218,13 +1218,18 @@ export class MailService {
       },
     )
 
+    const senderName = autoReplyMailData.sender || agencyName
+    const emailSender = `${senderName.replace('(', '\\(')} <${this.#senderMail}>`
+
+    const emailSubject =
+      autoReplyMailData.subject ||
+      `Thank you for submitting ${formTitle} (${responseId})`
+
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
         to: autoReplyMailData.email,
-        from: autoReplyMailData.sender || this.#senderFromString,
-        subject:
-          autoReplyMailData.subject ||
-          `Thank you for submitting ${formTitle} (${responseId})`,
+        from: emailSender,
+        subject: emailSubject,
         html: mailHtml,
         attachments,
       }

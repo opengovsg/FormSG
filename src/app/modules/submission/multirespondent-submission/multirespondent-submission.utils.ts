@@ -460,6 +460,7 @@ export const extractRespondentCopyEmails = ({
         {
           email: response.answer.value,
           subject: options.autoReplySubject,
+          sender: options.autoReplySender,
           body: options.autoReplyMessage,
           includeFormSummary: options.includeFormSummary,
         },

@@ -1,4 +1,5 @@
 import { flatten, uniq } from 'lodash'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -466,7 +467,7 @@ const sendMrfOutcomeEmails = ({
 const sendMrfRespondentCopyEmails = ({
   form,
   responses,
-  submissionId,
+  submission,
   attachments,
   respondentCopyRecipientData,
 }: {
@@ -477,13 +478,19 @@ const sendMrfRespondentCopyEmails = ({
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
   responses: FieldResponsesV3
-  submissionId: string
+  submission: IMultirespondentSubmissionSchema
   attachments?: IAttachmentInfo[]
   respondentCopyRecipientData: AutoReplyMailData[]
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
 > => {
+  const submissionId: string = submission.id
+  const submissionTime = moment(submission.created)
+    .tz('Asia/Singapore')
+    .format('ddd, DD MMM YYYY hh:mm:ss A')
+  const formUrl: string = `${config.app.appUrl}/${form._id}`
+
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
@@ -500,9 +507,9 @@ const sendMrfRespondentCopyEmails = ({
   const renderData: AutoreplySummaryRenderData = {
     refNo: submissionId,
     formTitle: form.title,
-    submissionTime: 'working submissionTime',
+    submissionTime: submissionTime,
     formData: pdfFormData,
-    formUrl: `working formUrl`,
+    formUrl: formUrl,
   }
 
   // Step 1: generate PDF if needed
@@ -724,7 +731,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     sendMrfRespondentCopyEmails({
       form,
       responses,
-      submissionId,
+      submission,
       attachments,
       respondentCopyRecipientData,
     }).mapErr((error) => {
@@ -989,7 +996,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     sendMrfRespondentCopyEmails({
       form: snapshottedFormDef,
       responses,
-      submissionId,
+      submission,
       attachments,
       respondentCopyRecipientData,
     }).mapErr((error) => {
