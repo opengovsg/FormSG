@@ -400,9 +400,9 @@ export const getPdfFormData = ({
     const questionTitle = formField.title
     const response = responses[formField._id]
 
-    const { fieldType } = response
-
     if (!response || !questionTitle) continue
+
+    const { fieldType } = response
 
     switch (response.fieldType) {
       case BasicField.Signature:
