@@ -358,16 +358,16 @@ export const getQuestionTitleAnswerStringSingleField = ({
       })
   }
 
-  // Add Ndi responses if they exist
-  for (const key in responses) {
-    if (startsWithSPCPFieldTitle(key)) {
-      const value = responses[key] as NdiResponseV3
-      questionAnswerPair.push({
-        question: key,
-        answer: value.answer,
-      })
-    }
-  }
+  // Add Ndi responses if they exist TODO: fix rebased implementation of Ndi responses
+  // for (const key in response) {
+  //   if (startsWithSPCPFieldTitle(key)) {
+  //     const value = response as NdiResponseV3
+  //     questionAnswerPair.push({
+  //       question: key,
+  //       answer: value.answer,
+  //     })
+  //   }
+  // }
   return questionAnswerPair
 }
 
