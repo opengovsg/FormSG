@@ -52,10 +52,10 @@ export const MrfRespondentCopyEmail = ({
 
     const renderResponseId = () => (
         <>
-          <Text style={{ ...secondaryTextStyle, marginBottom: '40px' }}>{'---'}</Text>
+          <Hr style={{ margin: '40px 0' }} />
           <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
           <Text style={{ ...secondaryTextStyle,  marginBottom: '40px' }}>{responseId}</Text>
-          <Text style={{ ...secondaryTextStyle, marginBottom: '40px' }}>{'---'}</Text>
+          <Hr style={{ margin: '40px 0' }} />
         </>
     )
 
