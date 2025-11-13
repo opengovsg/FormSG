@@ -105,38 +105,38 @@ git push origin ${release_version}
 echo -e "\033[34mCreating PR for release ${release_version} into release-al2\033[0m"
 # # extract changelog to inject into the PR
 pr_body_file=.pr_body_${release_version}
-pr_body_file_groupped=.pr_body_${release_version}_groupped
+pr_body_file_grouped=.pr_body_${release_version}_grouped
 
 awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed -E '/^([^-]|[[:space:]]*$)/d' > ${pr_body_file}
 
 # Extract the new changes
-echo "## New" > ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_groupped}
+echo "## New" > ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_grouped}
 
 # Extract production dependencies
-echo "" >> ${pr_body_file_groupped}
-echo "## Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_grouped}
+echo "## Dependencies" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_grouped}
 
 # Extract dev-dependencies
-echo "" >> ${pr_body_file_groupped}
-echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_grouped}
+echo "## Dev-Dependencies" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_grouped}
 
 # Extract test procedures for feature PRs
-echo "" >> ${pr_body_file_groupped}
-echo "## Tests" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
+echo "" >> ${pr_body_file_grouped}
+echo "## Tests" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
 grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
   pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
   tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed -E "s/\[[Xx]\]/[ ]/" | sed -E "s/^(##+) /\1## /")
   if [[ ${tests} =~ [^[:space:]] ]]; then
-    echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
-    echo "${tests}" >> ${pr_body_file_groupped}
-    echo "" >> ${pr_body_file_groupped}
+    echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_grouped}
+    echo "${tests}" >> ${pr_body_file_grouped}
+    echo "" >> ${pr_body_file_grouped}
   fi
 done
 
@@ -145,16 +145,16 @@ gh pr create \
   -H "${release_branch}" \
   -B "release-al2" \
   -t "build: release ${release_version}" \
-  -F "${pr_body_file_groupped}" \
+  -F "${pr_body_file_grouped}" \
   || gh pr edit ${release_branch} \
     -B "release-al2" \
     -t "build: release ${release_version}" \
-    -F "${pr_body_file_groupped}"
+    -F "${pr_body_file_grouped}"
 
 # Perform cleanup of temporary files and local release branch
 echo -e "\033[34mCleaning up temporary files and local release branch\033[0m"
 rm ${pr_body_file}
-rm ${pr_body_file_groupped}
+rm ${pr_body_file_grouped}
 git checkout ${hotfix_branch}
 git branch -D ${release_branch}
 
