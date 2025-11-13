@@ -876,11 +876,19 @@ export const PublicFormProvider = ({
             'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
           )
         : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+      console.log({
+        message: restoreDraftMessage,
+        meta: {
+          action: 'restoreDraft',
+          formId,
+          hasChangedDraftFields,
+        },
+      })
       toast({
         description: restoreDraftMessage,
       })
     },
-    [t, toast],
+    [t, toast, formId],
   )
   const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
 

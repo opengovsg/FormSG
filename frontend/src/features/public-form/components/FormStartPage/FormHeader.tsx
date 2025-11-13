@@ -46,8 +46,12 @@ export const MiniHeader = ({
   isOpen,
   isTemplate,
 }: MiniHeaderProps): JSX.Element => {
-  const { isSaveDraftEnabled, onSaveDraft, draftLastSavedDateTimeString } =
-    usePublicFormContext()
+  const {
+    isSaveDraftEnabled,
+    onSaveDraft,
+    draftLastSavedDateTimeString,
+    formId,
+  } = usePublicFormContext()
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
@@ -96,7 +100,17 @@ export const MiniHeader = ({
             </Flex>
             {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
               <FormHeaderSaveDraftButton
-                onSaveDraft={onSaveDraft}
+                onSaveDraft={() => {
+                  console.log({
+                    message: 'User clicked save draft from form header',
+                    meta: {
+                      action: 'saveDraft',
+                      variant: 'FormHeader',
+                      formId,
+                    },
+                  })
+                  onSaveDraft()
+                }}
                 draftLastSavedDateTimeString={draftLastSavedDateTimeString}
               />
             )}

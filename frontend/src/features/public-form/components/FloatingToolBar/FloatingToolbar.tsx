@@ -40,7 +40,17 @@ export const FloatingToolBar = (): JSX.Element | null => {
       <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
       {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
         <FloatingSaveDraftButton
-          onSaveDraft={onSaveDraft}
+          onSaveDraft={() => {
+            console.log({
+              message: 'User clicked save draft from floating toolbar',
+              meta: {
+                action: 'saveDraft',
+                variant: 'FloatingToolbar',
+                formId,
+              },
+            })
+            onSaveDraft()
+          }}
           draftLastSavedDateTimeString={draftLastSavedDateTimeString}
         />
       )}
