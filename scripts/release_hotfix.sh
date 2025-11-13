@@ -1,0 +1,161 @@
+#!/bin/bash
+set +x
+
+# To hotfix: 
+# 1. Make a new hotfix branch from release-al2
+# 2. Run this script from this hotfix branch. It will deploy the changes to stg and create a PR for release-al2.
+# 3. Verify the changes on stg.
+# 4. Merge the PR into release-al2. This deploys the changes to production.
+# 5. Make a PR and merge release-al2 back to develop to sync the changes with develop. 
+
+# CLI flags: 
+# --recut If you have made changes after cutting, you can add this flag to use the newest changes for hotfix release.
+# --nosquash The script squashes the changes in the hotfix branch into a single commit by default. This flag prevents the squashing if you want to keep the all the commits in the hotfix branch. 
+
+# pre-requisites: install github CLI
+# - github documentation: https://github.com/cli/cli#installation
+# - github is remote 'origin'
+# - PRs use test section LAST with heading "## Tests"
+# - ALL build and release PRs start with "build: "
+
+hotfix_branch=$(git branch --show-current)
+
+if ! command -v gh >/dev/null 2>&1; then
+    echo -e "\033[31mInstall gh first\033[0m"
+    exit 1
+fi
+
+if ! gh auth status >/dev/null 2>&1; then
+    echo -e "\033[31mYou need to login: gh auth login\033[0m"
+    exit 1
+fi
+
+has_local_changes=$(git status --porcelain --untracked-files=no --ignored=no)
+if [[ ${has_local_changes} ]]; then
+  set +x
+  echo -e "\033[31m==========\033[0m"
+  echo -e "\033[31mABORT: You have local modifications. Please stash or commit changes and run again.\033[0m"
+  echo -e "\033[31m==========\033[0m"
+  exit 1
+fi
+
+# From current hotfix/<description> branch 
+echo -e "\033[34mFetching latest tags and pulling latest changes\033[0m"
+git fetch --all --tags
+git pull
+
+echo -e "\033[34mResetting to the latest commit on the hotfix branch\033[0m"
+git reset --hard ${hotfix_branch}
+
+# Get the next patch version
+current_version=$(node -p "require('./package.json').version")
+release_version="v$(node -p '
+  const [major, minor, patch] = require("./package.json").version.split(".");
+  `${major}.${minor}.${parseInt(patch) + 1}`
+')"
+release_branch=release_${release_version}
+
+echo -e "\033[34mNext patch version: ${release_version}\033[0m"
+
+may_force_push=
+if [[ "$1" == "--recut" || "$2" == "--recut" ]]; then
+  echo -e "\033[34mRecutting: Deleting local and remote tag and release branch\033[0m"
+  # Delete the local and remote tag for this release version if it exists.
+  git tag -d ${release_version}
+  git push --delete origin ${release_version}
+  # Delete the local release branch for this release version if it exists.
+  git branch -D ${release_branch}
+  may_force_push=-f
+fi
+
+echo -e "\033[34mCreate a temporary branch to commit version bump changes\033[0m"
+short_hash=$(git rev-parse --short HEAD)
+temp_release_branch=temp_${short_hash}
+# All subsequent actions are done on the temporary branch to prevent the hotfix branch from being polluted/modified.
+git checkout -b ${temp_release_branch}
+
+# Squash the commit history into single commit titled the branch name, unless --nosquash is provided
+if [[ "$1" != "--nosquash" && "$2" != "--nosquash" ]]; then
+  echo -e "\033[34mSquashing commit history into single commit titled the branch name\033[0m"
+  git reset --soft release-al2
+  git commit -a -n -m "fix: changes from ${hotfix_branch}"
+fi
+
+echo -e "\033[34mBumping version to next patch version\033[0m"
+# Update the version in the root directory
+npm --no-git-tag-version version ${release_version}
+# Update the version in frontend directory
+npm --prefix frontend --no-git-tag-version version ${release_version}
+
+git commit -a -n -m "chore: bump version to ${release_version}"
+git tag ${release_version}
+
+echo -e "\033[34mCreating release branch to merge into release-al2\033[0m"
+git checkout -b ${release_branch}
+
+echo -e "\033[34mDeleting temporary branch\033[0m"
+git branch -D ${temp_release_branch}
+
+echo -e "\033[34mCreating the release branch to remote\033[0m" 
+git push origin ${may_force_push} HEAD:${release_branch}
+echo -e "\033[34mPushing to stg for verification\033[0m"
+git push -f origin HEAD:stg
+git push origin ${release_version}
+
+echo -e "\033[34mCreating PR for release ${release_version} into release-al2\033[0m"
+# # extract changelog to inject into the PR
+pr_body_file=.pr_body_${release_version}
+pr_body_file_grouped=.pr_body_${release_version}_grouped
+
+awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed -E '/^([^-]|[[:space:]]*$)/d' > ${pr_body_file}
+
+# Extract the new changes
+echo "## New" > ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_grouped}
+
+# Extract production dependencies
+echo "" >> ${pr_body_file_grouped}
+echo "## Dependencies" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_grouped}
+
+# Extract dev-dependencies
+echo "" >> ${pr_body_file_grouped}
+echo "## Dev-Dependencies" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_grouped}
+
+# Extract test procedures for feature PRs
+echo "" >> ${pr_body_file_grouped}
+echo "## Tests" >> ${pr_body_file_grouped}
+echo "" >> ${pr_body_file_grouped}
+grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
+  pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
+  tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed -E "s/\[[Xx]\]/[ ]/" | sed -E "s/^(##+) /\1## /")
+  if [[ ${tests} =~ [^[:space:]] ]]; then
+    echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_grouped}
+    echo "${tests}" >> ${pr_body_file_grouped}
+    echo "" >> ${pr_body_file_grouped}
+  fi
+done
+
+# Creating PR to merge into release-al2
+gh pr create \
+  -H "${release_branch}" \
+  -B "release-al2" \
+  -t "build: release ${release_version}" \
+  -F "${pr_body_file_grouped}" \
+  || gh pr edit ${release_branch} \
+    -B "release-al2" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_file_grouped}"
+
+# Perform cleanup of temporary files and local release branch
+echo -e "\033[34mCleaning up temporary files and local release branch\033[0m"
+rm ${pr_body_file}
+rm ${pr_body_file_grouped}
+git checkout ${hotfix_branch}
+git branch -D ${release_branch}
+
+echo -e "\033[34mHotfix preparation complete\033[0m"
