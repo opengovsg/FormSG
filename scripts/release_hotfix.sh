@@ -41,7 +41,7 @@ git fetch --all --tags
 git pull
 
 echo -e "\033[34mResetting to the latest commit on the hotfix branch\033[0m"
-git reset --hard
+git reset --hard ${hotfix_branch}
 
 # Get the next patch version
 current_version=$(node -p "require('./package.json').version")
@@ -55,9 +55,8 @@ echo -e "\033[34mNext patch version: ${release_version}\033[0m"
 may_force_push=
 if [[ "$1" == "--recut" || "$2" == "--recut" ]]; then
   echo -e "\033[34mRecutting: Deleting local and remote tag and release branch\033[0m"
-  # Delete the local tag for this release version if it exists.
+  # Delete the local and remote tag for this release version if it exists.
   git tag -d ${release_version}
-  # Delete the remote tag for this release version on the origin repository.
   git push --delete origin ${release_version}
   # Delete the local release branch for this release version if it exists.
   git branch -D ${release_branch}
@@ -67,7 +66,8 @@ fi
 echo -e "\033[34mCreate a temporary branch to commit version bump changes\033[0m"
 short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
-git checkout -b ${temp_release_branch}
+# All subsequent actions are done on the temporary branch to prevent the hotfix branch from being polluted/modified.
+ git checkout -b ${temp_release_branch}
 
 # Squash the commit history into single commit titled the branch name, unless --nosquash is provided
 if [[ "$1" != "--nosquash" && "$2" != "--nosquash" ]]; then
@@ -78,9 +78,9 @@ fi
 
 echo -e "\033[34mBumping version to next patch version\033[0m"
 # Update the version in the root directory
-npm --no-git-tag-version version patch
+npm --no-git-tag-version version ${release_version}
 # Update the version in frontend directory
-npm --prefix frontend --no-git-tag-version version patch
+npm --prefix frontend --no-git-tag-version version ${release_version}
 release_branch=release_${release_version}
 
 git commit -a -n -m "chore: bump version to ${release_version}"
