@@ -49,6 +49,7 @@ release_version="v$(node -p '
   const [major, minor, patch] = require("./package.json").version.split(".");
   `${major}.${minor}.${parseInt(patch) + 1}`
 ')"
+release_branch=release_${release_version}
 
 echo -e "\033[34mNext patch version: ${release_version}\033[0m"
 
@@ -81,7 +82,6 @@ echo -e "\033[34mBumping version to next patch version\033[0m"
 npm --no-git-tag-version version ${release_version}
 # Update the version in frontend directory
 npm --prefix frontend --no-git-tag-version version ${release_version}
-release_branch=release_${release_version}
 
 git commit -a -n -m "chore: bump version to ${release_version}"
 git tag ${release_version}
