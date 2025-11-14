@@ -156,57 +156,57 @@ export function useCommonFormProvider(formId: string) {
 // Hence, we need to map the frontend title-case to upper-case when submitting to backend.
 const transformFormInputCountryRegionToUpperCase =
   (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
-  (formInputs: Record<string, unknown>) => {
-    const countryRegionFieldIds = new Set(
-      form_fields
-        .filter((field) => field.fieldType === BasicField.CountryRegion)
-        .map((field) => field._id),
-    )
+    (formInputs: Record<string, unknown>) => {
+      const countryRegionFieldIds = new Set(
+        form_fields
+          .filter((field) => field.fieldType === BasicField.CountryRegion)
+          .map((field) => field._id),
+      )
 
-    return Object.keys(formInputs).reduce(
-      (newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (
-          countryRegionFieldIds.has(fieldId) &&
-          typeof currentInput === 'string'
-        ) {
-          newFormInputs[fieldId] = currentInput.toUpperCase()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      },
-      {},
-    )
-  }
+      return Object.keys(formInputs).reduce(
+        (newFormInputs: typeof formInputs, fieldId) => {
+          const currentInput = formInputs[fieldId]
+          if (
+            countryRegionFieldIds.has(fieldId) &&
+            typeof currentInput === 'string'
+          ) {
+            newFormInputs[fieldId] = currentInput.toUpperCase()
+          } else {
+            newFormInputs[fieldId] = currentInput
+          }
+          return newFormInputs
+        },
+        {},
+      )
+    }
 
 // Trim text inputs before sending to backend to match frontend validation
 const transformFormInputTrimTextInputs =
   (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
-  (formInputs: Record<string, unknown>) => {
-    const textFieldIds = new Set(
-      form_fields
-        .filter(
-          (field) =>
-            field.fieldType === BasicField.ShortText ||
-            field.fieldType === BasicField.LongText,
-        )
-        .map((field) => field._id),
-    )
+    (formInputs: Record<string, unknown>) => {
+      const textFieldIds = new Set(
+        form_fields
+          .filter(
+            (field) =>
+              field.fieldType === BasicField.ShortText ||
+              field.fieldType === BasicField.LongText,
+          )
+          .map((field) => field._id),
+      )
 
-    return Object.keys(formInputs).reduce(
-      (newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
-          newFormInputs[fieldId] = currentInput.trim()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      },
-      {},
-    )
-  }
+      return Object.keys(formInputs).reduce(
+        (newFormInputs: typeof formInputs, fieldId) => {
+          const currentInput = formInputs[fieldId]
+          if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
+            newFormInputs[fieldId] = currentInput.trim()
+          } else {
+            newFormInputs[fieldId] = currentInput
+          }
+          return newFormInputs
+        },
+        {},
+      )
+    }
 
 export const augmentFormFields = (
   formFields: FormFieldDto[],
@@ -448,14 +448,14 @@ export const PublicFormProvider = ({
   const data = useMemo(() => {
     return latestFormData && encryptedPreviousSubmission
       ? {
-          ...latestFormData,
-          form: {
-            ...latestFormData.form,
-            form_fields: encryptedPreviousSubmission.form_fields,
-            form_logics: encryptedPreviousSubmission.form_logics,
-            workflow: encryptedPreviousSubmission.workflow,
-          },
-        }
+        ...latestFormData,
+        form: {
+          ...latestFormData.form,
+          form_fields: encryptedPreviousSubmission.form_fields,
+          form_logics: encryptedPreviousSubmission.form_logics,
+          workflow: encryptedPreviousSubmission.workflow,
+        },
+      }
       : latestFormData
   }, [latestFormData, encryptedPreviousSubmission])
 
@@ -873,8 +873,8 @@ export const PublicFormProvider = ({
     ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
       const restoreDraftMessage = hasChangedDraftFields
         ? t(
-            'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
-          )
+          'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+        )
         : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
       datadogLogs.logger.log(restoreDraftMessage, {
         meta: {
@@ -1174,12 +1174,12 @@ export const PublicFormProvider = ({
             ),
             ...(form.payments_field.payment_type === PaymentType.Variable
               ? {
-                  payments: {
-                    amount_cents: dollarsToCents(
-                      paymentVariableInputAmountField ?? '0',
-                    ),
-                  },
-                }
+                payments: {
+                  amount_cents: dollarsToCents(
+                    paymentVariableInputAmountField ?? '0',
+                  ),
+                },
+              }
               : {}),
           }
 
@@ -1388,6 +1388,12 @@ export const PublicFormProvider = ({
     return <NotFoundErrorPage />
   }
 
+  const DATE_TIME_FORMAT_STRING = 'do MMM yyyy, h:mm:ss a'
+  const MOCK_CONSTANT_LAST_SAVED_DATETIME_STRING_FOR_STORYBOOK_TO_HAVE_NO_DIFFS = format(new Date('2025-11-14T12:00:00.000Z'), DATE_TIME_FORMAT_STRING)
+  const actualLastSavedDateTimeString = draftSubmission?.lastUpdated ? format(new Date(draftSubmission.lastUpdated), DATE_TIME_FORMAT_STRING) : undefined
+  // RATIONALE: Replace with constant string if actual last saved date time string exists during storybook visual tests to prevent noisy diffs.
+  const draftLastSavedDateTimeString = actualLastSavedDateTimeString && isTest ? MOCK_CONSTANT_LAST_SAVED_DATETIME_STRING_FOR_STORYBOOK_TO_HAVE_NO_DIFFS : actualLastSavedDateTimeString
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -1412,12 +1418,7 @@ export const PublicFormProvider = ({
         previousAttachments,
         setPreviousSubmission,
         isSaveDraftEnabled,
-        draftLastSavedDateTimeString: draftSubmission?.lastUpdated
-          ? format(
-              new Date(draftSubmission.lastUpdated),
-              'do MMM yyyy, h:mm:ss a',
-            )
-          : undefined,
+        draftLastSavedDateTimeString,
         onSaveDraft,
         defaultFormValues,
         augmentedFormFields,
