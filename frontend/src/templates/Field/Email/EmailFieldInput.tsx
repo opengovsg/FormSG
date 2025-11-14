@@ -79,7 +79,8 @@ export const EmailFieldInput = ({
             {...field}
             {...inputProps}
           />
-          {schema.autoReplyOptions?.includeFormSummary &&
+          {schema.autoReplyOptions?.hasAutoReply &&
+          schema.autoReplyOptions?.includeFormSummary &&
           !schema.disabled &&
           !error ? (
             <Text
