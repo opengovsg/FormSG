@@ -102,7 +102,7 @@ export const MiniHeader = ({
             {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
               <FormHeaderSaveDraftButton
                 onSaveDraft={() => {
-                  datadogLogs.logger?.log(
+                  datadogLogs.logger.log(
                     'User clicked save draft from form header',
                     {
                       meta: {

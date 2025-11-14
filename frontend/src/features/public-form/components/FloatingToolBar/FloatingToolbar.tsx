@@ -42,7 +42,7 @@ export const FloatingToolBar = (): JSX.Element | null => {
       {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
         <FloatingSaveDraftButton
           onSaveDraft={() => {
-            datadogLogs.logger?.log(
+            datadogLogs.logger.log(
               'User clicked save draft from floating toolbar',
               {
                 meta: {
