@@ -6,7 +6,7 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Text } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
@@ -64,7 +64,7 @@ export const EmailFieldInput = ({
       name={schema._id}
       defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
-        <>
+        <Flex direction="column" flex="1">
           <Input
             autoComplete="email"
             value={value?.value ?? ''}
@@ -93,7 +93,7 @@ export const EmailFieldInput = ({
               )}
             </Text>
           ) : null}
-        </>
+        </Flex>
       )}
     />
   )
