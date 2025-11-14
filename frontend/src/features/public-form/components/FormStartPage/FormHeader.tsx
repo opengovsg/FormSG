@@ -10,6 +10,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants/feature-flags'
@@ -101,14 +102,16 @@ export const MiniHeader = ({
             {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
               <FormHeaderSaveDraftButton
                 onSaveDraft={() => {
-                  console.log({
-                    message: 'User clicked save draft from form header',
-                    meta: {
-                      action: 'saveDraft',
-                      variant: 'FormHeader',
-                      formId,
+                  datadogLogs.logger?.log(
+                    'User clicked save draft from form header',
+                    {
+                      meta: {
+                        action: 'saveDraft',
+                        variant: 'FormHeader',
+                        formId,
+                      },
                     },
-                  })
+                  )
                   onSaveDraft()
                 }}
                 draftLastSavedDateTimeString={draftLastSavedDateTimeString}
