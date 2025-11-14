@@ -1,4 +1,5 @@
 import { Stack } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
@@ -41,14 +42,16 @@ export const FloatingToolBar = (): JSX.Element | null => {
       {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
         <FloatingSaveDraftButton
           onSaveDraft={() => {
-            console.log({
-              message: 'User clicked save draft from floating toolbar',
-              meta: {
-                action: 'saveDraft',
-                variant: 'FloatingToolbar',
-                formId,
+            datadogLogs.logger.log(
+              'User clicked save draft from floating toolbar',
+              {
+                meta: {
+                  action: 'saveDraft',
+                  variant: 'FloatingToolbar',
+                  formId,
+                },
               },
-            })
+            )
             onSaveDraft()
           }}
           draftLastSavedDateTimeString={draftLastSavedDateTimeString}
