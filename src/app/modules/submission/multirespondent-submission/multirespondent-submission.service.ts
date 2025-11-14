@@ -720,11 +720,16 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
+  // Find active fields for current step
+  const activeFields = form.workflow[currentStepNumber]
+    ? form.workflow[currentStepNumber].edit
+    : []
+
   // Find respondent copy recipient data
   const respondentCopyRecipientData = extractRespondentCopyEmails({
     responses: encryptedPayload.responses,
     formFields: form.form_fields,
-    activeFields: form.workflow[currentStepNumber].edit,
+    activeFields,
   })
 
   if (respondentCopyRecipientData && respondentCopyRecipientData.length > 0) {
