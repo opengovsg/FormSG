@@ -222,7 +222,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.subject.placeholder',
                   { formTitle: form?.title },
                 )}
-                _placeholder={{ color: 'secondary.700' }}
                 {...register('autoReplyOptions.autoReplySubject')}
               />
             </FormControl>
@@ -234,7 +233,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               </FormLabel>
               <Input
                 placeholder={form?.admin.agency.fullName}
-                _placeholder={{ color: 'secondary.700' }}
                 {...register('autoReplyOptions.autoReplySender')}
               />
             </FormControl>
@@ -249,12 +247,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.content.placeholder',
                   { agencyName: form?.admin.agency.fullName },
                 )}
-                sx={{
-                  '::placeholder': {
-                    color: 'secondary.700',
-                    opacity: 1,
-                  },
-                }}
                 {...register('autoReplyOptions.autoReplyMessage')}
               />
             </FormControl>
