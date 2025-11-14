@@ -131,7 +131,7 @@ export const useMutateFormSettings = () => {
         const toastStatusPublicMessage =
           newData.responseMode === FormResponseMode.Encrypt
             ? `Your form is now open.\n\nStore your secret key in a safe place. If you lose your secret key, all your responses will be lost permanently.`
-            : `Your form is now open.`
+            : 'Your form is now open.'
         const toastStatusClosedMessage = 'Your form is closed to new responses.'
         const toastStatusMessage = isNowPublic
           ? toastStatusPublicMessage
