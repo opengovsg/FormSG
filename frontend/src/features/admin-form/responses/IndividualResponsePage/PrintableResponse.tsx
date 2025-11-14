@@ -140,15 +140,15 @@ const getDefaultRows = ({
   responseId: string
   submissionTime: string
 }) => [
-  {
-    question: 'Response ID',
-    answer: responseId,
-  },
-  {
-    question: 'Time Submitted',
-    answer: submissionTime,
-  },
-]
+    {
+      question: 'Response ID',
+      answer: responseId,
+    },
+    {
+      question: 'Time Submitted',
+      answer: submissionTime,
+    },
+  ]
 
 const PrintableResponseRows = ({
   decryptedResponses,
@@ -181,6 +181,10 @@ const PrintableResponseRows = ({
   )
 }
 
+const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+// RATIONALE: Prevent noisy diffs from being detected during storybook snapshot comparisons due to dynamic form link. 
+const MOCK_CONSTANT_FORM_LINK_FOR_STORYBOOK_TO_HAVE_NO_DIFFS = 'https://form.gov.sg/64e2f7ae841cbe0012e785e7'
+
 export const PrintableResponse = ({
   formTitle,
   formId,
@@ -210,9 +214,8 @@ export const PrintableResponse = ({
           color="white"
           textDecor="underline"
           textDecorationColor="white"
-          data-chromatic="ignore"
         >
-          {window.location.origin}/{formId}
+          {isTest ? MOCK_CONSTANT_FORM_LINK_FOR_STORYBOOK_TO_HAVE_NO_DIFFS : `${window.location.origin}/${formId}`}
         </Text>
       </Box>
       <Box mx="5%" my="30px">
