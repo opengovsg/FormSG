@@ -876,7 +876,7 @@ export const PublicFormProvider = ({
             'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
           )
         : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
-      datadogLogs.logger?.log(restoreDraftMessage, {
+      datadogLogs.logger.log(restoreDraftMessage, {
         meta: {
           action: 'restoreDraft',
           formId,
