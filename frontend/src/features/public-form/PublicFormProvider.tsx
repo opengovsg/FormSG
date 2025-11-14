@@ -106,6 +106,9 @@ interface PublicFormProviderProps {
   isPublicFormPage?: boolean
 }
 
+const DATE_TIME_FORMAT_STRING = 'do MMM yyyy, h:mm:ss a'
+const MOCK_CONSTANT_LAST_SAVED_DATETIME = '2025-11-14T12:00:00.000Z'
+
 export function useCommonFormProvider(formId: string) {
   // For mobile section sidebar
   const {
@@ -1388,17 +1391,15 @@ export const PublicFormProvider = ({
     return <NotFoundErrorPage />
   }
 
-  const DATE_TIME_FORMAT_STRING = 'do MMM yyyy, h:mm:ss a'
-  const MOCK_CONSTANT_LAST_SAVED_DATETIME_STRING_FOR_STORYBOOK_TO_HAVE_NO_DIFFS =
-    format(new Date('2025-11-14T12:00:00.000Z'), DATE_TIME_FORMAT_STRING)
-  const actualLastSavedDateTimeString = draftSubmission?.lastUpdated
-    ? format(new Date(draftSubmission.lastUpdated), DATE_TIME_FORMAT_STRING)
+  // RATIONALE: Prevent noisy diffs from being detected during storybook snapshot comparisons due to dynamic date time.
+  const draftLastSavedDateTime =
+    draftSubmission?.lastUpdated && isTest
+      ? MOCK_CONSTANT_LAST_SAVED_DATETIME
+      : draftSubmission?.lastUpdated
+
+  const draftLastSavedDateTimeString = draftLastSavedDateTime
+    ? format(new Date(draftLastSavedDateTime), DATE_TIME_FORMAT_STRING)
     : undefined
-  // RATIONALE: Replace with constant string if actual last saved date time string exists during storybook visual tests to prevent noisy diffs.
-  const draftLastSavedDateTimeString =
-    actualLastSavedDateTimeString && isTest
-      ? MOCK_CONSTANT_LAST_SAVED_DATETIME_STRING_FOR_STORYBOOK_TO_HAVE_NO_DIFFS
-      : actualLastSavedDateTimeString
 
   return (
     <PublicFormContext.Provider
