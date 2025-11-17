@@ -39,7 +39,6 @@ export type WorkflowEmailData = {
   responseId: string
   formQuestionAnswers: QuestionAnswer[]
   outcome?: WorkflowOutcome | undefined 
-  respondentCopy?: boolean | undefined
 }
 
 export const MrfWorkflowCompletionEmail = ({
@@ -47,14 +46,10 @@ export const MrfWorkflowCompletionEmail = ({
   responseId = '64303c45828035f732088a41', 
   formQuestionAnswers = [], 
   outcome,
-  respondentCopy,
 }: WorkflowEmailData): JSX.Element => {
   let headingText =  
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
-  
-  if (respondentCopy) {
-    headingText = 'Thank you for submitting this form'
-  }
+
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
@@ -84,13 +79,11 @@ export const MrfWorkflowCompletionEmail = ({
             <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
                 Responses for {formTitle} 
               </Heading>
-            {respondentCopy === false ? null : (
               <>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
                 <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{responseId}</Text>
                 {formQuestionAnswers.map(renderQuestionAnswer)}
               </>
-              )}
             <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
               For more details, please contact the respondent(s) or form administrator.
             </Text>
