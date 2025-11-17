@@ -145,7 +145,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     isEncryptMode &&
     form.payments_channel.channel !== PaymentChannel.Unconnected
 
-  // payment forms disallows for sends as it has a separate payment confirmation email
+  // For payment forms inclusion of PDF responses are disallowed
   const pdfResponseToggleDescription = isPaymentDisabledForm
     ? t(
         'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',
@@ -155,7 +155,9 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       )
 
   // TODO: FRM-2172 Remove when respondent copy is out of beta
-  const isToggleEmailConfirmationDisabled = !user?.betaFlags?.respondentCopy
+  const isToggleEmailConfirmationDisabled =
+    form?.responseMode === FormResponseMode.Multirespondent &&
+    !user?.betaFlags?.respondentCopy
 
   return (
     <CreatePageDrawerContentContainer>
