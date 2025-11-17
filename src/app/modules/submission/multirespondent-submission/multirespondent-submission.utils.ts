@@ -351,12 +351,12 @@ export const getQuestionTitleAnswerStringSingleField = ({
       return questionAnswerPair
     default:
       answer = response.answer
-
-      questionAnswerPair.push({
-        question: questionTitle,
-        answer,
-      })
   }
+
+  questionAnswerPair.push({
+    question: questionTitle,
+    answer,
+  })
   return questionAnswerPair
 }
 
