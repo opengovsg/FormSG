@@ -145,7 +145,9 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
 
   const pdfResponseToggleDescription = isPdfResponseEnabled
-    ? undefined
+    ? t(
+        'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
+      )
     : t(
         'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',
       )
@@ -185,6 +187,80 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
           )}
         />
       </FormControl>
+      <Box>
+        <FormControl
+          isReadOnly={isLoading}
+          isDisabled={isToggleEmailConfirmationDisabled}
+        >
+          <Toggle
+            {...register('autoReplyOptions.hasAutoReply')}
+            description={t(
+              'features.adminForm.sidebar.fields.email.emailConfirmation.description',
+            )}
+            label={t(
+              'features.adminForm.sidebar.fields.email.emailConfirmation.title',
+            )}
+          />
+        </FormControl>
+        {watchedHasAutoReply && (
+          <>
+            <FormControl isReadOnly={isLoading} mt="1.5rem">
+              <Toggle
+                {...register('autoReplyOptions.includeFormSummary')}
+                label={t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponse',
+                )}
+                description={pdfResponseToggleDescription}
+                isDisabled={!isPdfResponseEnabled}
+              />
+            </FormControl>
+            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
+              <FormLabel>Subject</FormLabel>
+              <Input
+                autoFocus
+                placeholder={t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.subject.placeholder',
+                  { formTitle: form?.title },
+                )}
+                _placeholder={{ color: 'secondary.700' }}
+                {...register('autoReplyOptions.autoReplySubject')}
+              />
+            </FormControl>
+            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
+              <FormLabel>
+                {t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.senderName.title',
+                )}
+              </FormLabel>
+              <Input
+                placeholder={form?.admin.agency.fullName}
+                _placeholder={{ color: 'secondary.700' }}
+                {...register('autoReplyOptions.autoReplySender')}
+              />
+            </FormControl>
+            <FormControl isReadOnly={isLoading} isRequired mt="1.5rem">
+              <FormLabel>
+                {t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.content.title',
+                )}
+              </FormLabel>
+              <Textarea
+                placeholder={t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.content.placeholder',
+                  { agencyName: form?.admin.agency.fullName },
+                )}
+                sx={{
+                  '::placeholder': {
+                    color: 'secondary.700',
+                    opacity: 1,
+                  },
+                }}
+                {...register('autoReplyOptions.autoReplyMessage')}
+              />
+            </FormControl>
+          </>
+        )}
+      </Box>
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('isVerifiable')}
@@ -229,72 +305,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               {errors?.allowedEmailDomains?.message}
             </FormErrorMessage>
           </FormControl>
-        )}
-      </Box>
-      <Box>
-        <FormControl
-          isReadOnly={isLoading}
-          isDisabled={isToggleEmailConfirmationDisabled}
-        >
-          <Toggle
-            {...register('autoReplyOptions.hasAutoReply')}
-            description={t(
-              'features.adminForm.sidebar.fields.email.emailConfirmation.description',
-            )}
-            label={t(
-              'features.adminForm.sidebar.fields.email.emailConfirmation.title',
-            )}
-          />
-        </FormControl>
-        {watchedHasAutoReply && (
-          <>
-            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
-              <FormLabel>Subject</FormLabel>
-              <Input
-                autoFocus
-                placeholder={t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.subject.placeholder',
-                )}
-                {...register('autoReplyOptions.autoReplySubject')}
-              />
-            </FormControl>
-            <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
-              <FormLabel>
-                {t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.senderName.title',
-                )}
-              </FormLabel>
-              <Input
-                placeholder={t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.senderName.placeholder',
-                )}
-                {...register('autoReplyOptions.autoReplySender')}
-              />
-            </FormControl>
-            <FormControl isReadOnly={isLoading} isRequired mt="1.5rem">
-              <FormLabel>
-                {t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.content.title',
-                )}
-              </FormLabel>
-              <Textarea
-                placeholder={t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.content.placeholder',
-                )}
-                {...register('autoReplyOptions.autoReplyMessage')}
-              />
-            </FormControl>
-            <FormControl isReadOnly={isLoading} mt="1.5rem">
-              <Toggle
-                {...register('autoReplyOptions.includeFormSummary')}
-                label={t(
-                  'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponse',
-                )}
-                description={pdfResponseToggleDescription}
-                isDisabled={!isPdfResponseEnabled}
-              />
-            </FormControl>
-          </>
         )}
       </Box>
       <FormFieldDrawerActions
