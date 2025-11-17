@@ -724,9 +724,10 @@ describe('mail.service', () => {
           email: MOCK_VALID_EMAIL_2,
         },
       ],
+      isUseLambdaOutput: false,
     }
     const DEFAULT_AUTO_REPLY_BODY =
-      `Dear Sir or Madam,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
+      `To whom it may concern,\n\nThank you for submitting this form.\n\nRegards,\n${MOCK_AUTOREPLY_PARAMS.form.admin.agency.fullName}`.split(
         '\n',
       )
 
