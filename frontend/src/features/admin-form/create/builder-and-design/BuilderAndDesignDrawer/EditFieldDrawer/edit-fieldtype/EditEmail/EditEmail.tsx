@@ -155,8 +155,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       )
 
   // TODO: FRM-2172 Remove when respondent copy is out of beta
-  const isToggleEmailConfirmationDisabled =
-    !user?.betaFlags?.respondentCopy && !field.autoReplyOptions.hasAutoReply
+  const isToggleEmailConfirmationDisabled = !user?.betaFlags?.respondentCopy
 
   return (
     <CreatePageDrawerContentContainer>
