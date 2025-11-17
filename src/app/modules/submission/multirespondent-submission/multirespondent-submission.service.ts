@@ -68,7 +68,7 @@ import { MultirespondentSubmissionContent } from './multirespondent-submission.t
 import {
   extractRespondentCopyEmails,
   getEmailFromResponses,
-  getPdfFormData,
+  getPdfResponsesData,
   getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
@@ -496,8 +496,8 @@ const sendMrfRespondentCopyEmails = ({
     responses,
   })
 
-  // function to prepare answers for pdf html
-  const pdfFormData = getPdfFormData({
+  // Prepare repsonses for pdf html
+  const pdfFormData = getPdfResponsesData({
     formFields: form.form_fields,
     responses,
   })

@@ -145,6 +145,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     isEncryptMode &&
     form.payments_channel.channel !== PaymentChannel.Unconnected
 
+  // payment forms disallows for sends as it has a separate payment confirmation email
   const pdfResponseToggleDescription = isPaymentDisabledForm
     ? t(
         'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',

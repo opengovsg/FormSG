@@ -357,17 +357,6 @@ export const getQuestionTitleAnswerStringSingleField = ({
         answer,
       })
   }
-
-  // Add Ndi responses if they exist TODO: fix rebased implementation of Ndi responses
-  // for (const key in response) {
-  //   if (startsWithSPCPFieldTitle(key)) {
-  //     const value = response as NdiResponseV3
-  //     questionAnswerPair.push({
-  //       question: key,
-  //       answer: value.answer,
-  //     })
-  //   }
-  // }
   return questionAnswerPair
 }
 
@@ -400,17 +389,34 @@ export const getQuestionTitleAnswerString = ({
 
     questionAnswerPairs = [...questionAnswerPairs, ...questionAnswerPair]
   }
+
+  // Add Ndi responses if they exist
+  for (const key in responses) {
+    if (startsWithSPCPFieldTitle(key)) {
+      const value = responses[key] as NdiResponseV3
+      questionAnswerPairs.push({
+        question: key,
+        answer: value.answer,
+      })
+    }
+  }
   return questionAnswerPairs
 }
 
-export const getPdfFormData = ({
+/**
+ * Prepares responses data from MRF responses to PDF html format
+ * @param formFields - The form fields schema
+ * @param responses - The mrf responses to the form fields
+ * @returns list of EmailRespondentConfirmationField used for email & pdf generation
+ */
+export const getPdfResponsesData = ({
   formFields,
   responses,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
 }): EmailRespondentConfirmationField[] => {
-  let pdfFormData: EmailRespondentConfirmationField[] = []
+  let pdfResponseData: EmailRespondentConfirmationField[] = []
   if (!formFields || !responses) return []
 
   for (const formField of formFields) {
@@ -433,12 +439,30 @@ export const getPdfFormData = ({
         }
       })
 
-    pdfFormData = [...pdfFormData, ...emailFieldForPdf]
+    pdfResponseData = [...pdfResponseData, ...emailFieldForPdf]
   }
 
-  return pdfFormData
+  // Add Ndi responses if they exist
+  for (const key in responses) {
+    if (startsWithSPCPFieldTitle(key)) {
+      const value = responses[key] as NdiResponseV3
+      pdfResponseData.push({
+        question: key,
+        answerTemplate: [value.answer],
+      })
+    }
+  }
+  return pdfResponseData
 }
 
+/**
+ * Extracts email data to be sent respondent copies to from a multirespondent submission.
+ * Email inputs from email confirmation-enabled email fields that are assigned in the current step are extracted
+ * @param responses - The multirespondent submission's field responses
+ * @param formFields - The form fields schema
+ * @param activeFields - The active field Ids assigned in the current step
+ * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to
+ */
 export const extractRespondentCopyEmails = ({
   responses,
   formFields,
