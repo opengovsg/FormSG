@@ -26,4 +26,6 @@ export const featureFlags = {
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
   singpassMrf: 'singpass-mrf' as const,
+  enableSaveDraftButtonFloating: 'enable-save-draft-button-floating' as const,
+  enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
 }

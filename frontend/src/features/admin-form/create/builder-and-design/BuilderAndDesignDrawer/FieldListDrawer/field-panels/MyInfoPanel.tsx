@@ -289,7 +289,7 @@ const MyInfoText = ({
   if (isMyInfoDisabled) {
     return (
       <Text>
-        Enable MyInfo in the{' '}
+        Enable Singpass in the{' '}
         <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
           Settings
         </Link>{' '}

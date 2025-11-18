@@ -1,9 +1,12 @@
 import {
   Controller,
   ControllerRenderProps,
+  get,
   useFormContext,
+  useFormState,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Flex, Text } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
@@ -38,6 +41,7 @@ export const EmailFieldInput = ({
   isHighContrast,
 }: EmailFieldInputProps): JSX.Element => {
   const { t } = useTranslation()
+  const { errors } = useFormState({ name: schema._id })
   // TODO: decide how to combine with field-validations en-sg.ts
   const validationErrorMessages = t(
     'features.publicForm.components.fields.email.validation',
@@ -51,6 +55,7 @@ export const EmailFieldInput = ({
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()
+  const error = !!get(errors, schema._id)
 
   return (
     <Controller
@@ -59,20 +64,37 @@ export const EmailFieldInput = ({
       name={schema._id}
       defaultValue={{ value: '' }}
       render={({ field: { onChange, value, ...field } }) => (
-        <Input
-          autoComplete="email"
-          value={value?.value ?? ''}
-          onChange={(event) => {
-            const value = event.target.value.trim().toLowerCase()
-            return handleInputChange
-              ? handleInputChange(onChange)(value)
-              : onChange({ value })
-          }}
-          isHighContrast={isHighContrast}
-          preventDefaultOnEnter
-          {...field}
-          {...inputProps}
-        />
+        <Flex direction="column" flex="1">
+          <Input
+            autoComplete="email"
+            value={value?.value ?? ''}
+            onChange={(event) => {
+              const value = event.target.value.trim().toLowerCase()
+              return handleInputChange
+                ? handleInputChange(onChange)(value)
+                : onChange({ value })
+            }}
+            isHighContrast={isHighContrast}
+            preventDefaultOnEnter
+            {...field}
+            {...inputProps}
+          />
+          {schema.autoReplyOptions?.hasAutoReply &&
+          schema.autoReplyOptions?.includeFormSummary &&
+          !schema.disabled &&
+          !error ? (
+            <Text
+              color="secondary.400"
+              textStyle="body-2"
+              aria-hidden
+              my="0.5rem"
+            >
+              {t(
+                'features.publicForm.components.fields.email.respondentCopyHelperText',
+              )}
+            </Text>
+          ) : null}
+        </Flex>
       )}
     />
   )

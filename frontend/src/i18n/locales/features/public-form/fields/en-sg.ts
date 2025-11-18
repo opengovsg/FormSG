@@ -39,6 +39,8 @@ export const enSG: Fields = {
       domainDisallowed:
         'The entered email does not belong to an allowed email domain',
     },
+    respondentCopyHelperText:
+      'A copy of your responses will be sent to this email address',
   },
   verification: {
     button: {
