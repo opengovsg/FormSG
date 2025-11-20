@@ -4,7 +4,6 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -170,8 +169,7 @@ const asyncVirusScanning = (
   formId: string,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
-  | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-  | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
+  SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
@@ -196,18 +194,18 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     ParsedClearFormFieldResponse,
-    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results: Result<
     ParsedClearFormFieldResponse,
-    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[] = []
   for (const response of responses) {
     if (isQuarantinedAttachmentResponse(response)) {
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
       const attachmentResponse =
-        await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
