@@ -22,7 +22,7 @@ export type SnapshottedFormDef = Pick<
   | 'emails'
   | 'stepOneEmailNotificationFieldId'
   | 'stepsToNotify'
-  | 'hasRespondentCopy'
+  | 'admin'
   | 'webhook'
   | 'title'
   | 'workflow'

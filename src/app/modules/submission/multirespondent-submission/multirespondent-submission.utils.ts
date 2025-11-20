@@ -5,6 +5,7 @@ import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/consta
 import {
   BasicField,
   FieldResponsesV3,
+  FieldResponseV3,
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
@@ -18,10 +19,13 @@ import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature
 import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
+  EmailRespondentConfirmationField,
   FormFieldSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import { AutoReplyMailData } from '../../../services/mail/mail.types'
+import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
@@ -223,6 +227,139 @@ export const validateMrfFieldResponses = ({
   return ok(responses)
 }
 
+/**
+ * Extracts question-answer pairs from a form field and a response.
+ * Used for email body/pdf outputs and individualResponsePage displays
+ * Returns an array since some fields (e.g. table, children) will have
+ * multiple questionAnswerPairs per response
+ * @param formField - form field schema
+ * @param response - response of the form field
+ * @returns An array of QuestionAnswer objects
+ */
+export const getQuestionTitleAnswerStringSingleField = ({
+  formField,
+  response,
+}: {
+  formField: FormFieldSchema | FormFieldDto
+  response: FieldResponseV3
+}): QuestionAnswer[] => {
+  let questionTitle = formField.title
+  let answer = ''
+  let answerArray: string[] = []
+  const questionAnswerPair: QuestionAnswer[] = []
+  switch (response.fieldType) {
+    case BasicField.Attachment:
+      questionTitle = `[Attachment] ${questionTitle}`
+      answer = response.answer.answer
+      break
+    case BasicField.Address: {
+      const {
+        postalCode,
+        blockNumber,
+        streetName,
+        buildingName,
+        levelNumber,
+        unitNumber,
+      } = response.answer.addressSubFields
+      answerArray = [
+        blockNumber,
+        streetName,
+        buildingName,
+        levelNumber,
+        unitNumber,
+        postalCode,
+      ] // move postal code to end of array
+      answer = handleAddressResponseDisplay(Object.values(answerArray)).join(
+        ', ',
+      )
+      break
+    }
+    case BasicField.Email:
+    case BasicField.Mobile:
+      answer = response.answer.value
+      break
+    case BasicField.Table:
+      if (formField.fieldType !== BasicField.Table || !response.answer) break
+      // eslint-disable-next-line no-case-declarations
+      const idToColTitleMap = formField.columns.reduce(
+        (acc, col) => {
+          acc[col._id] = col.title
+          return acc
+        },
+        {} as Record<string, string>,
+      )
+
+      for (const row of response.answer) {
+        const validColumns = Object.entries(row).filter(
+          ([colId]) => colId in idToColTitleMap,
+        )
+
+        const delimitedColumnTitles = validColumns
+          .map(([colId]) => {
+            const colTitle = idToColTitleMap[colId]
+            return `${colTitle}`
+          })
+          .join('; ')
+
+        const delimitedColumnAnswers = validColumns
+          .map(([, colAns]) => colAns ?? '')
+          .join('; ')
+
+        const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
+        const answer = delimitedColumnAnswers
+
+        questionAnswerPair.push({
+          question,
+          answer,
+        })
+      }
+      return questionAnswerPair
+    case BasicField.Radio:
+      answer =
+        'value' in response.answer
+          ? response.answer.value
+          : 'othersInput' in response.answer
+            ? response.answer.othersInput
+            : ''
+      break
+    case BasicField.Checkbox:
+      // eslint-disable-next-line no-case-declarations
+      const selectedAnswers =
+        (response.answer.othersInput
+          ? [...response.answer.value, response.answer.othersInput]
+          : [...response.answer.value]
+        ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
+
+      answer = selectedAnswers.toString()
+      break
+    case BasicField.Signature:
+      questionTitle = `[signature] ${questionTitle}`
+      answer = SIGNATURE_CAPTURED_STRING
+      break
+    case BasicField.Children:
+      if (!response.answer.childFields || !response.answer.child) {
+        break
+      }
+      for (const [index, child] of response.answer.child.entries()) {
+        questionAnswerPair.push({
+          question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
+          answer: child
+            ? child.toString()
+            : response.answer.childFields.map(() => '').toString(),
+        })
+      }
+      return questionAnswerPair
+    default:
+      answer = response.answer
+  }
+
+  questionAnswerPair.push({
+    question: questionTitle,
+    answer,
+  })
+  return questionAnswerPair
+}
+
 /*
  * Extracts question-answer pairs from form fields and responses.
  * @param formFields - The form fields schema
@@ -236,149 +373,132 @@ export const getQuestionTitleAnswerString = ({
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
 }): QuestionAnswer[] => {
-  const questionAnswerPair = []
+  let questionAnswerPairs: QuestionAnswer[] = []
   if (!formFields || !responses) {
     return []
   }
   for (const formField of formFields) {
-    const MyInfoPrefix = 'myInfo' in formField ? '[MyInfo] ' : ''
-    const questionTitle = `${MyInfoPrefix}${formField.title}`
+    const questionTitle = formField.title
     const response = responses[formField._id]
 
     if (!response || !questionTitle) continue
-
-    let answer = ''
-    let answerArray: string[] = []
-    switch (response.fieldType) {
-      case BasicField.Attachment:
-        answer = response.answer.answer
-        questionAnswerPair.push({
-          question: `[Attachment] ${questionTitle}`,
-          answer,
-        })
-        continue
-      case BasicField.Address: {
-        const {
-          postalCode,
-          blockNumber,
-          streetName,
-          buildingName,
-          levelNumber,
-          unitNumber,
-        } = response.answer.addressSubFields
-        answerArray = [
-          blockNumber,
-          streetName,
-          buildingName,
-          levelNumber,
-          unitNumber,
-          postalCode,
-        ] // move postal code to end of array
-        questionAnswerPair.push({
-          question: `${questionTitle}`,
-          answer: handleAddressResponseDisplay(Object.values(answerArray)).join(
-            ', ',
-          ),
-        })
-        continue
-      }
-      case BasicField.Email:
-      case BasicField.Mobile:
-        answer = response.answer.value
-        break
-      case BasicField.Table:
-        if (formField.fieldType !== BasicField.Table || !response.answer)
-          continue
-        // eslint-disable-next-line no-case-declarations
-        const idToColTitleMap = formField.columns.reduce(
-          (acc, col) => {
-            acc[col._id] = col.title
-            return acc
-          },
-          {} as Record<string, string>,
-        )
-
-        for (const row of response.answer) {
-          const validColumns = Object.entries(row).filter(
-            ([colId]) => colId in idToColTitleMap,
-          )
-
-          const delimitedColumnTitles = validColumns
-            .map(([colId]) => {
-              const colTitle = idToColTitleMap[colId]
-              return `${colTitle}`
-            })
-            .join('; ')
-
-          const delimitedColumnAnswers = validColumns
-            .map(([, colAns]) => colAns ?? '')
-            .join('; ')
-
-          const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
-          const answer = delimitedColumnAnswers
-
-          questionAnswerPair.push({
-            question,
-            answer,
-          })
-        }
-        continue
-      case BasicField.Radio:
-        answer =
-          'value' in response.answer
-            ? response.answer.value
-            : 'othersInput' in response.answer
-              ? response.answer.othersInput
-              : ''
-        break
-      case BasicField.Checkbox:
-        // eslint-disable-next-line no-case-declarations
-        const selectedAnswers =
-          (response.answer.othersInput
-            ? [...response.answer.value, response.answer.othersInput]
-            : [...response.answer.value]
-          ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
-
-        answer = selectedAnswers.toString()
-        break
-      case BasicField.Signature:
-        questionAnswerPair.push({
-          question: `[signature] ${questionTitle}`,
-          answer: SIGNATURE_CAPTURED_STRING,
-        })
-        continue
-      case BasicField.Children:
-        if (!response.answer.childFields || !response.answer.child) {
-          continue
-        }
-        for (const [index, child] of response.answer.child.entries()) {
-          questionAnswerPair.push({
-            question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
-            answer: child
-              ? child.toString()
-              : response.answer.childFields.map(() => '').toString(),
-          })
-        }
-        continue
-      default:
-        answer = response.answer
-    }
-
-    questionAnswerPair.push({
-      question: questionTitle,
-      answer,
+    const questionAnswerPair = getQuestionTitleAnswerStringSingleField({
+      formField,
+      response,
     })
+
+    questionAnswerPairs = [...questionAnswerPairs, ...questionAnswerPair]
   }
 
   // Add Ndi responses if they exist
   for (const key in responses) {
     if (startsWithSPCPFieldTitle(key)) {
       const value = responses[key] as NdiResponseV3
-      questionAnswerPair.push({
+      questionAnswerPairs.push({
         question: key,
         answer: value.answer,
       })
     }
   }
-  return questionAnswerPair
+  return questionAnswerPairs
+}
+
+/**
+ * Prepares responses data from MRF responses to PDF html format
+ * @param formFields - The form fields schema
+ * @param responses - The mrf responses to the form fields
+ * @returns list of EmailRespondentConfirmationField used for email & pdf generation
+ */
+export const getPdfResponsesData = ({
+  formFields,
+  responses,
+}: {
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  responses: FieldResponsesV3
+}): EmailRespondentConfirmationField[] => {
+  let pdfResponseData: EmailRespondentConfirmationField[] = []
+  if (!formFields || !responses) return []
+
+  for (const formField of formFields) {
+    const questionTitle = formField.title
+    const response = responses[formField._id]
+
+    if (!response || !questionTitle) continue
+    const emailFieldForPdf: EmailRespondentConfirmationField[] =
+      getQuestionTitleAnswerStringSingleField({
+        formField,
+        response,
+      }).map((questionAnswerPair) => {
+        return {
+          question: questionAnswerPair.question,
+          fieldType: response.fieldType,
+          answerTemplate: [questionAnswerPair.answer],
+          ...(response.fieldType === BasicField.Signature && {
+            answer: convertToSignaturePngDataUri(response.answer.value),
+          }),
+        }
+      })
+
+    pdfResponseData = [...pdfResponseData, ...emailFieldForPdf]
+  }
+
+  // Add Ndi responses if they exist
+  for (const key in responses) {
+    if (startsWithSPCPFieldTitle(key)) {
+      const value = responses[key] as NdiResponseV3
+      pdfResponseData.push({
+        question: key,
+        answerTemplate: [value.answer],
+      })
+    }
+  }
+  return pdfResponseData
+}
+
+/**
+ * Extracts email data to be sent respondent copies to from a multirespondent submission.
+ * Email inputs from email confirmation-enabled email fields that are assigned in the current step are extracted
+ * @param responses - The multirespondent submission's field responses
+ * @param formFields - The form fields schema
+ * @param activeFields - The active field Ids assigned in the current step
+ * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to
+ */
+export const extractRespondentCopyEmails = ({
+  responses,
+  formFields,
+  activeFields,
+}: {
+  responses: FieldResponsesV3
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  activeFields: string[]
+}): AutoReplyMailData[] => {
+  return activeFields.flatMap((fieldId) => {
+    const fieldIdString = fieldId.toString()
+    const field = formFields.find((f) => f._id.toString() === fieldIdString)
+    const response = responses[fieldIdString]
+
+    if (
+      // checks if field is an email field
+      field &&
+      field.fieldType === BasicField.Email &&
+      field.autoReplyOptions?.hasAutoReply &&
+      response &&
+      // checks if response has an answer (email)
+      typeof response.answer === 'object' &&
+      'value' in response.answer &&
+      typeof response.answer.value === 'string'
+    ) {
+      const options = field.autoReplyOptions
+      return [
+        {
+          email: response.answer.value,
+          subject: options.autoReplySubject,
+          sender: options.autoReplySender,
+          body: options.autoReplyMessage,
+          includeFormSummary: options.includeFormSummary,
+        },
+      ]
+    }
+    return [] // no respondent copy emails found
+  })
 }

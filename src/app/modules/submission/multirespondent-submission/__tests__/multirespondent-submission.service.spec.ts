@@ -4,6 +4,7 @@ import { okAsync } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
+  FormFieldDto,
   FormWorkflowStepDto,
   WorkflowStatus,
   WorkflowType,
@@ -134,6 +135,33 @@ describe('multirespondent-submission.service', () => {
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[0]],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -246,6 +274,33 @@ describe('multirespondent-submission.service', () => {
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -365,6 +420,33 @@ describe('multirespondent-submission.service', () => {
           emails: [expectedEmails[3]],
           stepsToNotify: [stepTwoId, stepThreeId],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -478,6 +560,33 @@ describe('multirespondent-submission.service', () => {
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -587,6 +696,33 @@ describe('multirespondent-submission.service', () => {
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -715,6 +851,33 @@ describe('multirespondent-submission.service', () => {
           emails: [expectedEmails[1], expectedEmails[2]],
           stepsToNotify: [stepThreeId, stepFourId, stepFiveId],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -828,6 +991,33 @@ describe('multirespondent-submission.service', () => {
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
           stepOneEmailNotificationFieldId: emailFieldId1,
+          admin: {
+            agency: {
+              fullName: 'Government Technology Agency',
+            },
+          },
+          form_fields: [
+            {
+              _id: emailFieldId1,
+              fieldType: BasicField.Email,
+              title: 'Email Field 1',
+            },
+            {
+              _id: emailFieldId2,
+              fieldType: BasicField.Email,
+              title: 'Email Field 2',
+            },
+            {
+              _id: yesNoFieldId1,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 1',
+            },
+            {
+              _id: yesNoFieldId2,
+              fieldType: BasicField.YesNo,
+              title: 'Yes/No Field 2',
+            },
+          ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber,
         encryptedPayload: {
@@ -1426,234 +1616,6 @@ describe('multirespondent-submission.service', () => {
           notExpectedStepOneEmail,
         ),
       ).toBe(false)
-    })
-  })
-
-  describe('sendRespondentCopyEmail', () => {
-    it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionCreateActions', async () => {
-      // Arrange
-      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
-        MailService,
-        'sendMrfRespondentCopyEmail',
-      )
-
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
-
-      const emptyRespondentEmails: string[] = []
-
-      // Act
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        form: {
-          _id: mockFormId,
-          workflow: singleStepWorkflow,
-          emails: ['email1@example.com'],
-        } as IPopulatedMultirespondentForm,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        respondentEmails: emptyRespondentEmails,
-      })
-
-      // Assert
-      expect(sendMrfRespondentCopyEmailSpy).not.toHaveBeenCalled()
-    })
-
-    it('should not send respondent copy if respondent emails are not present on performMultiRespondentPostSubmissionUpdateActions', async () => {
-      // Arrange
-      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
-        MailService,
-        'sendMrfRespondentCopyEmail',
-      )
-
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
-
-      const emptyRespondentEmails: string[] = []
-
-      // Act
-      await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        snapshottedFormDef: {
-          _id: mockFormId,
-          workflow: singleStepWorkflow,
-          emails: ['email1@example.com'],
-        } as SnapshottedFormDef,
-        currentStepNumber: 1,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        respondentEmails: emptyRespondentEmails,
-      })
-
-      // Assert
-      expect(sendMrfRespondentCopyEmailSpy).not.toHaveBeenCalled()
-    })
-
-    it('sends respondent copy on first step submission when respondent emails are present', async () => {
-      // Arrange
-      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
-        MailService,
-        'sendMrfRespondentCopyEmail',
-      )
-
-      const singleStepWorkflow: FormWorkflowStepDto[] = [
-        {
-          _id: new ObjectId().toHexString(),
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [],
-        },
-      ]
-
-      const respondentEmails = ['test@example.com', 'test1@example.com']
-
-      // Act
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        form: {
-          _id: mockFormId,
-          workflow: singleStepWorkflow,
-          emails: ['email1@example.com'],
-        } as IPopulatedMultirespondentForm,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        respondentEmails: respondentEmails,
-      })
-
-      // Assert
-      expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
-      expect(
-        sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails,
-      ).toContainValues(respondentEmails)
-      expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
-        2,
-      )
-    })
-
-    it('sends respondent copy on subsequent step submission when respondent emails are present', async () => {
-      // Arrange
-      const sendMrfRespondentCopyEmailSpy = jest.spyOn(
-        MailService,
-        'sendMrfRespondentCopyEmail',
-      )
-
-      const mockFormId = new ObjectId().toHexString()
-      const mockSubmissionId = new ObjectId().toHexString()
-
-      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
-      const stepOneEditEmailFieldId = new ObjectId().toHexString()
-
-      const expectedStepOneEmail = 'expected_step_one_email@example.com'
-      const notExpectedStepOneEmail = 'not_expected_step_one_email@example.com'
-      const expectedStaticEmail = 'expected_static_email@example.com'
-      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
-
-      const stepOneId = new ObjectId().toHexString()
-      const stepTwoId = new ObjectId().toHexString()
-
-      const workflow: FormWorkflowStepDto[] = [
-        {
-          _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: stepOneEditEmailFieldId,
-          edit: [stepOneEditEmailFieldId],
-        },
-        {
-          _id: stepTwoId,
-          workflow_type: WorkflowType.Static,
-          emails: [expectedStepTwoEmail],
-          edit: [],
-        },
-      ]
-
-      const snapshottedFormDef = {
-        _id: mockFormId,
-        workflow,
-        emails: [expectedStaticEmail],
-        stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
-        stepOneEmailNotificationFieldId,
-      } as SnapshottedFormDef
-      const respondentEmails = ['test@example.com', 'test1@example.com']
-
-      const submissionResponses: FieldResponsesV3 = {
-        [stepOneEmailNotificationFieldId]: {
-          fieldType: BasicField.Email,
-          answer: {
-            value: expectedStepOneEmail,
-          },
-        },
-        [stepOneEditEmailFieldId]: {
-          fieldType: BasicField.Email,
-          answer: {
-            value: notExpectedStepOneEmail,
-          },
-        },
-      }
-
-      // Act
-      await performMultiRespondentPostSubmissionUpdateActions({
-        submission: {
-          _id: mockSubmissionId,
-        } as unknown as IMultirespondentSubmissionSchema,
-        submissionId: mockSubmissionId,
-        snapshottedFormDef,
-        currentStepNumber: workflow.length - 1,
-        encryptedPayload: {
-          encryptedContent: 'encryptedContent',
-          version: 1,
-          submissionPublicKey: 'submissionPublicKey',
-          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
-          responses: submissionResponses,
-          workflowStep: workflow.length - 1,
-        } as MultirespondentSubmissionDto,
-        logMeta: {} as any,
-        respondentEmails: respondentEmails,
-      })
-
-      // Assert
-      expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
-      expect(
-        sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails,
-      ).toContainValues(respondentEmails)
-      expect(sendMrfRespondentCopyEmailSpy.mock.calls[0][0].emails.length).toBe(
-        2,
-      )
     })
   })
 

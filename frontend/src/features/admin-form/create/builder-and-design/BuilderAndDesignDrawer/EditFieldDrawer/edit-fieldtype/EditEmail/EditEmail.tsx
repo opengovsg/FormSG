@@ -16,6 +16,8 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useUser } from '~features/user/queries'
+
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { useCreateTabForm } from '../../../../useCreateTabForm'
 import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
@@ -87,6 +89,8 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
 
+  const { user } = useUser()
+
   const requiredValidationRule = useMemo(
     () =>
       createBaseValidationRules<EditEmailInputs, 'title'>({
@@ -139,23 +143,21 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const isPaymentDisabledForm =
     isEncryptMode &&
-    form.payments_channel.channel === PaymentChannel.Unconnected
+    form.payments_channel.channel !== PaymentChannel.Unconnected
 
-  const isPdfResponseEnabled =
-    form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
-
-  const pdfResponseToggleDescription = isPdfResponseEnabled
+  // For payment forms inclusion of PDF responses are disallowed
+  const pdfResponseToggleDescription = isPaymentDisabledForm
     ? t(
-        'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
-      )
-    : t(
         'features.adminForm.sidebar.fields.email.emailConfirmation.includePdfResponseWarning',
       )
+    : t(
+        'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
+      )
 
-  // email confirmation is not supported on MRF
+  // TODO: FRM-2172 Remove when respondent copy is out of beta
   const isToggleEmailConfirmationDisabled =
     form?.responseMode === FormResponseMode.Multirespondent &&
-    !field.autoReplyOptions.hasAutoReply
+    !user?.betaFlags?.respondentCopy
 
   return (
     <CreatePageDrawerContentContainer>
@@ -211,7 +213,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponse',
                 )}
                 description={pdfResponseToggleDescription}
-                isDisabled={!isPdfResponseEnabled}
+                isDisabled={isPaymentDisabledForm}
               />
             </FormControl>
             <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
@@ -222,7 +224,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.subject.placeholder',
                   { formTitle: form?.title },
                 )}
-                _placeholder={{ color: 'secondary.700' }}
                 {...register('autoReplyOptions.autoReplySubject')}
               />
             </FormControl>
@@ -234,7 +235,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               </FormLabel>
               <Input
                 placeholder={form?.admin.agency.fullName}
-                _placeholder={{ color: 'secondary.700' }}
                 {...register('autoReplyOptions.autoReplySender')}
               />
             </FormControl>
@@ -249,12 +249,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
                   'features.adminForm.sidebar.fields.email.emailConfirmation.content.placeholder',
                   { agencyName: form?.admin.agency.fullName },
                 )}
-                sx={{
-                  '::placeholder': {
-                    color: 'secondary.700',
-                    opacity: 1,
-                  },
-                }}
                 {...register('autoReplyOptions.autoReplyMessage')}
               />
             </FormControl>
