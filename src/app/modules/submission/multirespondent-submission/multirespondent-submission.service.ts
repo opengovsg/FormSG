@@ -990,7 +990,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  //Find respondent copy recipient data
+  // Find respondent copy recipient data
   const respondentCopyRecipientData = extractRespondentCopyEmails({
     responses: responses,
     formFields: snapshottedFormDef.form_fields,
