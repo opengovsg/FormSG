@@ -744,7 +744,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         message: 'Send multirespondent respondent copy email error',
         meta: logMeta,
         error,
-      }) // return nothing; since successful submission does not depend on this respondent copy emails sent
+      }) // return nothing; since successful submission does not depend on respondent copy emails being sent
     })
   }
 
