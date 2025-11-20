@@ -103,10 +103,6 @@ export const FormEmailSection = ({
   settings,
   isHighContrast = true,
 }: EmailFormSectionProps): JSX.Element => {
-  //TODO: (Respondent Copy): Remove isTest and user when respondent copy is out of beta
-  const { user } = useUser()
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
   const { t } = useTranslation()
   const initialEmailSet = useMemo(
     () => new Set(settings.emails),
@@ -169,13 +165,6 @@ export const FormEmailSection = ({
             </FormLabel.Description>
           ) : null}
         </FormControl>
-        {isTest || user?.betaFlags?.respondentCopy ? (
-          <FormControl isDisabled={isDisabled}>
-            <Box mt={'1.5rem'}>
-              <RespondentCopyToggle />
-            </Box>
-          </FormControl>
-        ) : null}
       </FormProvider>
     </>
   )

@@ -29,6 +29,7 @@ import {
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
+import { MrfRespondentCopyEmail } from '../../views/templates/MrfRespondentCopyEmail'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -46,6 +47,7 @@ import {
   MailSendError,
 } from './mail.errors'
 import {
+  AutoReplyMailData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   FormDeactivatedNotificationHtmlData,
@@ -1171,32 +1173,36 @@ export class MailService {
   }
 
   sendMrfRespondentCopyEmail = ({
-    emails,
     formId,
     formTitle,
     responseId,
     formQuestionAnswers,
     attachments,
-    respondentCopy,
+    autoReplyMailData,
+    agencyName,
   }: {
-    emails: string[]
     formId: string
     formTitle: string
     responseId: string
-    formQuestionAnswers: QuestionAnswer[]
+    formQuestionAnswers?: QuestionAnswer[]
     attachments?: Mail.Attachment[]
-    respondentCopy: boolean
+    autoReplyMailData: AutoReplyMailData
+    agencyName: string
   }) => {
     const htmlData = {
       formTitle,
-      formId,
-      responseId: responseId.toString(),
+      responseId,
+      body:
+        autoReplyMailData.body ||
+        DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
+          '{agencyName}',
+          agencyName,
+        ),
       formQuestionAnswers,
-      respondentCopy: respondentCopy,
     }
 
     const generatedHtml = fromPromise(
-      render(MrfWorkflowCompletionEmail(htmlData)),
+      render(MrfRespondentCopyEmail(htmlData)),
       (e) => {
         logger.error({
           message: 'Failed to render MrfRespondentCopyEmail',
@@ -1212,11 +1218,18 @@ export class MailService {
       },
     )
 
+    const senderName = autoReplyMailData.sender || agencyName
+    const emailSender = `${senderName.replace('(', '\\(')} <${this.#senderMail}>`
+
+    const emailSubject =
+      autoReplyMailData.subject ||
+      `Thank you for submitting ${formTitle} (${responseId})`
+
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
-        to: emails,
-        from: this.#senderFromString,
-        subject: `Thank you for submitting ${formTitle} (${responseId})`,
+        to: autoReplyMailData.email,
+        from: emailSender,
+        subject: emailSubject,
         html: mailHtml,
         attachments,
       }
@@ -1225,32 +1238,6 @@ export class MailService {
         formId,
         mailId: 'workflowNotification',
       })
-    })
-  }
-
-  sendRespondentCopyEmail = ({
-    emails,
-    formId,
-    formTitle,
-    responseId,
-    mailHtml,
-  }: {
-    emails: string[]
-    formId: string
-    formTitle: string
-    responseId: string
-    mailHtml: string
-  }) => {
-    const mail: MailOptions = {
-      to: emails,
-      from: this.#senderFromString,
-      subject: `Thank you for submitting ${formTitle} (${responseId})`,
-      html: mailHtml,
-    }
-
-    return this.#sendNodeMail(mail, {
-      formId,
-      mailId: 'workflowNotification',
     })
   }
 }

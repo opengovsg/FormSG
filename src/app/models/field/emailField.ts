@@ -1,6 +1,5 @@
 import { Schema } from 'mongoose'
 
-import { FormResponseMode } from '../../../../shared/types'
 import { validateEmailDomains } from '../../../../shared/utils/email-domain-validation'
 import { IEmailFieldSchema } from '../../../types'
 
@@ -30,12 +29,6 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
       includeFormSummary: {
         type: Boolean,
         default: false,
-        set: function (this: IEmailFieldSchema, v: boolean) {
-          // Set to false if mrf mode regardless of initial value.
-          return this.parent().responseMode === FormResponseMode.Multirespondent
-            ? false
-            : v
-        },
       },
     },
 

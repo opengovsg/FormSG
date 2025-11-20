@@ -285,13 +285,6 @@ const MrfEmailNotificationsForm = ({
             </FormErrorMessage>
           )}
         </FormControl>
-        {isTest || user?.betaFlags?.respondentCopy ? (
-          <FormControl isDisabled={isDisabled}>
-            <Box mt={'1.5rem'}>
-              <RespondentCopyToggle />
-            </Box>
-          </FormControl>
-        ) : null}
       </Box>
     </form>
   )
