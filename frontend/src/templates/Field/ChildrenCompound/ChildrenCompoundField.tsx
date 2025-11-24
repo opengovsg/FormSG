@@ -373,7 +373,7 @@ const ChildrenBody = ({
           // First index taken by name.
           index += 1
           const key = `${field.id}+${index}`
-          const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}.${childName}`
+          const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
           const childrenSubFieldError = error ? error[index] : undefined
 
