@@ -261,46 +261,22 @@ type IdTaggedParsedClearAttachmentResponseV3 =
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
   formId: string,
-  enableGuardDutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
-  | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-  | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
+  SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     // we'll invoke both lambdas and one of them will be in-shadow in order
     // for us to compare the reliability of the services
-    if (enableGuardDutyLambdaInvoke) {
-      // trigger virus-scanner, ignore results because running in-shadow
-      SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-        response.answer,
-        formId,
-      )
 
-      // use guardduty scan results
-      return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-        response.answer,
-        formId,
-      ).map((attachmentResponse) => ({
-        ...response,
-        answer: attachmentResponse,
-      }))
-    } else {
-      // trigger guardduty, ignore results because running in-shadow
-      SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-        response.answer,
-        formId,
-      )
-
-      // use virus-scanner scan results
-      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-        response.answer,
-        formId,
-      ).map((attachmentResponse) => ({
-        ...response,
-        answer: attachmentResponse,
-      }))
-    }
+    // use guardduty scan results
+    return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
+      response.answer,
+      formId,
+    ).map((attachmentResponse) => ({
+      ...response,
+      answer: attachmentResponse,
+    }))
   })
 }
 
@@ -315,14 +291,14 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     IdTaggedParsedClearAttachmentResponseV3,
-    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results = []
   for (const response of responses) {
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
     const attachmentResponse =
-      await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+      await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
         response.answer,
         formId,
       )
@@ -347,7 +323,6 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-  const gbGuardDuty = req.growthbook?.isOn(featureFlags.guardduty)
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
   const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
@@ -386,7 +361,6 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             attachmentResponsesToRetrieve,
             req.formsg.formDef._id.toString(),
-            gbGuardDuty,
           ),
         )
 

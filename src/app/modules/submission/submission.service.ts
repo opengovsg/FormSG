@@ -75,13 +75,11 @@ import {
   InvalidFileExtensionError,
   InvalidFileKeyError,
   JsonParseFailedError,
-  MaliciousFileDetectedError,
   ParseVirusScannerLambdaPayloadError,
   PendingSubmissionNotFoundError,
   ResponseModeError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
-  VirusScanFailedError,
 } from './submission.errors'
 import {
   AttachmentMetadata,
@@ -284,83 +282,6 @@ const parseVirusScannerLambdaPayload = (
   return err(new ParseVirusScannerLambdaPayloadError())
 }
 
-type TriggerVirusScanningError =
-  | VirusScanFailedError
-  | InvalidFileKeyError
-  | MaliciousFileDetectedError
-  | ParseVirusScannerLambdaPayloadError
-
-/**
- * Invokes lambda to scan the file in the quarantine bucket for viruses.
- * @param quarantineFileKey object key of the file in the quarantine bucket
- * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
- * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
- */
-export const triggerVirusScanning = (
-  quarantineFileKey: string,
-): ResultAsync<
-  ParseVirusScannerLambdaPayloadOkType,
-  TriggerVirusScanningError
-> => {
-  const logMeta = {
-    action: 'triggerVirusScanning',
-    quarantineFileKey,
-  }
-
-  if (!validate(quarantineFileKey)) {
-    logger.error({
-      message: 'Invalid quarantine file key - not a valid uuid',
-      meta: logMeta,
-    })
-
-    return errAsync(new InvalidFileKeyError())
-  }
-
-  return ResultAsync.fromPromise(
-    AwsConfig.virusScannerLambda.invoke({
-      FunctionName: AwsConfig.virusScannerLambdaFunctionName,
-      Payload: JSON.stringify({ key: quarantineFileKey }),
-    }),
-    (error) => {
-      logger.error({
-        message: 'Error encountered when invoking virus scanning lambda',
-        meta: logMeta,
-        error,
-      })
-
-      return new VirusScanFailedError()
-    },
-  ).andThen((data: InvokeCommandOutput) => {
-    if (data && data.Payload)
-      return parseVirusScannerLambdaPayload(data.Payload).mapErr((error) => {
-        logger.error({
-          message:
-            'Error returned from virus scanning lambda or parsing lambda output',
-          meta: logMeta,
-          error: error,
-        })
-
-        if (error instanceof ParseVirusScannerLambdaPayloadError) return error
-        else if (error.statusCode === StatusCodes.NOT_FOUND)
-          return new InvalidFileKeyError(
-            'Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-          )
-        else if (error.statusCode !== StatusCodes.BAD_REQUEST)
-          return new VirusScanFailedError()
-
-        return new MaliciousFileDetectedError()
-      })
-
-    // if data or data.Payload is undefined
-    logger.error({
-      message: 'data or data.Payload from virus scanner lambda is undefined',
-      meta: logMeta,
-    })
-
-    return errAsync(new ParseVirusScannerLambdaPayloadError())
-  })
-}
-
 type DownloadCleanFileError = DownloadCleanFileFailedError | InvalidFileKeyError
 
 /**
@@ -444,67 +365,6 @@ export const downloadCleanFile = (
 
       return new DownloadCleanFileFailedError()
     },
-  )
-}
-
-export type TriggerVirusScanThenDownloadCleanFileChainError =
-  | TriggerVirusScanningError
-  | DownloadCleanFileError
-
-/**
- * Helper function to trigger virus scanning and download clean file.
- * @param response quarantined attachment response from storage submissions v2.1+.
- * @returns modified response with content replaced with clean file buffer and answer replaced with filename.
- */
-export const triggerVirusScanThenDownloadCleanFileChain = <
-  T extends
-    | ParsedClearAttachmentResponse
-    | ParsedClearAttachmentFieldResponseV3,
->(
-  response: T,
-  formId: string,
-): ResultAsync<T, TriggerVirusScanThenDownloadCleanFileChainError> => {
-  const logMeta = {
-    action: 'triggerVirusScanThenDownloadCleanFileChain',
-    formId,
-    quarantineFileKey: response.answer,
-  }
-  // Step 3: Trigger lambda to scan attachments.
-  return (
-    triggerVirusScanning(response.answer)
-      .mapErr((error) => {
-        if (error instanceof MaliciousFileDetectedError) {
-          logger.error({
-            message: 'Malicious file detected during lambda virus scan',
-            meta: logMeta,
-            error,
-          })
-          return new MaliciousFileDetectedError(response.filename)
-        }
-        return error
-      })
-      .map((lambdaOutput) => {
-        logger.info({
-          message:
-            'Successfully retrieved clean file from virus scanning lambda',
-          meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
-        })
-        return lambdaOutput.body
-      })
-      // Step 4: Retrieve attachments from the clean bucket.
-      .andThen((cleanAttachment) =>
-        // Retrieve attachment from clean bucket.
-        downloadCleanFile(
-          cleanAttachment.cleanFileKey,
-          cleanAttachment.destinationVersionId,
-          AwsConfig.virusScannerCleanS3Bucket,
-        ).map((attachmentBuffer) => ({
-          ...response,
-          // Replace content with attachmentBuffer and answer with filename.
-          content: attachmentBuffer,
-          answer: response.filename,
-        })),
-      )
   )
 }
 
