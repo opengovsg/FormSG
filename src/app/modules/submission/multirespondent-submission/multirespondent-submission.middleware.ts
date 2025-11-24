@@ -10,7 +10,6 @@ import {
   IPopulatedMultirespondentForm,
 } from 'src/types'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormAuthType,
