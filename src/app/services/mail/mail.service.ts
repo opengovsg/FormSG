@@ -795,7 +795,15 @@ export class MailService {
     >[]
   > => {
     // Data to render both the submission details mail HTML body and PDF.
-
+    logger.info({
+      message: `TESTING: Generating autoreply email for submission ${submission.id} of form ${form._id}`,
+      meta: {
+        action: 'sendAutoReplyEmails',
+        formId: form._id,
+        submissionId: submission.id,
+        responseData: responsesData,
+      },
+    })
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,
