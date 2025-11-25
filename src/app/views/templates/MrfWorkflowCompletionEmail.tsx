@@ -25,29 +25,29 @@ import {
 } from './mrfWorkflowCompletionEmailStyle'
 
 export enum WorkflowOutcome {
-  APPROVED = 'Approved', 
-  NOT_APPROVED = 'Not approved' 
-}  
+  APPROVED = 'Approved',
+  NOT_APPROVED = 'Not approved'
+}
 
 export type QuestionAnswer = {
-  question: string, 
-  answer: string 
+  question: string,
+  answer: string
 }
 
 export type WorkflowEmailData = {
   formTitle: string
   responseId: string
   formQuestionAnswers: QuestionAnswer[]
-  outcome?: WorkflowOutcome | undefined 
+  outcome?: WorkflowOutcome | undefined
 }
 
 export const MrfWorkflowCompletionEmail = ({
   formTitle = 'Test form title',
-  responseId = '64303c45828035f732088a41', 
-  formQuestionAnswers = [], 
+  responseId = '64303c45828035f732088a41',
+  formQuestionAnswers = [],
   outcome,
 }: WorkflowEmailData): JSX.Element => {
-  let headingText =  
+  let headingText =
     outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
 
 
@@ -60,7 +60,7 @@ export const MrfWorkflowCompletionEmail = ({
 
   return (
     <Html>
-      <Head /> 
+      <Head />
       <Preview>{headingText}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
@@ -76,14 +76,14 @@ export const MrfWorkflowCompletionEmail = ({
               </>
             )}
             <Hr style={{ margin: '40px 0' }} />
-            <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
-                Responses for {formTitle} 
-              </Heading>
-              <>
-                <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
-                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{responseId}</Text>
-                {formQuestionAnswers.map(renderQuestionAnswer)}
-              </>
+            <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
+              Responses for {formTitle}
+            </Heading>
+            <>
+              <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
+              <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{responseId}</Text>
+              {formQuestionAnswers.map(renderQuestionAnswer)}
+            </>
             <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
               For more details, please contact the respondent(s) or form administrator.
             </Text>

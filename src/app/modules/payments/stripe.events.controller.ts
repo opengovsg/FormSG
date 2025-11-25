@@ -89,7 +89,7 @@ const _handleStripeEventUpdates: ControllerHandler<
 
   // Step 3: Process the event
   return (
-    StripeService.handleStripeEvent(event, req.growthbook)
+    StripeService.handleStripeEvent(event)
       // Step 4: Return response to Stripe based on result
       .match(
         () => res.sendStatus(StatusCodes.OK),

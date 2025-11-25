@@ -1,6 +1,5 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-import { GrowthBook } from '@growthbook/growthbook'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
@@ -451,7 +450,6 @@ type HandleStripeEventResultError =
  */
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
-  growthbook: GrowthBook | undefined,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -498,7 +496,6 @@ export const handleStripeEvent = (
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
-              growthbook,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {

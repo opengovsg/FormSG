@@ -33,11 +33,10 @@ import {
   FormFieldSchema,
   IAttachmentInfo,
   IPopulatedEncryptedForm,
+  SgidFieldTitle,
 } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
-import { SubmissionEmailObj } from '../../email-submission/email-submission.util'
-import { ProcessedFieldResponse } from '../../submission.types'
 import {
   generateHashedSubmitterId,
   getCookieNameByAuthType,
@@ -492,9 +491,6 @@ describe('encrypt-submission.controller', () => {
         checkHasSingleSubmissionValidationFailureSpy,
       ).not.toHaveBeenCalled()
 
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not any error codes
@@ -502,6 +498,7 @@ describe('encrypt-submission.controller', () => {
         (mockRes.json as jest.Mock).mock.calls[0][0].errorCodes,
       ).not.toBeDefined()
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -567,9 +564,6 @@ describe('encrypt-submission.controller', () => {
       )
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
 
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not any error codes
@@ -584,6 +578,7 @@ describe('encrypt-submission.controller', () => {
         ),
       )
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -731,9 +726,6 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not have the single submission validation failure flag
@@ -748,8 +740,10 @@ describe('encrypt-submission.controller', () => {
         ),
       )
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
+
     it('should return json response with single submission validation failure flag when submissionId is not unique and does not save submission', async () => {
       jest
         .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
@@ -1129,7 +1123,7 @@ describe('encrypt-submission.controller', () => {
       expect(savedSubmission!.verifiedContent).toBeUndefined()
     })
 
-    it('should not include nric in email notification and not store nric if form isSubmitterIdCollectionEnabled is false for MyInfo authType', async () => {
+    it('should not include nric field in email fields to be included in notification email and not store nric if form isSubmitterIdCollectionEnabled is false for MyInfo authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockMyInfoAuthTypeAndSubmitterIdCollectionDisabledForm = {
@@ -1165,6 +1159,11 @@ describe('encrypt-submission.controller', () => {
       ) as unknown as SubmitEncryptModeFormHandlerRequest
       const mockRes = expressHandler.mockResponse()
 
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
@@ -1181,14 +1180,21 @@ describe('encrypt-submission.controller', () => {
 
       // Assert
       // email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
       // Assert nric is not contained - formData empty array since no parsed responses to be included in email
       expect(
-        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
-      ).toEqual([])
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields,
+      ).not.toContain(
+        expect.objectContaining({
+          answer: MOCK_NRIC,
+          fieldType: BasicField.Nric,
+          isVisible: true,
+          question: SgidFieldTitle.SgidNric,
+        }),
+      )
     })
 
-    it('should include nric in email notification and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
+    it('should include nric in email fields to be included in notification email and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm = {
@@ -1230,6 +1236,11 @@ describe('encrypt-submission.controller', () => {
       }
       const expectedVerifiedContent = { sgidUinFin: MOCK_NRIC }
 
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
@@ -1252,17 +1263,23 @@ describe('encrypt-submission.controller', () => {
         JSON.stringify(expectedVerifiedContent),
       )
 
-      // email notification should be sent with nric included
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      // email fields for generating email notification include nric
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
       expect(
-        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
-          .answer,
-      ).toEqual(MOCK_NRIC)
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields[0],
+      ).toEqual(
+        expect.objectContaining({
+          answer: MOCK_NRIC,
+          fieldType: BasicField.Nric,
+          isVisible: true,
+          question: SgidFieldTitle.SgidNric,
+        }),
+      )
     })
   })
 
-  describe('emailData', () => {
-    it('should have the isVisible field set to true for form fields', async () => {
+  describe('passes the required correct data used to generate content for post-submission notification emails', () => {
+    it('passes the required isVisible values in email fields, submission attachments, and respondent emails', async () => {
       // Arrange
       const performEncryptPostSubmissionActionsSpy = jest.spyOn(
         EncryptSubmissionService,
@@ -1296,7 +1313,29 @@ describe('encrypt-submission.controller', () => {
           fieldType: 'textarea',
           isVisible: true,
         },
+        {
+          id: new ObjectId(),
+          question: 'Short answer',
+          answer: 'this is a short answer',
+          fieldType: 'textfield',
+          isVisible: false,
+        },
       ]
+
+      const mockUnencryptedAttachments: IAttachmentInfo[] = [
+        {
+          filename: 'test.pdf',
+          content: Buffer.from('this is a test file'),
+          fieldId: 'test-field-id',
+        },
+        {
+          filename: 'test2.pdf',
+          content: Buffer.from('this is another test file'),
+          fieldId: 'test-field-id-2',
+        },
+      ]
+
+      const mockRespondentEmails = ['test@example.com', 'test2@example.com']
 
       const mockReq = merge(
         expressHandler.mockRequest({
@@ -1311,274 +1350,31 @@ describe('encrypt-submission.controller', () => {
               encryptedContent: 'encryptedContent',
               version: 1,
             },
+            unencryptedAttachments: mockUnencryptedAttachments,
             formDef: {},
             encryptedFormDef: mockEncryptForm,
+            respondentEmails: mockRespondentEmails,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
       const mockRes = expressHandler.mockResponse()
-
-      // Setup the SubmissionEmailObj
-      const emailData = new SubmissionEmailObj(
-        mockResponses as any as ProcessedFieldResponse[],
-        new Set(),
-        FormAuthType.NIL,
-      )
-
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
       // Assert
       expect(
-        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailData,
-      ).toEqual(emailData)
-    })
-  })
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields,
+      ).toEqual(mockResponses)
 
-  describe('submitEncryptModeForm', () => {
-    beforeEach(() => {
-      jest.clearAllMocks()
-      MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
-    })
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
+          .submissionAttachments,
+      ).toEqual(mockUnencryptedAttachments)
 
-    it('should call sendSubmissionToAdmin with no attachments', async () => {
-      // Arrange
-      jest
-        .spyOn(MailService, 'sendSubmissionToAdmin')
-        .mockReturnValue(okAsync(true))
-
-      const mockFormId = new ObjectId()
-      const mockForm = {
-        _id: mockFormId,
-        title: 'Test Form',
-        authType: FormAuthType.NIL,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const mockAttachments: IAttachmentInfo[] = []
-
-      const mockReq = merge(
-        expressHandler.mockRequest({
-          params: { formId: mockFormId.toHexString() },
-          body: {
-            responses: [],
-            attachments: mockAttachments,
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'mockEncryptedContent',
-              version: 1,
-            },
-            formDef: {},
-            encryptedFormDef: mockForm,
-            unencryptedAttachments: mockAttachments,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(mockReq, mockRes)
-
-      // Assert (done)
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({
-          attachments: mockAttachments,
-        }),
-      )
-    })
-
-    it('should call sendSubmissionToAdmin with the attachments', async () => {
-      // Arrange
-      jest
-        .spyOn(MailService, 'sendSubmissionToAdmin')
-        .mockReturnValue(okAsync(true))
-
-      const mockFormId = new ObjectId()
-      const mockForm = {
-        _id: mockFormId,
-        title: 'Test Form',
-        authType: FormAuthType.NIL,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const mockAttachments: IAttachmentInfo[] = [
-        {
-          filename: 'test.pdf',
-          content: Buffer.from('this is a test file'),
-          fieldId: 'test-field-id',
-        },
-      ]
-
-      const mockReq = merge(
-        expressHandler.mockRequest({
-          params: { formId: mockFormId.toHexString() },
-          body: {
-            responses: [],
-            attachments: mockAttachments,
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'mockEncryptedContent',
-              version: 1,
-            },
-            formDef: {},
-            encryptedFormDef: mockForm,
-            unencryptedAttachments: mockAttachments,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(mockReq, mockRes)
-
-      // Assert (done)
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({
-          attachments: mockAttachments,
-        }),
-      )
-    })
-
-    it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const signatureFieldId = new ObjectId()
-      const mockForm = {
-        _id: mockFormId,
-        title: 'Test Form',
-        authType: FormAuthType.NIL,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const mockResponses = [
-        {
-          _id: new ObjectId(),
-          question: '[MyInfo] Test Question',
-          answer: 'Test Answer',
-          fieldType: 'text',
-          isVisible: true,
-        },
-        {
-          _id: signatureFieldId,
-          question: 'Signature Question',
-          answerArray: ['draw', '[[[10,20,0.5]],[[40,40,0.5]]]'],
-          fieldType: 'signature',
-          isVisible: true,
-        },
-      ]
-
-      const mockReq = merge(
-        expressHandler.mockRequest({
-          params: { formId: mockFormId.toHexString() },
-          body: {
-            responses: mockResponses,
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'mockEncryptedContent',
-              version: 1,
-            },
-            formDef: {},
-            encryptedFormDef: mockForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(mockReq, mockRes)
-
-      // Assert
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dataCollationData: expect.arrayContaining([
-            expect.objectContaining({
-              question: 'Test Question',
-              answer: 'Test Answer',
-            }),
-            expect.objectContaining({
-              question: '[signature] Signature Question',
-              answer: `Signature captured`,
-            }),
-          ]),
-        }),
-      )
-    })
-
-    it('should strip [MyInfo] prefix from expected dataCollationData to sendSubmissionToAdmin', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const mockForm = {
-        _id: mockFormId,
-        title: 'Test Form',
-        authType: FormAuthType.NIL,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const mockResponses = [
-        {
-          _id: new ObjectId(),
-          question: '[MyInfo] Name',
-          answer: 'Test Answer',
-          fieldType: 'text',
-          isVisible: true,
-        },
-      ]
-
-      const mockReq = merge(
-        expressHandler.mockRequest({
-          params: { formId: mockFormId.toHexString() },
-          body: {
-            responses: mockResponses,
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'mockEncryptedContent',
-              version: 1,
-            },
-            formDef: {},
-            encryptedFormDef: mockForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(mockReq, mockRes)
-
-      // Assert
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dataCollationData: expect.arrayContaining([
-            expect.objectContaining({
-              question: 'Name',
-              answer: 'Test Answer',
-            }),
-          ]),
-        }),
-      )
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
+          .respondentEmails,
+      ).toEqual(mockRespondentEmails)
     })
   })
 })

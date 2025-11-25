@@ -2,13 +2,12 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { err, errAsync, fromPromise, Result, ResultAsync } from 'neverthrow'
+import { errAsync, fromPromise, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
 import { DEFAULT_RESPONDENT_COPY_EMAIL } from '../../../../shared/constants/mail'
-import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
@@ -16,7 +15,6 @@ import {
   BounceType,
   EmailAdminDataField,
   IFormHasEmailSchema,
-  IPopulatedEncryptedForm,
   IPopulatedForm,
   ISubmissionSchema,
 } from '../../../types'
@@ -63,7 +61,6 @@ import {
 } from './mail.types'
 import {
   generateAutoreplyHtml,
-  generateAutoreplyPdf,
   generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
@@ -678,7 +675,8 @@ export class MailService {
    * @param args.replyToEmails emails to set replyTo, if any
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
-   * @param args.attachments attachments to append to the email, if any
+   * @param args.submissionAttachments files from attachment fields in the submission to be included in the email notifications.
+   * @param args.pdfAttachment response PDF attachment to be included in the email notifications.
    * @param args.dataCollationData the data to use in the data collation tool to be appended to the end of the email
    * @param args.formData the form data to display to in the body in table form
    */
@@ -686,20 +684,43 @@ export class MailService {
     replyToEmails,
     form,
     submission,
-    attachments,
+    submissionAttachments = [],
     dataCollationData,
     formData,
+    pdfAttachment,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
-    attachments?: Mail.Attachment[]
+    submissionAttachments?: Mail.Attachment[]
     formData: EmailAdminDataField[]
     dataCollationData?: {
       question: string
       answer: string | number
     }[]
+    pdfAttachment?: Mail.Attachment
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const logMeta = {
+      action: 'sendSubmissionToAdmin',
+      formId: form._id,
+      submissionId: submission.id,
+    }
+
+    const adminEmailsToNotify = form.emails
+    if (!adminEmailsToNotify) {
+      return okAsync(true)
+    }
+
+    const attachmentsToInclude = [
+      ...submissionAttachments,
+      ...(pdfAttachment ? [pdfAttachment] : []),
+    ]
+
+    logger.info({
+      message: 'Sending admin notification mail',
+      meta: logMeta,
+    })
+
     const refNo = String(submission.id)
     const formTitle = form.title
     const submissionTime = moment(submission.created)
@@ -739,7 +760,7 @@ export class MailService {
         from: this.#senderFromString,
         subject: `formsg-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
-        attachments,
+        attachments: attachmentsToInclude,
         headers: {
           [EMAIL_HEADERS.formId]: String(form._id),
           [EMAIL_HEADERS.submissionId]: refNo,
@@ -774,7 +795,8 @@ export class MailService {
    * @param args.attachments attachments to append to the email, if any
    * @param args.responsesData the array of response data to use in rendering
    * the mail body or summary pdf
-   * @param args.isUseLambdaOutput whether to use the lambda output for the pdf generation
+   * @param args.submissionAttachments files from attachment fields in the submission that will be included in email notifications.
+   * @param args.pdfAttachment response PDF attachment to be included in the email notifications.
    * @param args.autoReplyMailDatas array of objects that contains autoreply mail data to override with defaults
    * @param args.autoReplyMailDatas[].email contains the recipient of the mail
    * @param args.autoReplyMailDatas[].subject if available, sends the mail out with this subject instead of the default subject
@@ -786,8 +808,9 @@ export class MailService {
     submission,
     responsesData,
     autoReplyMailDatas,
-    attachments = [],
-    isUseLambdaOutput,
+    submissionAttachments = [],
+    pdfAttachment,
+    isPaymentEnabled,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<
       Result<
@@ -806,55 +829,39 @@ export class MailService {
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
-    const renderData: AutoreplySummaryRenderData = { 
+    const strippedRenderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,
       submissionTime: moment(submission.created)
         .tz('Asia/Singapore')
         .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      formData: responsesData, 
+      // strip answer from renderData to always use answerTemplate for email body responses
+      formData: responsesData.map(({ question, answerTemplate }) => ({
+        question,
+        answerTemplate,
+      })),
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
-    // Create a copy of attachments for attaching of autoreply pdf if needed.
-    const attachmentsWithAutoreplyPdf = [...attachments]
-    const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
-    const encryptFormDef = form as IPopulatedEncryptedForm
-    const isPaymentEnabled =
-      isEncryptForm &&
-      encryptFormDef.payments_channel.channel !== PaymentChannel.Unconnected &&
-      encryptFormDef.payments_field.enabled === true
+    const getAttachmentsToInclude = (mailData: AutoReplyMailData) => {
+      const shouldPdfAttachmentBeIncluded =
+        !isPaymentEnabled && mailData.includeFormSummary
 
-    // Generate autoreply pdf and append into attachments if any of the mail has
-    // to include a form summary.
-    if (
-      autoReplyMailDatas.some((data) => data.includeFormSummary) &&
-      !isPaymentEnabled
-    ) {
-      const pdfBufferResult = await generateAutoreplyPdf(
-        autoReplyData,
-        isUseLambdaOutput,
-      )
-      if (pdfBufferResult.isErr()) {
-        return Promise.allSettled([err(pdfBufferResult.error)])
+      if (shouldPdfAttachmentBeIncluded && !pdfAttachment) {
+        logger.error({
+          message:
+            'Could not find PDF attachment required for autoReply email. Continuing to send without PDF attachment.',
+          meta: {
+            action: 'sendAutoReplyEmails',
+            formId: String(form._id),
+            submissionId: String(submission.id),
+          },
+        })
       }
-      attachmentsWithAutoreplyPdf.push({
-        filename: 'response.pdf',
-        content: Buffer.copyBytesFrom(pdfBufferResult.value),
-      })
-    }
 
-    // strip answer from renderData to always use answerTemplate for email body responses
-    const strippedResponsesData = responsesData.map(
-      ({ question, answerTemplate }) => ({
-        question,
-        answerTemplate,
-      }),
-    )
-
-    const strippedRenderData = {
-      ...renderData,
-      formData: strippedResponsesData,
+      return pdfAttachment && shouldPdfAttachmentBeIncluded
+        ? [...submissionAttachments, pdfAttachment]
+        : [...submissionAttachments]
     }
 
     // Prepare mail sending for each autoreply mail.
@@ -863,9 +870,7 @@ export class MailService {
         return this.#sendSingleAutoreplyMail({
           form,
           submission,
-          attachments: mailData.includeFormSummary
-            ? attachmentsWithAutoreplyPdf
-            : attachments,
+          attachments: getAttachmentsToInclude(mailData),
           autoReplyMailData: mailData,
           formSummaryRenderData: strippedRenderData,
           index,
@@ -1074,7 +1079,7 @@ export class MailService {
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
-  }) => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData = {
       formTitle,
       responseId: responseId.toString(),
@@ -1133,7 +1138,7 @@ export class MailService {
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
-  }) => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
       : WorkflowOutcome.APPROVED

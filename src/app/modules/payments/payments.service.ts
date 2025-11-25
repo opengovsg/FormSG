@@ -1,4 +1,3 @@
-import { GrowthBook } from '@growthbook/growthbook'
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
@@ -209,7 +208,6 @@ export const confirmPaymentPendingSubmission = (
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
-  growthbook: GrowthBook | undefined,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -244,7 +242,7 @@ export const performPaymentPostSubmissionActions = (
                 performEncryptPostSubmissionActions({
                   submission,
                   responses: payment.responses,
-                  growthbook,
+                  emailFields: [], // TODO [EMAIL-CONFIRMATION-BUG]: Email confirmation email to email fields does not work for payment forms, this is an existing issue to be fixed.
                 })
                   .andThen(() =>
                     // If successfully sent email confirmations, delete response data from payment document.
