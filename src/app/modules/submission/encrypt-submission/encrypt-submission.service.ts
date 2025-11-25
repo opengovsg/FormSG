@@ -351,6 +351,7 @@ export const performEncryptPostSubmissionActions = ({
             attachments,
             formData: emailData.formData,
             dataCollationData,
+            pdfAttachment: checkIfAdminPdfIsRequired() ? pdfAttachment : undefined,
           })
 
           return sendEmailConfirmations({
@@ -359,7 +360,11 @@ export const performEncryptPostSubmissionActions = ({
             attachments,
             responsesData: emailData?.autoReplyData,
             recipientData: recipientEmailDatas,
-            pdfAttachment,
+            pdfAttachment: checkIfRespondentFormSummaryIsRequired({
+              isPaymentEnabled,
+              autoReplyMailDatas: recipientEmailDatas,
+            }) ? pdfAttachment : undefined,
+            isPaymentEnabled,
           }).mapErr((error) => {
             logger.error({
               message: 'Error while sending email confirmations',

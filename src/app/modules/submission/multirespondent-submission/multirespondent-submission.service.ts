@@ -1214,7 +1214,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     attachments,
     formFields: snapshottedFormDef.form_fields,
     currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
-    pdfResult,
+    pdfResult: checkIfRespondentFormSummaryIsRequired({ responses, formFields: snapshottedFormDef.form_fields, currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [] }) ? pdfResult : okAsync(undefined),
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1249,7 +1249,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
-    pdfResult: pdfResult,
+    pdfResult: checkIsWorkflowCompletionEmailPdfRequired({ currentStepNumber, form: snapshottedFormDef, responses, isRejected: isStepRejected, submissionId }) ? pdfResult : okAsync(undefined),
   })
     .mapErr((error) => {
       logger.error({

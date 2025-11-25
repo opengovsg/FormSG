@@ -807,6 +807,7 @@ export class MailService {
     autoReplyMailDatas,
     attachments = [],
     pdfAttachment,
+    isPaymentEnabled,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<
       Result<
@@ -834,12 +835,6 @@ export class MailService {
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments, ...(pdfAttachment ? [pdfAttachment] : [])]
-    const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
-    const encryptFormDef = form as IPopulatedEncryptedForm
-    const isPaymentEnabled =
-      isEncryptForm &&
-      encryptFormDef.payments_channel.channel !== PaymentChannel.Unconnected &&
-      encryptFormDef.payments_field.enabled === true
 
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
