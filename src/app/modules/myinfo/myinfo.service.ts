@@ -389,8 +389,6 @@ export class MyInfoServiceClass {
       },
     ).andThen((hashes) => {
       if (hashes) {
-        console.log('hashes!')
-        console.log(hashes)
         return okAsync(hashes)
       } else {
         logger.info({
