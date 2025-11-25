@@ -421,8 +421,6 @@ export const validateStorageSubmission = async (
             .asyncAndThen(({ uinFin }) =>
               MyInfoService.fetchMyInfoHashes(uinFin, form._id)
                 .andThen((hashes) => {
-                  console.log('hashes')
-                  console.log(hashes)
                   return MyInfoService.checkMyInfoHashes(
                     parsedResponses.responses,
                     hashes,
@@ -430,8 +428,6 @@ export const validateStorageSubmission = async (
                 })
                 .map<IPopulatedStorageFormWithResponsesAndHash>(
                   (hashedFields) => {
-                    console.log('hashedFields')
-                    console.log(hashedFields)
                     return {
                       hashedFields,
                       parsedResponses,
