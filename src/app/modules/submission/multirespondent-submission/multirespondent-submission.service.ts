@@ -403,6 +403,7 @@ const sendMrfOutcomeEmails = ({
   isApproval = false,
   isRejected = false,
   attachments,
+  pdfResult,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -421,7 +422,8 @@ const sendMrfOutcomeEmails = ({
   isApproval?: boolean
   isRejected?: boolean
   attachments?: IAttachmentInfo[]
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+  pdfResult: ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError>
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
     formId: form._id?.toString(),
@@ -436,14 +438,22 @@ const sendMrfOutcomeEmails = ({
       currentStepNumber,
       submissionId,
     })
-      // Step 3: Send outcome emails based on type
       .asyncAndThen((destinationEmails) => {
+        return pdfResult.map((responsePdf) => {
+          return {
+            destinationEmails,
+            responsePdf,
+          }
+        })
+      })
+      // Step 3: Send outcome emails based on type
+      .andThen(({ destinationEmails, responsePdf }) => {
         if (!destinationEmails || destinationEmails.length <= 0) {
           logger.info({
             message: 'No destination email found for MRF outcome email',
             meta: logMeta,
           })
-          return okAsync(true)
+          return okAsync(true as const)
         }
 
         const isWorkflowCompleted = checkIsWorkflowCompleted({
@@ -453,7 +463,7 @@ const sendMrfOutcomeEmails = ({
         })
 
         if (!isWorkflowCompleted) {
-          return okAsync(true)
+          return okAsync(true as const)
         }
 
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
@@ -461,7 +471,11 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
-        const emailAttachments = [...(attachments ?? [])]
+        const emailAttachments = []
+        emailAttachments.push(...(attachments ?? []))
+        if (responsePdf) {
+          emailAttachments.push(responsePdf)
+        }
 
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
@@ -485,6 +499,7 @@ const sendMrfOutcomeEmails = ({
             return errAsync(error)
           })
         }
+
         return MailService.sendMrfWorkflowCompletionEmail({
           emails: destinationEmails,
           formId: form._id,
@@ -943,6 +958,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         responses,
         submissionId,
         attachments,
+        pdfResult,
       })
     })
     .mapErr((error) => {
@@ -1216,6 +1232,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isApproval: true,
       isRejected: true,
       attachments: attachments,
+      pdfResult: pdfResult,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -1232,6 +1249,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
+    pdfResult: pdfResult,
   })
     .mapErr((error) => {
       logger.error({

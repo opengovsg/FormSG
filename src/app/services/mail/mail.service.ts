@@ -1066,7 +1066,7 @@ export class MailService {
     responseId: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
-  }) => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData = {
       formTitle,
       responseId: responseId.toString(),
@@ -1125,7 +1125,7 @@ export class MailService {
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
-  }) => {
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
       : WorkflowOutcome.APPROVED
