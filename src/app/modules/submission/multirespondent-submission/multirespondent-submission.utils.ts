@@ -120,7 +120,7 @@ const getConditionalFieldEmailRecipient = (
 
   const emailRecipients =
     conditionalField?.optionsToRecipientsMap?.[
-      conditionalFieldResponse.answer
+    conditionalFieldResponse.answer
     ] ?? []
 
   return emailRecipients
@@ -220,22 +220,21 @@ export const validateMrfFieldResponses = ({
 
 /**
  * Extracts email data to be sent respondent copies to from a multirespondent submission.
- * Email inputs from email confirmation-enabled email fields that are assigned in the current step are extracted
- * @param responses - The multirespondent submission's field responses
- * @param formFields - The form fields schema
- * @param activeFields - The active field Ids assigned in the current step
- * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to
+ * @param responses - The multirespondent submission's field responses.
+ * @param formFields - The schema of the form fields present in the form.
+ * @param currentStepActiveFields - The active field Ids assigned in the current step.
+ * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to.
  */
-export const extractRespondentCopyEmails = ({
+export const extractRespondentCopyEmailDatas = ({
   responses,
   formFields,
-  activeFields,
+  currentStepActiveFields,
 }: {
   responses: FieldResponsesV3
   formFields: FormFieldSchema[] | FormFieldDto[]
-  activeFields: string[]
+  currentStepActiveFields: string[]
 }): AutoReplyMailData[] => {
-  return activeFields.flatMap((fieldId) => {
+  return currentStepActiveFields.flatMap((fieldId) => {
     const fieldIdString = fieldId.toString()
     const field = formFields.find((f) => f._id.toString() === fieldIdString)
     const response = responses[fieldIdString]
@@ -251,14 +250,14 @@ export const extractRespondentCopyEmails = ({
       'value' in response.answer &&
       typeof response.answer.value === 'string'
     ) {
-      const options = field.autoReplyOptions
+      const { autoReplyMessage, autoReplySubject, autoReplySender, includeFormSummary } = field.autoReplyOptions
       return [
         {
           email: response.answer.value,
-          subject: options.autoReplySubject,
-          sender: options.autoReplySender,
-          body: options.autoReplyMessage,
-          includeFormSummary: options.includeFormSummary,
+          subject: autoReplySubject,
+          sender: autoReplySender,
+          body: autoReplyMessage,
+          includeFormSummary
         },
       ]
     }

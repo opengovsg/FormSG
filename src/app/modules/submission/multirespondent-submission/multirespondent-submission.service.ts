@@ -70,7 +70,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
-  extractRespondentCopyEmails,
+  extractRespondentCopyEmailDatas,
   getEmailFromResponses,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
@@ -88,11 +88,11 @@ export const checkFormIsMultirespondent = (
   return isFormMultirespondent(form)
     ? ok(form)
     : err(
-        new ResponseModeError(
-          FormResponseMode.Multirespondent,
-          form.responseMode,
-        ),
-      )
+      new ResponseModeError(
+        FormResponseMode.Multirespondent,
+        form.responseMode,
+      ),
+    )
 }
 
 const checkIsFormApproval = (
@@ -471,7 +471,8 @@ const sendMrfRespondentCopyEmails = ({
   responses,
   submission,
   attachments,
-  respondentCopyRecipientData,
+  formFields,
+  currentStepActiveFields,
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
@@ -482,11 +483,23 @@ const sendMrfRespondentCopyEmails = ({
   responses: FieldResponsesV3
   submission: IMultirespondentSubmissionSchema
   attachments?: IAttachmentInfo[]
-  respondentCopyRecipientData: AutoReplyMailData[]
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  currentStepActiveFields: string[]
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
 > => {
+
+  const respondentCopyEmailDatas = extractRespondentCopyEmailDatas({
+    responses,
+    formFields,
+    currentStepActiveFields,
+  })
+  // if no respondent copy email data, continue without sending any emails 
+  if (!respondentCopyEmailDatas) {
+    return okAsync(true)
+  }
+
   const submissionId: string = submission.id
   const submissionTime = moment(submission.created)
     .tz('Asia/Singapore')
@@ -503,7 +516,7 @@ const sendMrfRespondentCopyEmails = ({
     formFields: form.form_fields,
     responses,
   })
-  const hasFormSummary = respondentCopyRecipientData.some(
+  const hasFormSummary = respondentCopyEmailDatas.some(
     (autoReplyMailData) => autoReplyMailData.includeFormSummary,
   )
   const renderData: AutoreplySummaryRenderData = {
@@ -519,11 +532,11 @@ const sendMrfRespondentCopyEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   > = hasFormSummary
-    ? generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
+      ? generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
         filename: 'response.pdf',
         content: Buffer.copyBytesFrom(pdfBuffer),
       }))
-    : okAsync(undefined)
+      : okAsync(undefined)
 
   return pdfResult.andThen((responsePdf) => {
     const recipientAttachments = [
@@ -531,7 +544,7 @@ const sendMrfRespondentCopyEmails = ({
       ...(responsePdf ? [responsePdf] : []),
     ]
     return ResultAsync.combine(
-      respondentCopyRecipientData.map((autoReplyMailData) => {
+      respondentCopyEmailDatas.map((autoReplyMailData) => {
         return MailService.sendMrfRespondentCopyEmail({
           formId: form._id,
           formTitle: form.title,
@@ -614,10 +627,10 @@ export const createMultiRespondentFormSubmission = ({
 
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
-            form,
-            nextStep,
-            encryptedPayload.responses,
-          )
+          form,
+          nextStep,
+          encryptedPayload.responses,
+        )
         : undefined
 
       if (
@@ -722,33 +735,20 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  // Find active fields for current step
-  const activeFields = form.workflow[currentStepNumber]
-    ? form.workflow[currentStepNumber].edit
-    : []
-
-  // Find respondent copy recipient data
-  const respondentCopyRecipientData = extractRespondentCopyEmails({
-    responses: encryptedPayload.responses,
+  sendMrfRespondentCopyEmails({
+    form,
+    responses,
+    submission,
+    attachments,
     formFields: form.form_fields,
-    activeFields,
-  })
-
-  if (respondentCopyRecipientData && respondentCopyRecipientData.length > 0) {
-    sendMrfRespondentCopyEmails({
-      form,
-      responses,
-      submission,
-      attachments,
-      respondentCopyRecipientData,
-    }).mapErr((error) => {
-      logger.error({
-        message: 'Send multirespondent respondent copy email error',
-        meta: logMeta,
-        error,
-      }) // return nothing; since successful submission does not depend on respondent copy emails being sent
+    currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Send multirespondent respondent copy email error',
+      meta: logMeta,
+      error,
     })
-  }
+  })
 
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
@@ -868,10 +868,10 @@ export const updateMultiRespondentFormSubmission = ({
           : null
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
-            snapshottedFormDef,
-            nextStep,
-            encryptedPayload.responses,
-          )
+          snapshottedFormDef,
+          nextStep,
+          encryptedPayload.responses,
+        )
         : undefined
 
       if (
@@ -912,16 +912,16 @@ export const updateMultiRespondentFormSubmission = ({
       }
       const submittedStepMeta = isApprovalForm
         ? ({
-            ...submittedStepMetaCommons,
-            status: isStepRejected
-              ? WorkflowStatus.REJECTED
-              : WorkflowStatus.APPROVED,
-            isApproval: true,
-          } as SubmittedApprovalStep)
+          ...submittedStepMetaCommons,
+          status: isStepRejected
+            ? WorkflowStatus.REJECTED
+            : WorkflowStatus.APPROVED,
+          isApproval: true,
+        } as SubmittedApprovalStep)
         : ({
-            ...submittedStepMetaCommons,
-            isApproval: false,
-          } as SubmittedNonApprovalStep)
+          ...submittedStepMetaCommons,
+          isApproval: false,
+        } as SubmittedNonApprovalStep)
 
       submission.submittedSteps = [
         ...(submission.submittedSteps ?? []),
@@ -992,28 +992,20 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  // Find respondent copy recipient data
-  const respondentCopyRecipientData = extractRespondentCopyEmails({
-    responses: responses,
+  sendMrfRespondentCopyEmails({
+    form: snapshottedFormDef,
+    responses,
+    submission,
+    attachments,
     formFields: snapshottedFormDef.form_fields,
-    activeFields: snapshottedFormDef.workflow[currentStepNumber].edit,
-  })
-
-  if (respondentCopyRecipientData && respondentCopyRecipientData.length > 0) {
-    sendMrfRespondentCopyEmails({
-      form: snapshottedFormDef,
-      responses,
-      submission,
-      attachments,
-      respondentCopyRecipientData,
-    }).mapErr((error) => {
-      logger.error({
-        message: 'Send multirespondent respondent copy email error',
-        meta: logMeta,
-        error,
-      }) // return nothing; since successful submission does not depend on this respondent copy emails sent
+    currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Send multirespondent respondent copy email error',
+      meta: logMeta,
+      error,
     })
-  }
+  })
 
   const isStepRejectedResult = checkIsStepRejected({
     zeroIndexedStepNumber: currentStepNumber,
