@@ -795,6 +795,7 @@ export class MailService {
     >[]
   > => {
     // Data to render both the submission details mail HTML body and PDF.
+
     const renderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,

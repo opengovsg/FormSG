@@ -256,7 +256,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
                       <DraggableMyInfoFieldListOption
                         index={originalIndex}
                         isDisabled={isDisabledCheck(fieldType)}
-                        isDisabled={false}
                         key={originalIndex}
                         fieldType={fieldType}
                       />
