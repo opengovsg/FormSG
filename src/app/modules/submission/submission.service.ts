@@ -453,14 +453,14 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   responsesData = [],
   attachments,
   recipientData,
-  isUseLambdaOutput,
+  pdfAttachment,
 }: {
   form: IPopulatedForm
   submission: S
   responsesData?: EmailRespondentConfirmationField[]
   attachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
-  isUseLambdaOutput: boolean
+  pdfAttachment?: Mail.Attachment
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
@@ -476,7 +476,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     attachments,
     responsesData,
     autoReplyMailDatas: recipientData,
-    isUseLambdaOutput,
+    pdfAttachment,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({
@@ -1217,8 +1217,8 @@ export type TriggerGuardDutyScanThenDownloadCleanFileChainError =
  */
 export const triggerGuardDutyScanThenDownloadCleanFileChain = <
   T extends
-    | ParsedClearAttachmentResponse
-    | ParsedClearAttachmentFieldResponseV3,
+  | ParsedClearAttachmentResponse
+  | ParsedClearAttachmentFieldResponseV3,
 >(
   response: T,
   formId: string,

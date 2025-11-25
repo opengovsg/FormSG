@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
-import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
+import { AutoReplyMailData, AutoreplySummaryRenderData } from 'src/app/services/mail/mail.types'
 import MailService from '../../../services/mail/mail.service'
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
 
@@ -11,13 +11,16 @@ import { featureFlags } from '../../../../../shared/constants'
 import {
   DateString,
   FormResponseMode,
+  PaymentChannel,
   SubmissionType,
 } from '../../../../../shared/types'
 import {
+  EmailAdminDataField,
   FieldResponse, IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm
 } from '../../../../types'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { createQueryWithDateParam } from '../../../utils/date'
@@ -42,7 +45,9 @@ import {
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
 
+import moment from 'moment'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
+import { generateAutoreplyPdf } from 'src/app/services/mail/mail.utils'
 import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import { ProcessedFieldResponse } from '../submission.types'
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
@@ -136,23 +141,71 @@ export const createEncryptSubmissionWithoutSave = ({
 }
 
 const checkIfAdminPdfIsRequired = (): boolean => {
-  return false
+  return true
 }
 
-const checkIfRespondentFormSummaryIsRequired = (): boolean => {
-  return false
+const checkIfRespondentFormSummaryIsRequired = ({
+  autoReplyMailDatas,
+  isPaymentEnabled,
+}: {
+  autoReplyMailDatas: AutoReplyMailData[]
+  isPaymentEnabled: boolean
+}): boolean => {
+  return !isPaymentEnabled && autoReplyMailDatas.some((data) => data.includeFormSummary)
 }
 
-const checkIfPdfGenerationIsRequired = (): boolean => {
-  return checkIfAdminPdfIsRequired() || checkIfRespondentFormSummaryIsRequired()
+const checkIfPdfGenerationIsRequired = ({
+  isPaymentEnabled,
+  autoReplyMailDatas,
+}: {
+  isPaymentEnabled: boolean
+  autoReplyMailDatas: AutoReplyMailData[]
+}): boolean => {
+  return checkIfAdminPdfIsRequired() || checkIfRespondentFormSummaryIsRequired({
+    isPaymentEnabled,
+    autoReplyMailDatas,
+  })
 }
 
-const generatePdfAttachmentIfRequired = (): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
-  if (!checkIfPdfGenerationIsRequired()) {
+const generatePdfAttachmentIfRequired = ({
+  isPaymentEnabled,
+  autoReplyMailDatas,
+  submission,
+  form,
+  responsesData,
+}: {
+  isPaymentEnabled: boolean
+  autoReplyMailDatas: AutoReplyMailData[]
+  submission: IEncryptedSubmissionSchema
+  form: IPopulatedEncryptedForm
+  responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
+    answer?: EmailAdminDataField['answer']
+  })[]
+}): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
+  if (!checkIfPdfGenerationIsRequired({
+    isPaymentEnabled,
+    autoReplyMailDatas,
+  })) {
     return okAsync(undefined)
   }
-  
-  return okAsync(undefined)
+
+  const renderData: AutoreplySummaryRenderData = {
+    refNo: submission.id,
+    formTitle: form.title,
+    submissionTime: moment(submission.created)
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A'),
+    formData: responsesData,
+    formUrl: `${config.app.appUrl}/${form._id}`,
+  }
+
+  return generateAutoreplyPdf(
+    renderData,
+    true,
+  ).map((pdfBuffer) => ({
+    filename: 'response.pdf',
+    content: Buffer.copyBytesFrom(pdfBuffer),
+  }))
 }
 
 /**
@@ -269,13 +322,25 @@ export const performEncryptPostSubmissionActions = ({
           answer: item.answer,
         }))
 
-        const pdfAttachmentResult = generatePdfAttachmentIfRequired()
+        const recipientEmailDatas = [
+          ...extractEmailConfirmationData(responses, form.form_fields),
+          ...respondentCopyEmailData,
+        ]
+
+        const isPaymentEnabled =
+          form.responseMode === FormResponseMode.Encrypt &&
+          form.payments_channel.channel !== PaymentChannel.Unconnected &&
+          form.payments_field.enabled === true
+
+        const pdfAttachmentResult = generatePdfAttachmentIfRequired({
+          isPaymentEnabled,
+          autoReplyMailDatas: recipientEmailDatas,
+          submission,
+          form,
+          responsesData: emailData.formData,
+        })
 
         return pdfAttachmentResult.andThen((pdfAttachment) => {
-          if (pdfAttachment) {
-            attachments = [...(attachments ?? []), pdfAttachment]
-          }
-
           void MailService.sendSubmissionToAdmin({
             replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
             form,
@@ -293,11 +358,8 @@ export const performEncryptPostSubmissionActions = ({
             submission,
             attachments,
             responsesData: emailData?.autoReplyData,
-            recipientData: [
-              ...extractEmailConfirmationData(responses, form.form_fields),
-              ...respondentCopyEmailData,
-            ],
-            isUseLambdaOutput,
+            recipientData: recipientEmailDatas,
+            pdfAttachment,
           }).mapErr((error) => {
             logger.error({
               message: 'Error while sending email confirmations',

@@ -2,7 +2,7 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { Result, ResultAsync, err, errAsync, fromPromise, okAsync } from 'neverthrow'
+import { Result, ResultAsync, errAsync, fromPromise, okAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -61,14 +61,12 @@ import {
   SubmissionToAdminHtmlData,
 } from './mail.types'
 import {
-  generateAutoreplyHtml,
-  generateAutoreplyPdf,
-  generateIssueReportedNotificationHtml,
+  generateAutoreplyHtml, generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
   generateSubmissionToAdminHtml,
-  isToFieldValid,
+  isToFieldValid
 } from './mail.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -688,6 +686,7 @@ export class MailService {
     attachments,
     dataCollationData,
     formData,
+    pdfAttachment,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
@@ -698,6 +697,7 @@ export class MailService {
       question: string
       answer: string | number
     }[]
+    pdfAttachment?: Mail.Attachment
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const logMeta = {
       action: 'sendSubmissionToAdmin',
@@ -708,6 +708,10 @@ export class MailService {
     const adminEmailsToNotify = form.emails
     if (!adminEmailsToNotify) {
       return okAsync(true)
+    }
+
+    if (pdfAttachment) {
+      attachments = [...(attachments ?? []), pdfAttachment]
     }
 
     logger.info({
@@ -802,7 +806,7 @@ export class MailService {
     responsesData,
     autoReplyMailDatas,
     attachments = [],
-    isUseLambdaOutput,
+    pdfAttachment,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<
       Result<
@@ -813,56 +817,29 @@ export class MailService {
   > => {
     // Data to render both the submission details mail HTML body and PDF.
 
-    const renderData: AutoreplySummaryRenderData = {
+    const strippedRenderData: AutoreplySummaryRenderData = {
       refNo: submission.id,
       formTitle: form.title,
       submissionTime: moment(submission.created)
         .tz('Asia/Singapore')
         .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      formData: responsesData,
+      // strip answer from renderData to always use answerTemplate for email body responses
+      formData: responsesData.map(
+        ({ question, answerTemplate }) => ({
+          question,
+          answerTemplate,
+        })),
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
-    const attachmentsWithAutoreplyPdf = [...attachments]
+    const attachmentsWithAutoreplyPdf = [...attachments, ...(pdfAttachment ? [pdfAttachment] : [])]
     const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
     const encryptFormDef = form as IPopulatedEncryptedForm
     const isPaymentEnabled =
       isEncryptForm &&
       encryptFormDef.payments_channel.channel !== PaymentChannel.Unconnected &&
       encryptFormDef.payments_field.enabled === true
-
-    // Generate autoreply pdf and append into attachments if any of the mail has
-    // to include a form summary.
-    if (
-      autoReplyMailDatas.some((data) => data.includeFormSummary) &&
-      !isPaymentEnabled
-    ) {
-      const pdfBufferResult = await generateAutoreplyPdf(
-        renderData,
-        isUseLambdaOutput,
-      )
-      if (pdfBufferResult.isErr()) {
-        return Promise.allSettled([err(pdfBufferResult.error)])
-      }
-      attachmentsWithAutoreplyPdf.push({
-        filename: 'response.pdf',
-        content: Buffer.copyBytesFrom(pdfBufferResult.value),
-      })
-    }
-
-    // strip answer from renderData to always use answerTemplate for email body responses
-    const strippedResponsesData = responsesData.map(
-      ({ question, answerTemplate }) => ({
-        question,
-        answerTemplate,
-      }),
-    )
-
-    const strippedRenderData = {
-      ...renderData,
-      formData: strippedResponsesData,
-    }
 
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
