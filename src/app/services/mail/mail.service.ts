@@ -2,21 +2,19 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { Result, ResultAsync, errAsync, fromPromise, okAsync } from 'neverthrow'
+import { errAsync, fromPromise, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
 import { DEFAULT_RESPONDENT_COPY_EMAIL } from '../../../../shared/constants/mail'
-import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   BounceType,
-  EmailAdminDataField, IFormHasEmailSchema,
-  IPopulatedEncryptedForm,
-  IPopulatedForm,
+  EmailAdminDataField,
+  IFormHasEmailSchema, IPopulatedForm,
   ISubmissionSchema
 } from '../../../types'
 import config from '../../config/config'
@@ -61,12 +59,13 @@ import {
   SubmissionToAdminHtmlData,
 } from './mail.types'
 import {
-  generateAutoreplyHtml, generateIssueReportedNotificationHtml,
+  generateAutoreplyHtml,
+  generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
   generateSubmissionToAdminHtml,
-  isToFieldValid
+  isToFieldValid,
 } from './mail.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -245,9 +244,9 @@ export class MailService {
           ...mail,
           headers: config.mail.sesConfigSet
             ? {
-              'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
-              ...mail.headers,
-            }
+                'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
+                ...mail.headers,
+              }
             : mail.headers,
         },
         {
@@ -825,16 +824,18 @@ export class MailService {
         .tz('Asia/Singapore')
         .format('ddd, DD MMM YYYY hh:mm:ss A'),
       // strip answer from renderData to always use answerTemplate for email body responses
-      formData: responsesData.map(
-        ({ question, answerTemplate }) => ({
-          question,
-          answerTemplate,
-        })),
+      formData: responsesData.map(({ question, answerTemplate }) => ({
+        question,
+        answerTemplate,
+      })),
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
-    const attachmentsWithAutoreplyPdf = [...attachments, ...(pdfAttachment ? [pdfAttachment] : [])]
+    const attachmentsWithAutoreplyPdf = [
+      ...attachments,
+      ...(pdfAttachment ? [pdfAttachment] : []),
+    ]
 
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(

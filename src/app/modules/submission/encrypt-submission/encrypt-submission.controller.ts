@@ -53,8 +53,6 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
-import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
@@ -801,7 +799,7 @@ const _createSubmission = async ({
     submission,
     responses,
     growthbook: req.growthbook,
-    emailFields, 
+    emailFields,
     attachments: emailAttachments,
     respondentEmails,
   })

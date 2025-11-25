@@ -1,11 +1,15 @@
 import { GrowthBook } from '@growthbook/growthbook'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
-import { AutoReplyMailData, AutoreplySummaryRenderData } from 'src/app/services/mail/mail.types'
-import MailService from '../../../services/mail/mail.service'
-import * as EmailSubmissionService from '../email-submission/email-submission.service'
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
+import {
+  AutoReplyMailData,
+  AutoreplySummaryRenderData,
+} from 'src/app/services/mail/mail.types'
+import { generateAutoreplyPdf } from 'src/app/services/mail/mail.utils'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -16,13 +20,15 @@ import {
 } from '../../../../../shared/types'
 import {
   EmailAdminDataField,
-  FieldResponse, IEncryptedSubmissionSchema,
+  FieldResponse,
+  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
-  IPopulatedForm
+  IPopulatedForm,
 } from '../../../../types'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import MailService from '../../../services/mail/mail.service'
 import { createQueryWithDateParam } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
@@ -35,6 +41,8 @@ import {
   WebhookValidationError,
 } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
+import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import {
   ResponseModeError,
@@ -43,13 +51,9 @@ import {
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
+import { ProcessedFieldResponse } from '../submission.types'
 import { extractEmailConfirmationData } from '../submission.utils'
 
-import moment from 'moment'
-import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
-import { generateAutoreplyPdf } from 'src/app/services/mail/mail.utils'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
-import { ProcessedFieldResponse } from '../submission.types'
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
 
@@ -107,10 +111,10 @@ export const assertFormIsSingleSubmissionDisabled = (
   return !form.isSingleSubmission
     ? ok(form)
     : err(
-      new UnsupportedSettingsError(
-        'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
-      ),
-    )
+        new UnsupportedSettingsError(
+          'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
+        ),
+      )
 }
 
 /**
@@ -151,7 +155,10 @@ const checkIfRespondentFormSummaryIsRequired = ({
   autoReplyMailDatas: AutoReplyMailData[]
   isPaymentEnabled: boolean
 }): boolean => {
-  return !isPaymentEnabled && autoReplyMailDatas.some((data) => data.includeFormSummary)
+  return (
+    !isPaymentEnabled &&
+    autoReplyMailDatas.some((data) => data.includeFormSummary)
+  )
 }
 
 const checkIfPdfGenerationIsRequired = ({
@@ -161,10 +168,13 @@ const checkIfPdfGenerationIsRequired = ({
   isPaymentEnabled: boolean
   autoReplyMailDatas: AutoReplyMailData[]
 }): boolean => {
-  return checkIfAdminPdfIsRequired() || checkIfRespondentFormSummaryIsRequired({
-    isPaymentEnabled,
-    autoReplyMailDatas,
-  })
+  return (
+    checkIfAdminPdfIsRequired() ||
+    checkIfRespondentFormSummaryIsRequired({
+      isPaymentEnabled,
+      autoReplyMailDatas,
+    })
+  )
 }
 
 const generatePdfAttachmentIfRequired = ({
@@ -182,10 +192,12 @@ const generatePdfAttachmentIfRequired = ({
     answer?: EmailAdminDataField['answer']
   })[]
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
-  if (!checkIfPdfGenerationIsRequired({
-    isPaymentEnabled,
-    autoReplyMailDatas,
-  })) {
+  if (
+    !checkIfPdfGenerationIsRequired({
+      isPaymentEnabled,
+      autoReplyMailDatas,
+    })
+  ) {
     return okAsync(undefined)
   }
 
@@ -199,10 +211,7 @@ const generatePdfAttachmentIfRequired = ({
     formUrl: `${config.app.appUrl}/${form._id}`,
   }
 
-  return generateAutoreplyPdf(
-    renderData,
-    true,
-  ).map((pdfBuffer) => ({
+  return generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
     filename: 'response.pdf',
     content: Buffer.copyBytesFrom(pdfBuffer),
   }))
@@ -284,11 +293,11 @@ export const performEncryptPostSubmissionActions = ({
       .andThen((form) => {
         const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
           ? respondentEmails?.map((val) => {
-            return {
-              email: val,
-              includeFormSummary: true,
-            }
-          })
+              return {
+                email: val,
+                includeFormSummary: true,
+              }
+            })
           : []
 
         // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
@@ -342,7 +351,8 @@ export const performEncryptPostSubmissionActions = ({
 
         return pdfAttachmentResult.andThen((pdfAttachment) => {
           void MailService.sendSubmissionToAdmin({
-            replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
+            replyToEmails:
+              EmailSubmissionService.extractEmailAnswers(emailFields),
             form,
             submission: {
               created: submission.created,
@@ -351,7 +361,9 @@ export const performEncryptPostSubmissionActions = ({
             attachments,
             formData: emailData.formData,
             dataCollationData,
-            pdfAttachment: checkIfAdminPdfIsRequired() ? pdfAttachment : undefined,
+            pdfAttachment: checkIfAdminPdfIsRequired()
+              ? pdfAttachment
+              : undefined,
           })
 
           return sendEmailConfirmations({
@@ -363,7 +375,9 @@ export const performEncryptPostSubmissionActions = ({
             pdfAttachment: checkIfRespondentFormSummaryIsRequired({
               isPaymentEnabled,
               autoReplyMailDatas: recipientEmailDatas,
-            }) ? pdfAttachment : undefined,
+            })
+              ? pdfAttachment
+              : undefined,
             isPaymentEnabled,
           }).mapErr((error) => {
             logger.error({

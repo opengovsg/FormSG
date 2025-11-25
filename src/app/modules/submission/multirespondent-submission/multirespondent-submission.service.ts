@@ -38,9 +38,7 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
-import {
-  AutoreplySummaryRenderData
-} from '../../../services/mail/mail.types'
+import { AutoreplySummaryRenderData } from '../../../services/mail/mail.types'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
@@ -86,11 +84,11 @@ export const checkFormIsMultirespondent = (
   return isFormMultirespondent(form)
     ? ok(form)
     : err(
-      new ResponseModeError(
-        FormResponseMode.Multirespondent,
-        form.responseMode,
-      ),
-    )
+        new ResponseModeError(
+          FormResponseMode.Multirespondent,
+          form.responseMode,
+        ),
+      )
 }
 
 const checkIsFormApproval = (
@@ -322,14 +320,20 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   currentStepNumber,
   submissionId,
 }: {
-  form: Pick<IPopulatedMultirespondentForm, '_id' | 'emails' | 'stepOneEmailNotificationFieldId' | 'stepsToNotify' | 'workflow'> & {
+  form: Pick<
+    IPopulatedMultirespondentForm,
+    | '_id'
+    | 'emails'
+    | 'stepOneEmailNotificationFieldId'
+    | 'stepsToNotify'
+    | 'workflow'
+  > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3,
-  currentStepNumber: number,
+  responses: FieldResponsesV3
+  currentStepNumber: number
   submissionId: string
 }): Result<string[], InvalidWorkflowTypeError> => {
-
   const logMeta = {
     action: 'getMrfOutcomeEmailsToNotify',
     formId: form._id?.toString(),
@@ -346,7 +350,9 @@ const getEmailsToNotifyAboutMrfOutcome = ({
     ? getEmailFromResponses(stepOneEmailNotificationFieldId, responses)
     : null
 
-  const respondentInStepOneEmailToNotify = respondentInStepOneToNotify ? [respondentInStepOneToNotify] : []
+  const respondentInStepOneEmailToNotify = respondentInStepOneToNotify
+    ? [respondentInStepOneToNotify]
+    : []
 
   // Emails to notify under the 'Other respondents in your workflow' setting
   const stepsToNotifyUpToCurrentStep = form.workflow.slice(
@@ -363,21 +369,29 @@ const getEmailsToNotifyAboutMrfOutcome = ({
       (workflowStep) => workflowStep !== undefined,
     ) as FormWorkflowStepDto[]
 
-  const otherRespondentsInYourWorkflowEmailsToNotifyResult = Result.combine(validWorkflowStepsToNotify.flatMap((workflowStep) => {
-    return retrieveWorkflowStepEmailAddresses(form, workflowStep, responses)
-  })).map((emails) => emails.flat())
+  const otherRespondentsInYourWorkflowEmailsToNotifyResult = Result.combine(
+    validWorkflowStepsToNotify.flatMap((workflowStep) => {
+      return retrieveWorkflowStepEmailAddresses(form, workflowStep, responses)
+    }),
+  ).map((emails) => emails.flat())
 
   if (otherRespondentsInYourWorkflowEmailsToNotifyResult.isErr()) {
     logger.error({
-      message: 'Failed to retrieve workflow step email addresses from non-step 1 workflow steps',
+      message:
+        'Failed to retrieve workflow step email addresses from non-step 1 workflow steps',
       meta: logMeta,
       error: otherRespondentsInYourWorkflowEmailsToNotifyResult.error,
     })
     return err(otherRespondentsInYourWorkflowEmailsToNotifyResult.error)
   }
 
-  const otherRespondentsInYourWorkflowEmailsToNotify = otherRespondentsInYourWorkflowEmailsToNotifyResult.value
-  return ok([...othersEmailsToNotify, ...respondentInStepOneEmailToNotify, ...otherRespondentsInYourWorkflowEmailsToNotify])
+  const otherRespondentsInYourWorkflowEmailsToNotify =
+    otherRespondentsInYourWorkflowEmailsToNotifyResult.value
+  return ok([
+    ...othersEmailsToNotify,
+    ...respondentInStepOneEmailToNotify,
+    ...otherRespondentsInYourWorkflowEmailsToNotify,
+  ])
 }
 
 const checkIsWorkflowCompleted = ({
@@ -422,8 +436,14 @@ const sendMrfOutcomeEmails = ({
   isApproval?: boolean
   isRejected?: boolean
   attachments?: IAttachmentInfo[]
-  pdfResult: ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError>
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError> => {
+  pdfResult: ResultAsync<
+    Mail.Attachment | undefined,
+    AutoreplyPdfGenerationError
+  >
+}): ResultAsync<
+  true,
+  InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
+> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
     formId: form._id?.toString(),
@@ -543,18 +563,20 @@ const sendMrfRespondentCopyEmails = ({
   attachments?: IAttachmentInfo[]
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
-  pdfResult: ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError>
+  pdfResult: ResultAsync<
+    Mail.Attachment | undefined,
+    AutoreplyPdfGenerationError
+  >
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
 > => {
-
   const respondentCopyEmailDatas = extractRespondentCopyEmailDatas({
     responses,
     formFields,
     currentStepActiveFields,
   })
-  // if no respondent copy email data, continue without sending any emails 
+  // if no respondent copy email data, continue without sending any emails
   if (!respondentCopyEmailDatas) {
     return okAsync(true)
   }
@@ -655,10 +677,10 @@ export const createMultiRespondentFormSubmission = ({
 
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
-          form,
-          nextStep,
-          encryptedPayload.responses,
-        )
+            form,
+            nextStep,
+            encryptedPayload.responses,
+          )
         : undefined
 
       if (
@@ -753,12 +775,22 @@ const checkIfRespondentFormSummaryIsRequired = ({
     formFields,
     currentStepActiveFields,
   })
-  return respondentCopyEmailDatas && respondentCopyEmailDatas.some(emailData => emailData.includeFormSummary)
+  return (
+    respondentCopyEmailDatas &&
+    respondentCopyEmailDatas.some((emailData) => emailData.includeFormSummary)
+  )
 }
 
 interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   currentStepNumber: number
-  form: Pick<IPopulatedMultirespondentForm, '_id' | 'workflow' | 'emails' | 'stepsToNotify' | 'stepOneEmailNotificationFieldId'> & {
+  form: Pick<
+    IPopulatedMultirespondentForm,
+    | '_id'
+    | 'workflow'
+    | 'emails'
+    | 'stepsToNotify'
+    | 'stepOneEmailNotificationFieldId'
+  > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
   responses: FieldResponsesV3
@@ -779,17 +811,26 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
     isRejected,
   })
 
-  const hasEmailsToSendMrfOutcomeNotification = getEmailsToNotifyAboutMrfOutcome({
-    form,
-    responses,
-    currentStepNumber,
-    submissionId,
-  })
+  const hasEmailsToSendMrfOutcomeNotification =
+    getEmailsToNotifyAboutMrfOutcome({
+      form,
+      responses,
+      currentStepNumber,
+      submissionId,
+    })
 
-  return isWorkflowCompleted && hasEmailsToSendMrfOutcomeNotification.isOk() && hasEmailsToSendMrfOutcomeNotification.value.length > 0
+  return (
+    isWorkflowCompleted &&
+    hasEmailsToSendMrfOutcomeNotification.isOk() &&
+    hasEmailsToSendMrfOutcomeNotification.value.length > 0
+  )
 }
 
-type CheckIsPdfGenerationRequiredArgs = Omit<CheckIfRespondentFormSummaryIsRequiredArgs, 'formFields'> & CheckIsWorkflowCompletionEmailPdfRequiredArgs
+type CheckIsPdfGenerationRequiredArgs = Omit<
+  CheckIfRespondentFormSummaryIsRequiredArgs,
+  'formFields'
+> &
+  CheckIsWorkflowCompletionEmailPdfRequiredArgs
 
 const checkIsPdfGenerationRequired = ({
   responses,
@@ -799,14 +840,20 @@ const checkIsPdfGenerationRequired = ({
   isRejected,
   submissionId,
 }: CheckIsPdfGenerationRequiredArgs): boolean => {
-  return checkIfRespondentFormSummaryIsRequired({ responses, formFields: form.form_fields, currentStepActiveFields })
-    || checkIsWorkflowCompletionEmailPdfRequired({
+  return (
+    checkIfRespondentFormSummaryIsRequired({
+      responses,
+      formFields: form.form_fields,
+      currentStepActiveFields,
+    }) ||
+    checkIsWorkflowCompletionEmailPdfRequired({
       currentStepNumber,
       form,
       responses,
       isRejected,
-      submissionId
+      submissionId,
     })
+  )
 }
 
 const generatePdfAttachmentIfRequired = ({
@@ -816,18 +863,32 @@ const generatePdfAttachmentIfRequired = ({
   currentStepActiveFields,
   currentStepNumber,
   isRejected,
-}:
-  CheckIsPdfGenerationRequiredArgs & {
-    submission: IMultirespondentSubmissionSchema
-    form: Pick<IPopulatedMultirespondentForm, '_id' | 'title' | 'workflow' | 'emails' | 'stepsToNotify' | 'stepOneEmailNotificationFieldId'> & {
-      form_fields: FormFieldSchema[] | FormFieldDto[]
-    }
+}: CheckIsPdfGenerationRequiredArgs & {
+  submission: IMultirespondentSubmissionSchema
+  form: Pick<
+    IPopulatedMultirespondentForm,
+    | '_id'
+    | 'title'
+    | 'workflow'
+    | 'emails'
+    | 'stepsToNotify'
+    | 'stepOneEmailNotificationFieldId'
+  > & {
+    form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
-
+}): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
   const submissionId = submission.id
 
-  if (!checkIsPdfGenerationRequired({ responses, form, currentStepActiveFields, currentStepNumber, isRejected, submissionId })) {
+  if (
+    !checkIsPdfGenerationRequired({
+      responses,
+      form,
+      currentStepActiveFields,
+      currentStepNumber,
+      isRejected,
+      submissionId,
+    })
+  ) {
     return okAsync(undefined)
   }
 
@@ -848,10 +909,12 @@ const generatePdfAttachmentIfRequired = ({
   }
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
-  const pdfResult = generateAutoreplyPdf(pdfRenderData, true).map((pdfBuffer) => ({
-    filename: DEFAULT_RESPONSE_PDF_FILENAME,
-    content: Buffer.copyBytesFrom(pdfBuffer),
-  }))
+  const pdfResult = generateAutoreplyPdf(pdfRenderData, true).map(
+    (pdfBuffer) => ({
+      filename: DEFAULT_RESPONSE_PDF_FILENAME,
+      content: Buffer.copyBytesFrom(pdfBuffer),
+    }),
+  )
 
   return pdfResult
 }
@@ -1027,10 +1090,10 @@ export const updateMultiRespondentFormSubmission = ({
           : null
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
-          snapshottedFormDef,
-          nextStep,
-          encryptedPayload.responses,
-        )
+            snapshottedFormDef,
+            nextStep,
+            encryptedPayload.responses,
+          )
         : undefined
 
       if (
@@ -1071,16 +1134,16 @@ export const updateMultiRespondentFormSubmission = ({
       }
       const submittedStepMeta = isApprovalForm
         ? ({
-          ...submittedStepMetaCommons,
-          status: isStepRejected
-            ? WorkflowStatus.REJECTED
-            : WorkflowStatus.APPROVED,
-          isApproval: true,
-        } as SubmittedApprovalStep)
+            ...submittedStepMetaCommons,
+            status: isStepRejected
+              ? WorkflowStatus.REJECTED
+              : WorkflowStatus.APPROVED,
+            isApproval: true,
+          } as SubmittedApprovalStep)
         : ({
-          ...submittedStepMetaCommons,
-          isApproval: false,
-        } as SubmittedNonApprovalStep)
+            ...submittedStepMetaCommons,
+            isApproval: false,
+          } as SubmittedNonApprovalStep)
 
       submission.submittedSteps = [
         ...(submission.submittedSteps ?? []),
@@ -1204,7 +1267,8 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepNumber,
     isRejected: isStepRejected,
     submissionId,
-    currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+    currentStepActiveFields:
+      snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
   })
 
   sendMrfRespondentCopyEmails({
@@ -1213,8 +1277,16 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submission,
     attachments,
     formFields: snapshottedFormDef.form_fields,
-    currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
-    pdfResult: checkIfRespondentFormSummaryIsRequired({ responses, formFields: snapshottedFormDef.form_fields, currentStepActiveFields: snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [] }) ? pdfResult : okAsync(undefined),
+    currentStepActiveFields:
+      snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+    pdfResult: checkIfRespondentFormSummaryIsRequired({
+      responses,
+      formFields: snapshottedFormDef.form_fields,
+      currentStepActiveFields:
+        snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+    })
+      ? pdfResult
+      : okAsync(undefined),
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1249,7 +1321,15 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
-    pdfResult: checkIsWorkflowCompletionEmailPdfRequired({ currentStepNumber, form: snapshottedFormDef, responses, isRejected: isStepRejected, submissionId }) ? pdfResult : okAsync(undefined),
+    pdfResult: checkIsWorkflowCompletionEmailPdfRequired({
+      currentStepNumber,
+      form: snapshottedFormDef,
+      responses,
+      isRejected: isStepRejected,
+      submissionId,
+    })
+      ? pdfResult
+      : okAsync(undefined),
   })
     .mapErr((error) => {
       logger.error({

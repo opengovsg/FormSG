@@ -12,7 +12,7 @@ import {
   uniqBy,
 } from 'lodash'
 import mongoose from 'mongoose'
-import { Result, err, ok } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 import { handleAddressResponseDisplay } from 'shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
@@ -26,8 +26,8 @@ import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
-  FieldResponseV3,
   FieldResponsesV3,
+  FieldResponseV3,
   FormAuthType,
   FormField,
   FormFieldDto,
@@ -1175,7 +1175,7 @@ export const getPdfResponsesData = ({
     return {
       question: questionAnswerPair.question,
       answerTemplate: [questionAnswerPair.answer],
-      answer: questionAnswerPair.signatureDataPngDataUri
+      answer: questionAnswerPair.signatureDataPngDataUri,
     }
   })
 }

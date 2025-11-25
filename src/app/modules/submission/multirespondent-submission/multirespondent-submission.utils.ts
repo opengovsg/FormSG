@@ -120,7 +120,7 @@ const getConditionalFieldEmailRecipient = (
 
   const emailRecipients =
     conditionalField?.optionsToRecipientsMap?.[
-    conditionalFieldResponse.answer
+      conditionalFieldResponse.answer
     ] ?? []
 
   return emailRecipients
@@ -250,14 +250,19 @@ export const extractRespondentCopyEmailDatas = ({
       'value' in response.answer &&
       typeof response.answer.value === 'string'
     ) {
-      const { autoReplyMessage, autoReplySubject, autoReplySender, includeFormSummary } = field.autoReplyOptions
+      const {
+        autoReplyMessage,
+        autoReplySubject,
+        autoReplySender,
+        includeFormSummary,
+      } = field.autoReplyOptions
       return [
         {
           email: response.answer.value,
           subject: autoReplySubject,
           sender: autoReplySender,
           body: autoReplyMessage,
-          includeFormSummary
+          includeFormSummary,
         },
       ]
     }

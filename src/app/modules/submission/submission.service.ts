@@ -1220,8 +1220,8 @@ export type TriggerGuardDutyScanThenDownloadCleanFileChainError =
  */
 export const triggerGuardDutyScanThenDownloadCleanFileChain = <
   T extends
-  | ParsedClearAttachmentResponse
-  | ParsedClearAttachmentFieldResponseV3,
+    | ParsedClearAttachmentResponse
+    | ParsedClearAttachmentFieldResponseV3,
 >(
   response: T,
   formId: string,
