@@ -17,7 +17,6 @@ import {
 } from '../../../../../shared/types'
 import {
   IAttachmentInfo,
-  IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
@@ -35,7 +34,6 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
-import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -56,7 +54,6 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
-import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
@@ -778,50 +775,7 @@ const _createSubmission = async ({
   })
 
   const createdTime = submission.created || new Date()
-
-  const logMetaWithSubmission = {
-    ...logMeta,
-    submissionId,
-    responseMetadata,
-  }
-
-  const emailData = new SubmissionEmailObj(
-    emailFields,
-    new Set(), // the MyInfo prefixes are already inserted in middleware
-    form.authType,
-  )
-
-  // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
-  // we want to remove it for the dataCollationData
-  const dataCollationData = emailData.dataCollationData.map((item) => ({
-    question: item.question.startsWith(MYINFO_PREFIX)
-      ? item.question.slice(MYINFO_PREFIX.length)
-      : item.question,
-    answer: item.answer,
-  }))
-
   const emailAttachments = [...(unencryptedAttachments ?? [])]
-  // We don't await for email submission, as the submission gets saved for encrypt
-  // submissions regardless, the email is more of a notification and shouldn't
-  // stop the storage of the data in the db
-  if (((form as IEncryptedForm)?.emails || []).length > 0) {
-    logger.info({
-      message: 'Sending admin notification mail',
-      meta: logMetaWithSubmission,
-    })
-
-    void MailService.sendSubmissionToAdmin({
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
-      form,
-      submission: {
-        created: createdTime,
-        id: submission.id,
-      },
-      attachments: emailAttachments,
-      formData: emailData.formData,
-      dataCollationData,
-    })
-  }
 
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
@@ -847,7 +801,7 @@ const _createSubmission = async ({
     submission,
     responses,
     growthbook: req.growthbook,
-    emailData,
+    emailFields, 
     attachments: emailAttachments,
     respondentEmails,
   })

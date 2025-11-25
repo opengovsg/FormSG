@@ -737,17 +737,17 @@ export const createMultiRespondentFormSubmission = ({
     })
 }
 
-interface CheckHasRespondentCopyFormSummaryArgs {
+interface CheckIfRespondentFormSummaryIsRequiredArgs {
   responses: FieldResponsesV3
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }
 
-const checkHasRespondentCopyFormSummary = ({
+const checkIfRespondentFormSummaryIsRequired = ({
   responses,
   formFields,
   currentStepActiveFields,
-}: CheckHasRespondentCopyFormSummaryArgs): boolean => {
+}: CheckIfRespondentFormSummaryIsRequiredArgs): boolean => {
   const respondentCopyEmailDatas = extractRespondentCopyEmailDatas({
     responses,
     formFields,
@@ -756,7 +756,7 @@ const checkHasRespondentCopyFormSummary = ({
   return respondentCopyEmailDatas && respondentCopyEmailDatas.some(emailData => emailData.includeFormSummary)
 }
 
-interface CheckIsWorkflowCompletionEmailRequiredArgs {
+interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   currentStepNumber: number
   form: Pick<IPopulatedMultirespondentForm, '_id' | 'workflow' | 'emails' | 'stepsToNotify' | 'stepOneEmailNotificationFieldId'> & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
@@ -766,13 +766,13 @@ interface CheckIsWorkflowCompletionEmailRequiredArgs {
   submissionId: string
 }
 
-const checkIsWorkflowCompletionEmailRequired = ({
+const checkIsWorkflowCompletionEmailPdfRequired = ({
   currentStepNumber,
   form,
   responses,
   isRejected,
   submissionId,
-}: CheckIsWorkflowCompletionEmailRequiredArgs) => {
+}: CheckIsWorkflowCompletionEmailPdfRequiredArgs) => {
   const isWorkflowCompleted = checkIsWorkflowCompleted({
     currentStepNumber,
     form,
@@ -789,7 +789,7 @@ const checkIsWorkflowCompletionEmailRequired = ({
   return isWorkflowCompleted && hasEmailsToSendMrfOutcomeNotification.isOk() && hasEmailsToSendMrfOutcomeNotification.value.length > 0
 }
 
-type CheckIsPdfGenerationRequiredArgs = Omit<CheckHasRespondentCopyFormSummaryArgs, 'formFields'> & CheckIsWorkflowCompletionEmailRequiredArgs
+type CheckIsPdfGenerationRequiredArgs = Omit<CheckIfRespondentFormSummaryIsRequiredArgs, 'formFields'> & CheckIsWorkflowCompletionEmailPdfRequiredArgs
 
 const checkIsPdfGenerationRequired = ({
   responses,
@@ -799,8 +799,8 @@ const checkIsPdfGenerationRequired = ({
   isRejected,
   submissionId,
 }: CheckIsPdfGenerationRequiredArgs): boolean => {
-  return checkHasRespondentCopyFormSummary({ responses, formFields: form.form_fields, currentStepActiveFields })
-    || checkIsWorkflowCompletionEmailRequired({
+  return checkIfRespondentFormSummaryIsRequired({ responses, formFields: form.form_fields, currentStepActiveFields })
+    || checkIsWorkflowCompletionEmailPdfRequired({
       currentStepNumber,
       form,
       responses,
@@ -809,7 +809,7 @@ const checkIsPdfGenerationRequired = ({
     })
 }
 
-const generatePdfIfRequired = ({
+const generatePdfAttachmentIfRequired = ({
   submission,
   form,
   responses,
@@ -882,7 +882,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submissionId,
   }
 
-  const pdfResult = generatePdfIfRequired({
+  const pdfResult = generatePdfAttachmentIfRequired({
     submission,
     form,
     responses,
@@ -1197,7 +1197,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       })
   }
 
-  const pdfResult = generatePdfIfRequired({
+  const pdfResult = generatePdfAttachmentIfRequired({
     submission,
     form: snapshottedFormDef,
     responses,

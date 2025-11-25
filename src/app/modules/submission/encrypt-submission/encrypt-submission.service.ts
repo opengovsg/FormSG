@@ -4,6 +4,8 @@ import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
 import { AutoReplyMailData } from 'src/app/services/mail/mail.types'
+import MailService from '../../../services/mail/mail.service'
+import * as EmailSubmissionService from '../email-submission/email-submission.service'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -12,10 +14,9 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import {
-  FieldResponse,
-  IEncryptedSubmissionSchema,
+  FieldResponse, IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
-  IPopulatedForm,
+  IPopulatedForm
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
@@ -41,6 +42,9 @@ import {
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
 
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
+import { ProcessedFieldResponse } from '../submission.types'
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
 
@@ -98,10 +102,10 @@ export const assertFormIsSingleSubmissionDisabled = (
   return !form.isSingleSubmission
     ? ok(form)
     : err(
-        new UnsupportedSettingsError(
-          'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
-        ),
-      )
+      new UnsupportedSettingsError(
+        'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
+      ),
+    )
 }
 
 /**
@@ -131,6 +135,26 @@ export const createEncryptSubmissionWithoutSave = ({
   })
 }
 
+const checkIfAdminPdfIsRequired = (): boolean => {
+  return false
+}
+
+const checkIfRespondentFormSummaryIsRequired = (): boolean => {
+  return false
+}
+
+const checkIfPdfGenerationIsRequired = (): boolean => {
+  return checkIfAdminPdfIsRequired() || checkIfRespondentFormSummaryIsRequired()
+}
+
+const generatePdfAttachmentIfRequired = (): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
+  if (!checkIfPdfGenerationIsRequired()) {
+    return okAsync(undefined)
+  }
+  
+  return okAsync(undefined)
+}
+
 /**
  * Performs the post-submission actions for encrypt submissions. This is to be
  * called when the submission is completed
@@ -149,14 +173,14 @@ export const performEncryptPostSubmissionActions = ({
   submission,
   responses,
   growthbook,
-  emailData,
+  emailFields,
   attachments,
   respondentEmails,
 }: {
   submission: IEncryptedSubmissionSchema
   responses: FieldResponse[]
   growthbook?: GrowthBook
-  emailData?: SubmissionEmailObj
+  emailFields: ProcessedFieldResponse[]
   attachments?: Mail.Attachment[]
   respondentEmails?: string[]
 }): ResultAsync<
@@ -207,11 +231,11 @@ export const performEncryptPostSubmissionActions = ({
       .andThen((form) => {
         const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
           ? respondentEmails?.map((val) => {
-              return {
-                email: val,
-                includeFormSummary: true,
-              }
-            })
+            return {
+              email: val,
+              includeFormSummary: true,
+            }
+          })
           : []
 
         // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
@@ -230,25 +254,60 @@ export const performEncryptPostSubmissionActions = ({
           },
         })
 
-        return sendEmailConfirmations({
-          form,
-          submission,
-          attachments,
-          responsesData: emailData?.autoReplyData,
-          recipientData: [
-            ...extractEmailConfirmationData(responses, form.form_fields),
-            ...respondentCopyEmailData,
-          ],
-          isUseLambdaOutput,
-        }).mapErr((error) => {
-          logger.error({
-            message: 'Error while sending email confirmations',
-            meta: {
-              action: 'sendEmailAutoReplies',
+        const emailData = new SubmissionEmailObj(
+          emailFields,
+          new Set(), // the MyInfo prefixes are already inserted in middleware
+          form.authType,
+        )
+
+        // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
+        // we want to remove it for the dataCollationData
+        const dataCollationData = emailData.dataCollationData.map((item) => ({
+          question: item.question.startsWith(MYINFO_PREFIX)
+            ? item.question.slice(MYINFO_PREFIX.length)
+            : item.question,
+          answer: item.answer,
+        }))
+
+        const pdfAttachmentResult = generatePdfAttachmentIfRequired()
+
+        return pdfAttachmentResult.andThen((pdfAttachment) => {
+          if (pdfAttachment) {
+            attachments = [...(attachments ?? []), pdfAttachment]
+          }
+
+          void MailService.sendSubmissionToAdmin({
+            replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
+            form,
+            submission: {
+              created: submission.created,
+              id: submission.id,
             },
-            error,
+            attachments,
+            formData: emailData.formData,
+            dataCollationData,
           })
-          return error
+
+          return sendEmailConfirmations({
+            form,
+            submission,
+            attachments,
+            responsesData: emailData?.autoReplyData,
+            recipientData: [
+              ...extractEmailConfirmationData(responses, form.form_fields),
+              ...respondentCopyEmailData,
+            ],
+            isUseLambdaOutput,
+          }).mapErr((error) => {
+            logger.error({
+              message: 'Error while sending email confirmations',
+              meta: {
+                action: 'sendEmailAutoReplies',
+              },
+              error,
+            })
+            return error
+          })
         })
       })
   )

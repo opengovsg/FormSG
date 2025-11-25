@@ -2,7 +2,7 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { err, errAsync, fromPromise, Result, ResultAsync } from 'neverthrow'
+import { Result, ResultAsync, err, errAsync, fromPromise, okAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -14,11 +14,10 @@ import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   BounceType,
-  EmailAdminDataField,
-  IFormHasEmailSchema,
+  EmailAdminDataField, IFormHasEmailSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
-  ISubmissionSchema,
+  ISubmissionSchema
 } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -248,9 +247,9 @@ export class MailService {
           ...mail,
           headers: config.mail.sesConfigSet
             ? {
-                'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
-                ...mail.headers,
-              }
+              'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
+              ...mail.headers,
+            }
             : mail.headers,
         },
         {
@@ -700,6 +699,22 @@ export class MailService {
       answer: string | number
     }[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const logMeta = {
+      action: 'sendSubmissionToAdmin',
+      formId: form._id,
+      submissionId: submission.id,
+    }
+
+    const adminEmailsToNotify = form.emails
+    if (!adminEmailsToNotify) {
+      return okAsync(true)
+    }
+
+    logger.info({
+      message: 'Sending admin notification mail',
+      meta: logMeta,
+    })
+
     const refNo = String(submission.id)
     const formTitle = form.title
     const submissionTime = moment(submission.created)
