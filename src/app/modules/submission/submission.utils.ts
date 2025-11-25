@@ -12,7 +12,7 @@ import {
   uniqBy,
 } from 'lodash'
 import mongoose from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
+import { Result, err, ok } from 'neverthrow'
 import { handleAddressResponseDisplay } from 'shared/utils/address'
 import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
 
@@ -26,8 +26,8 @@ import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
-  FieldResponsesV3,
   FieldResponseV3,
+  FieldResponsesV3,
   FormAuthType,
   FormField,
   FormFieldDto,
@@ -170,7 +170,6 @@ import {
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from './submission.types'
-import { questionMargin } from 'src/app/views/templates/mrfWorkflowCompletionEmailStyle'
 
 const logger = createLoggerWithLabel(module)
 
