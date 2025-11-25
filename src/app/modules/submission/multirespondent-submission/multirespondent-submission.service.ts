@@ -521,7 +521,7 @@ const sendMrfRespondentCopyEmails = ({
         filename: 'response.pdf',
         content: Buffer.copyBytesFrom(pdfBuffer),
       }))
-    : okAsync<Mail.Attachment | undefined>(undefined)
+    : okAsync(undefined)
 
   return pdfResult.andThen((responsePdf) => {
     const recipientAttachments = [
