@@ -170,6 +170,7 @@ import {
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from './submission.types'
+import { questionMargin } from 'src/app/views/templates/mrfWorkflowCompletionEmailStyle'
 
 const logger = createLoggerWithLabel(module)
 
@@ -1175,9 +1176,7 @@ export const getPdfResponsesData = ({
     return {
       question: questionAnswerPair.question,
       answerTemplate: [questionAnswerPair.answer],
-      ...(questionAnswerPair.signatureDataPngDataUri && {
-        answer: questionAnswerPair.signatureDataPngDataUri,
-      }),
+      answer: questionAnswerPair.signatureDataPngDataUri
     }
   })
 }
