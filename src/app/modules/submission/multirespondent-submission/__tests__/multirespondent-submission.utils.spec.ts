@@ -42,10 +42,10 @@ import {
 
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
+import { getQuestionAnswerPairsForMultipleFields } from '../../submission.utils'
 import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
-  getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -430,7 +430,10 @@ describe('multirespondent-submission.utils', () => {
         } as EmailResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         { question: 'Short Text', answer: 'Test answer' },
@@ -454,7 +457,10 @@ describe('multirespondent-submission.utils', () => {
         } as AttachmentResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         { question: '[Attachment] File Upload', answer: 'file.pdf' },
@@ -499,7 +505,10 @@ describe('multirespondent-submission.utils', () => {
         } as TableResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         {
@@ -539,7 +548,10 @@ describe('multirespondent-submission.utils', () => {
         } as CheckboxResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
@@ -570,7 +582,10 @@ describe('multirespondent-submission.utils', () => {
         } as AddressResponseV3,
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         {
@@ -599,7 +614,10 @@ describe('multirespondent-submission.utils', () => {
         },
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         {
@@ -618,7 +636,10 @@ describe('multirespondent-submission.utils', () => {
         },
       }
 
-      const result = getQuestionTitleAnswerString({ formFields, responses })
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
 
       expect(result).toEqual([
         {
@@ -845,7 +866,10 @@ describe('multirespondent-submission.utils', () => {
       } as ShortTextResponseV3,
     }
 
-    const result = getQuestionTitleAnswerString({ formFields, responses })
+    const result = getQuestionAnswerPairsForMultipleFields({
+      formFields,
+      responses,
+    })
 
     expect(result).toEqual([])
   })
@@ -859,13 +883,13 @@ describe('multirespondent-submission.utils', () => {
       } as IShortTextFieldSchema,
     ]
 
-    const undefinedResult = getQuestionTitleAnswerString({
+    const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: undefined as unknown as FieldResponsesV3,
     })
     expect(undefinedResult).toEqual([])
 
-    const nullResult = getQuestionTitleAnswerString({
+    const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
       responses: null as unknown as FieldResponsesV3,
     })

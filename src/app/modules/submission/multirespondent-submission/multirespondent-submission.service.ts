@@ -61,15 +61,17 @@ import {
 } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { AttachmentMetadata } from '../submission.types'
-import { getMrfSubmissionWorkflowStatus } from '../submission.utils'
+import {
+  getMrfSubmissionWorkflowStatus,
+  getPdfResponsesData,
+  getQuestionAnswerPairsForMultipleFields,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   extractRespondentCopyEmails,
   getEmailFromResponses,
-  getPdfResponsesData,
-  getQuestionTitleAnswerString,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
 
@@ -412,7 +414,7 @@ const sendMrfOutcomeEmails = ({
           return okAsync(true)
         }
 
-        const formQuestionAnswers = getQuestionTitleAnswerString({
+        const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
         })
@@ -491,7 +493,7 @@ const sendMrfRespondentCopyEmails = ({
     .format('ddd, DD MMM YYYY hh:mm:ss A')
   const formUrl: string = `${config.app.appUrl}/${form._id}`
 
-  const formQuestionAnswers = getQuestionTitleAnswerString({
+  const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
   })
