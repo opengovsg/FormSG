@@ -11,13 +11,13 @@ import {
 } from 'shared/types'
 
 import MailService from 'src/app/services/mail/mail.service'
+import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
   IMultirespondentSubmissionSchema,
   IPopulatedMultirespondentForm,
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
-import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
@@ -34,7 +34,9 @@ jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
 
 const MockMailUtils = jest.mocked(MailUtils)
-MockMailUtils.generateAutoreplyPdf.mockReturnValue(okAsync(Buffer.from('mock pdf buffer')))
+MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+  okAsync(Buffer.from('mock pdf buffer')),
+)
 
 describe('multirespondent-submission.service', () => {
   beforeAll(async () => {

@@ -468,7 +468,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -608,7 +610,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -676,9 +680,11 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
         responsesData: [],
         autoReplyMailDatas: expectedAutoReplyData,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
       })
       expect(result._unsafeUnwrap()).toBe(true)
     })
@@ -828,13 +834,13 @@ describe('submission.service', () => {
       expect(result._unsafeUnwrap()).toBe(true)
     })
 
-    it('should generate pdfAttachment when form summary for respondent is enabled', async () => {})
+    it('should generate pdfAttachment when form summary for respondent is enabled', async () => { })
 
-    it('should not generate pdfAttachment for payment form', () => {})
+    it('should not generate pdfAttachment for payment form', () => { })
 
-    it('should generate pdfAttachment for admin email notification', () => {})
+    it('should generate pdfAttachment for admin email notification', () => { })
 
-    it('should return pdf generation error when pdf generation fails', () => {})
+    it('should return pdf generation error when pdf generation fails', () => { })
 
     it('should return SendEmailConfirmationError when mail service errors', async () => {
       const mockForm = {
@@ -2865,7 +2871,11 @@ describe('submission.service', () => {
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, '', 'mock-bucket-name')
+      const actualResult = await downloadCleanFile(
+        MOCK_VALID_UUID,
+        '',
+        'mock-bucket-name',
+      )
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
@@ -2900,7 +2910,11 @@ describe('submission.service', () => {
 
       // Act
       // empty strings for invalid keys and version ids
-      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, versionId, 'mock-bucket-name')
+      const actualResult = await downloadCleanFile(
+        MOCK_VALID_UUID,
+        versionId,
+        'mock-bucket-name',
+      )
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()

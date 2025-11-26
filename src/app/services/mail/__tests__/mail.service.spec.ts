@@ -12,10 +12,7 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
-import {
-  BounceType, IPopulatedForm,
-  ISubmissionSchema
-} from 'src/types'
+import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
 
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
@@ -377,8 +374,7 @@ describe('mail.service', () => {
         created: new Date(),
       },
       submissionAttachments: [],
-      pdfAttachment:
-      {
+      pdfAttachment: {
         filename: 'test.pdf',
         content: Buffer.from('this is a test file'),
         fieldId: 'test-field-id',
@@ -417,7 +413,12 @@ describe('mail.service', () => {
         from: MOCK_SENDER_STRING,
         subject: `formsg-auto: ${MOCK_VALID_SUBMISSION_PARAMS.form.title} (#${MOCK_VALID_SUBMISSION_PARAMS.submission.id})`,
         html: expectedHtml,
-        attachments: [...MOCK_VALID_SUBMISSION_PARAMS.submissionAttachments, ...(MOCK_VALID_SUBMISSION_PARAMS.pdfAttachment ? [MOCK_VALID_SUBMISSION_PARAMS.pdfAttachment] : [])],
+        attachments: [
+          ...MOCK_VALID_SUBMISSION_PARAMS.submissionAttachments,
+          ...(MOCK_VALID_SUBMISSION_PARAMS.pdfAttachment
+            ? [MOCK_VALID_SUBMISSION_PARAMS.pdfAttachment]
+            : []),
+        ],
         headers: {
           // Hardcode in tests in case something changes this.
           'X-Formsg-Email-Type': 'Admin (response)',
@@ -1021,7 +1022,10 @@ describe('mail.service', () => {
         ...defaultExpectedArg,
         html: expectedMailBody,
         // Attachments should not be concatted with mock pdf response
-        attachments: [...(MOCK_AUTOREPLY_PARAMS_PAYMENT_ENABLED.submissionAttachments ?? [])],
+        attachments: [
+          ...(MOCK_AUTOREPLY_PARAMS_PAYMENT_ENABLED.submissionAttachments ??
+            []),
+        ],
       }
       const expectedResponse = await Promise.allSettled([ok(true)])
 

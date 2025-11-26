@@ -2,17 +2,32 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
+import { ok, okAsync } from 'neverthrow'
+import {
+  BasicField,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+  PaymentChannel,
+} from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
-import { FormFieldSchema, IAttachmentInfo, IEncryptedSubmissionSchema, IPopulatedEncryptedForm, SgidFieldTitle } from 'src/types'
-
-import { ok, okAsync } from 'neverthrow'
 import * as FormService from 'src/app/modules/form/form.service'
 import MailService from 'src/app/services/mail/mail.service'
-import { createEncryptSubmissionWithoutSave, performEncryptPostSubmissionActions } from '../encrypt-submission.service'
-import { BasicField, FieldResponse, FormAuthType, FormResponseMode, MyInfoAttribute, PaymentChannel } from 'shared/types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
+import {
+  FormFieldSchema,
+  IAttachmentInfo,
+  IEncryptedSubmissionSchema,
+  IPopulatedEncryptedForm,
+  SgidFieldTitle,
+} from 'src/types'
+
 import { ProcessedFieldResponse } from '../../submission.types'
+import {
+  createEncryptSubmissionWithoutSave,
+  performEncryptPostSubmissionActions,
+} from '../encrypt-submission.service'
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
@@ -68,7 +83,6 @@ describe('encrypt-submission.service', () => {
   })
 
   describe('performEncryptPostSubmissionActions', () => {
-
     const MOCK_NON_PAYMENT_ENCRYPT_FORM = {
       _id: new ObjectId(),
       title: 'Test Form',
@@ -86,16 +100,16 @@ describe('encrypt-submission.service', () => {
     } as IPopulatedEncryptedForm
 
     describe('pdfAttachment generation', () => {
-      it('should generate pdf attachment if required and sendSubmissionToAdmin with pdf attachment', async () => { })
+      it('should generate pdf attachment if required and sendSubmissionToAdmin with pdf attachment', async () => {})
 
-      it('should not generate pdf attachment if not required and sendSubmissionToAdmin without pdf attachment', async () => { })
+      it('should not generate pdf attachment if not required and sendSubmissionToAdmin without pdf attachment', async () => {})
     })
 
     describe('sendEmailConfirmations', () => {
       describe('pdfAttachment', () => {
-        it('should pass pdf attachment to sendEmailConfirmations if required', async () => { })
+        it('should pass pdf attachment to sendEmailConfirmations if required', async () => {})
 
-        it('should not pass pdf attachment to sendEmailConfirmations if not required, even if it exists', async () => { })
+        it('should not pass pdf attachment to sendEmailConfirmations if not required, even if it exists', async () => {})
       })
     })
 
@@ -103,19 +117,23 @@ describe('encrypt-submission.service', () => {
       beforeEach(() => {
         jest.clearAllMocks()
         MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
-        MockFormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM))
-        MockMailUtils.generateAutoreplyPdf.mockReturnValue(okAsync(Buffer.from('mock pdf buffer')))
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          okAsync(Buffer.from('mock pdf buffer')),
+        )
       })
 
       describe('pdfAttachment', () => {
-        it('should pass pdf attachment to sendSubmissionToAdmin if required', async () => { })
+        it('should pass pdf attachment to sendSubmissionToAdmin if required', async () => {})
 
-        it('should not pass pdf attachment to sendSubmissionToAdmin if not required, even if it exists', async () => { })
+        it('should not pass pdf attachment to sendSubmissionToAdmin if not required, even if it exists', async () => {})
       })
 
       describe('emailFields', () => {
         it('should include nric field in notification email if provided', async () => {
-          // Arrange 
+          // Arrange
           const MOCK_NRIC = 'S1234567A'
           const mockSubmission = {
             _id: new ObjectId(),
@@ -133,29 +151,36 @@ describe('encrypt-submission.service', () => {
           ]
 
           // Act
-          const postSubmissionActionStatus = await performEncryptPostSubmissionActions({
-            submission: mockSubmission,
-            responses: mockResponses,
-            emailFields: mockResponses,
-            submissionAttachments: [],
-            respondentEmails: [],
-          })
+          const postSubmissionActionStatus =
+            await performEncryptPostSubmissionActions({
+              submission: mockSubmission,
+              responses: mockResponses,
+              emailFields: mockResponses,
+              submissionAttachments: [],
+              respondentEmails: [],
+            })
 
           // Assert
           expect(postSubmissionActionStatus).toEqual(ok(true))
 
-          expect(MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData).toEqual
-          expect.arrayContaining([
-            expect.objectContaining({
-              answer: MOCK_NRIC,
-              fieldType: BasicField.Nric,
-              isVisible: true,
-              question: SgidFieldTitle.SgidNric,
-            }),
-          ])
+          expect(
+            MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
+          ).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                answer: MOCK_NRIC,
+                fieldType: BasicField.Nric,
+                isVisible: true,
+                question: SgidFieldTitle.SgidNric,
+              }),
+            ]),
+          )
 
           // Does not contain any other fields
-          expect(MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData.length).toEqual(1)
+          expect(
+            MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData
+              .length,
+          ).toEqual(1)
         })
       })
 
@@ -171,14 +196,14 @@ describe('encrypt-submission.service', () => {
           } as IEncryptedSubmissionSchema
 
           // Act
-          const postSubmissionActionStatus = await performEncryptPostSubmissionActions({
-            submission: mockSubmission,
-            responses: [],
-            emailFields: [],
-            submissionAttachments: noAttachments,
-            respondentEmails: [],
-          })
-
+          const postSubmissionActionStatus =
+            await performEncryptPostSubmissionActions({
+              submission: mockSubmission,
+              responses: [],
+              emailFields: [],
+              submissionAttachments: noAttachments,
+              respondentEmails: [],
+            })
 
           // Assert
           expect(postSubmissionActionStatus).toEqual(ok(true))
@@ -224,10 +249,9 @@ describe('encrypt-submission.service', () => {
         })
       })
 
-
       describe('dataCollationData', () => {
         it('should pass expected dataCollationData to sendSubmissionToAdmin', async () => {
-          // Arrange  
+          // Arrange
           const mockResponses: ProcessedFieldResponse[] = [
             {
               _id: new ObjectId().toHexString(),

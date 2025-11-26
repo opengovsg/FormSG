@@ -108,10 +108,10 @@ export const assertFormIsSingleSubmissionDisabled = (
   return !form.isSingleSubmission
     ? ok(form)
     : err(
-      new UnsupportedSettingsError(
-        'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
-      ),
-    )
+        new UnsupportedSettingsError(
+          'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
+        ),
+      )
 }
 
 /**
@@ -257,109 +257,111 @@ export const performEncryptPostSubmissionActions = ({
     submissionId: submission.id,
   }
 
-  return (
-    FormService.retrieveFullFormById(submission.form)
-      .andThen(checkFormIsEncryptMode)
-      .andThen((form) => {
-        // Fire webhooks if available
-        // To avoid being coupled to latency of receiving system,
-        // do not await on webhook
-        const webhookUrl = form.webhook?.url
-        if (!webhookUrl) return okAsync(form)
+  return FormService.retrieveFullFormById(submission.form)
+    .andThen(checkFormIsEncryptMode)
+    .andThen((form) => {
+      // Fire webhooks if available
+      // To avoid being coupled to latency of receiving system,
+      // do not await on webhook
+      const webhookUrl = form.webhook?.url
+      if (!webhookUrl) return okAsync(form)
 
-        return WebhookFactory.sendInitialWebhook(
-          submission,
-          webhookUrl,
-          !!form.webhook?.isRetryEnabled,
-        ).andThen(() => okAsync(form))
-      })
-      .andThen((form) => {
-        const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
-          ? respondentEmails?.map((val) => {
+      return WebhookFactory.sendInitialWebhook(
+        submission,
+        webhookUrl,
+        !!form.webhook?.isRetryEnabled,
+      ).andThen(() => okAsync(form))
+    })
+    .andThen((form) => {
+      const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
+        ? respondentEmails?.map((val) => {
             return {
               email: val,
               includeFormSummary: true,
             }
           })
-          : []
+        : []
 
-        const emailData = new SubmissionEmailObj(
-          emailFields,
-          new Set(), // the MyInfo prefixes are already inserted in middleware
-          form.authType,
-        )
+      const emailData = new SubmissionEmailObj(
+        emailFields,
+        new Set(), // the MyInfo prefixes are already inserted in middleware
+        form.authType,
+      )
 
-        // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
-        // we want to remove it for the dataCollationData
-        const dataCollationData = emailData.dataCollationData.map((item) => ({
-          question: item.question.startsWith(MYINFO_PREFIX)
-            ? item.question.slice(MYINFO_PREFIX.length)
-            : item.question,
-          answer: item.answer,
-        }))
+      // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
+      // we want to remove it for the dataCollationData
+      const dataCollationData = emailData.dataCollationData.map((item) => ({
+        question: item.question.startsWith(MYINFO_PREFIX)
+          ? item.question.slice(MYINFO_PREFIX.length)
+          : item.question,
+        answer: item.answer,
+      }))
 
-        const recipientEmailDatas = [
-          ...extractEmailConfirmationData(responses, form.form_fields),
-          ...respondentCopyEmailData,
-        ]
+      const recipientEmailDatas = [
+        ...extractEmailConfirmationData(responses, form.form_fields),
+        ...respondentCopyEmailData,
+      ]
 
-        const isPaymentEnabled =
-          form.responseMode === FormResponseMode.Encrypt &&
-          form.payments_channel.channel !== PaymentChannel.Unconnected &&
-          form.payments_field.enabled === true
+      const isPaymentEnabled =
+        form.responseMode === FormResponseMode.Encrypt &&
+        form.payments_channel.channel !== PaymentChannel.Unconnected &&
+        form.payments_field.enabled === true
 
-        const pdfAttachmentResult = generatePdfAttachmentIfRequired({
-          isPaymentEnabled,
-          autoReplyMailDatas: recipientEmailDatas,
-          submission,
-          form,
-          responsesData: emailData.formData,
-        })
-
-        return pdfAttachmentResult.andThen((pdfAttachment) => {
-          return ResultAsync.combine([
-            MailService.sendSubmissionToAdmin({
-              replyToEmails:
-                EmailSubmissionService.extractEmailAnswers(emailFields),
-              form,
-              submission: {
-                created: submission.created,
-                id: submission.id,
-              },
-              submissionAttachments,
-              formData: emailData.formData,
-              dataCollationData,
-              pdfAttachment: checkIfAdminPdfIsRequired()
-                ? pdfAttachment
-                : undefined,
-            }).mapErr(error => {
-              logger.error({
-                message: 'Error while sending submission notification email to admin',
-                meta: logMeta,
-                error,
-              })
-              return error
-            }),
-            sendEmailConfirmations({
-              form,
-              submission,
-              submissionAttachments,
-              recipientData: recipientEmailDatas,
-              pdfAttachment: checkIfRespondentFormSummaryIsRequired({
-                isPaymentEnabled,
-                autoReplyMailDatas: recipientEmailDatas,
-              }) ? pdfAttachment : undefined,
-              isPaymentEnabled,
-            }).mapErr(error => {
-              logger.error({
-                message: 'Error while sending email confirmations to respondents',
-                meta: logMeta,
-                error,
-              })
-              return error
-            }),
-          ])
-        })
+      const pdfAttachmentResult = generatePdfAttachmentIfRequired({
+        isPaymentEnabled,
+        autoReplyMailDatas: recipientEmailDatas,
+        submission,
+        form,
+        responsesData: emailData.formData,
       })
-  ).map(() => true)
+
+      return pdfAttachmentResult.andThen((pdfAttachment) => {
+        return ResultAsync.combine([
+          MailService.sendSubmissionToAdmin({
+            replyToEmails:
+              EmailSubmissionService.extractEmailAnswers(emailFields),
+            form,
+            submission: {
+              created: submission.created,
+              id: submission.id,
+            },
+            submissionAttachments,
+            formData: emailData.formData,
+            dataCollationData,
+            pdfAttachment: checkIfAdminPdfIsRequired()
+              ? pdfAttachment
+              : undefined,
+          }).mapErr((error) => {
+            logger.error({
+              message:
+                'Error while sending submission notification email to admin',
+              meta: logMeta,
+              error,
+            })
+            return error
+          }),
+          sendEmailConfirmations({
+            form,
+            submission,
+            submissionAttachments,
+            recipientData: recipientEmailDatas,
+            pdfAttachment: checkIfRespondentFormSummaryIsRequired({
+              isPaymentEnabled,
+              autoReplyMailDatas: recipientEmailDatas,
+            })
+              ? pdfAttachment
+              : undefined,
+            isPaymentEnabled,
+          }).mapErr((error) => {
+            logger.error({
+              message: 'Error while sending email confirmations to respondents',
+              meta: logMeta,
+              error,
+            })
+            return error
+          }),
+        ])
+      })
+    })
+    .map(() => true)
 }

@@ -2,7 +2,7 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { Result, ResultAsync, errAsync, fromPromise, okAsync } from 'neverthrow'
+import { errAsync, fromPromise, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -14,8 +14,9 @@ import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification
 import {
   BounceType,
   EmailAdminDataField,
-  IFormHasEmailSchema, IPopulatedForm,
-  ISubmissionSchema
+  IFormHasEmailSchema,
+  IPopulatedForm,
+  ISubmissionSchema,
 } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -244,9 +245,9 @@ export class MailService {
           ...mail,
           headers: config.mail.sesConfigSet
             ? {
-              'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
-              ...mail.headers,
-            }
+                'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
+                ...mail.headers,
+              }
             : mail.headers,
         },
         {
@@ -846,9 +847,10 @@ export class MailService {
         return this.#sendSingleAutoreplyMail({
           form,
           submission,
-          attachments: mailData.includeFormSummary && !isPaymentEnabled
-            ? attachmentsWithAutoreplyPdf
-            : submissionAttachments,
+          attachments:
+            mailData.includeFormSummary && !isPaymentEnabled
+              ? attachmentsWithAutoreplyPdf
+              : submissionAttachments,
           autoReplyMailData: mailData,
           formSummaryRenderData: strippedRenderData,
           index,

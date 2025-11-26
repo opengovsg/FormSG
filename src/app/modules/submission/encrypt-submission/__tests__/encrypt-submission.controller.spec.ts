@@ -12,7 +12,7 @@ import {
   BasicField,
   ErrorCode,
   FormAuthType,
-  MyInfoAttribute
+  MyInfoAttribute,
 } from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -563,7 +563,7 @@ describe('encrypt-submission.controller', () => {
         1,
       )
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
-    
+
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not any error codes
@@ -1182,12 +1182,16 @@ describe('encrypt-submission.controller', () => {
       // email notification should be sent
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
       // Assert nric is not contained - formData empty array since no parsed responses to be included in email
-      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields).not.toContain(expect.objectContaining({
-        answer: MOCK_NRIC,
-        fieldType: BasicField.Nric,
-        isVisible: true,
-        question: SgidFieldTitle.SgidNric,
-      }))
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields,
+      ).not.toContain(
+        expect.objectContaining({
+          answer: MOCK_NRIC,
+          fieldType: BasicField.Nric,
+          isVisible: true,
+          question: SgidFieldTitle.SgidNric,
+        }),
+      )
     })
 
     it('should include nric in email fields to be included in notification email and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
@@ -1261,17 +1265,20 @@ describe('encrypt-submission.controller', () => {
 
       // email fields for generating email notification include nric
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
-      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields[0]).toEqual(expect.objectContaining({
-        answer: MOCK_NRIC,
-        fieldType: BasicField.Nric,
-        isVisible: true,
-        question: SgidFieldTitle.SgidNric,
-      }))
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields[0],
+      ).toEqual(
+        expect.objectContaining({
+          answer: MOCK_NRIC,
+          fieldType: BasicField.Nric,
+          isVisible: true,
+          question: SgidFieldTitle.SgidNric,
+        }),
+      )
     })
   })
 
   describe('passes the required correct data used to generate content for post-submission notification emails', () => {
-
     it('passes the required isVisible values in email fields, submission attachments, and respondent emails', async () => {
       // Arrange
       const performEncryptPostSubmissionActionsSpy = jest.spyOn(
@@ -1312,7 +1319,7 @@ describe('encrypt-submission.controller', () => {
           answer: 'this is a short answer',
           fieldType: 'textfield',
           isVisible: false,
-        }
+        },
       ]
 
       const mockUnencryptedAttachments: IAttachmentInfo[] = [
@@ -1325,7 +1332,7 @@ describe('encrypt-submission.controller', () => {
           filename: 'test2.pdf',
           content: Buffer.from('this is another test file'),
           fieldId: 'test-field-id-2',
-        }
+        },
       ]
 
       const mockRespondentEmails = ['test@example.com', 'test2@example.com']
@@ -1359,9 +1366,15 @@ describe('encrypt-submission.controller', () => {
         performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields,
       ).toEqual(mockResponses)
 
-      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].submissionAttachments).toEqual(mockUnencryptedAttachments)
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
+          .submissionAttachments,
+      ).toEqual(mockUnencryptedAttachments)
 
-      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].respondentEmails).toEqual(mockRespondentEmails)
+      expect(
+        performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
+          .respondentEmails,
+      ).toEqual(mockRespondentEmails)
     })
   })
 })
