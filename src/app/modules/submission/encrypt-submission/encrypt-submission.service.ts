@@ -3,13 +3,6 @@ import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
-import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
-import {
-  AutoReplyMailData,
-  AutoreplySummaryRenderData,
-} from '../../../services/mail/mail.types'
-import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
-
 import {
   DateString,
   FormResponseMode,
@@ -26,7 +19,13 @@ import {
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
+import {
+  AutoReplyMailData,
+  AutoreplySummaryRenderData,
+} from '../../../services/mail/mail.types'
+import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { createQueryWithDateParam } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'

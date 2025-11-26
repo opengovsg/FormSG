@@ -13,10 +13,6 @@ import {
 } from 'lodash'
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
-import { handleAddressResponseDisplay } from '../../../../shared/utils/address'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../shared/utils/signature'
-
-import { convertToSignaturePngDataUri } from '../../utils/convert-vector-array-to-png'
 
 import {
   CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
@@ -41,7 +37,9 @@ import {
   SubmittedStep,
   WorkflowStatus,
 } from '../../../../shared/types'
+import { handleAddressResponseDisplay } from '../../../../shared/utils/address'
 import * as FileValidation from '../../../../shared/utils/file-validation'
+import { SIGNATURE_CAPTURED_STRING } from '../../../../shared/utils/signature'
 import {
   EmailRespondentConfirmationField,
   FieldResponse,
@@ -83,6 +81,7 @@ import {
   VerifyTurnstileError,
 } from '../../services/turnstile/turnstile.errors'
 import { CreatePresignedPostError } from '../../utils/aws-s3'
+import { convertToSignaturePngDataUri } from '../../utils/convert-vector-array-to-png'
 import { genericMapRouteErrorTransform } from '../../utils/error'
 import {
   DatabaseConflictError,

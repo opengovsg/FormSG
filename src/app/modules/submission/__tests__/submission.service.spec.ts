@@ -669,7 +669,7 @@ describe('submission.service', () => {
         submissionAttachments: MOCK_ATTACHMENTS,
         pdfAttachment: undefined,
         isPaymentEnabled: false,
-        responsesData: undefined,
+        responsesData: [],
       })
 
       const expectedAutoReplyData = [

@@ -462,6 +462,7 @@ export class MyInfoServiceClass {
     return Result.fromThrowable(
       () => jwt.verify(loginJwt, spcpMyInfoConfig.myInfoJwtSecret),
       (error) => {
+        console.log('xxx4', error)
         logger.error({
           message: 'Error while verifying MyInfo login cookie',
           meta: {
@@ -475,6 +476,7 @@ export class MyInfoServiceClass {
       if (isMyInfoLoginCookie(decoded)) {
         return ok(decoded)
       }
+      console.log('xxx3', decoded)
       return err(new MyInfoInvalidLoginCookieError())
     })
   }

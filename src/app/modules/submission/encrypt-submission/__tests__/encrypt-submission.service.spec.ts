@@ -165,22 +165,14 @@ describe('encrypt-submission.service', () => {
 
           expect(
             MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
-          ).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                answer: MOCK_NRIC,
-                fieldType: BasicField.Nric,
-                isVisible: true,
-                question: SgidFieldTitle.SgidNric,
-              }),
-            ]),
-          )
-
-          // Does not contain any other fields
-          expect(
-            MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData
-              .length,
-          ).toEqual(1)
+          ).toEqual([
+            {
+              answer: MOCK_NRIC,
+              fieldType: BasicField.Nric,
+              answerTemplate: [MOCK_NRIC],
+              question: SgidFieldTitle.SgidNric,
+            },
+          ])
         })
       })
 
