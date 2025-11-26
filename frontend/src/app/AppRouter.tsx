@@ -1,4 +1,5 @@
 import { Suspense, useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Route, Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
@@ -53,7 +54,6 @@ import { HashRouterElement } from './HashRouterElement'
 import { ParamIdValidator } from './ParamIdValidator'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
-import { Helmet } from 'react-helmet-async'
 
 const UseTemplateRedirectPage = loadable(
   () => import('~pages/UseTemplateRedirect'),
