@@ -197,7 +197,6 @@ const submitEncryptModeForm = async (
     }
     case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
-      console.log('xxx', req.cookies)
       const jwtPayloadResult = await extractMyInfoLoginJwt(
         req.cookies,
         authType,
@@ -207,7 +206,6 @@ const submitEncryptModeForm = async (
           return uinFin
         })
         .mapErr((error) => {
-          console.log('xxx2', error)
           logger.error({
             message: `Error verifying MyInfo${
               authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
