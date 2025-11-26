@@ -53,6 +53,7 @@ import { HashRouterElement } from './HashRouterElement'
 import { ParamIdValidator } from './ParamIdValidator'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
+import { Helmet } from 'react-helmet-async'
 
 const UseTemplateRedirectPage = loadable(
   () => import('~pages/UseTemplateRedirect'),
@@ -165,9 +166,14 @@ export const AppRouter = (): JSX.Element => {
           <Route
             path={EDIT_SUBMISSION_PAGE_SUBROUTE}
             element={
-              <ParamIdValidator
-                element={<PublicElement element={<PublicFormPage />} />}
-              />
+              <>
+                <Helmet>
+                  <meta name="robots" content="noindex,nofollow" />
+                </Helmet>
+                <ParamIdValidator
+                  element={<PublicElement element={<PublicFormPage />} />}
+                />
+              </>
             }
           />
           <Route
