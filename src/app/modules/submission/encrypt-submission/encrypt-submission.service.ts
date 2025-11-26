@@ -3,12 +3,12 @@ import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
-import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
+import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
 import {
   AutoReplyMailData,
   AutoreplySummaryRenderData,
-} from 'src/app/services/mail/mail.types'
-import { generateAutoreplyPdf } from 'src/app/services/mail/mail.utils'
+} from '../../../services/mail/mail.types'
+import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 
 import {
   DateString,

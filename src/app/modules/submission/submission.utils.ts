@@ -13,10 +13,10 @@ import {
 } from 'lodash'
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
-import { handleAddressResponseDisplay } from 'shared/utils/address'
-import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
+import { handleAddressResponseDisplay } from '../../../../shared/utils/address'
+import { SIGNATURE_CAPTURED_STRING } from '../../../../shared/utils/signature'
 
-import { convertToSignaturePngDataUri } from 'src/app/utils/convert-vector-array-to-png'
+import { convertToSignaturePngDataUri } from '../../utils/convert-vector-array-to-png'
 
 import {
   CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
