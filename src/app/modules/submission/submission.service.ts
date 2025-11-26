@@ -450,7 +450,7 @@ export const uploadAttachments = (
 export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form,
   submission,
-  responsesData = [],
+  responsesData,
   submissionAttachments,
   recipientData,
   pdfAttachment,
@@ -458,7 +458,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
 }: {
   form: IPopulatedForm
   submission: S
-  responsesData?: EmailRespondentConfirmationField[]
+  responsesData: EmailRespondentConfirmationField[]
   submissionAttachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment

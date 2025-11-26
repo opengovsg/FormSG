@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
-import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../modules/submission/submission.controller'
@@ -11,30 +10,6 @@ import { limitRate } from '../../../../utils/limit-rate'
 import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
 
 export const PublicFormsSubmissionsRouter = Router()
-
-/**
- * Submit a form response, processing it as an email to be sent to
- * the public servant who created the form. Optionally send a PDF
- * containing the submission back to the user, if an email address
- * was given. SMS autoreplies for mobile number fields are also sent if feature
- * is enabled.
- * @route POST /:formId/submissions/email
- * @group forms - endpoints to serve forms
- * @param formId.path.required - the form id
- * @param response.body.required - contains the entire form submission
- * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any
- * @consumes multipart/form-data
- * @produces application/json
- * @returns 200 - submission made
- * @returns 400 - submission has bad data and could not be processed
- */
-PublicFormsSubmissionsRouter.route(
-  '/:formId([a-fA-F0-9]{24})/submissions/email',
-).post(
-  limitRate({ max: rateLimitConfig.submissions }),
-  WogaaController.handleSubmit,
-  EmailSubmissionController.handleEmailSubmission,
-)
 
 /**
  * Submit a form response before public key encryption, performs pre-encryption

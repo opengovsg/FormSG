@@ -219,7 +219,7 @@ const generatePdfAttachmentIfRequired = ({
  * called when the submission is completed
  * @param submission the completed submission
  * @param responses the verified field responses sent with the original submission request
- * @param emailFields fields and their responses that will be included in email notifications.
+ * @param emailFields fields and their responses that will be included in email notifications. May be undefined if the form is payment form.
  * @param submissionAttachments files from attachment fields in the submission that will be included in email notifications.
  * @returns ok(true) if all actions were completed successfully
  * @returns err(FormNotFoundError) if the form or form admin does not exist
@@ -287,7 +287,6 @@ export const performEncryptPostSubmissionActions = ({
         new Set(), // the MyInfo prefixes are already inserted in middleware
         form.authType,
       )
-
       // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
       // we want to remove it for the dataCollationData
       const dataCollationData = emailData.dataCollationData.map((item) => ({
@@ -296,7 +295,6 @@ export const performEncryptPostSubmissionActions = ({
           : item.question,
         answer: item.answer,
       }))
-
       const recipientEmailDatas = [
         ...extractEmailConfirmationData(responses, form.form_fields),
         ...respondentCopyEmailData,
@@ -345,6 +343,7 @@ export const performEncryptPostSubmissionActions = ({
             submission,
             submissionAttachments,
             recipientData: recipientEmailDatas,
+            responsesData: emailData.formData,
             pdfAttachment: checkIfRespondentFormSummaryIsRequired({
               isPaymentEnabled,
               autoReplyMailDatas: recipientEmailDatas,
