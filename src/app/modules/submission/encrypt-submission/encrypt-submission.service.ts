@@ -1,4 +1,3 @@
-import { GrowthBook } from '@growthbook/growthbook'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -11,7 +10,6 @@ import {
 } from 'src/app/services/mail/mail.types'
 import { generateAutoreplyPdf } from 'src/app/services/mail/mail.utils'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   DateString,
   FormResponseMode,
@@ -35,7 +33,6 @@ import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
-import * as UserService from '../../user/user.service'
 import {
   WebhookPushToQueueError,
   WebhookValidationError,
@@ -348,7 +345,10 @@ export const performEncryptPostSubmissionActions = ({
               submission,
               submissionAttachments,
               recipientData: recipientEmailDatas,
-              pdfAttachment,
+              pdfAttachment: checkIfRespondentFormSummaryIsRequired({
+                isPaymentEnabled,
+                autoReplyMailDatas: recipientEmailDatas,
+              }) ? pdfAttachment : undefined,
               isPaymentEnabled,
             }).mapErr(error => {
               logger.error({

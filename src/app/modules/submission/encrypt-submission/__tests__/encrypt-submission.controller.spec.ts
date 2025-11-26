@@ -12,7 +12,7 @@ import {
   BasicField,
   ErrorCode,
   FormAuthType,
-  MyInfoAttribute,
+  MyInfoAttribute
 } from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -33,11 +33,10 @@ import {
   FormFieldSchema,
   IAttachmentInfo,
   IPopulatedEncryptedForm,
+  SgidFieldTitle,
 } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
-import { SubmissionEmailObj } from '../../email-submission/email-submission.util'
-import { ProcessedFieldResponse } from '../../submission.types'
 import {
   generateHashedSubmitterId,
   getCookieNameByAuthType,
@@ -492,9 +491,6 @@ describe('encrypt-submission.controller', () => {
         checkHasSingleSubmissionValidationFailureSpy,
       ).not.toHaveBeenCalled()
 
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not any error codes
@@ -502,6 +498,7 @@ describe('encrypt-submission.controller', () => {
         (mockRes.json as jest.Mock).mock.calls[0][0].errorCodes,
       ).not.toBeDefined()
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -566,10 +563,7 @@ describe('encrypt-submission.controller', () => {
         1,
       )
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
-
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
+    
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not any error codes
@@ -584,6 +578,7 @@ describe('encrypt-submission.controller', () => {
         ),
       )
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -731,9 +726,6 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-
       // Assert that status is not called, which defaults to intended 200 OK
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not have the single submission validation failure flag
@@ -748,8 +740,10 @@ describe('encrypt-submission.controller', () => {
         ),
       )
 
+      // Assert that post submission actions are performed
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
+
     it('should return json response with single submission validation failure flag when submissionId is not unique and does not save submission', async () => {
       jest
         .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
@@ -1129,7 +1123,7 @@ describe('encrypt-submission.controller', () => {
       expect(savedSubmission!.verifiedContent).toBeUndefined()
     })
 
-    it('should not include nric in email notification and not store nric if form isSubmitterIdCollectionEnabled is false for MyInfo authType', async () => {
+    it('should not include nric field in email fields to be included in notification email and not store nric if form isSubmitterIdCollectionEnabled is false for MyInfo authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockMyInfoAuthTypeAndSubmitterIdCollectionDisabledForm = {
@@ -1165,6 +1159,11 @@ describe('encrypt-submission.controller', () => {
       ) as unknown as SubmitEncryptModeFormHandlerRequest
       const mockRes = expressHandler.mockResponse()
 
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
@@ -1181,14 +1180,17 @@ describe('encrypt-submission.controller', () => {
 
       // Assert
       // email notification should be sent
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
       // Assert nric is not contained - formData empty array since no parsed responses to be included in email
-      expect(
-        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
-      ).toEqual([])
+      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields).not.toContain(expect.objectContaining({
+        answer: MOCK_NRIC,
+        fieldType: BasicField.Nric,
+        isVisible: true,
+        question: SgidFieldTitle.SgidNric,
+      }))
     })
 
-    it('should include nric in email notification and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
+    it('should include nric in email fields to be included in notification email and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm = {
@@ -1230,6 +1232,11 @@ describe('encrypt-submission.controller', () => {
       }
       const expectedVerifiedContent = { sgidUinFin: MOCK_NRIC }
 
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
@@ -1252,12 +1259,14 @@ describe('encrypt-submission.controller', () => {
         JSON.stringify(expectedVerifiedContent),
       )
 
-      // email notification should be sent with nric included
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-      expect(
-        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
-          .answer,
-      ).toEqual(MOCK_NRIC)
+      // email fields for generating email notification include nric
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
+      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][0].emailFields[0]).toEqual(expect.objectContaining({
+        answer: MOCK_NRIC,
+        fieldType: BasicField.Nric,
+        isVisible: true,
+        question: SgidFieldTitle.SgidNric,
+      }))
     })
   })
 
@@ -1295,9 +1304,9 @@ describe('encrypt-submission.controller', () => {
           question: 'Long answer',
           answer: 'this is an answer',
           fieldType: 'textarea',
-          isVisible: true, 
+          isVisible: true,
         },
-        { 
+        {
           id: new ObjectId(),
           question: 'Short answer',
           answer: 'this is a short answer',

@@ -739,6 +739,14 @@ describe('submission.service', () => {
       expect(result._unsafeUnwrap()).toBe(true)
     })
 
+    it('should generate pdfAttachment when form summary for respondent is enabled', async () => {})
+
+    it('should not generate pdfAttachment for payment form', () => {})
+
+    it('should generate pdfAttachment for admin email notification', () => {})
+
+    it('should return pdf generation error when pdf generation fails', () => {})
+
     it('should return SendEmailConfirmationError when mail service errors', async () => {
       const mockForm = {
         _id: MOCK_FORM_ID,
