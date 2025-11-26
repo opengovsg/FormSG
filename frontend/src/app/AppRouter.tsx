@@ -1,4 +1,5 @@
 import { Suspense, useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Route, Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
@@ -165,9 +166,14 @@ export const AppRouter = (): JSX.Element => {
           <Route
             path={EDIT_SUBMISSION_PAGE_SUBROUTE}
             element={
-              <ParamIdValidator
-                element={<PublicElement element={<PublicFormPage />} />}
-              />
+              <>
+                <Helmet>
+                  <meta name="robots" content="noindex,nofollow" />
+                </Helmet>
+                <ParamIdValidator
+                  element={<PublicElement element={<PublicFormPage />} />}
+                />
+              </>
             }
           />
           <Route
