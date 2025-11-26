@@ -17,19 +17,24 @@ import {
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
+import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
 } from '../../submission.errors'
+import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
   sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
-import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
+jest.mock('src/app/services/mail/mail.utils')
+
+const MockMailUtils = jest.mocked(MailUtils)
+MockMailUtils.generateAutoreplyPdf.mockReturnValue(okAsync(Buffer.from('mock pdf buffer')))
 
 describe('multirespondent-submission.service', () => {
   beforeAll(async () => {
