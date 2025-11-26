@@ -451,7 +451,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form,
   submission,
   responsesData = [],
-  attachments,
+  submissionAttachments,
   recipientData,
   pdfAttachment,
   isPaymentEnabled,
@@ -459,7 +459,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   form: IPopulatedForm
   submission: S
   responsesData?: EmailRespondentConfirmationField[]
-  attachments?: Mail.Attachment[]
+  submissionAttachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
   isPaymentEnabled: boolean
@@ -475,7 +475,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   const sentEmailsPromise = MailService.sendAutoReplyEmails({
     form,
     submission,
-    attachments,
+    submissionAttachments,
     responsesData,
     autoReplyMailDatas: recipientData,
     pdfAttachment,

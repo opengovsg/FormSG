@@ -111,10 +111,10 @@ export const assertFormIsSingleSubmissionDisabled = (
   return !form.isSingleSubmission
     ? ok(form)
     : err(
-        new UnsupportedSettingsError(
-          'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
-        ),
-      )
+      new UnsupportedSettingsError(
+        'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
+      ),
+    )
 }
 
 /**
@@ -222,6 +222,8 @@ const generatePdfAttachmentIfRequired = ({
  * called when the submission is completed
  * @param submission the completed submission
  * @param responses the verified field responses sent with the original submission request
+ * @param emailFields fields and their responses that will be included in email notifications.
+ * @param submissionAttachments files from attachment fields in the submission that will be included in email notifications.
  * @returns ok(true) if all actions were completed successfully
  * @returns err(FormNotFoundError) if the form or form admin does not exist
  * @returns err(ResponseModeError) if the form is not encrypt mode
@@ -234,16 +236,14 @@ const generatePdfAttachmentIfRequired = ({
 export const performEncryptPostSubmissionActions = ({
   submission,
   responses,
-  growthbook,
   emailFields,
-  attachments,
+  submissionAttachments,
   respondentEmails,
 }: {
   submission: IEncryptedSubmissionSchema
   responses: FieldResponse[]
-  growthbook?: GrowthBook
   emailFields: ProcessedFieldResponse[]
-  attachments?: Mail.Attachment[]
+  submissionAttachments?: Mail.Attachment[]
   respondentEmails?: string[]
 }): ResultAsync<
   true,
@@ -276,45 +276,15 @@ export const performEncryptPostSubmissionActions = ({
           !!form.webhook?.isRetryEnabled,
         ).andThen(() => okAsync(form))
       })
-      // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-      .map(async (form) => {
-        await UserService.getPopulatedUserById(form.admin).map(
-          async (admin) => {
-            await growthbook?.setAttributes({
-              ...growthbook?.getAttributes(),
-              formId: submission.form.toString(),
-              adminEmail: admin.email,
-              adminAgency: admin.agency.shortName,
-            })
-          },
-        )
-        return form
-      })
       .andThen((form) => {
         const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
           ? respondentEmails?.map((val) => {
-              return {
-                email: val,
-                includeFormSummary: true,
-              }
-            })
+            return {
+              email: val,
+              includeFormSummary: true,
+            }
+          })
           : []
-
-        // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete
-        const isUseLambdaOutput =
-          growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
-        logger.info({
-          message: 'Growthbook flag for lambda pdf generation',
-          meta: {
-            ...logMeta,
-            isUseLambdaOutput,
-            growthbookAttributes: growthbook?.getAttributes(),
-            lambdaPdfGenerationGrowthbookValue: growthbook?.getFeatureValue(
-              featureFlags.lambdaPdfGeneration,
-              undefined,
-            ),
-          },
-        })
 
         const emailData = new SubmissionEmailObj(
           emailFields,
@@ -350,46 +320,46 @@ export const performEncryptPostSubmissionActions = ({
         })
 
         return pdfAttachmentResult.andThen((pdfAttachment) => {
-          void MailService.sendSubmissionToAdmin({
-            replyToEmails:
-              EmailSubmissionService.extractEmailAnswers(emailFields),
-            form,
-            submission: {
-              created: submission.created,
-              id: submission.id,
-            },
-            attachments,
-            formData: emailData.formData,
-            dataCollationData,
-            pdfAttachment: checkIfAdminPdfIsRequired()
-              ? pdfAttachment
-              : undefined,
-          })
-
-          return sendEmailConfirmations({
-            form,
-            submission,
-            attachments,
-            responsesData: emailData?.autoReplyData,
-            recipientData: recipientEmailDatas,
-            pdfAttachment: checkIfRespondentFormSummaryIsRequired({
-              isPaymentEnabled,
-              autoReplyMailDatas: recipientEmailDatas,
-            })
-              ? pdfAttachment
-              : undefined,
-            isPaymentEnabled,
-          }).mapErr((error) => {
-            logger.error({
-              message: 'Error while sending email confirmations',
-              meta: {
-                action: 'sendEmailAutoReplies',
+          return ResultAsync.combine([
+            MailService.sendSubmissionToAdmin({
+              replyToEmails:
+                EmailSubmissionService.extractEmailAnswers(emailFields),
+              form,
+              submission: {
+                created: submission.created,
+                id: submission.id,
               },
-              error,
-            })
-            return error
-          })
+              submissionAttachments,
+              formData: emailData.formData,
+              dataCollationData,
+              pdfAttachment: checkIfAdminPdfIsRequired()
+                ? pdfAttachment
+                : undefined,
+            }).mapErr(error => {
+              logger.error({
+                message: 'Error while sending submission notification email to admin',
+                meta: logMeta,
+                error,
+              })
+              return error
+            }),
+            sendEmailConfirmations({
+              form,
+              submission,
+              submissionAttachments,
+              recipientData: recipientEmailDatas,
+              pdfAttachment,
+              isPaymentEnabled,
+            }).mapErr(error => {
+              logger.error({
+                message: 'Error while sending email confirmations to respondents',
+                meta: logMeta,
+                error,
+              })
+              return error
+            }),
+          ])
         })
       })
-  )
+  ).map(() => true)
 }

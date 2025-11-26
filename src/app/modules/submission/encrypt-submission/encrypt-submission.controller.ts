@@ -689,6 +689,9 @@ const _createPaymentSubmission = async ({
   })
 }
 
+/**
+ * @param emailFields fields and their responses that will be included in email notifications to admins and respondents.
+ */
 const _createSubmission = async ({
   req,
   res,
@@ -773,7 +776,7 @@ const _createSubmission = async ({
   })
 
   const createdTime = submission.created || new Date()
-  const emailAttachments = [...(unencryptedAttachments ?? [])]
+  const submissionAttachments = [...(unencryptedAttachments ?? [])]
 
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
@@ -798,9 +801,8 @@ const _createSubmission = async ({
   return await performEncryptPostSubmissionActions({
     submission,
     responses,
-    growthbook: req.growthbook,
     emailFields,
-    attachments: emailAttachments,
+    submissionAttachments,
     respondentEmails,
   })
 }

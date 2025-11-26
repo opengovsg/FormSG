@@ -674,7 +674,8 @@ export class MailService {
    * @param args.replyToEmails emails to set replyTo, if any
    * @param args.form the form document to retrieve some email data from
    * @param args.submission the submission document to retrieve some email data from
-   * @param args.attachments attachments to append to the email, if any
+   * @param args.submissionAttachments files from attachment fields in the submission to be included in the email notifications.
+   * @param args.pdfAttachment response PDF attachment to be included in the email notifications.
    * @param args.dataCollationData the data to use in the data collation tool to be appended to the end of the email
    * @param args.formData the form data to display to in the body in table form
    */
@@ -682,7 +683,7 @@ export class MailService {
     replyToEmails,
     form,
     submission,
-    attachments,
+    submissionAttachments = [],
     dataCollationData,
     formData,
     pdfAttachment,
@@ -690,7 +691,7 @@ export class MailService {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
-    attachments?: Mail.Attachment[]
+    submissionAttachments?: Mail.Attachment[]
     formData: EmailAdminDataField[]
     dataCollationData?: {
       question: string
@@ -709,8 +710,9 @@ export class MailService {
       return okAsync(true)
     }
 
+    const attachments = submissionAttachments
     if (pdfAttachment) {
-      attachments = [...(attachments ?? []), pdfAttachment]
+      attachments.push(pdfAttachment)
     }
 
     logger.info({
@@ -792,7 +794,8 @@ export class MailService {
    * @param args.attachments attachments to append to the email, if any
    * @param args.responsesData the array of response data to use in rendering
    * the mail body or summary pdf
-   * @param args.isUseLambdaOutput whether to use the lambda output for the pdf generation
+   * @param args.submissionAttachments files from attachment fields in the submission that will be included in email notifications.
+   * @param args.pdfAttachment response PDF attachment to be included in the email notifications.
    * @param args.autoReplyMailDatas array of objects that contains autoreply mail data to override with defaults
    * @param args.autoReplyMailDatas[].email contains the recipient of the mail
    * @param args.autoReplyMailDatas[].subject if available, sends the mail out with this subject instead of the default subject
@@ -804,7 +807,7 @@ export class MailService {
     submission,
     responsesData,
     autoReplyMailDatas,
-    attachments = [],
+    submissionAttachments = [],
     pdfAttachment,
     isPaymentEnabled,
   }: SendAutoReplyEmailsArgs): Promise<
@@ -833,7 +836,7 @@ export class MailService {
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [
-      ...attachments,
+      ...submissionAttachments,
       ...(pdfAttachment ? [pdfAttachment] : []),
     ]
 
@@ -845,7 +848,7 @@ export class MailService {
           submission,
           attachments: mailData.includeFormSummary
             ? attachmentsWithAutoreplyPdf
-            : attachments,
+            : submissionAttachments,
           autoReplyMailData: mailData,
           formSummaryRenderData: strippedRenderData,
           index,
