@@ -1,4 +1,3 @@
-import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -38,8 +37,7 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
-import { AutoreplySummaryRenderData } from '../../../services/mail/mail.types'
-import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
+import { generateAutoreplyPdf, generatePdfRenderData } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -63,10 +61,9 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   extractRespondentCopyEmailDatas,
-  getEmailFromResponses,
-  getPdfResponsesData,
-  getQuestionAnswerPairsForMultipleFields,
-  retrieveWorkflowStepEmailAddresses,
+  getEmailFromResponses, getQuestionAnswerPairsForMultipleFields,
+  getResponsesDataFromMrfResponses,
+  retrieveWorkflowStepEmailAddresses
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -890,21 +887,16 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
-  const submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-  const formUrl: string = `${config.app.appUrl}/${form._id}`
-
-  const pdfRenderData: AutoreplySummaryRenderData = {
+  const pdfRenderData = generatePdfRenderData({
     refNo: submissionId,
     formTitle: form.title,
-    submissionTime: submissionTime,
-    formData: getPdfResponsesData({
+    submissionDateTime: submission.created ?? new Date(),
+    responsesData: getResponsesDataFromMrfResponses({
       formFields: form.form_fields,
       responses,
     }),
-    formUrl: formUrl,
-  }
+    formUrl: `${config.app.appUrl}/${form._id}`,
+  })
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
   const pdfResult = generateAutoreplyPdf(pdfRenderData, true).map(

@@ -479,7 +479,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
  * @param responses - The mrf responses to the form fields
  * @returns list of EmailRespondentConfirmationField used for email & pdf generation
  */
-export const getPdfResponsesData = ({
+export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
 }: {

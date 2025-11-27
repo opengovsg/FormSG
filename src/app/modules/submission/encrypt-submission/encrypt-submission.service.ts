@@ -1,9 +1,9 @@
-import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
 import {
+  BasicField,
   DateString,
   FormResponseMode,
   PaymentChannel,
@@ -25,7 +25,7 @@ import {
   AutoReplyMailData,
   AutoreplySummaryRenderData,
 } from '../../../services/mail/mail.types'
-import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
+import { generateAutoreplyPdf, generatePdfRenderData } from '../../../services/mail/mail.utils'
 import { createQueryWithDateParam } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
@@ -173,6 +173,15 @@ const checkIfPdfGenerationIsRequired = ({
   )
 }
 
+const getPdfResponsesData = (responsesData: EmailAdminDataField[]): AutoreplySummaryRenderData['formData'] => {
+  return responsesData.map(({ question, answerTemplate, answer, fieldType }) => ({
+    question,
+    // Only signature field types 
+    answer: fieldType === BasicField.Signature ? answer : undefined,
+    answerTemplate
+  }))
+}
+
 const generatePdfAttachmentIfRequired = ({
   isPaymentEnabled,
   autoReplyMailDatas,
@@ -195,25 +204,17 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
-  const pdfResponsesData = responsesData.map(
-    ({ question, answerTemplate }) => ({
-      question,
-      answerTemplate,
-    }),
-  )
-
-  const renderData: AutoreplySummaryRenderData = {
+  const pdfRenderData = generatePdfRenderData({
     refNo: submission.id,
     formTitle: form.title,
-    submissionTime: moment(submission.created)
-      .tz('Asia/Singapore')
-      .format('ddd, DD MMM YYYY hh:mm:ss A'),
-    formData: pdfResponsesData,
+    submissionDateTime: submission.created ?? new Date(),
+    responsesData,
     formUrl: `${config.app.appUrl}/${form._id}`,
-  }
+  })
 
-  return generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
-    filename: 'response.pdf',
+  const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
+  return generateAutoreplyPdf(pdfRenderData, true).map((pdfBuffer) => ({
+    filename: DEFAULT_RESPONSE_PDF_FILENAME,
     content: Buffer.copyBytesFrom(pdfBuffer),
   }))
 }

@@ -755,6 +755,7 @@ export class MailService {
     const adminEmails: string[] = getAdminEmails(form)
 
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
+
       const mail: MailOptions = {
         to: adminEmails,
         from: this.#senderFromString,
