@@ -18,11 +18,14 @@ import {
 
 export class S3Service {
   private readonly s3Client: S3Client
+  private readonly isDevelopmentEnv: boolean
 
   constructor(
     isDevelopmentEnv: boolean,
     private readonly logger: pino.Logger,
   ) {
+    this.isDevelopmentEnv = isDevelopmentEnv
+
     if (isDevelopmentEnv) {
       this.s3Client = new S3Client({
         region: 'ap-southeast-1',
@@ -169,6 +172,21 @@ export class S3Service {
       bucketName,
       objectKey,
     })
+
+    // Dev mode doesn't have GuardDuty scanning so, manually tag files as clean
+    if (this.isDevelopmentEnv) {
+      this.logger.info(
+        'Development environment detected, skipping GuardDuty scan',
+        {
+          bucketName,
+          objectKey,
+        },
+      )
+      return {
+        Key: GUARD_DUTY_MALWARE_SCAN_TAG,
+        Value: 'NO_THREATS_FOUND',
+      }
+    }
 
     try {
       const malwareScanTag = await retry(
