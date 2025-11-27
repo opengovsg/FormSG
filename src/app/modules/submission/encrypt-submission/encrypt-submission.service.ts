@@ -48,7 +48,9 @@ import {
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData
+} from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
@@ -184,9 +186,7 @@ const generatePdfAttachmentIfRequired = ({
   autoReplyMailDatas: AutoReplyMailData[]
   submission: IEncryptedSubmissionSchema
   form: IPopulatedEncryptedForm
-  responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
-    answer?: EmailAdminDataField['answer']
-  })[]
+  responsesData: EmailAdminDataField[]
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
   if (
     !checkIfPdfGenerationIsRequired({
@@ -197,13 +197,20 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
+  const pdfResponsesData = responsesData.map(
+    ({ question, answerTemplate }) => ({
+      question,
+      answerTemplate,
+    }),
+  )
+
   const renderData: AutoreplySummaryRenderData = {
     refNo: submission.id,
     formTitle: form.title,
     submissionTime: moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A'),
-    formData: responsesData,
+    formData: pdfResponsesData,
     formUrl: `${config.app.appUrl}/${form._id}`,
   }
 
@@ -281,14 +288,14 @@ export const performEncryptPostSubmissionActions = ({
           })
         : []
 
-      const emailData = new SubmissionEmailObj(
+      const { responsesData, dataCollationData } = new SubmissionEmailObj(
         emailFields,
         new Set(), // the MyInfo prefixes are already inserted in middleware
         form.authType,
       )
       // Since we insert the [MyInfo] prefix in `encrypt-submission.middleware.ts`:L434
       // we want to remove it for the dataCollationData
-      const dataCollationData = emailData.dataCollationData.map((item) => ({
+      const formattedDataCollationData = dataCollationData.map((item) => ({
         question: item.question.startsWith(MYINFO_PREFIX)
           ? item.question.slice(MYINFO_PREFIX.length)
           : item.question,
@@ -309,7 +316,7 @@ export const performEncryptPostSubmissionActions = ({
         autoReplyMailDatas: recipientEmailDatas,
         submission,
         form,
-        responsesData: emailData.formData,
+        responsesData,
       })
 
       return pdfAttachmentResult.andThen((pdfAttachment) => {
@@ -323,8 +330,8 @@ export const performEncryptPostSubmissionActions = ({
               id: submission.id,
             },
             submissionAttachments,
-            formData: emailData.formData,
-            dataCollationData,
+            formData: responsesData,
+            dataCollationData: formattedDataCollationData,
             pdfAttachment: checkIfAdminPdfIsRequired()
               ? pdfAttachment
               : undefined,
@@ -342,7 +349,7 @@ export const performEncryptPostSubmissionActions = ({
             submission,
             submissionAttachments,
             recipientData: recipientEmailDatas,
-            responsesData: emailData.formData,
+            responsesData,
             pdfAttachment: checkIfRespondentFormSummaryIsRequired({
               isPaymentEnabled,
               autoReplyMailDatas: recipientEmailDatas,
