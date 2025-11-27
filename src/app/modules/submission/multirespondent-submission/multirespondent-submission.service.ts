@@ -57,11 +57,11 @@ import {
 } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { AttachmentMetadata } from '../submission.types'
+import { getMrfSubmissionWorkflowStatus } from '../submission.utils'
 import {
-  getMrfSubmissionWorkflowStatus,
   getPdfResponsesData,
   getQuestionAnswerPairsForMultipleFields,
-} from '../submission.utils'
+} from './multirespondent-submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
