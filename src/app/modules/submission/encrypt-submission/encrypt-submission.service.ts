@@ -286,7 +286,7 @@ export const performEncryptPostSubmissionActions = ({
           })
         : []
 
-      const { responsesData, dataCollationData } = new SubmissionEmailObj(
+      const { formData, dataCollationData } = new SubmissionEmailObj(
         emailFields,
         new Set(), // the MyInfo prefixes are already inserted in middleware
         form.authType,
@@ -314,7 +314,7 @@ export const performEncryptPostSubmissionActions = ({
         autoReplyMailDatas: recipientEmailDatas,
         submission,
         form,
-        responsesData,
+        responsesData: formData,
       })
 
       return pdfAttachmentResult.andThen((pdfAttachment) => {
@@ -328,7 +328,7 @@ export const performEncryptPostSubmissionActions = ({
               id: submission.id,
             },
             submissionAttachments,
-            formData: responsesData,
+            formData,
             dataCollationData: formattedDataCollationData,
             pdfAttachment: checkIfAdminPdfIsRequired()
               ? pdfAttachment
@@ -347,7 +347,7 @@ export const performEncryptPostSubmissionActions = ({
             submission,
             submissionAttachments,
             recipientData: recipientEmailDatas,
-            responsesData,
+            responsesData: formData,
             pdfAttachment: checkIfRespondentFormSummaryIsRequired({
               isPaymentEnabled,
               autoReplyMailDatas: recipientEmailDatas,

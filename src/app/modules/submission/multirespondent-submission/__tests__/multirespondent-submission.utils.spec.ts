@@ -42,10 +42,10 @@ import {
 
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
-import { getQuestionAnswerPairsForMultipleFields } from '../../submission.utils'
 import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
+  getQuestionAnswerPairsForMultipleFields,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'

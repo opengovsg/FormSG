@@ -27,13 +27,13 @@ export type EmailDataFields =
 export interface EmailData {
   autoReplyData: EmailRespondentConfirmationField[]
   dataCollationData: EmailDataCollationToolField[]
-  responsesData: EmailAdminDataField[]
+  formData: EmailAdminDataField[]
 }
 
 export interface EmailDataForOneField {
   autoReplyData?: EmailRespondentConfirmationField
   dataCollationData?: EmailDataCollationToolField
-  responseData: EmailAdminDataField
+  formData: EmailAdminDataField
 }
 
 export interface IAttachmentInfo {

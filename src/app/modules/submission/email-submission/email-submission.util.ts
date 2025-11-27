@@ -259,7 +259,7 @@ export const getAnswerForSignature = (
 
 /**
  *  Formats the response for sending to the submitter (autoReplyData),
- *  the table that is sent to the admin (responseData),
+ *  the table that is sent to the admin (formData),
  *  and the json used by data collation tool (dataCollationData).
  *
  * @param response
@@ -292,7 +292,7 @@ export const getFormattedResponse = (
   }
 
   // Send all the fields to admin
-  const responseData = {
+  const formData = {
     question: getFormDataPrefixedQuestion(response, hashedFields),
     answerTemplate: answerSplitByNewLine,
     answer,
@@ -301,7 +301,7 @@ export const getFormattedResponse = (
   return {
     autoReplyData,
     dataCollationData,
-    responseData,
+    formData,
   }
 }
 
@@ -462,18 +462,18 @@ export const mapRouteError: MapRouteError = (error) => {
 
 /**
  * Concatenate response into a string for hashing
- * @param responsesData Field-value tuples for admin email
+ * @param formData Field-value tuples for admin email
  * @param attachments Array of attachments as buffers
  * @returns concatenated response to hash
  */
 export const concatAttachmentsAndResponses = (
-  responsesData: EmailAdminDataField[],
+  formData: EmailAdminDataField[],
   attachments: IAttachmentInfo[],
 ): string => {
   let response = ''
-  response += responsesData.reduce((acc, fieldResponseData) => {
-    const question = fieldResponseData.question.toString().trim()
-    const answer = fieldResponseData.answer.toString().trim()
+  response += formData.reduce((acc, fieldData) => {
+    const question = fieldData.question.toString().trim()
+    const answer = fieldData.answer.toString().trim()
     return acc + `${question} ${answer}; `
   }, '')
   response += attachments.reduce((acc, { content }) => acc + content, '')
@@ -698,9 +698,9 @@ export class SubmissionEmailObj {
       : unmaskedAutoReplyData
   }
   /**
-   * Getter function to return responsesData which is used to send responses to admin
+   * Getter function to return formData which is used to send responses to admin
    */
-  get responsesData(): EmailAdminDataField[] {
+  get formData(): EmailAdminDataField[] {
     return this.parsedResponses.flatMap((response) =>
       createFormattedDataForOneField(
         response,
