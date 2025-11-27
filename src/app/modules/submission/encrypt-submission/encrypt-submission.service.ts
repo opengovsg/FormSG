@@ -48,9 +48,7 @@ import {
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
-import {
-  extractEmailConfirmationData
-} from '../submission.utils'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'

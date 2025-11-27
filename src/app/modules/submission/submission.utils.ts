@@ -14,20 +14,21 @@ import {
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
-import {
-  MULTIRESPONDENT_FORM_SUBMISSION_VERSION
-} from '../../../../shared/constants'
+import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from '../../../../shared/constants'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
-  BasicField, FormAuthType,
-  FormField, FormResponseMode,
-  MyInfoAttribute, SubmissionAttachment,
+  BasicField,
+  FormAuthType,
+  FormField,
+  FormResponseMode,
+  MyInfoAttribute,
+  SubmissionAttachment,
   SubmissionAttachmentsMap,
   SubmissionMrfMetadata,
   SubmittedApprovalStep,
   SubmittedStep,
-  WorkflowStatus
+  WorkflowStatus,
 } from '../../../../shared/types'
 import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
@@ -41,7 +42,7 @@ import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
-  MapRouteErrors
+  MapRouteErrors,
 } from '../../../types'
 import {
   ParsedClearAttachmentResponse,

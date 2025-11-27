@@ -1,6 +1,7 @@
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -13,6 +14,8 @@ import {
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
+import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
+import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
@@ -22,19 +25,16 @@ import {
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
+import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
-import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
-import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
