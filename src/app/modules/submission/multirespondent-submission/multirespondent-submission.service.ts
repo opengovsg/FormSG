@@ -887,14 +887,16 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
+  const responsesData = getResponsesDataFromMrfResponses({
+    formFields: form.form_fields,
+    responses,
+  })
+
   const pdfRenderData = generatePdfRenderData({
     refNo: submissionId,
     formTitle: form.title,
     submissionDateTime: submission.created ?? new Date(),
-    responsesData: getResponsesDataFromMrfResponses({
-      formFields: form.form_fields,
-      responses,
-    }),
+    responsesData, 
     formUrl: `${config.app.appUrl}/${form._id}`,
   })
 

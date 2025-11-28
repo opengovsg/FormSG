@@ -282,6 +282,7 @@ export type QuestionAnswerPair = {
   question: string
   answer: string
   signatureDataPngDataUri?: string
+  fieldType: BasicField
 }
 
 /**
@@ -371,6 +372,7 @@ const getQuestionAnswerPairsForOneField = ({
         questionAnswerPairs.push({
           question,
           answer,
+          fieldType: response.fieldType,
         })
       }
       return questionAnswerPairs
@@ -399,6 +401,7 @@ const getQuestionAnswerPairsForOneField = ({
         signatureDataPngDataUri: includeSignatureDataPngDataUri
           ? convertToSignaturePngDataUri(response.answer.value)
           : undefined,
+        fieldType: response.fieldType,
       }
       return [signatureQuestionAnswer]
     }
@@ -412,6 +415,7 @@ const getQuestionAnswerPairsForOneField = ({
           answer: child
             ? child.toString()
             : response.answer.childFields.map(() => '').toString(),
+          fieldType: response.fieldType,
         })
       }
       return questionAnswerPairs
@@ -422,6 +426,7 @@ const getQuestionAnswerPairsForOneField = ({
   questionAnswerPairs.push({
     question: questionTitle,
     answer,
+    fieldType: response.fieldType,
   })
   return questionAnswerPairs
 }
@@ -463,10 +468,11 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   // Add Ndi responses if they exist
   for (const key in responses) {
     if (startsWithSPCPFieldTitle(key)) {
-      const value = responses[key] as NdiResponseV3
+      const { answer, fieldType } = responses[key] as NdiResponseV3
       questionAnswerPairs.push({
         question: key,
-        answer: value.answer,
+        answer,
+        fieldType,
       })
     }
   }
@@ -499,6 +505,7 @@ export const getResponsesDataFromMrfResponses = ({
       question: questionAnswerPair.question,
       answerTemplate: [questionAnswerPair.answer],
       answer: questionAnswerPair.signatureDataPngDataUri,
+      fieldType: questionAnswerPair.fieldType,
     }
   })
 }
