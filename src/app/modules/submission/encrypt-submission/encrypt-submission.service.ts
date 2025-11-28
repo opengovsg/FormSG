@@ -3,11 +3,10 @@ import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 
 import {
-  BasicField,
   DateString,
   FormResponseMode,
   PaymentChannel,
-  SubmissionType,
+  SubmissionType
 } from '../../../../../shared/types'
 import {
   EmailAdminDataField,
@@ -22,8 +21,7 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
 import {
-  AutoReplyMailData,
-  AutoreplySummaryRenderData,
+  AutoReplyMailData
 } from '../../../services/mail/mail.types'
 import { generateAutoreplyPdf, generatePdfRenderData } from '../../../services/mail/mail.utils'
 import { createQueryWithDateParam } from '../../../utils/date'
@@ -171,15 +169,6 @@ const checkIfPdfGenerationIsRequired = ({
       autoReplyMailDatas,
     })
   )
-}
-
-const getPdfResponsesData = (responsesData: EmailAdminDataField[]): AutoreplySummaryRenderData['formData'] => {
-  return responsesData.map(({ question, answerTemplate, answer, fieldType }) => ({
-    question,
-    // Only signature field types 
-    answer: fieldType === BasicField.Signature ? answer : undefined,
-    answerTemplate
-  }))
 }
 
 const generatePdfAttachmentIfRequired = ({

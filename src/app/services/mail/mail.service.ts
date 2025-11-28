@@ -711,10 +711,10 @@ export class MailService {
       return okAsync(true)
     }
 
-    const attachments = submissionAttachments
-    if (pdfAttachment) {
-      attachments.push(pdfAttachment)
-    }
+    const attachmentsToInclude = [
+      ...submissionAttachments,
+      ...(pdfAttachment ? [pdfAttachment] : []),
+    ]
 
     logger.info({
       message: 'Sending admin notification mail',
@@ -755,13 +755,12 @@ export class MailService {
     const adminEmails: string[] = getAdminEmails(form)
 
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
-
       const mail: MailOptions = {
         to: adminEmails,
         from: this.#senderFromString,
         subject: `formsg-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
-        attachments,
+        attachments: attachmentsToInclude,
         headers: {
           [EMAIL_HEADERS.formId]: String(form._id),
           [EMAIL_HEADERS.submissionId]: refNo,
@@ -836,11 +835,25 @@ export class MailService {
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
-    // Create a copy of attachments for attaching of autoreply pdf if needed.
-    const attachmentsWithAutoreplyPdf = [
-      ...submissionAttachments,
-      ...(pdfAttachment ? [pdfAttachment] : []),
-    ]
+    const getAttachmentsToInclude = (mailData: AutoReplyMailData) => {
+      const shouldPdfAttachmentBeIncluded =
+        !isPaymentEnabled && mailData.includeFormSummary
+
+      if (shouldPdfAttachmentBeIncluded && !pdfAttachment) {
+        logger.error({ 
+          message: 'Could not find PDF attachment required for autoReply email. Continuing to send without PDF attachment.',
+          meta: {
+            action: 'sendAutoReplyEmails',
+            formId: String(form._id),
+            submissionId: String(submission.id),
+          },
+        })
+      } 
+
+      return pdfAttachment && shouldPdfAttachmentBeIncluded
+        ? [...submissionAttachments, pdfAttachment]
+        : [...submissionAttachments]
+    }
 
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
@@ -848,10 +861,7 @@ export class MailService {
         return this.#sendSingleAutoreplyMail({
           form,
           submission,
-          attachments:
-            mailData.includeFormSummary && !isPaymentEnabled
-              ? attachmentsWithAutoreplyPdf
-              : submissionAttachments,
+          attachments: getAttachmentsToInclude(mailData),
           autoReplyMailData: mailData,
           formSummaryRenderData: strippedRenderData,
           index,
