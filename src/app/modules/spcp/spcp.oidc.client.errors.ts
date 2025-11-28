@@ -10,6 +10,15 @@ export class CreateAuthorisationUrlError extends ApplicationError {
 }
 
 /**
+ * Error while creating Pushed Authorisation Request
+ */
+export class CreateParRequestError extends ApplicationError {
+  constructor(message = 'Error while creating Pushed Authorisation Request') {
+    super(message, undefined, ErrorCodes.SPCP_OIDC_CREATE_PAR_REQUEST)
+  }
+}
+
+/**
  * Failed to create JWT
  */
 export class CreateJwtError extends ApplicationError {

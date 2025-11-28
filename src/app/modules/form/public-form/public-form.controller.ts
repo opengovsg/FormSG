@@ -54,6 +54,7 @@ import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
+import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import {
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
@@ -701,10 +702,20 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
-              target,
-              form.esrvcId,
+            const cpOidcService = getOidcService(
+              FormAuthType.CP,
+            ) as CpOidcServiceClass
+            // Use PAR-based redirect when the feature flag is enabled
+            const useCorppassPar = req.growthbook?.isOn(
+              featureFlags.enableCorppassPar,
             )
+            if (useCorppassPar) {
+              return cpOidcService.createRedirectUrlWithPar(
+                target,
+                form.esrvcId,
+              )
+            }
+            return cpOidcService.createRedirectUrl(target, form.esrvcId)
           })
         }
         case FormAuthType.SGID:

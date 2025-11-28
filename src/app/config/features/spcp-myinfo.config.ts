@@ -29,6 +29,7 @@ type ISpcpConfig = {
   spOidcRpJwksSecretPath: string
   cpOidcNdiDiscoveryEndpoint: string
   cpOidcNdiJwksEndpoint: string
+  cpOidcNdiParEndpoint: string
   cpOidcRpClientId: string
   cpOidcRpRedirectUrl: string
   cpOidcRpJwksPublic: string
@@ -214,6 +215,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'CP_OIDC_NDI_JWKS_ENDPOINT',
+  },
+  cpOidcNdiParEndpoint: {
+    doc: "NDI's Corppass OIDC PAR (Pushed Authorization Request) Endpoint",
+    format: String,
+    default: '',
+    env: 'CP_OIDC_NDI_PAR_ENDPOINT',
   },
   cpOidcRpClientId: {
     doc: "The Relying Party's Corppass Client ID as registered with NDI",

@@ -19,6 +19,7 @@ import { SpcpOidcBaseClientCache } from './spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
+  CreateParRequestError,
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
   GetSigningKeyError,
@@ -62,6 +63,14 @@ export abstract class SpcpOidcBaseClient {
    * accessible only for testing
    */
   _spcpOidcBaseClientCache: SpcpOidcBaseClientCache
+
+  /**
+   * Protected getter for the redirect URL
+   * @returns RP redirect URL
+   */
+  protected get rpRedirectUrl(): string {
+    return this.#rpRedirectUrl
+  }
 
   /**
    * Constructor for client
@@ -512,8 +521,106 @@ export class CpOidcClient extends SpcpOidcBaseClient {
   authType = FormAuthType.CP
   eServiceIdKey = 'esrvcID'
 
-  constructor(params: SpcpOidcClientConstructorParams) {
+  #parEndpoint: string
+
+  constructor(
+    params: SpcpOidcClientConstructorParams & { parEndpoint?: string },
+  ) {
     super(params)
+    this.#parEndpoint = params.parEndpoint || ''
+  }
+
+  /**
+   * Method to generate url to CP login page for authorisation using Pushed Authorization Request (PAR)
+   * POSTs authorization parameters to PAR endpoint and returns a URL with request_uri
+   * @param state - contains formId, remember me, and stored queryId
+   * @param esrvcId - eServiceId
+   * @return authorisation url with request_uri from PAR response
+   * @throws CreateParRequestError if PAR request fails
+   * @throws CreateAuthorisationUrlError if state or esrvcId is undefined
+   */
+  async createAuthorisationUrlWithPar(
+    state: string,
+    esrvcId: string,
+  ): Promise<string> {
+    if (!state) {
+      throw new CreateAuthorisationUrlError(
+        'Empty state, failed to create redirect url.',
+      )
+    }
+    if (!esrvcId) {
+      throw new CreateAuthorisationUrlError(
+        'Empty esrvcId, failed to create redirect url.',
+      )
+    }
+    if (!this.#parEndpoint) {
+      throw new CreateParRequestError(
+        'PAR endpoint not configured, failed to create redirect url.',
+      )
+    }
+
+    const baseClient = await this.getBaseClientFromCache()
+    const nonce = ulid()
+
+    // Create client assertion for PAR request
+    const clientAssertion = await this.createJWT(
+      {
+        iss: this.rpClientId,
+        aud: baseClient.issuer.metadata.issuer,
+        sub: this.rpClientId,
+      },
+      '60s',
+    )
+
+    // Construct PAR request body
+    const parBody = new URLSearchParams({
+      scope: 'openid',
+      response_type: 'code',
+      client_id: this.rpClientId,
+      redirect_uri: this.rpRedirectUrl,
+      state: state,
+      nonce: nonce,
+      [this.eServiceIdKey]: esrvcId,
+      client_assertion_type:
+        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+      client_assertion: clientAssertion,
+    }).toString()
+
+    try {
+      const { data } = await axios.post<{
+        request_uri: string
+        expires_in: number
+      }>(this.#parEndpoint, parBody, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+
+      if (!data.request_uri) {
+        throw new CreateParRequestError('PAR response missing request_uri')
+      }
+
+      // Construct authorization URL with request_uri from PAR response
+      const authorizationEndpoint =
+        baseClient.issuer.metadata.authorization_endpoint
+
+      if (!authorizationEndpoint) {
+        throw new CreateParRequestError(
+          'Authorization endpoint not found in issuer metadata',
+        )
+      }
+
+      const authorisationUrl = `${authorizationEndpoint}?client_id=${encodeURIComponent(this.rpClientId)}&request_uri=${encodeURIComponent(data.request_uri)}`
+
+      return authorisationUrl
+    } catch (err) {
+      if (err instanceof CreateParRequestError) {
+        throw err
+      }
+      throw new CreateParRequestError(
+        `PAR request failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      )
+    }
   }
 
   /**

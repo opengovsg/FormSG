@@ -41,6 +41,7 @@ const cpOidcClient = new CpOidcClient({
     preIacFilePath: spcpMyInfoConfig.cpOidcRpJwksSecretPath,
     postIacJsonString: spcpMyInfoConfig.cpOidcRpJwksSecret,
   }),
+  parEndpoint: spcpMyInfoConfig.cpOidcNdiParEndpoint,
 })
 
 const cpOidcProps = {

@@ -13,6 +13,7 @@ import { SpcpOidcBaseClientCache } from '../spcp.oidc.client.cache'
 import {
   CreateAuthorisationUrlError,
   CreateJwtError,
+  CreateParRequestError,
   ExchangeAuthTokenError,
   GetDecryptionKeyError,
   GetSigningKeyError,
@@ -32,9 +33,11 @@ import {
 import {
   CP_OIDC_NDI_DISCOVERY_ENDPOINT,
   CP_OIDC_NDI_JWKS_ENDPOINT,
+  CP_OIDC_NDI_PAR_ENDPOINT,
   CP_OIDC_RP_CLIENT_ID,
   CP_OIDC_RP_REDIRECT_URL,
   cpOidcClientConfig,
+  cpOidcClientConfigWithPar,
   SP_OIDC_NDI_DISCOVERY_ENDPOINT,
   SP_OIDC_NDI_JWKS_ENDPOINT,
   SP_OIDC_RP_CLIENT_ID,
@@ -2200,6 +2203,215 @@ describe('CpOidcClient', () => {
       expect(mockAuthorisationUrlFn).not.toHaveBeenCalledWith(
         expect.objectContaining({ esrvc: MOCK_ESRVCID }),
       )
+    })
+  })
+
+  describe('createAuthorisationUrlWithPar', () => {
+    it('should throw CreateAuthorisationUrlError if state parameter is empty', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_EMPTY_STATE = ''
+      const MOCK_ESRVCID = 'esrvcId'
+
+      // Act
+
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfigWithPar)
+      const tryCreateUrl = cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_EMPTY_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      await expect(tryCreateUrl).rejects.toThrow(CreateAuthorisationUrlError)
+      await expect(tryCreateUrl).rejects.toThrow('Empty state')
+    })
+
+    it('should throw CreateAuthorisationUrlError if esrvcId parameter is empty', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_EMPTY_ESRVCID = ''
+
+      // Act
+
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfigWithPar)
+      const tryCreateUrl = cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_STATE,
+        MOCK_EMPTY_ESRVCID,
+      )
+
+      // Assert
+      await expect(tryCreateUrl).rejects.toThrow(CreateAuthorisationUrlError)
+      await expect(tryCreateUrl).rejects.toThrow('Empty esrvcId')
+    })
+
+    it('should throw CreateParRequestError if PAR endpoint is not configured', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+
+      // Act
+      // Use the config without PAR endpoint
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
+      const tryCreateUrl = cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      await expect(tryCreateUrl).rejects.toThrow(CreateParRequestError)
+      await expect(tryCreateUrl).rejects.toThrow('PAR endpoint not configured')
+    })
+
+    it('should correctly POST to PAR endpoint and return authorisation URL with request_uri', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+      const MOCK_REQUEST_URI = 'urn:ietf:params:oauth:request_uri:12345'
+      const MOCK_AUTH_ENDPOINT = 'https://corppass.example.com/authorize'
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          issuer: {
+            metadata: {
+              authorization_endpoint: MOCK_AUTH_ENDPOINT,
+              issuer: 'https://corppass.example.com',
+            },
+          },
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'createJWT')
+        .mockResolvedValueOnce('mockJwt')
+
+      const axiosSpy = jest.spyOn(axios, 'post').mockResolvedValueOnce({
+        data: {
+          request_uri: MOCK_REQUEST_URI,
+          expires_in: 90,
+        },
+      })
+
+      // Act
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfigWithPar)
+      const result = await cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      expect(axiosSpy).toHaveBeenCalledOnce()
+      expect(axiosSpy).toHaveBeenCalledWith(
+        CP_OIDC_NDI_PAR_ENDPOINT,
+        expect.stringContaining('esrvcID'),
+        expect.objectContaining({
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }),
+      )
+      expect(result).toContain(MOCK_AUTH_ENDPOINT)
+      expect(result).toContain('request_uri=')
+      expect(result).toContain(encodeURIComponent(MOCK_REQUEST_URI))
+    })
+
+    it('should throw CreateParRequestError if PAR response is missing request_uri', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          issuer: {
+            metadata: {
+              authorization_endpoint: 'https://corppass.example.com/authorize',
+              issuer: 'https://corppass.example.com',
+            },
+          },
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'createJWT')
+        .mockResolvedValueOnce('mockJwt')
+
+      jest.spyOn(axios, 'post').mockResolvedValueOnce({
+        data: {
+          expires_in: 90,
+          // Missing request_uri
+        },
+      })
+
+      // Act
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfigWithPar)
+      const tryCreateUrl = cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      await expect(tryCreateUrl).rejects.toThrow(CreateParRequestError)
+      await expect(tryCreateUrl).rejects.toThrow(
+        'PAR response missing request_uri',
+      )
+    })
+
+    it('should throw CreateParRequestError if PAR request fails', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          issuer: {
+            metadata: {
+              authorization_endpoint: 'https://corppass.example.com/authorize',
+              issuer: 'https://corppass.example.com',
+            },
+          },
+        } as unknown as BaseClient)
+
+      jest
+        .spyOn(CpOidcClient.prototype, 'createJWT')
+        .mockResolvedValueOnce('mockJwt')
+
+      jest
+        .spyOn(axios, 'post')
+        .mockRejectedValueOnce(new Error('Network error'))
+
+      // Act
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfigWithPar)
+      const tryCreateUrl = cpOidcClient.createAuthorisationUrlWithPar(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      await expect(tryCreateUrl).rejects.toThrow(CreateParRequestError)
+      await expect(tryCreateUrl).rejects.toThrow('PAR request failed')
     })
   })
 

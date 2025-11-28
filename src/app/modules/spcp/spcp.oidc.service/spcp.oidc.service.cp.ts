@@ -3,6 +3,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  CreateRedirectUrlError,
   ExchangeAuthTokenError,
   InvalidIdTokenError,
   InvalidJwtError,
@@ -40,6 +41,37 @@ export class CpOidcServiceClass extends SpcpOidcServiceClass {
     // assign members in subclass to let typescript register the types
     this.oidcClient = oidcClient
     this.oidcProps = oidcProps
+  }
+
+  /**
+   * Create the URL to which the client should be redirected for Corppass OIDC login using PAR.
+   * @param state - contains formId, remember me, and stored queryId
+   * @param esrvcId CP OIDC e-service ID
+   * @returns okAsync(redirectUrl)
+   * @returns errAsync(CreateRedirectUrlError)
+   */
+  createRedirectUrlWithPar(
+    state: string,
+    esrvcId: string,
+  ): ResultAsync<string, CreateRedirectUrlError> {
+    const logMeta = {
+      action: 'createRedirectUrlWithPar',
+      state,
+      esrvcId,
+      authType: this.authType,
+    }
+
+    return ResultAsync.fromPromise(
+      this.oidcClient.createAuthorisationUrlWithPar(state, esrvcId),
+      (error) => {
+        logger.error({
+          message: 'Error while creating redirect URL with PAR',
+          meta: logMeta,
+          error,
+        })
+        return new CreateRedirectUrlError()
+      },
+    )
   }
 
   /**

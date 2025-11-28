@@ -148,6 +148,7 @@ export const SP_OIDC_RP_REDIRECT_URL = 'spOidcRpRedirectUrl'
 
 export const CP_OIDC_NDI_DISCOVERY_ENDPOINT = 'cpOidcNdiDiscoveryEndpoint'
 export const CP_OIDC_NDI_JWKS_ENDPOINT = 'cpOidcNdiJwksEndpoint'
+export const CP_OIDC_NDI_PAR_ENDPOINT = 'https://corppass.example.com/par'
 export const CP_OIDC_RP_CLIENT_ID = 'cpOidcRpClientId'
 export const CP_OIDC_RP_REDIRECT_URL = 'cpOidcRpRedirectUrl'
 
@@ -197,4 +198,16 @@ export const cpOidcClientConfig: SpcpOidcClientConstructorParams = {
   rpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
   rpSecretJwks: TEST_CP_RP_SECRET_JWKS,
   rpPublicJwks: TEST_CP_RP_PUBLIC_JWKS,
+}
+
+export const cpOidcClientConfigWithPar: SpcpOidcClientConstructorParams & {
+  parEndpoint: string
+} = {
+  ndiDiscoveryEndpoint: CP_OIDC_NDI_DISCOVERY_ENDPOINT,
+  ndiJwksEndpoint: CP_OIDC_NDI_JWKS_ENDPOINT,
+  rpClientId: CP_OIDC_RP_CLIENT_ID,
+  rpRedirectUrl: CP_OIDC_RP_REDIRECT_URL,
+  rpSecretJwks: TEST_CP_RP_SECRET_JWKS,
+  rpPublicJwks: TEST_CP_RP_PUBLIC_JWKS,
+  parEndpoint: CP_OIDC_NDI_PAR_ENDPOINT,
 }
