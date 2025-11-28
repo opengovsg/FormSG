@@ -605,16 +605,24 @@ export class CpOidcClient extends SpcpOidcBaseClient {
         baseClient.issuer.metadata.authorization_endpoint
 
       if (!authorizationEndpoint) {
-        throw new CreateParRequestError(
+        throw new CreateAuthorisationUrlError(
           'Authorization endpoint not found in issuer metadata',
         )
       }
 
-      const authorisationUrl = `${authorizationEndpoint}?client_id=${encodeURIComponent(this.rpClientId)}&request_uri=${encodeURIComponent(data.request_uri)}`
+      const authorisationUrlParams = new URLSearchParams({
+        client_id: this.rpClientId,
+        request_uri: data.request_uri,
+      })
+
+      const authorisationUrl = `${authorizationEndpoint}?${authorisationUrlParams.toString()}`
 
       return authorisationUrl
     } catch (err) {
-      if (err instanceof CreateParRequestError) {
+      if (
+        err instanceof CreateParRequestError ||
+        err instanceof CreateAuthorisationUrlError
+      ) {
         throw err
       }
       throw new CreateParRequestError(
