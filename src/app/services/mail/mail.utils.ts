@@ -1,9 +1,11 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
+import moment from 'moment'
 import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
+import { BasicField } from '../../../../shared/types'
 import { BounceType, EmailRespondentConfirmationField } from '../../../types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -22,8 +24,6 @@ import {
   PaymentConfirmationData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
-import moment from 'moment'
-import { BasicField } from '../../../../shared/types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -114,8 +114,8 @@ export const generateBounceNotificationHtml = (
 }
 
 export const generatePdfRenderData = ({
-  refNo, 
-  formTitle, 
+  refNo,
+  formTitle,
   submissionDateTime,
   responsesData,
   formUrl,
@@ -126,20 +126,23 @@ export const generatePdfRenderData = ({
   responsesData: EmailRespondentConfirmationField[]
   formUrl: string
 }): AutoreplySummaryRenderData => {
-
-  const pdfResponsesData = responsesData.map(({ question, answerTemplate, answer, fieldType }) => ({
-    question,
-    answerTemplate, 
-    // In the submit-form-summary-pdf.server.view.html, for signature field, it expects the answer key, while for others, it expects the answerTemplate key.
-    answer: fieldType === BasicField.Signature ? answer : undefined,
-  }))
+  const pdfResponsesData = responsesData.map(
+    ({ question, answerTemplate, answer, fieldType }) => ({
+      question,
+      answerTemplate,
+      // In the submit-form-summary-pdf.server.view.html, for signature field, it expects the answer key, while for others, it expects the answerTemplate key.
+      answer: fieldType === BasicField.Signature ? answer : undefined,
+    }),
+  )
 
   return {
-    refNo, 
-    formTitle, 
-    submissionTime: moment(submissionDateTime).tz('Asia/Singapore').format('ddd, DD MMM YYYY hh:mm:ss A'),
+    refNo,
+    formTitle,
+    submissionTime: moment(submissionDateTime)
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A'),
     formData: pdfResponsesData,
-    formUrl
+    formUrl,
   }
 }
 

@@ -37,7 +37,10 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
-import { generateAutoreplyPdf, generatePdfRenderData } from '../../../services/mail/mail.utils'
+import {
+  generateAutoreplyPdf,
+  generatePdfRenderData,
+} from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -61,9 +64,10 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   extractRespondentCopyEmailDatas,
-  getEmailFromResponses, getQuestionAnswerPairsForMultipleFields,
+  getEmailFromResponses,
+  getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
-  retrieveWorkflowStepEmailAddresses
+  retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -896,7 +900,7 @@ const generatePdfAttachmentIfRequired = ({
     refNo: submissionId,
     formTitle: form.title,
     submissionDateTime: submission.created ?? new Date(),
-    responsesData, 
+    responsesData,
     formUrl: `${config.app.appUrl}/${form._id}`,
   })
 

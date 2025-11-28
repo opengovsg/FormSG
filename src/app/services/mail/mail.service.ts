@@ -840,15 +840,16 @@ export class MailService {
         !isPaymentEnabled && mailData.includeFormSummary
 
       if (shouldPdfAttachmentBeIncluded && !pdfAttachment) {
-        logger.error({ 
-          message: 'Could not find PDF attachment required for autoReply email. Continuing to send without PDF attachment.',
+        logger.error({
+          message:
+            'Could not find PDF attachment required for autoReply email. Continuing to send without PDF attachment.',
           meta: {
             action: 'sendAutoReplyEmails',
             formId: String(form._id),
             submissionId: String(submission.id),
           },
         })
-      } 
+      }
 
       return pdfAttachment && shouldPdfAttachmentBeIncluded
         ? [...submissionAttachments, pdfAttachment]

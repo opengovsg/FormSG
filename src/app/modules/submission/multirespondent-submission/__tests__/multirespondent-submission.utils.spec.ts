@@ -436,9 +436,17 @@ describe('multirespondent-submission.utils', () => {
       })
 
       expect(result).toEqual([
-        { question: 'Short Text', answer: 'Test answer' },
-        { question: 'Number', answer: '42' },
-        { question: 'Email', answer: 'test@example.com' },
+        {
+          question: 'Short Text',
+          answer: 'Test answer',
+          fieldType: BasicField.ShortText,
+        },
+        { question: 'Number', answer: '42', fieldType: BasicField.Number },
+        {
+          question: 'Email',
+          answer: 'test@example.com',
+          fieldType: BasicField.Email,
+        },
       ])
     })
 
@@ -463,7 +471,11 @@ describe('multirespondent-submission.utils', () => {
       })
 
       expect(result).toEqual([
-        { question: '[Attachment] File Upload', answer: 'file.pdf' },
+        {
+          question: '[Attachment] File Upload',
+          answer: 'file.pdf',
+          fieldType: BasicField.Attachment,
+        },
       ])
     })
 
@@ -514,18 +526,22 @@ describe('multirespondent-submission.utils', () => {
         {
           question: '[Table] Table of Name and Age (Name; Age)',
           answer: 'Alice; 30',
+          fieldType: BasicField.Table,
         },
         {
           question: '[Table] Table of Name and Age (Name; Age)',
           answer: 'Bob; 25',
+          fieldType: BasicField.Table,
         },
         {
           question: '[Table] Table of Hobbies (Hobby; Years)',
           answer: 'Swimming; 5',
+          fieldType: BasicField.Table,
         },
         {
           question: '[Table] Table of Hobbies (Hobby; Years)',
           answer: 'Reading; 10',
+          fieldType: BasicField.Table,
         },
       ])
     })
@@ -554,7 +570,11 @@ describe('multirespondent-submission.utils', () => {
       })
 
       expect(result).toEqual([
-        { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
+        {
+          question: 'Checkbox',
+          answer: 'Option 1,Option 2,Custom Option',
+          fieldType: BasicField.Checkbox,
+        },
       ])
     })
 
@@ -591,11 +611,48 @@ describe('multirespondent-submission.utils', () => {
         {
           question: 'Address',
           answer: '161, BUKIT BATOK STREET 11, #1-1, SINGAPORE 650161',
+          fieldType: BasicField.Address,
         },
       ])
     })
 
-    it('should handle signature fields correctly', () => {
+    it('should handle signature fields correctly when includeSignatureDataPngUri is true', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Signature',
+          fieldType: BasicField.Signature,
+        } as ISignatureFieldSchema,
+      ]
+
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Signature,
+          answer: {
+            type: 'draw',
+            value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
+          } as SignatureFieldResponseV3,
+        },
+      }
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+        includeSignatureDataPngDataUri: true,
+      })
+
+      expect(result).toEqual([
+        {
+          question: '[signature] Signature',
+          answer: 'Signature captured',
+          fieldType: BasicField.Signature,
+          signatureDataPngDataUri:
+            'data:image/png;base64,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',
+        },
+      ])
+    })
+
+    it('should handle signature fields correctly when includeSignatureDataPngUri is false', () => {
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
@@ -623,6 +680,8 @@ describe('multirespondent-submission.utils', () => {
         {
           question: '[signature] Signature',
           answer: 'Signature captured',
+          fieldType: BasicField.Signature,
+          signatureDataPngDataUri: undefined,
         },
       ])
     })
@@ -645,6 +704,7 @@ describe('multirespondent-submission.utils', () => {
         {
           question: 'SingPass Validated NRIC (Step 1)',
           answer: 'S1234567A',
+          fieldType: BasicField.Nric,
         },
       ])
     })
