@@ -37,10 +37,7 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
-import {
-  generateAutoreplyPdf,
-  generatePdfRenderData,
-} from '../../../services/mail/mail.utils'
+import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -896,16 +893,16 @@ const generatePdfAttachmentIfRequired = ({
     responses,
   })
 
-  const pdfRenderData = generatePdfRenderData({
+  const autoReplyData = {
     refNo: submissionId,
     formTitle: form.title,
     submissionDateTime: submission.created ?? new Date(),
     responsesData,
     formUrl: `${config.app.appUrl}/${form._id}`,
-  })
+  }
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
-  const pdfResult = generateAutoreplyPdf(pdfRenderData, true).map(
+  const pdfResult = generateAutoreplyPdf(autoReplyData, true).map(
     (pdfBuffer) => ({
       filename: DEFAULT_RESPONSE_PDF_FILENAME,
       content: Buffer.copyBytesFrom(pdfBuffer),

@@ -21,10 +21,7 @@ import { getEncryptSubmissionModel } from '../../../models/submission.server.mod
 import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
-import {
-  generateAutoreplyPdf,
-  generatePdfRenderData,
-} from '../../../services/mail/mail.utils'
+import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { createQueryWithDateParam } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
@@ -194,16 +191,16 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
-  const pdfRenderData = generatePdfRenderData({
+  const autoReplyData = {
     refNo: submission.id,
     formTitle: form.title,
     submissionDateTime: submission.created ?? new Date(),
     responsesData,
     formUrl: `${config.app.appUrl}/${form._id}`,
-  })
+  }
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
-  return generateAutoreplyPdf(pdfRenderData, true).map((pdfBuffer) => ({
+  return generateAutoreplyPdf(autoReplyData, true).map((pdfBuffer) => ({
     filename: DEFAULT_RESPONSE_PDF_FILENAME,
     content: Buffer.copyBytesFrom(pdfBuffer),
   }))

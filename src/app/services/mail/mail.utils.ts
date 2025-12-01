@@ -113,19 +113,21 @@ export const generateBounceNotificationHtml = (
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
-export const generatePdfRenderData = ({
-  refNo,
-  formTitle,
-  submissionDateTime,
-  responsesData,
-  formUrl,
-}: {
+interface AutoReplyData {
   refNo: string
   formTitle: string
   submissionDateTime: Date
   responsesData: EmailRespondentConfirmationField[]
   formUrl: string
-}): AutoreplySummaryRenderData => {
+}
+
+const generatePdfRenderData = ({
+  refNo,
+  formTitle,
+  submissionDateTime,
+  responsesData,
+  formUrl,
+}: AutoReplyData): AutoreplySummaryRenderData => {
   const pdfResponsesData = responsesData.map(
     ({ question, answerTemplate, answer, fieldType }) => ({
       question,
@@ -147,7 +149,7 @@ export const generatePdfRenderData = ({
 }
 
 export const generateAutoreplyPdf = (
-  renderData: AutoreplySummaryRenderData,
+  autoReplyData: AutoReplyData,
   isUseLambdaOutput: boolean,
 ): ResultAsync<Buffer, AutoreplyPdfGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
@@ -162,22 +164,26 @@ export const generateAutoreplyPdf = (
     },
   })
 
-  return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
-    return ResultAsync.fromPromise(
-      generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
-      (error) => {
-        logger.error({
-          meta: {
-            action: 'generateAutoreplyPdf',
-          },
-          message: 'Error occurred whilst generating autoreply PDF',
-          error,
-        })
+  const pdfRenderData = generatePdfRenderData(autoReplyData)
 
-        return new AutoreplyPdfGenerationError()
-      },
-    )
-  })
+  return safeRenderFile(pathToTemplate, pdfRenderData).andThen(
+    (summaryHtml) => {
+      return ResultAsync.fromPromise(
+        generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
+        (error) => {
+          logger.error({
+            meta: {
+              action: 'generateAutoreplyPdf',
+            },
+            message: 'Error occurred whilst generating autoreply PDF',
+            error,
+          })
+
+          return new AutoreplyPdfGenerationError()
+        },
+      )
+    },
+  )
 }
 
 export const generateAutoreplyHtml = (
