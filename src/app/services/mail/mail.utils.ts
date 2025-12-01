@@ -1,7 +1,7 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
@@ -48,6 +48,8 @@ const safeRenderFile = (
     },
   )
 }
+
+export const safeRenderFileForTest = safeRenderFile
 
 export const generateLoginOtpHtml = (htmlData: {
   otpPrefix: string
