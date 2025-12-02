@@ -91,6 +91,7 @@ const MOCK_AUTOREPLY_DATA = [
   {
     question: 'Email',
     answerTemplate: ['a@abc.com'],
+    fieldType: BasicField.Email,
   },
 ]
 const AUTOREPLY_OPTIONS_1: AutoReplyOptions = {
@@ -2857,7 +2858,7 @@ describe('submission.service', () => {
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile('invalid-key', '')
+      const actualResult = await downloadCleanFile('invalid-key', '', 'mock-bucket-name')
 
       // Assert
       expect(awsSpy).not.toHaveBeenCalled()
