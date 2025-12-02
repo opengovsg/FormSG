@@ -34,6 +34,18 @@ jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
 
 const MockMailUtils = jest.mocked(MailUtils)
+const MOCK_PDF_ATTACHMENT_BUFFER = Buffer.from('mock pdf buffer')
+const EXPECTED_MOCK_PDF_ATTACHMENT = {
+  filename: 'response.pdf',
+  content: MOCK_PDF_ATTACHMENT_BUFFER,
+}
+const MOCK_SUBMISSION_ATTACHMENTS = [
+  {
+    filename: 'attachment_1.pdf',
+    content: Buffer.from('mock pdf buffer'),
+    fieldId: new ObjectId().toHexString(),
+  },
+]
 MockMailUtils.generateAutoreplyPdf.mockReturnValue(
   okAsync(Buffer.from('mock pdf buffer')),
 )
@@ -54,6 +66,34 @@ describe('multirespondent-submission.service', () => {
 
   const mockFormId = new ObjectId().toHexString()
   const mockSubmissionId = new ObjectId().toHexString()
+
+  describe('pdf attachment', () => {
+    describe('pdf attachment is not generated when not needed', () => {
+      describe('first step', () => {
+        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', () => {})
+        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', () => {})
+      })
+
+      describe('subsequent steps', () => {
+        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', () => {})
+        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', () => {})
+      })
+    })
+  })
+
+  describe('respondent copy emails are sent', () => {
+    describe('first step', () => {
+      it('sends respondent copy without pdf when email field auto reply enabled but form summary is not included', () => {})
+      it('sends respondent copy emails with pdf when email field auto reply enabled and form summary is included', () => {})
+      it('does not send respondent copy emails when email field auto reply is not enabled', () => {})
+    })
+
+    describe('subsequent steps', () => {
+      it('sends respondent copy without pdf when email field auto reply enabled but form summary is not included', () => {})
+      it('sends respondent copy emails with pdf when email field auto reply enabled and form summary is included', () => {})
+      it('does not send respondent copy emails when email field auto reply is not enabled', () => {})
+    })
+  })
 
   describe('mrf approval email notification when approval step exists', () => {
     it('workflow continues and does not send approved outcome email when mrf is approved for mid step of multiple step MRF', async () => {
@@ -310,6 +350,7 @@ describe('multirespondent-submission.service', () => {
           ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentWorkflowStep,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
           version: 1,
@@ -325,6 +366,13 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        ...MOCK_SUBMISSION_ATTACHMENTS,
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -471,6 +519,12 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -611,6 +665,12 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -732,6 +792,7 @@ describe('multirespondent-submission.service', () => {
           ] as FormFieldDto[],
         } as SnapshottedFormDef,
         currentStepNumber: currentStepNumber,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
         encryptedPayload: {
           encryptedContent: 'encryptedContent',
           version: 1,
@@ -747,6 +808,13 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        ...MOCK_SUBMISSION_ATTACHMENTS,
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -902,6 +970,12 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -1042,6 +1116,12 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfApprovalEmailSpy).toHaveBeenCalledTimes(1)
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].attachments).toEqual([
+        EXPECTED_MOCK_PDF_ATTACHMENT,
+      ])
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
@@ -1054,7 +1134,7 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('mrf completion email notification when no approval step exists', () => {
-    it('sends completion email when single step mrf is completed', async () => {
+    it('sends completion email with pdf attachment when single step mrf is completed', async () => {
       // Arrange
       const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
         MailService,
@@ -1087,11 +1167,19 @@ describe('multirespondent-submission.service', () => {
           submissionPublicKey: 'submissionPublicKey',
           encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
         } as MultirespondentSubmissionDto,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
         logMeta: {} as any,
       })
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([...MOCK_SUBMISSION_ATTACHMENTS, EXPECTED_MOCK_PDF_ATTACHMENT])
+      // the correct destination emails are included
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
       ).toContainValues(['email1@example.com'])
@@ -1193,6 +1281,12 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([EXPECTED_MOCK_PDF_ATTACHMENT])
       // The emails sent to should only be the expected emails exactly
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
@@ -1384,6 +1478,12 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([EXPECTED_MOCK_PDF_ATTACHMENT])
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
       ).toContainValues(expectedEmails)
@@ -1448,10 +1548,17 @@ describe('multirespondent-submission.service', () => {
           workflowStep: workflow.length - 1,
         } as MultirespondentSubmissionDto,
         logMeta: {} as any,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
       })
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([...MOCK_SUBMISSION_ATTACHMENTS, EXPECTED_MOCK_PDF_ATTACHMENT])
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
       ).toContainValues(expectedEmails)
@@ -1522,6 +1629,12 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([EXPECTED_MOCK_PDF_ATTACHMENT])
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
       ).toContainValues(expectedEmails)
@@ -1612,6 +1725,13 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // pdf attachment is included and submission attachments are correct
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([EXPECTED_MOCK_PDF_ATTACHMENT])
+      // the correct destination emails are included
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
       ).toContainValues(expectedEmails)
