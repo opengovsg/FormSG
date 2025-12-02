@@ -26,6 +26,7 @@ jobs:
       ecr-repository: 'formsg'
       # ECS configuration
       ecs-cpu: 1024
+      formsg-app-reserved-cpu: 896
       ecs-memory: 4096
       ecs-cluster-name: 'formsg-prod-ecs'
       ecs-service-name: 'formsg-prod-ecs-service'
