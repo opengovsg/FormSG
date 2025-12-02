@@ -45,6 +45,7 @@ import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
+  extractRespondentCopyEmailDatas,
   getQuestionAnswerPairsForMultipleFields,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
@@ -57,6 +58,93 @@ describe('multirespondent-submission.utils', () => {
     emails: ['example@example.com'],
     edit: [],
   }
+
+  describe('extractRespondentCopyEmailDatas', () => {
+    it('should return email data for only current step email fields with auto reply enabled and has answer', () => {
+      // Arrange
+      const inactiveEmailField = new ObjectId().toHexString()
+      const activeEmailField = new ObjectId().toHexString()
+      const activeEmailFieldNoAnswer = new ObjectId().toHexString()
+      const activeEmailFieldNoAutoReply = new ObjectId().toHexString()
+      const shortTextFieldId = new ObjectId().toHexString()
+      const autoReplyOptionDefaults = {
+        autoReplySubject: 'Test Subject',
+        autoReplySender: 'Test Sender',
+        autoReplyMessage: 'Test Body',
+        includeFormSummary: true,
+        hasAutoReply: true,
+      }
+      const formFields = [
+        generateDefaultField(BasicField.Email, {
+          _id: inactiveEmailField,
+          autoReplyOptions: autoReplyOptionDefaults,
+        }),
+        generateDefaultField(BasicField.Email, {
+          _id: activeEmailField,
+          autoReplyOptions: autoReplyOptionDefaults,
+        }),
+        generateDefaultField(BasicField.Email, {
+          _id: activeEmailFieldNoAnswer,
+          autoReplyOptions: autoReplyOptionDefaults,
+        }),
+        generateDefaultField(BasicField.ShortText, {
+          _id: shortTextFieldId,
+          autoReplyOptions: autoReplyOptionDefaults,
+        }),
+        generateDefaultField(BasicField.Email, {
+          _id: activeEmailFieldNoAutoReply,
+          autoReplyOptions: {
+            ...autoReplyOptionDefaults,
+            hasAutoReply: false,
+          },
+        }),
+      ]
+
+      // Act
+      const result = extractRespondentCopyEmailDatas({
+        responses: {
+          [inactiveEmailField]: {
+            fieldType: BasicField.Email,
+            answer: {
+              value: 'notexpectedsinceinactive@email.com',
+            },
+          },
+          [activeEmailField]: {
+            fieldType: BasicField.Email,
+            answer: {
+              value: 'expected@email.com',
+            },
+          },
+          [shortTextFieldId]: {
+            fieldType: BasicField.ShortText,
+            answer: 'short text answer',
+          },
+          [activeEmailFieldNoAutoReply]: {
+            fieldType: BasicField.Email,
+            answer: { value: 'notexpectedsincenoautoReply@email.com' },
+          },
+        },
+        formFields,
+        currentStepActiveFields: [
+          activeEmailField,
+          shortTextFieldId,
+          activeEmailFieldNoAnswer,
+          activeEmailFieldNoAutoReply,
+        ],
+      })
+
+      // Assert
+      expect(result).toEqual([
+        {
+          email: 'expected@email.com',
+          subject: 'Test Subject',
+          sender: 'Test Sender',
+          body: 'Test Body',
+          includeFormSummary: true,
+        },
+      ])
+    })
+  })
 
   describe('createPublicMultirespondentSubmissionDto', () => {
     const getAllTypesFormFieldsWithDropdownOptionsToRecipientsMap = () => {
