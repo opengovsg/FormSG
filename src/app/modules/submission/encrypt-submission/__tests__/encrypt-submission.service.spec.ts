@@ -5,10 +5,10 @@ import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
 import {
   BasicField,
-  FormAuthType,
+  EmailResponse, FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
-  PaymentChannel,
+  PaymentChannel
 } from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -99,17 +99,377 @@ describe('encrypt-submission.service', () => {
       },
     } as IPopulatedEncryptedForm
 
-    describe('pdfAttachment generation', () => {
-      it('should generate pdf attachment if required and sendSubmissionToAdmin with pdf attachment', async () => {})
+    const MOCK_PAYMENT_ENCRYPT_FORM = {
+      _id: new ObjectId(),
+      title: 'Test Form',
+      responseMode: FormResponseMode.Encrypt,
+      authType: FormAuthType.NIL,
+      form_fields: [] as FormFieldSchema[],
+      emails: ['test@example.com'],
+      getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      payments_channel: {
+        channel: PaymentChannel.Stripe,
+      },
+      payments_field: {
+        enabled: true,
+      },
+    } as IPopulatedEncryptedForm
 
-      it('should not generate pdf attachment if not required and sendSubmissionToAdmin without pdf attachment', async () => {})
+    const MOCK_SUBMISSION_ATTACHMENTS = [
+      {
+        filename: 'test.pdf',
+        content: 'something',
+      },
+      {
+        filename: 'test2.pdf',
+        content: 'something else',
+      },
+    ]
+    const MOCK_NRIC = 'S1234567A'
+
+    const MOCK_PDF_ATTACHMENT_BUFFER = Buffer.from('mock pdf buffer')
+    const MOCK_PDF_ATTACHMENT = {
+      filename: 'response.pdf',
+      content: MOCK_PDF_ATTACHMENT_BUFFER,
+    }
+
+    describe('pdfAttachment generation and passing to sendSubmissionToAdmin and sendEmailConfirmations', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+        MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
+        MockMailService.sendAutoReplyEmails.mockResolvedValue([
+          {
+            status: 'fulfilled',
+            value: ok(true),
+          },
+        ])
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          okAsync(MOCK_PDF_ATTACHMENT_BUFFER),
+        )
+      })
+
+      it('should not generate pdf attachment if payment is enabled and not pass to either sendSubmissionToAdmin or sendEmailConfirmations', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponses: ProcessedFieldResponse[] = [
+          {
+            _id: new ObjectId().toHexString(),
+            question: SgidFieldTitle.SgidNric,
+            answer: MOCK_NRIC,
+            fieldType: BasicField.Nric,
+          },
+        ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponses,
+          emailFields: mockResponses,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: ['email1@example.com', 'email2@example.com'],
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).not.toHaveBeenCalled()
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: undefined,
+          }),
+        )
+        expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: undefined,
+          }),
+        )
+      })
+
+      it('should generate pdf attachment and pass pdf attachment to both sendSubmissionToAdmin and sendEmailConfirmation if form summary is enabled and payment is not enabled', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponses: ProcessedFieldResponse[] = [
+          {
+            _id: new ObjectId().toHexString(),
+            question: SgidFieldTitle.SgidNric,
+            answer: MOCK_NRIC,
+            fieldType: BasicField.Nric,
+          },
+        ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponses,
+          emailFields: mockResponses,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: ['email1@example.com', 'email2@example.com'], // presence of respondent emails means that form summary is enabled
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledOnce()
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: MOCK_PDF_ATTACHMENT,
+          }),
+        )
+        expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: MOCK_PDF_ATTACHMENT,
+          }),
+        )
+      })
+
+      it('should generate pdf attachment and pass pdf attachment to only sendSubmissionToAdmin if form summary and payment both are not enabled', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponsesWithoutAutoReplyEmailFields: ProcessedFieldResponse[] =
+          [
+            {
+              _id: new ObjectId().toHexString(),
+              question: SgidFieldTitle.SgidNric,
+              answer: MOCK_NRIC,
+              fieldType: BasicField.Nric,
+            },
+          ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponsesWithoutAutoReplyEmailFields,
+          emailFields: mockResponsesWithoutAutoReplyEmailFields,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: [],
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledOnce()
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+          expect.objectContaining({
+            pdfAttachment: MOCK_PDF_ATTACHMENT,
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          }),
+        )
+        expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
+      })
     })
 
     describe('sendEmailConfirmations', () => {
-      describe('pdfAttachment', () => {
-        it('should pass pdf attachment to sendEmailConfirmations if required', async () => {})
+      beforeEach(() => {
+        jest.clearAllMocks()
+        MockMailService.sendSubmissionToAdmin.mockReturnValue(okAsync(true))
+        MockMailService.sendAutoReplyEmails.mockResolvedValue([
+          {
+            status: 'fulfilled',
+            value: ok(true),
+          },
+        ])
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          okAsync(MOCK_PDF_ATTACHMENT_BUFFER),
+        )
+      })
 
-        it('should not pass pdf attachment to sendEmailConfirmations if not required, even if it exists', async () => {})
+      it('should sendEmailConfirmations if there are respondent emails', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponsesWithoutAutoReplyEmailFields: ProcessedFieldResponse[] =
+          [
+            {
+              _id: new ObjectId().toHexString(),
+              question: SgidFieldTitle.SgidNric,
+              answer: MOCK_NRIC,
+              fieldType: BasicField.Nric,
+            },
+          ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponsesWithoutAutoReplyEmailFields,
+          emailFields: mockResponsesWithoutAutoReplyEmailFields,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: ['email1@example.com', 'email2@example.com'],
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledOnce()
+        expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            autoReplyMailDatas: [
+              { email: 'email1@example.com', includeFormSummary: true },
+              { email: 'email2@example.com', includeFormSummary: true },
+            ],
+          }),
+        )
+      })
+
+      it('should sendEmailConfirmations if there are email fields with auto reply enabled', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const emailFieldId = new ObjectId().toHexString()
+        const emailResponse = {
+          _id: emailFieldId,
+          question: 'Email of respondent',
+          answer: 'email1@example.com',
+          fieldType: BasicField.Email,
+        } as EmailResponse
+        const emailFieldId2 = new ObjectId().toHexString()
+        const emailResponse2 = {
+          _id: emailFieldId2,
+          question: 'Email of respondent',
+          answer: 'email2@example.com',
+          fieldType: BasicField.Email,
+        } as EmailResponse
+        const mockResponses: ProcessedFieldResponse[] = [
+          {
+            _id: new ObjectId().toHexString(),
+            question: SgidFieldTitle.SgidNric,
+            answer: MOCK_NRIC,
+            fieldType: BasicField.Nric,
+          },
+          emailResponse,
+          emailResponse2,
+        ]
+
+        const emailField = {
+          _id: emailFieldId,
+          fieldType: BasicField.Email,
+          autoReplyOptions: {
+            hasAutoReply: true,
+            autoReplySubject: 'Test Subject',
+            autoReplySender: 'test@example.com',
+            autoReplyMessage: 'Test Message',
+            includeFormSummary: true,
+          },
+        }
+
+        const emailField2 = {
+          _id: emailFieldId2,
+          fieldType: BasicField.Email,
+          autoReplyOptions: {
+            hasAutoReply: true,
+            autoReplySubject: 'Test Subject',
+            autoReplySender: 'test@example.com',
+            autoReplyMessage: 'Test Message',
+            includeFormSummary: false,
+          },
+        }
+
+        const mockNonPaymentEncryptFormWithEmailField = {
+          ...MOCK_NON_PAYMENT_ENCRYPT_FORM,
+          form_fields: [
+            ...MOCK_NON_PAYMENT_ENCRYPT_FORM.form_fields,
+            emailField,
+            emailField2,
+          ],
+        } as IPopulatedEncryptedForm
+
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(mockNonPaymentEncryptFormWithEmailField),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponses,
+          emailFields: mockResponses,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: [],
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledOnce()
+        expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: MOCK_PDF_ATTACHMENT,
+            autoReplyMailDatas: [
+              {
+                body: emailField.autoReplyOptions.autoReplyMessage,
+                email: emailResponse.answer,
+                includeFormSummary:
+                  emailField.autoReplyOptions.includeFormSummary,
+                sender: emailField.autoReplyOptions.autoReplySender,
+                subject: emailField.autoReplyOptions.autoReplySubject,
+              },
+              {
+                body: emailField2.autoReplyOptions.autoReplyMessage,
+                email: emailResponse2.answer,
+                includeFormSummary:
+                  emailField2.autoReplyOptions.includeFormSummary,
+                sender: emailField2.autoReplyOptions.autoReplySender,
+                subject: emailField2.autoReplyOptions.autoReplySubject,
+              },
+            ],
+          }),
+        )
+      })
+
+      it('should not sendEmailConfirmations if there are no respondent emails and no email fields with auto reply enabled', async () => {
+        // Arrange
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponsesWithoutAutoReplyEmailFields: ProcessedFieldResponse[] =
+          [
+            {
+              _id: new ObjectId().toHexString(),
+              question: SgidFieldTitle.SgidNric,
+              answer: MOCK_NRIC,
+              fieldType: BasicField.Nric,
+            },
+          ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponsesWithoutAutoReplyEmailFields,
+          emailFields: mockResponsesWithoutAutoReplyEmailFields,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: [],
+        })
+
+        // Assert
+        expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
       })
     })
 
@@ -123,12 +483,6 @@ describe('encrypt-submission.service', () => {
         MockMailUtils.generateAutoreplyPdf.mockReturnValue(
           okAsync(Buffer.from('mock pdf buffer')),
         )
-      })
-
-      describe('pdfAttachment', () => {
-        it('should pass pdf attachment to sendSubmissionToAdmin if required', async () => {})
-
-        it('should not pass pdf attachment to sendSubmissionToAdmin if not required, even if it exists', async () => {})
       })
 
       describe('emailFields', () => {
