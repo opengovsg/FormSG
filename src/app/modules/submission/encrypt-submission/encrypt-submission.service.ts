@@ -136,8 +136,8 @@ export const createEncryptSubmissionWithoutSave = ({
   })
 }
 
-const checkIfAdminPdfIsRequired = (): boolean => {
-  return true
+const checkIfAdminPdfIsRequired = (isPaymentEnabled: boolean): boolean => {
+  return !isPaymentEnabled
 }
 
 const checkIfRespondentFormSummaryIsRequired = ({
@@ -161,7 +161,7 @@ const checkIfPdfGenerationIsRequired = ({
   autoReplyMailDatas: AutoReplyMailData[]
 }): boolean => {
   return (
-    checkIfAdminPdfIsRequired() ||
+    checkIfAdminPdfIsRequired(isPaymentEnabled) ||
     checkIfRespondentFormSummaryIsRequired({
       isPaymentEnabled,
       autoReplyMailDatas,
@@ -318,7 +318,7 @@ export const performEncryptPostSubmissionActions = ({
             submissionAttachments,
             formData,
             dataCollationData: formattedDataCollationData,
-            pdfAttachment: checkIfAdminPdfIsRequired()
+            pdfAttachment: checkIfAdminPdfIsRequired(isPaymentEnabled)
               ? pdfAttachment
               : undefined,
           }).mapErr((error) => {
