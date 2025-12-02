@@ -359,6 +359,12 @@ describe('mail.service', () => {
     })
   })
 
+  const MOCK_PDF_ATTACHMENT = {
+    filename: 'test.pdf',
+    content: Buffer.from('this is a test file'),
+    fieldId: 'test-field-id',
+  }
+
   describe('sendSubmissionToAdmin', () => {
     let expectedHtml: string
 
@@ -374,11 +380,7 @@ describe('mail.service', () => {
         created: new Date(),
       },
       submissionAttachments: [],
-      pdfAttachment: {
-        filename: 'test.pdf',
-        content: Buffer.from('this is a test file'),
-        fieldId: 'test-field-id',
-      },
+      pdfAttachment: MOCK_PDF_ATTACHMENT,
       dataCollationData: [
         {
           question: 'some question',
@@ -441,6 +443,50 @@ describe('mail.service', () => {
       expectedHtml = (
         await MailUtils.generateSubmissionToAdminHtml(htmlData)
       )._unsafeUnwrap()
+    })
+
+    it('should include submission attachments and pdf if it is provided', async () => {
+      const mockValidSubmissionParamsWithPdf = cloneDeep(
+        MOCK_VALID_SUBMISSION_PARAMS,
+      )
+      mockValidSubmissionParamsWithPdf.pdfAttachment =
+        cloneDeep(MOCK_PDF_ATTACHMENT)
+
+      const submissionAttachmentsAndPdf = [
+        ...MOCK_VALID_SUBMISSION_PARAMS.submissionAttachments,
+        MOCK_PDF_ATTACHMENT,
+      ]
+      // Act
+      await mailService.sendSubmissionToAdmin(mockValidSubmissionParamsWithPdf)
+
+      // Assert
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: submissionAttachmentsAndPdf,
+        }),
+      )
+    })
+
+    it('should include submission attachments but not include pdf attachment if it is not provided', async () => {
+      const mockValidSubmissionParamsWithPdf = {
+        ...cloneDeep(MOCK_VALID_SUBMISSION_PARAMS),
+        pdfAttachment: undefined,
+      }
+
+      const submissionAttachmentsWithoutPdf = [
+        ...MOCK_VALID_SUBMISSION_PARAMS.submissionAttachments,
+      ]
+      // Act
+      await mailService.sendSubmissionToAdmin(mockValidSubmissionParamsWithPdf)
+
+      // Assert
+      expect(sendMailSpy).toHaveBeenCalledOnce()
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: submissionAttachmentsWithoutPdf,
+        }),
+      )
     })
 
     it('should send submission mail to admin successfully if form.emails is an array with a single string', async () => {
@@ -1146,6 +1192,144 @@ describe('mail.service', () => {
       // is non-4xx error.
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+
+    it('should include pdf attachment for mailData if includeFormSummary is true, isPaymentEnabled is false and pdfAttachment is provided', async () => {
+      // Arrange
+      const pdfAttachment = {
+        filename: 'test.pdf',
+        content: Buffer.from('pdfcontent'),
+      }
+      const customDataParams = {
+        ...cloneDeep(MOCK_AUTOREPLY_PARAMS),
+        isPaymentEnabled: false,
+        pdfAttachment,
+      }
+
+      customDataParams.autoReplyMailDatas = [
+        {
+          email: MOCK_VALID_EMAIL,
+          includeFormSummary: true,
+        },
+      ]
+
+      const submissionAttachments = customDataParams.submissionAttachments ?? []
+      const expectedSubmissionAttachmentsAndPdf = [
+        ...submissionAttachments,
+        pdfAttachment,
+      ]
+
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      // Act
+      const result = await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(result[0].status).toBe('fulfilled')
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: expectedSubmissionAttachmentsAndPdf,
+        }),
+      )
+    })
+
+    it('should still send mail when pdf should be included but is not provided', async () => {
+      // Arrange
+      const customDataParams = {
+        ...cloneDeep(MOCK_AUTOREPLY_PARAMS),
+        isPaymentEnabled: false,
+        pdfAttachment: undefined,
+      }
+
+      customDataParams.autoReplyMailDatas = [
+        {
+          email: MOCK_VALID_EMAIL,
+          includeFormSummary: true,
+        },
+      ]
+
+      const expectedSubmissionAttachmentsWithoutPdf =
+        customDataParams.submissionAttachments ?? []
+
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      // Act
+      const result = await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(result[0].status).toBe('fulfilled')
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: expectedSubmissionAttachmentsWithoutPdf,
+        }),
+      )
+    })
+
+    it('should not include any attachment for mailData if includeFormSummary is false', async () => {
+      // Arrange
+      const customDataParams = {
+        ...cloneDeep(MOCK_AUTOREPLY_PARAMS),
+        isPaymentEnabled: false,
+        pdfAttachment: undefined,
+      }
+
+      customDataParams.autoReplyMailDatas = [
+        {
+          email: MOCK_VALID_EMAIL,
+          includeFormSummary: false,
+        },
+      ]
+
+      const expectedNoAttachments: [] = []
+
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      // Act
+      const result = await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(result[0].status).toBe('fulfilled')
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: expectedNoAttachments,
+        }),
+      )
+    })
+
+    it('should not include pdf attachment for mailData if isPaymentEnabled is true', async () => {
+      // Arrange
+      const customDataParams = {
+        ...cloneDeep(MOCK_AUTOREPLY_PARAMS),
+        isPaymentEnabled: true,
+        pdfAttachment: undefined,
+      }
+
+      customDataParams.autoReplyMailDatas = [
+        {
+          email: MOCK_VALID_EMAIL,
+          includeFormSummary: true,
+        },
+      ]
+
+      const expectedSubmissionAttachmentsWithoutPdf =
+        customDataParams.submissionAttachments ?? []
+
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      // Act
+      const result = await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(result[0].status).toBe('fulfilled')
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: expectedSubmissionAttachmentsWithoutPdf,
+        }),
+      )
     })
   })
 
