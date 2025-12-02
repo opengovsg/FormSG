@@ -6,6 +6,7 @@
       "portMappings": [
         { "containerPort": 4545, "hostPort": 4545, "protocol": "tcp" }
       ],
+      "cpu": "<FORMSG_APP_RESERVED_CPU>", 
       "environment": [
         { "name": "DD_SERVICE", "value": "formsg" }, 
         { "name": "DD_ENV", "value": "<DD_ENV>" }
