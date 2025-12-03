@@ -71,6 +71,10 @@ on:
         description: 'FormSG SDK mode'
         required: true
         type: string
+      formsg-app-reserved-cpu:
+        description: 'FormSG app reserved CPU units'
+        required: true
+        type: number
       dd-env:
         description: 'Datadog environment'
         required: true
@@ -184,6 +188,7 @@ jobs:
         run: |
           sed -i "s/<AWS_ACCOUNT_ID>/${{ secrets.aws-account-id }}/g" ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<DD_ENV>/${{ inputs.dd-env }}/g' ${{ inputs.ecs-task-definition-path }}
+          sed -i 's/<FORMSG_APP_RESERVED_CPU>/${{ inputs.formsg-app-reserved-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<CPU>/${{ inputs.ecs-cpu }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<MEMORY>/${{ inputs.ecs-memory }}/g' ${{ inputs.ecs-task-definition-path }}
           sed -i 's/<ENVIRONMENT_SITE_NAME>/${{ inputs.environment-site-name }}/g' ${{ inputs.ecs-task-definition-path }}
