@@ -70,13 +70,348 @@ describe('multirespondent-submission.service', () => {
   describe('pdf attachment', () => {
     describe('pdf attachment is not generated when not needed', () => {
       describe('first step', () => {
-        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', () => {})
-        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', () => {})
+        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', async () => {
+          // Arrange
+          const emailFieldWithoutFormSummaryStep1 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 1 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: false,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+          const emailFieldWithFormSummaryStep2 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 2 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: true,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+
+          const workflow = [
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [emailFieldWithoutFormSummaryStep1._id],
+            },
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: ['step2_respondent_email@example.com'],
+              edit: [emailFieldWithFormSummaryStep2._id],
+            },
+          ]
+
+          // Act
+          await performMultiRespondentPostSubmissionCreateActions({
+            submission: {
+              _id: mockSubmissionId,
+            } as unknown as IMultirespondentSubmissionSchema,
+            submissionId: mockSubmissionId,
+            form: {
+              _id: mockFormId,
+              title: 'Test Form',
+              form_fields: [
+                emailFieldWithoutFormSummaryStep1,
+                emailFieldWithFormSummaryStep2,
+              ],
+              stepsToNotify: [workflow[0]._id, workflow[1]._id],
+              workflow,
+              admin: {
+                agency: {
+                  fullName: 'Government Technology Agency',
+                },
+              },
+            } as unknown as IPopulatedMultirespondentForm,
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              submissionPublicKey: 'submissionPublicKey',
+              encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+              responses: {
+                [emailFieldWithoutFormSummaryStep1._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected1@example.com',
+                  },
+                },
+              },
+            } as MultirespondentSubmissionDto,
+            logMeta: {} as any,
+            attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          })
+
+          // Assert
+          expect(MockMailUtils.generateAutoreplyPdf).not.toHaveBeenCalled()
+        })
+        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', async () => {
+          // Arrange
+          const emailFieldWithoutFormSummaryStep1 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 1 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: false,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+
+          const workflow = [
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: [], // step 1 has no emails to notify for outcome
+              edit: [emailFieldWithoutFormSummaryStep1._id],
+            },
+          ]
+
+          const step1Id = new ObjectId().toHexString()
+
+          // Act
+          await performMultiRespondentPostSubmissionCreateActions({
+            submission: {
+              _id: mockSubmissionId,
+            } as unknown as IMultirespondentSubmissionSchema,
+            submissionId: mockSubmissionId,
+            form: {
+              _id: mockFormId,
+              title: 'Test Form',
+              form_fields: [emailFieldWithoutFormSummaryStep1],
+              stepsToNotify: [step1Id],
+              workflow,
+              admin: {
+                agency: {
+                  fullName: 'Government Technology Agency',
+                },
+              },
+            } as unknown as IPopulatedMultirespondentForm,
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              submissionPublicKey: 'submissionPublicKey',
+              encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+              responses: {
+                [emailFieldWithoutFormSummaryStep1._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected1@example.com',
+                  },
+                },
+              },
+            } as MultirespondentSubmissionDto,
+            logMeta: {} as any,
+            attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          })
+
+          // Assert
+          expect(MockMailUtils.generateAutoreplyPdf).not.toHaveBeenCalled()
+        })
       })
 
       describe('subsequent steps', () => {
-        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', () => {})
-        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', () => {})
+        it('should not generate pdf when there is no active form summary included email field and workflow is incomplete', async () => {
+          // Arrange
+          const emailFieldWithFormSummaryStep1 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 1 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: true,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+          const emailFieldWithoutFormSummaryStep2 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 2 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: false,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+
+          const workflow = [
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [emailFieldWithFormSummaryStep1._id],
+            },
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: ['step2_respondent_email@example.com'],
+              edit: [emailFieldWithoutFormSummaryStep2._id],
+            },
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: ['step3_respondent_email@example.com'],
+              edit: [emailFieldWithFormSummaryStep1._id],
+            },
+          ]
+
+          // Act
+          await performMultiRespondentPostSubmissionUpdateActions({
+            submission: {
+              _id: mockSubmissionId,
+            } as unknown as IMultirespondentSubmissionSchema,
+            submissionId: mockSubmissionId,
+            snapshottedFormDef: {
+              _id: mockFormId,
+              title: 'Test Form',
+              form_fields: [
+                emailFieldWithFormSummaryStep1,
+                emailFieldWithoutFormSummaryStep2,
+              ],
+              stepsToNotify: [workflow[1]._id],
+              workflow,
+              admin: {
+                agency: {
+                  fullName: 'Government Technology Agency',
+                },
+              },
+            } as unknown as SnapshottedFormDef,
+            currentStepNumber: 1, // submitted step 2
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              submissionPublicKey: 'submissionPublicKey',
+              encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+              responses: {
+                [emailFieldWithFormSummaryStep1._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected1@example.com',
+                  },
+                },
+                [emailFieldWithoutFormSummaryStep2._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected2@example.com',
+                  },
+                },
+              },
+            } as MultirespondentSubmissionDto,
+            logMeta: {} as any,
+            attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          })
+
+          // Assert
+          expect(MockMailUtils.generateAutoreplyPdf).not.toHaveBeenCalled()
+        })
+
+        it('should not generate pdf when there is no active form summary included email field and workflow is complete but has no emails to notify for outcome', async () => {
+          // Arrange
+          const emailFieldWithFormSummaryStep1 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 1 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: true,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+          const emailFieldWithoutFormSummaryStep2 = {
+            _id: new ObjectId().toHexString(),
+            fieldType: BasicField.Email,
+            title: 'Step 2 Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: false,
+              autoReplySubject: 'Test Subject',
+              autoReplyMessage: 'Test Message',
+              autoReplySender: 'Test Sender',
+            },
+          }
+
+          const workflow = [
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [emailFieldWithFormSummaryStep1._id],
+            },
+            {
+              _id: new ObjectId().toHexString(),
+              workflow_type: WorkflowType.Static,
+              emails: ['step2_respondent_email@example.com'],
+              edit: [emailFieldWithoutFormSummaryStep2._id],
+            },
+          ]
+
+          // Act
+          await performMultiRespondentPostSubmissionUpdateActions({
+            submission: {
+              _id: mockSubmissionId,
+            } as unknown as IMultirespondentSubmissionSchema,
+            submissionId: mockSubmissionId,
+            snapshottedFormDef: {
+              _id: mockFormId,
+              title: 'Test Form',
+              form_fields: [
+                emailFieldWithFormSummaryStep1,
+                emailFieldWithoutFormSummaryStep2,
+              ],
+              stepsToNotify: [],
+              emails: [],
+              workflow,
+              admin: {
+                agency: {
+                  fullName: 'Government Technology Agency',
+                },
+              },
+            } as unknown as SnapshottedFormDef,
+            currentStepNumber: 1, // submitted step 2
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              submissionPublicKey: 'submissionPublicKey',
+              encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+              responses: {
+                [emailFieldWithFormSummaryStep1._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected1@example.com',
+                  },
+                },
+                [emailFieldWithoutFormSummaryStep2._id]: {
+                  fieldType: BasicField.Email,
+                  answer: {
+                    value: 'expected2@example.com',
+                  },
+                },
+              },
+            } as MultirespondentSubmissionDto,
+            logMeta: {} as any,
+            attachments: MOCK_SUBMISSION_ATTACHMENTS,
+          })
+
+          // Assert
+          expect(MockMailUtils.generateAutoreplyPdf).not.toHaveBeenCalled()
+        })
       })
     })
   })
