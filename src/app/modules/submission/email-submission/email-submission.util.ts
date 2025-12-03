@@ -280,6 +280,7 @@ export const getFormattedResponse = (
     autoReplyData = {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,
+      fieldType,
     }
   }
 
@@ -560,6 +561,7 @@ const maskUidOnLastField = (
         return {
           question: autoReplyField.question,
           answerTemplate: maskedAnswerTemplate,
+          fieldType: autoReplyField.fieldType,
         }
       } else {
         return autoReplyField
@@ -638,6 +640,7 @@ const getAutoReplyFormattedResponse = (
       ...(response.fieldType === BasicField.Signature && {
         answer: response.answer,
       }), // add signature answer for PDF generation
+      fieldType: response.fieldType,
     }
   }
   return undefined

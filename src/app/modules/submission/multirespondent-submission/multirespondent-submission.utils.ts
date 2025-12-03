@@ -449,6 +449,7 @@ export const getPdfResponsesData = ({
       pdfResponseData.push({
         question: key,
         answerTemplate: [value.answer],
+        fieldType: value.fieldType,
       })
     }
   }

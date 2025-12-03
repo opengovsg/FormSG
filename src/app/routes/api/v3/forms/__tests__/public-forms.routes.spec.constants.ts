@@ -10,8 +10,9 @@ import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 import { BasicField, FieldBase } from '../../../../../../../shared/types'
 
-export const MOCK_NO_RESPONSES_BODY = {
+export const MOCK_STORAGE_NO_RESPONSES_BODY = {
   responses: [],
+  version: 2,
 }
 
 export const MOCK_TEXT_FIELD = generateDefaultField(BasicField.ShortText)

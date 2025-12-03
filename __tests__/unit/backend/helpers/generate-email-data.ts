@@ -16,6 +16,7 @@ export const generateSingleAnswerAutoreply = (
 ): EmailRespondentConfirmationField => ({
   question: response.question,
   answerTemplate: response.answer.split('\n'),
+  fieldType: response.fieldType,
 })
 
 export const generateSingleAnswerFormData = (
