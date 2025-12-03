@@ -798,13 +798,21 @@ export class MailService {
   > => {
     // Data to render both the submission details mail HTML body and PDF.
 
-    const renderData: AutoreplySummaryRenderData = {
+    const autoReplyData = {
+      refNo: submission.id,
+      formTitle: form.title,
+      submissionDateTime: submission.created || new Date(),
+      responsesData,
+      formUrl: `${this.#appUrl}/${form._id}`,
+    }
+
+    const renderData: AutoreplySummaryRenderData = { 
       refNo: submission.id,
       formTitle: form.title,
       submissionTime: moment(submission.created)
         .tz('Asia/Singapore')
         .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      formData: responsesData,
+      formData: responsesData, 
       formUrl: `${this.#appUrl}/${form._id}`,
     }
 
@@ -824,7 +832,7 @@ export class MailService {
       !isPaymentEnabled
     ) {
       const pdfBufferResult = await generateAutoreplyPdf(
-        renderData,
+        autoReplyData,
         isUseLambdaOutput,
       )
       if (pdfBufferResult.isErr()) {

@@ -486,10 +486,6 @@ const sendMrfRespondentCopyEmails = ({
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
 > => {
   const submissionId: string = submission.id
-  const submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-  const formUrl: string = `${config.app.appUrl}/${form._id}`
 
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
@@ -504,12 +500,12 @@ const sendMrfRespondentCopyEmails = ({
   const hasFormSummary = respondentCopyRecipientData.some(
     (autoReplyMailData) => autoReplyMailData.includeFormSummary,
   )
-  const renderData: AutoreplySummaryRenderData = {
+  const autoReplyData = {
     refNo: submissionId,
     formTitle: form.title,
-    submissionTime: submissionTime,
-    formData: pdfFormData,
-    formUrl: formUrl,
+    submissionDateTime: submission.created || new Date(), 
+    responsesData: pdfFormData,
+    formUrl: `${config.app.appUrl}/${form._id}`,
   }
 
   // Step 1: generate PDF if needed
@@ -517,7 +513,7 @@ const sendMrfRespondentCopyEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   > = hasFormSummary
-    ? generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
+    ? generateAutoreplyPdf(autoReplyData, true).map((pdfBuffer) => ({
         filename: 'response.pdf',
         content: Buffer.copyBytesFrom(pdfBuffer),
       }))

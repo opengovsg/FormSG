@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, okAsync } from 'neverthrow'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
-import { FormResponseMode, PaymentChannel } from 'shared/types'
+import { BasicField, FormResponseMode, PaymentChannel } from 'shared/types'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { MailService } from 'src/app/services/mail/mail.service'
@@ -716,6 +716,7 @@ describe('mail.service', () => {
         {
           question: 'some question',
           answerTemplate: ['some answer template'],
+          fieldType: BasicField.ShortText,
         },
       ],
       attachments: ['something'] as Attachment[],

@@ -1,7 +1,7 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
 
-import { AutoReplyOptions } from '../../../../shared/types'
+import { AutoReplyOptions, BasicField } from '../../../../shared/types'
 import {
   EmailAdminDataField,
   IFormSchema,
@@ -31,6 +31,7 @@ export type SendAutoReplyEmailsArgs = {
   attachments?: Mail.Attachment[]
   responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
     answer?: EmailAdminDataField['answer']
+    fieldType: BasicField
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
   isUseLambdaOutput: boolean

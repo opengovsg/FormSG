@@ -1,10 +1,12 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
 import { flattenDeep } from 'lodash'
+import moment from 'moment-timezone'
 import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { BounceType } from '../../../types'
+import { BasicField } from '../../../../shared/types'
+import { BounceType, EmailRespondentConfirmationField } from '../../../types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
@@ -46,6 +48,8 @@ const safeRenderFile = (
     },
   )
 }
+
+export const safeRenderFileForTest = safeRenderFile
 
 export const generateLoginOtpHtml = (htmlData: {
   otpPrefix: string
@@ -111,8 +115,43 @@ export const generateBounceNotificationHtml = (
   return safeRenderFile(pathToTemplate, htmlData)
 }
 
+interface AutoReplyData {
+  refNo: string
+  formTitle: string
+  submissionDateTime: Date
+  responsesData: EmailRespondentConfirmationField[]
+  formUrl: string
+}
+
+const generatePdfRenderData = ({
+  refNo,
+  formTitle,
+  submissionDateTime,
+  responsesData,
+  formUrl,
+}: AutoReplyData): AutoreplySummaryRenderData => {
+  const pdfResponsesData = responsesData.map(
+    ({ question, answerTemplate, answer, fieldType }) => ({
+      question,
+      answerTemplate,
+      // In the submit-form-summary-pdf.server.view.html, for signature field, it expects the answer key, while for others, it expects the answerTemplate key.
+      answer: fieldType === BasicField.Signature ? answer : undefined,
+    }),
+  )
+
+  return {
+    refNo,
+    formTitle,
+    submissionTime: moment(submissionDateTime)
+      .tz('Asia/Singapore')
+      .format('ddd, DD MMM YYYY hh:mm:ss A'),
+    formData: pdfResponsesData,
+    formUrl,
+  }
+}
+
 export const generateAutoreplyPdf = (
-  renderData: AutoreplySummaryRenderData,
+  autoReplyData: AutoReplyData,
   isUseLambdaOutput: boolean,
 ): ResultAsync<Buffer, AutoreplyPdfGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
@@ -127,22 +166,26 @@ export const generateAutoreplyPdf = (
     },
   })
 
-  return safeRenderFile(pathToTemplate, renderData).andThen((summaryHtml) => {
-    return ResultAsync.fromPromise(
-      generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
-      (error) => {
-        logger.error({
-          meta: {
-            action: 'generateAutoreplyPdf',
-          },
-          message: 'Error occurred whilst generating autoreply PDF',
-          error,
-        })
+  const pdfRenderData = generatePdfRenderData(autoReplyData)
 
-        return new AutoreplyPdfGenerationError()
-      },
-    )
-  })
+  return safeRenderFile(pathToTemplate, pdfRenderData).andThen(
+    (summaryHtml) => {
+      return ResultAsync.fromPromise(
+        generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
+        (error) => {
+          logger.error({
+            meta: {
+              action: 'generateAutoreplyPdf',
+            },
+            message: 'Error occurred whilst generating autoreply PDF',
+            error,
+          })
+
+          return new AutoreplyPdfGenerationError()
+        },
+      )
+    },
+  )
 }
 
 export const generateAutoreplyHtml = (

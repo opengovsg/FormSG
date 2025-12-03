@@ -91,6 +91,7 @@ const MOCK_AUTOREPLY_DATA = [
   {
     question: 'Email',
     answerTemplate: ['a@abc.com'],
+    fieldType: BasicField.Email,
   },
 ]
 const AUTOREPLY_OPTIONS_1: AutoReplyOptions = {
@@ -456,6 +457,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [
@@ -497,6 +499,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
@@ -542,6 +545,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       expect(MockMailService.sendAutoReplyEmails).not.toHaveBeenCalled()
@@ -593,6 +597,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [EXPECTED_AUTOREPLY_DATA_1]
@@ -656,6 +661,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: undefined,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [
@@ -722,6 +728,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: undefined,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [
@@ -781,6 +788,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [
@@ -850,6 +858,7 @@ describe('submission.service', () => {
         submission: MOCK_SUBMISSION,
         attachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isUseLambdaOutput: false,
       })
 
       const expectedAutoReplyData = [
