@@ -303,7 +303,7 @@ export const performEncryptPostSubmissionActions = ({
         submission,
         form,
         responsesData: formData,
-      })
+      }).orElse(() => okAsync(undefined))
 
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
