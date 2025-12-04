@@ -881,16 +881,21 @@ const generatePdfAttachmentIfRequired = ({
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
   const submissionId = submission.id
 
-  if (
-    !checkIsPdfGenerationRequired({
-      responses,
-      form,
-      currentStepActiveFields,
+  const isRespondentCopyPdfRequired = checkIfRespondentFormSummaryIsRequired({
+    responses,
+    formFields: form.form_fields,
+    currentStepActiveFields,
+  })
+  const isWorkflowCompletionEmailPdfRequired =
+    checkIsWorkflowCompletionEmailPdfRequired({
       currentStepNumber,
+      form,
+      responses,
       isRejected,
       submissionId,
     })
-  ) {
+
+  if (!isRespondentCopyPdfRequired && !isWorkflowCompletionEmailPdfRequired) {
     return okAsync(undefined)
   }
 
@@ -908,12 +913,27 @@ const generatePdfAttachmentIfRequired = ({
   }
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
-  const pdfResult = generateAutoreplyPdf(autoReplyData, true).map(
-    (pdfBuffer) => ({
+  const pdfResult = generateAutoreplyPdf(autoReplyData, true)
+    .map((pdfBuffer) => ({
       filename: DEFAULT_RESPONSE_PDF_FILENAME,
       content: Buffer.copyBytesFrom(pdfBuffer),
-    }),
-  )
+    }))
+    .mapErr((error) => {
+      logger.error({
+        message:
+          'Failed to include required PDF attachment for email notifications',
+        meta: {
+          action: 'generatePdfAttachmentIfRequired',
+          submissionId,
+          formId: form._id,
+          formResponseMode: FormResponseMode.Multirespondent,
+          isRespondentCopyPdfRequired,
+          isWorkflowCompletionEmailPdfRequired,
+        },
+        error,
+      })
+      return error
+    })
 
   return pdfResult
 }

@@ -153,22 +153,6 @@ const checkIfRespondentFormSummaryIsRequired = ({
   )
 }
 
-const checkIfPdfGenerationIsRequired = ({
-  isPaymentEnabled,
-  autoReplyMailDatas,
-}: {
-  isPaymentEnabled: boolean
-  autoReplyMailDatas: AutoReplyMailData[]
-}): boolean => {
-  return (
-    checkIfAdminPdfIsRequired(isPaymentEnabled) ||
-    checkIfRespondentFormSummaryIsRequired({
-      isPaymentEnabled,
-      autoReplyMailDatas,
-    })
-  )
-}
-
 const generatePdfAttachmentIfRequired = ({
   isPaymentEnabled,
   autoReplyMailDatas,
@@ -182,12 +166,12 @@ const generatePdfAttachmentIfRequired = ({
   form: IPopulatedEncryptedForm
   responsesData: EmailAdminDataField[]
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
-  if (
-    !checkIfPdfGenerationIsRequired({
-      isPaymentEnabled,
-      autoReplyMailDatas,
-    })
-  ) {
+  const isAdminPdfRequired = checkIfAdminPdfIsRequired(isPaymentEnabled)
+  const isRespondentCopyPdfRequired = checkIfRespondentFormSummaryIsRequired({
+    isPaymentEnabled,
+    autoReplyMailDatas,
+  })
+  if (!isAdminPdfRequired && !isRespondentCopyPdfRequired) {
     return okAsync(undefined)
   }
 
@@ -200,10 +184,27 @@ const generatePdfAttachmentIfRequired = ({
   }
 
   const DEFAULT_RESPONSE_PDF_FILENAME = 'response.pdf'
-  return generateAutoreplyPdf(autoReplyData, true).map((pdfBuffer) => ({
-    filename: DEFAULT_RESPONSE_PDF_FILENAME,
-    content: Buffer.copyBytesFrom(pdfBuffer),
-  }))
+  return generateAutoreplyPdf(autoReplyData, true)
+    .map((pdfBuffer) => ({
+      filename: DEFAULT_RESPONSE_PDF_FILENAME,
+      content: Buffer.copyBytesFrom(pdfBuffer),
+    }))
+    .mapErr((error) => {
+      logger.error({
+        message:
+          'Failed to include required PDF attachment for email notifications',
+        meta: {
+          action: 'generatePdfAttachmentIfRequired',
+          submissionId: submission.id,
+          formId: form._id,
+          formResponseMode: form.responseMode,
+          isAdminPdfRequired,
+          isRespondentCopyPdfRequired,
+        },
+        error,
+      })
+      return error
+    })
 }
 
 /**
