@@ -10,6 +10,7 @@ import {
   WorkflowType,
 } from 'shared/types'
 
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
@@ -29,7 +30,6 @@ import {
   performMultiRespondentPostSubmissionUpdateActions,
   sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
-import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
@@ -2240,7 +2240,7 @@ describe('multirespondent-submission.service', () => {
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
       ).toBe(1)
     })
-    
+
     it('sends completion email with pdf attachment when single step mrf is completed', async () => {
       // Arrange
       const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(

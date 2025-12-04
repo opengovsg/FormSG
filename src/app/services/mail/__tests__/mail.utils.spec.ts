@@ -1,8 +1,9 @@
 import { ObjectId } from 'bson'
-import * as ConvertHtmlToPdf from '../../../utils/convert-html-to-pdf'
-import { generateAutoreplyPdf, safeRenderFileForTest } from '../mail.utils'
 import { BasicField } from 'shared/types'
 import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
+
+import * as ConvertHtmlToPdf from '../../../utils/convert-html-to-pdf'
+import { generateAutoreplyPdf, safeRenderFileForTest } from '../mail.utils'
 
 jest.mock('../../../utils/convert-html-to-pdf.ts')
 const MockConvertHtmlToPdf = jest.mocked(ConvertHtmlToPdf)

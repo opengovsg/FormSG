@@ -14,6 +14,7 @@ import {
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FormService from 'src/app/modules/form/form.service'
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
@@ -29,7 +30,6 @@ import {
   createEncryptSubmissionWithoutSave,
   performEncryptPostSubmissionActions,
 } from '../encrypt-submission.service'
-import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 

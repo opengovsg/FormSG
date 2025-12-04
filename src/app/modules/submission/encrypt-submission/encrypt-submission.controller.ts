@@ -804,6 +804,7 @@ const _createSubmission = async ({
     emailFields,
     submissionAttachments,
     respondentEmails,
+    growthbook: req.growthbook,
   })
 }
 

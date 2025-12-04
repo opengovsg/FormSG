@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -11,11 +12,12 @@ import {
 import {
   EmailAdminDataField,
   FieldResponse,
+  FormFieldSchema,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
 } from '../../../../types'
-import config from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
@@ -44,7 +46,10 @@ import {
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  isAdminEmailPdfEnabled,
+} from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
@@ -136,7 +141,17 @@ export const createEncryptSubmissionWithoutSave = ({
   })
 }
 
-const checkIfAdminPdfIsRequired = (isPaymentEnabled: boolean): boolean => {
+const checkIfAdminPdfIsRequired = (
+  isPaymentEnabled: boolean,
+  formFields: FormFieldSchema[],
+  growthbook?: GrowthBook,
+): boolean => {
+  const isGbFlagEnabled =
+    isAdminEmailPdfEnabled({ growthbook, formFields }) || isTest
+
+  if (!isGbFlagEnabled) {
+    return false
+  }
   return !isPaymentEnabled
 }
 
@@ -159,14 +174,20 @@ const generatePdfAttachmentIfRequired = ({
   submission,
   form,
   responsesData,
+  growthbook,
 }: {
   isPaymentEnabled: boolean
   autoReplyMailDatas: AutoReplyMailData[]
   submission: IEncryptedSubmissionSchema
   form: IPopulatedEncryptedForm
   responsesData: EmailAdminDataField[]
+  growthbook?: GrowthBook
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
-  const isAdminPdfRequired = checkIfAdminPdfIsRequired(isPaymentEnabled)
+  const isAdminPdfRequired = checkIfAdminPdfIsRequired(
+    isPaymentEnabled,
+    form.form_fields,
+    growthbook,
+  )
   const isRespondentCopyPdfRequired = checkIfRespondentFormSummaryIsRequired({
     isPaymentEnabled,
     autoReplyMailDatas,
@@ -229,12 +250,14 @@ export const performEncryptPostSubmissionActions = ({
   emailFields,
   submissionAttachments,
   respondentEmails,
+  growthbook,
 }: {
   submission: IEncryptedSubmissionSchema
   responses: FieldResponse[]
   emailFields: ProcessedFieldResponse[]
   submissionAttachments?: Mail.Attachment[]
   respondentEmails?: string[]
+  growthbook?: GrowthBook
 }): ResultAsync<
   true,
   | FormNotFoundError
@@ -304,6 +327,7 @@ export const performEncryptPostSubmissionActions = ({
         submission,
         form,
         responsesData: formData,
+        growthbook,
       }).orElse(() => okAsync(undefined))
 
       return pdfAttachmentResult.andThen((pdfAttachment) => {
@@ -319,7 +343,11 @@ export const performEncryptPostSubmissionActions = ({
             submissionAttachments,
             formData,
             dataCollationData: formattedDataCollationData,
-            pdfAttachment: checkIfAdminPdfIsRequired(isPaymentEnabled)
+            pdfAttachment: checkIfAdminPdfIsRequired(
+              isPaymentEnabled,
+              form.form_fields,
+              growthbook,
+            )
               ? pdfAttachment
               : undefined,
           }).mapErr((error) => {

@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -26,7 +27,7 @@ import {
   MultirespondentSubmissionDto,
   SnapshottedFormDef,
 } from '../../../../types/api'
-import config from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -55,7 +56,10 @@ import {
 } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { AttachmentMetadata } from '../submission.types'
-import { getMrfSubmissionWorkflowStatus } from '../submission.utils'
+import {
+  getMrfSubmissionWorkflowStatus,
+  isAdminEmailPdfEnabled,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
@@ -798,6 +802,7 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   responses: FieldResponsesV3
   isRejected: boolean
   submissionId: string
+  growthbook?: GrowthBook
 }
 
 const checkIsWorkflowCompletionEmailPdfRequired = ({
@@ -806,7 +811,17 @@ const checkIsWorkflowCompletionEmailPdfRequired = ({
   responses,
   isRejected,
   submissionId,
+  growthbook,
 }: CheckIsWorkflowCompletionEmailPdfRequiredArgs) => {
+  const isGbFlagEnabled =
+    isAdminEmailPdfEnabled({
+      growthbook,
+      formFields: form.form_fields as FormFieldSchema[],
+    }) || isTest
+
+  if (!isGbFlagEnabled) {
+    return false
+  }
   const isWorkflowCompleted = checkIsWorkflowCompleted({
     currentStepNumber,
     form,
@@ -834,30 +849,6 @@ type CheckIsPdfGenerationRequiredArgs = Omit<
 > &
   CheckIsWorkflowCompletionEmailPdfRequiredArgs
 
-const checkIsPdfGenerationRequired = ({
-  responses,
-  form,
-  currentStepActiveFields,
-  currentStepNumber,
-  isRejected,
-  submissionId,
-}: CheckIsPdfGenerationRequiredArgs): boolean => {
-  return (
-    checkIfRespondentFormSummaryIsRequired({
-      responses,
-      formFields: form.form_fields,
-      currentStepActiveFields,
-    }) ||
-    checkIsWorkflowCompletionEmailPdfRequired({
-      currentStepNumber,
-      form,
-      responses,
-      isRejected,
-      submissionId,
-    })
-  )
-}
-
 const generatePdfAttachmentIfRequired = ({
   submission,
   form,
@@ -865,6 +856,7 @@ const generatePdfAttachmentIfRequired = ({
   currentStepActiveFields,
   currentStepNumber,
   isRejected,
+  growthbook,
 }: CheckIsPdfGenerationRequiredArgs & {
   submission: IMultirespondentSubmissionSchema
   form: Pick<
@@ -893,6 +885,7 @@ const generatePdfAttachmentIfRequired = ({
       responses,
       isRejected,
       submissionId,
+      growthbook,
     })
 
   if (!isRespondentCopyPdfRequired && !isWorkflowCompletionEmailPdfRequired) {
@@ -945,6 +938,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
+  growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -952,6 +946,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
+  growthbook?: GrowthBook
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
@@ -972,7 +967,29 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     currentStepNumber,
     isRejected: false, // first step cannot be an approval step and thus cannot be rejected.
     submissionId,
+    growthbook,
   })
+
+  const sendMrfRespondentCopyEmailsPdfResult =
+    checkIfRespondentFormSummaryIsRequired({
+      responses,
+      formFields: form.form_fields,
+      currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
+    })
+      ? pdfResult
+      : okAsync(undefined)
+
+  const sendMrfOutcomeEmailsPdfResult =
+    checkIsWorkflowCompletionEmailPdfRequired({
+      currentStepNumber,
+      form,
+      responses,
+      isRejected: false,
+      submissionId,
+      growthbook,
+    })
+      ? pdfResult
+      : okAsync(undefined)
 
   sendMrfRespondentCopyEmails({
     form,
@@ -981,7 +998,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     attachments,
     formFields: form.form_fields,
     currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
-    pdfResult,
+    pdfResult: sendMrfRespondentCopyEmailsPdfResult,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1040,7 +1057,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         responses,
         submissionId,
         attachments,
-        pdfResult,
+        pdfResult: sendMrfOutcomeEmailsPdfResult,
       })
     })
     .mapErr((error) => {
@@ -1208,6 +1225,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload,
   logMeta,
   attachments,
+  growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
   submissionId: string
@@ -1216,6 +1234,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
   attachments?: IAttachmentInfo[]
+  growthbook?: GrowthBook
 }): ResultAsync<
   boolean,
   | InvalidWorkflowTypeError
@@ -1288,7 +1307,30 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     currentStepActiveFields:
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+    growthbook,
   })
+
+  const sendMrfRespondentCopyEmailsPdfResult =
+    checkIfRespondentFormSummaryIsRequired({
+      responses,
+      formFields: snapshottedFormDef.form_fields,
+      currentStepActiveFields:
+        snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
+    })
+      ? pdfResult
+      : okAsync(undefined)
+
+  const sendMrfOutcomeEmailsPdfResult =
+    checkIsWorkflowCompletionEmailPdfRequired({
+      currentStepNumber,
+      form: snapshottedFormDef,
+      responses,
+      isRejected: isStepRejected,
+      submissionId,
+      growthbook,
+    })
+      ? pdfResult
+      : okAsync(undefined)
 
   sendMrfRespondentCopyEmails({
     form: snapshottedFormDef,
@@ -1298,14 +1340,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     formFields: snapshottedFormDef.form_fields,
     currentStepActiveFields:
       snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
-    pdfResult: checkIfRespondentFormSummaryIsRequired({
-      responses,
-      formFields: snapshottedFormDef.form_fields,
-      currentStepActiveFields:
-        snapshottedFormDef.workflow[currentStepNumber]?.edit ?? [],
-    })
-      ? pdfResult
-      : okAsync(undefined),
+    pdfResult: sendMrfRespondentCopyEmailsPdfResult,
   }).mapErr((error) => {
     logger.error({
       message: 'Send multirespondent respondent copy email error',
@@ -1323,7 +1358,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isApproval: true,
       isRejected: true,
       attachments: attachments,
-      pdfResult: pdfResult,
+      pdfResult: sendMrfOutcomeEmailsPdfResult,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -1340,15 +1375,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
-    pdfResult: checkIsWorkflowCompletionEmailPdfRequired({
-      currentStepNumber,
-      form: snapshottedFormDef,
-      responses,
-      isRejected: isStepRejected,
-      submissionId,
-    })
-      ? pdfResult
-      : okAsync(undefined),
+    pdfResult: sendMrfOutcomeEmailsPdfResult,
   })
     .mapErr((error) => {
       logger.error({
