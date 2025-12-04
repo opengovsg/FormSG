@@ -2,13 +2,14 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
-import { ok, okAsync } from 'neverthrow'
+import { errAsync, ok, okAsync } from 'neverthrow'
 import {
   BasicField,
-  EmailResponse, FormAuthType,
+  EmailResponse,
+  FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
-  PaymentChannel
+  PaymentChannel,
 } from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -28,6 +29,7 @@ import {
   createEncryptSubmissionWithoutSave,
   performEncryptPostSubmissionActions,
 } from '../encrypt-submission.service'
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
@@ -145,6 +147,53 @@ describe('encrypt-submission.service', () => {
         ])
         MockMailUtils.generateAutoreplyPdf.mockReturnValue(
           okAsync(MOCK_PDF_ATTACHMENT_BUFFER),
+        )
+      })
+
+      it('should send email confirmations and sendSubmissionToAdmin without pdf attachment when pdf generation fails', async () => {
+        // Arrange
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          errAsync(new AutoreplyPdfGenerationError()),
+        )
+        const mockSubmission = {
+          _id: new ObjectId(),
+          form: new ObjectId(),
+          created: new Date(),
+        } as IEncryptedSubmissionSchema
+        const mockResponses: ProcessedFieldResponse[] = [
+          {
+            _id: new ObjectId().toHexString(),
+            question: SgidFieldTitle.SgidNric,
+            answer: MOCK_NRIC,
+            fieldType: BasicField.Nric,
+          },
+        ]
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(MOCK_NON_PAYMENT_ENCRYPT_FORM),
+        )
+
+        // Act
+        await performEncryptPostSubmissionActions({
+          submission: mockSubmission,
+          responses: mockResponses,
+          emailFields: mockResponses,
+          submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+          respondentEmails: ['email1@example.com', 'email2@example.com'], // presence of respondent emails means that form summary is enabled
+        })
+
+        // Assert
+        expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledOnce()
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: undefined,
+          }),
+        )
+        expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionAttachments: MOCK_SUBMISSION_ATTACHMENTS,
+            pdfAttachment: undefined,
+          }),
         )
       })
 

@@ -1,6 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
@@ -29,6 +29,7 @@ import {
   performMultiRespondentPostSubmissionUpdateActions,
   sendNextStepReminderEmail,
 } from '../multirespondent-submission.service'
+import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
@@ -46,13 +47,16 @@ const MOCK_SUBMISSION_ATTACHMENTS = [
     fieldId: new ObjectId().toHexString(),
   },
 ]
-MockMailUtils.generateAutoreplyPdf.mockReturnValue(
-  okAsync(Buffer.from('mock pdf buffer')),
-)
 
 describe('multirespondent-submission.service', () => {
   beforeAll(async () => {
     await dbHandler.connect()
+  })
+
+  beforeEach(() => {
+    MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+      okAsync(Buffer.from('mock pdf buffer')),
+    )
   })
 
   afterEach(async () => {
@@ -705,6 +709,86 @@ describe('multirespondent-submission.service', () => {
 
         // Assert
         expect(sendMrfRespondentCopyEmailSpy).not.toHaveBeenCalled()
+      })
+
+      it('sends respondent copy despite pdf generation error', async () => {
+        // Arrange
+        MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+          errAsync(new AutoreplyPdfGenerationError()),
+        )
+        const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+          MailService,
+          'sendMrfRespondentCopyEmail',
+        )
+        const emailFieldWithFormSummaryStep1 = {
+          _id: new ObjectId().toHexString(),
+          fieldType: BasicField.Email,
+          title: 'Step 1 Email Field',
+          autoReplyOptions: {
+            hasAutoReply: true,
+            includeFormSummary: true,
+            autoReplySubject: 'Test Subject',
+            autoReplyMessage: 'Test Message',
+            autoReplySender: 'Test Sender',
+          },
+        }
+
+        const workflow = [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [emailFieldWithFormSummaryStep1._id],
+          },
+        ]
+
+        // Act
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission: {
+            _id: mockSubmissionId,
+          } as unknown as IMultirespondentSubmissionSchema,
+          submissionId: mockSubmissionId,
+          form: {
+            _id: mockFormId,
+            title: 'Test Form',
+            form_fields: [emailFieldWithFormSummaryStep1],
+            stepsToNotify: [workflow[0]._id],
+            workflow,
+            admin: {
+              agency: {
+                fullName: 'Government Technology Agency',
+              },
+            },
+          } as unknown as IPopulatedMultirespondentForm,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {
+              [emailFieldWithFormSummaryStep1._id]: {
+                fieldType: BasicField.Email,
+                answer: {
+                  value: 'expected1@example.com',
+                },
+              },
+            },
+          } as MultirespondentSubmissionDto,
+          logMeta: {} as any,
+          attachments: MOCK_SUBMISSION_ATTACHMENTS,
+        })
+
+        // Assert
+        // that sent to correct destination emails
+        expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
+        expect(
+          sendMrfRespondentCopyEmailSpy.mock.calls[0][0].autoReplyMailData
+            .email,
+        ).toEqual('expected1@example.com')
+        // still sends without pdf attachment
+        expect(
+          sendMrfRespondentCopyEmailSpy.mock.calls[0][0].attachments,
+        ).toEqual([...MOCK_SUBMISSION_ATTACHMENTS])
       })
     })
 
@@ -2101,6 +2185,62 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('mrf completion email notification when no approval step exists', () => {
+    it('sends completion email without pdf attachment when pdf generation fails', async () => {
+      // Arrange
+      MockMailUtils.generateAutoreplyPdf.mockReturnValue(
+        errAsync(new AutoreplyPdfGenerationError()),
+      )
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const singleStepWorkflow: FormWorkflowStepDto[] = [
+        {
+          _id: new ObjectId().toHexString(),
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ]
+
+      // Act
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          _id: mockSubmissionId,
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: {
+          _id: mockFormId,
+          workflow: singleStepWorkflow,
+          emails: ['email1@example.com'],
+        } as IPopulatedMultirespondentForm,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+        } as MultirespondentSubmissionDto,
+        attachments: MOCK_SUBMISSION_ATTACHMENTS,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      // pdf generation is invoked
+      expect(MockMailUtils.generateAutoreplyPdf).toHaveBeenCalledTimes(1)
+      // submission attachments is sent without pdf attachment
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].attachments,
+      ).toEqual([...MOCK_SUBMISSION_ATTACHMENTS])
+      // the correct destination emails are included
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(['email1@example.com'])
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+      ).toBe(1)
+    })
+    
     it('sends completion email with pdf attachment when single step mrf is completed', async () => {
       // Arrange
       const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
