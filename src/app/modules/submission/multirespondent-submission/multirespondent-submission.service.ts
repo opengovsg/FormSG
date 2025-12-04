@@ -455,12 +455,14 @@ const sendMrfOutcomeEmails = ({
       submissionId,
     })
       .asyncAndThen((destinationEmails) => {
-        return pdfResult.map((responsePdf) => {
-          return {
-            destinationEmails,
-            responsePdf,
-          }
-        })
+        return pdfResult
+          .orElse(() => okAsync(undefined))
+          .map((responsePdf) => {
+            return {
+              destinationEmails,
+              responsePdf,
+            }
+          })
       })
       // Step 3: Send outcome emails based on type
       .andThen(({ destinationEmails, responsePdf }) => {
@@ -584,42 +586,46 @@ const sendMrfRespondentCopyEmails = ({
     responses,
   })
 
-  return pdfResult.andThen((responsePdf) => {
-    const recipientAttachments = [
-      ...(attachments ?? []),
-      ...(responsePdf ? [responsePdf] : []),
-    ]
-    return ResultAsync.combine(
-      respondentCopyEmailDatas.map((autoReplyMailData) => {
-        return MailService.sendMrfRespondentCopyEmail({
-          formId: form._id,
-          formTitle: form.title,
-          responseId: submissionId,
-          attachments: autoReplyMailData.includeFormSummary
-            ? recipientAttachments
-            : [],
-          autoReplyMailData,
-          agencyName: form.admin.agency.fullName,
-          ...(autoReplyMailData.includeFormSummary && { formQuestionAnswers }),
-        }).orElse((error) => {
-          logger.error({
-            message: 'Failed to send respondent copy email',
-            meta: {
-              action: 'sendMrfRespondentCopyEmail',
-              formId: form._id,
-              submissionId,
-              autoReplyMailData,
-            },
-            error,
+  return pdfResult
+    .orElse(() => okAsync(undefined))
+    .andThen((responsePdf) => {
+      const recipientAttachments = [
+        ...(attachments ?? []),
+        ...(responsePdf ? [responsePdf] : []),
+      ]
+      return ResultAsync.combine(
+        respondentCopyEmailDatas.map((autoReplyMailData) => {
+          return MailService.sendMrfRespondentCopyEmail({
+            formId: form._id,
+            formTitle: form.title,
+            responseId: submissionId,
+            attachments: autoReplyMailData.includeFormSummary
+              ? recipientAttachments
+              : [],
+            autoReplyMailData,
+            agencyName: form.admin.agency.fullName,
+            ...(autoReplyMailData.includeFormSummary && {
+              formQuestionAnswers,
+            }),
+          }).orElse((error) => {
+            logger.error({
+              message: 'Failed to send respondent copy email',
+              meta: {
+                action: 'sendMrfRespondentCopyEmail',
+                formId: form._id,
+                submissionId,
+                autoReplyMailData,
+              },
+              error,
+            })
+            return okAsync(true) //continue even if one email fails
           })
-          return okAsync(true) //continue even if one email fails
-        })
-      }),
-    ).map(() => true) as ResultAsync<
-      true,
-      InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
-    >
-  })
+        }),
+      ).map(() => true) as ResultAsync<
+        true,
+        InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
+      >
+    })
 }
 
 const saveAttachmentsToDbIfExists = ({
