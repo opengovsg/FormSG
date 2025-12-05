@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -28,7 +28,6 @@ import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
-import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
@@ -228,25 +227,87 @@ export const validateMrfFieldResponses = ({
 }
 
 /**
- * Extracts question-answer pairs from a form field and a response.
+ * Extracts email data to be sent respondent copies to from a multirespondent submission.
+ * @param responses - The multirespondent submission's field responses.
+ * @param formFields - The schema of the form fields present in the form.
+ * @param currentStepActiveFields - The active field Ids assigned in the current step.
+ * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to.
+ */
+export const extractRespondentCopyEmailDatas = ({
+  responses,
+  formFields,
+  currentStepActiveFields,
+}: {
+  responses: FieldResponsesV3
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  currentStepActiveFields: string[]
+}): AutoReplyMailData[] => {
+  return currentStepActiveFields.flatMap((fieldId) => {
+    const fieldIdString = fieldId.toString()
+    const field = formFields.find((f) => f._id.toString() === fieldIdString)
+    const response = responses[fieldIdString]
+
+    if (
+      // checks if field is an email field
+      field &&
+      field.fieldType === BasicField.Email &&
+      field.autoReplyOptions?.hasAutoReply &&
+      response &&
+      // checks if response has an answer (email)
+      typeof response.answer === 'object' &&
+      'value' in response.answer &&
+      typeof response.answer.value === 'string'
+    ) {
+      const {
+        autoReplyMessage,
+        autoReplySubject,
+        autoReplySender,
+        includeFormSummary,
+      } = field.autoReplyOptions
+      return [
+        {
+          email: response.answer.value,
+          subject: autoReplySubject,
+          sender: autoReplySender,
+          body: autoReplyMessage,
+          includeFormSummary,
+        },
+      ]
+    }
+    return [] // no respondent copy emails found
+  })
+}
+
+export type QuestionAnswerPair = {
+  question: string
+  answer: string
+  signatureDataPngDataUri?: string
+  fieldType: BasicField
+}
+
+/**
+ * Given a single form field and its response, extracts question-answer pairs.
  * Used for email body/pdf outputs and individualResponsePage displays
  * Returns an array since some fields (e.g. table, children) will have
- * multiple questionAnswerPairs per response
- * @param formField - form field schema
- * @param response - response of the form field
- * @returns An array of QuestionAnswer objects
+ * multiple question-answer pairs per response
+ * @param formField - Single form field schema. Does not include Ndi responses, @see getQuestionAnswerPairsForMultipleFields on how to include ndi responses.
+ * @param response - Response for the given form field
+ * @returns An array of QuestionAnswer objects representing the extracted question-answer pairs for the given form field.
  */
-export const getQuestionTitleAnswerStringSingleField = ({
+const getQuestionAnswerPairsForOneField = ({
   formField,
   response,
+  includeSignatureDataPngDataUri,
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV3
-}): QuestionAnswer[] => {
+  includeSignatureDataPngDataUri: boolean
+}): QuestionAnswerPair[] => {
   let questionTitle = formField.title
   let answer = ''
   let answerArray: string[] = []
-  const questionAnswerPair: QuestionAnswer[] = []
+  const questionAnswerPairs: QuestionAnswerPair[] = []
+
   switch (response.fieldType) {
     case BasicField.Attachment:
       questionTitle = `[Attachment] ${questionTitle}`
@@ -308,12 +369,13 @@ export const getQuestionTitleAnswerStringSingleField = ({
         const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
         const answer = delimitedColumnAnswers
 
-        questionAnswerPair.push({
+        questionAnswerPairs.push({
           question,
           answer,
+          fieldType: response.fieldType,
         })
       }
-      return questionAnswerPair
+      return questionAnswerPairs
     case BasicField.Radio:
       answer =
         'value' in response.answer
@@ -332,71 +394,85 @@ export const getQuestionTitleAnswerStringSingleField = ({
 
       answer = selectedAnswers.toString()
       break
-    case BasicField.Signature:
-      questionTitle = `[signature] ${questionTitle}`
-      answer = SIGNATURE_CAPTURED_STRING
-      break
+    case BasicField.Signature: {
+      const signatureQuestionAnswer = {
+        question: `[signature] ${questionTitle}`,
+        answer: SIGNATURE_CAPTURED_STRING,
+        signatureDataPngDataUri: includeSignatureDataPngDataUri
+          ? convertToSignaturePngDataUri(response.answer.value)
+          : undefined,
+        fieldType: response.fieldType,
+      }
+      return [signatureQuestionAnswer]
+    }
     case BasicField.Children:
       if (!response.answer.childFields || !response.answer.child) {
         break
       }
       for (const [index, child] of response.answer.child.entries()) {
-        questionAnswerPair.push({
+        questionAnswerPairs.push({
           question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
           answer: child
             ? child.toString()
             : response.answer.childFields.map(() => '').toString(),
+          fieldType: response.fieldType,
         })
       }
-      return questionAnswerPair
+      return questionAnswerPairs
     default:
       answer = response.answer
   }
 
-  questionAnswerPair.push({
+  questionAnswerPairs.push({
     question: questionTitle,
     answer,
+    fieldType: response.fieldType,
   })
-  return questionAnswerPair
+  return questionAnswerPairs
 }
 
-/*
- * Extracts question-answer pairs from form fields and responses.
- * @param formFields - The form fields schema
- * @param responses - The responses to the form fields
- * @returns An array of QuestionAnswer objects
+/**
+ * Given multiple form fields and their responses, extracts question-answer pairs.
+ * @param formFields - List of form fields schemas
+ * @param responses - Corresponding list of responses to the given form fields
+ * @returns An array of QuestionAnswer pairs representing the extracted question-answer pairs for the all the given form fields.
  */
-export const getQuestionTitleAnswerString = ({
+export const getQuestionAnswerPairsForMultipleFields = ({
   formFields,
   responses,
+  includeSignatureDataPngDataUri = false,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
-}): QuestionAnswer[] => {
-  let questionAnswerPairs: QuestionAnswer[] = []
+  includeSignatureDataPngDataUri?: boolean
+}): QuestionAnswerPair[] => {
+  const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
     return []
   }
-  for (const formField of formFields) {
-    const questionTitle = formField.title
-    const response = responses[formField._id]
+  for (const currentFormField of formFields) {
+    const questionTitle = currentFormField.title
+    const response = responses[currentFormField._id]
 
     if (!response || !questionTitle) continue
-    const questionAnswerPair = getQuestionTitleAnswerStringSingleField({
-      formField,
-      response,
-    })
+    const questionAnswerPairsForCurrentFormField =
+      getQuestionAnswerPairsForOneField({
+        formField: currentFormField,
+        response,
+        includeSignatureDataPngDataUri,
+      })
 
-    questionAnswerPairs = [...questionAnswerPairs, ...questionAnswerPair]
+    questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
   }
 
   // Add Ndi responses if they exist
   for (const key in responses) {
     if (startsWithSPCPFieldTitle(key)) {
-      const value = responses[key] as NdiResponseV3
+      const { answer, fieldType } = responses[key] as NdiResponseV3
       questionAnswerPairs.push({
         question: key,
-        answer: value.answer,
+        answer,
+        fieldType,
       })
     }
   }
@@ -409,97 +485,27 @@ export const getQuestionTitleAnswerString = ({
  * @param responses - The mrf responses to the form fields
  * @returns list of EmailRespondentConfirmationField used for email & pdf generation
  */
-export const getPdfResponsesData = ({
+export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
 }): EmailRespondentConfirmationField[] => {
-  let pdfResponseData: EmailRespondentConfirmationField[] = []
   if (!formFields || !responses) return []
 
-  for (const formField of formFields) {
-    const questionTitle = formField.title
-    const response = responses[formField._id]
+  const questionAnswerPairs = getQuestionAnswerPairsForMultipleFields({
+    formFields,
+    responses,
+    includeSignatureDataPngDataUri: true,
+  })
 
-    if (!response || !questionTitle) continue
-    const emailFieldForPdf: EmailRespondentConfirmationField[] =
-      getQuestionTitleAnswerStringSingleField({
-        formField,
-        response,
-      }).map((questionAnswerPair) => {
-        return {
-          question: questionAnswerPair.question,
-          fieldType: response.fieldType,
-          answerTemplate: [questionAnswerPair.answer],
-          ...(response.fieldType === BasicField.Signature && {
-            answer: convertToSignaturePngDataUri(response.answer.value),
-          }),
-        }
-      })
-
-    pdfResponseData = [...pdfResponseData, ...emailFieldForPdf]
-  }
-
-  // Add Ndi responses if they exist
-  for (const key in responses) {
-    if (startsWithSPCPFieldTitle(key)) {
-      const value = responses[key] as NdiResponseV3
-      pdfResponseData.push({
-        question: key,
-        answerTemplate: [value.answer],
-        fieldType: value.fieldType,
-      })
+  return questionAnswerPairs.map((questionAnswerPair) => {
+    return {
+      question: questionAnswerPair.question,
+      answerTemplate: [questionAnswerPair.answer],
+      answer: questionAnswerPair.signatureDataPngDataUri,
+      fieldType: questionAnswerPair.fieldType,
     }
-  }
-  return pdfResponseData
-}
-
-/**
- * Extracts email data to be sent respondent copies to from a multirespondent submission.
- * Email inputs from email confirmation-enabled email fields that are assigned in the current step are extracted
- * @param responses - The multirespondent submission's field responses
- * @param formFields - The form fields schema
- * @param activeFields - The active field Ids assigned in the current step
- * @returns AutoReplyMailData[] - list of email data to be sent respondent copies to
- */
-export const extractRespondentCopyEmails = ({
-  responses,
-  formFields,
-  activeFields,
-}: {
-  responses: FieldResponsesV3
-  formFields: FormFieldSchema[] | FormFieldDto[]
-  activeFields: string[]
-}): AutoReplyMailData[] => {
-  return activeFields.flatMap((fieldId) => {
-    const fieldIdString = fieldId.toString()
-    const field = formFields.find((f) => f._id.toString() === fieldIdString)
-    const response = responses[fieldIdString]
-
-    if (
-      // checks if field is an email field
-      field &&
-      field.fieldType === BasicField.Email &&
-      field.autoReplyOptions?.hasAutoReply &&
-      response &&
-      // checks if response has an answer (email)
-      typeof response.answer === 'object' &&
-      'value' in response.answer &&
-      typeof response.answer.value === 'string'
-    ) {
-      const options = field.autoReplyOptions
-      return [
-        {
-          email: response.answer.value,
-          subject: options.autoReplySubject,
-          sender: options.autoReplySender,
-          body: options.autoReplyMessage,
-          includeFormSummary: options.includeFormSummary,
-        },
-      ]
-    }
-    return [] // no respondent copy emails found
   })
 }
