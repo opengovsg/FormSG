@@ -261,7 +261,7 @@ const FieldRowContainer = ({
           ref={provided.innerRef}
         >
           <Tooltip
-            hidden={!isHiddenByLogic}
+            hidden={false}
             placement="top"
             label="This field may be hidden by your form logic"
           >
@@ -294,6 +294,7 @@ const FieldRowContainer = ({
               onClick={handleFieldClick}
               onKeyDown={handleKeydown}
               ref={ref}
+              {...provided.dragHandleProps}
             >
               <Fade in={isActive}>
                 <chakra.button
