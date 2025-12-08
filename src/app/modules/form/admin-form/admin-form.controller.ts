@@ -22,7 +22,6 @@ import {
   ErrorDto,
   FieldCreateDto,
   FieldUpdateDto,
-  FormAuthType,
   FormColorTheme,
   FormDto,
   FormFeedbackMetaDto,
@@ -54,15 +53,10 @@ import {
   encryptStringsMessage,
 } from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
-import {
-  EncryptSubmissionDto,
-  FormUpdateParams,
-  ParsedEmailModeSubmissionBody,
-} from '../../../../types/api'
+import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
@@ -74,32 +68,16 @@ import {
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
-import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
-import {
-  mapRouteError as mapEmailSubmissionError,
-  SubmissionEmailObj,
-} from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
-import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import {
-  extractEmailConfirmationData,
-  mapAttachmentsFromResponses,
-  mapRouteError as mapSubmissionError,
-} from '../../submission/submission.utils'
+import { mapRouteError as mapSubmissionError } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 import { getSubmissionType } from '../form.utils'
 
-import {
-  PREVIEW_CORPPASS_UID,
-  PREVIEW_CORPPASS_UINFIN,
-  PREVIEW_SINGPASS_UINFIN,
-} from './admin-form.constants'
 import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
   createWorkflowStepValidator,
@@ -2104,158 +2082,6 @@ export const submitEncryptPreview: ControllerHandler<
 
 export const handleEncryptPreviewSubmission = [
   submitEncryptPreview,
-] as ControllerHandler[]
-
-/**
- * Handler for POST /v2/submissions/email/preview/:formId.
- * @security session
- *
- * @returns 200 with a mock submission ID
- * @returns 400 when body is malformed; e.g. invalid responses, or when admin email fails to be sent
- * @returns 403 when current user does not have read permissions to given form
- * @returns 404 when given form ID does not exist
- * @returns 410 when given form has been deleted
- * @returns 422 when user ID in session is not found in database
- * @returns 500 when database error occurs
- */
-export const submitEmailPreview: ControllerHandler<
-  { formId: string },
-  { message: string; submissionId?: string },
-  ParsedEmailModeSubmissionBody,
-  { captchaResponse?: unknown }
-> = async (req, res) => {
-  const { formId } = req.params
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  // No need to process attachments as we don't do anything with them
-  const { responses } = req.body
-  const logMeta = {
-    action: 'submitEmailPreview',
-    formId,
-    ...createReqMeta(req),
-  }
-
-  const formResult = await UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Read,
-      }),
-    )
-    .andThen(EmailSubmissionService.checkFormIsEmailMode)
-  if (formResult.isErr()) {
-    logger.error({
-      message: 'Error while retrieving form for preview submission',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapEmailSubmissionError(
-      formResult.error,
-    )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const form = formResult.value
-
-  const parsedResponsesResult = await SubmissionService.validateAttachments(
-    responses,
-    form.responseMode,
-  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
-  if (parsedResponsesResult.isErr()) {
-    logger.error({
-      message: 'Error while parsing responses for preview submission',
-      meta: logMeta,
-      error: parsedResponsesResult.error,
-    })
-    const { errorMessage, statusCode } = mapEmailSubmissionError(
-      parsedResponsesResult.error,
-    )
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-  const parsedResponses = parsedResponsesResult.value
-  const attachments = mapAttachmentsFromResponses(req.body.responses)
-
-  // Handle SingPass, CorpPass and MyInfo authentication and validation
-  const { authType } = form
-  if (authType === FormAuthType.SP || authType === FormAuthType.MyInfo) {
-    parsedResponses.addNdiResponses({
-      authType,
-      uinFin: PREVIEW_SINGPASS_UINFIN,
-    })
-  } else if (authType === FormAuthType.CP) {
-    parsedResponses.addNdiResponses({
-      authType,
-      uinFin: PREVIEW_CORPPASS_UINFIN,
-      userInfo: PREVIEW_CORPPASS_UID,
-    })
-  }
-
-  const emailData = new SubmissionEmailObj(
-    parsedResponses.getAllResponses(),
-    // All MyInfo fields are verified in preview
-    new Set(AdminFormService.extractMyInfoFieldIds(form.form_fields)),
-    form.authType,
-  )
-  const submission = EmailSubmissionService.createEmailSubmissionWithoutSave(
-    form,
-    // Don't need to care about response hash or salt
-    '',
-    '',
-  )
-
-  const sendAdminEmailResult = await MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(
-      parsedResponses.getAllResponses(),
-    ),
-    form,
-    submission,
-    attachments,
-    dataCollationData: emailData.dataCollationData,
-    formData: emailData.formData,
-  })
-  if (sendAdminEmailResult.isErr()) {
-    logger.error({
-      message: 'Error sending submission to admin',
-      meta: logMeta,
-      error: sendAdminEmailResult.error,
-    })
-    const { statusCode, errorMessage } = mapEmailSubmissionError(
-      sendAdminEmailResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Don't await on email confirmations, so submission is successful even if
-  // this fails
-  void SubmissionService.sendEmailConfirmations({
-    form,
-    submission,
-    attachments,
-    responsesData: emailData.autoReplyData,
-    recipientData: extractEmailConfirmationData(
-      parsedResponses.getAllResponses(),
-      form.form_fields,
-    ),
-    isUseLambdaOutput: false, // TODO: [PDF-LAMBDA-GENERATION]: To remove once pdf lambda rollout is complete. Currently set to false since v2 api is not being used.
-  }).mapErr((error) => {
-    logger.error({
-      message: 'Error while sending email confirmations',
-      meta: logMeta,
-      error,
-    })
-  })
-
-  return res.json({
-    message: 'Form submission successful.',
-    submissionId: submission.id,
-  })
-}
-
-export const handleEmailPreviewSubmission = [
-  ReceiverMiddleware.receiveEmailSubmission,
-  EmailSubmissionMiddleware.validateResponseParams,
-  submitEmailPreview,
 ] as ControllerHandler[]
 
 /**
