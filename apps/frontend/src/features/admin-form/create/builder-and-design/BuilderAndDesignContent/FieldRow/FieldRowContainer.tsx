@@ -294,6 +294,7 @@ const FieldRowContainer = ({
               onClick={handleFieldClick}
               onKeyDown={handleKeydown}
               ref={ref}
+              {...provided.dragHandleProps}
             >
               <Fade in={isActive}>
                 <chakra.button
