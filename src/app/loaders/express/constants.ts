@@ -45,7 +45,6 @@ export const CSP_CORE_DIRECTIVES = {
     config.aws.attachmentBucketUrl,
     config.aws.imageBucketUrl,
     config.aws.logoBucketUrl,
-    config.aws.virusScannerQuarantineS3BucketUrl,
     config.aws.guarddutyQuarantineS3BucketUrl,
     'https://*.google-analytics.com',
     'https://*.analytics.google.com',

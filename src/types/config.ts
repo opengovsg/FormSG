@@ -38,14 +38,8 @@ export type AwsConfig = {
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
-  virusScannerQuarantineS3BucketUrl: string
-  virusScannerQuarantineS3Bucket: string
-  virusScannerCleanS3Bucket: string
   s3: aws.S3
   endPoint: string
-  virusScannerLambda: Lambda // using aws-sdk-v3 (FRM-993)
-  virusScannerLambdaFunctionName: string
-  // new virusScanningFunctions
   guarddutyQuarantineS3BucketUrl: string
   guarddutyQuarantineS3Bucket: string
   guarddutyCleanS3Bucket: string
@@ -153,8 +147,6 @@ export interface ICompulsoryVarsSchema {
     staticAssetsS3Bucket: string
     logoS3Bucket: string
     attachmentS3Bucket: string
-    virusScannerQuarantineS3Bucket: string
-    virusScannerCleanS3Bucket: string
     paymentProofS3Bucket: string
   }
 }
@@ -200,8 +192,6 @@ export interface IOptionalVarsSchema {
   awsConfig: {
     region: string
     customCloudWatchGroup: string
-    virusScannerLambdaFunctionName: string
-    virusScannerLambdaEndpoint: string
     guarddutyQuarantineS3Bucket: string
     guarddutyCleanS3Bucket: string
     guarddutyLambdaFunctionName: string
@@ -258,7 +248,6 @@ export interface IBucketUrlSchema {
   logoBucketUrl: string
   imageBucketUrl: string
   staticAssetsBucketUrl: string
-  virusScannerQuarantineS3BucketUrl: string
   paymentProofS3BucketUrl: string
   endPoint: string
   guarddutyQuarantineS3BucketUrl: string

@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.266.0",
+  "version": "6.277.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -39,9 +39,8 @@
     "copyfiles:backend": "copyfiles -u 1 src/**/*.html dist/backend/src",
     "clean": "rimraf dist/",
     "start": "node -r dotenv/config src/app/server.js",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client,virus-scanner,virus-scanner-guardduty,pdf-gen\" -c  \"yellow.bold,green.bold,blue.bold,cyan.bold,magenta.bold\" \"docker-compose up\" \"npm run dev:frontend\" \"npm --prefix serverless/virus-scanner run dev\" \"npm --prefix serverless/virus-scanner-guardduty run dev\" \"npm --prefix serverless/pdf-gen-sparticuz run dev\"",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client,virus-scanner-guardduty,pdf-gen\" -c  \"yellow.bold,green.bold,cyan.bold,magenta.bold\" \"docker-compose up\" \"npm run dev:frontend\" \"npm --prefix serverless/virus-scanner-guardduty run dev\" \"npm --prefix serverless/pdf-gen-sparticuz run dev\"",
     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
-    "dev:virus-scanner": "npm --prefix serverless/virus-scanner run dev",
     "dev:virus-scanner-guardduty": "npm --prefix serverless/virus-scanner-guardduty run dev",
     "dev:pdf-gen": "npm --prefix serverless/pdf-gen-sparticuz run dev",
     "dev:frontend": "npm run --prefix frontend start",
@@ -154,7 +153,7 @@
     "ulid": "^2.3.0",
     "uuid": "^11.1.0",
     "uuid-by-string": "^4.0.0",
-    "validator": "^13.15.20",
+    "validator": "^13.15.23",
     "winston": "^3.13.0",
     "winston-cloudwatch": "^6.3.0",
     "zod": "^3.24.3"

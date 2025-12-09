@@ -181,6 +181,9 @@ const PrintableResponseRows = ({
   )
 }
 
+const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+const MOCK_CONSTANT_FORM_LINK = 'https://form.gov.sg/64e2f7ae841cbe0012e785e7'
+
 export const PrintableResponse = ({
   formTitle,
   formId,
@@ -210,9 +213,11 @@ export const PrintableResponse = ({
           color="white"
           textDecor="underline"
           textDecorationColor="white"
-          data-chromatic="ignore"
         >
-          {window.location.origin}/{formId}
+          {/* RATIONALE: Prevent noisy diffs from being detected during storybook snapshot comparisons due to dynamic form link. */}
+          {isTest
+            ? MOCK_CONSTANT_FORM_LINK
+            : `${window.location.origin}/${formId}`}
         </Text>
       </Box>
       <Box mx="5%" my="30px">

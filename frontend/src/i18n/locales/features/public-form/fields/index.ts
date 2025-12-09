@@ -14,6 +14,7 @@ export interface Fields {
     validation: {
       domainDisallowed: string
     }
+    respondentCopyHelperText: string
   }
   attachment: {
     disabled: string

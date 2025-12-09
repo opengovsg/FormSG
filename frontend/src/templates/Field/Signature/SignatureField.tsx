@@ -32,7 +32,7 @@ export const SignatureField = ({
   isHighContrast,
 }: SignatureFieldProps): JSX.Element => {
   const formContext = useFormContext<SignatureFieldInput>()
-  const { getValues, setValue } = formContext
+  const { register, unregister, setValue } = formContext
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
@@ -55,8 +55,13 @@ export const SignatureField = ({
   )
 
   useEffect(() => {
-    formContext.register(schema._id, signatureValidationRules)
-  }, [formContext, schema._id, signatureValidationRules])
+    register(schema._id, signatureValidationRules)
+
+    // when unmounting, unregister the field so that submission will not be blocked by signature validation errors
+    return () => {
+      unregister(schema._id)
+    }
+  }, [register, schema._id, signatureValidationRules, unregister])
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)

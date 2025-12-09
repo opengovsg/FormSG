@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -105,6 +105,9 @@ interface PublicFormProviderProps {
    */
   isPublicFormPage?: boolean
 }
+
+const DATE_TIME_FORMAT_STRING = 'do MMM yyyy, h:mm:ss a'
+const MOCK_CONSTANT_LAST_SAVED_DATETIME = '2025-11-14T12:00:00.000Z'
 
 export function useCommonFormProvider(formId: string) {
   // For mobile section sidebar
@@ -640,7 +643,7 @@ export const PublicFormProvider = ({
     false,
   )
 
-  const enableSingpassMrfFeatureFlag = useFeatureIsOn(featureFlags.singpassMrf)
+  const enableSingpassMrfFeatureFlag = useFeatureValue(featureFlags.singpassMrf, true)
 
   let hasLoaded: boolean
   let containerID: string
@@ -876,11 +879,18 @@ export const PublicFormProvider = ({
             'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
           )
         : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
+      datadogLogs.logger.log(restoreDraftMessage, {
+        meta: {
+          action: 'restoreDraft',
+          formId,
+          hasChangedDraftFields,
+        },
+      })
       toast({
         description: restoreDraftMessage,
       })
     },
-    [t, toast],
+    [t, toast, formId],
   )
   const hasUnrestorableFields = Boolean(changedFieldIds?.length > 0)
 
@@ -1381,6 +1391,16 @@ export const PublicFormProvider = ({
     return <NotFoundErrorPage />
   }
 
+  // RATIONALE: Prevent noisy diffs from being detected during storybook snapshot comparisons due to dynamic date time.
+  const draftLastSavedDateTime =
+    draftSubmission?.lastUpdated && isTest
+      ? MOCK_CONSTANT_LAST_SAVED_DATETIME
+      : draftSubmission?.lastUpdated
+
+  const draftLastSavedDateTimeString = draftLastSavedDateTime
+    ? format(new Date(draftLastSavedDateTime), DATE_TIME_FORMAT_STRING)
+    : undefined
+
   return (
     <PublicFormContext.Provider
       value={{
@@ -1405,12 +1425,7 @@ export const PublicFormProvider = ({
         previousAttachments,
         setPreviousSubmission,
         isSaveDraftEnabled,
-        draftLastSavedDateTimeString: draftSubmission?.lastUpdated
-          ? format(
-              new Date(draftSubmission.lastUpdated),
-              'do MMM yyyy, h:mm:ss a',
-            )
-          : undefined,
+        draftLastSavedDateTimeString,
         onSaveDraft,
         defaultFormValues,
         augmentedFormFields,

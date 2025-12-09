@@ -4,7 +4,6 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -168,41 +167,16 @@ export const validateStorageSubmissionParams = celebrate({
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
   formId: string,
-  enableGuardDutyLambdaInvoke: boolean | undefined,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
-  | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-  | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
+  SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      // we'll invoke both lambdas and one of them will be in-shadow in order
-      // for us to compare the reliability of the services
-      if (enableGuardDutyLambdaInvoke) {
-        // trigger virus-scanner, ignore results because running in-shadow
-        SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-
-        // use guardduty scan results
-        return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-      } else {
-        // trigger guardduty, ignore results because running in-shadow
-        SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-
-        // use virus-scanner scan results
-        return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
-          response,
-          formId,
-        )
-      }
+      return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
+        response,
+        formId,
+      )
     }
     // If field is not an attachment, return original response.
     return okAsync(response)
@@ -220,18 +194,18 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     ParsedClearFormFieldResponse,
-    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results: Result<
     ParsedClearFormFieldResponse,
-    SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[] = []
   for (const response of responses) {
     if (isQuarantinedAttachmentResponse(response)) {
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
       const attachmentResponse =
-        await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
           response,
           formId,
         )
@@ -257,12 +231,11 @@ export const scanAndRetrieveAttachments = async (
     action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
-  const gbGuardDuty = req.growthbook?.isOn(featureFlags.guardduty)
+
   // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
-    | SubmissionService.TriggerVirusScanThenDownloadCleanFileChainError
-    | SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
+    SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   > =
     // On the local development environment, there is only 1 lambda and the virus scanning service WILL CRASH if multiple lambda invocations are
     // attempted at the same time. Reference: https://www.notion.so/opengov/Encryption-Boundary-Shift-the-journey-so-far-dfc6e15fc65f45eba3dd6a9af48eebea?pvs=4#d0944ba61aad45ce988ed0474f131e59
@@ -280,7 +253,6 @@ export const scanAndRetrieveAttachments = async (
           asyncVirusScanning(
             req.body.responses,
             req.formsg.formDef._id.toString(),
-            gbGuardDuty,
           ),
         )
 

@@ -179,7 +179,6 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
           fail-on-cache-miss: true
-      - run: npm ci --prefix serverless/virus-scanner
       - run: npm ci --prefix serverless/virus-scanner-guardduty
       - run: npm ci --prefix serverless/pdf-gen-sparticuz
       - name: Configure Datadog Test Visibility

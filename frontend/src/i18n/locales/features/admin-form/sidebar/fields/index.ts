@@ -87,8 +87,9 @@ export interface Fields {
         title: string
         placeholder: string
       }
-      includePdfResponse: string
+      includeResponse: string
       includePdfResponseWarning: string
+      includeResponseDescription: string
     }
   }
   mobileNo: {

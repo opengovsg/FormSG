@@ -24,7 +24,6 @@ import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/Payme
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
 
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
-import { PublicRespondentEmailField } from './PublicRespondentEmailField'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
@@ -119,12 +118,6 @@ export const FormFields = ({
             />
           </Box>
         )}
-      {/* TODO: (respondent copy): Remove when respondent copy is out of beta */}
-      {form?.hasRespondentCopy && isRespondentCopyEnabled ? (
-        <Box mt="2.5rem" px={{ base: '1rem', md: 0 }}>
-          <PublicRespondentEmailField />
-        </Box>
-      ) : null}
       <PublicFormPaymentResumeModal />
       <PublicFormSubmitButton
         onSubmit={onSubmit ? handleSubmit(onSubmit) : undefined}

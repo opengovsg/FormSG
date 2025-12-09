@@ -6,6 +6,7 @@ import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
 
 import {
   createStorageModeSubmissionDto,
+  formatMyInfoStorageResponseData,
   getPaymentAmount,
   getPaymentIntentDescription,
 } from '../encrypt-submission.utils'
@@ -148,6 +149,82 @@ describe('encrypt-submission.utils', () => {
       const result = getPaymentIntentDescription(formData, products)
 
       expect(result).toContain(expectedValue)
+    })
+  })
+
+  describe('formatMyInfoStorageResponseData', () => {
+    it('should return original responses when no hashed fields are provided', () => {
+      // Arrange
+      const parsedResponses: any[] = [
+        { _id: 'field1', question: 'Question 1' },
+        { _id: 'field2', question: 'Question 2' },
+      ]
+
+      // Act
+      const actual = formatMyInfoStorageResponseData(parsedResponses)
+
+      // Assert
+      expect(actual).toEqual(parsedResponses)
+    })
+
+    it('should prefix MyInfo fields in responses when hashed fields are provided', () => {
+      // Arrange
+      const parsedResponses: any[] = [
+        {
+          _id: 'field1',
+          question: 'Question 1',
+          myInfo: { attr: 'NAME' },
+          answer: 'John Doe',
+          fieldType: 'textfield',
+        },
+        {
+          _id: 'field2',
+          question: 'Question 2',
+          answer: 'Some answer',
+          fieldType: 'textfield',
+        },
+        {
+          _id: 'childrenbirthrecords.692411846d1da146b503aada.childname.0',
+          question: 'Question Child',
+          myInfo: { attr: 'childname' },
+          answer: 'Child Name',
+          fieldType: 'children',
+        },
+      ]
+      const hashedFields = new Set([
+        'field1',
+        'childrenbirthrecords.692411846d1da146b503aada.childname.0',
+      ])
+
+      // Act
+      const actual = formatMyInfoStorageResponseData(
+        parsedResponses,
+        hashedFields,
+      )
+
+      // Assert
+      expect(actual).toEqual([
+        {
+          _id: 'field1',
+          question: '[MyInfo] Question 1',
+          myInfo: { attr: 'NAME' },
+          answer: 'John Doe',
+          fieldType: 'textfield',
+        },
+        {
+          _id: 'field2',
+          question: 'Question 2',
+          answer: 'Some answer',
+          fieldType: 'textfield',
+        },
+        {
+          _id: 'childrenbirthrecords.692411846d1da146b503aada.childname.0',
+          question: '[MyInfo] Question Child',
+          myInfo: { attr: 'childname' },
+          answer: 'Child Name',
+          fieldType: 'children',
+        },
+      ])
     })
   })
 })

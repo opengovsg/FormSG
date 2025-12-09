@@ -113,7 +113,12 @@ describe('Multirespondent Submission Middleware', () => {
         stepsToNotify: [new ObjectId().toHexString()],
       }),
       // Add other required properties to satisfy IPopulatedForm interface
-      admin: { _id: new ObjectId() },
+      admin: {
+        _id: new ObjectId(),
+        agency: {
+          fullName: 'Government Technology Agency',
+        },
+      },
       permissionList: [],
       startPage: { title: 'Start', paragraph: 'Start page' },
       endPage: { title: 'End', paragraph: 'End page' },
@@ -212,7 +217,7 @@ describe('Multirespondent Submission Middleware', () => {
         form_logics: MOCK_MRF_SUBMISSION.form_logics, // Should use snapshot from submission
         webhook: MOCK_FORM.webhook, // Should use current form data
         workflow: MOCK_MRF_SUBMISSION.workflow, // Should use snapshot from submission
-        hasRespondentCopy: MOCK_FORM.hasRespondentCopy, // Should use current form data
+        admin: MOCK_FORM.admin, // Should use current form data
         emails: MOCK_FORM.emails, // Should use current form data
         stepOneEmailNotificationFieldId:
           MOCK_FORM.stepOneEmailNotificationFieldId, // Should use current form data

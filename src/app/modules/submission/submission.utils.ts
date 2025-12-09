@@ -776,7 +776,15 @@ export const getMyInfoPrefix = (
   response: ResponseFormattedForEmail | ProcessedFieldResponse,
   hashedFields: Set<MyInfoKey>,
 ): string => {
-  return !!response.myInfo?.attr && hashedFields.has(response._id)
+  /* encrypt mode children fields have ids e.g. childrenbirthrecords.67585515e1ced6d790a91e14.childname.0
+   * without the suffixed child name. So we check if any hashed fields starts with response id
+   */
+  const isResponseMyInfoChildren =
+    response.fieldType === BasicField.Children &&
+    Array.from(hashedFields).some((field) => field.startsWith(response._id))
+
+  return !!response.myInfo?.attr &&
+    (hashedFields.has(response._id) || isResponseMyInfoChildren)
     ? MYINFO_PREFIX
     : ''
 }
