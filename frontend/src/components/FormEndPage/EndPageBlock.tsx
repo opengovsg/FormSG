@@ -102,6 +102,7 @@ export const EndPageBlock = ({
 
   return (
     <>
+      {ogpAwarenessComponent && <Box mb="1rem">{ogpAwarenessComponent}</Box>}
       <Box ref={focusRef}>
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
@@ -115,7 +116,6 @@ export const EndPageBlock = ({
           </Box>
         ) : null}
       </Box>
-      {ogpAwarenessComponent && <Box mt="1rem">{ogpAwarenessComponent}</Box>}
       <Box mt="1rem">
         <Box>
           <Text textColor="secondary.300" textStyle="caption-2">
