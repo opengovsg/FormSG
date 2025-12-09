@@ -7,6 +7,7 @@ import {
   handleAddressResponseDisplay,
 } from '../../../../../shared/utils/address'
 import {
+  convertToSignaturePngDataUri,
   convertToSignatureVectorArray,
   SIGNATURE_CAPTURED_STRING,
 } from '../../../../../shared/utils/signature'
@@ -35,7 +36,6 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
-import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import {
   isProcessedAddressResponse,
   isProcessedCheckboxResponse,

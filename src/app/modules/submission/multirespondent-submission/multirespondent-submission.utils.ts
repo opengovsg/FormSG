@@ -15,7 +15,10 @@ import {
   WorkflowType,
 } from '../../../../../shared/types'
 import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
+import {
+  convertToSignaturePngDataUri,
+  SIGNATURE_CAPTURED_STRING,
+} from '../../../../../shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
@@ -25,7 +28,6 @@ import {
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
-import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
