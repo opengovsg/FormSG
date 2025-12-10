@@ -1,5 +1,4 @@
 import { flatten, uniq } from 'lodash'
-import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -39,11 +38,11 @@ import {
   MailSendError,
 } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
+import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import {
-  AutoReplyMailData,
-  AutoreplySummaryRenderData,
-} from '../../../services/mail/mail.types'
-import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
+  AutoReplyData,
+  generateAutoreplyPdf,
+} from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
@@ -486,11 +485,6 @@ const sendMrfRespondentCopyEmails = ({
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
 > => {
   const submissionId: string = submission.id
-  const submissionTime = moment(submission.created)
-    .tz('Asia/Singapore')
-    .format('ddd, DD MMM YYYY hh:mm:ss A')
-  const formUrl: string = `${config.app.appUrl}/${form._id}`
-
   const formQuestionAnswers = getQuestionTitleAnswerString({
     formFields: form.form_fields,
     responses,
@@ -504,12 +498,13 @@ const sendMrfRespondentCopyEmails = ({
   const hasFormSummary = respondentCopyRecipientData.some(
     (autoReplyMailData) => autoReplyMailData.includeFormSummary,
   )
-  const renderData: AutoreplySummaryRenderData = {
+
+  const autoReplyData: AutoReplyData = {
     refNo: submissionId,
     formTitle: form.title,
-    submissionTime: submissionTime,
-    formData: pdfFormData,
-    formUrl: formUrl,
+    submissionDateTime: submission.created || new Date(),
+    responsesData: pdfFormData,
+    formUrl: `${config.app.appUrl}/${form._id}`,
   }
 
   // Step 1: generate PDF if needed
@@ -517,7 +512,7 @@ const sendMrfRespondentCopyEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   > = hasFormSummary
-    ? generateAutoreplyPdf(renderData, true).map((pdfBuffer) => ({
+    ? generateAutoreplyPdf(autoReplyData, true).map((pdfBuffer) => ({
         filename: 'response.pdf',
         content: Buffer.copyBytesFrom(pdfBuffer),
       }))

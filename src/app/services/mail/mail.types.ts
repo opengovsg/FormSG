@@ -29,7 +29,10 @@ export type SendAutoReplyEmailsArgs = {
   form: IPopulatedForm
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
   attachments?: Mail.Attachment[]
-  responsesData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
+  responsesData: (Pick<
+    EmailAdminDataField,
+    'question' | 'answerTemplate' | 'fieldType'
+  > & {
     answer?: EmailAdminDataField['answer']
   })[]
   autoReplyMailDatas: AutoReplyMailData[]

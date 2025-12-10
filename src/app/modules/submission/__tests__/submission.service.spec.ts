@@ -91,6 +91,7 @@ const MOCK_AUTOREPLY_DATA = [
   {
     question: 'Email',
     answerTemplate: ['a@abc.com'],
+    fieldType: BasicField.Email,
   },
 ]
 const AUTOREPLY_OPTIONS_1: AutoReplyOptions = {

@@ -207,8 +207,8 @@ describe('email-submission.util', () => {
       ]
 
       const expectedAutoReplyData = [
-        { question, answerTemplate: [firstRow] },
-        { question, answerTemplate: [secondRow] },
+        { question, answerTemplate: [firstRow], fieldType: BasicField.Table },
+        { question, answerTemplate: [secondRow], fieldType: BasicField.Table },
       ]
 
       const expectedFormData = [
@@ -240,17 +240,19 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
-      const answer = response.answerArray.join(', ')
+      const { question, answerArray, fieldType } = response
+      const answer = answerArray.join(', ')
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: [answer], fieldType },
+      ]
       const expectedFormData = [
         {
           question,
           answer,
           answerTemplate: [answer],
-          fieldType: BasicField.Checkbox,
+          fieldType,
         },
       ]
 
@@ -268,19 +270,20 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
-      const answer = response.answer
+      const { question, answer, fieldType } = response
 
       const expectedDataCollationData = [
         { question: `${ATTACHMENT_PREFIX}${question}`, answer },
       ]
-      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: [answer], fieldType },
+      ]
       const expectedFormData = [
         {
           question: `${ATTACHMENT_PREFIX}${question}`,
           answer,
           answerTemplate: [answer],
-          fieldType: BasicField.Attachment,
+          fieldType,
         },
       ]
 
@@ -301,18 +304,18 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
+      const { question, fieldType } = response
 
       const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n') },
+        { question, answerTemplate: answer.split('\n'), fieldType },
       ]
       const expectedFormData = [
         {
           question,
           answer,
           answerTemplate: answer.split('\n'),
-          fieldType: BasicField.ShortText,
+          fieldType,
         },
       ]
 
@@ -333,21 +336,22 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
+      const { question, fieldType } = response
+
       const answer = answerArray[0].join(',')
 
       const expectedDataCollationData = [
         { question: `${TABLE_PREFIX}${question}`, answer },
       ]
       const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n') },
+        { question, answerTemplate: answer.split('\n'), fieldType },
       ]
       const expectedFormData = [
         {
           question: `${TABLE_PREFIX}${question}`,
           answer,
           answerTemplate: answer.split('\n'),
-          fieldType: BasicField.Table,
+          fieldType,
         },
       ]
 
@@ -366,19 +370,19 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
+      const { question, fieldType } = response
       const answer = answerArray.join(', ')
 
       const expectedDataCollationData = [{ question, answer }]
       const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n') },
+        { question, answerTemplate: answer.split('\n'), fieldType },
       ]
       const expectedFormData = [
         {
           question,
           answer,
           answerTemplate: answer.split('\n'),
-          fieldType: BasicField.Checkbox,
+          fieldType,
         },
       ]
 
@@ -398,11 +402,12 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const question = response.question
-      const answer = response.answer
+      const { question, answer, fieldType } = response
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [{ question, answerTemplate: [answer] }]
+      const expectedAutoReplyData = [
+        { question, answerTemplate: [answer], fieldType },
+      ]
       const expectedFormData = [
         {
           question: `${VERIFIED_PREFIX}${question}`,
@@ -453,10 +458,12 @@ describe('email-submission.util', () => {
         {
           question: nameResponse.question,
           answerTemplate: [nameResponse.answer],
+          fieldType: nameResponse.fieldType,
         },
         {
           question: vehicleResponse.question,
           answerTemplate: [vehicleResponse.answer],
+          fieldType: vehicleResponse.fieldType,
         },
       ]
       const expectedFormData = [
@@ -534,6 +541,7 @@ describe('email-submission.util', () => {
           answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
             '\n',
           ),
+          fieldType: response1.fieldType,
         },
         // Note that response2 is not shown in Email Confirmation as isVisible is false
       ]
@@ -560,11 +568,13 @@ describe('email-submission.util', () => {
           answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
             '\n',
           ),
+          fieldType: response1.fieldType,
         },
         // Note that response2 is not shown in Email Confirmation as isVisible is false
         {
           question: responseCPUID.question,
           answerTemplate: ['*****567A'],
+          fieldType: responseCPUID.fieldType,
         },
       ]
       expect(submissionEmailObjCP.autoReplyData).toEqual(correctConfirmation)
