@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { BiImage } from 'react-icons/bi'
 import {
   Box,
+  Divider,
   Flex,
   Grid,
   Icon,
@@ -11,8 +12,12 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import { FormColorTheme } from '~shared/types'
+
+import { OgpLogoFull } from '~assets/svgrs/brand/OgpFullLogo'
 
 import { FormLogoutButton } from './FormLogoutButton'
 
@@ -79,21 +84,33 @@ export const FormBannerLogo = ({
     }
   }, [fallbackType, logoImgSrc])
 
+  const enableOgpHeader = useFeatureValue(featureFlags.ogpHeader, false)
+
   if (!hasLogo && !isLoading) return null
 
   return (
     <Grid p="1rem" bg="white" gridTemplateColumns="1fr auto 1fr">
       <Spacer />
-      <Flex maxW="57rem">
-        <Image
-          fallback={fallback}
-          onLoad={() => setFallbackType('loaded')}
-          onError={() => setFallbackType('error')}
-          src={logoImgSrc}
-          alt={logoImgAlt}
-          minH="1.25rem"
-          maxH="4rem"
-        />
+      <Flex alignItems={'center'} justifyContent="center" px={4}>
+        <Flex maxW="57rem">
+          <Image
+            fallback={fallback}
+            onLoad={() => setFallbackType('loaded')}
+            onError={() => setFallbackType('error')}
+            src={logoImgSrc}
+            alt={logoImgAlt}
+            minH="1.25rem"
+            maxH="4rem"
+          />
+        </Flex>
+        {enableOgpHeader && (
+          <>
+            <Divider orientation="vertical" />
+            <Box ml={3}>
+              <OgpLogoFull fontStyle={'3rem'} height={`3rem`} />
+            </Box>
+          </>
+        )}
       </Flex>
       <FormLogoutButton
         colorScheme={`theme-${colorTheme}`}

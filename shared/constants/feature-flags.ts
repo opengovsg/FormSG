@@ -28,5 +28,6 @@ export const featureFlags = {
   singpassMrf: 'singpass-mrf' as const,
   enableSaveDraftButtonFloating: 'enable-save-draft-button-floating' as const,
   enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
+  ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
 }
