@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { format } from 'date-fns'
 
 import {
@@ -11,6 +12,8 @@ import {
   PublicFormDto,
 } from '~shared/types/form'
 
+import { OgpAwarenessBadge } from '~assets/svgrs/brand/OgpAwarenessBadge'
+import { OgpAwarenessBanner } from '~assets/svgrs/brand/OgpAwarenessBanner'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
@@ -85,8 +88,21 @@ export const EndPageBlock = ({
     return 'You have successfully submitted your response.'
   }, [formTitle])
 
+  const ogpAwareness = useFeatureValue('ogp-awareness', 'none')
+  const ogpAwarenessComponent = (() => {
+    switch (ogpAwareness) {
+      case 'banner':
+        return <OgpAwarenessBanner />
+      case 'badge':
+        return <OgpAwarenessBadge />
+      default:
+        return undefined
+    }
+  })()
+
   return (
     <>
+      {ogpAwarenessComponent && <Box mb="1rem">{ogpAwarenessComponent}</Box>}
       <Box ref={focusRef}>
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
