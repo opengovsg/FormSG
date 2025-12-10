@@ -30,4 +30,5 @@ export const featureFlags = {
   enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
   ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
+  ogpSpinner: 'ogp-spinner' as const,
 }

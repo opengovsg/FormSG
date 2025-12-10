@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLoader } from 'react-icons/bi'
 import {
+  Box,
   Flex,
   FlexProps,
   Icon,
@@ -31,6 +32,11 @@ interface SpinnerProps extends FlexProps {
   label?: string
 
   /**
+   * Custom spinner element. If not provided, a default spinner icon will be used.
+   */
+  element?: JSX.Element
+
+  /**
    * Font size of the spinner.
    */
   fontSize?: IconProps['fontSize']
@@ -50,6 +56,7 @@ export const Spinner = ({
   color = 'inherit',
   label: userSpecifiedLabel,
   fontSize = '1rem',
+  element,
   ...flexProps
 }: SpinnerProps): JSX.Element => {
   const { t } = useTranslation()
@@ -66,12 +73,16 @@ export const Spinner = ({
   return (
     <Flex color={color} align="center" {...flexProps}>
       {label && <VisuallyHidden>{label}</VisuallyHidden>}
-      <Icon
-        animation={animation}
-        as={BiLoader}
-        fontSize={fontSize}
-        aria-label="Spinner icon"
-      />
+      {element ? (
+        <Box animation={animation}>{element}</Box>
+      ) : (
+        <Icon
+          animation={animation}
+          as={BiLoader}
+          fontSize={fontSize}
+          aria-label="Spinner icon"
+        />
+      )}
     </Flex>
   )
 }
