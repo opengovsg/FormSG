@@ -3,7 +3,7 @@ import { BasicField } from '../../shared/types'
 export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
-  fieldType?: BasicField
+  fieldType: BasicField
   answer?: string
 }
 

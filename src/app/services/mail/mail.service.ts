@@ -62,6 +62,7 @@ import {
   SubmissionToAdminHtmlData,
 } from './mail.types'
 import {
+  AutoReplyData,
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateIssueReportedNotificationHtml,
@@ -796,18 +797,6 @@ export class MailService {
       >
     >[]
   > => {
-    // Data to render both the submission details mail HTML body and PDF.
-
-    const renderData: AutoreplySummaryRenderData = {
-      refNo: submission.id,
-      formTitle: form.title,
-      submissionTime: moment(submission.created)
-        .tz('Asia/Singapore')
-        .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      formData: responsesData,
-      formUrl: `${this.#appUrl}/${form._id}`,
-    }
-
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments]
     const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
@@ -817,6 +806,13 @@ export class MailService {
       encryptFormDef.payments_channel.channel !== PaymentChannel.Unconnected &&
       encryptFormDef.payments_field.enabled === true
 
+    const autoReplyData: AutoReplyData = {
+      refNo: submission.id,
+      formTitle: form.title,
+      submissionDateTime: submission.created || new Date(),
+      responsesData,
+      formUrl: `${this.#appUrl}/${form._id}`,
+    }
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
     if (
@@ -824,7 +820,7 @@ export class MailService {
       !isPaymentEnabled
     ) {
       const pdfBufferResult = await generateAutoreplyPdf(
-        renderData,
+        autoReplyData,
         isUseLambdaOutput,
       )
       if (pdfBufferResult.isErr()) {
@@ -844,9 +840,14 @@ export class MailService {
       }),
     )
 
-    const strippedRenderData = {
-      ...renderData,
+    const strippedRenderData: AutoreplySummaryRenderData = {
+      refNo: submission.id,
+      formTitle: form.title,
+      submissionTime: moment(submission.created)
+        .tz('Asia/Singapore')
+        .format('ddd, DD MMM YYYY hh:mm:ss A'),
       formData: strippedResponsesData,
+      formUrl: `${this.#appUrl}/${form._id}`,
     }
 
     // Prepare mail sending for each autoreply mail.
