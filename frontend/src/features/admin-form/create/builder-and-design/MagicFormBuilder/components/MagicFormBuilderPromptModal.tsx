@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Control,
   Controller,
@@ -36,7 +37,11 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
+import {
+  featureFlags,
+  MFB_VISION_MAX_IMAGES_COUNT,
+  MFB_TEXT_PROMPT_MAX_CHAR,
+} from '~shared/constants'
 
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
@@ -130,11 +135,15 @@ const TextPromptModalBodyContent = ({
   errors: FieldErrors<TextPromptInputs>
   watch: (name: keyof TextPromptInputs) => string | undefined
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.modals.magicFormBuilder',
+  })
   const promptValue = watch('prompt')
-  const MAX_CHAR = 500
+  const isOverLimit =
+    promptValue && promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
   return (
     <>
-      <FormControl isInvalid={!!errors.prompt?.message}>
+      <FormControl isInvalid={!!errors.prompt?.message || !!isOverLimit}>
         <FormLabel textStyle="subhead-1">
           I want to create a form that collects...
         </FormLabel>
@@ -145,23 +154,28 @@ const TextPromptModalBodyContent = ({
           {...register('prompt', {
             required: 'Please enter a prompt',
             maxLength: {
-              value: MAX_CHAR,
-              message: 'Please enter at most 500 characters',
+              value: MFB_TEXT_PROMPT_MAX_CHAR,
+              message: `Please enter at most ${MFB_TEXT_PROMPT_MAX_CHAR} characters`,
             },
           })}
         />
         <FormErrorMessage>
-          {errors.prompt?.message && promptValue
-            ? `Your description cannot be longer than 500 characters. (${promptValue.length}/500)`
+          {isOverLimit
+            ? t('promptMaxLengthError', {
+                maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
+                current: promptValue.length,
+              })
             : errors.prompt?.message}
         </FormErrorMessage>{' '}
-        {promptValue && !errors.prompt?.message && (
+        {promptValue && !errors.prompt?.message && !isOverLimit && (
           <FormHelperText
             color={
-              promptValue.length >= MAX_CHAR ? 'danger.500' : 'secondary.400'
+              promptValue.length >= MFB_TEXT_PROMPT_MAX_CHAR
+                ? 'danger.500'
+                : 'secondary.400'
             }
           >
-            {`(${promptValue.length}/${MAX_CHAR})`}
+            {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}{' '}
           </FormHelperText>
         )}
       </FormControl>
