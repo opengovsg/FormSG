@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
   Control,
   Controller,
@@ -10,6 +9,7 @@ import {
   UseFormSetError,
   UseFormSetValue,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
@@ -39,8 +39,8 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import {
   featureFlags,
-  MFB_VISION_MAX_IMAGES_COUNT,
   MFB_TEXT_PROMPT_MAX_CHAR,
+  MFB_VISION_MAX_IMAGES_COUNT,
 } from '~shared/constants'
 
 import { NextAndBackButtonGroup } from '~components/Button'
