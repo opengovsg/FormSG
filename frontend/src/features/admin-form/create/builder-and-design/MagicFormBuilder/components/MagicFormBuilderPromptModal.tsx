@@ -16,6 +16,7 @@ import {
   Flex,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   HStack,
   Modal,
@@ -122,11 +123,15 @@ const TextPromptModalBodyContent = ({
   register,
   setValue,
   errors,
+  watch,
 }: {
   register: UseFormRegister<TextPromptInputs>
   setValue: UseFormSetValue<TextPromptInputs>
   errors: FieldErrors<TextPromptInputs>
+  watch: (name: keyof TextPromptInputs) => string | undefined
 }) => {
+  const promptValue = watch('prompt')
+  const MAX_CHAR = 500
   return (
     <>
       <FormControl isInvalid={!!errors.prompt?.message}>
@@ -140,12 +145,25 @@ const TextPromptModalBodyContent = ({
           {...register('prompt', {
             required: 'Please enter a prompt',
             maxLength: {
-              value: 500,
+              value: MAX_CHAR,
               message: 'Please enter at most 500 characters',
             },
           })}
         />
-        <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+        <FormErrorMessage>
+          {errors.prompt?.message && promptValue
+            ? `Your description cannot be longer than 500 characters. (${promptValue.length}/500)`
+            : errors.prompt?.message}
+        </FormErrorMessage>{' '}
+        {promptValue && !errors.prompt?.message && (
+          <FormHelperText
+            color={
+              promptValue.length >= MAX_CHAR ? 'danger.500' : 'secondary.400'
+            }
+          >
+            {`(${promptValue.length}/${MAX_CHAR})`}
+          </FormHelperText>
+        )}
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
@@ -228,6 +246,7 @@ const MagicFormBuilderCreateFormPrompt = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<TextPromptInputs>()
 
@@ -277,6 +296,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                     register={register}
                     setValue={setValue}
                     errors={errors}
+                    watch={watch}
                   />
                 </TabPanel>
                 <TabPanel>
@@ -295,6 +315,7 @@ const MagicFormBuilderCreateFormPrompt = ({
               register={register}
               setValue={setValue}
               errors={errors}
+              watch={watch}
             />
           ) : isMfbVisionEnabled ? (
             <VisionPromptModalBodyContent
