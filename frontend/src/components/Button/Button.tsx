@@ -4,6 +4,11 @@ import {
   forwardRef,
   IconProps,
 } from '@chakra-ui/react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
+
+import { OgpLogo } from '~assets/svgrs/brand/OgpLogo'
 
 import Spinner from '../Spinner'
 
@@ -30,10 +35,28 @@ export const Button = forwardRef<ButtonProps, 'button'>(
     { children, spinnerFontSize, isFullWidth, isHighContrast, ...props },
     ref,
   ) => {
+    const gb = useGrowthBook()
+
+    // Ensures compatibility between Chakra size definitions and those supported by the SVG logo
+    const spinnerSize =
+      typeof spinnerFontSize === 'string' || typeof spinnerFontSize === 'number'
+        ? spinnerFontSize
+        : '1.5rem'
+
+    const spinner = gb?.isOn(featureFlags.ogpSpinner) ? (
+      <Spinner
+        fontSize={spinnerFontSize ?? '1.5rem'}
+        speed="1s"
+        element={<OgpLogo height={spinnerSize} fill="primary" />}
+      />
+    ) : (
+      <Spinner fontSize={spinnerFontSize ?? '1.5rem'} />
+    )
+
     return (
       <ChakraButton
         ref={ref}
-        spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
+        spinner={spinner}
         width={isFullWidth ? '100%' : undefined}
         {...props}
         {...(isFullWidth ? { minH: '3.5rem' } : {})}
