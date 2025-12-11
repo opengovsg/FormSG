@@ -17,7 +17,7 @@ export const SettingsAuthPage = (): JSX.Element => {
     if (isLoading || !settings) return false
     // TODO: FRM-2151 remove when Singpass MRF is out of beta
     if (settings.responseMode === FormResponseMode.Multirespondent) {
-      return user?.betaFlags?.singpassMrf
+      return user?.betaFlags?.singpassMrf || settings.authType !== 'NIL'
     }
     return true
   }, [isLoading, settings, user?.betaFlags?.singpassMrf])
