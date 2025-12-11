@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { FormResponseMode } from '~shared/types'
 
 import { useUser } from '~features/user/queries'
@@ -11,12 +13,16 @@ export const SettingsAuthPage = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
   const { user } = useUser()
 
-  // TODO: FRM-2151 remove when Singpass MRF is out of beta
-  if (
-    !isLoading &&
-    settings?.responseMode === FormResponseMode.Multirespondent &&
-    !user?.betaFlags?.singpassMrf
-  ) {
+  const showAuthSection = useMemo(() => {
+    if (isLoading || !settings) return false
+    // TODO: FRM-2151 remove when Singpass MRF is out of beta
+    if (settings.responseMode === FormResponseMode.Multirespondent) {
+      return user?.betaFlags?.singpassMrf
+    }
+    return true
+  }, [isLoading, settings, user?.betaFlags?.singpassMrf])
+
+  if (!showAuthSection) {
     return <AuthUnsupportedMsg />
   }
 
