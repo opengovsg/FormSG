@@ -299,7 +299,7 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {`Only 30 MyInfo fields are allowed (${numMyInfoFields}/30). `}
+      {`Only 30 Myinfo fields are allowed (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
         Learn more
       </Link>

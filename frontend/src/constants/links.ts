@@ -64,7 +64,7 @@ export const LANDING_PAGE_EXAMPLE_FORMS = [
     label: 'Health and Travel Declaration Form',
   },
   {
-    href: 'https://form.gov.sg/60b81af0f7c4df001210f2b3',
+    href: 'https://form.gov.sg/692fede5b804ecac232b7773',
     label: 'MOM ART Self Swab',
   },
 ]
