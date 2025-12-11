@@ -24,5 +24,6 @@ export interface Modals {
   }
   magicFormBuilder: {
     promptMaxLengthError: string
+    promptRequiredError: string
   }
 }

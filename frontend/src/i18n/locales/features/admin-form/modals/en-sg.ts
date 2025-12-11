@@ -26,6 +26,7 @@ export const enSG = {
   },
   magicFormBuilder: {
     promptMaxLengthError:
-      'Your description cannot be longer than {maxLength} characters. ({current}/{maxLength})',
+      'Your description cannot be longer than {maxLength} characters.',
+    promptRequiredError: 'Please enter a description.',
   },
 }

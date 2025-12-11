@@ -139,11 +139,9 @@ const TextPromptModalBodyContent = ({
     keyPrefix: 'features.adminForm.modals.magicFormBuilder',
   })
   const promptValue = watch('prompt')
-  const isOverLimit =
-    promptValue && promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
   return (
     <>
-      <FormControl isInvalid={!!errors.prompt?.message || !!isOverLimit}>
+      <FormControl isInvalid={!!errors.prompt?.message}>
         <FormLabel textStyle="subhead-1">
           I want to create a form that collects...
         </FormLabel>
@@ -152,32 +150,32 @@ const TextPromptModalBodyContent = ({
           borderRadius="4px"
           placeholder={GENERATE_FORM_PLACEHOLDER}
           {...register('prompt', {
-            required: 'Please enter a prompt',
-            maxLength: {
-              value: MFB_TEXT_PROMPT_MAX_CHAR,
-              message: `Please enter at most ${MFB_TEXT_PROMPT_MAX_CHAR} characters`,
+            required: t('promptRequiredError'),
+            validate: (value) => {
+              if (value.length > MFB_TEXT_PROMPT_MAX_CHAR) {
+                return t('promptMaxLengthError', {
+                  maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
+                  current: value.length,
+                })
+              }
+              return true
             },
           })}
         />
-        <FormErrorMessage>
-          {isOverLimit
-            ? t('promptMaxLengthError', {
-                maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
-                current: promptValue.length,
-              })
-            : errors.prompt?.message}
-        </FormErrorMessage>{' '}
-        {promptValue && !errors.prompt?.message && !isOverLimit && (
-          <FormHelperText
-            color={
-              promptValue.length >= MFB_TEXT_PROMPT_MAX_CHAR
-                ? 'danger.500'
-                : 'secondary.400'
-            }
-          >
-            {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}{' '}
-          </FormHelperText>
-        )}
+        <HStack spacing={0} align="baseline">
+          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+          {promptValue && (
+            <FormHelperText
+              color={
+                promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
+                  ? 'danger.500'
+                  : 'secondary.400'
+              }
+            >
+              {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
+            </FormHelperText>
+          )}
+        </HStack>
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
@@ -262,8 +260,9 @@ const MagicFormBuilderCreateFormPrompt = ({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<TextPromptInputs>()
-
+  } = useForm<TextPromptInputs>({
+    mode: 'onChange',
+  })
   const {
     control: visionControl,
     formState: { errors: visionErrors },
