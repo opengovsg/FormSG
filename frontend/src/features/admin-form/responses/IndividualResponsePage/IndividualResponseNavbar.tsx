@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
@@ -8,7 +8,6 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
-import { useReactToPrint } from 'react-to-print'
 import {
   Box,
   ButtonGroup,
@@ -33,7 +32,7 @@ import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
-import PrintableResponse from './PrintableResponse'
+import generateResponsePdf from './utils/generateResponsePdf'
 import { useIndividualSubmission } from './queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
@@ -56,7 +55,9 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     isAnyFetching,
   } = useUnlockedResponses()
   const { data: form, isLoading: isFormLoading } = useAdminForm()
-  const { isLoading } = useIndividualSubmission()
+  const { data: submission, isLoading: isSubmissionLoading } =
+    useIndividualSubmission()
+  const isLoading = isFormLoading || isSubmissionLoading
 
   const nextSubmissionId = useMemo(
     () => getNextSubmissionId(submissionId),
@@ -130,12 +131,6 @@ export const IndividualResponseNavbar = (): JSX.Element => {
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
 
-  const printableResponseRef = useRef<HTMLDivElement>(null)
-  const reactToPrintFn = useReactToPrint({
-    contentRef: printableResponseRef,
-    documentTitle: `${form ? `${form.title}_formId_${form._id}_` : ''}submissionId_${submissionId}_response.pdf`,
-  })
-
   return (
     <Grid
       sx={noPrintCss}
@@ -174,8 +169,8 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                 <IconButton
                   aria-label="Print"
                   icon={<FaRegFilePdf />}
-                  isLoading={isLoading || isFormLoading}
-                  onClick={() => {
+                  isLoading={isLoading}
+                  onClick={async () => {
                     datadogLogs.logger.info(
                       `IndividualResponseNavbar: admin printing pdf`,
                       {
@@ -186,11 +181,12 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                         },
                       },
                     )
-                    reactToPrintFn()
+                    if (submission && form) {
+                      await generateResponsePdf({ form, submission })
+                    }
                   }}
                   variant="clear"
                 />
-                <PrintableResponse ref={printableResponseRef} />
               </Box>
             )}
           </Stack>

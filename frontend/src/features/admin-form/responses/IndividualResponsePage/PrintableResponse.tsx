@@ -1,18 +1,12 @@
-import { forwardRef } from 'react'
 import { Box, Text } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
 import { BasicField } from '~shared/types/field'
 import { handleAddressResponseDisplay } from '~shared/utils/address'
 
-import { showOnlyWhenPrintCss } from '~utils/showOnlyWhenPrintCss'
-
-import { useAdminForm } from '~features/admin-form/common/queries'
+import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
-
-import { useIndividualSubmission } from './queries'
-import { SignatureCanvas } from './SignatureCanvas'
 
 const SIGNATURE_PDF_FIXED_WIDTH = 300 // Same as the backend template's signature width
 
@@ -114,15 +108,25 @@ const PrintableDecryptedRow = ({
           ))}
         </>
       )
-    case BasicField.Signature:
-      return (
-        <TableRow>
-          <TableSingleColItem>{row.question}</TableSingleColItem>
-          <TableSingleColItem>
-            <SignatureCanvas row={row} widthPx={SIGNATURE_PDF_FIXED_WIDTH} />
-          </TableSingleColItem>
-        </TableRow>
-      )
+    case BasicField.Signature: {
+      if (row.answerArray && row.answerArray.length > 1) {
+        const signatureVectorArray = JSON.parse(row.answerArray[1] as string)
+        const signatureSvg = convertToSignatureSvgString(signatureVectorArray)
+        return (
+          <TableRow>
+            <TableSingleColItem>{row.question}</TableSingleColItem>
+            <TableSingleColItem>
+              <img
+                src={`data:image/svg+xml;utf8,${encodeURIComponent(signatureSvg)}`}
+                width={SIGNATURE_PDF_FIXED_WIDTH}
+                alt="Signature"
+              />
+            </TableSingleColItem>
+          </TableRow>
+        )
+      }
+      return <></>
+    }
     default:
       return (
         <StandardPrintableRow
@@ -231,22 +235,4 @@ export const PrintableResponse = ({
   )
 }
 
-const PrintableResponseContainer = forwardRef<HTMLDivElement>((_, ref) => {
-  const { data: form } = useAdminForm()
-  const { data, isLoading, isError } = useIndividualSubmission()
-  if (isLoading || isError || !form || !data?.responses) return null
-
-  return (
-    <Box ref={ref} sx={showOnlyWhenPrintCss}>
-      <PrintableResponse
-        formTitle={form.title}
-        formId={form._id}
-        decryptedResponses={data?.responses}
-        responseId={data.refNo}
-        submissionTime={data.submissionTime}
-      />
-    </Box>
-  )
-})
-
-export default PrintableResponseContainer
+export default PrintableResponse
