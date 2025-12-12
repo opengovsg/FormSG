@@ -30,6 +30,8 @@ import {
 } from './workflow'
 import { ErrorCode } from '../errorCodes'
 
+import { Schema } from 'mongoose'
+
 export type FormId = Tagged<string, 'FormId'>
 
 export enum FormColorTheme {
@@ -113,6 +115,7 @@ export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
   mfb_vision_prompt_count?: number
+  template_form_id?: Schema.Types.ObjectId
 }
 
 export type FormPaymentsChannel = {

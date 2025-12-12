@@ -33,6 +33,7 @@ export type OverrideProps = {
   publicKey?: string
   submissionLimit?: number | null
   workflow?: IMultirespondentForm['workflow']
+  metadata?: IForm['metadata']
 }
 
 export type EditFormFieldResult = Result<FormFieldSchema[], EditFieldError>

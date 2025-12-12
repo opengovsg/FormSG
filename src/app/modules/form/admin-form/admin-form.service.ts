@@ -661,6 +661,8 @@ type DuplicateFormOpts = {
   workspaceId?: string
   // If defined, overrides the emails of MRF workflows and dropdown fields with the given overrideEmails
   overrideEmails?: string[]
+  // If duplicated from a use-template
+  isFromTemplate?: boolean
 }
 
 /**
@@ -681,7 +683,7 @@ export const duplicateForm = (
     overrideParams,
     newAdminId,
   )
-  const { workspaceId, overrideEmails } = opts ?? {}
+  const { workspaceId, overrideEmails, isFromTemplate } = opts ?? {}
 
   // Set startPage.logo to default irregardless.
   overrideProps.startPage = {
@@ -718,6 +720,13 @@ export const duplicateForm = (
         )
       }
     })
+  }
+
+  // if created from template, track original form id in metadata
+  if (isFromTemplate) {
+    duplicateParams.metadata = {
+      template_form_id: originalForm._id,
+    }
   }
 
   if (workspaceId)
