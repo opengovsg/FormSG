@@ -162,20 +162,40 @@ const TextPromptModalBodyContent = ({
             },
           })}
         />
-        <HStack spacing={0} align="baseline">
-          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-          {promptValue && (
-            <FormHelperText
-              color={
-                promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
-                  ? 'danger.500'
-                  : 'secondary.400'
-              }
-            >
-              {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
-            </FormHelperText>
-          )}
-        </HStack>
+        {errors.prompt?.message ? (
+          <FormErrorMessage display="block">
+            <Box as="span" display="inline" whiteSpace="normal">
+              <Box as="span" display="inline">
+                {errors.prompt.message}
+              </Box>
+              {promptValue && (
+                <Box
+                  as="span"
+                  display="inline"
+                  ml={1}
+                  color={
+                    promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
+                      ? 'danger.500'
+                      : 'secondary.400'
+                  }
+                >
+                  {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
+                </Box>
+              )}
+            </Box>
+          </FormErrorMessage>
+        ) : null}
+        {!errors.prompt?.message && promptValue && (
+          <FormHelperText
+            color={
+              promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
+                ? 'danger.500'
+                : 'secondary.400'
+            }
+          >
+            {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
+          </FormHelperText>
+        )}
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
