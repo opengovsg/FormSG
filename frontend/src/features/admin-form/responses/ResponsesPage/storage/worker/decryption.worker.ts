@@ -1,6 +1,9 @@
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
+
+import { SubmissionStreamDto, SubmissionType } from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
 
@@ -12,6 +15,7 @@ import {
   MaterializedCsvRecord,
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
+import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptAttachment'
 
 const queue = new PQueue({ concurrency: 1 })
 
@@ -49,6 +53,68 @@ function verifySignature(
   return verified.every((v) => v)
 }
 
+async function decryptSubmissionData({
+  submissionData,
+  secretKey,
+}: {
+  submissionData: SubmissionStreamDto
+  secretKey: string
+}): Promise<{
+  decryptedResponses: FormField[]
+  mrfSubmissionSecretKey?: string
+}> {
+  const { processDecryptedContent, processDecryptedContentV3 } = await import(
+    '../utils/processDecryptedContent'
+  )
+
+  const { encryptedContent, verifiedContent, version, submissionType } =
+    submissionData
+
+  let decryptedResponses, mrfSubmissionSecretKey
+  switch (submissionType) {
+    case SubmissionType.Encrypt: {
+      const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
+        encryptedContent,
+        verifiedContent,
+        version,
+      })
+      if (!decryptedObject) {
+        throw new Error('Invalid decryption for storage mode response')
+      }
+      decryptedResponses = processDecryptedContent(decryptedObject)
+      break
+    }
+    case SubmissionType.Multirespondent: {
+      const decryptedObject = formsgSdk.cryptoV3.decrypt(secretKey, {
+        encryptedSubmissionSecretKey:
+          submissionData.encryptedSubmissionSecretKey,
+        encryptedContent,
+        verifiedContent,
+        version,
+      })
+      if (!decryptedObject) {
+        throw new Error('Invalid decryption for multirespondent response')
+      }
+      mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
+      decryptedResponses = await processDecryptedContentV3(
+        submissionData.form_fields,
+        decryptedObject,
+      )
+      break
+    }
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _: never = submissionData
+      throw new Error('Invalid submission type encountered.')
+    }
+  }
+
+  return {
+    decryptedResponses,
+    mrfSubmissionSecretKey,
+  }
+}
+
 /**
  * Decrypts given data into a {@type CsvRecord} and posts the result back to the
  * main thread.
@@ -56,41 +122,34 @@ function verifySignature(
  */
 async function decryptIntoCsv(
   data: LineData,
-  isFasterDownloadsEnabled: boolean,
+  isFasterDownloadsEnabled: boolean = false,
 ): Promise<MaterializedCsvRecord> {
   // This needs to be dynamically imported due to sharing code between main app and worker code.
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
   // Something to do with babel-loader.
-
-  // TODO: May be removed when we move to Webpack 5, where web workers are now first class citizens?
-  const { processDecryptedContent, processDecryptedContentV3 } = await import(
-    '../utils/processDecryptedContent'
-  )
-  const { downloadAndDecryptAttachmentsAsZip } = await import(
-    '../utils/downloadAndDecryptAttachment'
-  )
-
-  const { SubmissionStreamDto, SubmissionType } = await import('~shared/types')
-
   const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
-
-  let csvRecord: CsvRecord
   const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
   let downloadBlob: Blob
+  let csvRecord: CsvRecord
 
   try {
-    // Validate that the submission is of a valid shape.
     const submission = SubmissionStreamDto.parse(JSON.parse(line))
+    const {
+      _id: submissionId,
+      created: submissionCreated,
+      submissionType,
+    } = submission
+
     csvRecord = new CsvRecord(
-      submission._id,
-      submission.created,
+      submissionId,
+      submissionCreated,
       CsvRecordStatus.Unknown,
       formId,
       hostOrigin,
-      submission.submissionType === SubmissionType.Encrypt
+      submissionType === SubmissionType.Encrypt
         ? submission.payment
         : undefined,
-      submission.submissionType === SubmissionType.Multirespondent
+      submissionType === SubmissionType.Multirespondent
         ? {
             workflowStatus: submission.mrfMeta.workflowStatus,
             workflowCurrentStepNumber:
@@ -102,53 +161,21 @@ async function decryptIntoCsv(
           }
         : undefined,
     )
+
     try {
-      let decryptedSubmission, submissionSecretKey
-      switch (submission.submissionType) {
-        case SubmissionType.Encrypt: {
-          const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
-            encryptedContent: submission.encryptedContent,
-            verifiedContent: submission.verifiedContent,
-            version: submission.version,
-          })
-          if (!decryptedObject) {
-            throw new Error('Invalid decryption for storage mode response')
-          }
-          decryptedSubmission = processDecryptedContent(decryptedObject)
-          break
-        }
-        case SubmissionType.Multirespondent: {
-          const decryptedObject = formsgSdk.cryptoV3.decrypt(secretKey, {
-            encryptedSubmissionSecretKey:
-              submission.encryptedSubmissionSecretKey,
-            encryptedContent: submission.encryptedContent,
-            verifiedContent: submission.verifiedContent,
-            version: submission.version,
-          })
-          if (!decryptedObject) {
-            throw new Error('Invalid decryption for multirespondent response')
-          }
-          submissionSecretKey = decryptedObject.submissionSecretKey
-          decryptedSubmission = await processDecryptedContentV3(
-            submission.form_fields,
-            decryptedObject,
-          )
-          break
-        }
-        default: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _: never = submission
-          throw new Error('Invalid submission type encountered.')
-        }
-      }
+      const { decryptedResponses, mrfSubmissionSecretKey } =
+        await decryptSubmissionData({
+          submissionData: submission,
+          secretKey,
+        })
 
       if (
         // Short-circuit signature verification for multirespondent submission
-        submission.submissionType === SubmissionType.Multirespondent ||
-        verifySignature(decryptedSubmission, submission.created)
+        submissionType === SubmissionType.Multirespondent ||
+        verifySignature(decryptedResponses, submissionCreated)
       ) {
         csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
-        csvRecord.setRecord(decryptedSubmission)
+        csvRecord.setRecord(decryptedResponses)
       } else {
         csvRecord.setStatus(CsvRecordStatus.Unverified, 'Unverified')
       }
@@ -157,20 +184,20 @@ async function decryptIntoCsv(
         // Logic to determine which key to use to decrypt attachments.
         const attachmentDecryptionKey =
           // If no submission secret key present, it is a storage mode form. So, use form secret key.
-          !submissionSecretKey
+          !mrfSubmissionSecretKey
             ? secretKey
             : // It's an mrf, but old version
-              submission.submissionType === SubmissionType.Multirespondent &&
+              submissionType === SubmissionType.Multirespondent &&
                 !submission.mrfVersion
               ? secretKey
-              : submissionSecretKey
+              : mrfSubmissionSecretKey
 
         let questionCount = 0
         const extraAttachments: {
           filename: string
           blob: Blob
         }[] = []
-        decryptedSubmission.forEach((field) => {
+        decryptedResponses.forEach((field) => {
           // Populate question number
           if (field.fieldType !== 'section') {
             ++questionCount
