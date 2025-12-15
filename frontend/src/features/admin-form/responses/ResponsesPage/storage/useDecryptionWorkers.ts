@@ -25,6 +25,7 @@ import {
   CleanableDecryptionWorkerApi,
   CsvRecordStatus,
   DownloadResult,
+  MaterializedCsvRecord,
 } from './types'
 
 const NUM_OF_METADATA_ROWS = 5
@@ -151,30 +152,23 @@ const useDecryptionWorkers = ({
       const reader = stream.getReader()
       let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
+      let decryptionProgress = 0
+      const submissionDecryptPromises: Promise<MaterializedCsvRecord>[] = []
 
-      let progress = 0
-      let timeSinceLastXAttachmentDownload = 0
-
-      return new Promise<DownloadResult>((resolve, reject) => {
-        reader
-          .read()
-          .then(
-            (read = async (result) => {
-              if (result.done) return
-              try {
-                // round-robin scheduling
-                const { workerApi } =
-                  workerPool[receivedRecordCount % numWorkers]
-                const decryptResult = await workerApi.decryptIntoCsv({
-                  line: result.value,
-                  secretKey,
-                  downloadAttachments,
-                  formId: adminForm._id,
-                  hostOrigin: window.location.origin,
-                })
-                progress += 1
-                onProgress(progress)
-
+      await reader.read().then(
+        (read = async (result) => {
+          if (result.done) return
+          const { workerApi } = workerPool[receivedRecordCount % numWorkers]
+          submissionDecryptPromises.push(
+            workerApi
+              .decryptIntoCsv({
+                line: result.value,
+                secretKey,
+                downloadAttachments,
+                formId: adminForm._id,
+                hostOrigin: window.location.origin,
+              })
+              .then(async (decryptResult) => {
                 switch (decryptResult.status) {
                   case CsvRecordStatus.Error:
                     errorCount++
@@ -194,38 +188,52 @@ const useDecryptionWorkers = ({
                       errorCount++
                       console.error('Error in getResponseInstance', e)
                     }
-
-                    if (downloadAttachments && decryptResult.downloadBlob) {
-                      // Ensure attachments downloads are spaced out to avoid browser blocking downloads
-                      if (progress % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
-                        const now = new Date().getTime()
-                        const elapsedSinceXDownloads =
-                          now - timeSinceLastXAttachmentDownload
-
-                        const waitTime = Math.max(
-                          0,
-                          ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
-                            elapsedSinceXDownloads,
-                        )
-                        if (waitTime > 0) {
-                          await waitForMs(waitTime)
-                        }
-                        timeSinceLastXAttachmentDownload = now
-                      }
-                      await downloadResponseAttachment(
-                        decryptResult.downloadBlob,
-                        decryptResult.id,
-                      )
-                    }
                   }
                 }
-              } catch (e) {
-                console.error('Error parsing JSON', e)
-              }
-              // recurse through the stream
-              return reader.read().then(read)
-            }),
+                return decryptResult
+              })
+              .then((decryptResult) => {
+                decryptionProgress += 1
+                onProgress(decryptionProgress)
+                return decryptResult
+              }),
           )
+          return reader.read().then(read)
+        }),
+      )
+
+      return new Promise<DownloadResult>((resolve, reject) => {
+        // Step 1: Decrypt all submissions and their attachments (into blobs), add the submissions into the csv.
+        Promise.all(submissionDecryptPromises)
+          // Step 2: Download the attachment blobs for each submission.
+          // This step is done separately to allow for spacing out the downloads to avoid browser blocking downloads.
+          .then((decryptResults) => {
+            let timeSinceLastXAttachmentDownload = 0
+            decryptResults.forEach(async (decryptResult, index) => {
+              if (downloadAttachments && decryptResult.downloadBlob) {
+                // Ensure attachments downloads are spaced out to avoid browser blocking downloads
+                if (index % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
+                  const now = new Date().getTime()
+                  const elapsedSinceXDownloads =
+                    now - timeSinceLastXAttachmentDownload
+
+                  const waitTime = Math.max(
+                    0,
+                    ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
+                      elapsedSinceXDownloads,
+                  )
+                  if (waitTime > 0) {
+                    await waitForMs(waitTime)
+                  }
+                  timeSinceLastXAttachmentDownload = now
+                }
+                await downloadResponseAttachment(
+                  decryptResult.downloadBlob,
+                  decryptResult.id,
+                )
+              }
+            })
+          })
           .catch((err) => {
             if (!downloadStartTime) {
               // No start time, means did not even start http request.
@@ -264,7 +272,6 @@ const useDecryptionWorkers = ({
                 err,
               )
             }
-
             console.error(
               'Failed to download data, is there a network issue?',
               err,
@@ -272,6 +279,7 @@ const useDecryptionWorkers = ({
             killWorkers(workerPool)
             reject(err)
           })
+          // Step 3: Generate the actual CSV file.
           .finally(() => {
             const checkComplete = () => {
               // If all the records could not be decrypted
@@ -347,7 +355,6 @@ const useDecryptionWorkers = ({
                 setTimeout(checkComplete, 100)
               }
             }
-
             checkComplete()
           })
       })
