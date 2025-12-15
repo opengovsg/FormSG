@@ -50,6 +50,7 @@ function verifySignature(
         fieldId,
         answer,
       })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return false
     }
@@ -130,6 +131,85 @@ async function decryptSubmissionData({
   }
 }
 
+function getAttachmentDecryptionKey({
+  submission,
+  mrfSubmissionSecretKey,
+  secretKey,
+}: {
+  submission: {
+    submissionType: SubmissionType
+    mrfVersion?: number
+  }
+  mrfSubmissionSecretKey?: string
+  secretKey: string
+}) {
+  const { submissionType, mrfVersion } = submission
+  if (!mrfSubmissionSecretKey) {
+    // If no mrf submission secret key present, it is a storage mode form. So, use form secret key.
+    return secretKey
+  }
+  const isOldMrfVersion =
+    submissionType === SubmissionType.Multirespondent && !mrfVersion
+  if (isOldMrfVersion) {
+    return secretKey
+  }
+  return mrfSubmissionSecretKey
+}
+
+async function downloadAndDecryptSubmissionAttachments({
+  attachmentDecryptionKey,
+  attachmentMetadata,
+  decryptedResponses,
+}: {
+  attachmentDecryptionKey: string
+  attachmentMetadata: Record<string, string>
+  decryptedResponses: FormField[]
+}): Promise<
+  | {
+      downloadedAttachmentsBlob: Blob
+      isDownloadSuccessful: boolean
+    }
+  | {
+      isDownloadSuccessful: false
+    }
+> {
+  const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
+  let questionCount = 0
+  const extraAttachments: {
+    filename: string
+    blob: Blob
+  }[] = []
+
+  decryptedResponses.forEach((field) => {
+    // Populate question number
+    if (field.fieldType !== 'section') {
+      ++questionCount
+    }
+    // Populate S3 presigned URL for attachments
+    if (attachmentMetadata[field._id]) {
+      attachmentDownloadUrls.set(questionCount, {
+        url: attachmentMetadata[field._id],
+        filename: field.answer,
+      })
+    }
+  })
+  try {
+    const downloadedAttachmentsBlob = await queue.add(() =>
+      downloadAndDecryptAttachmentsAsZip(
+        attachmentDownloadUrls,
+        attachmentDecryptionKey,
+        extraAttachments,
+      ),
+    )
+    return { downloadedAttachmentsBlob, isDownloadSuccessful: true }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    return {
+      isDownloadSuccessful: false,
+    }
+  }
+}
+
 /**
  * Decrypts given data into a {@type CsvRecord} and posts the result back to the
  * main thread.
@@ -141,8 +221,6 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   // Something to do with babel-loader.
   const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
   let csvRecord: CsvRecord
-  const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
-  let downloadBlob: Blob
 
   try {
     const submission = SubmissionStreamDto.parse(JSON.parse(line))
@@ -195,56 +273,37 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
     }
 
     if (downloadAttachments) {
-      // Logic to determine which key to use to decrypt attachments.
-      const attachmentDecryptionKey =
-        // If no submission secret key present, it is a storage mode form. So, use form secret key.
-        !mrfSubmissionSecretKey
-          ? secretKey
-          : // It's an mrf, but old version
-            submission.submissionType === SubmissionType.Multirespondent &&
-              !submission.mrfVersion
-            ? secretKey
-            : mrfSubmissionSecretKey
-
-      let questionCount = 0
-      const extraAttachments: {
-        filename: string
-        blob: Blob
-      }[] = []
-      decryptedResponses.forEach((field) => {
-        // Populate question number
-        if (field.fieldType !== 'section') {
-          ++questionCount
-        }
-        // Populate S3 presigned URL for attachments
-        if (submission.attachmentMetadata[field._id]) {
-          attachmentDownloadUrls.set(questionCount, {
-            url: submission.attachmentMetadata[field._id],
-            filename: field.answer,
-          })
-        }
+      const attachmentDecryptionKey = getAttachmentDecryptionKey({
+        submission,
+        mrfSubmissionSecretKey,
+        secretKey,
       })
 
-      try {
-        downloadBlob = await queue.add(() =>
-          downloadAndDecryptAttachmentsAsZip(
-            attachmentDownloadUrls,
-            attachmentDecryptionKey,
-            extraAttachments,
-          ),
-        )
-        csvRecord.setStatus(
-          CsvRecordStatus.Ok,
-          'Success (with Downloaded Attachment)',
-        )
-        csvRecord.setDownloadBlob(downloadBlob)
-      } catch (error) {
+      const attachmentDownloadBlob =
+        await downloadAndDecryptSubmissionAttachments({
+          attachmentDecryptionKey,
+          attachmentMetadata: submission.attachmentMetadata,
+          decryptedResponses,
+        })
+
+      if (!attachmentDownloadBlob.isDownloadSuccessful) {
         csvRecord.setStatus(
           CsvRecordStatus.AttachmentError,
           'Attachment Download Error',
         )
+        csvRecord.materializeSubmissionData()
+        return csvRecord as MaterializedCsvRecord
       }
+
+      csvRecord.setStatus(
+        CsvRecordStatus.Ok,
+        'Success (with Downloaded Attachment)',
+      )
+      csvRecord.setDownloadBlob(
+        attachmentDownloadBlob.downloadedAttachmentsBlob,
+      )
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     csvRecord = new CsvRecord(
       CsvRecordStatus.Error,
