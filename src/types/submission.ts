@@ -33,8 +33,13 @@ export interface WebhookData {
   encryptedSubmissionSecretKey?: string
 }
 
+export interface MrfWebhookData extends WebhookData {
+  form_fields?: IMultirespondentSubmissionSchema['form_fields']
+  form_logics?: IMultirespondentSubmissionSchema['form_logics']
+}
+
 export interface WebhookView {
-  data: WebhookData
+  data: WebhookData | MrfWebhookData
 }
 
 export type SubmissionWebhookInfo = {

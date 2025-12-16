@@ -25,7 +25,7 @@ import {
   IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
-  IWebhookResponseSchema,
+  IWebhookResponseSchema, MrfWebhookData,
   MultirespondentSubmissionCursorData,
   MultirespondentSubmissionData,
   StorageModeSubmissionCursorData,
@@ -592,7 +592,7 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     ? getPaymentWebhookEventObject(this.paymentId)
     : {}
 
-  const webhookData: WebhookData = {
+  const webhookData: MrfWebhookData = {
     formId,
     submissionId: String(this._id),
     encryptedContent: this.encryptedContent,
@@ -600,6 +600,8 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     verifiedContent: this.verifiedContent,
     version: this.version,
     created: this.created,
+    form_fields: this.form_fields,
+    form_logics: this.form_logics,
     attachmentDownloadUrls: attachmentRecords,
     paymentContent,
     workflowContent: {
