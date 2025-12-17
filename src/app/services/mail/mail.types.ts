@@ -28,7 +28,7 @@ export type SendSingleAutoreplyMailArgs = {
 export type SendAutoReplyEmailsArgs = {
   form: IPopulatedForm
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
-  attachments?: Mail.Attachment[]
+  submissionAttachments?: Mail.Attachment[]
   responsesData: (Pick<
     EmailAdminDataField,
     'question' | 'answerTemplate' | 'fieldType'
@@ -36,7 +36,8 @@ export type SendAutoReplyEmailsArgs = {
     answer?: EmailAdminDataField['answer']
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
-  isUseLambdaOutput: boolean
+  pdfAttachment?: Mail.Attachment
+  isPaymentEnabled: boolean
 }
 
 export type MailServiceParams = {

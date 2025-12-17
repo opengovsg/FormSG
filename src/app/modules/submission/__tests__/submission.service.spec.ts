@@ -455,7 +455,9 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
       })
 
@@ -467,7 +469,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -496,7 +500,9 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
       })
 
@@ -541,7 +547,9 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
       })
 
@@ -592,7 +600,9 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
       })
 
@@ -601,7 +611,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -655,8 +667,10 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
-        responsesData: undefined,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
+        responsesData: [],
       })
 
       const expectedAutoReplyData = [
@@ -667,14 +681,91 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
         responsesData: [],
+        autoReplyMailDatas: expectedAutoReplyData,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
+      })
+      expect(result._unsafeUnwrap()).toBe(true)
+    })
+
+    it('should call mail service with pdfAttachment when a pdfAttachment is provided', async () => {
+      const mockForm = {
+        _id: MOCK_FORM_ID,
+        form_fields: [
+          {
+            ...generateDefaultField(BasicField.Email),
+            autoReplyOptions: AUTOREPLY_OPTIONS_1,
+          },
+          {
+            ...generateDefaultField(BasicField.Email),
+            autoReplyOptions: AUTOREPLY_OPTIONS_2,
+          },
+        ],
+      } as unknown as IPopulatedForm
+      MockMailService.sendAutoReplyEmails.mockResolvedValueOnce([
+        {
+          status: 'fulfilled',
+          value: ok(true),
+        },
+        {
+          status: 'fulfilled',
+          value: ok(true),
+        },
+      ])
+
+      const responses = [
+        {
+          ...generateNewSingleAnswerResponse(BasicField.Email, {
+            _id: mockForm.form_fields![0]._id,
+            answer: MOCK_EMAIL_1,
+          }),
+        },
+        {
+          ...generateNewSingleAnswerResponse(BasicField.Email, {
+            _id: mockForm.form_fields![1]._id,
+            answer: MOCK_EMAIL_2,
+          }),
+        },
+      ]
+      const recipientData = extractEmailConfirmationData(
+        responses,
+        mockForm.form_fields,
+      )
+
+      const MOCK_PDF_ATTACHMENT = {
+        content: Buffer.from('mock pdf buffer'),
+        filename: 'response.pdf',
+      }
+      const result = await SubmissionService.sendEmailConfirmations({
+        form: mockForm,
+        recipientData,
+        submission: MOCK_SUBMISSION,
+        submissionAttachments: undefined,
+        responsesData: MOCK_AUTOREPLY_DATA,
+        isPaymentEnabled: false,
+        pdfAttachment: MOCK_PDF_ATTACHMENT,
+      })
+
+      const expectedAutoReplyData = [
+        EXPECTED_AUTOREPLY_DATA_1,
+        EXPECTED_AUTOREPLY_DATA_2,
+      ]
+
+      expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
+        form: mockForm,
+        submission: MOCK_SUBMISSION,
+        submissionAttachments: undefined,
+        pdfAttachment: MOCK_PDF_ATTACHMENT,
+        isPaymentEnabled: false,
+        responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
       expect(result._unsafeUnwrap()).toBe(true)
     })
 
-    it('should call mail service with attachments undefined when there are no attachments', async () => {
+    it('should call mail service with submissionAttachments undefined and pdfAttachment undefined when there are no submissionAttachments or pdfAttachment', async () => {
       const mockForm = {
         _id: MOCK_FORM_ID,
         form_fields: [
@@ -721,8 +812,10 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: undefined,
+        submissionAttachments: undefined,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isPaymentEnabled: false,
+        pdfAttachment: undefined,
       })
 
       const expectedAutoReplyData = [
@@ -733,7 +826,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: undefined,
+        submissionAttachments: undefined,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -780,8 +875,10 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isPaymentEnabled: false,
+        pdfAttachment: undefined,
       })
 
       const expectedAutoReplyData = [
@@ -792,7 +889,9 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
       })
@@ -849,8 +948,10 @@ describe('submission.service', () => {
         form: mockForm,
         recipientData,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
+        isPaymentEnabled: false,
+        pdfAttachment: undefined,
       })
 
       const expectedAutoReplyData = [
@@ -861,9 +962,11 @@ describe('submission.service', () => {
       expect(MockMailService.sendAutoReplyEmails).toHaveBeenCalledWith({
         form: mockForm,
         submission: MOCK_SUBMISSION,
-        attachments: MOCK_ATTACHMENTS,
+        submissionAttachments: MOCK_ATTACHMENTS,
         responsesData: MOCK_AUTOREPLY_DATA,
         autoReplyMailDatas: expectedAutoReplyData,
+        pdfAttachment: undefined,
+        isPaymentEnabled: false,
       })
       expect(result._unsafeUnwrapErr()).toEqual(
         new SendEmailConfirmationError(),
@@ -2747,7 +2850,11 @@ describe('submission.service', () => {
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile('invalid-key', '')
+      const actualResult = await downloadCleanFile(
+        'invalid-key',
+        '',
+        'mock-bucket-name',
+      )
 
       // Assert
       expect(awsSpy).not.toHaveBeenCalled()
@@ -2761,7 +2868,11 @@ describe('submission.service', () => {
 
       // Act
       // empty string for version id to simulate failure
-      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, '')
+      const actualResult = await downloadCleanFile(
+        MOCK_VALID_UUID,
+        '',
+        'mock-bucket-name',
+      )
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
@@ -2796,7 +2907,11 @@ describe('submission.service', () => {
 
       // Act
       // empty strings for invalid keys and version ids
-      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, versionId)
+      const actualResult = await downloadCleanFile(
+        MOCK_VALID_UUID,
+        versionId,
+        'mock-bucket-name',
+      )
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
