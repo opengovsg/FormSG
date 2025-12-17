@@ -134,7 +134,10 @@ const useProvidePhoneNumberInput = ({
     // Cast to Examples type: JSON files contain plain strings, but the library
     // expects NationalNumber (tagged type). This is safe at runtime as the library
     // handles strings correctly.
-    const exampleNumber = getExampleNumber(country, examples as Examples)?.formatNational()
+    const exampleNumber = getExampleNumber(
+      country,
+      examples as Examples,
+    )?.formatNational()
 
     if (examplePlaceholder === 'aggressive') {
       return exampleNumber ?? props.placeholder
