@@ -1,4 +1,5 @@
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
+
 import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
 
 import { ChartsSupportedFieldsInfoBox } from './ChartsSupportedFieldsInfoBox'
