@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import crypto from 'crypto'
 import StatusCodes from 'http-status-codes'
@@ -14,7 +15,11 @@ import {
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
-import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from '../../../../shared/constants'
+import {
+  AdminEmailPdfFeatureValue,
+  featureFlags,
+  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+} from '../../../../shared/constants'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
@@ -940,4 +945,27 @@ export const buildMrfMetadata = ({
     lastSubmittedAt,
     hasNextStepRecipientEmails,
   }
+}
+
+export const isAdminEmailPdfEnabled = ({
+  growthbook,
+  formFields,
+}: {
+  growthbook?: GrowthBook
+  formFields: FormFieldSchema[]
+}) => {
+  if (!growthbook) {
+    return false
+  }
+  const adminEmailPdfFeatureValue = growthbook.getFeatureValue(
+    featureFlags.adminEmailPdf,
+    AdminEmailPdfFeatureValue.OFF,
+  )
+  if (adminEmailPdfFeatureValue === AdminEmailPdfFeatureValue.ON) {
+    return true
+  }
+  if (adminEmailPdfFeatureValue === AdminEmailPdfFeatureValue.SIGNATURES_ONLY) {
+    return formFields.some((field) => field.fieldType === BasicField.Signature)
+  }
+  return false
 }
