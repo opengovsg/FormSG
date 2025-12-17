@@ -19,7 +19,7 @@ export const enSG = {
     input: {
       label: 'Maximum number of responses allowed',
       description:
-        'Your form will automatically close once it reaches the set limit. Enable reCAPTCHA to prevent spam submissions from triggering this limit.',
+        'Your form will automatically close once it reaches the set limit.',
     },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
@@ -33,9 +33,9 @@ export const enSG = {
       "Respondents can save what they've filled in and continue later on the same browser.",
   },
   captcha: {
-    label: 'Enable reCAPTCHA',
+    label: 'Enable human verification (reCAPTCHA)',
     description:
-      'If you expect non-English-speaking respondents, they may have difficulty understanding the reCAPTCHA selection instructions.',
+      'Respondents may need to complete an image challenge to submit the form.',
   },
   issueNotifications: {
     label: 'Receive email notifications for issues reported by respondents',

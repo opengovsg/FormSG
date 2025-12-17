@@ -311,7 +311,7 @@ export const SignatureField = ({
                 }}
                 isLoading={isSubmitting}
                 isDisabled={schema.disabled}
-                variant={'outline'}
+                variant={'clear'}
               >
                 Clear
               </Button>

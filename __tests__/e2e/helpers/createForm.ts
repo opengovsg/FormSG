@@ -50,7 +50,7 @@ import {
   getTitleWithQuestionNumber,
 } from '../utils'
 
-import { closeModals } from './closeModals';
+import { closeModals } from './closeModals'
 
 type CreateFormReturn = {
   form: IFormSchema
@@ -268,7 +268,7 @@ const addGeneralSettings = async (
   // Turn off captcha, since we can't test for that
   await page
     .locator('label', {
-      has: page.locator('[aria-label="Enable reCAPTCHA"]'),
+      has: page.locator('[aria-label="Enable human verification (reCAPTCHA)"]'),
     })
     .click()
 
