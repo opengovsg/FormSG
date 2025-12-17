@@ -621,9 +621,10 @@ export const PublicFormProvider = ({
         // Only update the `formId` attribute, keep the rest the same
         ...growthbook.getAttributes(),
         formId,
+        adminAgency: data?.form.admin.agency.shortName,
       })
     }
-  }, [growthbook, formId])
+  }, [growthbook, formId, data?.form.admin.agency.shortName])
 
   // Scroll to top of page when user has finished their submission.
   useLayoutEffect(() => {
