@@ -134,7 +134,11 @@ export const UnlockedChartsContainer = () => {
     .filter(isNonEmpty)
 
   return (
-    <>
+    <Flex
+      flexDir="column"
+      pt={0}
+      pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+    >
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}
@@ -206,6 +210,6 @@ export const UnlockedChartsContainer = () => {
           )}
         />
       )}
-    </>
+    </Flex>
   )
 }

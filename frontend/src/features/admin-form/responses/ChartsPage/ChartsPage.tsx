@@ -1,6 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import { Box, Container, Divider, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Container,
+  Divider,
+  Flex,
+  Skeleton,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
@@ -23,7 +31,11 @@ import UnlockedCharts from './UnlockedCharts'
 export const ChartsPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: form, isLoading } = useAdminForm()
-  const { totalResponsesCount, secretKey } = useStorageResponsesContext()
+  const {
+    totalResponsesCount,
+    secretKey,
+    isLoading: isResponsesLoading,
+  } = useStorageResponsesContext()
   const { pathname } = useLocation()
   const chartsMaxResponseCount = useFeatureValue(
     featureFlags.chartsMaxResponseCount,
@@ -91,24 +103,38 @@ export const ChartsPage = (): JSX.Element => {
     <UnlockedCharts />
   ) : (
     <>
-      <SecretKeyVerification
-        hideResponseCount
-        heroSvg={<ChartsSvgr />}
-        ctaText={t(
-          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
-        )}
-        label={t(
-          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
-        )}
-      />
-      <Container p={0} maxW="42.5rem">
-        <Box mt="2rem" mb="0.5rem">
-          <Divider />
-        </Box>
-        <Stack>
-          <ChartsSupportedFieldsInfoBox />
-        </Stack>
-      </Container>
+      <Flex
+        flexDir="column"
+        align="center"
+        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      >
+        <Container p={0} maxW="42.5rem">
+          <SecretKeyVerification
+            heroSvg={<ChartsSvgr />}
+            ctaText={t(
+              'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
+            )}
+            label={t(
+              'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
+            )}
+          />
+        </Container>
+      </Flex>
+      <Flex
+        flexDir="column"
+        align="center"
+        pb="4rem"
+        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      >
+        <Container p={0} maxW="42.5rem">
+          <Box mt="2rem" mb="0.5rem">
+            <Divider />
+          </Box>
+          <Stack>
+            <ChartsSupportedFieldsInfoBox />
+          </Stack>
+        </Container>
+      </Flex>
     </>
   )
 }

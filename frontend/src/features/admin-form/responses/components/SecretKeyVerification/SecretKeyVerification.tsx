@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Box, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import SecretKeyVerificationInput from '~components/SecretKeyVerificationInput'
 
@@ -10,11 +10,13 @@ export const SecretKeyVerification = ({
   ctaText,
   label,
   hideResponseCount,
+  noPadding,
 }: {
   heroSvg: JSX.Element
   ctaText: string
   label: string
   hideResponseCount?: boolean
+  noPadding?: boolean
 }): JSX.Element => {
   const { setSecretKey, formPublicKey, isLoading, totalResponsesCount } =
     useStorageResponsesContext()
@@ -22,7 +24,10 @@ export const SecretKeyVerification = ({
   const { t } = useTranslation()
 
   return (
-    <Container p={0} maxW="42.5rem">
+    <Box
+      px={noPadding ? 0 : { base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      pt={{ base: '1.5rem', md: '2rem' }}
+    >
       <Stack spacing="2rem">
         {heroSvg}
         {!hideResponseCount ? (
@@ -51,6 +56,6 @@ export const SecretKeyVerification = ({
           buttonText={ctaText}
         />
       </Stack>
-    </Container>
+    </Box>
   )
 }

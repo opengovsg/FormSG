@@ -108,27 +108,44 @@ function NotApprovedBadge() {
   )
 }
 
+// Column width presets - shirt sizes for table columns
+const COLUMN_SIZES = {
+  xs: { width: 80, minWidth: 60, maxWidth: 100 }, // Tiny columns like "#"
+  sm: { width: 120, minWidth: 100, maxWidth: 150 }, // Small columns like "Status"
+  md: { width: 180, minWidth: 120, maxWidth: 250 }, // Medium columns like "Email"
+  lg: { width: 250, minWidth: 200, maxWidth: 350 }, // Large columns like "Timestamp"
+  xl: { width: 300, minWidth: 200, maxWidth: 400 }, // Extra large like "Response ID"
+}
+
+// Helper function to create column width config
+const columnWidth = (
+  size: keyof typeof COLUMN_SIZES,
+  options?: {
+    disableResizing?: boolean
+    customWidth?: number
+    minWidth?: number
+    maxWidth?: number
+  },
+) => ({
+  ...COLUMN_SIZES[size],
+  ...options,
+  ...(options?.customWidth && { width: options.customWidth }),
+})
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    width: 80, // width is used for both the flex-basis and flex-grow
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    maxWidth: 100, // maxWidth is only used as a limit for resizing
+    ...columnWidth('xs'),
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    width: 300,
-    minWidth: 300,
-    maxWidth: 300,
+    ...columnWidth('xl'),
   },
   {
     Header: 'Timestamp',
     accessor: 'submissionTime',
-    width: 250,
-    minWidth: 250,
-    disableResizing: true,
+    ...columnWidth('lg', { disableResizing: true }),
   },
 ]
 
@@ -141,8 +158,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return payments.email
     },
-    minWidth: 250,
-    width: 250,
+    ...columnWidth('md'),
   },
 
   {
@@ -153,8 +169,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return `${centsToDollars(payments.paymentAmt)}`
     },
-    minWidth: 150,
-    width: 150,
+    ...columnWidth('sm'),
   },
 
   {
@@ -169,15 +184,13 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
 
       return `${centsToDollars(payments.transactionFee)}`
     },
-    minWidth: 150,
-    width: 150,
+    ...columnWidth('sm', { customWidth: 100 }),
   },
 
   {
     Header: 'Net Amount (S$)', //  (amt they receive in bank)
     accessor: ({ payments }) => getNetAmount(payments),
-    minWidth: 150,
-    width: 150,
+    ...columnWidth('sm'),
   },
 
   {
@@ -188,9 +201,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return payments.payoutDate
     },
-    minWidth: 200,
-    width: 200,
-    disableResizing: true,
+    ...columnWidth('md', { customWidth: 150, disableResizing: true }),
   },
 ]
 
@@ -198,16 +209,12 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    width: 80,
-    minWidth: 80,
-    maxWidth: 100,
+    ...columnWidth('xs', { customWidth: 60, minWidth: 40 }),
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    width: 240,
-    minWidth: 240,
-    maxWidth: 240,
+    ...columnWidth('md', { customWidth: 160, minWidth: 100, maxWidth: 240 }),
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
@@ -228,9 +235,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         return <CompletedBadge />
       }
     },
-    width: 160,
-    minWidth: 160,
-    maxWidth: 160,
+    ...columnWidth('sm', { minWidth: 90, maxWidth: 160 }),
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
@@ -251,25 +256,12 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         workflowNumTotalSteps,
       })
     },
-    width: 180,
-    minWidth: 180,
-    maxWidth: 180,
+    ...columnWidth('md', { customWidth: 140, maxWidth: 180 }),
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
-    // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
-    // accessor: ({ mrf }) =>
-    //   mrf?.lastSubmittedAt
-    //     ? formatInTimeZone(
-    //         mrf.lastSubmittedAt,
-    //         'Asia/Singapore',
-    //         'do MMM yyyy, hh:mm:ss a',
-    //       )
-    //     : '',
-    width: 240,
-    minWidth: 240,
-    maxWidth: 240,
+    ...columnWidth('md', { minWidth: 140, maxWidth: 240 }),
   },
   {
     Header: MRF_REMINDERS_LABEL,
@@ -283,11 +275,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         <SendReminderButton submissionId={submissionId} />
       ) : null
     },
-    minWidth: 160,
-    width: 160,
+    ...columnWidth('md'),
   },
 ]
-
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
@@ -379,6 +369,8 @@ export const ResponsesTable = () => {
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
+      minW="fit-content" // Let table be its natural width based on columns
+      w="100%"
     >
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
@@ -395,6 +387,9 @@ export const ResponsesTable = () => {
                 pos="relative"
                 {...column.getHeaderProps()}
                 key={column.getHeaderProps().key}
+                minW={0} // Allow header to shrink but not overlap
+                flexShrink={0} // Prevent headers from shrinking below their minWidth
+                overflow="hidden" // Prevent content from overflowing
               >
                 <Flex align="center">{column.render('Header')}</Flex>
 
@@ -404,7 +399,7 @@ export const ResponsesTable = () => {
                     justify="center"
                     top={0}
                     right={0}
-                    zIndex={1}
+                    zIndex={2}
                     transitionProperty="background"
                     transitionDuration="normal"
                     pos="absolute"
@@ -444,12 +439,9 @@ export const ResponsesTable = () => {
                 handleRowClick(row.values.refNo, row.values.number)
               }
               cursor="pointer"
-              _hover={{
-                bg: 'primary.100',
-              }}
-              _active={{
-                bg: 'primary.200',
-              }}
+              minWidth="100%"
+              display="flex"
+              role="group" // ✨ Add this to make parent hoverable
             >
               {row.cells.map((cell) => {
                 return (
@@ -459,6 +451,16 @@ export const ResponsesTable = () => {
                     key={cell.getCellProps().key}
                     display="flex"
                     alignItems="center"
+                    minW={0}
+                    flexShrink={0}
+                    overflow="hidden"
+                    _groupHover={{
+                      bg: 'primary.100', // ✨ Hover on row affects all cells
+                    }}
+                    _active={{
+                      bg: 'primary.200',
+                    }}
+                    transition="background 0.15s ease" // ✨ Smooth transition
                   >
                     {cell.render('Cell')}
                   </Td>
