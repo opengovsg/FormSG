@@ -14,6 +14,7 @@ import {
   CountryCode,
   Examples,
   getExampleNumber,
+  NationalNumber,
 } from 'libphonenumber-js'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
 

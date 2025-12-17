@@ -6,7 +6,7 @@
  */
 import { forwardRef } from '@chakra-ui/react'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
-import { CountryCode } from 'libphonenumber-js/min'
+import { CountryCode, NationalNumber } from 'libphonenumber-js/min'
 
 import { InputProps } from '../Input'
 
