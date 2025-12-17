@@ -22,6 +22,8 @@ export type AttachmentsDownloadMap = Map<
 
 export type CsvRecordData = FormField
 
+export type MaterializedCsvRecord = SetRequired<CsvRecord, 'submissionData'>
+
 export type DecryptedSubmissionData = {
   created: string
   submissionId: string
@@ -29,12 +31,9 @@ export type DecryptedSubmissionData = {
   record: CsvRecordData[]
 }
 
-export type MaterializedCsvRecord = SetRequired<CsvRecord, 'submissionData'>
-
-export type LineData = {
-  line: string
+export interface SubmissionDataForDecryption {
+  submissionStreamDtoString: string
   secretKey: string
-  downloadAttachments?: boolean
   formId: string
   hostOrigin: string
 }
@@ -42,6 +41,23 @@ export type LineData = {
 export type CleanableDecryptionWorkerApi = {
   workerApi: Remote<DecryptionWorkerApi>
   cleanup: () => void
+}
+
+/**
+ * Options for bulk download.
+ */
+export interface DownloadOptions {
+  isDownloadAttachments: boolean
+  isDownloadCsv: boolean
+}
+
+/**
+ * Decrypted formatted data returned by the decryption worker.
+ */
+export type DecryptedData = {
+  materializedCsvRecord?: MaterializedCsvRecord
+  attachmentDownloadBlob?: Blob
+  submissionId?: string
 }
 
 /** Download result after downloading storage mode responses */

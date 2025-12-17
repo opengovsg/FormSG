@@ -24,8 +24,8 @@ import {
 import {
   CleanableDecryptionWorkerApi,
   CsvRecordStatus,
+  DecryptedData,
   DownloadResult,
-  MaterializedCsvRecord,
 } from './types'
 
 const NUM_OF_METADATA_ROWS = 5
@@ -153,7 +153,7 @@ const useDecryptionWorkers = ({
       let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
       let decryptionProgress = 0
-      const submissionDecryptPromises: Promise<MaterializedCsvRecord>[] = []
+      const submissionDecryptPromises: Promise<DecryptedData>[] = []
 
       await reader.read().then(
         (read = async (result) => {
@@ -161,15 +161,17 @@ const useDecryptionWorkers = ({
           const { workerApi } = workerPool[receivedRecordCount % numWorkers]
           submissionDecryptPromises.push(
             workerApi
-              .decryptIntoCsv({
-                line: result.value,
+              .getDecryptedData({
+                isDownloadAttachments: downloadAttachments,
+                isDownloadCsv: true,
+                submissionStreamDtoString: result.value,
                 secretKey,
-                downloadAttachments,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
               })
               .then(async (decryptResult) => {
-                switch (decryptResult.status) {
+                const { materializedCsvRecord } = decryptResult
+                switch (materializedCsvRecord?.status) {
                   case CsvRecordStatus.Error:
                     errorCount++
                     break
@@ -182,7 +184,9 @@ const useDecryptionWorkers = ({
                     break
                   case CsvRecordStatus.Ok: {
                     try {
-                      csvGenerator.addRecord(decryptResult.submissionData)
+                      csvGenerator.addRecord(
+                        materializedCsvRecord.submissionData,
+                      )
                       receivedRecordCount++
                     } catch (e) {
                       errorCount++
@@ -210,7 +214,12 @@ const useDecryptionWorkers = ({
           .then((decryptResults) => {
             let timeSinceLastXAttachmentDownload = 0
             decryptResults.forEach(async (decryptResult, index) => {
-              if (downloadAttachments && decryptResult.downloadBlob) {
+              const { submissionId, attachmentDownloadBlob } = decryptResult
+              if (
+                downloadAttachments &&
+                attachmentDownloadBlob &&
+                submissionId
+              ) {
                 // Ensure attachments downloads are spaced out to avoid browser blocking downloads
                 if (index % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
                   const now = new Date().getTime()
@@ -228,8 +237,8 @@ const useDecryptionWorkers = ({
                   timeSinceLastXAttachmentDownload = now
                 }
                 await downloadResponseAttachment(
-                  decryptResult.downloadBlob,
-                  decryptResult.id,
+                  attachmentDownloadBlob,
+                  submissionId,
                 )
               }
             })
