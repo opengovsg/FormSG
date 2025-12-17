@@ -12,7 +12,6 @@ import {
 import {
   AsYouType,
   CountryCode,
-  Examples,
   getExampleNumber,
   NationalNumber,
 } from 'libphonenumber-js'
