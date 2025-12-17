@@ -104,6 +104,7 @@ export const DownloadButton = (): JSX.Element => {
     () => ({
       isDownloadAttachments: false,
       isDownloadCsv: false,
+      isDownloadPdf: false,
     }),
     [],
   )
@@ -205,6 +206,7 @@ export const DownloadButton = (): JSX.Element => {
       ...downloadParams,
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
+      isDownloadPdf: downloadOptions.isDownloadPdf,
     })
   }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
 

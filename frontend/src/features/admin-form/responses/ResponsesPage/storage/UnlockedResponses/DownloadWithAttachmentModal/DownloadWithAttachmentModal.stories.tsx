@@ -40,6 +40,7 @@ ConfirmationStateResponseAndAttachmentsDesktop.args = {
   downloadOptions: {
     isDownloadAttachments: true,
     isDownloadCsv: true,
+    isDownloadPdf: false,
   },
 }
 export const ConfirmationStateResponseAndAttachmentsMobile = Template.bind({})
@@ -56,6 +57,7 @@ ConfirmationStateAttachmentsOnlyDesktop.args = {
   downloadOptions: {
     isDownloadAttachments: true,
     isDownloadCsv: false,
+    isDownloadPdf: false,
   },
 }
 

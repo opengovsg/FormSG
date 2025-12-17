@@ -394,7 +394,11 @@ async function parseAndDecryptSubmissionData({
   }
 }
 
-type GetDecryptedDataParams = DownloadOptions & SubmissionDataForDecryption
+type GetDecryptedDataParams = Pick<
+  DownloadOptions,
+  'isDownloadAttachments' | 'isDownloadCsv'
+> &
+  SubmissionDataForDecryption
 
 async function getDecryptedData(
   getDecryptedDataParams: GetDecryptedDataParams,
@@ -452,8 +456,11 @@ async function getDecryptedData(
   return {
     materializedCsvRecord,
     attachmentDownloadBlob,
-    submissionId: isParseSuccessful
-      ? decryptedSubmissionResult.parsedSubmission._id
+    parsedSubmission: isParseSuccessful
+      ? decryptedSubmissionResult.parsedSubmission
+      : undefined,
+    decryptedResponses: isDecryptionSuccessful
+      ? decryptedSubmissionResult.decryptedResponses
       : undefined,
     status: {
       isDecryptionSuccessful,
