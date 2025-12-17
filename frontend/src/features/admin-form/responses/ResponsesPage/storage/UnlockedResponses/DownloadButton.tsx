@@ -262,6 +262,7 @@ export const DownloadButton = (): JSX.Element => {
           downloadPercentage={downloadPercentage}
           isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
+          downloadOptions={downloadOptions}
         />
       )}
       {dateRangeResponsesCount !== undefined && (

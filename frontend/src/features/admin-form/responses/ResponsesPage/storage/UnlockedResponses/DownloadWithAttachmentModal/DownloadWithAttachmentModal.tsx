@@ -11,7 +11,7 @@ import {
 
 import { XMotionBox } from '~templates/MotionBox'
 
-import { CanceledResult, DownloadResult } from '../../types'
+import { CanceledResult, DownloadOptions, DownloadResult } from '../../types'
 import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 
@@ -27,6 +27,7 @@ export interface DownloadWithAttachmentModalProps
   downloadPercentage: number
   initialState?: [DownloadWithAttachmentFlowStates, number]
   downloadMetadata?: DownloadResult | CanceledResult
+  downloadOptions: DownloadOptions
 }
 
 /** Exported for testing. */
@@ -50,6 +51,7 @@ export const DownloadWithAttachmentModal = ({
   responsesCount,
   downloadPercentage,
   downloadMetadata,
+  downloadOptions,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
@@ -94,6 +96,7 @@ export const DownloadWithAttachmentModal = ({
         <XMotionBox keyProp={currentStep} custom={direction}>
           {currentStep === DownloadWithAttachmentFlowStates.Confirmation && (
             <ConfirmationScreen
+              downloadOptions={downloadOptions}
               isDownloading={isDownloading}
               responsesCount={responsesCount}
               onCancel={onClose}
