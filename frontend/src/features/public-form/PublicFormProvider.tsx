@@ -621,7 +621,7 @@ export const PublicFormProvider = ({
         // Only update the `formId` attribute, keep the rest the same
         ...growthbook.getAttributes(),
         formId,
-        agencyName: data?.form.admin.agency.shortName,
+        adminAgency: data?.form.admin.agency.shortName,
       })
     }
   }, [growthbook, formId, data?.form.admin.agency.shortName])
