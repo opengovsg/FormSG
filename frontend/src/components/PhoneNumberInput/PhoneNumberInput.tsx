@@ -58,7 +58,7 @@ export interface PhoneNumberInputProps extends BasePhoneNumberInputProps {
    * Examples to retrieve placeholder number from, if any. Defaults to
    * `libphonenumber-js/examples.mobile.json` if none provided.
    */
-  examples?: { [country in CountryCode]: string }
+  examples?: { [country in CountryCode]: NationalNumber }
 
   /**
    * Whether international phone numbers are allowed. Defaults to `true`.
