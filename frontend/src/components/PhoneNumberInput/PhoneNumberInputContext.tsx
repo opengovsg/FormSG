@@ -34,7 +34,7 @@ type PhoneNumberInputContextProps = {
    * Examples to retrieve placeholder number from, if any. Defaults to
    * `libphonenumber-js/examples.mobile.json` if none provided.
    */
-  examples?: { [country in CountryCode]: string }
+  examples?: { [country in CountryCode]: NationalNumber }
   placeholder?: string
   /**
    * Whether international phone numbers are allowed. Defaults to `true`.
