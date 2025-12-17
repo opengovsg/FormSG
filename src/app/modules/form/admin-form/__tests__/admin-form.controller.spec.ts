@@ -4046,7 +4046,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { overrideEmails: ['andanother@example.com'] },
+        { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
       )
     })
 
@@ -4118,7 +4118,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { overrideEmails: ['andanother@example.com'] },
+        { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
       )
     })
 
@@ -4268,7 +4268,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
-        { overrideEmails: ['andanother@example.com'] },
+        { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
       )
     })
   })

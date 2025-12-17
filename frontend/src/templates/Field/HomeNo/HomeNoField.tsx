@@ -1,4 +1,5 @@
 import { Controller, useFormContext } from 'react-hook-form'
+import { Examples } from 'libphonenumber-js'
 
 import { useHomeNoValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput from '~components/PhoneNumberInput'
@@ -34,7 +35,7 @@ export const HomeNoField = ({
           <PhoneNumberInput
             autoComplete="tel"
             allowInternational={schema.allowIntlNumbers}
-            examples={landlineExamples}
+            examples={landlineExamples as Examples}
             // Remove placeholder when field is disabled, to avoid confusion if
             // the field is prefilled or not (placeholder and prefill look similar)
             examplePlaceholder={schema.disabled ? 'off' : undefined}
