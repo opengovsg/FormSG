@@ -12,8 +12,8 @@ import {
 import {
   AsYouType,
   CountryCode,
+  Examples,
   getExampleNumber,
-  NationalNumber,
 } from 'libphonenumber-js'
 import defaultExamples from 'libphonenumber-js/examples.mobile.json'
 
@@ -34,7 +34,7 @@ type PhoneNumberInputContextProps = {
    * Examples to retrieve placeholder number from, if any. Defaults to
    * `libphonenumber-js/examples.mobile.json` if none provided.
    */
-  examples?: { [country in CountryCode]: NationalNumber }
+  examples?: { [country in CountryCode]: string }
   placeholder?: string
   /**
    * Whether international phone numbers are allowed. Defaults to `true`.
@@ -131,7 +131,13 @@ const useProvidePhoneNumberInput = ({
       return props.placeholder
     }
 
-    const exampleNumber = getExampleNumber(country, examples)?.formatNational()
+    // Cast to Examples type: JSON files contain plain strings, but the library
+    // expects NationalNumber (tagged type). This is safe at runtime as the library
+    // handles strings correctly.
+    const exampleNumber = getExampleNumber(
+      country,
+      examples as Examples,
+    )?.formatNational()
 
     if (examplePlaceholder === 'aggressive') {
       return exampleNumber ?? props.placeholder
