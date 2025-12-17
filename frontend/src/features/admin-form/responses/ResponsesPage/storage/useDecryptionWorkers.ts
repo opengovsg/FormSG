@@ -47,6 +47,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   responsesCount: number
   // Used to determine if we should add MRF related columns to the CSV.
   isMrf: boolean
+  isDownloadCsv: boolean
 }
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
@@ -83,6 +84,7 @@ const useDecryptionWorkers = ({
     async ({
       responsesCount,
       downloadAttachments,
+      isDownloadCsv,
       secretKey,
       endDate,
       startDate,
@@ -117,7 +119,7 @@ const useDecryptionWorkers = ({
         action: 'downloadEncryptedReponses',
         formId: adminForm._id,
         formTitle: adminForm.title,
-        downloadAttachments: downloadAttachments,
+        downloadAttachments,
         num_workers: numWorkers,
         expectedNumSubmissions: NUM_OF_METADATA_ROWS,
         adminId: user?._id,
@@ -138,11 +140,13 @@ const useDecryptionWorkers = ({
 
       setWorkers(workerPool)
 
-      const csvGenerator = new EncryptedResponseCsvGenerator(
-        responsesCount,
-        NUM_OF_METADATA_ROWS,
-        isMrf,
-      )
+      const csvGenerator = isDownloadCsv
+        ? new EncryptedResponseCsvGenerator(
+            responsesCount,
+            NUM_OF_METADATA_ROWS,
+            isMrf,
+          )
+        : undefined
 
       const stream = await getEncryptedResponsesStream(
         adminForm._id,
@@ -163,34 +167,36 @@ const useDecryptionWorkers = ({
             workerApi
               .getDecryptedData({
                 isDownloadAttachments: downloadAttachments,
-                isDownloadCsv: true,
+                isDownloadCsv,
                 submissionStreamDtoString: result.value,
                 secretKey,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
               })
               .then(async (decryptResult) => {
-                const { materializedCsvRecord } = decryptResult
-                switch (materializedCsvRecord?.status) {
-                  case CsvRecordStatus.Error:
-                    errorCount++
-                    break
-                  case CsvRecordStatus.Unverified:
-                    unverifiedCount++
-                    break
-                  case CsvRecordStatus.AttachmentError:
-                    errorCount++
-                    attachmentErrorCount++
-                    break
-                  case CsvRecordStatus.Ok: {
-                    try {
-                      csvGenerator.addRecord(
-                        materializedCsvRecord.submissionData,
-                      )
-                      receivedRecordCount++
-                    } catch (e) {
+                if (isDownloadCsv && csvGenerator) {
+                  const { materializedCsvRecord } = decryptResult
+                  switch (materializedCsvRecord?.status) {
+                    case CsvRecordStatus.Error:
                       errorCount++
-                      console.error('Error in getResponseInstance', e)
+                      break
+                    case CsvRecordStatus.Unverified:
+                      unverifiedCount++
+                      break
+                    case CsvRecordStatus.AttachmentError:
+                      errorCount++
+                      attachmentErrorCount++
+                      break
+                    case CsvRecordStatus.Ok: {
+                      try {
+                        csvGenerator.addRecord(
+                          materializedCsvRecord.submissionData,
+                        )
+                        receivedRecordCount++
+                      } catch (e) {
+                        errorCount++
+                        console.error('Error in getResponseInstance', e)
+                      }
                     }
                   }
                 }
@@ -291,6 +297,16 @@ const useDecryptionWorkers = ({
           // Step 3: Generate the actual CSV file.
           .finally(() => {
             const checkComplete = () => {
+              if (!isDownloadCsv || !csvGenerator) {
+                const NO_CSV_COUNT = 0 // RATIONALE: 0 row counts since no CSV is needed
+                resolve({
+                  expectedCount: NO_CSV_COUNT,
+                  successCount: NO_CSV_COUNT,
+                  errorCount: NO_CSV_COUNT,
+                  unverifiedCount: NO_CSV_COUNT,
+                })
+                return
+              }
               // If all the records could not be decrypted
               if (errorCount + unverifiedCount === responsesCount) {
                 const failureEndTime = performance.now()
@@ -371,18 +387,18 @@ const useDecryptionWorkers = ({
     [adminForm, onProgress, user?._id, workers],
   )
 
-  const handleExportCsvMutation = useMutation(
+  const handleBulkDownloadMutation = useMutation(
     (params: DownloadEncryptedParams) => downloadEncryptedResponses(params),
     mutateProps,
   )
 
   const abortDecryption = useCallback(() => {
     abortControllerRef.current.abort()
-    handleExportCsvMutation.reset()
+    handleBulkDownloadMutation.reset()
     killWorkers(workers)
-  }, [handleExportCsvMutation, workers])
+  }, [handleBulkDownloadMutation, workers])
 
-  return { handleExportCsvMutation, abortDecryption }
+  return { handleBulkDownloadMutation, abortDecryption }
 }
 
 export default useDecryptionWorkers

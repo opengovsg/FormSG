@@ -62,8 +62,8 @@ export interface ResponsesResponsesPage {
         }
         progressModalContent: string
         menuItem: {
-          csvOnly: string
-          csvWithAttachments: string
+          csv: string
+          attachments: string
         }
       }
       unlockedResponses: {

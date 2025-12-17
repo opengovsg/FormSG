@@ -1,7 +1,16 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useThrottle } from 'react-use'
-import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
+import {
+  Box,
+  CheckboxGroup,
+  Flex,
+  MenuButton,
+  MenuList,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -9,17 +18,102 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
+import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import { CanceledResult, DownloadResult } from '../types'
+import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
 
+const DownloadSelectorCheckbox = ({
+  optionText,
+  isChecked,
+  onChange,
+}: {
+  optionText: string
+  isChecked: boolean
+  onChange: () => void
+}) => {
+  return (
+    <Checkbox isChecked={isChecked} onChange={onChange} px="1rem" py="0.75rem">
+      {optionText}
+    </Checkbox>
+  )
+}
+
+const DownloadSelector = ({
+  onClickNext,
+  onDownload,
+  downloadOptions,
+  setDownloadOptions,
+}: {
+  onClickNext: () => void
+  downloadOptions: DownloadOptions
+  onDownload: () => void
+  setDownloadOptions: (downloadOptions: DownloadOptions) => void
+}) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix:
+      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem',
+  })
+
+  const { isDownloadCsv, isDownloadAttachments } = downloadOptions
+  const onlyDownloadCsv = isDownloadCsv && !isDownloadAttachments
+
+  return (
+    <Stack>
+      <CheckboxGroup value={['csv', 'attachments']}>
+        <Stack direction="column">
+          <DownloadSelectorCheckbox
+            optionText={t('csv')}
+            isChecked={isDownloadCsv}
+            onChange={() =>
+              setDownloadOptions({
+                ...downloadOptions,
+                isDownloadCsv: !isDownloadCsv,
+              })
+            }
+          />
+          <DownloadSelectorCheckbox
+            optionText={t('attachments')}
+            isChecked={isDownloadAttachments}
+            onChange={() =>
+              setDownloadOptions({
+                ...downloadOptions,
+                isDownloadAttachments: !isDownloadAttachments,
+              })
+            }
+          />
+        </Stack>
+      </CheckboxGroup>
+      <Flex m="1rem" justify="flex-end">
+        <Button onClick={onlyDownloadCsv ? onDownload : onClickNext}>
+          {onlyDownloadCsv ? 'Start download' : 'Next'}
+        </Button>
+      </Flex>
+    </Stack>
+  )
+}
+
 export const DownloadButton = (): JSX.Element => {
+  const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
+    () => ({
+      isDownloadAttachments: false,
+      isDownloadCsv: false,
+    }),
+    [],
+  )
+  const [downloadOptions, setDownloadOptions] = useState<DownloadOptions>(
+    DEFAULT_DOWNLOAD_OPTIONS,
+  )
+  const resetDownloadOptions = useCallback(() => {
+    setDownloadOptions(DEFAULT_DOWNLOAD_OPTIONS)
+  }, [DEFAULT_DOWNLOAD_OPTIONS])
+
   const {
     isOpen: isDownloadModalOpen,
     onClose: onDownloadModalClose,
@@ -61,7 +155,7 @@ export const DownloadButton = (): JSX.Element => {
     DownloadResult | CanceledResult
   >()
 
-  const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
+  const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
     mutateProps: {
       onMutate: () => {
@@ -99,26 +193,20 @@ export const DownloadButton = (): JSX.Element => {
       onSettled: (decryptResult) => {
         setProgressModalTimeout(null)
         setDownloadMetadata(decryptResult)
+        resetDownloadOptions()
       },
     },
   })
 
-  const handleExportCsvNoAttachments = useCallback(() => {
+  const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
     setProgressModalTimeout(5000)
-    return handleExportCsvMutation.mutate({
+    return handleBulkDownloadMutation.mutate({
       ...downloadParams,
-      downloadAttachments: false,
+      downloadAttachments: downloadOptions.isDownloadAttachments,
+      isDownloadCsv: downloadOptions.isDownloadCsv,
     })
-  }, [downloadParams, handleExportCsvMutation])
-
-  const handleExportCsvWithAttachments = useCallback(() => {
-    if (!downloadParams) return
-    return handleExportCsvMutation.mutate({
-      ...downloadParams,
-      downloadAttachments: true,
-    })
-  }, [downloadParams, handleExportCsvMutation])
+  }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
 
   const resetDownload = useCallback(() => {
     setDownloadCount(0)
@@ -162,17 +250,17 @@ export const DownloadButton = (): JSX.Element => {
         confirmButtonText={t(
           'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.confirmButtonText',
         )}
-        when={handleExportCsvMutation.isLoading}
+        when={handleBulkDownloadMutation.isLoading}
       />
       {dateRangeResponsesCount !== undefined && (
         <DownloadWithAttachmentModal
           responsesCount={dateRangeResponsesCount}
           isOpen={isDownloadModalOpen}
           onClose={handleModalClose}
-          onDownload={handleExportCsvWithAttachments}
+          onDownload={handleBulkDownload}
           onCancel={handleAttachmentsDownloadCancel}
           downloadPercentage={downloadPercentage}
-          isDownloading={handleExportCsvMutation.isLoading}
+          isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
         />
       )}
@@ -197,13 +285,13 @@ export const DownloadButton = (): JSX.Element => {
         </ProgressModal>
       )}
       <Box gridArea="export" justifySelf="flex-end">
-        <Menu placement="bottom-end">
-          {({ isOpen }) => (
+        <Menu closeOnSelect={false} placement="bottom-end">
+          {({ isOpen, onClose }) => (
             <>
               <MenuButton
                 as={Button}
                 isDisabled={!downloadParams}
-                isLoading={handleExportCsvMutation.isLoading}
+                isLoading={handleBulkDownloadMutation.isLoading}
                 isActive={isOpen}
                 aria-label={t(
                   'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
@@ -212,18 +300,20 @@ export const DownloadButton = (): JSX.Element => {
               >
                 {t('features.common.download')}
               </MenuButton>
-              <Menu.List>
-                <Menu.Item onClick={handleExportCsvNoAttachments}>
-                  {t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem.csvOnly',
-                  )}
-                </Menu.Item>
-                <Menu.Item onClick={onDownloadModalOpen}>
-                  {t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem.csvWithAttachments',
-                  )}
-                </Menu.Item>
-              </Menu.List>
+              <MenuList>
+                <DownloadSelector
+                  onClickNext={() => {
+                    onClose()
+                    onDownloadModalOpen()
+                  }}
+                  onDownload={() => {
+                    onClose()
+                    handleBulkDownload()
+                  }}
+                  downloadOptions={downloadOptions}
+                  setDownloadOptions={setDownloadOptions}
+                />
+              </MenuList>
             </>
           )}
         </Menu>

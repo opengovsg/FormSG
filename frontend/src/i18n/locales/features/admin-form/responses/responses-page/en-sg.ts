@@ -73,8 +73,8 @@ export const enSG: ResponsesResponsesPage = {
         progressModalContent:
           '{dateRangeResponsesCount} responses are being processed. Navigating away from this page will stop the download.',
         menuItem: {
-          csvOnly: 'CSV only',
-          csvWithAttachments: 'CSV with attachments',
+          csv: 'Spreadsheet of responses (.csv)',
+          attachments: 'Respondent-uploaded attachments',
         },
       },
       unlockedResponses: {
