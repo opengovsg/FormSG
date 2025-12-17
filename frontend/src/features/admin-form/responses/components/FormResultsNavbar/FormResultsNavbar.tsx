@@ -1,22 +1,17 @@
-import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Flex, TabList, Tabs } from '@chakra-ui/react'
 import { BiBarChartAlt2, BiCommentDetail, BiTable } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
+import { useParams } from 'react-router-dom'
+import { TabList } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormResponseMode } from '~shared/types'
 
 import {
-  ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
-  ADMINFORM_RESULTS_SUBROUTE,
-  ADMINFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
-import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -33,20 +28,10 @@ interface TabEntry {
 
 export const FormResultsNavbar = (): JSX.Element => {
   const { formId } = useParams()
-  const navigate = useNavigate()
   const { data: form } = useAdminForm()
-  const { pathname } = useLocation()
   const { t } = useTranslation()
 
   if (!formId) throw new Error('No formId provided')
-
-  const checkTabActive = useCallback(
-    (to: string) => {
-      const match = pathname.match(ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX)
-      return (match?.[2] ?? '/') === `/${to}`
-    },
-    [pathname],
-  )
 
   const isChartsEnabled = useFeatureValue('charts', false)
   const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
@@ -83,15 +68,6 @@ export const FormResultsNavbar = (): JSX.Element => {
         ]
       : []),
   ]
-
-  const handleTabChange = (index: number) => {
-    const subRoute = tabConfig[index].path
-    const path = subRoute
-      ? `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}/${subRoute}`
-      : `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`
-    navigate(path)
-  }
-  const tabIndex = tabConfig.findIndex((tab) => checkTabActive(tab.path))
 
   return (
     <TabList

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import {
   DateRangePicker,
@@ -39,13 +39,11 @@ export const UnlockedResponses = (): JSX.Element => {
   return (
     <Flex
       flexDir="column"
-      h="100%"
       pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }} // Reduce padding on mobile
       w="100%"
       maxW="100%" // IMPORTANT: Never exceed screen width
       minW={0}
       overflowX="hidden" // IMPORTANT: Don't let this container scroll horizontally
-      overflowY="auto" // Allow vertical scroll for the whole page
     >
       {/* On small screens: stacked (3 rows), On larger screens: horizontal */}
       <Flex
@@ -126,9 +124,6 @@ export const UnlockedResponses = (): JSX.Element => {
       <Box
         mb="3rem"
         overflowX="auto" // This allows horizontal scrolling
-        overflowY="auto"
-        flex={1}
-        minH={0}
         w="100%"
         minW={0}
         maxW="100%"

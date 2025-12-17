@@ -1,14 +1,6 @@
 import { useCallback } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import {
-  Box,
-  Flex,
-  Spacer,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-} from '@chakra-ui/react'
+import { Box, Flex, Spacer, Tabs } from '@chakra-ui/react'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
