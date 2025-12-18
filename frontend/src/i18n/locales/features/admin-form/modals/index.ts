@@ -22,4 +22,8 @@ export interface Modals {
   emailModeMigration: {
     title: string
   }
+  magicFormBuilder: {
+    promptMaxLengthError: string
+    promptRequiredError: string
+  }
 }
