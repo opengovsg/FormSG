@@ -32,7 +32,6 @@ export const ChartsPage = (): JSX.Element => {
   const {
     totalResponsesCount,
     secretKey,
-    isLoading: isResponsesLoading,
   } = useStorageResponsesContext()
   const { pathname } = useLocation()
   const chartsMaxResponseCount = useFeatureValue(
