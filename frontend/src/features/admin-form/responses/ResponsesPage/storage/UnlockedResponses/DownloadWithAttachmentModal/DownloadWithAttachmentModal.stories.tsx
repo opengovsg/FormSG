@@ -32,6 +32,20 @@ const Template: StoryFn<DownloadWithAttachmentModalProps> = (args) => {
     />
   )
 }
+
+export const ConfirmationScreenResponsesAndAttachmentsAndPdfsDesktop =
+  Template.bind({})
+ConfirmationScreenResponsesAndAttachmentsAndPdfsDesktop.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: true,
+    isDownloadCsv: true,
+    isDownloadPdf: true,
+  },
+}
+
 export const ConfirmationStateResponseAndAttachmentsDesktop = Template.bind({})
 ConfirmationStateResponseAndAttachmentsDesktop.args = {
   downloadPercentage: 0,
@@ -49,6 +63,30 @@ ConfirmationStateResponseAndAttachmentsMobile.args =
 ConfirmationStateResponseAndAttachmentsMobile.parameters =
   getMobileViewParameters()
 
+export const ConfirmationScreenResponsesAndPdfsDesktop = Template.bind({})
+ConfirmationScreenResponsesAndPdfsDesktop.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: false,
+    isDownloadCsv: true,
+    isDownloadPdf: true,
+  },
+}
+
+export const ConfirmationScreenAttachmentsAndPdfsDesktop = Template.bind({})
+ConfirmationScreenAttachmentsAndPdfsDesktop.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: true,
+    isDownloadCsv: false,
+    isDownloadPdf: true,
+  },
+}
+
 export const ConfirmationStateAttachmentsOnlyDesktop = Template.bind({})
 ConfirmationStateAttachmentsOnlyDesktop.args = {
   downloadPercentage: 0,
@@ -65,6 +103,18 @@ export const ConfirmationStateAttachmentsOnlyMobile = Template.bind({})
 ConfirmationStateAttachmentsOnlyMobile.args =
   ConfirmationStateAttachmentsOnlyDesktop.args
 ConfirmationStateAttachmentsOnlyMobile.parameters = getMobileViewParameters()
+
+export const ConfirmationScreenPdfsOnlyDesktop = Template.bind({})
+ConfirmationScreenPdfsOnlyDesktop.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: false,
+    isDownloadCsv: false,
+    isDownloadPdf: true,
+  },
+}
 
 export const DownloadingStateDesktop = Template.bind({})
 DownloadingStateDesktop.args = {

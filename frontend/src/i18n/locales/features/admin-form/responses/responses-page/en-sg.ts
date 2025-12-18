@@ -21,18 +21,24 @@ export const enSG: ResponsesResponsesPage = {
           backToResponses: 'Back to responses',
         },
         confirmationScreen: {
+          pdfsDescription:
+            'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+          titlePdfsOnly: 'Download PDFs',
           titleAttachmentsOnly: 'Download attachments',
           titleResponsesAndAttachments: 'Download responses and attachments',
+          titleResponsesAndPdfs: 'Download responses and PDFs',
+          titleAttachmentsAndPdfs: 'Download attachments and PDFs',
+          titleResponsesAndAttachmentsAndPdfs:
+            'Download responses, attachments and PDFs',
           numberOfResponses: 'Number of responses',
           estimatedTime: 'Estimated time',
           estimatedTimeReference: '30-50 mins per 1,000 responses',
           filterResponsesCountHelperText:
             'You can reduce the number of downloads at one go by adjusting the date range.',
           intensiveOperationWarning: {
-            title:
-              'Downloading many attachments can be an intensive operation.',
+            title: 'Downloading many files can be an intensive operation.',
             doNotUseIE: 'Do not use Internet Explorer',
             ensureStrongNetworkConnectivity:
               'Ensure network connectivity is strong',

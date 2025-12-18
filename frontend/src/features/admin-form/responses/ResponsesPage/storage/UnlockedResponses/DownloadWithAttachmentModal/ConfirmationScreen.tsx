@@ -55,18 +55,60 @@ export const ConfirmationScreen = ({
   const confirmationScreenKeyPrefix =
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen'
 
+  const getTitle = () => {
+    if (
+      downloadOptions.isDownloadCsv &&
+      downloadOptions.isDownloadAttachments &&
+      downloadOptions.isDownloadPdf
+    ) {
+      return t(
+        `${confirmationScreenKeyPrefix}.titleResponsesAndAttachmentsAndPdfs`,
+      )
+    }
+    if (
+      !downloadOptions.isDownloadCsv &&
+      downloadOptions.isDownloadAttachments &&
+      downloadOptions.isDownloadPdf
+    ) {
+      return t(`${confirmationScreenKeyPrefix}.titleAttachmentsAndPdfs`)
+    }
+    if (
+      downloadOptions.isDownloadCsv &&
+      !downloadOptions.isDownloadAttachments &&
+      downloadOptions.isDownloadPdf
+    ) {
+      return t(`${confirmationScreenKeyPrefix}.titleResponsesAndPdfs`)
+    }
+    if (
+      downloadOptions.isDownloadCsv &&
+      downloadOptions.isDownloadAttachments &&
+      !downloadOptions.isDownloadPdf
+    ) {
+      return t(`${confirmationScreenKeyPrefix}.titleResponsesAndAttachments`)
+    }
+    if (
+      !downloadOptions.isDownloadCsv &&
+      !downloadOptions.isDownloadAttachments &&
+      downloadOptions.isDownloadPdf
+    ) {
+      return t(`${confirmationScreenKeyPrefix}.titlePdfsOnly`)
+    }
+    if (
+      !downloadOptions.isDownloadCsv &&
+      downloadOptions.isDownloadAttachments &&
+      !downloadOptions.isDownloadPdf
+    ) {
+      return t(`${confirmationScreenKeyPrefix}.titleAttachmentsOnly`)
+    }
+    return ''
+  }
+
   return (
     <>
       <ModalCloseButton />
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
-          <Text>
-            {!downloadOptions.isDownloadCsv
-              ? t(`${confirmationScreenKeyPrefix}.titleAttachmentsOnly`)
-              : t(
-                  `${confirmationScreenKeyPrefix}.titleResponsesAndAttachments`,
-                )}
-          </Text>
+          <Text>{getTitle()}</Text>
           <Badge w="fit-content" colorScheme="success">
             {t('features.common.betaBadgeLabel')}
           </Badge>
@@ -74,23 +116,28 @@ export const ConfirmationScreen = ({
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
-          <Text>
-            {downloadOptions.isDownloadAttachments ? (
+          {downloadOptions.isDownloadAttachments ? (
+            <Text>
               <Trans
                 i18nKey={`${confirmationScreenKeyPrefix}.attachmentsDescription`}
               />
-            ) : (
-              ''
-            )}
-            <br />
-            <br />
+            </Text>
+          ) : undefined}
+          {downloadOptions.isDownloadPdf ? (
+            <Text>
+              <Trans
+                i18nKey={`${confirmationScreenKeyPrefix}.pdfsDescription`}
+              />
+            </Text>
+          ) : undefined}
+          <Text>
             <b>{t(`${confirmationScreenKeyPrefix}.numberOfResponses`)}:</b>{' '}
             {responsesCount.toLocaleString()}
             <br />
             <b>{t(`${confirmationScreenKeyPrefix}.estimatedTime`)}:</b>{' '}
             {t(`${confirmationScreenKeyPrefix}.estimatedTimeReference`)}
-            <br />
-            <br />
+          </Text>
+          <Text>
             {t(`${confirmationScreenKeyPrefix}.filterResponsesCountHelperText`)}
           </Text>
           <InlineMessage>
