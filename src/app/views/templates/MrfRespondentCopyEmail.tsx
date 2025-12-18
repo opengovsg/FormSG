@@ -22,6 +22,7 @@ import {
   questionMargin,
   answerMargin,
 } from './mrfWorkflowCompletionEmailStyle'
+import React from 'react'
 
 export type QuestionAnswer = {
   question: string
@@ -58,6 +59,30 @@ export const MrfRespondentCopyEmail = ({
           <Hr style={{ margin: '40px 0' }} />
         </>
     )
+    
+    /**
+     * Explicitly render line breaks and paragraphs in email body, as certain email clients
+     * might not be compatible with CSS white-space property. (e.g. white-space: pre-line)
+     * @param body - email body text with line breaks
+     * @param textStyle - css properties
+     * @returns an array of JSX elements representing paragraphs and line breaks
+     */
+    const renderEmailBody = (
+      body: string,
+      textStyle: React.CSSProperties,
+    ): JSX.Element[] => {
+      return body.split(/\n{2,}/).map((paragraph, i) => (
+      <Text key={i} style={{ ...textStyle, marginBottom: '16px' }}>
+        {paragraph.split('\n').map((line, j) => (
+          <React.Fragment key={j}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
+        </Text>
+      ))
+      }
+
 
     return (
     <Html>
@@ -70,9 +95,7 @@ export const MrfRespondentCopyEmail = ({
             <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
               {headingText}
             </Heading>
-            <Text style={{ ...secondaryTextStyle, marginBottom: '40px', whiteSpace: 'pre-line' }}>
-              {body}
-            </Text>
+            {renderEmailBody(body, secondaryTextStyle)}
             {renderResponseId()}
               {formQuestionAnswers ? (
                 <>
