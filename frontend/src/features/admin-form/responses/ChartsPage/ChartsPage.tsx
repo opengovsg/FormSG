@@ -1,12 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import {
-  Box,
-  Container,
-  Divider,
-  Flex,
-  Stack,
-} from '@chakra-ui/react'
+import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
@@ -29,10 +23,7 @@ import UnlockedCharts from './UnlockedCharts'
 export const ChartsPage = (): JSX.Element => {
   const { t } = useTranslation()
   const { data: form, isLoading } = useAdminForm()
-  const {
-    totalResponsesCount,
-    secretKey,
-  } = useStorageResponsesContext()
+  const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const { pathname } = useLocation()
   const chartsMaxResponseCount = useFeatureValue(
     featureFlags.chartsMaxResponseCount,
