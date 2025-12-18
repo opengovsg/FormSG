@@ -111,7 +111,7 @@ const useDecryptionWorkers = ({
       let errorCount = 0
       let unverifiedCount = 0
       let attachmentErrorCount = 0
-      let receivedRecordCount = 0
+      let currentSubmissionIndex = 0 // used to iterate through the workers
 
       const logMeta = {
         action: 'downloadEncryptedReponses',
@@ -158,7 +158,7 @@ const useDecryptionWorkers = ({
       await reader.read().then(
         (read = async (result) => {
           if (result.done) return
-          const { workerApi } = workerPool[receivedRecordCount % numWorkers]
+          const { workerApi } = workerPool[currentSubmissionIndex % numWorkers]
           submissionDecryptPromises.push(
             workerApi
               .decryptIntoCsv({
@@ -183,7 +183,6 @@ const useDecryptionWorkers = ({
                   case CsvRecordStatus.Ok: {
                     try {
                       csvGenerator.addRecord(decryptResult.submissionData)
-                      receivedRecordCount++
                     } catch (e) {
                       errorCount++
                       console.error('Error in getResponseInstance', e)
@@ -198,6 +197,7 @@ const useDecryptionWorkers = ({
                 return decryptResult
               }),
           )
+          currentSubmissionIndex += 1 // used to assign the next submission to the next worker
           return reader.read().then(read)
         }),
       )
