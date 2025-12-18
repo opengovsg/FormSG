@@ -61,8 +61,10 @@ const DownloadSelector = ({
       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem',
   })
 
-  const { isDownloadCsv, isDownloadAttachments } = downloadOptions
-  const onlyDownloadCsv = isDownloadCsv && !isDownloadAttachments
+  const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
+    downloadOptions
+  const onlyDownloadCsv =
+    isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
 
   return (
     <Stack>
@@ -85,6 +87,16 @@ const DownloadSelector = ({
               setDownloadOptions({
                 ...downloadOptions,
                 isDownloadAttachments: !isDownloadAttachments,
+              })
+            }
+          />
+          <DownloadSelectorCheckbox
+            optionText={t('pdfs')}
+            isChecked={isDownloadPdf}
+            onChange={() =>
+              setDownloadOptions({
+                ...downloadOptions,
+                isDownloadPdf: !isDownloadPdf,
               })
             }
           />

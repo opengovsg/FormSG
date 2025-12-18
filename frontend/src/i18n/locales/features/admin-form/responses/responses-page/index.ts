@@ -67,6 +67,7 @@ export interface ResponsesResponsesPage {
         menuItem: {
           csv: string
           attachments: string
+          pdfs: string
         }
       }
       unlockedResponses: {

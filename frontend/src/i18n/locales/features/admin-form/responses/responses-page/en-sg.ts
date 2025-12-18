@@ -79,6 +79,7 @@ export const enSG: ResponsesResponsesPage = {
         menuItem: {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',
+          pdfs: 'PDF copies of responses (.pdf)',
         },
       },
       unlockedResponses: {
