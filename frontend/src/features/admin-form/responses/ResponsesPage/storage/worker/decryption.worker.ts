@@ -70,7 +70,6 @@ async function decryptSubmissionData({
       isSubmissionDecryptionSuccessful: true
     }
   | {
-      errorMessage: string
       isSubmissionDecryptionSuccessful: false
     }
 > {
@@ -86,10 +85,8 @@ async function decryptSubmissionData({
         version,
       })
       if (!decryptedObject) {
-        const errorMessage = `Invalid decryption for storage mode response`
-        console.error(errorMessage)
+        console.error('Invalid decryption for storage mode response')
         return {
-          errorMessage,
           isSubmissionDecryptionSuccessful: false,
         }
       }
@@ -105,10 +102,8 @@ async function decryptSubmissionData({
         version,
       })
       if (!decryptedObject) {
-        const errorMessage = `Invalid decryption for multirespondent response`
-        console.error(errorMessage)
+        console.error('Invalid decryption for multirespondent response')
         return {
-          errorMessage,
           isSubmissionDecryptionSuccessful: false,
         }
       }
@@ -122,10 +117,8 @@ async function decryptSubmissionData({
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = submissionData
-      const errorMessage = `Invalid submission type encountered.`
-      console.error(errorMessage)
+      console.error('Invalid submission type encountered.')
       return {
-        errorMessage,
         isSubmissionDecryptionSuccessful: false,
       }
     }
