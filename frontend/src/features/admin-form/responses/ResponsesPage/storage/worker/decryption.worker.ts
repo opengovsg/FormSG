@@ -150,28 +150,23 @@ async function decryptIntoCsv(
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
   // Something to do with babel-loader.
   const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
+  let csvRecord: CsvRecord
   const attachmentDownloadUrls: AttachmentsDownloadMap = new Map()
   let downloadBlob: Blob
-  let csvRecord: CsvRecord
 
   try {
     const submission = SubmissionStreamDto.parse(JSON.parse(line))
-    const {
-      _id: submissionId,
-      created: submissionCreated,
-      submissionType,
-    } = submission
 
     csvRecord = new CsvRecord(
-      submissionId,
-      submissionCreated,
+      submission._id,
+      submission.created,
       CsvRecordStatus.Unknown,
       formId,
       hostOrigin,
-      submissionType === SubmissionType.Encrypt
+      submission.submissionType === SubmissionType.Encrypt
         ? submission.payment
         : undefined,
-      submissionType === SubmissionType.Multirespondent
+      submission.submissionType === SubmissionType.Multirespondent
         ? {
             workflowStatus: submission.mrfMeta.workflowStatus,
             workflowCurrentStepNumber:
@@ -200,8 +195,8 @@ async function decryptIntoCsv(
 
     if (
       // Short-circuit signature verification for multirespondent submission
-      submissionType === SubmissionType.Multirespondent ||
-      verifySignature(decryptedResponses, submissionCreated)
+      submission.submissionType === SubmissionType.Multirespondent ||
+      verifySignature(decryptedResponses, submission.created)
     ) {
       csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
       csvRecord.setRecord(decryptedResponses)
@@ -216,7 +211,7 @@ async function decryptIntoCsv(
         !mrfSubmissionSecretKey
           ? secretKey
           : // It's an mrf, but old version
-            submissionType === SubmissionType.Multirespondent &&
+            submission.submissionType === SubmissionType.Multirespondent &&
               !submission.mrfVersion
             ? secretKey
             : mrfSubmissionSecretKey
