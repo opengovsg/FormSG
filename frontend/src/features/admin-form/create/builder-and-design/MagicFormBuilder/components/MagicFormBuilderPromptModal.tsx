@@ -139,6 +139,7 @@ const TextPromptModalBodyContent = ({
     keyPrefix: 'features.adminForm.modals.magicFormBuilder',
   })
   const promptValue = watch('prompt')
+  const promptLength = promptValue?.length ?? 0
   return (
     <>
       <FormControl isInvalid={!!errors.prompt?.message}>
@@ -151,56 +152,28 @@ const TextPromptModalBodyContent = ({
           placeholder={GENERATE_FORM_PLACEHOLDER}
           {...register('prompt', {
             required: t('promptRequiredError'),
-            validate: (value) => {
-              if (value.length > MFB_TEXT_PROMPT_MAX_CHAR) {
-                return t('promptMaxLengthError', {
-                  maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
-                  current: value.length,
-                })
-              }
-              return true
+            maxLength: {
+              value: MFB_TEXT_PROMPT_MAX_CHAR,
+              message: t('promptMaxLengthError', {
+                maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
+                currentLength: promptLength,
+              }),
             },
           })}
         />
-        {errors.prompt?.message ? (
-          <FormErrorMessage display="block">
-            <Box as="span" display="inline" whiteSpace="normal">
-              <Box as="span" display="inline">
-                {errors.prompt.message}
-              </Box>
-              {promptValue && (
-                <Box
-                  as="span"
-                  display="inline"
-                  ml={1}
-                  color={
-                    promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
-                      ? 'danger.500'
-                      : 'secondary.400'
-                  }
-                >
-                  {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
-                </Box>
-              )}
-            </Box>
-          </FormErrorMessage>
-        ) : null}
-        {!errors.prompt?.message && promptValue && (
-          <FormHelperText
-            color={
-              promptValue.length > MFB_TEXT_PROMPT_MAX_CHAR
-                ? 'danger.500'
-                : 'secondary.400'
-            }
-          >
-            {`(${promptValue.length}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
+        <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+        {!errors.prompt?.message && promptLength && (
+          <FormHelperText>
+            {`(${promptLength}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
           </FormHelperText>
         )}
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
           promptIdeas={TEXT_PROMPT_IDEAS}
-          onClick={(prompt) => setValue('prompt', prompt)}
+          onClick={(prompt) => {
+            setValue('prompt', prompt, { shouldValidate: true })
+          }}
         />
       </Box>
     </>
