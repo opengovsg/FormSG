@@ -5,9 +5,7 @@ import {
   Container,
   Divider,
   Flex,
-  Skeleton,
   Stack,
-  Text,
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
