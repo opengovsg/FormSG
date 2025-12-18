@@ -8,6 +8,7 @@ import {
   UseFormRegister,
   UseFormSetError,
   UseFormSetValue,
+  UseFormWatch,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
@@ -133,7 +134,7 @@ const TextPromptModalBodyContent = ({
   register: UseFormRegister<TextPromptInputs>
   setValue: UseFormSetValue<TextPromptInputs>
   errors: FieldErrors<TextPromptInputs>
-  watch: (name: keyof TextPromptInputs) => string | undefined
+  watch: UseFormWatch<TextPromptInputs>
 }) => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.modals.magicFormBuilder',
