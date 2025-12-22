@@ -52,6 +52,8 @@ const HeaderBar = ({
     textStyle: { base: 'legal', md: 'caption-2' },
     display: 'flex',
     width: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   }
 
   // Mobile
@@ -137,12 +139,12 @@ export const GovtMasthead = ({
         <GovtMastheadIcon
           aria-hidden
           fontSize="1rem"
-          mr={{ base: '0.25rem', lg: '0.5rem' }}
+          mr="0.5rem"
           my={{ base: '0px', md: '2px' }}
           flexShrink={0}
         />
-        <Flex alignItems="center" flexWrap="wrap">
-          <Box>
+        <Flex alignItems="center" flexWrap="wrap" justifyContent="flex-start">
+          <Box textAlign="left">
             <Text as="span">
               A Singapore Government Agency Website. Beware of government
               impersonation scams.&ensp;
@@ -161,7 +163,7 @@ export const GovtMasthead = ({
           </Box>
         </Flex>
         {isMobile && (
-          <Flex align="center">
+          <Flex align="center" ml="0.5rem">
             <Icon
               aria-hidden
               as={isOpen ? BiChevronUp : BiChevronDown}
