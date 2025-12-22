@@ -163,11 +163,11 @@ const TextPromptModalBodyContent = ({
           })}
         />
         <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-        {!errors.prompt?.message && promptLength && (
+        {!errors.prompt?.message && promptLength > 0 ? (
           <FormHelperText>
             {`(${promptLength}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
           </FormHelperText>
-        )}
+        ) : undefined}
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
