@@ -32,7 +32,8 @@ const generateResponsePdf = async ({
       submissionTime={submission.submissionTime}
     />,
   )
-  const pdfTitle = `${form ? `${form.title}_formId_${form._id}_` : ''}submissionId_${submission.refNo}_response.pdf`
+
+  const pdfTitle = `${form.title}_formId_${form._id}_submissionId_${submission.refNo}_response.pdf`
   await html2pdf()
     .set({
       margin: 0,
