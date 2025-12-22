@@ -224,8 +224,7 @@ export interface WhitelistedSubmitterIds {
   isWhitelistEnabled: boolean
 }
 
-export interface WhitelistedSubmitterIdsWithReferenceOid
-  extends WhitelistedSubmitterIds {
+export interface WhitelistedSubmitterIdsWithReferenceOid extends WhitelistedSubmitterIds {
   encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
