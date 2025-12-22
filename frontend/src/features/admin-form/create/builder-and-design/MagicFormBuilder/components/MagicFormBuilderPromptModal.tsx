@@ -8,7 +8,9 @@ import {
   UseFormRegister,
   UseFormSetError,
   UseFormSetValue,
+  UseFormWatch,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
 import {
   Box,
@@ -16,6 +18,7 @@ import {
   Flex,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   HStack,
   Modal,
@@ -35,7 +38,11 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags, MFB_VISION_MAX_IMAGES_COUNT } from '~shared/constants'
+import {
+  featureFlags,
+  MFB_TEXT_PROMPT_MAX_CHAR,
+  MFB_VISION_MAX_IMAGES_COUNT,
+} from '~shared/constants'
 
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
@@ -122,11 +129,18 @@ const TextPromptModalBodyContent = ({
   register,
   setValue,
   errors,
+  watch,
 }: {
   register: UseFormRegister<TextPromptInputs>
   setValue: UseFormSetValue<TextPromptInputs>
   errors: FieldErrors<TextPromptInputs>
+  watch: UseFormWatch<TextPromptInputs>
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.modals.magicFormBuilder',
+  })
+  const promptValue = watch('prompt')
+  const promptLength = promptValue?.length ?? 0
   return (
     <>
       <FormControl isInvalid={!!errors.prompt?.message}>
@@ -138,19 +152,29 @@ const TextPromptModalBodyContent = ({
           borderRadius="4px"
           placeholder={GENERATE_FORM_PLACEHOLDER}
           {...register('prompt', {
-            required: 'Please enter a prompt',
+            required: t('promptRequiredError'),
             maxLength: {
-              value: 500,
-              message: 'Please enter at most 500 characters',
+              value: MFB_TEXT_PROMPT_MAX_CHAR,
+              message: t('promptMaxLengthError', {
+                maxLength: MFB_TEXT_PROMPT_MAX_CHAR,
+                currentLength: promptLength,
+              }),
             },
           })}
         />
         <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+        {!errors.prompt?.message && promptLength && (
+          <FormHelperText>
+            {`(${promptLength}/${MFB_TEXT_PROMPT_MAX_CHAR})`}
+          </FormHelperText>
+        )}
       </FormControl>
       <Box mt="1rem">
         <PromptSelectorBar
           promptIdeas={TEXT_PROMPT_IDEAS}
-          onClick={(prompt) => setValue('prompt', prompt)}
+          onClick={(prompt) => {
+            setValue('prompt', prompt, { shouldValidate: true })
+          }}
         />
       </Box>
     </>
@@ -228,9 +252,11 @@ const MagicFormBuilderCreateFormPrompt = ({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
-  } = useForm<TextPromptInputs>()
-
+  } = useForm<TextPromptInputs>({
+    mode: 'onChange',
+  })
   const {
     control: visionControl,
     formState: { errors: visionErrors },
@@ -277,6 +303,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                     register={register}
                     setValue={setValue}
                     errors={errors}
+                    watch={watch}
                   />
                 </TabPanel>
                 <TabPanel>
@@ -295,6 +322,7 @@ const MagicFormBuilderCreateFormPrompt = ({
               register={register}
               setValue={setValue}
               errors={errors}
+              watch={watch}
             />
           ) : isMfbVisionEnabled ? (
             <VisionPromptModalBodyContent

@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import {
   featureFlags,
+  MFB_TEXT_PROMPT_MAX_CHAR,
   MFB_VISION_MAX_IMAGES_COUNT,
 } from '../../../../../shared/constants'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -29,7 +30,7 @@ const handleTextPromptValidator = celebrate({
       .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
-    prompt: Joi.string().required().max(500),
+    prompt: Joi.string().required().max(MFB_TEXT_PROMPT_MAX_CHAR),
   },
 })
 
