@@ -12,6 +12,7 @@ import { SubmissionId, SubmissionMetadata } from '~shared/types'
 import { useFormResponses } from '~features/admin-form/responses/queries'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
+import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 const PAGE_SIZE = 10
 
@@ -61,6 +62,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const [lastNavPage, setLastNavPage] = useState(currentPage)
   const [lastNavSubmissionId, setLastNavSubmissionId] = useState(submissionId)
 
+  const { dateRange: [startDate, endDate] } = useStorageResponsesContext()
+
   useEffect(() => {
     if (currentPage && currentPage !== lastNavPage) {
       setLastNavPage(currentPage)
@@ -72,6 +75,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setLastNavPage(currentPage ?? 1)
   }, [currentPage, submissionId])
 
+
+  console.log('startDateX', startDate)
+  console.log('endDateY', endDate)
   const {
     data: { count: filteredCount, metadata: filteredMetadata = [] } = {},
     isFetching: isFilterFetching,
@@ -79,6 +85,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     // Will not run if submissionId does not exist.
     page: 0,
     submissionId,
+    startDate,
+    endDate,
   })
 
   // Track the pages to use for various metadata.
@@ -94,17 +102,17 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   }, [currentPage, lastNavPage])
 
   const { data: { count, metadata = [] } = {}, isLoading } = useFormResponses({
-    page: pages.current,
+    page: pages.current, startDate, endDate,
   })
 
   const {
     data: { metadata: prevMetadata = [] } = {},
     isFetching: isPrevFetching,
-  } = useFormResponses({ page: pages.prev })
+  } = useFormResponses({ page: pages.prev, startDate, endDate })
   const {
     data: { metadata: nextMetadata = [] } = {},
     isFetching: isNextFetching,
-  } = useFormResponses({ page: pages.next })
+  } = useFormResponses({ page: pages.next, startDate, endDate })
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),

@@ -2,7 +2,11 @@ import { useMemo } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormFeedbackMetaDto, FormIssueMetaDto } from '~shared/types'
+import {
+  DateString,
+  FormFeedbackMetaDto,
+  FormIssueMetaDto,
+} from '~shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
@@ -27,7 +31,7 @@ export const adminFormResponsesKeys = {
   metadata: (id: string, params: FormSubmissionMetadataQueryDto) => {
     const builtParams = params.submissionId
       ? [params.submissionId]
-      : [params.page ?? 1]
+      : [params.page ?? 1, params.startDate ?? '', params.endDate ?? '']
     return [
       ...adminFormResponsesKeys.id(id),
       'metadata',
@@ -76,9 +80,13 @@ export const useFormResponsesCount = (
 export const useFormResponses = ({
   page = 1,
   submissionId,
+  startDate,
+  endDate,
 }: {
   page?: number
   submissionId?: string
+  startDate?: DateString
+  endDate?: DateString
 } = {}): UseQueryResult<SubmissionMetadataList> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -89,16 +97,17 @@ export const useFormResponses = ({
     if (submissionId) {
       return { submissionId }
     }
-    return { page }
-  }, [page, submissionId])
+    return { page, startDate, endDate }
+  }, [page, submissionId, startDate, endDate])
 
+  console.log('paramsX', params)
   return useQuery(
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
       staleTime: 0,
-      keepPreviousData: !submissionId,
-      enabled: !!secretKey && (page > 0 || !!submissionId),
+      // keepPreviousData: false,
+      // enabled: !!secretKey && (!!submissionId || page > 0),
     },
   )
 }

@@ -394,9 +394,13 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   {
     page = 1,
     pageSize = 10,
+    startDate,
+    endDate,
   }: {
     page?: number
     pageSize?: number
+    startDate?: string
+    endDate?: string
   } = {},
 ): Promise<{
   metadata: SubmissionMetadata[]
@@ -405,7 +409,14 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   const numToSkip = (page - 1) * pageSize
   // return documents within the page
   const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
-    { $match: { form: new mongoose.Types.ObjectId(formId) } },
+    {
+      $match: {
+        form: new mongoose.Types.ObjectId(formId),
+        ...(startDate && endDate
+          ? { created: { $gte: startDate, $lte: endDate } }
+          : {}),
+      },
+    },
     { $sort: { created: -1 } },
     { $skip: numToSkip },
     { $limit: pageSize },
@@ -658,9 +669,13 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
   {
     page = 1,
     pageSize = 10,
+    startDate,
+    endDate,
   }: {
     page?: number
     pageSize?: number
+    startDate?: string
+    endDate?: string
   } = {},
 ): Promise<{
   metadata: SubmissionMetadata[]
@@ -670,7 +685,14 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
   // return documents within the page
   const pageResults: Promise<MultiRespondentAggregateResult[]> = this.aggregate(
     [
-      { $match: { form: new mongoose.Types.ObjectId(formId) } },
+      {
+        $match: {
+          form: new mongoose.Types.ObjectId(formId),
+          ...(startDate && endDate
+            ? { created: { $gte: startDate, $lte: endDate } }
+            : {}),
+        },
+      },
       { $sort: { created: -1 } },
       { $skip: numToSkip },
       { $limit: pageSize },

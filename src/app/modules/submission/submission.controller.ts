@@ -73,8 +73,10 @@ export const getMetadata: ControllerHandler<
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
-  const { page, submissionId } = req.query
+  const { page, submissionId, startDate, endDate } = req.query
 
+  console.log('startDateX', startDate)
+  console.log('endDateY', endDate)
   const logMeta = {
     action: 'handleGetMetadata',
     formId,
@@ -113,7 +115,13 @@ export const getMetadata: ControllerHandler<
           })
         }
         // Step 4b: Retrieve all submissions of given form id.
-        return getSubmissionMetadataList(form.responseMode, formId, page)
+        return getSubmissionMetadataList(
+          form.responseMode,
+          formId,
+          page,
+          startDate,
+          endDate,
+        )
       })
       .map((metadataList) => {
         logger.info({
@@ -148,6 +156,8 @@ export const handleGetMetadata = [
         not: Joi.exist(),
         then: Joi.required(),
       }),
+      startDate: Joi.date().optional(),
+      endDate: Joi.date().optional().min(Joi.ref('startDate')),
     },
   }),
   getMetadata,

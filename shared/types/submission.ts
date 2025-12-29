@@ -325,6 +325,8 @@ export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   {
     page: number
     submissionId: string
+    startDate?: DateString
+    endDate?: DateString
   },
   'page' | 'submissionId'
 >

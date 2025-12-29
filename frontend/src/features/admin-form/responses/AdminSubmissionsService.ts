@@ -49,12 +49,16 @@ export const getFormSubmissionsMetadata = async (
   formId: string,
   queryParams: FormSubmissionMetadataQueryDto,
 ): Promise<SubmissionMetadataList> => {
+  console.log('queryParamsZ', queryParams)
   return ApiService.get(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
     {
       params: queryParams,
     },
-  ).then(({ data }) => data)
+  ).then(({ data }) => {
+    console.log('dataZ', data)
+    return data
+  })
 }
 
 /**
