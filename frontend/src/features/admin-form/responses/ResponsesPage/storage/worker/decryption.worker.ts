@@ -216,103 +216,102 @@ async function downloadAndDecryptSubmissionAttachments({
  * @param data The data to decrypt into a csvRecord.
  */
 async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
-  // This needs to be dynamically imported due to sharing code between main app and worker code.
-  // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
-  // Something to do with babel-loader.
   const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
   let csvRecord: CsvRecord
 
+  let submission: SubmissionStreamDto
   try {
-    const submission = SubmissionStreamDto.parse(JSON.parse(line))
-
-    csvRecord = new CsvRecord(
-      submission._id,
-      submission.created,
-      CsvRecordStatus.Unknown,
-      formId,
-      hostOrigin,
-      submission.submissionType === SubmissionType.Encrypt
-        ? submission.payment
-        : undefined,
-      submission.submissionType === SubmissionType.Multirespondent
-        ? {
-            workflowStatus: submission.mrfMeta.workflowStatus,
-            workflowCurrentStepNumber:
-              submission.mrfMeta.workflowCurrentStepNumber,
-            workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
-            lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
-            hasNextStepRecipientEmails:
-              submission.mrfMeta.hasNextStepRecipientEmails,
-          }
-        : undefined,
-    )
-
-    const decryptSubmissionDataResult = await decryptSubmissionData({
-      submissionData: submission,
-      secretKey,
-    })
-
-    if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
-      csvRecord.setStatus(CsvRecordStatus.Error, 'Decryption Error')
-      csvRecord.materializeSubmissionData()
-      return csvRecord as MaterializedCsvRecord
-    }
-
-    const { decryptedResponses, mrfSubmissionSecretKey } =
-      decryptSubmissionDataResult
-
-    if (
-      // Short-circuit signature verification for multirespondent submission
-      submission.submissionType === SubmissionType.Multirespondent ||
-      verifySignature(decryptedResponses, submission.created)
-    ) {
-      csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
-      csvRecord.setRecord(decryptedResponses)
-    } else {
-      csvRecord.setStatus(CsvRecordStatus.Unverified, 'Unverified')
-    }
-
-    if (downloadAttachments) {
-      const attachmentDecryptionKey = getAttachmentDecryptionKey({
-        submission,
-        mrfSubmissionSecretKey,
-        secretKey,
-      })
-
-      const attachmentDownloadBlob =
-        await downloadAndDecryptSubmissionAttachments({
-          attachmentDecryptionKey,
-          attachmentMetadata: submission.attachmentMetadata,
-          decryptedResponses,
-        })
-
-      if (!attachmentDownloadBlob.isDownloadSuccessful) {
-        csvRecord.setStatus(
-          CsvRecordStatus.AttachmentError,
-          'Attachment Download Error',
-        )
-        csvRecord.materializeSubmissionData()
-        return csvRecord as MaterializedCsvRecord
-      }
-
-      csvRecord.setStatus(
-        CsvRecordStatus.Ok,
-        'Success (with Downloaded Attachment)',
-      )
-      csvRecord.setDownloadBlob(
-        attachmentDownloadBlob.downloadedAttachmentsBlob,
-      )
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    submission = SubmissionStreamDto.parse(JSON.parse(line))
   } catch (error) {
-    csvRecord = new CsvRecord(
+    const errorMessage = 'Error parsing submission'
+    console.error(errorMessage, error)
+    const ERROR_CSV_RECORD = new CsvRecord(
       CsvRecordStatus.Error,
       formatInTimeZone(new Date(), 'Asia/Singapore', 'dd MMM yyyy hh:mm:ss z'),
       CsvRecordStatus.Error,
       CsvRecordStatus.Error,
       CsvRecordStatus.Error,
     )
-    csvRecord.setStatus(CsvRecordStatus.Error, 'Submission decryption error')
+    csvRecord = ERROR_CSV_RECORD
+    csvRecord.setStatus(CsvRecordStatus.Error, errorMessage)
+    csvRecord.materializeSubmissionData()
+    return csvRecord as MaterializedCsvRecord
+  }
+
+  csvRecord = new CsvRecord(
+    submission._id,
+    submission.created,
+    CsvRecordStatus.Unknown,
+    formId,
+    hostOrigin,
+    submission.submissionType === SubmissionType.Encrypt
+      ? submission.payment
+      : undefined,
+    submission.submissionType === SubmissionType.Multirespondent
+      ? {
+          workflowStatus: submission.mrfMeta.workflowStatus,
+          workflowCurrentStepNumber:
+            submission.mrfMeta.workflowCurrentStepNumber,
+          workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
+          lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
+          hasNextStepRecipientEmails:
+            submission.mrfMeta.hasNextStepRecipientEmails,
+        }
+      : undefined,
+  )
+
+  const decryptSubmissionDataResult = await decryptSubmissionData({
+    submissionData: submission,
+    secretKey,
+  })
+
+  if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
+    csvRecord.setStatus(CsvRecordStatus.Error, 'Decryption Error')
+    csvRecord.materializeSubmissionData()
+    return csvRecord as MaterializedCsvRecord
+  }
+
+  const { decryptedResponses, mrfSubmissionSecretKey } =
+    decryptSubmissionDataResult
+
+  if (
+    // Short-circuit signature verification for multirespondent submission
+    submission.submissionType === SubmissionType.Multirespondent ||
+    verifySignature(decryptedResponses, submission.created)
+  ) {
+    csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
+    csvRecord.setRecord(decryptedResponses)
+  } else {
+    csvRecord.setStatus(CsvRecordStatus.Unverified, 'Unverified')
+  }
+
+  if (downloadAttachments) {
+    const attachmentDecryptionKey = getAttachmentDecryptionKey({
+      submission,
+      mrfSubmissionSecretKey,
+      secretKey,
+    })
+
+    const attachmentDownloadBlob =
+      await downloadAndDecryptSubmissionAttachments({
+        attachmentDecryptionKey,
+        attachmentMetadata: submission.attachmentMetadata,
+        decryptedResponses,
+      })
+
+    if (!attachmentDownloadBlob.isDownloadSuccessful) {
+      csvRecord.setStatus(
+        CsvRecordStatus.AttachmentError,
+        'Attachment Download Error',
+      )
+      csvRecord.materializeSubmissionData()
+      return csvRecord as MaterializedCsvRecord
+    }
+    csvRecord.setStatus(
+      CsvRecordStatus.Ok,
+      'Success (with Downloaded Attachment)',
+    )
+    csvRecord.setDownloadBlob(attachmentDownloadBlob.downloadedAttachmentsBlob)
   }
   csvRecord.materializeSubmissionData()
   return csvRecord as MaterializedCsvRecord
