@@ -131,11 +131,11 @@ export const enSG: Workflow = {
       'This Yes/No field was deleted, please select another Yes/No field',
     notRequired: 'Approval not required in this step',
     toggle: {
-      label: 'This respondent is an approver',
+      label: 'Make this step an approval',
       description:
-        'If they select Yes, the form continues to the next step. If they select No, it stops here.',
+        'If respondent selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
       tooltip:
-        'Use this for steps that involve any type of decision, such as reviews or endorsements',
+        'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
       placeholder: 'Select a Yes/No field from your form',
     },
     validation: {
