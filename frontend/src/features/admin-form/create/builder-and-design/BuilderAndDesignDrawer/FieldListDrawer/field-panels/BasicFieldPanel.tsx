@@ -1,9 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
-
-import { featureFlags } from '~shared/constants'
-import { BasicField } from '~shared/types'
 
 import {
   BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
