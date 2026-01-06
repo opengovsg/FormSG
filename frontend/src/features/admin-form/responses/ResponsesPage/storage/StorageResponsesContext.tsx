@@ -9,7 +9,10 @@ export interface StorageResponsesContextProps {
   setSecretKey: (secretKey: string) => void
   dateRange: DateString[]
   setDateRange: (dateRange: DateString[]) => void
-  downloadParams: Omit<DownloadEncryptedParams, 'downloadAttachments'> | null
+  downloadParams: Omit<
+    DownloadEncryptedParams,
+    'downloadAttachments' | 'isDownloadCsv'
+  > | null
   totalResponsesCount?: number
   dateRangeResponsesCount?: number
   formPublicKey: string | null

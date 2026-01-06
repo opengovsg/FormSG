@@ -455,6 +455,10 @@ async function getDecryptedData(
     submissionId: isParseSuccessful
       ? decryptedSubmissionResult.parsedSubmission._id
       : undefined,
+    status: {
+      isDecryptionSuccessful,
+      isDownloadAndDecryptSubmissionAttachmentsSuccessful,
+    },
   }
 }
 

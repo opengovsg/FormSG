@@ -55,6 +55,10 @@ export interface DownloadOptions {
  * Decrypted formatted data returned by the decryption worker.
  */
 export type DecryptedData = {
+  status: {
+    isDecryptionSuccessful: boolean
+    isDownloadAndDecryptSubmissionAttachmentsSuccessful: boolean
+  }
   materializedCsvRecord?: MaterializedCsvRecord
   attachmentDownloadBlob?: Blob
   submissionId?: string
