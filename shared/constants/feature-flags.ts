@@ -31,6 +31,7 @@ export const featureFlags = {
   ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
   ogpSpinner: 'ogp-spinner' as const,
+  unlockedResponsesV2: 'unlocked-responses-v2' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
