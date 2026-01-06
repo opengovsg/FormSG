@@ -21,11 +21,15 @@ export const enSG: ResponsesResponsesPage = {
           backToResponses: 'Back to responses',
         },
         confirmationScreen: {
-          title: 'Download responses and attachments',
-          numberOfResponsesAndAttachments:
-            'Number of responses and attachments',
+          attachmentsDescription:
+            'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
+          titleAttachmentsOnly: 'Download attachments',
+          titleResponsesAndAttachments: 'Download responses and attachments',
+          numberOfResponses: 'Number of responses',
           estimatedTime: 'Estimated time',
           estimatedTimeReference: '30-50 mins per 1,000 responses',
+          filterResponsesCountHelperText:
+            'You can reduce the number of downloads at one go by adjusting the date range.',
           intensiveOperationWarning: {
             title:
               'Downloading many attachments can be an intensive operation.',
@@ -73,8 +77,8 @@ export const enSG: ResponsesResponsesPage = {
         progressModalContent:
           '{dateRangeResponsesCount} responses are being processed. Navigating away from this page will stop the download.',
         menuItem: {
-          csvOnly: 'CSV only',
-          csvWithAttachments: 'CSV with attachments',
+          csv: 'Spreadsheet of responses (.csv)',
+          attachments: 'Respondent-uploaded attachments',
         },
       },
       unlockedResponses: {

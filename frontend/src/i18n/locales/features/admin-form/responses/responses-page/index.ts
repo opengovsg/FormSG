@@ -18,10 +18,13 @@ export interface ResponsesResponsesPage {
           backToResponses: string
         }
         confirmationScreen: {
-          title: string
-          numberOfResponsesAndAttachments: string
+          titleAttachmentsOnly: string
+          titleResponsesAndAttachments: string
+          attachmentsDescription: string
+          numberOfResponses: string
           estimatedTime: string
           estimatedTimeReference: string
+          filterResponsesCountHelperText: string
           intensiveOperationWarning: {
             title: string
             doNotUseIE: string
@@ -62,8 +65,8 @@ export interface ResponsesResponsesPage {
         }
         progressModalContent: string
         menuItem: {
-          csvOnly: string
-          csvWithAttachments: string
+          csv: string
+          attachments: string
         }
       }
       unlockedResponses: {

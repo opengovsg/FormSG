@@ -20,8 +20,6 @@ import {
 
 /** @class CsvRecord represents the CSV data to be passed back, along with helper functions */
 export class CsvRecord {
-  downloadBlob?: Blob
-  downloadBlobURL?: string
   submissionData?: DecryptedSubmissionData
 
   #statusMessage: string
@@ -57,15 +55,6 @@ export class CsvRecord {
   setStatus(status: CsvRecordStatus, msg: string) {
     this.status = status
     this.#statusMessage = msg
-  }
-
-  /**
-   * Sets the ZIP attachment blob to be downloaded
-   *
-   * @param blob A blob containing a ZIP file of all the submission attachments downloaded
-   */
-  setDownloadBlob(blob: Blob) {
-    this.downloadBlob = blob
   }
 
   /**

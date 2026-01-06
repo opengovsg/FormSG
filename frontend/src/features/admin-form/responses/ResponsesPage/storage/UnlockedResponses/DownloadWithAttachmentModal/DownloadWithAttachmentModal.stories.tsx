@@ -32,15 +32,37 @@ const Template: StoryFn<DownloadWithAttachmentModalProps> = (args) => {
     />
   )
 }
-export const ConfirmationStateDesktop = Template.bind({})
-ConfirmationStateDesktop.args = {
+export const ConfirmationStateResponseAndAttachmentsDesktop = Template.bind({})
+ConfirmationStateResponseAndAttachmentsDesktop.args = {
   downloadPercentage: 0,
   isDownloading: false,
   responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: true,
+    isDownloadCsv: true,
+  },
 }
-export const ConfirmationStateMobile = Template.bind({})
-ConfirmationStateMobile.args = ConfirmationStateDesktop.args
-ConfirmationStateMobile.parameters = getMobileViewParameters()
+export const ConfirmationStateResponseAndAttachmentsMobile = Template.bind({})
+ConfirmationStateResponseAndAttachmentsMobile.args =
+  ConfirmationStateResponseAndAttachmentsDesktop.args
+ConfirmationStateResponseAndAttachmentsMobile.parameters =
+  getMobileViewParameters()
+
+export const ConfirmationStateAttachmentsOnlyDesktop = Template.bind({})
+ConfirmationStateAttachmentsOnlyDesktop.args = {
+  downloadPercentage: 0,
+  isDownloading: false,
+  responsesCount: 9001,
+  downloadOptions: {
+    isDownloadAttachments: true,
+    isDownloadCsv: false,
+  },
+}
+
+export const ConfirmationStateAttachmentsOnlyMobile = Template.bind({})
+ConfirmationStateAttachmentsOnlyMobile.args =
+  ConfirmationStateAttachmentsOnlyDesktop.args
+ConfirmationStateAttachmentsOnlyMobile.parameters = getMobileViewParameters()
 
 export const DownloadingStateDesktop = Template.bind({})
 DownloadingStateDesktop.args = {
