@@ -11,8 +11,10 @@ import {
   AttachmentsDownloadMap,
   CsvRecordData,
   CsvRecordStatus,
-  LineData,
+  DecryptedData,
+  DownloadOptions,
   MaterializedCsvRecord,
+  SubmissionDataForDecryption,
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptAttachment'
@@ -131,18 +133,20 @@ async function decryptSubmissionData({
   }
 }
 
-function getAttachmentDecryptionKey({
-  submission,
-  mrfSubmissionSecretKey,
-  secretKey,
-}: {
+type GetAttachmentDecryptionKeyParams = {
   submission: {
     submissionType: SubmissionType
     mrfVersion?: number
   }
   mrfSubmissionSecretKey?: string
   secretKey: string
-}) {
+}
+
+function getAttachmentDecryptionKey({
+  submission,
+  mrfSubmissionSecretKey,
+  secretKey,
+}: GetAttachmentDecryptionKeyParams) {
   const { submissionType, mrfVersion } = submission
   if (!mrfSubmissionSecretKey) {
     // If no mrf submission secret key present, it is a storage mode form. So, use form secret key.
@@ -156,15 +160,16 @@ function getAttachmentDecryptionKey({
   return mrfSubmissionSecretKey
 }
 
-async function downloadAndDecryptSubmissionAttachments({
-  attachmentDecryptionKey,
-  attachmentMetadata,
-  decryptedResponses,
-}: {
+type _DownloadAndDecryptSubmissionAttachmentsParams = {
   attachmentDecryptionKey: string
   attachmentMetadata: Record<string, string>
   decryptedResponses: FormField[]
-}): Promise<
+}
+async function _downloadAndDecryptSubmissionAttachments({
+  attachmentDecryptionKey,
+  attachmentMetadata,
+  decryptedResponses,
+}: _DownloadAndDecryptSubmissionAttachmentsParams): Promise<
   | {
       downloadedAttachmentsBlob: Blob
       isDownloadSuccessful: boolean
@@ -210,21 +215,51 @@ async function downloadAndDecryptSubmissionAttachments({
   }
 }
 
+async function downloadAndDecryptSubmissionAttachments(
+  downloadAndDecryptSubmissionAttachmentsParams: Pick<
+    _DownloadAndDecryptSubmissionAttachmentsParams,
+    'attachmentMetadata' | 'decryptedResponses'
+  > &
+    GetAttachmentDecryptionKeyParams,
+) {
+  const attachmentDecryptionKey = getAttachmentDecryptionKey(
+    downloadAndDecryptSubmissionAttachmentsParams,
+  )
+
+  return await _downloadAndDecryptSubmissionAttachments({
+    attachmentDecryptionKey,
+    attachmentMetadata:
+      downloadAndDecryptSubmissionAttachmentsParams.attachmentMetadata,
+    decryptedResponses:
+      downloadAndDecryptSubmissionAttachmentsParams.decryptedResponses,
+  })
+}
+
+type LineData = {
+  isDownloadAttachments: boolean
+  formId: string
+  hostOrigin: string
+  isDownloadAttachmentsSuccessful: boolean
+} & DecryptionResult
+
 /**
  * Decrypts given data into a {@type CsvRecord} and posts the result back to the
  * main thread.
  * @param data The data to decrypt into a csvRecord.
  */
-async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
-  const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
-  let csvRecord: CsvRecord
+async function getMaterializedCsvRecord(
+  lineData: LineData,
+): Promise<MaterializedCsvRecord> {
+  const {
+    isDownloadAttachments,
+    isParseSuccessful,
+    isDecryptionSuccessful,
+    formId,
+    hostOrigin,
+    isDownloadAttachmentsSuccessful,
+  } = lineData
 
-  let submission: SubmissionStreamDto
-  try {
-    submission = SubmissionStreamDto.parse(JSON.parse(line))
-  } catch (error) {
-    const errorMessage = 'Error parsing submission'
-    console.error(errorMessage, error)
+  if (!isParseSuccessful) {
     const ERROR_CSV_RECORD = new CsvRecord(
       CsvRecordStatus.Error,
       formatInTimeZone(new Date(), 'Asia/Singapore', 'dd MMM yyyy hh:mm:ss z'),
@@ -232,52 +267,50 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
       CsvRecordStatus.Error,
       CsvRecordStatus.Error,
     )
-    csvRecord = ERROR_CSV_RECORD
-    csvRecord.setStatus(CsvRecordStatus.Error, errorMessage)
-    csvRecord.materializeSubmissionData()
-    return csvRecord as MaterializedCsvRecord
+    ERROR_CSV_RECORD.setStatus(
+      CsvRecordStatus.Error,
+      'Error parsing submission',
+    )
+    ERROR_CSV_RECORD.materializeSubmissionData()
+    return ERROR_CSV_RECORD as MaterializedCsvRecord
   }
 
-  csvRecord = new CsvRecord(
-    submission._id,
-    submission.created,
+  const { parsedSubmission } = lineData
+
+  const csvRecord = new CsvRecord(
+    parsedSubmission._id,
+    parsedSubmission.created,
     CsvRecordStatus.Unknown,
     formId,
     hostOrigin,
-    submission.submissionType === SubmissionType.Encrypt
-      ? submission.payment
+    parsedSubmission.submissionType === SubmissionType.Encrypt
+      ? parsedSubmission.payment
       : undefined,
-    submission.submissionType === SubmissionType.Multirespondent
+    parsedSubmission.submissionType === SubmissionType.Multirespondent
       ? {
-          workflowStatus: submission.mrfMeta.workflowStatus,
+          workflowStatus: parsedSubmission.mrfMeta.workflowStatus,
           workflowCurrentStepNumber:
-            submission.mrfMeta.workflowCurrentStepNumber,
-          workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
-          lastSubmittedAt: submission.mrfMeta.lastSubmittedAt,
+            parsedSubmission.mrfMeta.workflowCurrentStepNumber,
+          workflowNumTotalSteps: parsedSubmission.mrfMeta.workflowNumTotalSteps,
+          lastSubmittedAt: parsedSubmission.mrfMeta.lastSubmittedAt,
           hasNextStepRecipientEmails:
-            submission.mrfMeta.hasNextStepRecipientEmails,
+            parsedSubmission.mrfMeta.hasNextStepRecipientEmails,
         }
       : undefined,
   )
 
-  const decryptSubmissionDataResult = await decryptSubmissionData({
-    submissionData: submission,
-    secretKey,
-  })
-
-  if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
+  if (!isDecryptionSuccessful) {
     csvRecord.setStatus(CsvRecordStatus.Error, 'Decryption Error')
     csvRecord.materializeSubmissionData()
     return csvRecord as MaterializedCsvRecord
   }
 
-  const { decryptedResponses, mrfSubmissionSecretKey } =
-    decryptSubmissionDataResult
+  const { decryptedResponses } = lineData
 
+  // Short-circuit signature verification for multirespondent submission
   if (
-    // Short-circuit signature verification for multirespondent submission
-    submission.submissionType === SubmissionType.Multirespondent ||
-    verifySignature(decryptedResponses, submission.created)
+    parsedSubmission.submissionType === SubmissionType.Multirespondent ||
+    verifySignature(decryptedResponses, parsedSubmission.created)
   ) {
     csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
     csvRecord.setRecord(decryptedResponses)
@@ -285,21 +318,8 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
     csvRecord.setStatus(CsvRecordStatus.Unverified, 'Unverified')
   }
 
-  if (downloadAttachments) {
-    const attachmentDecryptionKey = getAttachmentDecryptionKey({
-      submission,
-      mrfSubmissionSecretKey,
-      secretKey,
-    })
-
-    const attachmentDownloadBlob =
-      await downloadAndDecryptSubmissionAttachments({
-        attachmentDecryptionKey,
-        attachmentMetadata: submission.attachmentMetadata,
-        decryptedResponses,
-      })
-
-    if (!attachmentDownloadBlob.isDownloadSuccessful) {
+  if (isDownloadAttachments) {
+    if (!isDownloadAttachmentsSuccessful) {
       csvRecord.setStatus(
         CsvRecordStatus.AttachmentError,
         'Attachment Download Error',
@@ -311,14 +331,135 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
       CsvRecordStatus.Ok,
       'Success (with Downloaded Attachment)',
     )
-    csvRecord.setDownloadBlob(attachmentDownloadBlob.downloadedAttachmentsBlob)
   }
   csvRecord.materializeSubmissionData()
   return csvRecord as MaterializedCsvRecord
 }
 
+type DecryptionResult =
+  | {
+      isParseSuccessful: false
+      isDecryptionSuccessful: false
+    }
+  | {
+      isParseSuccessful: true
+      parsedSubmission: SubmissionStreamDto
+      isDecryptionSuccessful: false
+    }
+  | {
+      isParseSuccessful: true
+      parsedSubmission: SubmissionStreamDto
+      isDecryptionSuccessful: true
+      decryptedResponses: FormField[]
+      mrfSubmissionSecretKey?: string
+    }
+
+async function parseAndDecryptSubmissionData({
+  submissionStreamDtoString,
+  secretKey,
+}: SubmissionDataForDecryption): Promise<DecryptionResult> {
+  let submission: SubmissionStreamDto
+
+  try {
+    submission = SubmissionStreamDto.parse(
+      JSON.parse(submissionStreamDtoString),
+    )
+  } catch (error) {
+    console.error('Error parsing submission', error)
+    return {
+      isParseSuccessful: false,
+      isDecryptionSuccessful: false,
+    }
+  }
+
+  const decryptSubmissionDataResult = await decryptSubmissionData({
+    submissionData: submission,
+    secretKey,
+  })
+
+  if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
+    return {
+      isParseSuccessful: true,
+      parsedSubmission: submission,
+      isDecryptionSuccessful: false,
+    }
+  }
+
+  return {
+    isParseSuccessful: true,
+    parsedSubmission: submission,
+    isDecryptionSuccessful: true,
+    decryptedResponses: decryptSubmissionDataResult.decryptedResponses,
+    mrfSubmissionSecretKey: decryptSubmissionDataResult.mrfSubmissionSecretKey,
+  }
+}
+
+type GetDecryptedDataParams = DownloadOptions & SubmissionDataForDecryption
+
+async function getDecryptedData(
+  getDecryptedDataParams: GetDecryptedDataParams,
+): Promise<DecryptedData> {
+  let materializedCsvRecord: MaterializedCsvRecord | undefined
+  let attachmentDownloadBlob: Blob | undefined
+  let isDownloadAndDecryptSubmissionAttachmentsSuccessful = false
+
+  const { secretKey } = getDecryptedDataParams
+
+  const decryptedSubmissionResult = await parseAndDecryptSubmissionData(
+    getDecryptedDataParams,
+  )
+
+  const { isDownloadAttachments, isDownloadCsv } = getDecryptedDataParams
+  const { isDecryptionSuccessful, isParseSuccessful } =
+    decryptedSubmissionResult
+
+  if (isDownloadAttachments) {
+    if (isDecryptionSuccessful) {
+      const { parsedSubmission, decryptedResponses, mrfSubmissionSecretKey } =
+        decryptedSubmissionResult
+      const { attachmentMetadata } = parsedSubmission
+      const downloadAndDecryptSubmissionAttachmentsResult =
+        await downloadAndDecryptSubmissionAttachments({
+          attachmentMetadata,
+          decryptedResponses,
+          submission: parsedSubmission,
+          secretKey,
+          mrfSubmissionSecretKey,
+        })
+      const { isDownloadSuccessful } =
+        downloadAndDecryptSubmissionAttachmentsResult
+      isDownloadAndDecryptSubmissionAttachmentsSuccessful = isDownloadSuccessful
+
+      if (isDownloadSuccessful) {
+        attachmentDownloadBlob =
+          downloadAndDecryptSubmissionAttachmentsResult.downloadedAttachmentsBlob
+      }
+    }
+  }
+
+  if (isDownloadCsv) {
+    const { formId, hostOrigin } = getDecryptedDataParams
+    materializedCsvRecord = await getMaterializedCsvRecord({
+      isDownloadAttachments,
+      formId,
+      hostOrigin,
+      isDownloadAttachmentsSuccessful:
+        isDownloadAndDecryptSubmissionAttachmentsSuccessful,
+      ...decryptedSubmissionResult,
+    })
+  }
+
+  return {
+    materializedCsvRecord,
+    attachmentDownloadBlob,
+    submissionId: isParseSuccessful
+      ? decryptedSubmissionResult.parsedSubmission._id
+      : undefined,
+  }
+}
+
 const exports = {
-  decryptIntoCsv,
+  getDecryptedData,
 }
 
 expose(exports)
