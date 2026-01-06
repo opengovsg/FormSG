@@ -121,7 +121,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     accessor: 'refNo',
     width: 300,
     minWidth: 300,
-    maxWidth: 300,
+    disableResizing: true,
   },
   {
     Header: 'Timestamp',
@@ -315,14 +315,19 @@ export const ResponsesTableV2 = () => {
   }, [filteredMetadata, metadata, submissionId])
 
   const columns = useMemo(() => {
-    if (isMultiRespondentForm) {
-      return MRF_RESPONSE_TABLE_COLUMNS
-    }
-    if (isPaymentsForm) {
-      return PAYMENT_RESPONSE_TABLE_COLUMNS
-    }
-    return BASE_RESPONSE_TABLE_COLUMNS
-  }, [isMultiRespondentForm, isPaymentsForm])
+    const baseColumns = isMultiRespondentForm
+      ? MRF_RESPONSE_TABLE_COLUMNS
+      : isPaymentsForm
+        ? PAYMENT_RESPONSE_TABLE_COLUMNS
+        : BASE_RESPONSE_TABLE_COLUMNS
+
+    const selectFieldColumns =
+      form?.form_fields?.map((field) => ({
+        Header: field.title,
+      })) ?? []
+    const columnsWithFields = baseColumns.concat(selectFieldColumns)
+    return columnsWithFields
+  }, [isMultiRespondentForm, isPaymentsForm, form])
 
   const {
     prepareRow,
