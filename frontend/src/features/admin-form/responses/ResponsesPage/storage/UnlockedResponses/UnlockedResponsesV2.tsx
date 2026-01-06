@@ -12,19 +12,22 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-  PopoverCloseButton,
   PopoverArrow,
   PopoverBody,
   PopoverFooter,
   Select,
-  Input,
+  Input
 } from '@chakra-ui/react'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useState } from 'react'
-import { BiCalendar, BiFilter, BiHide, BiPlus } from 'react-icons/bi'
+import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { BasicField } from '~shared/types'
+import { BasicField, DateString } from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
+import {
+  DateRangePicker,
+  dateRangePickerHelper,
+} from '~components/DateRangePicker'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -86,26 +89,6 @@ const FilterEditor = ({
   )
 }
 
-const FilterButton = ({
-  icon,
-  label,
-}: {
-  icon: React.ReactElement
-  label: string
-}) => {
-  return (
-    <Button
-      leftIcon={icon}
-      borderWidth="1"
-      borderColor="secondary.200"
-      color="secondary.500"
-      variant="clear"
-      _hover={{ bg: 'secondary.100', color: 'secondary.700' }}
-    >
-      {label}
-    </Button>
-  )
-}
 const FieldFilter = ({
   fields,
   filters,
@@ -126,7 +109,7 @@ const FieldFilter = ({
     ])
   }
   return (
-    <Popover placement="bottom-start">
+    <Popover placement='bottom-end'>
       <PopoverTrigger>
         <Button
           leftIcon={<BiFilter />}
@@ -139,10 +122,9 @@ const FieldFilter = ({
       </PopoverTrigger>
       <PopoverContent bgColor="white" width="40rem">
         <PopoverArrow />
-        <PopoverCloseButton />
         <PopoverBody>
           {!filters || filters.length === 0 ? (
-            <InlineMessage fontSize="sm">
+            <InlineMessage fontSize='sm' alignItems='center'>
               Add a new filter to find specific responses.
             </InlineMessage>
           ) : (
@@ -225,8 +207,26 @@ const HideFields = ({
   )
 }
 
-const DateRangeFilter = () => {
-  return <FilterButton icon={<BiCalendar />} label="All time" />
+const DateRangeFilter = ({
+  dateRange,
+  setDateRange,
+}: {
+  dateRange: DateString[]
+  setDateRange: (dateRange: DateString[]) => void
+}) => {
+  return (
+    <DateRangePicker
+      placement='bottom-end'
+      value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
+      onChange={(nextDateRange) =>
+        setDateRange(
+          dateRangePickerHelper.datePickerValueToDateString(
+            nextDateRange,
+          ),
+        )
+      }
+    />
+  )
 }
 
 const FilterBar = ({
@@ -235,12 +235,16 @@ const FilterBar = ({
   setSelectedFieldIds,
   filters,
   setFilters,
+  dateRange,
+  setDateRange,
 }: {
   formFields: { _id: string; title: string; fieldType: BasicField }[]
   selectedFieldIds: string[]
   setSelectedFieldIds: (fieldIds: string[]) => void
   filters: Filter[]
   setFilters: (filters: Filter[]) => void
+  dateRange: DateString[]
+  setDateRange: (dateRange: DateString[]) => void
 }) => {
   return (
     <Flex justifyContent={'space-between'}>
@@ -257,14 +261,14 @@ const FilterBar = ({
         />
       </Flex>
       <Flex gap="0.5rem">
-        <DateRangeFilter />
+        <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
       </Flex>
     </Flex>
   )
 }
 
 const UnlockedResponsesV2 = () => {
-  const { data: form, isLoading: isFormLoading } = useAdminForm()
+  const { data: form } = useAdminForm()
   const { form_fields } = form ?? {}
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
@@ -272,14 +276,18 @@ const UnlockedResponsesV2 = () => {
   )
   const [filters, setFilters] = useState<Filter[]>([])
 
+  const [dateRange, setDateRange] = useState<DateString[]>([])
+
   return (
-    <Stack width="100%" gap="0.5rem" flexDir="column">
+    <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
       <FilterBar
         formFields={form_fields ?? []}
         selectedFieldIds={selectedFieldIds}
         setSelectedFieldIds={setSelectedFieldIds}
         filters={filters}
         setFilters={setFilters}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
         <ResponsesTableV2 />

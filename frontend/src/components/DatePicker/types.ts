@@ -1,4 +1,4 @@
-import { InputProps } from '@chakra-ui/react'
+import { InputProps, PopoverProps } from '@chakra-ui/react'
 import { Locale } from 'date-fns'
 
 export interface DatePickerBaseProps
@@ -34,4 +34,8 @@ export interface DatePickerBaseProps
   refocusOnClose?: boolean
   /** date-fns's Locale of the date to be applied if provided. */
   locale?: Locale
+  /**
+   * The placement of the date picker popover content.
+   */
+  placement?: PopoverProps['placement']
 }

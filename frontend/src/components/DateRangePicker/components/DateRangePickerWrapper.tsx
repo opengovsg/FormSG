@@ -13,6 +13,7 @@ export const DateRangePickerWrapper = forwardRef<object, 'input'>(
       closeCalendarOnChange,
       handleFieldContainerClick,
       isMobile,
+      placement,
     } = useDateRangePicker()
 
     if (isMobile) {
@@ -33,7 +34,7 @@ export const DateRangePickerWrapper = forwardRef<object, 'input'>(
     return (
       <Flex>
         <Popover
-          placement="bottom-start"
+          placement={placement ?? 'bottom-start'}
           isLazy
           initialFocusRef={initialFocusRef}
           closeOnBlur={closeCalendarOnChange}

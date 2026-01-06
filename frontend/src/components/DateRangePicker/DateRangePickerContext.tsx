@@ -14,6 +14,7 @@ import {
 import {
   CSSObject,
   FormControlProps,
+  PopoverProps,
   ThemingProps,
   useControllableState,
   useDisclosure,
@@ -53,6 +54,7 @@ interface DateRangePickerContextReturn {
   labelSeparator: string
   colorScheme?: ThemingProps<'DatePicker'>['colorScheme']
   monthsToDisplay?: number
+  placement?: PopoverProps['placement']
 }
 
 const DateRangePickerContext =
@@ -100,6 +102,7 @@ const useProvideDateRangePicker = ({
   colorScheme = 'primary',
   monthsToDisplay,
   refocusOnClose = true,
+  placement,
   ...props
 }: DateRangePickerProps): DateRangePickerContextReturn => {
   const initialFocusRef = useRef<HTMLInputElement>(null)
@@ -327,5 +330,6 @@ const useProvideDateRangePicker = ({
     disclosureProps,
     labelSeparator,
     monthsToDisplay,
+    placement,
   }
 }
