@@ -16,18 +16,22 @@ import {
   PopoverBody,
   PopoverFooter,
   Select,
-  Input
+  Input,
 } from '@chakra-ui/react'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { BasicField, DateString } from '~shared/types'
+import { BasicField, DateString, SubmissionMetadata } from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
 import {
   DateRangePicker,
   dateRangePickerHelper,
 } from '~components/DateRangePicker'
+import { useStorageResponsesContext } from '../StorageResponsesContext'
+import useDecryptResponses from '../useDecryptResponses'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import { useSecretKey } from '../useSecretKey'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -109,7 +113,7 @@ const FieldFilter = ({
     ])
   }
   return (
-    <Popover placement='bottom-end'>
+    <Popover placement="bottom-end">
       <PopoverTrigger>
         <Button
           leftIcon={<BiFilter />}
@@ -124,7 +128,7 @@ const FieldFilter = ({
         <PopoverArrow />
         <PopoverBody>
           {!filters || filters.length === 0 ? (
-            <InlineMessage fontSize='sm' alignItems='center'>
+            <InlineMessage fontSize="sm" alignItems="center">
               Add a new filter to find specific responses.
             </InlineMessage>
           ) : (
@@ -216,13 +220,11 @@ const DateRangeFilter = ({
 }) => {
   return (
     <DateRangePicker
-      placement='bottom-end'
+      placement="bottom-end"
       value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
       onChange={(nextDateRange) =>
         setDateRange(
-          dateRangePickerHelper.datePickerValueToDateString(
-            nextDateRange,
-          ),
+          dateRangePickerHelper.datePickerValueToDateString(nextDateRange),
         )
       }
     />
@@ -268,15 +270,39 @@ const FilterBar = ({
 }
 
 const UnlockedResponsesV2 = () => {
-  const { data: form } = useAdminForm()
+  const { data: form, isLoading: isLoadingForm } = useAdminForm()
+  const { secretKey, isLoading: isLoadingSecretKey } = useStorageResponsesContext()
   const { form_fields } = form ?? {}
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
     form_fields?.map((field) => field._id) ?? [],
   )
   const [filters, setFilters] = useState<Filter[]>([])
+  const [dateRange, setDateRange] = useState<DateString[] | undefined>(
+    undefined,
+  )
 
-  const [dateRange, setDateRange] = useState<DateString[]>([])
+  if (!secretKey || !form) return null
+
+  const [decryptedResponses, setDecryptedResponses] = useState<
+    ({ decryptedResponses: FormField[] } & SubmissionMetadata)[]
+  >([])
+
+  const { decryptResponses } = useDecryptResponses()
+
+  useEffect(() => {
+    if (isLoadingForm || isLoadingSecretKey) return
+    decryptResponses({
+      formId: form?._id ?? '',
+      secretKey,
+      startDate: dateRange ? dateRange[0] : undefined,
+      endDate: dateRange ? dateRange[1] : undefined,
+    }).then((results) => {
+      const decryptedResponses = results
+        .filter((result): result is { decryptedResponses: FormField[] } & SubmissionMetadata => result !== undefined)
+      setDecryptedResponses(decryptedResponses)
+    })
+  }, [form?._id, secretKey, dateRange, isLoadingForm, isLoadingSecretKey])
 
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
@@ -286,11 +312,11 @@ const UnlockedResponsesV2 = () => {
         setSelectedFieldIds={setSelectedFieldIds}
         filters={filters}
         setFilters={setFilters}
-        dateRange={dateRange}
+        dateRange={dateRange ?? []}
         setDateRange={setDateRange}
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
-        <ResponsesTableV2 />
+        <ResponsesTableV2 form={form} decryptedResponses={decryptedResponses} />
       </Box>
     </Stack>
   )

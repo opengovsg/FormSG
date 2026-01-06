@@ -336,7 +336,7 @@ async function getMaterializedCsvRecord(
   return csvRecord as MaterializedCsvRecord
 }
 
-type DecryptionResult =
+export type DecryptionResult =
   | {
       isParseSuccessful: false
       isDecryptionSuccessful: false
@@ -357,7 +357,10 @@ type DecryptionResult =
 async function parseAndDecryptSubmissionData({
   submissionStreamDtoString,
   secretKey,
-}: SubmissionDataForDecryption): Promise<DecryptionResult> {
+}: Pick<
+  SubmissionDataForDecryption,
+  'submissionStreamDtoString' | 'secretKey'
+>): Promise<DecryptionResult> {
   let submission: SubmissionStreamDto
 
   try {
@@ -463,6 +466,7 @@ async function getDecryptedData(
 }
 
 const exports = {
+  parseAndDecryptSubmissionData,
   getDecryptedData,
 }
 

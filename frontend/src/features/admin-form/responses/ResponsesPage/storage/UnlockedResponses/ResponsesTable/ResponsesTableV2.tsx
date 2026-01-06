@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react'
 
 import {
+  AdminFormDto,
   FormResponseMode,
   SubmissionMetadata,
   WorkflowStatus,
@@ -41,8 +42,9 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
-type ResponseColumnData = SubmissionMetadata
+type ResponseColumnData = { decryptedResponses: FormField[] } & SubmissionMetadata
 
 const StatusBadge = ({
   textColor,
@@ -282,8 +284,13 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
-export const ResponsesTableV2 = () => {
-  const { data: form } = useAdminForm()
+export const ResponsesTableV2 = ({
+  form,
+  decryptedResponses,
+}: {
+  form: AdminFormDto
+  decryptedResponses: ({ decryptedResponses: FormField[] } & SubmissionMetadata)[]
+}) => {
   const isPaymentsForm =
     form?.responseMode === FormResponseMode.Encrypt
       ? form.payments_field.enabled
@@ -322,12 +329,16 @@ export const ResponsesTableV2 = () => {
         : BASE_RESPONSE_TABLE_COLUMNS
 
     const selectFieldColumns =
-      form?.form_fields?.map((field) => ({
+      form.form_fields?.map((field) => ({
         Header: field.title,
+        accessor: (row: any) => {
+          const response = row.decryptedResponses.find((response: FormField) => response._id === field._id)
+          return JSON.stringify(response)
+        },
       })) ?? []
     const columnsWithFields = baseColumns.concat(selectFieldColumns)
     return columnsWithFields
-  }, [isMultiRespondentForm, isPaymentsForm, form])
+  }, [isMultiRespondentForm, isPaymentsForm])
 
   const {
     prepareRow,
@@ -339,7 +350,7 @@ export const ResponsesTableV2 = () => {
   } = useTable<ResponseColumnData>(
     {
       columns,
-      data: metadataToUse,
+      data: decryptedResponses,
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
