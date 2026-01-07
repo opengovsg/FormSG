@@ -22,7 +22,12 @@ import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useEffect, useState } from 'react'
 import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { BasicField, DateString, SubmissionMetadata } from '~shared/types'
+import {
+  BasicField,
+  DateString,
+  FormFieldDto,
+  SubmissionMetadata,
+} from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
 import {
   DateRangePicker,
@@ -269,13 +274,29 @@ const FilterBar = ({
   )
 }
 
+const filterFieldsForDashboardView = (formFields: FormFieldDto[]) => {
+  return formFields.filter((field) => {
+    return (
+      field.fieldType !== BasicField.Section &&
+      field.fieldType !== BasicField.Statement &&
+      field.fieldType !== BasicField.Signature &&
+      field.fieldType !== BasicField.Attachment &&
+      field.fieldType !== BasicField.Image &&
+      field.fieldType !== BasicField.Address &&
+      field.fieldType !== BasicField.Children
+    )
+  })
+}
+
 const UnlockedResponsesV2 = () => {
   const { data: form, isLoading: isLoadingForm } = useAdminForm()
-  const { secretKey, isLoading: isLoadingSecretKey } = useStorageResponsesContext()
+  const { secretKey, isLoading: isLoadingSecretKey } =
+    useStorageResponsesContext()
   const { form_fields } = form ?? {}
+  const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
-    form_fields?.map((field) => field._id) ?? [],
+    fieldsForDashboardView?.map((field) => field._id) ?? [],
   )
   const [filters, setFilters] = useState<Filter[]>([])
   const [dateRange, setDateRange] = useState<DateString[] | undefined>(
@@ -298,8 +319,12 @@ const UnlockedResponsesV2 = () => {
       startDate: dateRange ? dateRange[0] : undefined,
       endDate: dateRange ? dateRange[1] : undefined,
     }).then((results) => {
-      const decryptedResponses = results
-        .filter((result): result is { decryptedResponses: FormField[] } & SubmissionMetadata => result !== undefined)
+      const decryptedResponses = results.filter(
+        (
+          result,
+        ): result is { decryptedResponses: FormField[] } & SubmissionMetadata =>
+          result !== undefined,
+      )
       setDecryptedResponses(decryptedResponses)
     })
   }, [form?._id, secretKey, dateRange, isLoadingForm, isLoadingSecretKey])
@@ -307,7 +332,7 @@ const UnlockedResponsesV2 = () => {
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
       <FilterBar
-        formFields={form_fields ?? []}
+        formFields={fieldsForDashboardView ?? []}
         selectedFieldIds={selectedFieldIds}
         setSelectedFieldIds={setSelectedFieldIds}
         filters={filters}
@@ -316,7 +341,10 @@ const UnlockedResponsesV2 = () => {
         setDateRange={setDateRange}
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
-        <ResponsesTableV2 form={form} decryptedResponses={decryptedResponses} />
+        <ResponsesTableV2
+          form={{ ...form, form_fields: fieldsForDashboardView }}
+          decryptedResponses={decryptedResponses}
+        />
       </Box>
     </Stack>
   )

@@ -20,16 +20,14 @@ import {
 } from '@chakra-ui/react'
 
 import {
-  AdminFormDto,
-  FormResponseMode,
+  AdminFormDto, FormResponseMode,
   SubmissionMetadata,
-  WorkflowStatus,
+  WorkflowStatus
 } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import Badge from '~components/Badge'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
@@ -44,7 +42,9 @@ import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
-type ResponseColumnData = { decryptedResponses: FormField[] } & SubmissionMetadata
+type ResponseColumnData = {
+  decryptedResponses: FormField[]
+} & SubmissionMetadata
 
 const StatusBadge = ({
   textColor,
@@ -289,7 +289,9 @@ export const ResponsesTableV2 = ({
   decryptedResponses,
 }: {
   form: AdminFormDto
-  decryptedResponses: ({ decryptedResponses: FormField[] } & SubmissionMetadata)[]
+  decryptedResponses: ({
+    decryptedResponses: FormField[]
+  } & SubmissionMetadata)[]
 }) => {
   const isPaymentsForm =
     form?.responseMode === FormResponseMode.Encrypt
@@ -300,9 +302,6 @@ export const ResponsesTableV2 = ({
 
   const {
     currentPage: currentPage1Indexed,
-    metadata,
-    filteredMetadata,
-    submissionId,
     onRowClick,
   } = useUnlockedResponses()
 
@@ -313,14 +312,6 @@ export const ResponsesTableV2 = ({
     [currentPage1Indexed],
   )
 
-  const metadataToUse = useMemo(() => {
-    if (submissionId) {
-      return filteredMetadata
-    } else {
-      return metadata
-    }
-  }, [filteredMetadata, metadata, submissionId])
-
   const columns = useMemo(() => {
     const baseColumns = isMultiRespondentForm
       ? MRF_RESPONSE_TABLE_COLUMNS
@@ -329,13 +320,16 @@ export const ResponsesTableV2 = ({
         : BASE_RESPONSE_TABLE_COLUMNS
 
     const selectFieldColumns =
-      form.form_fields?.map((field) => ({
-        Header: field.title,
-        accessor: (row: any) => {
-          const response = row.decryptedResponses.find((response: FormField) => response._id === field._id)
-          return JSON.stringify(response)
-        },
-      })) ?? []
+      form.form_fields
+        .map((field) => ({
+          Header: field.title,
+          accessor: (row: any) => {
+            const response = row.decryptedResponses.find(
+              (response: FormField) => response._id === field._id,
+            )
+            return response?.answer ?? ''
+          },
+        })) ?? []
     const columnsWithFields = baseColumns.concat(selectFieldColumns)
     return columnsWithFields
   }, [isMultiRespondentForm, isPaymentsForm])
