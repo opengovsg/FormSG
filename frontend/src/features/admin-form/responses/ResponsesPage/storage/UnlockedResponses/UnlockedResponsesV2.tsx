@@ -18,6 +18,7 @@ import {
   Select,
   Input,
 } from '@chakra-ui/react'
+import { includes } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useEffect, useState } from 'react'
 import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
@@ -342,7 +343,12 @@ const UnlockedResponsesV2 = () => {
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
         <ResponsesTableV2
-          form={{ ...form, form_fields: fieldsForDashboardView }}
+          form={{
+            ...form,
+            form_fields: fieldsForDashboardView.filter((field) =>
+              includes(selectedFieldIds, field._id),
+            ),
+          }}
           decryptedResponses={decryptedResponses}
         />
       </Box>

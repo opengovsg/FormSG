@@ -20,9 +20,10 @@ import {
 } from '@chakra-ui/react'
 
 import {
-  AdminFormDto, FormResponseMode,
+  AdminFormDto,
+  FormResponseMode,
   SubmissionMetadata,
-  WorkflowStatus
+  WorkflowStatus,
 } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
@@ -300,10 +301,8 @@ export const ResponsesTableV2 = ({
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
 
-  const {
-    currentPage: currentPage1Indexed,
-    onRowClick,
-  } = useUnlockedResponses()
+  const { currentPage: currentPage1Indexed, onRowClick } =
+    useUnlockedResponses()
 
   const navigate = useNavigate()
 
@@ -320,19 +319,18 @@ export const ResponsesTableV2 = ({
         : BASE_RESPONSE_TABLE_COLUMNS
 
     const selectFieldColumns =
-      form.form_fields
-        .map((field) => ({
-          Header: field.title,
-          accessor: (row: any) => {
-            const response = row.decryptedResponses.find(
-              (response: FormField) => response._id === field._id,
-            )
-            return response?.answer ?? ''
-          },
-        })) ?? []
+      form.form_fields.map((field) => ({
+        Header: field.title,
+        accessor: (row: any) => {
+          const response = row.decryptedResponses.find(
+            (response: FormField) => response._id === field._id,
+          )
+          return response?.answer ?? ''
+        },
+      })) ?? []
     const columnsWithFields = baseColumns.concat(selectFieldColumns)
     return columnsWithFields
-  }, [isMultiRespondentForm, isPaymentsForm])
+  }, [isMultiRespondentForm, isPaymentsForm, form.form_fields])
 
   const {
     prepareRow,
@@ -460,6 +458,8 @@ export const ResponsesTableV2 = ({
                     key={cell.getCellProps().key}
                     display="flex"
                     alignItems="center"
+                    overflow="clip"
+                    textOverflow="ellipsis"
                   >
                     {cell.render('Cell')}
                   </Td>
