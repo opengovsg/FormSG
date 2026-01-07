@@ -350,7 +350,7 @@ const UnlockedResponsesV2 = () => {
         <ResponsesTableV2
           form={{
             ...form,
-            form_fields: selectedFields
+            form_fields: selectedFields,
           }}
           decryptedResponses={decryptedResponses}
         />
