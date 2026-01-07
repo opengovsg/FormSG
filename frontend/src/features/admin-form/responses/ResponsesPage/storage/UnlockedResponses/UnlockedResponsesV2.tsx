@@ -258,7 +258,9 @@ const FilterBar = ({
     <Flex justifyContent={'space-between'}>
       <Flex gap="0.5rem">
         <FieldFilter
-          fields={formFields}
+          fields={formFields.filter((field) =>
+            includes(selectedFieldIds, field._id),
+          )}
           filters={filters}
           setFilters={setFilters}
         />
@@ -298,6 +300,9 @@ const UnlockedResponsesV2 = () => {
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
     fieldsForDashboardView?.map((field) => field._id) ?? [],
+  )
+  const selectedFields = fieldsForDashboardView.filter((field) =>
+    includes(selectedFieldIds, field._id),
   )
   const [filters, setFilters] = useState<Filter[]>([])
   const [dateRange, setDateRange] = useState<DateString[] | undefined>(
@@ -345,9 +350,7 @@ const UnlockedResponsesV2 = () => {
         <ResponsesTableV2
           form={{
             ...form,
-            form_fields: fieldsForDashboardView.filter((field) =>
-              includes(selectedFieldIds, field._id),
-            ),
+            form_fields: selectedFields
           }}
           decryptedResponses={decryptedResponses}
         />
