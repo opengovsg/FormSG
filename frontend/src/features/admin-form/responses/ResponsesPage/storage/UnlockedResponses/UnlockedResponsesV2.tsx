@@ -22,7 +22,7 @@ import { Document } from 'flexsearch'
 import { includes, intersection } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useEffect, useState } from 'react'
-import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
+import { BiFilter, BiHide, BiPlus, BiTrash } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   BasicField,
@@ -38,6 +38,7 @@ import {
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import useDecryptResponses from '../useDecryptResponses'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import IconButton from '~components/IconButton'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -52,11 +53,13 @@ interface Filter {
 const FilterEditor = ({
   filter,
   onChange,
+  onDelete,
   fields,
   index,
 }: {
   filter: Filter
   onChange: (filter: Filter) => void
+  onDelete: () => void
   fields: {
     _id: string
     title: string
@@ -94,6 +97,14 @@ const FilterEditor = ({
         value={filter.value}
         onChange={(e) => onChange({ ...filter, value: e.target.value })}
         size="sm"
+        placeholder="value"
+      />
+      <IconButton
+        icon={<BiTrash color="red" size="16" />}
+        size="xs"
+        variant="clear"
+        onClick={onDelete}
+        aria-label={'Delete filter'}
       />
     </Flex>
   )
@@ -118,8 +129,14 @@ const FieldFilter = ({
       { fieldId: fields[0]._id, operator: FilterOperator.Contains, value: '' },
     ])
   }
+
   return (
-    <Popover placement="bottom-end">
+    <Popover
+      placement="bottom-end"
+      onClose={() => {
+        setFilters(filters.filter((f) => f.value && f.value.trim() !== ''))
+      }}
+    >
       <PopoverTrigger>
         <Button
           leftIcon={<BiFilter />}
@@ -127,7 +144,9 @@ const FieldFilter = ({
           borderColor="secondary.200"
           color="secondary.500"
         >
-          Filter
+          {filters && filters.length > 0
+            ? `${filters.length} filters`
+            : 'Filter'}
         </Button>
       </PopoverTrigger>
       <PopoverContent bgColor="white" width="40rem">
@@ -148,6 +167,9 @@ const FieldFilter = ({
                     setFilters(
                       filters.map((f, i) => (i === index ? updatedFilter : f)),
                     )
+                  }
+                  onDelete={() =>
+                    setFilters(filters.filter((_, i) => i !== index))
                   }
                   fields={fields}
                 />
@@ -291,6 +313,10 @@ const filterFieldsForDashboardView = (formFields: FormFieldDto[]) => {
   })
 }
 
+const getValidFilters = (filters: Filter[]): Filter[] => {
+  return filters.filter((filter) => filter.value.length > 0)
+}
+
 const UnlockedResponsesV2 = () => {
   const { data: form, isLoading: isLoadingForm } = useAdminForm()
   const { secretKey, isLoading: isLoadingSecretKey } =
@@ -363,7 +389,8 @@ const UnlockedResponsesV2 = () => {
   }, [])
 
   let filteredDecryptedResponses = decryptedResponses
-  const validFilters = filters.filter((filter) => filter.value.length > 0)
+
+  const validFilters = getValidFilters(filters)
   if (validFilters.length > 0 && !isDecrypting && searchIndex) {
     const eachFilterResponseIds = validFilters.map((filter) => {
       const searchResult = searchIndex.search(filter.value, {
