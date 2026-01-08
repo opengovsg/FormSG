@@ -35,6 +35,7 @@ const useDecryptResponses = () => {
       endDate?: DateString
     }) => {
       let currentSubmissionIndex = 0
+      let submissionNumber = 0
       if (workers.length) killWorkers(workers)
 
       const workerPool: CleanableDecryptionWorkerApi[] = []
@@ -70,7 +71,7 @@ const useDecryptResponses = () => {
             .then((result) => {
               if (result.isParseSuccessful && result.isDecryptionSuccessful) {
                 return {
-                  number: currentSubmissionIndex + 1,
+                  number: ++submissionNumber,
                   decryptedResponses: result.decryptedResponses,
                   refNo: result.parsedSubmission._id,
                   submissionTime: result.parsedSubmission.created,
