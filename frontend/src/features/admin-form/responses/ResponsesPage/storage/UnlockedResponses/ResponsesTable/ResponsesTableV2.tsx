@@ -10,10 +10,12 @@ import {
 } from 'react-table'
 import {
   BadgeProps,
+  Box,
   Flex,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -394,6 +396,22 @@ export const ResponsesTableV2 = ({
     },
     [navigate, onRowClick],
   )
+
+  if (decryptedResponses.length === 0) {
+    return (
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        py="4rem"
+        color="secondary.400"
+      >
+        <Text textStyle="subhead-1">
+          No responses match your current filters.
+        </Text>
+      </Box>
+    )
+  }
 
   return (
     <Table
