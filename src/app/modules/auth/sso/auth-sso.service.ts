@@ -67,7 +67,9 @@ export class AuthSsoServiceClass {
               'Error while discovering SSO client configuration from upstream service. SSO login is unavailable.',
             error,
           })
-          // Return rejected promise to satisfy typesafe/no-throw-sync-func linter rule
+          // Return rejected promise to satisfy typesafe/no-throw-sync-func linter rule.
+          // This rejected promise is safe - it's stored in clientConfigPromise and only
+          // accessed via ResultAsync.fromPromise() which properly handles rejections.
           return Promise.reject(
             new SsoCreateRedirectUrlError(
               'SSO service discovery failed. Please try again later.',
