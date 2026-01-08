@@ -19,13 +19,18 @@ import {
   Input,
   Skeleton,
 } from '@chakra-ui/react'
-import { Document } from 'flexsearch'
-import { includes, intersection } from 'lodash'
+import { Document, Encoder } from 'flexsearch'
+import { includes, intersection, throttle } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BiFilter, BiHide, BiPlus, BiRefresh, BiTrash } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { BasicField, DateString, FormFieldDto, FormResponseMode } from '~shared/types'
+import {
+  BasicField,
+  DateString,
+  FormFieldDto,
+  FormResponseMode,
+} from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
 import {
   DateRangePicker,
@@ -33,13 +38,22 @@ import {
 } from '~components/DateRangePicker'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
+  DecryptedResponse,
   useDecryptedResponsesQuery,
   useInvalidateDecryptedResponses,
 } from '../useDecryptedResponsesQuery'
 import IconButton from '~components/IconButton'
 import { DownloadButton } from './DownloadButton'
-import { MRF_PENDING_RESPONSE_AT_LABEL, MRF_REMINDERS_LABEL, MRF_RESPONSE_TIMESTAMP_LABEL, MRF_WORKFLOW_STATUS_LABEL } from '~features/admin-form/responses/constants'
-import { getPendingResponseAtString, getStatusFromWorkflowStatus } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_REMINDERS_LABEL,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+import {
+  getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -149,7 +163,12 @@ const FieldFilter = ({
             : 'Filter'}
         </Button>
       </PopoverTrigger>
-      <PopoverContent bgColor="white" width="40rem">
+      <PopoverContent
+        maxHeight="30vh"
+        overflowY="auto"
+        bgColor="white"
+        width="40rem"
+      >
         <PopoverArrow />
         <PopoverBody>
           {!filters || filters.length === 0 ? (
@@ -220,7 +239,7 @@ const HideFields = ({
           >
             Hide Fields
           </MenuButton>
-          <MenuList>
+          <MenuList maxHeight="30vh" overflowY="auto">
             <MenuOptionGroup
               onChange={(value) => setSelectedFieldIds(value as string[])}
               value={selectedFieldIds}
@@ -331,6 +350,36 @@ const getValidFilters = (filters: Filter[]): Filter[] => {
   return filters.filter((filter) => filter.value.length > 0)
 }
 
+const filterDecryptedResponses = ({
+  decryptedResponses,
+  filters,
+  searchIndex,
+}: {
+  decryptedResponses: DecryptedResponse[]
+  filters: Filter[]
+  searchIndex: Document
+}) => {
+  const validFilters = getValidFilters(filters)
+  if (validFilters.length === 0 || !searchIndex) {
+    return decryptedResponses
+  }
+
+  const eachFilterResponseIds = validFilters.map((filter) => {
+    const searchResult = searchIndex.search(filter.value, {
+      field: filter.fieldId,
+    })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filteredResponseIds = searchResult.flatMap(
+      (result: any) => result.result,
+    )
+    return filteredResponseIds
+  })
+  const allFilteredResponseIds = intersection(...eachFilterResponseIds)
+  return decryptedResponses.filter((response) =>
+    includes(allFilteredResponseIds, response.refNo),
+  )
+}
+
 const UnlockedResponsesV2 = () => {
   const { data: form, isLoading: isLoadingForm } = useAdminForm()
   const { secretKey, isLoading: isLoadingSecretKey } =
@@ -339,32 +388,44 @@ const UnlockedResponsesV2 = () => {
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
   const essentialFields: {
-    _id: string,
+    _id: string
     title: string
-  }[] = [{
-    _id: 'Response ID',
-    title: 'Response ID',
-  }, {
-    _id: MRF_RESPONSE_TIMESTAMP_LABEL,
-    title: 'Response Timestamp',
-  }]
+  }[] = [
+      {
+        _id: 'Response ID',
+        title: 'Response ID',
+      },
+      {
+        _id: MRF_RESPONSE_TIMESTAMP_LABEL,
+        title: 'Response Timestamp',
+      },
+    ]
   const mrfFields: {
-    _id: string,
+    _id: string
     title: string
-  }[] = isMrf ? [{
-    _id: MRF_WORKFLOW_STATUS_LABEL,
-    title: 'Workflow Status',
-  }, {
-    _id: MRF_PENDING_RESPONSE_AT_LABEL,
-    title: 'Workflow Pending Step At',
-  }, {
-    _id: MRF_REMINDERS_LABEL,
-    title: 'Workflow Reminders',
-  }] : []
+  }[] = isMrf
+      ? [
+        {
+          _id: MRF_WORKFLOW_STATUS_LABEL,
+          title: 'Workflow Status',
+        },
+        {
+          _id: MRF_PENDING_RESPONSE_AT_LABEL,
+          title: 'Workflow Pending Step At',
+        },
+        {
+          _id: MRF_REMINDERS_LABEL,
+          title: 'Workflow Reminders',
+        },
+      ]
+      : []
 
   const submissionMetaFields = [...essentialFields, ...mrfFields]
   const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
-  const allDashboardFields = [...submissionMetaFields, ...fieldsForDashboardView]
+  const allDashboardFields = [
+    ...submissionMetaFields,
+    ...fieldsForDashboardView,
+  ]
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
     allDashboardFields?.map((field) => field._id) ?? [],
@@ -395,6 +456,19 @@ const UnlockedResponsesV2 = () => {
 
     const documentIndex = new Document({
       tokenize: 'reverse',
+      encoder: new Encoder({
+        normalize: true,
+        dedupe: false,
+        cache: true,
+        include: {
+          letter: true,
+          number: true,
+          symbol: false,
+          punctuation: false,
+          control: false,
+          char: '',
+        },
+      }),
       index: allDashboardFields.map((field) => field._id),
     })
 
@@ -420,7 +494,11 @@ const UnlockedResponsesV2 = () => {
         metadataDocument[MRF_WORKFLOW_STATUS_LABEL] =
           getStatusFromWorkflowStatus(response.mrf.workflowStatus)
       }
-      if (response.mrf?.workflowStatus && response.mrf?.workflowCurrentStepNumber && response.mrf?.workflowNumTotalSteps) {
+      if (
+        response.mrf?.workflowStatus &&
+        response.mrf?.workflowCurrentStepNumber &&
+        response.mrf?.workflowNumTotalSteps
+      ) {
         metadataDocument[MRF_PENDING_RESPONSE_AT_LABEL] =
           getPendingResponseAtString({
             workflowStatus: response.mrf.workflowStatus,
@@ -441,29 +519,43 @@ const UnlockedResponsesV2 = () => {
 
   if (!secretKey || !form) return null
 
+  const [filteredDecryptedResponses, setFilteredDecryptedResponses] =
+    useState<DecryptedResponse[]>(decryptedResponses)
+
+  const throttledSetFilteredDecryptedResponses = useCallback(
+    throttle(
+      ({
+        filters,
+        searchIndex,
+        decryptedResponses,
+      }: {
+        filters: Filter[]
+        searchIndex: Document
+        decryptedResponses: DecryptedResponse[]
+      }) => {
+        setFilteredDecryptedResponses(
+          filterDecryptedResponses({
+            decryptedResponses,
+            filters,
+            searchIndex,
+          }),
+        )
+      },
+      500,
+    ),
+    [],
+  )
+
+  useEffect(() => {
+    throttledSetFilteredDecryptedResponses({
+      decryptedResponses,
+      filters,
+      searchIndex,
+    })
+  }, [decryptedResponses, filters, searchIndex])
+
   // Hook to invalidate cache (e.g., to fetch latest submissions)
   const { invalidate } = useInvalidateDecryptedResponses(form._id)
-
-  let filteredDecryptedResponses = decryptedResponses
-
-  const validFilters = getValidFilters(filters)
-  if (validFilters.length > 0 && !isFetchingAndDecrypting && searchIndex) {
-    const eachFilterResponseIds = validFilters.map((filter) => {
-      const searchResult = searchIndex.search(filter.value, {
-        field: filter.fieldId,
-      })
-      const filteredResponseIds = searchResult.flatMap(
-        (result: any) => result.result,
-      )
-      return filteredResponseIds
-    })
-    const allFilteredResponseIds = intersection(...eachFilterResponseIds)
-    filteredDecryptedResponses = filteredDecryptedResponses.filter(
-      (response) => {
-        return includes(allFilteredResponseIds, response.refNo)
-      },
-    )
-  }
 
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">

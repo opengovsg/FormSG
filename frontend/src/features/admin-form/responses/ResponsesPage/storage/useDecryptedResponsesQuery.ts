@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import { formatInTimeZone } from 'date-fns-tz'
 
 import { DateString, SubmissionMetadata, SubmissionType } from '~shared/types'
 
@@ -81,11 +82,16 @@ async function fetchAndDecryptResponses({
           })
           .then((result) => {
             if (result.isParseSuccessful && result.isDecryptionSuccessful) {
+              const submissionTime = formatInTimeZone(
+                result.parsedSubmission.created,
+                'Asia/Singapore',
+                'dd MMM yyyy hh:mm:ss a',
+              )
               return {
                 number: ++submissionNumber,
                 decryptedResponses: result.decryptedResponses,
                 refNo: result.parsedSubmission._id,
-                submissionTime: result.parsedSubmission.created,
+                submissionTime,
                 payments: null,
                 mrf:
                   result.parsedSubmission.submissionType ===
