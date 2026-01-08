@@ -25,7 +25,7 @@ import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useMemo, useState } from 'react'
 import { BiFilter, BiHide, BiPlus, BiRefresh, BiTrash } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { BasicField, DateString, FormFieldDto } from '~shared/types'
+import { BasicField, DateString, FormFieldDto, FormResponseMode } from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
 import {
   DateRangePicker,
@@ -38,6 +38,8 @@ import {
 } from '../useDecryptedResponsesQuery'
 import IconButton from '~components/IconButton'
 import { DownloadButton } from './DownloadButton'
+import { MRF_PENDING_RESPONSE_AT_LABEL, MRF_REMINDERS_LABEL, MRF_RESPONSE_TIMESTAMP_LABEL, MRF_WORKFLOW_STATUS_LABEL } from '~features/admin-form/responses/constants'
+import { getPendingResponseAtString, getStatusFromWorkflowStatus } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -117,7 +119,6 @@ const FieldFilter = ({
   fields: {
     _id: string
     title: string
-    fieldType: BasicField
   }[]
   filters: Filter[]
   setFilters: (filters: Filter[]) => void
@@ -269,7 +270,7 @@ const FilterBar = ({
   handleRefresh,
   isRefreshing,
 }: {
-  formFields: { _id: string; title: string; fieldType: BasicField }[]
+  formFields: { _id: string; title: string }[]
   selectedFieldIds: string[]
   setSelectedFieldIds: (fieldIds: string[]) => void
   filters: Filter[]
@@ -335,14 +336,46 @@ const UnlockedResponsesV2 = () => {
   const { secretKey, isLoading: isLoadingSecretKey } =
     useStorageResponsesContext()
   const { form_fields } = form ?? {}
+
+  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+  const essentialFields: {
+    _id: string,
+    title: string
+  }[] = [{
+    _id: 'Response ID',
+    title: 'Response ID',
+  }, {
+    _id: MRF_RESPONSE_TIMESTAMP_LABEL,
+    title: 'Response Timestamp',
+  }]
+  const mrfFields: {
+    _id: string,
+    title: string
+  }[] = isMrf ? [{
+    _id: MRF_WORKFLOW_STATUS_LABEL,
+    title: 'Workflow Status',
+  }, {
+    _id: MRF_PENDING_RESPONSE_AT_LABEL,
+    title: 'Workflow Pending Step At',
+  }, {
+    _id: MRF_REMINDERS_LABEL,
+    title: 'Workflow Reminders',
+  }] : []
+
+  const submissionMetaFields = [...essentialFields, ...mrfFields]
   const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
+  const allDashboardFields = [...submissionMetaFields, ...fieldsForDashboardView]
 
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
-    fieldsForDashboardView?.map((field) => field._id) ?? [],
+    allDashboardFields?.map((field) => field._id) ?? [],
   )
   const selectedFields = fieldsForDashboardView.filter((field) =>
     includes(selectedFieldIds, field._id),
   )
+  const selectedSubmissionMetaFields = submissionMetaFields.filter((field) =>
+    includes(selectedFieldIds, field._id),
+  )
+
   const [filters, setFilters] = useState<Filter[]>([])
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
@@ -358,15 +391,15 @@ const UnlockedResponsesV2 = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchIndex = useMemo<any>(() => {
-    if (!decryptedResponses.length || !fieldsForDashboardView.length)
-      return null
+    if (!decryptedResponses.length || !allDashboardFields.length) return null
 
     const documentIndex = new Document({
       tokenize: 'reverse',
-      index: fieldsForDashboardView.map((field) => field._id),
+      index: allDashboardFields.map((field) => field._id),
     })
 
     decryptedResponses.forEach((response) => {
+      // Build document from decrypted form fields
       const responseDocument = response.decryptedResponses.reduce<
         Record<string, string>
       >((acc, decryptedField) => {
@@ -375,11 +408,36 @@ const UnlockedResponsesV2 = () => {
         }
         return acc
       }, {})
-      documentIndex.add({ ...responseDocument, id: response.refNo })
+
+      // Add metadata fields to the document for indexing
+      const metadataDocument: Record<string, string> = {
+        'Response ID': response.refNo,
+        [MRF_RESPONSE_TIMESTAMP_LABEL]: response.submissionTime,
+      }
+
+      // Add MRF fields if available
+      if (response.mrf?.workflowStatus) {
+        metadataDocument[MRF_WORKFLOW_STATUS_LABEL] =
+          getStatusFromWorkflowStatus(response.mrf.workflowStatus)
+      }
+      if (response.mrf?.workflowStatus && response.mrf?.workflowCurrentStepNumber && response.mrf?.workflowNumTotalSteps) {
+        metadataDocument[MRF_PENDING_RESPONSE_AT_LABEL] =
+          getPendingResponseAtString({
+            workflowStatus: response.mrf.workflowStatus,
+            workflowCurrentStepNumber: response.mrf.workflowCurrentStepNumber,
+            workflowNumTotalSteps: response.mrf.workflowNumTotalSteps,
+          })
+      }
+
+      documentIndex.add({
+        ...responseDocument,
+        ...metadataDocument,
+        id: response.refNo,
+      })
     })
 
     return documentIndex
-  }, [decryptedResponses, fieldsForDashboardView])
+  }, [decryptedResponses, allDashboardFields])
 
   if (!secretKey || !form) return null
 
@@ -410,7 +468,7 @@ const UnlockedResponsesV2 = () => {
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
       <FilterBar
-        formFields={fieldsForDashboardView ?? []}
+        formFields={allDashboardFields ?? []}
         selectedFieldIds={selectedFieldIds}
         setSelectedFieldIds={setSelectedFieldIds}
         filters={filters}
@@ -425,10 +483,9 @@ const UnlockedResponsesV2 = () => {
           <Skeleton height="2.5rem" />
         ) : (
           <ResponsesTableV2
-            form={{
-              ...form,
-              form_fields: selectedFields,
-            }}
+            form={form}
+            selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+            selectedFields={selectedFields}
             decryptedResponses={filteredDecryptedResponses}
           />
         )}

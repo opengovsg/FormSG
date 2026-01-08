@@ -115,9 +115,9 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    width: 80, // width is used for both the flex-basis and flex-grow
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    maxWidth: 100, // maxWidth is only used as a limit for resizing
+    width: 50, // width is used for both the flex-basis and flex-grow
+    minWidth: 50, // minWidth is only used as a limit for resizing
+    maxWidth: 50, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Response ID',
@@ -127,7 +127,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     disableResizing: true,
   },
   {
-    Header: 'Timestamp',
+    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
     width: 250,
     minWidth: 250,
@@ -201,9 +201,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    width: 80,
-    minWidth: 80,
-    maxWidth: 100,
+    width: 50,
+    minWidth: 50,
+    maxWidth: 50,
   },
   {
     Header: 'Response ID',
@@ -287,9 +287,19 @@ const PAYMENT_RESPONSE_TABLE_COLUMNS =
 
 export const ResponsesTableV2 = ({
   form,
+  selectedFields,
+  selectedSubmissionMetaFields,
   decryptedResponses,
 }: {
   form: AdminFormDto
+  selectedFields: {
+    _id: string
+    title: string
+  }[]
+  selectedSubmissionMetaFields: {
+    _id: string
+    title: string
+  }[]
   decryptedResponses: ({
     decryptedResponses: FormField[]
   } & SubmissionMetadata)[]
@@ -318,8 +328,16 @@ export const ResponsesTableV2 = ({
         ? PAYMENT_RESPONSE_TABLE_COLUMNS
         : BASE_RESPONSE_TABLE_COLUMNS
 
+    const filteredBaseColumns = baseColumns.filter((column) => {
+      return (
+        selectedSubmissionMetaFields.some(
+          (field) => field._id === column.Header,
+        ) || column.Header === '#'
+      )
+    })
+
     const selectFieldColumns =
-      form.form_fields.map((field) => ({
+      selectedFields.map((field) => ({
         Header: field.title,
         accessor: (row: any) => {
           const response = row.decryptedResponses.find(
@@ -328,9 +346,14 @@ export const ResponsesTableV2 = ({
           return response?.answer ?? ''
         },
       })) ?? []
-    const columnsWithFields = baseColumns.concat(selectFieldColumns)
+    const columnsWithFields = filteredBaseColumns.concat(selectFieldColumns)
     return columnsWithFields
-  }, [isMultiRespondentForm, isPaymentsForm, form.form_fields])
+  }, [
+    isMultiRespondentForm,
+    isPaymentsForm,
+    selectedSubmissionMetaFields,
+    selectedFields,
+  ])
 
   const {
     prepareRow,
