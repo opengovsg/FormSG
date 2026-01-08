@@ -37,6 +37,7 @@ import {
   useInvalidateDecryptedResponses,
 } from '../useDecryptedResponsesQuery'
 import IconButton from '~components/IconButton'
+import { DownloadButton } from './DownloadButton'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -305,6 +306,7 @@ const FilterBar = ({
           onClick={handleRefresh}
           aria-label={'Get latest responses'}
         />
+        <DownloadButton />
       </Flex>
     </Flex>
   )
@@ -342,9 +344,7 @@ const UnlockedResponsesV2 = () => {
     includes(selectedFieldIds, field._id),
   )
   const [filters, setFilters] = useState<Filter[]>([])
-  const [dateRange, setDateRange] = useState<DateString[] | undefined>(
-    undefined,
-  )
+  const { dateRange, setDateRange } = useStorageResponsesContext()
 
   // Use the cached query hook - decryption only happens once and results persist across navigation
   const { data: decryptedResponses = [], isFetching: isFetchingAndDecrypting } =

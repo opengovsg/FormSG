@@ -18,17 +18,24 @@ export const StorageResponsesTab = (): JSX.Element => {
 
   const isUnlockedResponsesV2FlagOn = useFeatureValue(
     featureFlags.unlockedResponsesV2,
-    true,
+    false,
   )
-  const [isUnlockedResponsesV2] = useState(isUnlockedResponsesV2FlagOn)
+  const [isUnlockedResponsesV2, setIsUnlockedResponsesV2] = useState(
+    isUnlockedResponsesV2FlagOn,
+  )
 
   if (totalResponsesCount === 0) {
     return <EmptyResponses />
   }
 
-
   return secretKey ? (
-    isUnlockedResponsesV2 ? <UnlockedResponsesV2 /> : <UnlockedResponses />
+    isUnlockedResponsesV2 ? (
+      <UnlockedResponsesV2 />
+    ) : (
+      <UnlockedResponses
+        toggleDashboardV2={() => setIsUnlockedResponsesV2(true)}
+      />
+    )
   ) : (
     <SecretKeyVerification
       heroSvg={<FormActivationSvg />}

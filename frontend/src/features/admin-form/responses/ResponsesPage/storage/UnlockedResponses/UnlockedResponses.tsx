@@ -1,6 +1,16 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Skeleton,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
+import { BiGridAlt } from 'react-icons/bi'
 
 import {
   DateRangePicker,
@@ -15,7 +25,11 @@ import { ResponsesTable } from './ResponsesTable'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
-export const UnlockedResponses = (): JSX.Element => {
+export const UnlockedResponses = ({
+  toggleDashboardV2,
+}: {
+  toggleDashboardV2: () => void
+}): JSX.Element => {
   const { t } = useTranslation()
 
   const {
@@ -94,6 +108,18 @@ export const UnlockedResponses = (): JSX.Element => {
               )
             }
           />
+          <Button
+            leftIcon={<BiGridAlt />}
+            variant="clear"
+            borderColor="secondary.200"
+            color="secondary.500"
+            onClick={toggleDashboardV2}
+          >
+            Data mode
+            <Badge ml="0.5rem" colorScheme="success">
+              Beta
+            </Badge>
+          </Button>
           <DownloadButton />
         </Stack>
       </Grid>
