@@ -17,27 +17,25 @@ import {
   PopoverFooter,
   Select,
   Input,
+  Skeleton,
 } from '@chakra-ui/react'
 import { Document } from 'flexsearch'
 import { includes, intersection } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
-import { useEffect, useState } from 'react'
-import { BiFilter, BiHide, BiPlus, BiTrash } from 'react-icons/bi'
+import { useMemo, useState } from 'react'
+import { BiFilter, BiHide, BiPlus, BiRefresh, BiTrash } from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
-import {
-  BasicField,
-  DateString,
-  FormFieldDto,
-  SubmissionMetadata,
-} from '~shared/types'
+import { BasicField, DateString, FormFieldDto } from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
 import {
   DateRangePicker,
   dateRangePickerHelper,
 } from '~components/DateRangePicker'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import useDecryptResponses from '../useDecryptResponses'
-import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import {
+  useDecryptedResponsesQuery,
+  useInvalidateDecryptedResponses,
+} from '../useDecryptedResponsesQuery'
 import IconButton from '~components/IconButton'
 
 enum FilterOperator {
@@ -267,6 +265,8 @@ const FilterBar = ({
   setFilters,
   dateRange,
   setDateRange,
+  handleRefresh,
+  isRefreshing,
 }: {
   formFields: { _id: string; title: string; fieldType: BasicField }[]
   selectedFieldIds: string[]
@@ -275,6 +275,8 @@ const FilterBar = ({
   setFilters: (filters: Filter[]) => void
   dateRange: DateString[]
   setDateRange: (dateRange: DateString[]) => void
+  handleRefresh: () => void
+  isRefreshing: boolean
 }) => {
   return (
     <Flex justifyContent={'space-between'}>
@@ -294,6 +296,15 @@ const FilterBar = ({
       </Flex>
       <Flex gap="0.5rem">
         <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
+        <IconButton
+          isLoading={isRefreshing}
+          icon={<BiRefresh />}
+          variant="clear"
+          borderColor="secondary.200"
+          color="secondary.500"
+          onClick={handleRefresh}
+          aria-label={'Get latest responses'}
+        />
       </Flex>
     </Flex>
   )
@@ -335,63 +346,50 @@ const UnlockedResponsesV2 = () => {
     undefined,
   )
 
-  const [isDecrypting, setIsDecrypting] = useState(true)
+  // Use the cached query hook - decryption only happens once and results persist across navigation
+  const { data: decryptedResponses = [], isFetching: isFetchingAndDecrypting } =
+    useDecryptedResponsesQuery({
+      formId: form?._id ?? '',
+      secretKey: secretKey ?? '',
+      startDate: dateRange ? dateRange[0] : undefined,
+      endDate: dateRange ? dateRange[1] : undefined,
+      enabled: !isLoadingForm && !isLoadingSecretKey && !!secretKey && !!form,
+    })
 
-  const [searchIndex, setSearchIndex] = useState<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const searchIndex = useMemo<any>(() => {
+    if (!decryptedResponses.length || !fieldsForDashboardView.length)
+      return null
+
+    const documentIndex = new Document({
+      tokenize: 'reverse',
+      index: fieldsForDashboardView.map((field) => field._id),
+    })
+
+    decryptedResponses.forEach((response) => {
+      const responseDocument = response.decryptedResponses.reduce<
+        Record<string, string>
+      >((acc, decryptedField) => {
+        if (decryptedField._id && decryptedField.answer) {
+          acc[decryptedField._id] = decryptedField.answer
+        }
+        return acc
+      }, {})
+      documentIndex.add({ ...responseDocument, id: response.refNo })
+    })
+
+    return documentIndex
+  }, [decryptedResponses, fieldsForDashboardView])
 
   if (!secretKey || !form) return null
 
-  const [decryptedResponses, setDecryptedResponses] = useState<
-    ({ decryptedResponses: FormField[] } & SubmissionMetadata)[]
-  >([])
-
-  const { decryptResponses } = useDecryptResponses()
-
-  useEffect(() => {
-    if (isLoadingForm || isLoadingSecretKey) return
-    decryptResponses({
-      formId: form?._id ?? '',
-      secretKey,
-      startDate: dateRange ? dateRange[0] : undefined,
-      endDate: dateRange ? dateRange[1] : undefined,
-    })
-      .then((results) => {
-        const decryptedResponses = results.filter(
-          (
-            result,
-          ): result is {
-            decryptedResponses: FormField[]
-          } & SubmissionMetadata => result !== undefined,
-        )
-        setDecryptedResponses(decryptedResponses)
-
-        const documentIndex = new Document({
-          tokenize: 'reverse',
-          index: fieldsForDashboardView.map((field) => field._id),
-        })
-
-        decryptedResponses.map((response) => {
-          const responseDocument = response.decryptedResponses.reduce(
-            (acc, decryptedField) => {
-              if (decryptedField._id && decryptedField.answer) {
-                acc[decryptedField._id] = decryptedField.answer
-              }
-              return acc
-            },
-            {} as Record<string, string>,
-          )
-          documentIndex.add({ ...responseDocument, id: response.refNo })
-        })
-
-        setSearchIndex(documentIndex)
-      })
-      .then(() => setIsDecrypting(false))
-  }, [])
+  // Hook to invalidate cache (e.g., to fetch latest submissions)
+  const { invalidate } = useInvalidateDecryptedResponses(form._id)
 
   let filteredDecryptedResponses = decryptedResponses
 
   const validFilters = getValidFilters(filters)
-  if (validFilters.length > 0 && !isDecrypting && searchIndex) {
+  if (validFilters.length > 0 && !isFetchingAndDecrypting && searchIndex) {
     const eachFilterResponseIds = validFilters.map((filter) => {
       const searchResult = searchIndex.search(filter.value, {
         field: filter.fieldId,
@@ -409,10 +407,6 @@ const UnlockedResponsesV2 = () => {
     )
   }
 
-  if (isDecrypting) {
-    return <>Loading...</>
-  }
-
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
       <FilterBar
@@ -423,15 +417,21 @@ const UnlockedResponsesV2 = () => {
         setFilters={setFilters}
         dateRange={dateRange ?? []}
         setDateRange={setDateRange}
+        handleRefresh={invalidate}
+        isRefreshing={isFetchingAndDecrypting}
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
-        <ResponsesTableV2
-          form={{
-            ...form,
-            form_fields: selectedFields,
-          }}
-          decryptedResponses={filteredDecryptedResponses}
-        />
+        {isFetchingAndDecrypting ? (
+          <Skeleton height="2.5rem" />
+        ) : (
+          <ResponsesTableV2
+            form={{
+              ...form,
+              form_fields: selectedFields,
+            }}
+            decryptedResponses={filteredDecryptedResponses}
+          />
+        )}
       </Box>
     </Stack>
   )

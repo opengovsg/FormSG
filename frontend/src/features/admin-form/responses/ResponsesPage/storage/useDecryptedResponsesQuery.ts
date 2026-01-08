@@ -1,0 +1,180 @@
+import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+
+import { DateString, SubmissionMetadata, SubmissionType } from '~shared/types'
+
+import { adminFormResponsesKeys } from '../../queries'
+
+import {
+  getEncryptedResponsesStream,
+  makeWorkerApiAndCleanup,
+} from './StorageResponsesService'
+import { CleanableDecryptionWorkerApi } from './types'
+
+export type DecryptedResponse = {
+  decryptedResponses: FormField[]
+} & SubmissionMetadata
+
+// Query key for decrypted responses cache
+const decryptedResponsesKey = (
+  formId: string,
+  dateRange?: { startDate?: DateString; endDate?: DateString },
+) =>
+  [
+    ...adminFormResponsesKeys.id(formId),
+    'decrypted',
+    dateRange?.startDate ?? 'all',
+    dateRange?.endDate ?? 'all',
+  ] as const
+
+const NUM_WORKERS = window.navigator.hardwareConcurrency || 4
+
+const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
+  return workers.forEach((worker) => worker.cleanup())
+}
+
+/**
+ * Fetches and decrypts responses.
+ * This is extracted to be used by React Query.
+ */
+async function fetchAndDecryptResponses({
+  formId,
+  secretKey,
+  startDate,
+  endDate,
+}: {
+  formId: string
+  secretKey: string
+  startDate?: DateString
+  endDate?: DateString
+}): Promise<DecryptedResponse[]> {
+  const workerPool: CleanableDecryptionWorkerApi[] = []
+
+  try {
+    for (let i = 0; i < NUM_WORKERS; i++) {
+      workerPool.push(makeWorkerApiAndCleanup())
+    }
+
+    const stream = await getEncryptedResponsesStream(formId, {
+      downloadAttachments: false,
+      startDate,
+      endDate,
+    })
+
+    const reader = stream.getReader()
+    let currentSubmissionIndex = 0
+    let submissionNumber = 0
+
+    const submissionDecryptPromises: Promise<DecryptedResponse | undefined>[] =
+      []
+
+    let read: (result: ReadableStreamReadResult<string>) => void
+
+    await reader.read().then(
+      (read = async (result) => {
+        if (result.done) return
+        const { workerApi } = workerPool[currentSubmissionIndex % NUM_WORKERS]
+        const decryptResponsePromise = workerApi
+          .parseAndDecryptSubmissionData({
+            submissionStreamDtoString: result.value,
+            secretKey,
+          })
+          .then((result) => {
+            if (result.isParseSuccessful && result.isDecryptionSuccessful) {
+              return {
+                number: ++submissionNumber,
+                decryptedResponses: result.decryptedResponses,
+                refNo: result.parsedSubmission._id,
+                submissionTime: result.parsedSubmission.created,
+                payments: null,
+                mrf:
+                  result.parsedSubmission.submissionType ===
+                  SubmissionType.Multirespondent
+                    ? result.parsedSubmission.mrfMeta
+                    : undefined,
+              } as DecryptedResponse
+            }
+            return undefined
+          })
+        submissionDecryptPromises.push(decryptResponsePromise)
+        currentSubmissionIndex++
+        return reader.read().then(read)
+      }),
+    )
+
+    const results = await Promise.all(submissionDecryptPromises)
+
+    return results.filter(
+      (result): result is DecryptedResponse => result !== undefined,
+    )
+  } finally {
+    killWorkers(workerPool)
+  }
+}
+
+interface UseDecryptedResponsesQueryParams {
+  formId: string
+  secretKey: string
+  startDate?: DateString
+  endDate?: DateString
+  enabled?: boolean
+}
+
+/**
+ * React Query hook that caches decrypted responses.
+ * The decryption only happens once and results are cached across navigation.
+ *
+ * @param params.formId - The form ID
+ * @param params.secretKey - The secret key for decryption
+ * @param params.startDate - Optional start date filter
+ * @param params.endDate - Optional end date filter
+ * @param params.enabled - Whether to enable the query (defaults to true)
+ */
+export const useDecryptedResponsesQuery = ({
+  formId,
+  secretKey,
+  startDate,
+  endDate,
+  enabled = true,
+}: UseDecryptedResponsesQueryParams): UseQueryResult<DecryptedResponse[]> => {
+  return useQuery<DecryptedResponse[]>(
+    decryptedResponsesKey(formId, { startDate, endDate }),
+    () =>
+      fetchAndDecryptResponses({
+        formId,
+        secretKey,
+        startDate,
+        endDate,
+      }),
+    {
+      enabled: enabled && !!formId && !!secretKey,
+      // Keep data fresh indefinitely (only manual invalidation triggers refetch)
+      staleTime: Infinity,
+      // Keep in cache for 30 minutes after component unmounts
+      cacheTime: 30 * 60 * 1000,
+      // Disable all auto-refetching since fetching and decrypting is expensive
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    },
+  )
+}
+
+/**
+ * Hook to manually invalidate/refetch decrypted responses.
+ * Use this when you need to force a refresh (e.g., to fetch latest submissions).
+ */
+export const useInvalidateDecryptedResponses = (formId: string) => {
+  const queryClient = useQueryClient()
+
+  return {
+    /** Invalidates decrypted response caches for this form (all date ranges) */
+    invalidate: () => {
+      // Uses prefix matching - invalidates all queries starting with this key
+      queryClient.invalidateQueries([
+        ...adminFormResponsesKeys.id(formId),
+        'decrypted',
+      ])
+    },
+  }
+}
