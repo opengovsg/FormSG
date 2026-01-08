@@ -18,7 +18,8 @@ import {
   Select,
   Input,
 } from '@chakra-ui/react'
-import { includes } from 'lodash'
+import { Document } from 'flexsearch'
+import { includes, intersection } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useEffect, useState } from 'react'
 import { BiFilter, BiHide, BiPlus } from 'react-icons/bi'
@@ -37,7 +38,6 @@ import {
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import useDecryptResponses from '../useDecryptResponses'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
-import { useSecretKey } from '../useSecretKey'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -309,6 +309,10 @@ const UnlockedResponsesV2 = () => {
     undefined,
   )
 
+  const [isDecrypting, setIsDecrypting] = useState(true)
+
+  const [searchIndex, setSearchIndex] = useState<any>(null)
+
   if (!secretKey || !form) return null
 
   const [decryptedResponses, setDecryptedResponses] = useState<
@@ -324,16 +328,63 @@ const UnlockedResponsesV2 = () => {
       secretKey,
       startDate: dateRange ? dateRange[0] : undefined,
       endDate: dateRange ? dateRange[1] : undefined,
-    }).then((results) => {
-      const decryptedResponses = results.filter(
-        (
-          result,
-        ): result is { decryptedResponses: FormField[] } & SubmissionMetadata =>
-          result !== undefined,
-      )
-      setDecryptedResponses(decryptedResponses)
     })
-  }, [form?._id, secretKey, dateRange, isLoadingForm, isLoadingSecretKey])
+      .then((results) => {
+        const decryptedResponses = results.filter(
+          (
+            result,
+          ): result is {
+            decryptedResponses: FormField[]
+          } & SubmissionMetadata => result !== undefined,
+        )
+        setDecryptedResponses(decryptedResponses)
+
+        const documentIndex = new Document({
+          tokenize: 'reverse',
+          index: fieldsForDashboardView.map((field) => field._id),
+        })
+
+        decryptedResponses.map((response) => {
+          const responseDocument = response.decryptedResponses.reduce(
+            (acc, decryptedField) => {
+              if (decryptedField._id && decryptedField.answer) {
+                acc[decryptedField._id] = decryptedField.answer
+              }
+              return acc
+            },
+            {} as Record<string, string>,
+          )
+          documentIndex.add({ ...responseDocument, id: response.refNo })
+        })
+
+        setSearchIndex(documentIndex)
+      })
+      .then(() => setIsDecrypting(false))
+  }, [])
+
+  let filteredDecryptedResponses = decryptedResponses
+  const validFilters = filters.filter((filter) => filter.value.length > 0)
+  if (validFilters.length > 0 && !isDecrypting && searchIndex) {
+    const eachFilterResponseIds = validFilters.map((filter) => {
+      const searchResult = searchIndex.search(filter.value, {
+        field: filter.fieldId,
+      })
+      const filteredResponseIds = searchResult.flatMap(
+        (result: any) => result.result,
+      )
+      return filteredResponseIds
+    })
+    const allFilteredResponseIds = intersection(...eachFilterResponseIds)
+    filteredDecryptedResponses = filteredDecryptedResponses.filter(
+      (response) => {
+        return includes(allFilteredResponseIds, response.refNo)
+      },
+    )
+  }
+
+  if (isDecrypting) {
+    return <>Loading...</>
+  }
 
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
@@ -352,7 +403,7 @@ const UnlockedResponsesV2 = () => {
             ...form,
             form_fields: selectedFields,
           }}
-          decryptedResponses={decryptedResponses}
+          decryptedResponses={filteredDecryptedResponses}
         />
       </Box>
     </Stack>
