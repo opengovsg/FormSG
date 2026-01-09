@@ -1,34 +1,13 @@
-import {
-  ContextType,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import {
-  Navigator as BaseNavigator,
-  UNSAFE_NavigationContext as NavigationContext,
-} from 'react-router-dom'
-import type { History } from 'history'
-
-interface Navigator extends BaseNavigator {
-  block: History['block']
-}
-
-type NavigationContextWithBlock = ContextType<typeof NavigationContext> & {
-  navigator: Navigator
-}
+import { useCallback, useEffect, useState } from 'react'
+import { useBlocker } from 'react-router-dom'
 
 export const useNavigationPrompt = (when?: boolean) => {
-  const navigationContext = useContext(
-    NavigationContext,
-  ) as NavigationContextWithBlock
-
   const [isPromptShown, setIsPromptShown] = useState(false)
-  const [targetPath, setTargetPath] = useState<string>()
 
-  const unblockRef = useRef<() => void>()
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      when === true && currentLocation.pathname !== nextLocation.pathname,
+  )
 
   const handleShowModal = useCallback(() => {
     setIsPromptShown(true)
@@ -36,29 +15,23 @@ export const useNavigationPrompt = (when?: boolean) => {
 
   const onCancel = useCallback(() => {
     setIsPromptShown(false)
-  }, [])
+    if (blocker.state === 'blocked') {
+      blocker.reset()
+    }
+  }, [blocker])
 
   useEffect(() => {
-    if (!when) return
-    unblockRef.current = navigationContext.navigator.block((transaction) => {
-      setTargetPath(transaction.pathname)
+    if (blocker.state === 'blocked') {
       handleShowModal()
-      return false
-    })
-    return () => {
-      unblockRef.current && unblockRef.current()
     }
-  }, [handleShowModal, navigationContext.navigator, when])
+  }, [blocker.state, handleShowModal])
 
   const handleConfirm = useCallback(() => {
-    if (unblockRef.current) {
-      unblockRef.current()
-    }
     setIsPromptShown(false)
-    if (targetPath !== undefined) {
-      navigationContext?.navigator.push(targetPath)
+    if (blocker.state === 'blocked') {
+      blocker.proceed()
     }
-  }, [targetPath, navigationContext?.navigator])
+  }, [blocker])
 
   return {
     isPromptShown,
