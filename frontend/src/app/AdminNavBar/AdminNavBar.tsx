@@ -19,7 +19,7 @@ import { SeenFlags } from '~shared/types'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
-import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
+import { FEATURE_REQUEST, FORM_GUIDE, FORUMSG_URL } from '~constants/links'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
@@ -44,6 +44,9 @@ import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 import Menu from '../../components/Menu'
+import { MdForum } from 'react-icons/md'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { featureFlags } from '~shared/constants'
 
 const BrandSmallLogo = chakra(BrandMarkSvg)
 
@@ -241,6 +244,9 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   const { t } = useTranslation()
 
+  //TODO: Remove forum link after H4PG2026
+  const isForumSGEnabled = useFeatureIsOn(featureFlags.forumsg)
+
   const navLinks: AdminNavBarLinkProps[] = [
     {
       label: t('features.app.adminNavBar.linkLabel.featureRequest'),
@@ -252,6 +258,16 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       href: FORM_GUIDE,
       MobileIcon: BxsHelpCircle,
     },
+    // TODO: Remove forum link after H4PG2026
+    ...(isForumSGEnabled
+      ? [
+          {
+            label: 'Forum',
+            href: FORUMSG_URL,
+            MobileIcon: MdForum,
+          },
+        ]
+      : []),
   ]
 
   return (
