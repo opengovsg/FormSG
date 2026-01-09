@@ -1,6 +1,11 @@
 import { Suspense, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Route, Routes } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import loadable from '@loadable/component'
@@ -89,9 +94,9 @@ export const AppRouter = (): JSX.Element => {
     }
   }, [growthbook])
 
-  return (
-    <WithSuspense>
-      <Routes>
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route path="/">
         <Route
           path={LANDING_ROUTE}
           element={<HashRouterElement element={<LandingPage />} />}
@@ -234,7 +239,13 @@ export const AppRouter = (): JSX.Element => {
           }
         />
         <Route path="*" element={<NotFoundErrorPage />} />
-      </Routes>
+      </Route>,
+    ),
+  )
+
+  return (
+    <WithSuspense>
+      <RouterProvider router={router} />
     </WithSuspense>
   )
 }

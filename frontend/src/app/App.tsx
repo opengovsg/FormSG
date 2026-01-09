@@ -2,7 +2,6 @@ import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
-import { BrowserRouter } from 'react-router-dom'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 
@@ -71,17 +70,15 @@ export const App = (): JSX.Element => {
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />
-          <BrowserRouter>
-            <ChakraProvider theme={theme} resetCSS>
-              <TurnstileChallengeProvider>
-                <AuthProvider>
-                  <GrowthBookProvider>
-                    <AppRouter />
-                  </GrowthBookProvider>
-                </AuthProvider>
-              </TurnstileChallengeProvider>
-            </ChakraProvider>
-          </BrowserRouter>
+          <ChakraProvider theme={theme} resetCSS>
+            <TurnstileChallengeProvider>
+              <AuthProvider>
+                <GrowthBookProvider>
+                  <AppRouter />
+                </GrowthBookProvider>
+              </AuthProvider>
+            </TurnstileChallengeProvider>
+          </ChakraProvider>
         </QueryClientProvider>
       </HelmetProvider>
     </>
