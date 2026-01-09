@@ -1,5 +1,9 @@
-import { MemoryRouter, Route } from 'react-router'
-import { Routes } from 'react-router-dom'
+import { Route } from 'react-router'
+import {
+  createMemoryRouter,
+  createRoutesFromElements,
+  RouterProvider,
+} from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 
@@ -55,33 +59,27 @@ const MOCK_KEYPAIR = {
 }
 
 const Template: StoryFn = () => {
-  return (
-    <MemoryRouter
-      initialEntries={[
-        `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}`,
-      ]}
-    >
-      <Routes>
+  const router = createMemoryRouter(
+    createRoutesFromElements(
+      <Route path={`${ADMINFORM_ROUTE}/:formId`} element={<AdminFormLayout />}>
         <Route
-          path={`${ADMINFORM_ROUTE}/:formId`}
-          element={<AdminFormLayout />}
+          path={ADMINFORM_RESULTS_SUBROUTE}
+          element={<FormResultsLayout />}
         >
-          <Route
-            path={ADMINFORM_RESULTS_SUBROUTE}
-            element={<FormResultsLayout />}
-          >
-            <Route element={<ResponsesLayout />}>
-              <Route index element={<ResponsesPage />} />
-            </Route>
-            <Route
-              path={RESULTS_FEEDBACK_SUBROUTE}
-              element={<FeedbackPage />}
-            />
+          <Route element={<ResponsesLayout />}>
+            <Route index element={<ResponsesPage />} />
           </Route>
+          <Route path={RESULTS_FEEDBACK_SUBROUTE} element={<FeedbackPage />} />
         </Route>
-      </Routes>
-    </MemoryRouter>
+      </Route>,
+    ),
+    {
+      initialEntries: [
+        `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}`,
+      ],
+    },
   )
+  return <RouterProvider router={router} />
 }
 export const EmailForm = Template.bind({})
 
