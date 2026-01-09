@@ -1,6 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useEffect } from 'react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import {
+  createMemoryRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from 'react-router-dom'
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
 import { Decorator } from '@storybook/react'
 import dayjs from 'dayjs'
@@ -118,15 +123,17 @@ export const EditFieldDrawerDecorator: Decorator = (storyFn) => {
 
 export const ADMIN_FORM_CREATE_PAGE_FORM_ID = '12345'
 export const AdminFormCreatePageDecorator: Decorator = (storyFn) => {
-  return (
-    <MemoryRouter initialEntries={[`/${ADMIN_FORM_CREATE_PAGE_FORM_ID}`]}>
-      <Routes>
-        <Route path={'/:formId'} element={<AdminFormLayout />}>
-          <Route index element={storyFn()} />
-        </Route>
-      </Routes>
-    </MemoryRouter>
+  const router = createMemoryRouter(
+    createRoutesFromElements(
+      <Route path={'/:formId'} element={<AdminFormLayout />}>
+        <Route index element={storyFn()} />
+      </Route>,
+    ),
+    {
+      initialEntries: [`/${ADMIN_FORM_CREATE_PAGE_FORM_ID}`],
+    },
   )
+  return <RouterProvider router={router} />
 }
 
 export const mockDateDecorator: Decorator = (storyFn, { parameters }) => {
@@ -173,15 +180,15 @@ interface StoryRouterProps {
 export const StoryRouter =
   ({ path, initialEntries }: StoryRouterProps): Decorator =>
   (storyFn, { parameters }) => {
-    return (
-      <MemoryRouter
-        initialEntries={parameters?.router?.initialEntries ?? initialEntries}
-      >
-        <Routes>
-          <Route path={parameters?.router?.path ?? path} element={storyFn()} />
-        </Routes>
-      </MemoryRouter>
+    const router = createMemoryRouter(
+      createRoutesFromElements(
+        <Route path={parameters?.router?.path ?? path} element={storyFn()} />,
+      ),
+      {
+        initialEntries: parameters?.router?.initialEntries ?? initialEntries,
+      },
     )
+    return <RouterProvider router={router} />
   }
 
 /**
