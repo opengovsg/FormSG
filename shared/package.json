@@ -6,7 +6,7 @@
     "date-fns": "^3.6.0",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
-    "libphonenumber-js": "1.12.33",
+    "libphonenumber-js": "1.12.34",
     "lodash": "^4.17.21",
     "tweetnacl": "^1.0.3",
     "tweetnacl-util": "^0.15.1",
