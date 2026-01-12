@@ -303,6 +303,7 @@ const _handleInterpretData: ControllerHandler<
     .andThen((form) =>
       interpretResponseData({
         formId: form._id,
+        formName: form.title,
         question,
         responses,
       }),

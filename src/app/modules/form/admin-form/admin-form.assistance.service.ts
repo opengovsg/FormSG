@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { z } from 'zod'
 
 import {
@@ -26,7 +26,6 @@ import {
 } from './admin-form.errors'
 import { createFormFields, updateFormMetadata } from './admin-form.service'
 import { Message, Role, sendPromptToModel } from './ai-model'
-import { okAsync } from 'neverthrow'
 
 const logger = createLoggerWithLabel(module)
 
@@ -575,20 +574,22 @@ interface InterpretDataResponse {
 const INTERPRET_DATA_SYSTEM_PROMPT = {
   role: Role.System,
   content:
-    'You are an AI assistant helping to analyze and interpret form response data. ' +
     'You will be given a set of form responses and a question about the data. ' +
-    'Analyze the responses carefully and provide a clear, concise, and accurate answer to the question. ' +
+    'Analyze the responses and provide an answer to the question. ' +
     'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
     'If the question asks for statistics, provide accurate calculations. ' +
     'If the question is unclear or cannot be answered with the given data, explain why. ' +
-    'Keep your response focused and relevant to the question asked. ' +
-    'Format your response in a readable way, using bullet points or numbered lists when appropriate.',
+    'Keep your response accurate, focused and relevant to the question asked. Do not suggest additional actions or offers to do more.' +
+    'Keep your answer concise and preferably within 500 words, less is better.' +
+    'Format your response using markdown, ensure the indents and spacing is optimized for readability.',
 }
 
 const generateInterpretDataPrompt = ({
+  formName,
   question,
   responses,
 }: {
+  formName: string
   question: string
   responses: InterpretDataResponse[]
 }): Message[] => {
@@ -605,7 +606,7 @@ const generateInterpretDataPrompt = ({
     INTERPRET_DATA_SYSTEM_PROMPT,
     {
       role: Role.User,
-      content: `Here are the form responses:\n\n${dataContent}\n\n---\n\nQuestion: ${question}\n\nPlease analyze the data and answer the question.`,
+      content: `Form Name: ${formName}\n\nHere are the form responses:\n\n${dataContent}\n\n---\n\nQuestion: ${question}\n\nAfter analyzing the data, the answer to the question is.`,
     },
   ] as Message[]
 }
@@ -613,23 +614,30 @@ const generateInterpretDataPrompt = ({
 /**
  * Interprets form response data using AI based on a user question.
  * @param formId The ID of the form
+ * @param formName The name of the form for context
  * @param question The question to ask about the data
  * @param responses The decrypted form responses to analyze
  * @returns The AI-generated answer to the question
  */
 export const interpretResponseData = ({
   formId,
+  formName,
   question,
   responses,
 }: {
   formId: string
+  formName: string
   question: string
   responses: InterpretDataResponse[]
 }): ResultAsync<
   string,
   ModelResponseFailureError | ModelGetClientFailureError
 > => {
-  const messages = generateInterpretDataPrompt({ question, responses })
+  const messages = generateInterpretDataPrompt({
+    formName,
+    question,
+    responses,
+  })
 
   return sendPromptToModel({
     messages,
@@ -639,7 +647,8 @@ export const interpretResponseData = ({
       if (!modelResponse) {
         const modelResponseFailureError = new ModelResponseFailureError()
         logger.error({
-          message: 'Error generating response from model for data interpretation',
+          message:
+            'Error generating response from model for data interpretation',
           meta: {
             action: 'interpretResponseData',
             formId,

@@ -18,6 +18,8 @@ import {
 } from '@chakra-ui/react'
 import { useInterpretDataMutation } from '~features/admin-form/assistance/mutations'
 import { InterpretDataResponse } from '~features/admin-form/assistance/AssistanceService'
+import { MarkdownText } from '~components/MarkdownText/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 import { format } from 'date-fns'
 import { Document, Encoder } from 'flexsearch'
 import { includes, intersection, throttle } from 'lodash'
@@ -418,6 +420,19 @@ const InterpretBox = ({
   answer?: string
 }) => {
   const [question, setQuestion] = useState('')
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'body-1',
+        color: 'secondary.700',
+      },
+      list: {
+        color: 'secondary.700',
+        marginInlineStart: '1.25em',
+      },
+    },
+  })
+
   return (
     <Stack
       width="100%"
@@ -449,12 +464,15 @@ const InterpretBox = ({
           p="1rem"
           bg="primary.100"
           borderRadius="4px"
-          whiteSpace="pre-wrap"
         >
           <Text fontWeight="semibold" mb="0.5rem">
             Answer:
           </Text>
-          <Text>{answer}</Text>
+          <Box>
+            <MarkdownText multilineBreaks components={mdComponents}>
+              {answer}
+            </MarkdownText>
+          </Box>
         </Box>
       )}
     </Stack>
