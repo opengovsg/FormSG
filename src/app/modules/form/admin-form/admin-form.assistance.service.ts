@@ -26,6 +26,7 @@ import {
 } from './admin-form.errors'
 import { createFormFields, updateFormMetadata } from './admin-form.service'
 import { Message, Role, sendPromptToModel } from './ai-model'
+import { okAsync } from 'neverthrow'
 
 const logger = createLoggerWithLabel(module)
 
@@ -556,5 +557,105 @@ export const createFormFieldsUsingVisionPrompt = ({
           (form.metadata?.mfb_vision_prompt_count ?? 0) + 1,
       })
       return updatedFields.map((field) => field._id)
+    })
+}
+
+interface InterpretDataField {
+  fieldId: string
+  question: string
+  answer: string
+}
+
+interface InterpretDataResponse {
+  refNo: string
+  submissionTime: string
+  fields: InterpretDataField[]
+}
+
+const INTERPRET_DATA_SYSTEM_PROMPT = {
+  role: Role.System,
+  content:
+    'You are an AI assistant helping to analyze and interpret form response data. ' +
+    'You will be given a set of form responses and a question about the data. ' +
+    'Analyze the responses carefully and provide a clear, concise, and accurate answer to the question. ' +
+    'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
+    'If the question asks for statistics, provide accurate calculations. ' +
+    'If the question is unclear or cannot be answered with the given data, explain why. ' +
+    'Keep your response focused and relevant to the question asked. ' +
+    'Format your response in a readable way, using bullet points or numbered lists when appropriate.',
+}
+
+const generateInterpretDataPrompt = ({
+  question,
+  responses,
+}: {
+  question: string
+  responses: InterpretDataResponse[]
+}): Message[] => {
+  const formattedResponses = responses.map((response) => {
+    const fieldAnswers = response.fields
+      .map((field) => `  - ${field.question}: ${field.answer || '(no answer)'}`)
+      .join('\n')
+    return `Response ID: ${response.refNo}\nSubmission Time: ${response.submissionTime}\nAnswers:\n${fieldAnswers}`
+  })
+
+  const dataContent = formattedResponses.join('\n\n---\n\n')
+
+  return [
+    INTERPRET_DATA_SYSTEM_PROMPT,
+    {
+      role: Role.User,
+      content: `Here are the form responses:\n\n${dataContent}\n\n---\n\nQuestion: ${question}\n\nPlease analyze the data and answer the question.`,
+    },
+  ] as Message[]
+}
+
+/**
+ * Interprets form response data using AI based on a user question.
+ * @param formId The ID of the form
+ * @param question The question to ask about the data
+ * @param responses The decrypted form responses to analyze
+ * @returns The AI-generated answer to the question
+ */
+export const interpretResponseData = ({
+  formId,
+  question,
+  responses,
+}: {
+  formId: string
+  question: string
+  responses: InterpretDataResponse[]
+}): ResultAsync<
+  string,
+  ModelResponseFailureError | ModelGetClientFailureError
+> => {
+  const messages = generateInterpretDataPrompt({ question, responses })
+
+  return sendPromptToModel({
+    messages,
+    formId,
+  })
+    .andThen((modelResponse) => {
+      if (!modelResponse) {
+        const modelResponseFailureError = new ModelResponseFailureError()
+        logger.error({
+          message: 'Error generating response from model for data interpretation',
+          meta: {
+            action: 'interpretResponseData',
+            formId,
+            error: modelResponseFailureError,
+          },
+        })
+        return errAsync(modelResponseFailureError)
+      }
+      return okAsync(modelResponse)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error when interpreting response data with AI',
+        meta: { action: 'interpretResponseData', formId },
+        error,
+      })
+      return error
     })
 }

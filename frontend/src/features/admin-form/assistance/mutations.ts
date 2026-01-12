@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import {
+  interpretData,
+  InterpretDataResponse,
   makeTextPrompt,
   makeVisionPrompt,
 } from '~features/admin-form/assistance/AssistanceService'
@@ -66,4 +68,27 @@ export const useAssistanceMutations = () => {
     useMakeTextPromptMutation,
     useMakeVisionPromptMutation,
   }
+}
+
+export const useInterpretDataMutation = (formId: string) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(
+    ({
+      question,
+      responses,
+    }: {
+      question: string
+      responses: InterpretDataResponse[]
+    }) => interpretData({ formId, question, responses }),
+    {
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message || 'Failed to interpret data',
+          status: 'danger',
+        })
+      },
+    },
+  )
 }

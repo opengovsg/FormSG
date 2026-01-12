@@ -438,6 +438,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 3,
       env: 'MAKE_VISION_PROMPT_RATE_LIMIT',
     },
+    interpretData: {
+      doc: 'Per-minute, per-IP request limit for interpreting form response data with AI',
+      format: 'int',
+      default: 10,
+      env: 'INTERPRET_DATA_RATE_LIMIT',
+    },
     mrfPendingSubmissionEmailReminder: {
       doc: 'Per-minute, per-IP request, per submission id limit for sending email reminders for MRF submissions',
       format: 'int',

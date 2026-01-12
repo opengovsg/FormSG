@@ -27,3 +27,32 @@ export const makeVisionPrompt = ({
     { imageDataUrls },
   ).then(({ data }) => data)
 }
+
+export interface InterpretDataField {
+  fieldId: string
+  question: string
+  answer: string
+}
+
+export interface InterpretDataResponse {
+  refNo: string
+  submissionTime: string
+  fields: InterpretDataField[]
+}
+
+export interface InterpretDataParams {
+  formId: string
+  question: string
+  responses: InterpretDataResponse[]
+}
+
+export const interpretData = ({
+  formId,
+  question,
+  responses,
+}: InterpretDataParams) => {
+  return ApiService.post<{ message: string; answer?: string }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data`,
+    { question, responses },
+  ).then(({ data }) => data)
+}

@@ -72,6 +72,7 @@ export type RateLimitConfig = {
   makeTextPrompt: number
   makeVisionPrompt: number
   mrfPendingSubmissionEmailReminder: number
+  interpretData: number
 }
 
 export type PublicApiConfig = {

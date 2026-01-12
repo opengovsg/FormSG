@@ -14,13 +14,24 @@ import {
   Input,
   Skeleton,
   Checkbox,
+  Textarea,
 } from '@chakra-ui/react'
+import { useInterpretDataMutation } from '~features/admin-form/assistance/mutations'
+import { InterpretDataResponse } from '~features/admin-form/assistance/AssistanceService'
 import { format } from 'date-fns'
 import { Document, Encoder } from 'flexsearch'
 import { includes, intersection, throttle } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BiFilter, BiHide, BiPlus, BiRefresh, BiTrash } from 'react-icons/bi'
+import {
+  BiFilter,
+  BiGridAlt,
+  BiHide,
+  BiPlus,
+  BiRefresh,
+  BiSolidMagicWand,
+  BiTrash,
+} from 'react-icons/bi'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   BasicField,
@@ -49,6 +60,7 @@ import {
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import { DateRangePicker } from '~components/DateRangePicker'
 import { DateRangeValue } from '~components/Calendar'
+import Tooltip from '~components/Tooltip'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -271,6 +283,22 @@ const HideFields = ({
   )
 }
 
+const InterpretButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <Tooltip placement="top" label="Talk to your data">
+      <Button
+        onClick={onClick}
+        leftIcon={<BiSolidMagicWand />}
+        variant="clear"
+        borderColor="secondary.200"
+        color="secondary.500"
+      >
+        Interpret
+      </Button>
+    </Tooltip>
+  )
+}
+
 const FilterBar = ({
   formFields,
   selectedFieldIds,
@@ -281,6 +309,7 @@ const FilterBar = ({
   setDateRange,
   handleRefresh,
   isRefreshing,
+  onClickInterpret,
 }: {
   formFields: { _id: string; title: string }[]
   selectedFieldIds: string[]
@@ -291,10 +320,12 @@ const FilterBar = ({
   setDateRange: (dateRange: DateRangeValue) => void
   handleRefresh: () => void
   isRefreshing: boolean
+  onClickInterpret: () => void
 }) => {
   return (
     <Flex justifyContent={'space-between'}>
       <Flex gap="0.5rem">
+        <DateRangePicker value={dateRange} onChange={setDateRange} />
         <FieldFilter
           fields={formFields.filter((field) =>
             includes(selectedFieldIds, field._id),
@@ -309,16 +340,20 @@ const FilterBar = ({
         />
       </Flex>
       <Flex gap="0.5rem">
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
-        <IconButton
-          isLoading={isRefreshing}
-          icon={<BiRefresh />}
-          variant="clear"
-          borderColor="secondary.200"
-          color="secondary.500"
-          onClick={handleRefresh}
-          aria-label={'Get latest responses'}
-        />
+        <InterpretButton onClick={onClickInterpret} />
+        <Tooltip placement="top" label="Get latest responses">
+          <Button
+            isLoading={isRefreshing}
+            leftIcon={<BiRefresh />}
+            variant="clear"
+            borderColor="secondary.200"
+            color="secondary.500"
+            onClick={handleRefresh}
+            aria-label={'Get latest responses'}
+          >
+            Refresh
+          </Button>
+        </Tooltip>
         <DownloadButton />
       </Flex>
     </Flex>
@@ -370,6 +405,59 @@ const filterDecryptedResponses = ({
   const allFilteredResponseIds = intersection(...eachFilterResponseIds)
   return decryptedResponses.filter((response) =>
     includes(allFilteredResponseIds, response.refNo),
+  )
+}
+
+const InterpretBox = ({
+  onAsk,
+  isLoading,
+  answer,
+}: {
+  onAsk: (textQuestion: string) => void
+  isLoading: boolean
+  answer?: string
+}) => {
+  const [question, setQuestion] = useState('')
+  return (
+    <Stack
+      width="100%"
+      dropShadow="2px"
+      borderRadius="4px"
+      border="1px solid"
+      borderColor="secondary.200"
+      p="1rem"
+      gap="0.5rem"
+    >
+      <Textarea
+        placeholder="Ask a question about your data (e.g., 'How many responses selected option A?', 'Summarize the feedback')"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        isReadOnly={isLoading}
+      />
+      <Flex justifyContent="flex-end">
+        <Button
+          isLoading={isLoading}
+          onClick={() => onAsk(question)}
+          isDisabled={!question.trim()}
+        >
+          Ask
+        </Button>
+      </Flex>
+      {answer && (
+        <Box
+          mt="0.5rem"
+          p="1rem"
+          bg="primary.100"
+          borderRadius="4px"
+          whiteSpace="pre-wrap"
+        >
+          <Text fontWeight="semibold" mb="0.5rem">
+            Answer:
+          </Text>
+          <Text>{answer}</Text>
+        </Box>
+      )}
+    </Stack>
   )
 }
 
@@ -560,6 +648,49 @@ const UnlockedResponsesV2 = () => {
   // Hook to invalidate cache (e.g., to fetch latest submissions)
   const { invalidate } = useInvalidateDecryptedResponses(form._id)
 
+  const [isInterpretOpen, setIsInterpretOpen] = useState(false)
+  const [interpretAnswer, setInterpretAnswer] = useState<string | undefined>()
+
+  const interpretDataMutation = useInterpretDataMutation(form._id)
+
+  const transformResponsesToInterpretFormat = useCallback(
+    (responses: DecryptedResponse[]): InterpretDataResponse[] => {
+      return responses.map((response) => ({
+        refNo: response.refNo,
+        submissionTime: response.submissionTime,
+        fields: response.decryptedResponses
+          .filter((field) => field._id && field.question)
+          .map((field) => ({
+            fieldId: field._id,
+            question: field.question,
+            answer: field.answer || '',
+          })),
+      }))
+    },
+    [],
+  )
+
+  const onAsk = useCallback(
+    (question: string) => {
+      if (!question.trim()) return
+
+      setInterpretAnswer(undefined)
+      const responsesForApi = transformResponsesToInterpretFormat(
+        filteredDecryptedResponses,
+      )
+
+      interpretDataMutation.mutate(
+        { question, responses: responsesForApi },
+        {
+          onSuccess: (data) => {
+            setInterpretAnswer(data.answer)
+          },
+        },
+      )
+    },
+    [filteredDecryptedResponses, interpretDataMutation, transformResponsesToInterpretFormat],
+  )
+
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
       <FilterBar
@@ -572,17 +703,27 @@ const UnlockedResponsesV2 = () => {
         setDateRange={setDateRange}
         handleRefresh={invalidate}
         isRefreshing={isFetchingAndDecrypting}
+        onClickInterpret={() => setIsInterpretOpen(!isInterpretOpen)}
       />
       <Box overflow="auto" maxWidth="100%" flex={1}>
         {isFetchingAndDecrypting ? (
           <Skeleton height="2.5rem" />
         ) : (
-          <ResponsesTableV2
-            form={form}
-            selectedSubmissionMetaFields={selectedSubmissionMetaFields}
-            selectedFields={selectedFields}
-            decryptedResponses={filteredDecryptedResponses}
-          />
+          <Stack gap="0.5rem">
+            {isInterpretOpen && (
+              <InterpretBox
+                onAsk={onAsk}
+                isLoading={interpretDataMutation.isLoading}
+                answer={interpretAnswer}
+              />
+            )}
+            <ResponsesTableV2
+              form={form}
+              selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+              selectedFields={selectedFields}
+              decryptedResponses={filteredDecryptedResponses}
+            />
+          </Stack>
         )}
       </Box>
     </Stack>

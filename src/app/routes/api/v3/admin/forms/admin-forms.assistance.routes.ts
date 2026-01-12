@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../../config/config'
 import {
+  handleInterpretData,
   handleTextPrompt,
   handleVisionPrompt,
 } from '../../../../../modules/form/admin-form/admin-form.assistance.controller'
@@ -19,4 +20,10 @@ AdminFormsAssistanceRouter.post(
   '/:formId([a-fA-F0-9]{24})/assistance/vision-prompt',
   limitRate({ max: rateLimitConfig.makeVisionPrompt }),
   handleVisionPrompt,
+)
+
+AdminFormsAssistanceRouter.post(
+  '/:formId([a-fA-F0-9]{24})/assistance/interpret-data',
+  limitRate({ max: rateLimitConfig.interpretData }),
+  handleInterpretData,
 )

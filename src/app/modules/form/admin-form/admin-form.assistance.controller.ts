@@ -4,6 +4,8 @@ import { StatusCodes } from 'http-status-codes'
 
 import {
   featureFlags,
+  INTERPRET_DATA_MAX_RESPONSES,
+  INTERPRET_DATA_QUESTION_MAX_CHAR,
   MFB_TEXT_PROMPT_MAX_CHAR,
   MFB_VISION_MAX_IMAGES_COUNT,
 } from '../../../../../shared/constants'
@@ -16,6 +18,7 @@ import * as UserService from '../../user/user.service'
 import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
+  interpretResponseData,
 } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -208,3 +211,126 @@ export const handleVisionPrompt = [
   handleVisionPromptValidator,
   _handleVisionPrompt,
 ]
+
+const handleInterpretDataValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+  [Segments.BODY]: {
+    question: Joi.string().required().max(INTERPRET_DATA_QUESTION_MAX_CHAR),
+    responses: Joi.array()
+      .items(
+        Joi.object({
+          refNo: Joi.string().required(),
+          submissionTime: Joi.string().required(),
+          fields: Joi.array()
+            .items(
+              Joi.object({
+                fieldId: Joi.string().required(),
+                question: Joi.string().required(),
+                answer: Joi.string().allow('').required(),
+              }),
+            )
+            .required(),
+        }),
+      )
+      .required()
+      .max(INTERPRET_DATA_MAX_RESPONSES),
+  },
+})
+
+interface IInterpretDataField {
+  fieldId: string
+  question: string
+  answer: string
+}
+
+interface IInterpretDataResponse {
+  refNo: string
+  submissionTime: string
+  fields: IInterpretDataField[]
+}
+
+interface IInterpretData {
+  question: string
+  responses: IInterpretDataResponse[]
+}
+
+const _handleInterpretData: ControllerHandler<
+  { formId: string },
+  { message: string; answer?: string },
+  IInterpretData
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { question, responses } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with read permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }).map((form) => ({ user, form })),
+    )
+    .map(({ user, form }) => {
+      logger.info({
+        message: 'Interpreting response data with AI',
+        meta: {
+          action: '_handleInterpretData',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          userEmail: user.email,
+          formId,
+          questionLength: question.length,
+          responsesCount: responses.length,
+        },
+      })
+      return form
+    })
+    .andThen((form) =>
+      interpretResponseData({
+        formId: form._id,
+        question,
+        responses,
+      }),
+    )
+    .map((answer) =>
+      res.status(StatusCodes.OK).json({
+        message: 'Data interpreted successfully.',
+        answer,
+      }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred interpreting response data.',
+        meta: {
+          action: '_handleInterpretData',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          question,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleInterpretData = [
+  handleInterpretDataValidator,
+  _handleInterpretData,
+] as ControllerHandler[]
