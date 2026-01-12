@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCommentDetail } from 'react-icons/bi'
 import { GoDotFill } from 'react-icons/go'
+import { MdForum } from 'react-icons/md'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
@@ -13,7 +14,9 @@ import {
   Icon,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import { SeenFlags } from '~shared/types'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -44,9 +47,6 @@ import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 import Menu from '../../components/Menu'
-import { MdForum } from 'react-icons/md'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-import { featureFlags } from '~shared/constants'
 
 const BrandSmallLogo = chakra(BrandMarkSvg)
 
@@ -57,7 +57,12 @@ type AdminNavBarLinkProps = {
   shouldShowNotification?: boolean
 }
 
-const AdminNavBarLink = ({ MobileIcon, href, label, shouldShowNotification }: AdminNavBarLinkProps) => {
+const AdminNavBarLink = ({
+  MobileIcon,
+  href,
+  label,
+  shouldShowNotification,
+}: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
 
   if (isMobile && MobileIcon) {
@@ -277,13 +282,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     // TODO: Remove forum link after H4PG2026
     ...(isForumSGEnabled
       ? [
-        {
-          label: 'Forum',
-          href: FORUMSG_URL,
-          MobileIcon: MdForum,
-          shouldShowNotification: true,
-        },
-      ]
+          {
+            label: 'Forum',
+            href: FORUMSG_URL,
+            MobileIcon: MdForum,
+            shouldShowNotification: true,
+          },
+        ]
       : []),
   ]
 
