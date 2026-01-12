@@ -115,7 +115,7 @@ export const UnlockedResponses = ({
             color="secondary.500"
             onClick={toggleDashboardV2}
           >
-            Data mode
+            See full responses
             <Badge ml="0.5rem" colorScheme="success">
               Beta
             </Badge>

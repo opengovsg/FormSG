@@ -3,11 +3,6 @@ import {
   Flex,
   Button,
   Stack,
-  MenuButton,
-  Menu,
-  MenuList,
-  MenuOptionGroup,
-  MenuItemOption,
   Text,
   Popover,
   PopoverTrigger,
@@ -18,7 +13,9 @@ import {
   Select,
   Input,
   Skeleton,
+  Checkbox,
 } from '@chakra-ui/react'
+import { format } from 'date-fns'
 import { Document, Encoder } from 'flexsearch'
 import { includes, intersection, throttle } from 'lodash'
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
@@ -32,10 +29,6 @@ import {
   FormResponseMode,
 } from '~shared/types'
 import InlineMessage from '~components/InlineMessage'
-import {
-  DateRangePicker,
-  dateRangePickerHelper,
-} from '~components/DateRangePicker'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
   DecryptedResponse,
@@ -54,6 +47,8 @@ import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import { DateRangePicker } from '~components/DateRangePicker'
+import { DateRangeValue } from '~components/Calendar'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -87,7 +82,6 @@ const FilterEditor = ({
       <Select
         value={filter.fieldId}
         onChange={(e) => onChange({ ...filter, fieldId: e.target.value })}
-        size="sm"
       >
         {fields.map((field) => (
           <option key={field._id} value={field._id}>
@@ -100,7 +94,6 @@ const FilterEditor = ({
         onChange={(e) =>
           onChange({ ...filter, operator: e.target.value as FilterOperator })
         }
-        size="sm"
       >
         {Object.values(FilterOperator).map((operator) => (
           <option key={operator} value={operator}>
@@ -111,12 +104,10 @@ const FilterEditor = ({
       <Input
         value={filter.value}
         onChange={(e) => onChange({ ...filter, value: e.target.value })}
-        size="sm"
         placeholder="value"
       />
       <IconButton
-        icon={<BiTrash color="red" size="16" />}
-        size="xs"
+        icon={<BiTrash color="red" />}
         variant="clear"
         onClick={onDelete}
         aria-label={'Delete filter'}
@@ -173,7 +164,9 @@ const FieldFilter = ({
         <PopoverBody>
           {!filters || filters.length === 0 ? (
             <InlineMessage fontSize="sm" alignItems="center">
-              Add a new filter to find specific responses.
+              {fields.length > 0
+                ? 'Add a new filter to find specific responses.'
+                : 'No columns to filter. Show a column to continue.'}
             </InlineMessage>
           ) : (
             <Stack gap="0.5rem">
@@ -200,9 +193,9 @@ const FieldFilter = ({
           <Flex justifyContent="space-between">
             <Button
               leftIcon={<BiPlus />}
-              size="sm"
               colorScheme="primary"
               onClick={handleAddFilter}
+              isDisabled={fields.length <= 0}
             >
               Add filter
             </Button>
@@ -225,56 +218,56 @@ const HideFields = ({
   selectedFieldIds: string[]
   setSelectedFieldIds: (fieldIds: string[]) => void
 }) => {
+  const isNoSelectedFields = selectedFieldIds.length === 0
+  const toggleAllText = selectedFieldIds.length === 0 ? 'Show all' : 'Hide all'
+  const handleToggleAll = () => {
+    if (selectedFieldIds.length === 0) {
+      setSelectedFieldIds(fields.map((field) => field._id))
+    } else {
+      setSelectedFieldIds([])
+    }
+  }
   return (
-    <Menu closeOnSelect={false}>
-      {({ isOpen }) => (
-        <>
-          <MenuButton
-            isActive={isOpen}
-            as={Button}
-            leftIcon={<BiHide />}
-            variant="clear"
-            borderColor="secondary.200"
-            color="secondary.500"
-          >
-            Hide Fields
-          </MenuButton>
-          <MenuList maxHeight="30vh" overflowY="auto">
-            <MenuOptionGroup
-              onChange={(value) => setSelectedFieldIds(value as string[])}
-              value={selectedFieldIds}
-              type="checkbox"
-            >
-              {fields.map((field) => (
-                <MenuItemOption key={field._id} value={field._id}>
-                  {field.title}
-                </MenuItemOption>
-              ))}
-            </MenuOptionGroup>
-          </MenuList>
-        </>
-      )}
-    </Menu>
-  )
-}
-
-const DateRangeFilter = ({
-  dateRange,
-  setDateRange,
-}: {
-  dateRange: DateString[]
-  setDateRange: (dateRange: DateString[]) => void
-}) => {
-  return (
-    <DateRangePicker
-      placement="bottom-end"
-      value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
-      onChange={(nextDateRange) =>
-        setDateRange(
-          dateRangePickerHelper.datePickerValueToDateString(nextDateRange),
-        )
-      }
-    />
+    <Popover placement="bottom-end">
+      <PopoverTrigger>
+        <Button
+          leftIcon={<BiHide />}
+          variant="clear"
+          borderColor="secondary.200"
+          color="secondary.500"
+        >
+          {isNoSelectedFields ? 'Show columns' : 'Edit columns'}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent bgColor="white" borderRadius="4px">
+        <PopoverBody>
+          <Stack overflowY="auto" maxHeight="30vh">
+            {fields.map((field) => (
+              <Checkbox
+                key={field._id}
+                isChecked={includes(selectedFieldIds, field._id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedFieldIds([...selectedFieldIds, field._id])
+                  } else {
+                    setSelectedFieldIds(
+                      selectedFieldIds.filter((id) => id !== field._id),
+                    )
+                  }
+                }}
+              >
+                {field.title}
+              </Checkbox>
+            ))}
+          </Stack>
+        </PopoverBody>
+        <PopoverFooter display="flex" justifyContent="flex-end">
+          <Button variant="clear" onClick={handleToggleAll}>
+            {toggleAllText}
+          </Button>
+        </PopoverFooter>
+      </PopoverContent>
+    </Popover>
   )
 }
 
@@ -294,8 +287,8 @@ const FilterBar = ({
   setSelectedFieldIds: (fieldIds: string[]) => void
   filters: Filter[]
   setFilters: (filters: Filter[]) => void
-  dateRange: DateString[]
-  setDateRange: (dateRange: DateString[]) => void
+  dateRange: DateRangeValue
+  setDateRange: (dateRange: DateRangeValue) => void
   handleRefresh: () => void
   isRefreshing: boolean
 }) => {
@@ -316,7 +309,7 @@ const FilterBar = ({
         />
       </Flex>
       <Flex gap="0.5rem">
-        <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
+        <DateRangePicker value={dateRange} onChange={setDateRange} />
         <IconButton
           isLoading={isRefreshing}
           icon={<BiRefresh />}
@@ -438,15 +431,25 @@ const UnlockedResponsesV2 = () => {
   )
 
   const [filters, setFilters] = useState<Filter[]>([])
-  const { dateRange, setDateRange } = useStorageResponsesContext()
+  const [dateRange, setDateRange] = useState<DateRangeValue>([null, null])
 
   // Use the cached query hook - decryption only happens once and results persist across navigation
   const { data: decryptedResponses = [], isFetching: isFetchingAndDecrypting } =
     useDecryptedResponsesQuery({
       formId: form?._id ?? '',
       secretKey: secretKey ?? '',
-      startDate: dateRange ? dateRange[0] : undefined,
-      endDate: dateRange ? dateRange[1] : undefined,
+      startDate:
+        dateRange && dateRange[0]
+          ? dateRange[0]
+            ? (format(dateRange[0], 'yyyy-MM-dd') as DateString)
+            : undefined
+          : undefined,
+      endDate:
+        dateRange && dateRange[1]
+          ? dateRange[1]
+            ? (format(dateRange[1], 'yyyy-MM-dd') as DateString)
+            : undefined
+          : undefined,
       enabled: !isLoadingForm && !isLoadingSecretKey && !!secretKey && !!form,
     })
 
@@ -565,7 +568,7 @@ const UnlockedResponsesV2 = () => {
         setSelectedFieldIds={setSelectedFieldIds}
         filters={filters}
         setFilters={setFilters}
-        dateRange={dateRange ?? []}
+        dateRange={dateRange}
         setDateRange={setDateRange}
         handleRefresh={invalidate}
         isRefreshing={isFetchingAndDecrypting}
