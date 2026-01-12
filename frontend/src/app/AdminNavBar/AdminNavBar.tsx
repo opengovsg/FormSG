@@ -54,34 +54,50 @@ type AdminNavBarLinkProps = {
   label: string
   href: string
   MobileIcon: As
+  shouldShowNotification?: boolean
 }
 
-const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
+const AdminNavBarLink = ({ MobileIcon, href, label, shouldShowNotification }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
 
   if (isMobile && MobileIcon) {
     return (
-      <IconButton
-        variant="clear"
-        as="a"
-        href={href}
-        aria-label={label}
-        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
-      />
+      <Box position="relative">
+        <IconButton
+          variant="clear"
+          as="a"
+          href={href}
+          aria-label={label}
+          icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
+        />
+        {shouldShowNotification && (
+          <Icon
+            as={GoDotFill}
+            color="danger.500"
+            position="absolute"
+            ml="-15px"
+          />
+        )}
+      </Box>
     )
   }
 
   return (
-    <Link
-      w="fit-content"
-      variant="standalone"
-      color="secondary.500"
-      href={href}
-      aria-label={label}
-      target="_blank"
-    >
-      {label}
-    </Link>
+    <Box position="relative">
+      <Link
+        w="fit-content"
+        variant="standalone"
+        color="secondary.500"
+        href={href}
+        aria-label={label}
+        target="_blank"
+      >
+        {label}
+      </Link>
+      {shouldShowNotification && (
+        <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
+      )}
+    </Box>
   )
 }
 
@@ -261,12 +277,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     // TODO: Remove forum link after H4PG2026
     ...(isForumSGEnabled
       ? [
-          {
-            label: 'Forum',
-            href: FORUMSG_URL,
-            MobileIcon: MdForum,
-          },
-        ]
+        {
+          label: 'Forum',
+          href: FORUMSG_URL,
+          MobileIcon: MdForum,
+          shouldShowNotification: true,
+        },
+      ]
       : []),
   ]
 
