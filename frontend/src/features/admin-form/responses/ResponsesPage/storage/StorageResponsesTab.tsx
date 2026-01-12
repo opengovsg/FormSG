@@ -1,16 +1,17 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFeatureValue } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
 import { SecretKeyVerification } from '../../components/SecretKeyVerification'
 import { EmptyResponses } from '../common/EmptyResponses'
 
+import UnlockedResponsesV2 from './UnlockedResponses/UnlockedResponsesV2'
 import { useStorageResponsesContext } from './StorageResponsesContext'
 import { UnlockedResponses } from './UnlockedResponses'
-import { useState } from 'react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
-import { featureFlags } from '~shared/constants'
-import UnlockedResponsesV2 from './UnlockedResponses/UnlockedResponsesV2'
 
 export const StorageResponsesTab = (): JSX.Element => {
   const { t } = useTranslation()

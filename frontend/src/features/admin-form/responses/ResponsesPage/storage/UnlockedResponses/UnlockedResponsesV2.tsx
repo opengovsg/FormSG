@@ -1,68 +1,72 @@
-import {
-  Box,
-  Flex,
-  Button,
-  Stack,
-  Text,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverBody,
-  PopoverFooter,
-  Select,
-  Input,
-  Skeleton,
-  Checkbox,
-  Textarea,
-} from '@chakra-ui/react'
-import { useInterpretDataMutation } from '~features/admin-form/assistance/mutations'
-import { InterpretDataResponse } from '~features/admin-form/assistance/AssistanceService'
-import { MarkdownText } from '~components/MarkdownText/MarkdownText'
-import { useMdComponents } from '~hooks/useMdComponents'
-import { format } from 'date-fns'
-import { Document, Encoder } from 'flexsearch'
-import { includes, intersection, throttle } from 'lodash'
-import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   BiFilter,
-  BiGridAlt,
   BiHide,
   BiPlus,
   BiRefresh,
   BiSolidMagicWand,
   BiTrash,
 } from 'react-icons/bi'
-import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Flex,
+  Input,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverFooter,
+  PopoverTrigger,
+  Select,
+  Skeleton,
+  Stack,
+  Text,
+  Textarea,
+} from '@chakra-ui/react'
+import { format } from 'date-fns'
+import { Document, Encoder } from 'flexsearch'
+import { includes, intersection, throttle } from 'lodash'
+
 import {
   BasicField,
   DateString,
   FormFieldDto,
   FormResponseMode,
 } from '~shared/types'
-import InlineMessage from '~components/InlineMessage'
-import { useStorageResponsesContext } from '../StorageResponsesContext'
-import {
-  DecryptedResponse,
-  useDecryptedResponsesQuery,
-  useInvalidateDecryptedResponses,
-} from '../useDecryptedResponsesQuery'
+
+import { useMdComponents } from '~hooks/useMdComponents'
+import { DateRangeValue } from '~components/Calendar'
+import { DateRangePicker } from '~components/DateRangePicker'
 import IconButton from '~components/IconButton'
-import { DownloadButton } from './DownloadButton'
+import InlineMessage from '~components/InlineMessage'
+import { MarkdownText } from '~components/MarkdownText/MarkdownText'
+import Tooltip from '~components/Tooltip'
+
+import { InterpretDataResponse } from '~features/admin-form/assistance/AssistanceService'
+import { useInterpretDataMutation } from '~features/admin-form/assistance/mutations'
+import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
+
+import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
-  getPendingResponseAtString,
-  getStatusFromWorkflowStatus,
-} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
-import { DateRangePicker } from '~components/DateRangePicker'
-import { DateRangeValue } from '~components/Calendar'
-import Tooltip from '~components/Tooltip'
+  DecryptedResponse,
+  useDecryptedResponsesQuery,
+  useInvalidateDecryptedResponses,
+} from '../useDecryptedResponsesQuery'
+
+import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
+import { DownloadButton } from './DownloadButton'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -398,8 +402,8 @@ const filterDecryptedResponses = ({
     const searchResult = searchIndex.search(filter.value, {
       field: filter.fieldId,
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filteredResponseIds = searchResult.flatMap(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (result: any) => result.result,
     )
     return filteredResponseIds
@@ -459,12 +463,7 @@ const InterpretBox = ({
         </Button>
       </Flex>
       {answer && (
-        <Box
-          mt="0.5rem"
-          p="1rem"
-          bg="primary.100"
-          borderRadius="4px"
-        >
+        <Box mt="0.5rem" p="1rem" bg="primary.100" borderRadius="4px">
           <Text fontWeight="semibold" mb="0.5rem">
             Answer:
           </Text>
@@ -490,20 +489,20 @@ const UnlockedResponsesV2 = () => {
     _id: string
     title: string
   }[] = [
-      {
-        _id: 'Response ID',
-        title: 'Response ID',
-      },
-      {
-        _id: MRF_RESPONSE_TIMESTAMP_LABEL,
-        title: 'Response Timestamp',
-      },
-    ]
+    {
+      _id: 'Response ID',
+      title: 'Response ID',
+    },
+    {
+      _id: MRF_RESPONSE_TIMESTAMP_LABEL,
+      title: 'Response Timestamp',
+    },
+  ]
   const mrfFields: {
     _id: string
     title: string
   }[] = isMrf
-      ? [
+    ? [
         {
           _id: MRF_WORKFLOW_STATUS_LABEL,
           title: 'Workflow Status',
@@ -517,7 +516,7 @@ const UnlockedResponsesV2 = () => {
           title: 'Workflow Reminders',
         },
       ]
-      : []
+    : []
 
   const submissionMetaFields = [...essentialFields, ...mrfFields]
   const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
@@ -626,8 +625,6 @@ const UnlockedResponsesV2 = () => {
     return documentIndex
   }, [decryptedResponses, allDashboardFields])
 
-  if (!secretKey || !form) return null
-
   const [filteredDecryptedResponses, setFilteredDecryptedResponses] =
     useState<DecryptedResponse[]>(decryptedResponses)
 
@@ -664,12 +661,12 @@ const UnlockedResponsesV2 = () => {
   }, [decryptedResponses, filters, searchIndex])
 
   // Hook to invalidate cache (e.g., to fetch latest submissions)
-  const { invalidate } = useInvalidateDecryptedResponses(form._id)
+  const { invalidate } = useInvalidateDecryptedResponses(form?._id ?? '')
 
   const [isInterpretOpen, setIsInterpretOpen] = useState(false)
   const [interpretAnswer, setInterpretAnswer] = useState<string | undefined>()
 
-  const interpretDataMutation = useInterpretDataMutation(form._id)
+  const interpretDataMutation = useInterpretDataMutation(form?._id ?? '')
 
   const transformResponsesToInterpretFormat = useCallback(
     (responses: DecryptedResponse[]): InterpretDataResponse[] => {
@@ -706,8 +703,14 @@ const UnlockedResponsesV2 = () => {
         },
       )
     },
-    [filteredDecryptedResponses, interpretDataMutation, transformResponsesToInterpretFormat],
+    [
+      filteredDecryptedResponses,
+      interpretDataMutation,
+      transformResponsesToInterpretFormat,
+    ],
   )
+
+  if (!secretKey || !form) return null
 
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">

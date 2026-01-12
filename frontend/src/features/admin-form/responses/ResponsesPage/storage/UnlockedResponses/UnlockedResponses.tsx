@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiGridAlt } from 'react-icons/bi'
 import {
   Badge,
   Box,
@@ -10,7 +11,6 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { BiGridAlt } from 'react-icons/bi'
 
 import {
   DateRangePicker,

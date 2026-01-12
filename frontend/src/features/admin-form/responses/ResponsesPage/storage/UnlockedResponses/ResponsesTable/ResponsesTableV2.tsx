@@ -20,6 +20,7 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import {
   AdminFormDto,
@@ -43,7 +44,6 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
-import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 type ResponseColumnData = {
   decryptedResponses: FormField[]
@@ -341,6 +341,7 @@ export const ResponsesTableV2 = ({
     const selectFieldColumns =
       selectedFields.map((field) => ({
         Header: field.title,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         accessor: (row: any) => {
           const response = row.decryptedResponses.find(
             (response: FormField) => response._id === field._id,

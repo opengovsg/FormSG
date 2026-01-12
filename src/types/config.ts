@@ -223,6 +223,7 @@ export interface IOptionalVarsSchema {
     makeTextPrompt: number
     makeVisionPrompt: number
     mrfPendingSubmissionEmailReminder: number
+    interpretData: number
   }
   iacMigration: {
     // TODO: (IaC Migration) Remove this after IaC migration is fully completed
