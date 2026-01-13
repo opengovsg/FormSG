@@ -489,20 +489,20 @@ const UnlockedResponsesV2 = () => {
     _id: string
     title: string
   }[] = [
-    {
-      _id: 'Response ID',
-      title: 'Response ID',
-    },
-    {
-      _id: MRF_RESPONSE_TIMESTAMP_LABEL,
-      title: 'Response Timestamp',
-    },
-  ]
+      {
+        _id: 'Response ID',
+        title: 'Response ID',
+      },
+      {
+        _id: MRF_RESPONSE_TIMESTAMP_LABEL,
+        title: 'Response Timestamp',
+      },
+    ]
   const mrfFields: {
     _id: string
     title: string
   }[] = isMrf
-    ? [
+      ? [
         {
           _id: MRF_WORKFLOW_STATUS_LABEL,
           title: 'Workflow Status',
@@ -516,7 +516,7 @@ const UnlockedResponsesV2 = () => {
           title: 'Workflow Reminders',
         },
       ]
-    : []
+      : []
 
   const submissionMetaFields = [...essentialFields, ...mrfFields]
   const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
@@ -726,25 +726,23 @@ const UnlockedResponsesV2 = () => {
         isRefreshing={isFetchingAndDecrypting}
         onClickInterpret={() => setIsInterpretOpen(!isInterpretOpen)}
       />
+      {isInterpretOpen && (
+        <InterpretBox
+          onAsk={onAsk}
+          isLoading={interpretDataMutation.isLoading}
+          answer={interpretAnswer}
+        />
+      )}
       <Box overflow="auto" maxWidth="100%" flex={1}>
         {isFetchingAndDecrypting ? (
           <Skeleton height="2.5rem" />
         ) : (
-          <Stack gap="0.5rem">
-            {isInterpretOpen && (
-              <InterpretBox
-                onAsk={onAsk}
-                isLoading={interpretDataMutation.isLoading}
-                answer={interpretAnswer}
-              />
-            )}
-            <ResponsesTableV2
-              form={form}
-              selectedSubmissionMetaFields={selectedSubmissionMetaFields}
-              selectedFields={selectedFields}
-              decryptedResponses={filteredDecryptedResponses}
-            />
-          </Stack>
+          <ResponsesTableV2
+            form={form}
+            selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+            selectedFields={selectedFields}
+            decryptedResponses={filteredDecryptedResponses}
+          />
         )}
       </Box>
     </Stack>
