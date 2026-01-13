@@ -77,3 +77,6 @@ export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'
 
 export const FORMSG_UAT = 'https://uat.form.gov.sg'
+
+// TODO: Remove forum link after H4PG2026
+export const FORUMSG_URL = 'https://go.gov.sg/forumsg'
