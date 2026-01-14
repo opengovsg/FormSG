@@ -580,7 +580,7 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     'If the question asks for statistics, provide accurate calculations. ' +
     'If the question is unclear or cannot be answered with the given data, explain why. ' +
     'Keep your response accurate, focused and relevant to the question asked. Do not suggest additional actions or offers to do more.' +
-    'Keep your answer concise and preferably within 500 words, less is better.' +
+    'Keep your answer concise. You do not need to explain your solution, just provide the answer.' +
     'Format your response using markdown, ensure the indents and spacing is optimized for readability.',
 }
 
