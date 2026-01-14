@@ -14,7 +14,7 @@ import {
   Icon,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 import { SeenFlags } from '~shared/types'
@@ -171,6 +171,19 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { updateLastSeenFlagMutation } = useUserMutations()
   const toast = useToast({ status: 'success', isClosable: true })
 
+  const growthbook = useGrowthBook()
+
+  // Set GrowthBook attributes for targeting rules
+  useEffect(() => {
+    if (growthbook && user?.email) {
+      growthbook.setAttributes({
+        ...growthbook.getAttributes(),
+        adminEmail: user.email,
+        adminAgency: user.agency?.shortName,
+      })
+    }
+  }, [growthbook, user?.email, user?.agency?.shortName])
+
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
@@ -282,13 +295,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     // TODO: Remove forum link after H4PG2026
     ...(isForumSGEnabled
       ? [
-          {
-            label: 'Forum',
-            href: FORUMSG_URL,
-            MobileIcon: MdForum,
-            shouldShowNotification: true,
-          },
-        ]
+        {
+          label: 'Forum',
+          href: FORUMSG_URL,
+          MobileIcon: MdForum,
+          shouldShowNotification: true,
+        },
+      ]
       : []),
   ]
 
