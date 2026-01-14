@@ -14,7 +14,7 @@ import {
   Icon,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 import { SeenFlags } from '~shared/types'
@@ -170,6 +170,19 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading, removeQuery } = useUser()
   const { updateLastSeenFlagMutation } = useUserMutations()
   const toast = useToast({ status: 'success', isClosable: true })
+
+  const growthbook = useGrowthBook()
+
+  // Set GrowthBook attributes for targeting rules synchronously
+  useMemo(() => {
+    if (growthbook && user?.email) {
+      growthbook.setAttributes({
+        ...growthbook.getAttributes(),
+        adminEmail: user.email,
+        adminAgency: user.agency?.shortName,
+      })
+    }
+  }, [growthbook, user?.email, user?.agency?.shortName])
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
