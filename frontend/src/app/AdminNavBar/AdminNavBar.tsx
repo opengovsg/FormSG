@@ -295,13 +295,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     // TODO: Remove forum link after H4PG2026
     ...(isForumSGEnabled
       ? [
-        {
-          label: 'Forum',
-          href: FORUMSG_URL,
-          MobileIcon: MdForum,
-          shouldShowNotification: true,
-        },
-      ]
+          {
+            label: 'Forum',
+            href: FORUMSG_URL,
+            MobileIcon: MdForum,
+            shouldShowNotification: true,
+          },
+        ]
       : []),
   ]
 
