@@ -46,12 +46,18 @@ export interface InterpretDataParams {
   responses: InterpretDataResponse[]
 }
 
+export interface InterpretDataResult {
+  message: string
+  answer: string
+  explanation: string
+}
+
 export const interpretData = ({
   formId,
   question,
   responses,
-}: InterpretDataParams) => {
-  return ApiService.post<{ message: string; answer?: string }>(
+}: InterpretDataParams): Promise<InterpretDataResult> => {
+  return ApiService.post<InterpretDataResult>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data`,
     { question, responses },
   ).then(({ data }) => data)

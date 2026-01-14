@@ -575,13 +575,18 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
   role: Role.System,
   content:
     'You will be given a set of form responses and a question about the data. ' +
-    'Analyze the responses and provide an answer to the question. ' +
+    'Analyze the responses and provide a structured answer in JSON format with two required keys: "answer" and "explanation". ' +
+    'The "answer" key must be as concise as possible which answers the question to the point.' +
+    'The "explanation" key should contain the reasoning, methodology, breakdown, or additional context that supports the answer. ' +
     'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
     'If the question asks for statistics, provide accurate calculations. ' +
-    'If the question is unclear or cannot be answered with the given data, explain why. ' +
-    'Keep your response accurate, focused and relevant to the question asked. Do not suggest additional actions or offers to do more.' +
-    'Keep your answer concise. You do not need to explain your solution, just provide the answer.' +
-    'Format your response using markdown, ensure the indents and spacing is optimized for readability.',
+    'If the question is unclear or cannot be answered with the given data, explain why in the explanation field and provide "Unable to determine" as the answer. ' +
+    'Do not suggest additional actions or offers to do more. ' +
+    'Format the explanation using markdown for readability. ' +
+    'Example responses: ' +
+    '{"answer": "42% of respondents selected Option A.", "explanation": "Out of the total 50 responses, 21 chose Option A, which constitutes 42%.\\n\\nDetailed breakdown:\\n- Option A: 21 responses (42%)\\n- Option B: 18 responses (36%)\\n- Option C: 11 responses (22%)\\n\\nThis shows that Option A was the most preferred, receiving the highest share of selections."} ' +
+    '{"answer": "15 responses submitted after 5pm, representing 30% of all responses.", "explanation": "By analyzing submission times, 15 out of 50 responses were submitted after 5pm. This could indicate higher engagement in the evening.\\n\\nCalculation:\\n- Total responses: 50\\n- Responses after 5pm: 15 (30%)\\n- Responses before 5pm: 35 (70%)"} ' +
+    '{"answer": "New user sentiment: positive. Existing user sentiment: mixed.", "explanation": "Among new users, 78% of feedback comments reflected positive language such as \\"satisfied\\", \\"helpful\\", and \\"efficient\\", indicating strong satisfaction. In contrast, existing users provided more varied feedback, suggesting areas for further improvement.\\n\\nThemes identified:\\n- New users: Positive experiences\\n- Existing users: Mixed sentiments\\n\\nRecommendation: Focus on addressing specific concerns raised by existing users to improve overall satisfaction."}',
 }
 
 const generateInterpretDataPrompt = ({
@@ -606,10 +611,21 @@ const generateInterpretDataPrompt = ({
     INTERPRET_DATA_SYSTEM_PROMPT,
     {
       role: Role.User,
-      content: `Form Name: ${formName}\n\nHere are the form responses:\n\n${dataContent}\n\n---\n\nQuestion: ${question}\n\nAfter analyzing the data, the answer to the question is.`,
+      content: `Form Name: ${formName}\n\nHere are the form responses:\n\n${dataContent}\n\n---\n\nQuestion: ${question}\n\nProvide your response as a JSON object with "answer" and "explanation" keys:`,
     },
   ] as Message[]
 }
+
+/**
+ * Zod schema to validate the model response for interpret data.
+ * Both answer and explanation are required.
+ */
+const interpretDataResultSchema = z.object({
+  answer: z.string(),
+  explanation: z.string(),
+})
+
+type InterpretDataResult = z.infer<typeof interpretDataResultSchema>
 
 /**
  * Interprets form response data using AI based on a user question.
@@ -617,7 +633,7 @@ const generateInterpretDataPrompt = ({
  * @param formName The name of the form for context
  * @param question The question to ask about the data
  * @param responses The decrypted form responses to analyze
- * @returns The AI-generated answer to the question
+ * @returns The AI-generated answer split into concise answer and detailed explanation
  */
 export const interpretResponseData = ({
   formId,
@@ -630,8 +646,11 @@ export const interpretResponseData = ({
   question: string
   responses: InterpretDataResponse[]
 }): ResultAsync<
-  string,
-  ModelResponseFailureError | ModelGetClientFailureError
+  InterpretDataResult,
+  | ModelResponseFailureError
+  | ModelGetClientFailureError
+  | ModelResponseInvalidSyntaxError
+  | ModelResponseInvalidSchemaFormatError
 > => {
   const messages = generateInterpretDataPrompt({
     formName,
@@ -642,6 +661,11 @@ export const interpretResponseData = ({
   return sendPromptToModel({
     messages,
     formId,
+    options: {
+      response_format: {
+        type: 'json_object',
+      },
+    },
   })
     .andThen((modelResponse) => {
       if (!modelResponse) {
@@ -657,7 +681,39 @@ export const interpretResponseData = ({
         })
         return errAsync(modelResponseFailureError)
       }
-      return okAsync(modelResponse)
+
+      let parsedJson
+      try {
+        parsedJson = JSON.parse(modelResponse)
+      } catch (error) {
+        logger.error({
+          message: 'Error parsing interpret data response as JSON',
+          meta: {
+            action: 'interpretResponseData',
+            formId,
+            modelResponse,
+            error,
+          },
+        })
+        return errAsync(new ModelResponseInvalidSyntaxError())
+      }
+
+      const validationResult = interpretDataResultSchema.safeParse(parsedJson)
+
+      if (!validationResult.success) {
+        logger.error({
+          message: 'Model response does not match expected schema',
+          meta: {
+            action: 'interpretResponseData',
+            formId,
+            parsedJson,
+            error: validationResult.error,
+          },
+        })
+        return errAsync(new ModelResponseInvalidSchemaFormatError())
+      }
+
+      return okAsync(validationResult.data)
     })
     .mapErr((error) => {
       logger.error({

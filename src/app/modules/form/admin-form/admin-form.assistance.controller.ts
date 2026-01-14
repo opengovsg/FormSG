@@ -261,7 +261,7 @@ interface IInterpretData {
 
 const _handleInterpretData: ControllerHandler<
   { formId: string },
-  { message: string; answer?: string },
+  { message: string; answer?: string; explanation?: string },
   IInterpretData
 > = async (req, res) => {
   const { formId } = req.params
@@ -308,10 +308,11 @@ const _handleInterpretData: ControllerHandler<
         responses,
       }),
     )
-    .map((answer) =>
+    .map((result) =>
       res.status(StatusCodes.OK).json({
         message: 'Data interpreted successfully.',
-        answer,
+        answer: result.answer,
+        explanation: result.explanation,
       }),
     )
     .mapErr((error) => {

@@ -424,16 +424,22 @@ const filterDecryptedResponses = ({
   )
 }
 
+interface InterpretResult {
+  answer: string
+  explanation: string
+}
+
 const InterpretBox = ({
   onAsk,
   isLoading,
-  answer,
+  result,
 }: {
   onAsk: (textQuestion: string) => void
   isLoading: boolean
-  answer?: string
+  result?: InterpretResult
 }) => {
   const [question, setQuestion] = useState('')
+  const [showExplanation, setShowExplanation] = useState(false)
   const mdComponents = useMdComponents({
     styles: {
       text: {
@@ -466,20 +472,43 @@ const InterpretBox = ({
       <Flex justifyContent="flex-end">
         <Button
           isLoading={isLoading}
-          onClick={() => onAsk(question)}
+          onClick={() => {
+            setShowExplanation(false)
+            onAsk(question)
+          }}
           isDisabled={!question.trim()}
         >
           Ask
         </Button>
       </Flex>
-      {answer && (
+      {result?.answer && (
         <Box mt="0.5rem" p="1rem" bg="primary.100" borderRadius="4px">
+          <Flex justifyContent="space-between" alignItems="center" mb="0.5rem">
+            <Text fontWeight="semibold">Answer:</Text>
+            {result?.explanation && (
+              <Button
+                variant="link"
+                size="sm"
+                color="primary.500"
+                onClick={() => setShowExplanation(!showExplanation)}
+              >
+                {showExplanation ? 'Hide explanation' : 'Show explanation'}
+              </Button>
+            )}
+          </Flex>
+          <Text textStyle="body-1" color="secondary.700">
+            {result.answer}
+          </Text>
+        </Box>
+      )}
+      {result?.explanation && showExplanation && (
+        <Box mt="0.5rem" p="1rem" bg="neutral.100" borderRadius="4px">
           <Text fontWeight="semibold" mb="0.5rem">
-            Answer:
+            Explanation:
           </Text>
           <Box>
             <MarkdownText multilineBreaks components={mdComponents}>
-              {answer}
+              {result.explanation}
             </MarkdownText>
           </Box>
         </Box>
@@ -661,7 +690,9 @@ const UnlockedResponsesV2 = () => {
   const { invalidate } = useInvalidateDecryptedResponses(form?._id ?? '')
 
   const [isInterpretOpen, setIsInterpretOpen] = useState(false)
-  const [interpretAnswer, setInterpretAnswer] = useState<string | undefined>()
+  const [interpretResult, setInterpretResult] = useState<
+    InterpretResult | undefined
+  >()
 
   const interpretDataMutation = useInterpretDataMutation(form?._id ?? '')
 
@@ -686,7 +717,7 @@ const UnlockedResponsesV2 = () => {
     (question: string) => {
       if (!question.trim()) return
 
-      setInterpretAnswer(undefined)
+      setInterpretResult(undefined)
       const responsesForApi = transformResponsesToInterpretFormat(
         filteredDecryptedResponses,
       )
@@ -695,7 +726,10 @@ const UnlockedResponsesV2 = () => {
         { question, responses: responsesForApi },
         {
           onSuccess: (data) => {
-            setInterpretAnswer(data.answer)
+            setInterpretResult({
+              answer: data.answer,
+              explanation: data.explanation,
+            })
           },
         },
       )
@@ -727,7 +761,7 @@ const UnlockedResponsesV2 = () => {
         <InterpretBox
           onAsk={onAsk}
           isLoading={interpretDataMutation.isLoading}
-          answer={interpretAnswer}
+          result={interpretResult}
         />
       )}
       <Box overflow="auto" maxWidth="100%" flex={1}>
