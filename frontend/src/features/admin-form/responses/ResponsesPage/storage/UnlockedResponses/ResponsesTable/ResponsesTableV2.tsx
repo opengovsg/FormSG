@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { BiChevronDown, BiFilterAlt, BiHide } from 'react-icons/bi'
 import {
   Column,
   useFlexLayout,
@@ -11,7 +12,15 @@ import {
 import {
   BadgeProps,
   Box,
+  Button,
   Flex,
+  Input,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Portal,
   Table,
   Tbody,
   Td,
@@ -19,6 +28,8 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
+  VStack,
 } from '@chakra-ui/react'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
@@ -123,6 +134,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: 'Response ID',
+    id: 'Response ID', // Must match the key used in search index
     accessor: 'refNo',
     width: 300,
     minWidth: 300,
@@ -130,6 +142,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    id: MRF_RESPONSE_TIMESTAMP_LABEL, // Must match the key used in search index
     accessor: 'submissionTime',
     width: 250,
     minWidth: 250,
@@ -209,6 +222,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: 'Response ID',
+    id: 'Response ID', // Must match the key used in search index
     accessor: 'refNo',
     width: 240,
     minWidth: 240,
@@ -216,6 +230,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
+    id: MRF_WORKFLOW_STATUS_LABEL, // Must match the key used in search index
     accessor: ({ mrf }) => {
       if (!mrf?.workflowStatus) {
         return ''
@@ -239,6 +254,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
+    id: MRF_PENDING_RESPONSE_AT_LABEL, // Must match the key used in search index
     accessor: ({ mrf }) => {
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
@@ -262,6 +278,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    id: MRF_RESPONSE_TIMESTAMP_LABEL, // Must match the key used in search index
     accessor: 'submissionTime',
     width: 240,
     minWidth: 240,
@@ -269,6 +286,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_REMINDERS_LABEL,
+    id: MRF_REMINDERS_LABEL, // Must match the key used in search index
     Cell: ({ row }) => {
       const isPending =
         row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
@@ -287,11 +305,151 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
+const ColumnHeaderMenu = ({
+  columnId,
+  columnTitle,
+  currentFilterValue,
+  onHideColumn,
+  onAddFilter,
+  onRemoveFilter,
+}: {
+  columnId: string
+  columnTitle: string
+  currentFilterValue?: string
+  onHideColumn: (fieldId: string) => void
+  onAddFilter: (fieldId: string, value: string) => void
+  onRemoveFilter?: (fieldId: string) => void
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [filterValue, setFilterValue] = useState(currentFilterValue || '')
+
+  // Update local state when currentFilterValue changes
+  useEffect(() => {
+    setFilterValue(currentFilterValue || '')
+  }, [currentFilterValue])
+
+  const handleAddFilter = () => {
+    if (filterValue.trim()) {
+      onAddFilter(columnId, filterValue.trim())
+      onClose()
+    }
+  }
+
+  const handleRemoveFilter = () => {
+    if (onRemoveFilter) {
+      onRemoveFilter(columnId)
+      setFilterValue('')
+      onClose()
+    }
+  }
+
+  const handleHide = () => {
+    onHideColumn(columnId)
+    onClose()
+  }
+
+  const hasActiveFilter = !!currentFilterValue
+
+  return (
+    <Popover
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+      placement="bottom-start"
+    >
+      <PopoverTrigger>
+        <Flex
+          align="center"
+          cursor="pointer"
+          _hover={{ color: 'primary.200' }}
+          gap="0.25rem"
+        >
+          <Text>{columnTitle}</Text>
+          {hasActiveFilter && <BiFilterAlt />}
+          <BiChevronDown />
+        </Flex>
+      </PopoverTrigger>
+      <Portal>
+        <PopoverContent width="18rem" bg="white" zIndex="popover">
+          <PopoverArrow />
+          <PopoverBody p="0.75rem">
+            <VStack align="stretch" spacing="0.5rem">
+              <Button
+                leftIcon={<BiHide />}
+                variant="ghost"
+                size="sm"
+                justifyContent="flex-start"
+                colorScheme="secondary"
+                borderColor="secondary.200"
+                onClick={handleHide}
+              >
+                Hide column
+              </Button>
+              <Box
+                borderTop="1px solid"
+                borderColor="secondary.200"
+                pt="0.5rem"
+              >
+                <Text fontSize="xs" color="secondary.500" mb="0.25rem">
+                  Filter by value {hasActiveFilter && '(active)'}
+                </Text>
+                <Flex gap="0.5rem">
+                  <Input
+                    size="sm"
+                    placeholder="Contains..."
+                    value={filterValue}
+                    onChange={(e) => setFilterValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleAddFilter()
+                    }}
+                    bg="white"
+                    color="secondary.700"
+                    borderColor={
+                      hasActiveFilter ? 'primary.500' : 'secondary.300'
+                    }
+                    _placeholder={{ color: 'secondary.400' }}
+                  />
+                  <Button
+                    size="sm"
+                    colorScheme="primary"
+                    leftIcon={<BiFilterAlt />}
+                    onClick={handleAddFilter}
+                    isDisabled={!filterValue.trim()}
+                  >
+                    {hasActiveFilter ? 'Update' : 'Filter'}
+                  </Button>
+                </Flex>
+                {hasActiveFilter && onRemoveFilter && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="red"
+                    onClick={handleRemoveFilter}
+                    mt="0.25rem"
+                    width="100%"
+                  >
+                    Remove filter
+                  </Button>
+                )}
+              </Box>
+            </VStack>
+          </PopoverBody>
+        </PopoverContent>
+      </Portal>
+    </Popover>
+  )
+}
+
 export const ResponsesTableV2 = ({
   form,
   selectedFields,
   selectedSubmissionMetaFields,
   decryptedResponses,
+  isResponseLimitExceeded,
+  onHideColumn,
+  onAddFilter,
+  onRemoveFilter,
+  filters = [],
 }: {
   form: AdminFormDto
   selectedFields: {
@@ -305,6 +463,11 @@ export const ResponsesTableV2 = ({
   decryptedResponses: ({
     decryptedResponses: FormField[]
   } & SubmissionMetadata)[]
+  isResponseLimitExceeded: boolean
+  onHideColumn?: (fieldId: string) => void
+  onAddFilter?: (fieldId: string, value: string) => void
+  onRemoveFilter?: (fieldId: string) => void
+  filters?: { fieldId: string; value: string }[]
 }) => {
   const isPaymentsForm =
     form?.responseMode === FormResponseMode.Encrypt
@@ -341,6 +504,7 @@ export const ResponsesTableV2 = ({
     const selectFieldColumns =
       selectedFields.map((field) => ({
         Header: field.title,
+        id: field._id, // Store the field ID for filtering
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         accessor: (row: any) => {
           const response = row.decryptedResponses.find(
@@ -398,7 +562,7 @@ export const ResponsesTableV2 = ({
     [navigate, onRowClick],
   )
 
-  if (decryptedResponses.length === 0) {
+  if (decryptedResponses.length === 0 || isResponseLimitExceeded) {
     return (
       <Box
         display="flex"
@@ -408,7 +572,9 @@ export const ResponsesTableV2 = ({
         color="secondary.400"
       >
         <Text textStyle="subhead-1">
-          No responses match your current filters.
+          {isResponseLimitExceeded
+            ? 'Response limit exceeded. Please filter to a smaller date range.'
+            : 'No responses match your current filters.'}
         </Text>
       </Box>
     )
@@ -430,45 +596,66 @@ export const ResponsesTableV2 = ({
             // To toggle _groupHover styles to show divider when header is hovered.
             data-group
           >
-            {headerGroup.headers.map((column) => (
-              <Th
-                as="div"
-                pos="relative"
-                {...column.getHeaderProps()}
-                key={column.getHeaderProps().key}
-              >
-                <Flex align="center">{column.render('Header')}</Flex>
+            {headerGroup.headers.map((column) => {
+              // Use column.id if available (for form fields), otherwise use Header (for meta fields)
+              const columnId = column.id || String(column.Header)
+              const columnTitle = String(column.Header)
+              const isNumberColumn = column.Header === '#'
+              const canShowMenu = onHideColumn && onAddFilter && !isNumberColumn
+              // Find the current filter value for this column
+              const currentFilter = filters.find((f) => f.fieldId === columnId)
 
-                {column.disableResizing ? null : (
-                  <Flex
-                    {...column.getResizerProps()}
-                    justify="center"
-                    top={0}
-                    right={0}
-                    zIndex={1}
-                    transitionProperty="background"
-                    transitionDuration="normal"
-                    pos="absolute"
-                    h="100%"
-                    borderX="8px solid"
-                    borderColor="secondary.500"
-                    _hover={{
-                      bg: column.isResizing ? 'white' : 'secondary.200',
-                    }}
-                    _groupHover={{
-                      bg: column.isResizing ? 'white' : 'secondary.300',
-                      _hover: {
+              return (
+                <Th
+                  as="div"
+                  pos="relative"
+                  {...column.getHeaderProps()}
+                  key={column.getHeaderProps().key}
+                >
+                  {canShowMenu ? (
+                    <ColumnHeaderMenu
+                      columnId={columnId}
+                      columnTitle={columnTitle}
+                      currentFilterValue={currentFilter?.value}
+                      onHideColumn={onHideColumn}
+                      onAddFilter={onAddFilter}
+                      onRemoveFilter={onRemoveFilter}
+                    />
+                  ) : (
+                    <Flex align="center">{column.render('Header')}</Flex>
+                  )}
+
+                  {column.disableResizing ? null : (
+                    <Flex
+                      {...column.getResizerProps()}
+                      justify="center"
+                      top={0}
+                      right={0}
+                      zIndex={1}
+                      transitionProperty="background"
+                      transitionDuration="normal"
+                      pos="absolute"
+                      h="100%"
+                      borderX="8px solid"
+                      borderColor="secondary.500"
+                      _hover={{
                         bg: column.isResizing ? 'white' : 'secondary.200',
-                      },
-                    }}
-                    w="17px"
-                    sx={{
-                      touchAction: 'none',
-                    }}
-                  />
-                )}
-              </Th>
-            ))}
+                      }}
+                      _groupHover={{
+                        bg: column.isResizing ? 'white' : 'secondary.300',
+                        _hover: {
+                          bg: column.isResizing ? 'white' : 'secondary.200',
+                        },
+                      }}
+                      w="17px"
+                      sx={{
+                        touchAction: 'none',
+                      }}
+                    />
+                  )}
+                </Th>
+              )
+            })}
           </Tr>
         ))}
       </Thead>

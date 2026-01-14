@@ -88,7 +88,6 @@ export const UnlockedChartsContainer = () => {
   const { t } = useTranslation()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
-  // const { data: decryptedContent } = useAllSubmissionData(dateRange)
 
   const { data: decryptedResponses } = useDecryptedResponsesQuery({ dateRange })
 

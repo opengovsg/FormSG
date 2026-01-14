@@ -25,7 +25,6 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { format } from 'date-fns'
 import { Document, Encoder } from 'flexsearch'
 import { includes, intersection, throttle } from 'lodash'
 
@@ -37,7 +36,6 @@ import {
 } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
-import { DateRangeValue } from '~components/Calendar'
 import {
   DateRangePicker,
   dateRangePickerHelper,
@@ -86,6 +84,7 @@ const FilterEditor = ({
   onChange,
   onDelete,
   fields,
+  availableFields,
   index,
 }: {
   filter: Filter
@@ -95,8 +94,20 @@ const FilterEditor = ({
     _id: string
     title: string
   }[]
+  availableFields: {
+    _id: string
+    title: string
+  }[]
   index: number
 }) => {
+  const currentField = fields.find((f) => f._id === filter.fieldId)
+  const dropdownFields = currentField
+    ? [
+      currentField,
+      ...availableFields.filter((f) => f._id !== currentField._id),
+    ]
+    : availableFields
+
   return (
     <Flex gap={2} alignItems="center">
       <Text width="12rem">{index === 0 ? 'Where' : 'And'}</Text>
@@ -104,7 +115,7 @@ const FilterEditor = ({
         value={filter.fieldId}
         onChange={(e) => onChange({ ...filter, fieldId: e.target.value })}
       >
-        {fields.map((field) => (
+        {dropdownFields.map((field) => (
           <option key={field._id} value={field._id}>
             {field.title}
           </option>
@@ -149,10 +160,27 @@ const FieldFilter = ({
   filters: Filter[]
   setFilters: (filters: Filter[]) => void
 }) => {
+  const getAvailableFields = (excludeFieldId?: string) => {
+    const filteredFieldIds = filters
+      .map((f) => f.fieldId)
+      .filter((id) => id !== excludeFieldId)
+    return fields.filter((field) => !filteredFieldIds.includes(field._id))
+  }
+
+  const availableFieldsForNewFilter = getAvailableFields()
+  const canAddMoreFilters = availableFieldsForNewFilter.length > 0
+
   const handleAddFilter = () => {
+    if (!canAddMoreFilters) return
+    // Auto-select the first available field that doesn't have a filter
+    const nextAvailableField = availableFieldsForNewFilter[0]
     setFilters([
       ...filters,
-      { fieldId: fields[0]._id, operator: FilterOperator.Contains, value: '' },
+      {
+        fieldId: nextAvailableField._id,
+        operator: FilterOperator.Contains,
+        value: '',
+      },
     ])
   }
 
@@ -205,6 +233,7 @@ const FieldFilter = ({
                     setFilters(filters.filter((_, i) => i !== index))
                   }
                   fields={fields}
+                  availableFields={getAvailableFields(filter.fieldId)}
                 />
               ))}
             </Stack>
@@ -216,10 +245,15 @@ const FieldFilter = ({
               leftIcon={<BiPlus />}
               colorScheme="primary"
               onClick={handleAddFilter}
-              isDisabled={fields.length <= 0}
+              isDisabled={!canAddMoreFilters}
             >
               Add filter
             </Button>
+            {!canAddMoreFilters && filters.length > 0 && (
+              <Text fontSize="sm" color="secondary.400" alignSelf="center">
+                All columns have filters
+              </Text>
+            )}
           </Flex>
         </PopoverFooter>
       </PopoverContent>
@@ -517,10 +551,10 @@ const InterpretBox = ({
   )
 }
 
+const MAX_RESPONSES_COUNT_FOR_DECRYPT = 5
+
 const UnlockedResponsesV2 = () => {
   const { data: form, isLoading: isLoadingForm } = useAdminForm()
-  const { secretKey, isLoading: isLoadingSecretKey } =
-    useStorageResponsesContext()
   const { form_fields } = form ?? {}
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
@@ -575,13 +609,16 @@ const UnlockedResponsesV2 = () => {
   )
 
   const [filters, setFilters] = useState<Filter[]>([])
-  const { dateRange, setDateRange } = useStorageResponsesContext()
+  const { dateRange, setDateRange, dateRangeResponsesCount } =
+    useStorageResponsesContext()
 
   // Use the cached query hook - decryption only happens once and results persist across navigation
   const { data: decryptedResponses = [], isFetching: isFetchingAndDecrypting } =
     useDecryptedResponsesQuery({
       dateRange,
-      enabled: !isLoadingForm && !isLoadingSecretKey && !!secretKey && !!form,
+      enabled:
+        !!dateRangeResponsesCount &&
+        dateRangeResponsesCount <= MAX_RESPONSES_COUNT_FOR_DECRYPT,
     })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -741,7 +778,47 @@ const UnlockedResponsesV2 = () => {
     ],
   )
 
-  if (!secretKey || !form) return null
+  // Handler to hide a column from the table header menu
+  const handleHideColumn = useCallback(
+    (fieldId: string) => {
+      setSelectedFieldIds(selectedFieldIds.filter((id) => id !== fieldId))
+    },
+    [selectedFieldIds],
+  )
+
+  // Handler to add a filter from the table header menu
+  const handleColumnAddFilter = useCallback(
+    (fieldId: string, value: string) => {
+      // Check if filter already exists for this field and update it
+      const existingFilterIndex = filters.findIndex(
+        (f) => f.fieldId === fieldId,
+      )
+      if (existingFilterIndex >= 0) {
+        const updatedFilters = [...filters]
+        updatedFilters[existingFilterIndex] = {
+          ...updatedFilters[existingFilterIndex],
+          value,
+        }
+        setFilters(updatedFilters)
+      } else {
+        setFilters([
+          ...filters,
+          { fieldId, operator: FilterOperator.Contains, value },
+        ])
+      }
+    },
+    [filters],
+  )
+
+  // Handler to remove a filter from the table header menu
+  const handleRemoveFilter = useCallback(
+    (fieldId: string) => {
+      setFilters(filters.filter((f) => f.fieldId !== fieldId))
+    },
+    [filters],
+  )
+
+  if (!form) return null
 
   return (
     <Stack height="100%" width="100%" gap="0.5rem" flexDir="column">
@@ -769,10 +846,21 @@ const UnlockedResponsesV2 = () => {
           <Skeleton height="2.5rem" />
         ) : (
           <ResponsesTableV2
+            isResponseLimitExceeded={
+              !!dateRangeResponsesCount &&
+              dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
+            }
             form={form}
             selectedSubmissionMetaFields={selectedSubmissionMetaFields}
             selectedFields={selectedFields}
             decryptedResponses={filteredDecryptedResponses}
+            onHideColumn={handleHideColumn}
+            onAddFilter={handleColumnAddFilter}
+            onRemoveFilter={handleRemoveFilter}
+            filters={filters.map((f) => ({
+              fieldId: f.fieldId,
+              value: f.value,
+            }))}
           />
         )}
       </Box>
