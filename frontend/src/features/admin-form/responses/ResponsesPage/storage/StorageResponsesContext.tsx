@@ -7,8 +7,8 @@ import { DownloadEncryptedParams } from './useDecryptionWorkers'
 export interface StorageResponsesContextProps {
   secretKey?: string
   setSecretKey: (secretKey: string) => void
-  dateRange: DateString[]
-  setDateRange: (dateRange: DateString[]) => void
+  dateRange: [DateString | null, DateString | null]
+  setDateRange: (dateRange: [DateString | null, DateString | null]) => void
   downloadParams: Omit<
     DownloadEncryptedParams,
     'downloadAttachments' | 'isDownloadCsv'

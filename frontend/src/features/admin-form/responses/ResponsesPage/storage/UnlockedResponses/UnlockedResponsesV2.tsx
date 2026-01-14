@@ -38,7 +38,10 @@ import {
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { DateRangeValue } from '~components/Calendar'
-import { DateRangePicker } from '~components/DateRangePicker'
+import {
+  DateRangePicker,
+  dateRangePickerHelper,
+} from '~components/DateRangePicker'
 import IconButton from '~components/IconButton'
 import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText/MarkdownText'
@@ -322,8 +325,8 @@ const FilterBar = ({
   setSelectedFieldIds: (fieldIds: string[]) => void
   filters: Filter[]
   setFilters: (filters: Filter[]) => void
-  dateRange: DateRangeValue
-  setDateRange: (dateRange: DateRangeValue) => void
+  dateRange: [DateString | null, DateString | null]
+  setDateRange: (dateRange: [DateString | null, DateString | null]) => void
   handleRefresh: () => void
   isRefreshing: boolean
   onClickInterpret: () => void
@@ -331,7 +334,14 @@ const FilterBar = ({
   return (
     <Flex justifyContent={'space-between'}>
       <Flex gap="0.5rem">
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
+        <DateRangePicker
+          value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
+          onChange={(nextDateRange) =>
+            setDateRange(
+              dateRangePickerHelper.datePickerValueToDateString(nextDateRange),
+            )
+          }
+        />
         <FieldFilter
           fields={formFields.filter((field) =>
             includes(selectedFieldIds, field._id),
@@ -536,25 +546,12 @@ const UnlockedResponsesV2 = () => {
   )
 
   const [filters, setFilters] = useState<Filter[]>([])
-  const [dateRange, setDateRange] = useState<DateRangeValue>([null, null])
+  const { dateRange, setDateRange } = useStorageResponsesContext()
 
   // Use the cached query hook - decryption only happens once and results persist across navigation
   const { data: decryptedResponses = [], isFetching: isFetchingAndDecrypting } =
     useDecryptedResponsesQuery({
-      formId: form?._id ?? '',
-      secretKey: secretKey ?? '',
-      startDate:
-        dateRange && dateRange[0]
-          ? dateRange[0]
-            ? (format(dateRange[0], 'yyyy-MM-dd') as DateString)
-            : undefined
-          : undefined,
-      endDate:
-        dateRange && dateRange[1]
-          ? dateRange[1]
-            ? (format(dateRange[1], 'yyyy-MM-dd') as DateString)
-            : undefined
-          : undefined,
+      dateRange,
       enabled: !isLoadingForm && !isLoadingSecretKey && !!secretKey && !!form,
     })
 

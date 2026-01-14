@@ -20,16 +20,22 @@ export const StorageResponsesProvider = ({
 
   const { data: form, isLoading: isAdminFormLoading } = useAdminForm()
 
-  const [dateRange, setDateRange] = useState<DateString[]>([])
+  const [dateRange, setDateRange] = useState<
+    [DateString | null, DateString | null]
+  >([null, null])
   const { data: totalResponsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
   const {
     data: dateRangeResponsesCount,
     isLoading: isDateRangeResponsesCountLoading,
-  } = useFormResponsesCount({
-    startDate: dateRange[0],
-    endDate: dateRange[1],
-  })
+  } = useFormResponsesCount(
+    dateRange[0] && dateRange[1]
+      ? {
+        startDate: dateRange[0],
+        endDate: dateRange[1],
+      }
+      : undefined,
+  )
   const [secretKey, setSecretKey] = useSecretKey(formId)
 
   const formPublicKey = useMemo(() => {
@@ -43,8 +49,8 @@ export const StorageResponsesProvider = ({
     return {
       secretKey,
       responsesCount: dateRangeResponsesCount,
-      startDate: dateRange[0],
-      endDate: dateRange[1],
+      startDate: dateRange[0] ?? undefined,
+      endDate: dateRange[1] ?? undefined,
       isMrf: form?.responseMode === FormResponseMode.Multirespondent,
     }
   }, [dateRange, dateRangeResponsesCount, secretKey, form?.responseMode])

@@ -13,19 +13,21 @@ import {
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { DecryptedSubmission } from '../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
-import { useAllSubmissionData } from '../queries'
 
 import { EmptyChartsContainer } from './components/EmptyChartsContainer'
 import { FIELD_TO_CHART, FormChart } from './components/FormChart'
 import WordCloud, { WordCloudProps } from './components/WordCloud'
+import {
+  DecryptedResponse,
+  useDecryptedResponsesQuery,
+} from '../../ResponsesPage/storage/useDecryptedResponsesQuery'
 
 // transform filtered data into an array of answer to count
 const aggregateSubmissionData = (
   id: string,
   formField: FormFieldDto,
-  data: DecryptedSubmission[],
+  data: DecryptedResponse[],
 ): [string, number][] => {
   const hashMap = new Map<string, number>()
   if (formField.fieldType === BasicField.Rating) {
@@ -35,7 +37,7 @@ const aggregateSubmissionData = (
   }
 
   data.forEach((content) => {
-    content.responses.forEach((field) => {
+    content.decryptedResponses.forEach((field) => {
       if (field._id === id && field.answer) {
         // singular answer fields
         hashMap.set(field.answer, (hashMap.get(field.answer) || 0) + 1)
@@ -55,14 +57,14 @@ const aggregateSubmissionData = (
 // transform filtered text data into an array of {word: count}
 const aggregateWordCloud = (
   id: string,
-  data: DecryptedSubmission[],
+  data: DecryptedResponse[],
 ): WordCloudProps['words'] => {
   const hashMap = new Map<string, number>()
 
   const resultArr: WordCloudProps['words'] = []
 
   data.forEach((content) => {
-    content.responses.forEach((field) => {
+    content.decryptedResponses.forEach((field) => {
       if (field._id === id && field.answer) {
         // split to words
         const answerArray = field.answer.split(' ')
@@ -86,12 +88,14 @@ export const UnlockedChartsContainer = () => {
   const { t } = useTranslation()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
-  const { data: decryptedContent } = useAllSubmissionData(dateRange)
+  // const { data: decryptedContent } = useAllSubmissionData(dateRange)
+
+  const { data: decryptedResponses } = useDecryptedResponsesQuery({ dateRange })
 
   const filteredDecryptedData = useMemo(() => {
-    if (!decryptedContent) return []
-    return decryptedContent
-  }, [decryptedContent])
+    if (!decryptedResponses) return []
+    return decryptedResponses
+  }, [decryptedResponses])
 
   if (!form) return null
 

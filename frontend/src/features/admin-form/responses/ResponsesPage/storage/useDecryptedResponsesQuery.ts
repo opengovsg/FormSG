@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient, UseQueryResult } from 'react-query'
+import { useParams } from 'react-router-dom'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { formatInTimeZone } from 'date-fns-tz'
 
@@ -6,6 +7,7 @@ import { DateString, SubmissionMetadata, SubmissionType } from '~shared/types'
 
 import { adminFormResponsesKeys } from '../../queries'
 
+import { useStorageResponsesContext } from './StorageResponsesContext'
 import {
   getEncryptedResponsesStream,
   makeWorkerApiAndCleanup,
@@ -119,10 +121,7 @@ async function fetchAndDecryptResponses({
 }
 
 interface UseDecryptedResponsesQueryParams {
-  formId: string
-  secretKey: string
-  startDate?: DateString
-  endDate?: DateString
+  dateRange: [DateString | null, DateString | null]
   enabled?: boolean
 }
 
@@ -137,14 +136,27 @@ interface UseDecryptedResponsesQueryParams {
  * @param params.enabled - Whether to enable the query (defaults to true)
  */
 export const useDecryptedResponsesQuery = ({
-  formId,
-  secretKey,
-  startDate,
-  endDate,
+  dateRange,
   enabled = true,
 }: UseDecryptedResponsesQueryParams): UseQueryResult<DecryptedResponse[]> => {
+  const { secretKey } = useStorageResponsesContext()
+
+  const { formId } = useParams()
+  if (!formId) {
+    throw new Error('No formId provided')
+  }
+  if (!secretKey) {
+    throw new Error('No secretKey provided')
+  }
+
+  const startDate = dateRange[0] ?? undefined
+  const endDate = dateRange[1] ?? undefined
+
   return useQuery<DecryptedResponse[]>(
-    decryptedResponsesKey(formId, { startDate, endDate }),
+    decryptedResponsesKey(formId, {
+      startDate,
+      endDate,
+    }),
     () =>
       fetchAndDecryptResponses({
         formId,

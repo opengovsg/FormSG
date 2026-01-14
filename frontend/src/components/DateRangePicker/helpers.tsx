@@ -4,30 +4,32 @@ import { DateString } from '~shared/types'
 
 import { DateRangeValue } from '~components/Calendar'
 
-export const dateStringToDatePickerValue = (range: DateString[]) => {
+export const dateStringToDatePickerValue = (
+  range: [DateString | null, DateString | null],
+): DateRangeValue => {
   const [start, end] = range
+  if (!start && !end) {
+    return [null, null]
+  }
   // Convert to Date objects
-  const startDate = new Date(start)
-  const endDate = new Date(end)
-  const result: (Date | null)[] = [null, null]
-  // Check if dates are valid
-  if (isValid(startDate)) {
-    result[0] = startDate
-  }
-  if (isValid(endDate)) {
-    result[1] = endDate
-  }
-  return result as DateRangeValue
+  const startDate = start && isValid(new Date(start)) ? new Date(start) : null
+  const endDate = end && isValid(new Date(end)) ? new Date(end) : null
+
+  return [startDate, endDate] as DateRangeValue
 }
 
-export const datePickerValueToDateString = (range: DateRangeValue) => {
+export const datePickerValueToDateString = (
+  range: DateRangeValue,
+): [DateString | null, DateString | null] => {
   const [start, end] = range
-  const result: DateString[] = []
-  if (start) {
-    result.push(format(start, 'yyyy-MM-dd') as DateString)
+
+  if (!start && !end) {
+    return [null, null]
   }
-  if (end) {
-    result.push(format(end, 'yyyy-MM-dd') as DateString)
-  }
-  return result
+
+  const startDateString = start
+    ? (format(start, 'yyyy-MM-dd') as DateString)
+    : null
+  const endDateString = end ? (format(end, 'yyyy-MM-dd') as DateString) : null
+  return [startDateString, endDateString]
 }
