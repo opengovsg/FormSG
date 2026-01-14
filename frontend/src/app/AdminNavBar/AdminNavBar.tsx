@@ -173,8 +173,8 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   const growthbook = useGrowthBook()
 
-  // Set GrowthBook attributes for targeting rules
-  useEffect(() => {
+  // Set GrowthBook attributes for targeting rules synchronously
+  useMemo(() => {
     if (growthbook && user?.email) {
       growthbook.setAttributes({
         ...growthbook.getAttributes(),
