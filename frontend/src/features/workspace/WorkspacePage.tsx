@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -13,7 +13,7 @@ import {
   Stack,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureValue, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { Workspace } from '~shared/types/workspace'
 
@@ -49,6 +49,19 @@ export const WorkspacePage = (): JSX.Element => {
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    if (growthbook && user?.email) {
+      growthbook.setAttributes({
+        // Only update the `adminEmail` & `adminAgency` attribute, keep the rest the same
+        ...growthbook.getAttributes(),
+        adminEmail: user.email,
+        adminAgency: user.agency.shortName,
+      })
+    }
+  }, [growthbook, user?.email, user?.agency?.shortName])
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
