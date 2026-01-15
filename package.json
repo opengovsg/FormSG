@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.294.0",
+  "version": "6.295.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -12,7 +12,7 @@
     "url": "https://github.com/opengovsg/formsg.git"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.22",
     "npm": ">=8"
   },
   "scriptComments": {
