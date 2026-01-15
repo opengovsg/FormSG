@@ -12,7 +12,7 @@
     "url": "https://github.com/opengovsg/formsg.git"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.22",
     "npm": ">=8"
   },
   "scriptComments": {
