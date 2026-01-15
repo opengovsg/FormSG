@@ -1,4 +1,4 @@
-FROM node:jod-alpine3.21 
+FROM node:jod-alpine3.22 
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:jod-alpine3.21 AS build
+FROM node:jod-alpine3.22 AS build
 
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
