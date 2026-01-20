@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { BiChevronDown, BiFilterAlt, BiHide } from 'react-icons/bi'
+import { useNavigate } from 'react-router-dom'
 import {
   Column,
   useFlexLayout,

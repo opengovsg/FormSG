@@ -31,9 +31,9 @@ export const StorageResponsesProvider = ({
   } = useFormResponsesCount(
     dateRange[0] && dateRange[1]
       ? {
-        startDate: dateRange[0],
-        endDate: dateRange[1],
-      }
+          startDate: dateRange[0],
+          endDate: dateRange[1],
+        }
       : undefined,
   )
   const [secretKey, setSecretKey] = useSecretKey(formId)

@@ -38,11 +38,7 @@ export interface GenericChartProps {
   data: { label: string; value: number }[] | [string, number][] // Array of objects or tuples
 }
 
-export const GenericChart = ({
-  title,
-  chartType,
-  data,
-}: GenericChartProps) => {
+export const GenericChart = ({ title, chartType, data }: GenericChartProps) => {
   const [isTable, setIsTable] = useState(false)
 
   const dataToRender = useMemo(() => {
@@ -50,9 +46,9 @@ export const GenericChart = ({
     const tupleData: [string, number][] =
       data.length > 0 && typeof data[0] === 'object' && 'label' in data[0]
         ? (data as { label: string; value: number }[]).map((item) => [
-          item.label,
-          item.value,
-        ])
+            item.label,
+            item.value,
+          ])
         : (data as [string, number][])
 
     // Deep copy of the data

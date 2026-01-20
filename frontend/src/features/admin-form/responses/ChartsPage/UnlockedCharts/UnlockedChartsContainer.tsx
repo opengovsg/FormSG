@@ -14,14 +14,14 @@ import {
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
-
-import { EmptyChartsContainer } from './components/EmptyChartsContainer'
-import { FIELD_TO_CHART, FormChart } from './components/FormChart'
-import WordCloud, { WordCloudProps } from './components/WordCloud'
 import {
   DecryptedResponse,
   useDecryptedResponsesQuery,
 } from '../../ResponsesPage/storage/useDecryptedResponsesQuery'
+
+import { EmptyChartsContainer } from './components/EmptyChartsContainer'
+import { FIELD_TO_CHART, FormChart } from './components/FormChart'
+import WordCloud, { WordCloudProps } from './components/WordCloud'
 
 // transform filtered data into an array of answer to count
 const aggregateSubmissionData = (

@@ -67,13 +67,13 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 
+import { GenericChart } from '../../../ChartsPage/UnlockedCharts/components/GenericChart'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
   DecryptedResponse,
   useDecryptedResponsesQuery,
   useInvalidateDecryptedResponses,
 } from '../useDecryptedResponsesQuery'
-import { GenericChart } from '../../../ChartsPage/UnlockedCharts/components/GenericChart'
 
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { DownloadButton } from './DownloadButton'
@@ -112,9 +112,9 @@ const FilterEditor = ({
   const currentField = fields.find((f) => f._id === filter.fieldId)
   const dropdownFields = currentField
     ? [
-      currentField,
-      ...availableFields.filter((f) => f._id !== currentField._id),
-    ]
+        currentField,
+        ...availableFields.filter((f) => f._id !== currentField._id),
+      ]
     : availableFields
 
   return (
@@ -515,7 +515,8 @@ const InterpretBox = ({
   const [question, setQuestion] = useState('')
   const [showExplanation, setShowExplanation] = useState(false)
   const [showReasoning, setShowReasoning] = useState(false)
-  const isLoading = currentStep === 'analyzing' || currentStep === 'interpreting'
+  const isLoading =
+    currentStep === 'analyzing' || currentStep === 'interpreting'
 
   // Debug: Log chart data
   useEffect(() => {
@@ -567,52 +568,52 @@ const InterpretBox = ({
       />
       {(isLoadingSuggestedQuestions ||
         (suggestedQuestions && suggestedQuestions.length > 0)) && (
-          <Box>
-            <Flex justifyContent="space-between" alignItems="center" mb="0.25rem">
-              <Text fontSize="xs" color="secondary.500">
-                Suggested questions
-              </Text>
-              {onRefreshSuggestedQuestions && (
-                <Button
-                  variant="link"
-                  size="xs"
-                  color="secondary.500"
-                  isLoading={isLoadingSuggestedQuestions}
-                  onClick={onRefreshSuggestedQuestions}
-                  isDisabled={isLoadingSuggestedQuestions}
-                >
-                  Change suggestions
-                </Button>
-              )}
-            </Flex>
-            {isLoadingSuggestedQuestions ? (
-              <Flex gap="0.5rem" wrap="wrap" py="0.25rem">
-                <Skeleton height="1.75rem" width="8rem" borderRadius="4px" />
-                <Skeleton height="1.75rem" width="10rem" borderRadius="4px" />
-                <Skeleton height="1.75rem" width="9rem" borderRadius="4px" />
-              </Flex>
-            ) : (
-              suggestedQuestions &&
-              suggestedQuestions.length > 0 && (
-                <Flex gap="0.5rem" wrap="wrap">
-                  {suggestedQuestions.map((q, idx) => (
-                    <Button
-                      key={`sq-${idx}`}
-                      size="xs"
-                      variant="outline"
-                      borderColor="secondary.200"
-                      color="secondary.700"
-                      onClick={() => setQuestion(q)}
-                      isDisabled={isLoading}
-                    >
-                      {q}
-                    </Button>
-                  ))}
-                </Flex>
-              )
+        <Box>
+          <Flex justifyContent="space-between" alignItems="center" mb="0.25rem">
+            <Text fontSize="xs" color="secondary.500">
+              Suggested questions
+            </Text>
+            {onRefreshSuggestedQuestions && (
+              <Button
+                variant="link"
+                size="xs"
+                color="secondary.500"
+                isLoading={isLoadingSuggestedQuestions}
+                onClick={onRefreshSuggestedQuestions}
+                isDisabled={isLoadingSuggestedQuestions}
+              >
+                Change suggestions
+              </Button>
             )}
-          </Box>
-        )}
+          </Flex>
+          {isLoadingSuggestedQuestions ? (
+            <Flex gap="0.5rem" wrap="wrap" py="0.25rem">
+              <Skeleton height="1.75rem" width="8rem" borderRadius="4px" />
+              <Skeleton height="1.75rem" width="10rem" borderRadius="4px" />
+              <Skeleton height="1.75rem" width="9rem" borderRadius="4px" />
+            </Flex>
+          ) : (
+            suggestedQuestions &&
+            suggestedQuestions.length > 0 && (
+              <Flex gap="0.5rem" wrap="wrap">
+                {suggestedQuestions.map((q, idx) => (
+                  <Button
+                    key={`sq-${idx}`}
+                    size="xs"
+                    variant="outline"
+                    borderColor="secondary.200"
+                    color="secondary.700"
+                    onClick={() => setQuestion(q)}
+                    isDisabled={isLoading}
+                  >
+                    {q}
+                  </Button>
+                ))}
+              </Flex>
+            )
+          )}
+        </Box>
+      )}
       <Flex justifyContent="flex-end" alignItems="center" gap="0.5rem">
         {isLoading && (
           <Text fontSize="sm" color="secondary.400">
@@ -656,20 +657,22 @@ const InterpretBox = ({
                   <Box>
                     {(analysisChanges.addedFieldTitles.length > 0 ||
                       analysisChanges.removedFieldTitles.length > 0) && (
-                        <Box>
-                          <Text fontWeight="semibold">Column changes:</Text>
-                          {analysisChanges.addedFieldTitles.length > 0 && (
-                            <Text>
-                              Showing: {analysisChanges.addedFieldTitles.join(', ')}
-                            </Text>
-                          )}
-                          {analysisChanges.removedFieldTitles.length > 0 && (
-                            <Text>
-                              Hidden: {analysisChanges.removedFieldTitles.join(', ')}
-                            </Text>
-                          )}
-                        </Box>
-                      )}
+                      <Box>
+                        <Text fontWeight="semibold">Column changes:</Text>
+                        {analysisChanges.addedFieldTitles.length > 0 && (
+                          <Text>
+                            Showing:{' '}
+                            {analysisChanges.addedFieldTitles.join(', ')}
+                          </Text>
+                        )}
+                        {analysisChanges.removedFieldTitles.length > 0 && (
+                          <Text>
+                            Hidden:{' '}
+                            {analysisChanges.removedFieldTitles.join(', ')}
+                          </Text>
+                        )}
+                      </Box>
+                    )}
                     {analysisChanges.filterChanges.length > 0 && (
                       <Box mt="0.5rem">
                         <Text fontWeight="semibold">
@@ -811,20 +814,20 @@ const UnlockedResponsesV2 = () => {
     _id: string
     title: string
   }[] = [
-      {
-        _id: 'Response ID',
-        title: 'Response ID',
-      },
-      {
-        _id: MRF_RESPONSE_TIMESTAMP_LABEL,
-        title: 'Response Timestamp',
-      },
-    ]
+    {
+      _id: 'Response ID',
+      title: 'Response ID',
+    },
+    {
+      _id: MRF_RESPONSE_TIMESTAMP_LABEL,
+      title: 'Response Timestamp',
+    },
+  ]
   const mrfFields: {
     _id: string
     title: string
   }[] = isMrf
-      ? [
+    ? [
         {
           _id: MRF_WORKFLOW_STATUS_LABEL,
           title: 'Workflow Status',
@@ -838,7 +841,7 @@ const UnlockedResponsesV2 = () => {
           title: 'Workflow Reminders',
         },
       ]
-      : []
+    : []
 
   const submissionMetaFields = [...essentialFields, ...mrfFields]
   const fieldsForDashboardView = filterFieldsForDashboardView(form_fields ?? [])
@@ -995,22 +998,26 @@ const UnlockedResponsesV2 = () => {
   const [analysisReasoning, setAnalysisReasoning] = useState<
     string | undefined
   >()
-  const [analysisChanges, setAnalysisChanges] = useState<{
-    addedFieldTitles: string[]
-    removedFieldTitles: string[]
-    filterChanges: Array<{
-      type: 'added' | 'removed' | 'updated'
-      fieldTitle: string
-      value?: string
-      from?: string
-      to?: string
-    }>
-  } | undefined>()
+  const [analysisChanges, setAnalysisChanges] = useState<
+    | {
+        addedFieldTitles: string[]
+        removedFieldTitles: string[]
+        filterChanges: Array<{
+          type: 'added' | 'removed' | 'updated'
+          fieldTitle: string
+          value?: string
+          from?: string
+          to?: string
+        }>
+      }
+    | undefined
+  >()
 
   const analyzeQuestionMutation = useAnalyzeQuestionMutation(form?._id ?? '')
   const interpretDataMutation = useInterpretDataMutation(form?._id ?? '')
-  const suggestedQuestionsMutation = useSuggestedQuestionsMutation(form?._id ?? '')
-
+  const suggestedQuestionsMutation = useSuggestedQuestionsMutation(
+    form?._id ?? '',
+  )
 
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
 
@@ -1108,10 +1115,10 @@ const UnlockedResponsesV2 = () => {
             const nextSelected =
               validRelevantFieldIds.length > 0
                 ? [
-                  'Response ID',
-                  MRF_RESPONSE_TIMESTAMP_LABEL,
-                  ...validRelevantFieldIds,
-                ]
+                    'Response ID',
+                    MRF_RESPONSE_TIMESTAMP_LABEL,
+                    ...validRelevantFieldIds,
+                  ]
                 : prevSelected
 
             const addedFieldTitles = nextSelected
@@ -1125,12 +1132,12 @@ const UnlockedResponsesV2 = () => {
             // Calculate filter changes
             const nextFilters =
               analysisResult.suggestedFilters &&
-                analysisResult.suggestedFilters.length > 0
+              analysisResult.suggestedFilters.length > 0
                 ? analysisResult.suggestedFilters.map((f) => ({
-                  fieldId: f.fieldId,
-                  operator: FilterOperator.Contains,
-                  value: f.value,
-                }))
+                    fieldId: f.fieldId,
+                    operator: FilterOperator.Contains,
+                    value: f.value,
+                  }))
                 : prevFilters
 
             const prevByField = new Map(prevFilters.map((f) => [f.fieldId, f]))
@@ -1185,11 +1192,12 @@ const UnlockedResponsesV2 = () => {
             )
 
             // Show only relevant columns (update UI)
-            if (
-              validRelevantFieldIds.length > 0
-            ) {
+            if (validRelevantFieldIds.length > 0) {
               // Keep essential fields (Response ID, timestamp) plus relevant fields
-              const essentialFieldIds = ['Response ID', MRF_RESPONSE_TIMESTAMP_LABEL]
+              const essentialFieldIds = [
+                'Response ID',
+                MRF_RESPONSE_TIMESTAMP_LABEL,
+              ]
               const newSelectedFields = [
                 ...essentialFieldIds,
                 ...validRelevantFieldIds,
@@ -1302,8 +1310,6 @@ const UnlockedResponsesV2 = () => {
     })
   }, [form?._id, suggestedQuestionsMutation])
 
-
-
   // Handler to hide a column from the table header menu
   const handleHideColumn = useCallback(
     (fieldId: string) => {
@@ -1384,7 +1390,9 @@ const UnlockedResponsesV2 = () => {
           isLoadingSuggestedQuestions={suggestedQuestionsMutation.isLoading}
           onRefreshSuggestedQuestions={fetchSuggestedQuestions}
           mentionedResponseIds={mentionedResponseIds}
-          filteredResponseIds={filteredDecryptedResponses?.map((r) => String(r.refNo))}
+          filteredResponseIds={filteredDecryptedResponses?.map((r) =>
+            String(r.refNo),
+          )}
           onClearMentionedFilter={handleClearMentionedFilter}
         />
       )}
