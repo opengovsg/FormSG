@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import {
+  analyzeQuestion,
+  getSuggestedQuestions,
   interpretData,
   InterpretDataResponse,
   makeTextPrompt,
@@ -68,6 +70,38 @@ export const useAssistanceMutations = () => {
     useMakeTextPromptMutation,
     useMakeVisionPromptMutation,
   }
+}
+
+export const useAnalyzeQuestionMutation = (formId: string) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(
+    ({ question }: { question: string }) =>
+      analyzeQuestion({ formId, question }),
+    {
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message || 'Failed to analyze question',
+          status: 'danger',
+        })
+      },
+    },
+  )
+}
+
+export const useSuggestedQuestionsMutation = (formId: string) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(() => getSuggestedQuestions({ formId }), {
+    onError: (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message || 'Failed to generate suggested questions',
+        status: 'danger',
+      })
+    },
+  })
 }
 
 export const useInterpretDataMutation = (formId: string) => {

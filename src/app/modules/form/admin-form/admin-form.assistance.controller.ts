@@ -16,8 +16,10 @@ import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 
 import {
+  analyzeQuestionForRelevantFields,
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
+  generateSuggestedQuestions,
   interpretResponseData,
 } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
@@ -212,6 +214,171 @@ export const handleVisionPrompt = [
   _handleVisionPrompt,
 ]
 
+// ============================================
+// Analyze Question Endpoint (Step 1 of 2-step flow)
+// ============================================
+
+const handleAnalyzeQuestionValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+  [Segments.BODY]: {
+    question: Joi.string().required().max(INTERPRET_DATA_QUESTION_MAX_CHAR),
+  },
+})
+
+interface IAnalyzeQuestion {
+  question: string
+}
+
+const _handleAnalyzeQuestion: ControllerHandler<
+  { formId: string },
+  {
+    message: string
+    relevantFieldIds?: string[]
+    suggestedFilters?: Array<{
+      fieldId: string
+      operator: 'contains' | 'equals'
+      value: string
+    }>
+    reasoning?: string
+  },
+  IAnalyzeQuestion
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { question } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with read permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Analyze question to find relevant fields.
+      .andThen((form) =>
+        analyzeQuestionForRelevantFields({
+          form,
+          question,
+        }),
+      )
+      .map((result) =>
+        res.status(StatusCodes.OK).json({
+          message: 'Question analyzed successfully.',
+          relevantFieldIds: result.relevantFieldIds,
+          suggestedFilters: result.suggestedFilters,
+          reasoning: result.reasoning,
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred analyzing question.',
+          meta: {
+            action: '_handleAnalyzeQuestion',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            question,
+            errorType: error.constructor.name,
+            errorMessage: error.message,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleAnalyzeQuestion = [
+  handleAnalyzeQuestionValidator,
+  _handleAnalyzeQuestion,
+] as ControllerHandler[]
+
+// ============================================
+// Suggested Questions Endpoint
+// ============================================
+
+const handleSuggestedQuestionsValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+})
+
+const _handleSuggestedQuestions: ControllerHandler<
+  { formId: string },
+  { message: string; suggestedQuestions?: string[] }
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .andThen((form) => generateSuggestedQuestions({ form }))
+    .map((result) =>
+      res.status(StatusCodes.OK).json({
+        message: 'Suggested questions generated successfully.',
+        suggestedQuestions: result.suggestedQuestions,
+      }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred generating suggested questions.',
+        meta: {
+          action: '_handleSuggestedQuestions',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          errorType: error.constructor.name,
+          errorMessage: error.message,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleSuggestedQuestions = [
+  handleSuggestedQuestionsValidator,
+  _handleSuggestedQuestions,
+] as ControllerHandler[]
+
+// ============================================
+// Interpret Data Endpoint (Step 2 of 2-step flow)
+// ============================================
+
 const handleInterpretDataValidator = celebrate({
   [Segments.PARAMS]: {
     formId: Joi.string()
@@ -230,7 +397,6 @@ const handleInterpretDataValidator = celebrate({
             .items(
               Joi.object({
                 fieldId: Joi.string().required(),
-                question: Joi.string().required(),
                 answer: Joi.string().allow('').required(),
               }),
             )
@@ -244,7 +410,6 @@ const handleInterpretDataValidator = celebrate({
 
 interface IInterpretDataField {
   fieldId: string
-  question: string
   answer: string
 }
 
@@ -259,9 +424,21 @@ interface IInterpretData {
   responses: IInterpretDataResponse[]
 }
 
+interface ISuggestedChart {
+  chartType: 'pie' | 'bar' | 'column' | 'line'
+  title: string
+  data: { label: string; value: number }[] // Array of objects with label and value
+}
+
 const _handleInterpretData: ControllerHandler<
   { formId: string },
-  { message: string; answer?: string; explanation?: string },
+  {
+    message: string
+    answer?: string
+    explanation?: string
+    mentionedResponseIds?: string[]
+    suggestedCharts?: ISuggestedChart[]
+  },
   IInterpretData
 > = async (req, res) => {
   const { formId } = req.params
@@ -276,60 +453,64 @@ const _handleInterpretData: ControllerHandler<
   }
 
   // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Retrieve form with read permission check.
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Read,
-      }).map((form) => ({ user, form })),
-    )
-    .map(({ user, form }) => {
-      logger.info({
-        message: 'Interpreting response data with AI',
-        meta: {
-          action: '_handleInterpretData',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          userEmail: user.email,
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with read permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
           formId,
-          questionLength: question.length,
-          responsesCount: responses.length,
-        },
+          level: PermissionLevel.Read,
+        }).map((form) => ({ user, form })),
+      )
+      .map(({ user, form }) => {
+        logger.info({
+          message: 'Interpreting response data with AI',
+          meta: {
+            action: '_handleInterpretData',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            userEmail: user.email,
+            formId,
+            questionLength: question.length,
+            responsesCount: responses.length,
+          },
+        })
+        return form
       })
-      return form
-    })
-    .andThen((form) =>
-      interpretResponseData({
-        formId: form._id,
-        formName: form.title,
-        question,
-        responses,
-      }),
-    )
-    .map((result) =>
-      res.status(StatusCodes.OK).json({
-        message: 'Data interpreted successfully.',
-        answer: result.answer,
-        explanation: result.explanation,
-      }),
-    )
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error occurred interpreting response data.',
-        meta: {
-          action: '_handleInterpretData',
-          ...createReqMeta(req),
-          userId: sessionUserId,
-          formId,
+      // Step 3: Interpret response data.
+      .andThen((form) =>
+        interpretResponseData({
+          form,
           question,
-        },
-        error,
+          responses,
+        }),
+      )
+      .map((result) =>
+        res.status(StatusCodes.OK).json({
+          message: 'Data interpreted successfully.',
+          answer: result.answer,
+          explanation: result.explanation,
+          mentionedResponseIds: result.mentionedResponseIds,
+          suggestedCharts: result.suggestedCharts,
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred interpreting response data.',
+          meta: {
+            action: '_handleInterpretData',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            question,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
+  )
 }
 
 export const handleInterpretData = [

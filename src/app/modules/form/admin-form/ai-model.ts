@@ -92,12 +92,42 @@ export const sendPromptToModel = ({
   return ResultAsync.fromPromise(
     llmClient.chat.completions.create(chatCompletionPrompt),
     (err) => {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+            ? err
+            : JSON.stringify(err)
+
+      // Extract error details if available
+      const errorDetails: Record<string, unknown> = {}
+      if (err instanceof OpenAIError) {
+        // OpenAIError may have different properties depending on the error type
+        const errObj = err as unknown as Record<string, unknown>
+        if ('status' in errObj) errorDetails.status = errObj.status
+        if ('code' in errObj) errorDetails.code = errObj.code
+        if ('param' in errObj) errorDetails.param = errObj.param
+        if ('type' in errObj) errorDetails.type = errObj.type
+      }
+
       logger.error({
         message: 'Failed to generate model response',
-        meta: logMeta,
+        meta: {
+          ...logMeta,
+          errorMessage,
+          errorDetails,
+          responseFormat: options?.response_format,
+          errorName: err instanceof Error ? err.name : typeof err,
+        },
         error: err,
       })
-      return new ModelResponseFailureError()
+
+      const statusMessage = errorDetails.status
+        ? ` Status: ${errorDetails.status}`
+        : ''
+      return new ModelResponseFailureError(
+        `Model API error: ${errorMessage}.${statusMessage}`,
+      )
     },
   ).map((response) => {
     const isLlmResponseMissing =
@@ -106,6 +136,14 @@ export const sendPromptToModel = ({
       !response.choices[0].message?.content
 
     if (isLlmResponseMissing) {
+      logger.warn({
+        message: 'Model response is missing content',
+        meta: {
+          ...logMeta,
+          responseChoices: response.choices?.length,
+          hasMessage: !!response.choices?.[0]?.message,
+        },
+      })
       return null
     }
     return response.choices[0].message?.content

@@ -45,8 +45,16 @@ import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText/MarkdownText'
 import Tooltip from '~components/Tooltip'
 
-import { InterpretDataResponse } from '~features/admin-form/assistance/AssistanceService'
-import { useInterpretDataMutation } from '~features/admin-form/assistance/mutations'
+import {
+  InterpretDataResponse,
+  SuggestedChart,
+  SuggestedFilter,
+} from '~features/admin-form/assistance/AssistanceService'
+import {
+  useAnalyzeQuestionMutation,
+  useInterpretDataMutation,
+  useSuggestedQuestionsMutation,
+} from '~features/admin-form/assistance/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   getPendingResponseAtString,
@@ -65,6 +73,7 @@ import {
   useDecryptedResponsesQuery,
   useInvalidateDecryptedResponses,
 } from '../useDecryptedResponsesQuery'
+import { GenericChart } from '../../../ChartsPage/UnlockedCharts/components/GenericChart'
 
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { DownloadButton } from './DownloadButton'
@@ -328,7 +337,7 @@ const HideFields = ({
 
 const InterpretButton = ({ onClick }: { onClick: () => void }) => {
   return (
-    <Tooltip placement="top" label="Talk to your data">
+    <Tooltip placement="top" label="Use AI to understand your data">
       <Button
         onClick={onClick}
         leftIcon={<BiSolidMagicWand />}
@@ -336,7 +345,7 @@ const InterpretButton = ({ onClick }: { onClick: () => void }) => {
         borderColor="secondary.200"
         color="secondary.500"
       >
-        Interpret
+        Analyse
       </Button>
     </Tooltip>
   )
@@ -461,19 +470,61 @@ const filterDecryptedResponses = ({
 interface InterpretResult {
   answer: string
   explanation: string
+  suggestedCharts?: SuggestedChart[]
 }
+
+type InterpretStep = 'idle' | 'analyzing' | 'interpreting'
 
 const InterpretBox = ({
   onAsk,
-  isLoading,
+  currentStep,
   result,
+  analysisReasoning,
+  analysisChanges,
+  suggestedQuestions,
+  isLoadingSuggestedQuestions,
+  onRefreshSuggestedQuestions,
+  mentionedResponseIds,
+  filteredResponseIds,
+  decryptedResponsesCount,
+  onClearMentionedFilter,
 }: {
   onAsk: (textQuestion: string) => void
-  isLoading: boolean
+  currentStep: InterpretStep
   result?: InterpretResult
+  analysisReasoning?: string
+  analysisChanges?: {
+    addedFieldTitles: string[]
+    removedFieldTitles: string[]
+    filterChanges: Array<{
+      type: 'added' | 'removed' | 'updated'
+      fieldTitle: string
+      value?: string
+      from?: string
+      to?: string
+    }>
+  }
+  suggestedQuestions?: string[]
+  isLoadingSuggestedQuestions?: boolean
+  onRefreshSuggestedQuestions?: () => void
+  mentionedResponseIds?: string[]
+  decryptedResponsesCount?: number
+  filteredResponseIds?: string[]
+  onClearMentionedFilter?: () => void
 }) => {
   const [question, setQuestion] = useState('')
   const [showExplanation, setShowExplanation] = useState(false)
+  const [showReasoning, setShowReasoning] = useState(false)
+  const isLoading = currentStep === 'analyzing' || currentStep === 'interpreting'
+
+  // Debug: Log chart data
+  useEffect(() => {
+    if (result?.suggestedCharts && result.suggestedCharts.length > 0) {
+      console.log('Charts to render:', {
+        suggestedCharts: result.suggestedCharts,
+      })
+    }
+  }, [result?.suggestedCharts])
   const mdComponents = useMdComponents({
     styles: {
       text: {
@@ -487,6 +538,17 @@ const InterpretBox = ({
     },
   })
 
+  const getLoadingText = () => {
+    switch (currentStep) {
+      case 'analyzing':
+        return 'Applying relevant filters & columns...'
+      case 'interpreting':
+        return 'Answering using filtered data...'
+      default:
+        return 'Ask'
+    }
+  }
+
   return (
     <Stack
       width="100%"
@@ -498,16 +560,70 @@ const InterpretBox = ({
       gap="0.5rem"
     >
       <Textarea
-        placeholder="Ask a question about your data (e.g., 'How many responses selected option A?', 'Summarize the feedback')"
+        placeholder="Ask a question about your data"
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         isReadOnly={isLoading}
       />
-      <Flex justifyContent="flex-end">
+      {(isLoadingSuggestedQuestions ||
+        (suggestedQuestions && suggestedQuestions.length > 0)) && (
+          <Box>
+            <Flex justifyContent="space-between" alignItems="center" mb="0.25rem">
+              <Text fontSize="xs" color="secondary.500">
+                Suggested questions
+              </Text>
+              {onRefreshSuggestedQuestions && (
+                <Button
+                  variant="link"
+                  size="xs"
+                  color="secondary.500"
+                  isLoading={isLoadingSuggestedQuestions}
+                  onClick={onRefreshSuggestedQuestions}
+                  isDisabled={isLoadingSuggestedQuestions}
+                >
+                  Change suggestions
+                </Button>
+              )}
+            </Flex>
+            {isLoadingSuggestedQuestions ? (
+              <Flex gap="0.5rem" wrap="wrap" py="0.25rem">
+                <Skeleton height="1.75rem" width="8rem" borderRadius="4px" />
+                <Skeleton height="1.75rem" width="10rem" borderRadius="4px" />
+                <Skeleton height="1.75rem" width="9rem" borderRadius="4px" />
+              </Flex>
+            ) : (
+              suggestedQuestions &&
+              suggestedQuestions.length > 0 && (
+                <Flex gap="0.5rem" wrap="wrap">
+                  {suggestedQuestions.map((q, idx) => (
+                    <Button
+                      key={`sq-${idx}`}
+                      size="xs"
+                      variant="outline"
+                      borderColor="secondary.200"
+                      color="secondary.700"
+                      onClick={() => setQuestion(q)}
+                      isDisabled={isLoading}
+                    >
+                      {q}
+                    </Button>
+                  ))}
+                </Flex>
+              )
+            )}
+          </Box>
+        )}
+      <Flex justifyContent="flex-end" alignItems="center" gap="0.5rem">
+        {isLoading && (
+          <Text fontSize="sm" color="secondary.400">
+            {getLoadingText()}
+          </Text>
+        )}
         <Button
           isLoading={isLoading}
           onClick={() => {
             setShowExplanation(false)
+            setShowReasoning(false)
             onAsk(question)
           }}
           isDisabled={!question.trim()}
@@ -515,36 +631,169 @@ const InterpretBox = ({
           Ask
         </Button>
       </Flex>
+      {analysisReasoning && (
+        <Box mt="0.5rem" p="0.75rem" bg="blue.50" borderRadius="4px">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" color="blue.600">
+              Applied filters & relevant columns
+            </Text>
+            <Button
+              variant="link"
+              size="xs"
+              color="blue.500"
+              onClick={() => setShowReasoning(!showReasoning)}
+            >
+              {showReasoning ? 'Hide' : 'Details'}
+            </Button>
+          </Flex>
+          {showReasoning && (
+            <Stack fontSize="sm" color="blue.700" mt="0.5rem" spacing="0.5rem">
+              <Text>{analysisReasoning}</Text>
+              {analysisChanges &&
+                (analysisChanges.addedFieldTitles.length > 0 ||
+                  analysisChanges.removedFieldTitles.length > 0 ||
+                  analysisChanges.filterChanges.length > 0) && (
+                  <Box>
+                    {(analysisChanges.addedFieldTitles.length > 0 ||
+                      analysisChanges.removedFieldTitles.length > 0) && (
+                        <Box>
+                          <Text fontWeight="semibold">Column changes:</Text>
+                          {analysisChanges.addedFieldTitles.length > 0 && (
+                            <Text>
+                              Showing: {analysisChanges.addedFieldTitles.join(', ')}
+                            </Text>
+                          )}
+                          {analysisChanges.removedFieldTitles.length > 0 && (
+                            <Text>
+                              Hidden: {analysisChanges.removedFieldTitles.join(', ')}
+                            </Text>
+                          )}
+                        </Box>
+                      )}
+                    {analysisChanges.filterChanges.length > 0 && (
+                      <Box mt="0.5rem">
+                        <Text fontWeight="semibold">
+                          Filter changes (AND only, max 1 per column):
+                        </Text>
+                        <Stack mt="0.25rem" spacing="0.25rem">
+                          {analysisChanges.filterChanges.map((c, idx) => {
+                            if (c.type === 'added') {
+                              return (
+                                <Text key={`fc-${idx}`}>
+                                  + {c.fieldTitle} contains "{c.value}"
+                                </Text>
+                              )
+                            }
+                            if (c.type === 'removed') {
+                              return (
+                                <Text key={`fc-${idx}`}>
+                                  − {c.fieldTitle} contains "{c.value}"
+                                </Text>
+                              )
+                            }
+                            return (
+                              <Text key={`fc-${idx}`}>
+                                ~ {c.fieldTitle} contains "{c.from}" → "{c.to}"
+                              </Text>
+                            )
+                          })}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+            </Stack>
+          )}
+        </Box>
+      )}
+      {(() => {
+        // Only show the notification if mentionedResponseIds doesn't contain all filtered responses
+        if (!mentionedResponseIds || mentionedResponseIds.length === 0) {
+          return null
+        }
+
+        // Check if mentionedResponseIds contains all filtered responses
+        if (mentionedResponseIds.length === decryptedResponsesCount) {
+          return null
+        }
+
+        return (
+          <Box mt="0.5rem" p="0.75rem" bg="green.50" borderRadius="4px">
+            <Flex justifyContent="space-between" alignItems="center">
+              <Text fontSize="sm" color="green.700">
+                Showing {mentionedResponseIds.length} response
+                {mentionedResponseIds.length !== 1 ? 's' : ''} mentioned in the
+                answer
+              </Text>
+              {onClearMentionedFilter && (
+                <Button
+                  variant="link"
+                  size="xs"
+                  color="green.600"
+                  onClick={onClearMentionedFilter}
+                >
+                  Show all
+                </Button>
+              )}
+            </Flex>
+          </Box>
+        )
+      })()}
       {result?.answer && (
-        <Box mt="0.5rem" p="1rem" bg="primary.100" borderRadius="4px">
-          <Flex justifyContent="space-between" alignItems="center" mb="0.5rem">
-            <Text fontWeight="semibold">Answer:</Text>
+        <Box mt="0.5rem" p="0.75rem" bg="primary.100" borderRadius="4px">
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text fontSize="sm" fontWeight="semibold" color="primary.700">
+              Answer:
+            </Text>
             {result?.explanation && (
               <Button
                 variant="link"
-                size="sm"
-                color="primary.500"
+                size="xs"
+                color="primary.600"
                 onClick={() => setShowExplanation(!showExplanation)}
               >
                 {showExplanation ? 'Hide explanation' : 'Show explanation'}
               </Button>
             )}
           </Flex>
-          <Text textStyle="body-1" color="secondary.700">
+          {result.suggestedCharts &&
+            result.suggestedCharts.length > 0 &&
+            result.suggestedCharts.map((chart, index) => {
+              // Only render if chart has data
+              if (!chart.data || chart.data.length === 0) {
+                return null
+              }
+              return (
+                <Box key={`chart-${index}`} mt="1rem" width="100%">
+                  <GenericChart
+                    title={chart.title}
+                    chartType={chart.chartType}
+                    data={chart.data}
+                  />
+                </Box>
+              )
+            })}
+          <Text textStyle="body-1" color="secondary.700" mt="0.5rem">
             {result.answer}
           </Text>
-        </Box>
-      )}
-      {result?.explanation && showExplanation && (
-        <Box mt="0.5rem" p="1rem" bg="neutral.100" borderRadius="4px">
-          <Text fontWeight="semibold" mb="0.5rem">
-            Explanation:
-          </Text>
-          <Box>
-            <MarkdownText multilineBreaks components={mdComponents}>
-              {result.explanation}
-            </MarkdownText>
-          </Box>
+          {result?.explanation && showExplanation && (
+            <>
+              <Text
+                fontSize="sm"
+                fontWeight="semibold"
+                color="primary.700"
+                mt="1rem"
+                mb="0.5rem"
+              >
+                Explanation:
+              </Text>
+              <Box>
+                <MarkdownText multilineBreaks components={mdComponents}>
+                  {result.explanation}
+                </MarkdownText>
+              </Box>
+            </>
+          )}
         </Box>
       )}
     </Stack>
@@ -554,7 +803,7 @@ const InterpretBox = ({
 const MAX_RESPONSES_COUNT_FOR_DECRYPT = 5
 
 const UnlockedResponsesV2 = () => {
-  const { data: form, isLoading: isLoadingForm } = useAdminForm()
+  const { data: form } = useAdminForm()
   const { form_fields } = form ?? {}
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
@@ -690,6 +939,9 @@ const UnlockedResponsesV2 = () => {
 
   const [filteredDecryptedResponses, setFilteredDecryptedResponses] =
     useState<DecryptedResponse[]>(decryptedResponses)
+  const [mentionedResponseIds, setMentionedResponseIds] = useState<
+    string[] | undefined
+  >()
 
   const throttledSetFilteredDecryptedResponses = useCallback(
     throttle(
@@ -697,31 +949,40 @@ const UnlockedResponsesV2 = () => {
         filters,
         searchIndex,
         decryptedResponses,
+        mentionedResponseIds,
       }: {
         filters: Filter[]
         searchIndex: Document
         decryptedResponses: DecryptedResponse[]
+        mentionedResponseIds: string[]
       }) => {
-        setFilteredDecryptedResponses(
-          filterDecryptedResponses({
-            decryptedResponses,
-            filters,
-            searchIndex,
-          }),
-        )
+        let filteredResponses = filterDecryptedResponses({
+          decryptedResponses,
+          filters,
+          searchIndex,
+        })
+
+        if (mentionedResponseIds.length > 0) {
+          filteredResponses = filteredResponses?.filter((r) =>
+            mentionedResponseIds.includes(String(r.refNo)),
+          )
+        }
+        setFilteredDecryptedResponses(filteredResponses)
       },
       500,
     ),
     [],
   )
 
+  // Apply filters from search and field filters
   useEffect(() => {
     throttledSetFilteredDecryptedResponses({
-      decryptedResponses,
       filters,
       searchIndex,
+      decryptedResponses,
+      mentionedResponseIds: mentionedResponseIds ?? [],
     })
-  }, [decryptedResponses, filters, searchIndex])
+  }, [decryptedResponses, filters, searchIndex, mentionedResponseIds])
 
   // Hook to invalidate cache (e.g., to fetch latest submissions)
   const { invalidate } = useInvalidateDecryptedResponses(form?._id ?? '')
@@ -730,22 +991,83 @@ const UnlockedResponsesV2 = () => {
   const [interpretResult, setInterpretResult] = useState<
     InterpretResult | undefined
   >()
+  const [interpretStep, setInterpretStep] = useState<InterpretStep>('idle')
+  const [analysisReasoning, setAnalysisReasoning] = useState<
+    string | undefined
+  >()
+  const [analysisChanges, setAnalysisChanges] = useState<{
+    addedFieldTitles: string[]
+    removedFieldTitles: string[]
+    filterChanges: Array<{
+      type: 'added' | 'removed' | 'updated'
+      fieldTitle: string
+      value?: string
+      from?: string
+      to?: string
+    }>
+  } | undefined>()
 
+  const analyzeQuestionMutation = useAnalyzeQuestionMutation(form?._id ?? '')
   const interpretDataMutation = useInterpretDataMutation(form?._id ?? '')
+  const suggestedQuestionsMutation = useSuggestedQuestionsMutation(form?._id ?? '')
+
+
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
 
   const transformResponsesToInterpretFormat = useCallback(
-    (responses: DecryptedResponse[]): InterpretDataResponse[] => {
+    (
+      responses: DecryptedResponse[],
+      relevantFieldIds?: string[],
+    ): InterpretDataResponse[] => {
       return responses.map((response) => ({
         refNo: response.refNo,
         submissionTime: response.submissionTime,
         fields: response.decryptedResponses
-          .filter((field) => field._id && field.question)
+          .filter((field) => {
+            // Must have fieldId
+            if (!field._id) return false
+            // If relevantFieldIds provided, only include those fields
+            if (relevantFieldIds && relevantFieldIds.length > 0) {
+              return relevantFieldIds.includes(field._id)
+            }
+            return true
+          })
           .map((field) => ({
             fieldId: field._id,
-            question: field.question,
             answer: field.answer || '',
           })),
       }))
+    },
+    [],
+  )
+
+  // Apply AI-suggested filters to the responses
+  const applyAiFilters = useCallback(
+    (
+      responses: DecryptedResponse[],
+      suggestedFilters: SuggestedFilter[],
+    ): DecryptedResponse[] => {
+      if (!suggestedFilters || suggestedFilters.length === 0) {
+        return responses
+      }
+
+      return responses.filter((response) => {
+        return suggestedFilters.every((filter) => {
+          const field = response.decryptedResponses.find(
+            (f) => f._id === filter.fieldId,
+          )
+          if (!field || !field.answer) return false
+
+          const answer = field.answer.toLowerCase()
+          const value = filter.value.toLowerCase()
+
+          if (filter.operator === 'equals') {
+            return answer === value
+          }
+          // 'contains' operator
+          return answer.includes(value)
+        })
+      })
     },
     [],
   )
@@ -755,28 +1077,232 @@ const UnlockedResponsesV2 = () => {
       if (!question.trim()) return
 
       setInterpretResult(undefined)
-      const responsesForApi = transformResponsesToInterpretFormat(
-        filteredDecryptedResponses,
-      )
+      setAnalysisReasoning(undefined)
+      setAnalysisChanges(undefined)
+      setMentionedResponseIds(undefined)
+      setInterpretStep('analyzing')
 
-      interpretDataMutation.mutate(
-        { question, responses: responsesForApi },
+      console.log('LLM: analzying question:', question)
+      // Step 1: Analyze the question to get relevant fields
+      analyzeQuestionMutation.mutate(
+        { question },
         {
-          onSuccess: (data) => {
-            setInterpretResult({
-              answer: data.answer,
-              explanation: data.explanation,
+          onSuccess: (analysisResult) => {
+            setAnalysisReasoning(analysisResult.reasoning)
+
+            const prevSelected = selectedFieldIds
+            const prevFilters = filters
+            const fieldTitleById = new Map(
+              allDashboardFields.map((f) => [f._id, f.title]),
+            )
+
+            const validDashboardFieldIds = new Set(
+              allDashboardFields.map((f) => f._id),
+            )
+            const validRelevantFieldIds =
+              analysisResult.relevantFieldIds?.filter((id) =>
+                validDashboardFieldIds.has(id),
+              ) ?? []
+
+            // Calculate column changes
+            const nextSelected =
+              validRelevantFieldIds.length > 0
+                ? [
+                  'Response ID',
+                  MRF_RESPONSE_TIMESTAMP_LABEL,
+                  ...validRelevantFieldIds,
+                ]
+                : prevSelected
+
+            const addedFieldTitles = nextSelected
+              .filter((id) => !prevSelected.includes(id))
+              .map((id) => fieldTitleById.get(id) ?? id)
+
+            const removedFieldTitles = prevSelected
+              .filter((id) => !nextSelected.includes(id))
+              .map((id) => fieldTitleById.get(id) ?? id)
+
+            // Calculate filter changes
+            const nextFilters =
+              analysisResult.suggestedFilters &&
+                analysisResult.suggestedFilters.length > 0
+                ? analysisResult.suggestedFilters.map((f) => ({
+                  fieldId: f.fieldId,
+                  operator: FilterOperator.Contains,
+                  value: f.value,
+                }))
+                : prevFilters
+
+            const prevByField = new Map(prevFilters.map((f) => [f.fieldId, f]))
+            const nextByField = new Map(nextFilters.map((f) => [f.fieldId, f]))
+            const filterChanges: Array<{
+              type: 'added' | 'removed' | 'updated'
+              fieldTitle: string
+              value?: string
+              from?: string
+              to?: string
+            }> = []
+
+            for (const [fieldId, next] of nextByField.entries()) {
+              const prev = prevByField.get(fieldId)
+              const fieldTitle = fieldTitleById.get(fieldId) ?? fieldId
+              if (!prev) {
+                filterChanges.push({
+                  type: 'added',
+                  fieldTitle,
+                  value: next.value,
+                })
+              } else if (prev.value !== next.value) {
+                filterChanges.push({
+                  type: 'updated',
+                  fieldTitle,
+                  from: prev.value,
+                  to: next.value,
+                })
+              }
+            }
+            for (const [fieldId, prev] of prevByField.entries()) {
+              if (!nextByField.has(fieldId)) {
+                const fieldTitle = fieldTitleById.get(fieldId) ?? fieldId
+                filterChanges.push({
+                  type: 'removed',
+                  fieldTitle,
+                  value: prev.value,
+                })
+              }
+            }
+
+            setAnalysisChanges({
+              addedFieldTitles,
+              removedFieldTitles,
+              filterChanges,
             })
+
+            // Apply AI-suggested filters to responses
+            const responsesWithAiFilters = applyAiFilters(
+              filteredDecryptedResponses,
+              analysisResult.suggestedFilters,
+            )
+
+            // Show only relevant columns (update UI)
+            if (
+              validRelevantFieldIds.length > 0
+            ) {
+              // Keep essential fields (Response ID, timestamp) plus relevant fields
+              const essentialFieldIds = ['Response ID', MRF_RESPONSE_TIMESTAMP_LABEL]
+              const newSelectedFields = [
+                ...essentialFieldIds,
+                ...validRelevantFieldIds,
+              ]
+              setSelectedFieldIds(newSelectedFields)
+            }
+
+            // Apply AI-suggested filters to UI
+            if (
+              analysisResult.suggestedFilters &&
+              analysisResult.suggestedFilters.length > 0
+            ) {
+              const newFilters = analysisResult.suggestedFilters.map((f) => ({
+                fieldId: f.fieldId,
+                operator:
+                  f.operator === 'equals'
+                    ? FilterOperator.Contains
+                    : FilterOperator.Contains,
+                value: f.value,
+              }))
+              setFilters(newFilters)
+            }
+
+            // Step 2: Interpret the data with filtered/relevant fields
+            setInterpretStep('interpreting')
+            const responsesForApi = transformResponsesToInterpretFormat(
+              responsesWithAiFilters,
+              validRelevantFieldIds,
+            )
+
+            console.log('LLM: interpreting question:', question)
+            interpretDataMutation.mutate(
+              { question, responses: responsesForApi },
+              {
+                onSuccess: (data) => {
+                  console.log('Interpret data result:', {
+                    answer: data.answer,
+                    suggestedCharts: data.suggestedCharts,
+                    mentionedResponseIds: data.mentionedResponseIds,
+                  })
+                  setInterpretResult({
+                    answer: data.answer,
+                    explanation: data.explanation,
+                    suggestedCharts: data.suggestedCharts,
+                  })
+
+                  // Use mentionedResponseIds from structured output if provided
+                  // Validate that the IDs actually exist in the responses
+                  if (
+                    data.mentionedResponseIds &&
+                    data.mentionedResponseIds.length > 0
+                  ) {
+                    const allResponseIds = new Set(
+                      decryptedResponses.map((r) => String(r.refNo)),
+                    )
+                    // Filter to only include valid response IDs
+                    const validMentionedIds = data.mentionedResponseIds.filter(
+                      (id) => allResponseIds.has(String(id)),
+                    )
+                    if (validMentionedIds.length > 0) {
+                      setMentionedResponseIds(validMentionedIds)
+                    } else {
+                      setMentionedResponseIds(undefined)
+                    }
+                  } else {
+                    setMentionedResponseIds(undefined)
+                  }
+
+                  setInterpretStep('idle')
+                },
+                onError: () => {
+                  setInterpretStep('idle')
+                  setMentionedResponseIds(undefined)
+                },
+              },
+            )
+          },
+          onError: () => {
+            setInterpretStep('idle')
           },
         },
       )
     },
     [
+      analyzeQuestionMutation,
+      applyAiFilters,
       filteredDecryptedResponses,
       interpretDataMutation,
       transformResponsesToInterpretFormat,
+      setSelectedFieldIds,
+      setFilters,
+      decryptedResponses,
+      selectedFieldIds,
+      filters,
+      allDashboardFields,
     ],
   )
+
+  const fetchSuggestedQuestions = useCallback(() => {
+    console.log('LLM: fetching suggested questions')
+    if (!form?._id) return
+    suggestedQuestionsMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        console.log('suggested questions fetched', data)
+        setSuggestedQuestions(data.suggestedQuestions ?? [])
+      },
+      onError: () => {
+        setSuggestedQuestions([])
+      },
+    })
+  }, [form?._id, suggestedQuestionsMutation])
+
+
 
   // Handler to hide a column from the table header menu
   const handleHideColumn = useCallback(
@@ -818,6 +1344,11 @@ const UnlockedResponsesV2 = () => {
     [filters],
   )
 
+  // Handler to clear the mentioned response filter
+  const handleClearMentionedFilter = useCallback(() => {
+    setMentionedResponseIds(undefined)
+  }, [])
+
   if (!form) return null
 
   return (
@@ -832,13 +1363,29 @@ const UnlockedResponsesV2 = () => {
         setDateRange={setDateRange}
         handleRefresh={invalidate}
         isRefreshing={isFetchingAndDecrypting}
-        onClickInterpret={() => setIsInterpretOpen(!isInterpretOpen)}
+        onClickInterpret={() => {
+          if (
+            (!suggestedQuestions || suggestedQuestions.length === 0) &&
+            !suggestedQuestionsMutation.isLoading
+          ) {
+            fetchSuggestedQuestions()
+          }
+          setIsInterpretOpen(!isInterpretOpen)
+        }}
       />
       {isInterpretOpen && (
         <InterpretBox
           onAsk={onAsk}
-          isLoading={interpretDataMutation.isLoading}
+          currentStep={interpretStep}
           result={interpretResult}
+          analysisReasoning={analysisReasoning}
+          analysisChanges={analysisChanges}
+          suggestedQuestions={suggestedQuestions}
+          isLoadingSuggestedQuestions={suggestedQuestionsMutation.isLoading}
+          onRefreshSuggestedQuestions={fetchSuggestedQuestions}
+          mentionedResponseIds={mentionedResponseIds}
+          filteredResponseIds={filteredDecryptedResponses?.map((r) => String(r.refNo))}
+          onClearMentionedFilter={handleClearMentionedFilter}
         />
       )}
       <Box overflow="auto" maxWidth="100%" flex={1}>

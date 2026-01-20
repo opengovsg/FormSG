@@ -28,9 +28,63 @@ export const makeVisionPrompt = ({
   ).then(({ data }) => data)
 }
 
+// ============================================
+// Step 1: Analyze Question
+// ============================================
+
+export interface AnalyzeQuestionParams {
+  formId: string
+  question: string
+}
+
+export interface SuggestedFilter {
+  fieldId: string
+  operator: 'contains' | 'equals'
+  value: string
+}
+
+export interface AnalyzeQuestionResult {
+  message: string
+  relevantFieldIds: string[]
+  suggestedFilters: SuggestedFilter[]
+  reasoning: string
+}
+
+export const analyzeQuestion = ({
+  formId,
+  question,
+}: AnalyzeQuestionParams): Promise<AnalyzeQuestionResult> => {
+  return ApiService.post<AnalyzeQuestionResult>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/analyze-question`,
+    { question },
+  ).then(({ data }) => data)
+}
+
+// ============================================
+// Suggested Questions (UI helper)
+// ============================================
+
+export interface SuggestedQuestionsResult {
+  message: string
+  suggestedQuestions: string[]
+}
+
+export const getSuggestedQuestions = ({
+  formId,
+}: {
+  formId: string
+}): Promise<SuggestedQuestionsResult> => {
+  return ApiService.get<SuggestedQuestionsResult>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/suggested-questions`,
+  ).then(({ data }) => data)
+}
+
+// ============================================
+// Step 2: Interpret Data
+// ============================================
+
 export interface InterpretDataField {
   fieldId: string
-  question: string
   answer: string
 }
 
@@ -46,10 +100,18 @@ export interface InterpretDataParams {
   responses: InterpretDataResponse[]
 }
 
+export interface SuggestedChart {
+  chartType: 'pie' | 'bar' | 'column' | 'line'
+  title: string
+  data: { label: string; value: number }[] // Array of objects with label and value
+}
+
 export interface InterpretDataResult {
   message: string
   answer: string
   explanation: string
+  mentionedResponseIds?: string[]
+  suggestedCharts?: SuggestedChart[]
 }
 
 export const interpretData = ({

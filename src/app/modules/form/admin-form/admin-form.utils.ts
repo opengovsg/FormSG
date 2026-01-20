@@ -205,7 +205,10 @@ export const mapRouteError = (
     case ModelResponseInvalidSyntaxError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage: 'Something went wrong. Please try creating fields again.',
+        // Pass through the actual error message for better debugging
+        errorMessage:
+          error.message ||
+          'Something went wrong. Please try creating fields again.',
       }
     default:
       logger.error({
