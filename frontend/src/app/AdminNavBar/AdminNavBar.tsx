@@ -56,11 +56,7 @@ type AdminNavBarLinkProps = {
   MobileIcon: As
 }
 
-const AdminNavBarLink = ({
-  MobileIcon,
-  href,
-  label,
-}: AdminNavBarLinkProps) => {
+const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
 
   if (isMobile && MobileIcon) {
