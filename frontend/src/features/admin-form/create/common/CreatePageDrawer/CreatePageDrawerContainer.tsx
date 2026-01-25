@@ -18,11 +18,33 @@ export const CreatePageDrawerContainer = ({
   const { drawerRef } = useCreatePageSidebarLayout()
 
   const drawerMotionProps = useMemo(() => {
+    if (isMobile) {
+      // Mobile: take all viewport width minus the 56px sidebar
+      return {
+        initial: { width: 0 },
+        animate: {
+          width: 'calc(100vw - 56px)',
+          transition: {
+            bounce: 0,
+            duration: 0.2,
+          },
+        },
+        exit: {
+          width: 0,
+          opacity: 0,
+          transition: {
+            duration: 0.2,
+          },
+        },
+      }
+    }
+
+    // Desktop: expand width like before
     return {
       initial: { width: 0 },
       animate: {
-        maxWidth: isMobile ? '100%' : '33.25rem',
-        width: isMobile ? '100%' : '36%',
+        maxWidth: '33.25rem',
+        width: '36%',
         transition: {
           bounce: 0,
           duration: 0.2,
@@ -37,22 +59,27 @@ export const CreatePageDrawerContainer = ({
       },
     }
   }, [isMobile])
-
   return (
     <AnimatePresence>
       {isDrawerOpen ? (
-        <MotionBox
-          bg="white"
-          key="sidebar"
-          pos="relative"
-          as="aside"
-          overflow="hidden"
-          {...drawerMotionProps}
-        >
-          <Flex w="100%" h="100%" flexDir="column" ref={drawerRef}>
-            {children}
-          </Flex>
-        </MotionBox>
+        <>
+          <MotionBox
+            {...(!isMobile && {
+              borderRight: '1px solid',
+              borderColor: 'neutral.300',
+            })}
+            bg="white"
+            key="sidebar"
+            pos="relative"
+            as="aside"
+            overflow="hidden"
+            {...drawerMotionProps}
+          >
+            <Flex w="100%" h="100%" flexDir="column" ref={drawerRef}>
+              {children}
+            </Flex>
+          </MotionBox>
+        </>
       ) : null}
     </AnimatePresence>
   )
