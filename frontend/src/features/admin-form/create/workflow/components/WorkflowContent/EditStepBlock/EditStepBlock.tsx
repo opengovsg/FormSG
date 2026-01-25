@@ -31,6 +31,7 @@ export interface EditLogicBlockProps {
   stepNumber: number
   submitButtonLabel: string
   handleOpenDeleteModal?: () => void
+  handleCancel?: () => void
   isLoading: boolean
 }
 
@@ -43,6 +44,7 @@ export const EditStepBlock = ({
   isLoading,
   submitButtonLabel,
   handleOpenDeleteModal,
+  handleCancel,
 }: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
 
@@ -175,7 +177,7 @@ export const EditStepBlock = ({
         isLoading={_isLoading}
         handleSubmit={handleSubmit}
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
-        handleCancel={setToInactive}
+        handleCancel={handleCancel ?? setToInactive}
         submitButtonLabel={submitButtonLabel}
         ariaLabelName="step"
       />

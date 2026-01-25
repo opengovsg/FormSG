@@ -8,9 +8,9 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useWorkflowMutations } from '../../../mutations'
 import { EditStepBlock } from '../EditStepBlock'
-
 export interface ActiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
@@ -43,8 +43,31 @@ export const ActiveStepBlock = ({
   step,
   handleOpenDeleteModal,
 }: ActiveStepBlockProps): JSX.Element => {
-  const { updateStepMutation } = useWorkflowMutations()
+  const { updateStepMutation, deleteStepMutation } = useWorkflowMutations()
+  const { formWorkflow } = useAdminFormWorkflow()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+
+  const handleCancel = useCallback(() => {
+    // If this is the first step with no fields assigned and it's the only step,
+    // delete it instead of just closing the edit view
+    const isFirstStep = stepNumber === 0
+    const hasNoFields = step.edit.length === 0
+    const isOnlyStep = formWorkflow?.length === 1
+
+    if (isFirstStep && hasNoFields && isOnlyStep) {
+      deleteStepMutation.mutate(stepNumber, {
+        onSuccess: () => setToInactive(),
+      })
+    } else {
+      setToInactive()
+    }
+  }, [
+    stepNumber,
+    step.edit.length,
+    formWorkflow?.length,
+    deleteStepMutation,
+    setToInactive,
+  ])
 
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
@@ -67,6 +90,7 @@ export const ActiveStepBlock = ({
       stepNumber={stepNumber}
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
+      handleCancel={handleCancel}
       onSubmit={handleSubmit}
       defaultValues={step}
       submitButtonLabel="Save step"

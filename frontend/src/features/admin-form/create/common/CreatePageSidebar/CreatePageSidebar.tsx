@@ -23,6 +23,12 @@ import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
 import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 
+import { useAdminFormWorkflow } from '../../workflow/hooks/useAdminFormWorkflow'
+import {
+  useAdminWorkflowStore,
+  createOrEditDataSelector,
+} from '../../workflow/adminWorkflowStore'
+
 import {
   isDirtySelector,
   useDirtyFieldStore,
@@ -38,9 +44,10 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
-
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
+  const { formWorkflow } = useAdminFormWorkflow()
+  const createOrEditData = useAdminWorkflowStore(createOrEditDataSelector)
   const { updateLastSeenFlagMutation } = useUserMutations()
 
   const shouldShowMrfWorkflowReddot = useMemo(() => {
@@ -83,7 +90,14 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   )
 
   const handleDrawerWorkflowClick = useCallback(() => {
-    handleWorkflowClick(isDirty)
+    // Mirror the isEmptyWorkflow logic from CreatePageWorkflowTab
+    // Line 94 - FIXED
+    const isEmptyWorkflow =
+      (!formWorkflow || formWorkflow.length === 0) && !createOrEditData
+    const shouldOpenDrawer = !isEmptyWorkflow
+
+    handleWorkflowClick(isDirty, shouldOpenDrawer)
+
     if (shouldShowMrfWorkflowReddot) {
       updateLastSeenFlagMutation.mutate({
         flag: SeenFlags.CreateBuilderMrfWorkflow,
@@ -91,12 +105,13 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       })
     }
   }, [
+    formWorkflow,
+    createOrEditData, // ← CRITICAL: Add this dependency
     handleWorkflowClick,
-    updateLastSeenFlagMutation,
-    shouldShowMrfWorkflowReddot,
     isDirty,
+    shouldShowMrfWorkflowReddot,
+    updateLastSeenFlagMutation,
   ])
-
   return (
     <Stack
       bg="white"

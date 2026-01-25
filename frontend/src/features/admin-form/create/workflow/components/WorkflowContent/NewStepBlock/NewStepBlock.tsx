@@ -5,6 +5,7 @@ import { Button } from '@chakra-ui/react'
 
 import { FormWorkflowStep } from '~shared/types'
 
+import { useCreatePageSidebar } from '../../../../common/CreatePageSidebarContext/CreatePageSidebarContext'
 import {
   isCreatingStateSelector,
   setToCreatingSelector,
@@ -25,14 +26,20 @@ export const NewStepBlock = () => {
       setToInactive: setToInactiveSelector(state),
       setToCreating: setToCreatingSelector(state),
     }))
+  const { handleWorkflowClick } = useCreatePageSidebar()
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       createStepMutation.mutate(step, {
-        onSuccess: () => setToInactive(),
+        onSuccess: () => {
+          setToInactive()
+          // Auto-open drawer when first step is created
+          if (formWorkflow?.length === 0) {
+            handleWorkflowClick(false, true)
+          }
+        },
       }),
-    [createStepMutation, setToInactive],
+    [createStepMutation, setToInactive, formWorkflow, handleWorkflowClick],
   )
-
   if (!formWorkflow) return null
 
   return isCreatingState ? (
