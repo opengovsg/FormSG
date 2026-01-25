@@ -19,6 +19,10 @@ import {
   isDirtySelector,
   useDirtyFieldStore,
 } from './builder-and-design/useDirtyFieldStore'
+import {
+  isDirtySelector as isWorkflowDirtySelector,
+  useDirtyWorkflowStore,
+} from './workflow/useDirtyWorkflowStore'
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
@@ -57,10 +61,10 @@ export const CreatePage = (): JSX.Element => {
   }, [isLoading, hasAdminSeenFeatureTour])
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
-
+  const isWorkflowDirty = useDirtyWorkflowStore(isWorkflowDirtySelector)
   return (
     <>
-      <NavigationPrompt when={isDirty} />
+      <NavigationPrompt when={isDirty || isWorkflowDirty} />{' '}
       <CreatePageSidebarProvider>
         <DirtyModal />
         <Flex

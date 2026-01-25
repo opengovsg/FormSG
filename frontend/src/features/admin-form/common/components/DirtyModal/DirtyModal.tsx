@@ -7,12 +7,19 @@ import { FieldListTabIndex } from '~features/admin-form/create/builder-and-desig
 import { useDesignStore } from '~features/admin-form/create/builder-and-design/useDesignStore'
 import { useFieldBuilderStore } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 import { useCreatePageSidebar } from '~features/admin-form/create/common'
+import {
+  clearHoldingStateDataSelector,
+  holdingStateDataSelector,
+  moveFromHoldingSelector,
+  useAdminWorkflowStore,
+} from '~features/admin-form/create/workflow/adminWorkflowStore'
 
 export const useDirtyModal = () => {
   const {
     handleClose,
     handleBuilderClick,
     handleDesignClick,
+    handleWorkflowClick,
     pendingTab,
     movePendingToActiveTab,
     clearPendingTab,
@@ -46,6 +53,16 @@ export const useDirtyModal = () => {
     builderMoveFromHolding: state.moveFromHolding,
   }))
 
+  const {
+    workflowHoldingStateData,
+    workflowClearHoldingStateData,
+    workflowMoveFromHolding,
+  } = useAdminWorkflowStore((state) => ({
+    workflowHoldingStateData: holdingStateDataSelector(state),
+    workflowClearHoldingStateData: clearHoldingStateDataSelector(state),
+    workflowMoveFromHolding: moveFromHoldingSelector(state),
+  }))
+
   const handleConfirmNavigate = () => {
     if (builderHoldingStateData !== null) {
       builderMoveFromHolding()
@@ -59,6 +76,9 @@ export const useDirtyModal = () => {
       handleClose(false)
       handleBuilderClick(false)
       setFieldListTabIndex(FieldListTabIndex.Payments)
+    } else if (workflowHoldingStateData !== null) {
+      workflowMoveFromHolding()
+      handleWorkflowClick(false)
     } else if (pendingTab !== undefined) {
       movePendingToActiveTab()
     }
@@ -71,6 +91,8 @@ export const useDirtyModal = () => {
       designClearHoldingState()
     } else if (paymentHoldingState !== null) {
       paymentClearHoldingState()
+    } else if (workflowHoldingStateData !== null) {
+      workflowClearHoldingStateData()
     } else if (pendingTab !== undefined) {
       clearPendingTab()
     }
@@ -80,6 +102,7 @@ export const useDirtyModal = () => {
     builderHoldingStateData !== null ||
     designHoldingState !== null ||
     paymentHoldingState !== null ||
+    workflowHoldingStateData !== null ||
     pendingTab !== undefined
 
   return {

@@ -3,21 +3,33 @@ import { Box, Divider, Stack } from '@chakra-ui/react'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import {
+  isCreatingStateSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 
+import { CreatingStepBlock } from './CreatingStepBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
 
   if (isLoading) return null
   return (
     <Stack color="secondary.500" spacing="2.75rem" mt="1.5rem">
       {/* <HeaderBlock /> */}
-      <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
-        {formWorkflow?.map((step, i) => (
-          <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
-        ))}
+      <Stack spacing="0">
+        <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
+          {formWorkflow?.map((step, i) => (
+            <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
+          ))}
+          {isCreatingState && (
+            <CreatingStepBlock stepNumber={formWorkflow?.length ?? 0} />
+          )}
+        </Stack>
+        {!isCreatingState && <WorkflowStepBlockDivider />}
         <NewStepBlock />
       </Stack>
     </Stack>

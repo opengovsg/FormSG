@@ -6,11 +6,7 @@ export const EditStepBlockContainer = ({
   children?: React.ReactNode
 }): JSX.Element => {
   return (
-    <Stack
-      direction="column"
-      spacing="0.75rem"
-      px={{ base: '1.5rem', md: '2rem' }}
-    >
+    <Stack direction="column" spacing="0.75rem">
       {children}
     </Stack>
   )

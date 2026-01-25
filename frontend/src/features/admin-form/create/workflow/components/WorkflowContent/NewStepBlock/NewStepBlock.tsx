@@ -3,57 +3,37 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
-import { FormWorkflowStep } from '~shared/types'
-
 import { useCreatePageSidebar } from '../../../../common/CreatePageSidebarContext/CreatePageSidebarContext'
 import {
   isCreatingStateSelector,
   setToCreatingSelector,
-  setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
-import { useWorkflowMutations } from '../../../mutations'
-import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
   const { t } = useTranslation()
   const { formWorkflow } = useAdminFormWorkflow()
-  const { createStepMutation } = useWorkflowMutations()
-  const { isCreatingState, setToInactive, setToCreating } =
-    useAdminWorkflowStore((state) => ({
-      isCreatingState: isCreatingStateSelector(state),
-      setToInactive: setToInactiveSelector(state),
-      setToCreating: setToCreatingSelector(state),
-    }))
+  const { isCreatingState, setToCreating } = useAdminWorkflowStore((state) => ({
+    isCreatingState: isCreatingStateSelector(state),
+    setToCreating: setToCreatingSelector(state),
+  }))
   const { handleWorkflowClick } = useCreatePageSidebar()
-  const handleSubmit = useCallback(
-    (step: FormWorkflowStep) =>
-      createStepMutation.mutate(step, {
-        onSuccess: () => {
-          setToInactive()
-          // Auto-open drawer when first step is created
-          if (formWorkflow?.length === 0) {
-            handleWorkflowClick(false, true)
-          }
-        },
-      }),
-    [createStepMutation, setToInactive, formWorkflow, handleWorkflowClick],
-  )
+
+  const handleAddStep = useCallback(() => {
+    // Set creating state
+    setToCreating()
+    // Ensure drawer opens
+    handleWorkflowClick(false, true)
+  }, [setToCreating, handleWorkflowClick])
+
   if (!formWorkflow) return null
 
-  return isCreatingState ? (
-    <EditStepBlock
-      stepNumber={formWorkflow.length}
-      isLoading={createStepMutation.isLoading}
-      onSubmit={handleSubmit}
-      defaultValues={{ edit: [] }}
-      submitButtonLabel={t(
-        'features.adminForm.sidebar.workflow.approvals.addStep',
-      )}
-    />
-  ) : (
-    <Button onClick={setToCreating} variant="outline" leftIcon={<BiPlus />}>
+  // Hide button when already creating a step to prevent multiple creations
+  if (isCreatingState) return null
+
+  return (
+    <Button onClick={handleAddStep} variant="outline" leftIcon={<BiPlus />}>
       {t('features.adminForm.sidebar.workflow.approvals.addStep')}
     </Button>
   )

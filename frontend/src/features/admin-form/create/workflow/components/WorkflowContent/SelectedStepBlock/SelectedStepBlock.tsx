@@ -1,41 +1,32 @@
-import { useCallback, useMemo } from 'react'
-import { useIsMutating } from 'react-query'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiPencil } from 'react-icons/bi'
+import { BiTrash } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
-import { useCreatePageSidebar } from '../../../../common/CreatePageSidebarContext/CreatePageSidebarContext'
 
 import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
 import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
 import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
-import {
-  createOrEditDataSelector,
-  setToEditingSelector,
-  useAdminWorkflowStore,
-} from '../../../adminWorkflowStore'
-import {
-  isDirtySelector,
-  useDirtyWorkflowStore,
-} from '../../../useDirtyWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
-import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+import { InactiveApprovalsBlock } from '../InactiveStepBlock/InactiveApprovalsBlock'
 
-import { adminFormKeys } from '~features/admin-form/common/queries'
+import { useWorkflowMutations } from '../../../mutations'
 
-interface InactiveStepBlockProps {
+interface SelectedStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
+  handleOpenDeleteModal?: () => void
 }
 
 interface RespondentBadgeProps {
@@ -103,33 +94,15 @@ const SubsequentStepRespondentBadges = ({
   }
 }
 
-export const InactiveStepBlock = ({
+export const SelectedStepBlock = ({
   stepNumber,
   step,
-}: InactiveStepBlockProps): JSX.Element | null => {
+  handleOpenDeleteModal,
+}: SelectedStepBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
   const { idToFieldMap } = useAdminFormWorkflow()
-  const setToEditing = useAdminWorkflowStore(setToEditingSelector)
-  const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-  const isDirty = useDirtyWorkflowStore(isDirtySelector)
-  const { handleWorkflowClick } = useCreatePageSidebar()
-
-  // Prevent editing step if some other step is being edited.
-  const isMutating = useIsMutating({ mutationKey: adminFormKeys.base })
-  const isPreventEdit = useMemo(
-    () => !!stateData || isMutating > 0,
-    [stateData, isMutating],
-  )
-
-  const handleClick = useCallback(() => {
-    if (isPreventEdit) {
-      return
-    }
-    // Pass isDirty as holding parameter - if dirty, will trigger DirtyModal
-    setToEditing(stepNumber, isDirty)
-    // Ensure drawer opens
-    handleWorkflowClick(isDirty, true)
-  }, [isPreventEdit, stepNumber, setToEditing, isDirty, handleWorkflowClick])
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const { deleteStepMutation } = useWorkflowMutations()
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -171,21 +144,28 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
+  // Auto-scroll into view when component mounts
+  useEffect(() => {
+    if (wrapperRef.current) {
+      wrapperRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+    }
+  }, [])
+
   return (
-    <Box pos="relative">
-      <chakra.button
-        type="button"
+    <Box pos="relative" ref={wrapperRef}>
+      <chakra.div
         w="100%"
         textAlign="start"
         borderRadius="4px"
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
+        bg="primary.50"
+        border="2px solid"
+        borderColor="primary.500"
+        boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -231,21 +211,22 @@ export const InactiveStepBlock = ({
             <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
           ) : null}
         </Stack>
-      </chakra.button>
-      {
-        <IconButton
-          top={{ base: '0.5rem', md: '2rem' }}
-          right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          aria-label={t(
-            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
-          )}
-          variant="clear"
-          onClick={handleClick}
-          icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        />
-      }
+      </chakra.div>
+      {!isFirstStep && handleOpenDeleteModal ? (
+        <Tooltip label="Delete step">
+          <IconButton
+            top={{ base: '0.5rem', md: '2rem' }}
+            right={{ base: '0.5rem', md: '2rem' }}
+            pos="absolute"
+            aria-label="Delete step"
+            variant="clear"
+            colorScheme="danger"
+            onClick={handleOpenDeleteModal}
+            icon={<BiTrash fontSize="1.5rem" />}
+            isDisabled={deleteStepMutation.isLoading}
+          />
+        </Tooltip>
+      ) : null}
     </Box>
   )
 }

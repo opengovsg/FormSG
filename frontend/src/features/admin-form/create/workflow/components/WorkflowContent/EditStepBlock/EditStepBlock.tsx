@@ -1,6 +1,5 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Divider, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -8,13 +7,18 @@ import {
   WorkflowType,
 } from '~shared/types'
 
-import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { WorkflowDrawerActions } from './WorkflowDrawerActions'
 import { useUser } from '~features/user/queries'
 
+import { CreatePageDrawerContentContainer } from '../../../../common/CreatePageDrawer/CreatePageDrawerContentContainer'
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import {
+  setIsDirtySelector,
+  useDirtyWorkflowStore,
+} from '../../../useDirtyWorkflowStore'
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -30,7 +34,6 @@ export interface EditLogicBlockProps {
 
   stepNumber: number
   submitButtonLabel: string
-  handleOpenDeleteModal?: () => void
   handleCancel?: () => void
   isLoading: boolean
 }
@@ -43,10 +46,10 @@ export const EditStepBlock = ({
   defaultValues,
   isLoading,
   submitButtonLabel,
-  handleOpenDeleteModal,
   handleCancel,
 }: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+  const setIsDirty = useDirtyWorkflowStore(setIsDirtySelector)
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -54,19 +57,13 @@ export const EditStepBlock = ({
   const { user, isLoading: isUserLoading } = useUser()
   const _isLoading = isLoading || isUserLoading
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  // Track dirty state
+  const isDirty = formMethods.formState.isDirty
 
-  useLayoutEffect(() => {
-    if (wrapperRef.current) {
-      wrapperRef.current.scrollIntoView({
-        behavior: 'smooth',
-        // Block required so parent (with overflow:hidden) will not be scrolled
-        // and causing unscrollable white space.
-        // See https://stackoverflow.com/questions/48634459/scrollintoview-block-vs-inline/48635751#48635751
-        block: 'nearest',
-      })
-    }
-  }, [])
+  useEffect(() => {
+    setIsDirty(isDirty)
+    return () => setIsDirty(false) // cleanup on unmount
+  }, [isDirty, setIsDirty])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     if (inputs.approval_field === '') {
@@ -92,10 +89,9 @@ export const EditStepBlock = ({
       })
     }
 
-    let step: FormWorkflowStep & { _id: string }
+    let step: FormWorkflowStep
 
-    const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
-      _id: inputs._id,
+    const workflowStepBase: FormWorkflowStepBase = {
       workflow_type: inputs.workflow_type,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
@@ -138,49 +134,31 @@ export const EditStepBlock = ({
   })
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const isCreatingStep = !defaultValues?._id
 
   return (
-    <Stack
-      ref={wrapperRef}
-      py="2rem"
-      spacing="1.5rem"
-      borderRadius="4px"
-      bg="white"
-      border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
-      transitionProperty="common"
-      transitionDuration="normal"
-    >
+    <CreatePageDrawerContentContainer px="0">
       <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
-      <Divider />
       <RespondentBlock
         user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
         isLoading={_isLoading}
       />
-      <Divider />
       <QuestionsBlock
         formMethods={formMethods}
         isLoading={_isLoading}
         isFirstStep={isFirstStep}
       />
       {!isFirstStep ? (
-        <>
-          <Divider />
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-        </>
+        <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
       ) : null}
-      <Divider />
-      <SaveActionGroup
-        isLoading={_isLoading}
+      <WorkflowDrawerActions
         handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={handleCancel ?? setToInactive}
         submitButtonLabel={submitButtonLabel}
-        ariaLabelName="step"
+        isLoading={_isLoading}
       />
-    </Stack>
+    </CreatePageDrawerContentContainer>
   )
 }

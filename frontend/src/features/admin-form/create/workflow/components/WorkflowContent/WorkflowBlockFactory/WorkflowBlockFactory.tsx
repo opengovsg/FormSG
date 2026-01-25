@@ -8,8 +8,8 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { DeleteStepModal } from '../../DeleteStepModal'
-import { ActiveStepBlock } from '../ActiveStepBlock'
 import { InactiveStepBlock } from '../InactiveStepBlock'
+import { SelectedStepBlock } from '../SelectedStepBlock'
 
 export interface WorkflowBlockFactoryProps {
   stepNumber: number
@@ -21,13 +21,14 @@ export const WorkflowBlockFactory = ({
   step,
 }: WorkflowBlockFactoryProps): JSX.Element => {
   const editState = useAdminWorkflowStore(editDataSelector)
+
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
     onOpen: onDeleteModalOpen,
   } = useDisclosure()
 
-  const isActiveState = useMemo(
+  const isSelectedState = useMemo(
     () => editState?.stepNumber === stepNumber,
     [editState?.stepNumber, stepNumber],
   )
@@ -39,8 +40,8 @@ export const WorkflowBlockFactory = ({
         onClose={onDeleteModalClose}
         stepNumber={stepNumber}
       />
-      {isActiveState ? (
-        <ActiveStepBlock
+      {isSelectedState ? (
+        <SelectedStepBlock
           stepNumber={stepNumber}
           step={step}
           handleOpenDeleteModal={onDeleteModalOpen}

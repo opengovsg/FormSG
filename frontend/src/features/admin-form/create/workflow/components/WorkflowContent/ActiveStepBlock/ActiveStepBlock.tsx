@@ -89,7 +89,6 @@ export const ActiveStepBlock = ({
     <EditStepBlock
       stepNumber={stepNumber}
       isLoading={updateStepMutation.isLoading}
-      handleOpenDeleteModal={handleOpenDeleteModal}
       handleCancel={handleCancel}
       onSubmit={handleSubmit}
       defaultValues={step}
