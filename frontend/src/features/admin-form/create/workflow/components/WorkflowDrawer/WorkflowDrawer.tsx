@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Divider, Flex } from '@chakra-ui/react'
 
-import { FormWorkflowStep } from '~shared/types'
-
+import { FormWorkflowStep, WorkflowType } from '~shared/types'
 import { datadogRum } from '~utils/datadog'
 import {
   clearPreviewDataSelector,
@@ -73,13 +72,18 @@ export const WorkflowDrawer = (): JSX.Element => {
 
   const currentStep = useMemo(() => {
     if (isCreatingStep) {
-      // For creating, return empty default values
-      return { edit: [] }
+      // For creating, return complete default values to prevent false dirty state
+      return {
+        edit: [],
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        step_name: undefined,
+        approval_field: undefined,
+      }
     }
     if (!isEditingStep || !formWorkflow) return null
     return formWorkflow[createOrEditData.stepNumber]
   }, [isCreatingStep, isEditingStep, formWorkflow, createOrEditData])
-
   const stepNumber = isEditingStep
     ? createOrEditData.stepNumber
     : formWorkflow?.length ?? 0
@@ -96,7 +100,7 @@ export const WorkflowDrawer = (): JSX.Element => {
 
   const handleCancel = useCallback(() => {
     clearPreviewData() // Clear preview before closing
-    
+
     if (isCreatingStep) {
       // Just close when canceling creation
       setToInactive()
@@ -130,7 +134,6 @@ export const WorkflowDrawer = (): JSX.Element => {
     deleteStepMutation,
     setToInactive,
   ])
-
 
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
