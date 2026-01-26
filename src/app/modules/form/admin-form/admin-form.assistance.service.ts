@@ -276,7 +276,8 @@ const generateAndsendTextPromptToModel = ({
     formId,
     options: {
       response_format: {
-        type: 'json_object',
+        type: 'json_schema',
+        json_schema: suggestedFormFieldsLlmSchema,
       },
     },
   }).mapErr((error) => {
@@ -445,6 +446,126 @@ const generateFormCreationVisionPrompt = ({
   ] as Message[]
 }
 
+const suggestedFormFieldsLlmSchema = {
+  name: 'suggested_form_fields',
+  strict: true,
+  schema: {
+    type: 'object',
+    properties: {
+      fields: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          anyOf: [
+            // 1. Base field schema
+            {
+              type: 'object',
+              properties: {
+                title: { type: 'string', minLength: 1 },
+                fieldType: {
+                  type: 'string',
+                  enum: [
+                    'Section',
+                    'Email',
+                    'Mobile',
+                    'HomeNo',
+                    'Number',
+                    'Decimal',
+                    'ShortText',
+                    'LongText',
+                    'CountryRegion',
+                    'YesNo',
+                    'Attachment',
+                    'Date',
+                    'Rating',
+                    'Nric',
+                    'Uen',
+                    'Address',
+                    'Signature',
+                  ],
+                },
+                required: { type: 'boolean' },
+                description: { type: 'string' },
+              },
+              required: ['title', 'fieldType', 'required', 'description'], // description must be required in Strict Mode if defined
+              additionalProperties: false,
+            },
+            // 2. Table field schema
+            {
+              type: 'object',
+              properties: {
+                title: { type: 'string', minLength: 1 },
+                fieldType: { type: 'string', const: 'Table' },
+                required: { type: 'boolean' },
+                description: { type: 'string' },
+                columns: {
+                  type: 'array',
+                  items: { type: 'string', minLength: 1 },
+                  minItems: 1,
+                },
+                minimumRows: { type: 'integer', minimum: 1 },
+                maximumRows: { type: 'integer', minimum: 1 },
+                addMoreRows: { type: 'boolean' },
+              },
+              required: [
+                'title',
+                'fieldType',
+                'required',
+                'description',
+                'columns',
+                'minimumRows',
+                'maximumRows',
+                'addMoreRows',
+              ],
+              additionalProperties: false,
+            },
+            // 3. Statement field schema
+            {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                fieldType: { type: 'string', const: 'Statement' },
+                required: { type: 'boolean' },
+                description: { type: 'string', minLength: 1 },
+              },
+              required: ['title', 'fieldType', 'required', 'description'],
+              additionalProperties: false,
+            },
+            // 4. Choices field schema
+            {
+              type: 'object',
+              properties: {
+                title: { type: 'string', minLength: 1 },
+                fieldType: {
+                  type: 'string',
+                  enum: ['Checkbox', 'Radio', 'Dropdown'],
+                },
+                required: { type: 'boolean' },
+                description: { type: 'string' },
+                fieldOptions: {
+                  type: 'array',
+                  items: { type: 'string', minLength: 1 },
+                  minItems: 1,
+                },
+              },
+              required: [
+                'title',
+                'fieldType',
+                'required',
+                'description',
+                'fieldOptions',
+              ],
+              additionalProperties: false,
+            },
+          ],
+        },
+      },
+    },
+    required: ['fields'],
+    additionalProperties: false,
+  },
+}
+
 const generateAndSendVisionPromptToModel = ({
   formId,
   imageDataUrls,
@@ -458,7 +579,8 @@ const generateAndSendVisionPromptToModel = ({
     formId,
     options: {
       response_format: {
-        type: 'json_object',
+        type: 'json_schema',
+        json_schema: suggestedFormFieldsLlmSchema,
       },
     },
   }).mapErr((error) => {
