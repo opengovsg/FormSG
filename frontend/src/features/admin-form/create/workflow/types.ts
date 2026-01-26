@@ -12,7 +12,7 @@ export enum AdminEditWorkflowState {
 }
 
 export type EditStepInputs = FormWorkflowStep & {
-  _id: string
+  _id?: string
   workflow_type: WorkflowType
   emails?: FormWorkflowStepStatic['emails']
   field?: FormWorkflowStepDynamic['field']
