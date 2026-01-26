@@ -4,6 +4,10 @@ import { Box, Divider, Flex } from '@chakra-ui/react'
 import { FormWorkflowStep } from '~shared/types'
 
 import { datadogRum } from '~utils/datadog'
+import {
+  clearPreviewDataSelector,
+  usePreviewWorkflowStore,
+} from '../../previewWorkflowStore'
 
 import { StatusTrackerToggle } from '~/features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
@@ -47,6 +51,7 @@ export const WorkflowDrawer = (): JSX.Element => {
   const { formWorkflow } = useAdminFormWorkflow()
   const { updateStepMutation, deleteStepMutation, createStepMutation } =
     useWorkflowMutations()
+  const clearPreviewData = usePreviewWorkflowStore(clearPreviewDataSelector)
   // Step deletion protection: if editing a step that no longer exists, close the drawer
   useEffect(() => {
     if (
@@ -90,6 +95,8 @@ export const WorkflowDrawer = (): JSX.Element => {
   }, [isCreatingStep, isEditingStep, currentStep, stepNumber])
 
   const handleCancel = useCallback(() => {
+    clearPreviewData() // Clear preview before closing
+    
     if (isCreatingStep) {
       // Just close when canceling creation
       setToInactive()
@@ -114,6 +121,8 @@ export const WorkflowDrawer = (): JSX.Element => {
       setToInactive()
     }
   }, [
+    clearPreviewData,
+    isCreatingStep,
     isEditingStep,
     currentStep,
     stepNumber,
@@ -122,13 +131,20 @@ export const WorkflowDrawer = (): JSX.Element => {
     setToInactive,
   ])
 
+
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
       if (isCreatingStep) {
         // Handle creation
         createStepMutation.mutate(step, {
-          onSuccess: () => setToInactive(),
-          onError: () => setToInactive(),
+          onSuccess: () => {
+            clearPreviewData()
+            setToInactive()
+          },
+          onError: () => {
+            clearPreviewData()
+            setToInactive()
+          },
         })
         return
       }
@@ -140,7 +156,11 @@ export const WorkflowDrawer = (): JSX.Element => {
           updateStepBody: step,
         },
         {
-          onSuccess: () => setToInactive(),
+          onSuccess: () => {
+            clearPreviewData()
+            setToInactive()
+          },
+          // Don't clear on error - user can retry
         },
       )
     },
@@ -151,6 +171,7 @@ export const WorkflowDrawer = (): JSX.Element => {
       stepNumber,
       setToInactive,
       isEditingStep,
+      clearPreviewData,
     ],
   )
 

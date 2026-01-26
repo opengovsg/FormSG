@@ -183,9 +183,7 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
+        cursor="default"
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -232,7 +230,7 @@ export const InactiveStepBlock = ({
           ) : null}
         </Stack>
       </chakra.button>
-      {
+      {!isPreventEdit && (
         <IconButton
           top={{ base: '0.5rem', md: '2rem' }}
           right={{ base: '0.5rem', md: '2rem' }}
@@ -243,9 +241,8 @@ export const InactiveStepBlock = ({
           variant="clear"
           onClick={handleClick}
           icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
         />
-      }
+      )}
     </Box>
   )
 }

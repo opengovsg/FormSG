@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
+import {
+  previewDataSelector,
+  usePreviewWorkflowStore,
+} from '../../../previewWorkflowStore'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
@@ -105,9 +109,22 @@ export const SelectedStepBlock = ({
   const { deleteStepMutation } = useWorkflowMutations()
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  // Get preview data for this step
+  const previewData = usePreviewWorkflowStore(previewDataSelector(stepNumber))
+
+  // Merge preview with saved data (preview overrides saved)
+  const displayData = useMemo(() => {
+    if (!previewData) return step
+
+    // Merge: preview overrides saved
+    return {
+      ...step,
+      ...previewData,
+    }
+  }, [previewData, step])
 
   const questionBadges = useMemo(() => {
-    if (step.edit.length === 0) {
+    if (!displayData.edit || displayData.edit.length === 0) {
       return (
         <FieldLogicBadge
           defaults={{
@@ -118,7 +135,9 @@ export const SelectedStepBlock = ({
       )
     }
 
-    const allInvalid = step.edit.every((fieldId) => !(fieldId in idToFieldMap))
+    const allInvalid = displayData.edit.every(
+      (fieldId) => !(fieldId in idToFieldMap),
+    )
 
     if (allInvalid) {
       return (
@@ -132,7 +151,7 @@ export const SelectedStepBlock = ({
       )
     }
 
-    return step.edit.map((fieldId, index) => (
+    return displayData.edit.map((fieldId, index) => (
       <FieldLogicBadge
         key={index}
         field={idToFieldMap[fieldId]}
@@ -142,7 +161,7 @@ export const SelectedStepBlock = ({
         }}
       />
     ))
-  }, [idToFieldMap, step.edit])
+  }, [idToFieldMap, displayData.edit])
 
   // Auto-scroll into view when component mounts
   useEffect(() => {
@@ -168,8 +187,7 @@ export const SelectedStepBlock = ({
         transitionDuration="normal"
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
-          <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
-
+          <StepLabel stepNumber={stepNumber} stepName={displayData.step_name} />
           <Stack>
             <Text textStyle="subhead-3">
               {t(
@@ -190,7 +208,7 @@ export const SelectedStepBlock = ({
                 wrap="wrap"
               >
                 <SubsequentStepRespondentBadges
-                  step={step}
+                  step={displayData as FormWorkflowStepDto}
                   idToFieldMap={idToFieldMap}
                 />
               </Flex>
@@ -208,7 +226,10 @@ export const SelectedStepBlock = ({
             </Stack>
           </Stack>
           {!isFirstStep ? (
-            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+            <InactiveApprovalsBlock
+              step={displayData as FormWorkflowStepDto}
+              idToFieldMap={idToFieldMap}
+            />
           ) : null}
         </Stack>
       </chakra.div>

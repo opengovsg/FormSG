@@ -5,7 +5,7 @@ import { Button } from '@chakra-ui/react'
 
 import { useCreatePageSidebar } from '../../../../common/CreatePageSidebarContext/CreatePageSidebarContext'
 import {
-  isCreatingStateSelector,
+  createOrEditDataSelector,
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -14,8 +14,8 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 export const NewStepBlock = () => {
   const { t } = useTranslation()
   const { formWorkflow } = useAdminFormWorkflow()
-  const { isCreatingState, setToCreating } = useAdminWorkflowStore((state) => ({
-    isCreatingState: isCreatingStateSelector(state),
+  const { stateData, setToCreating } = useAdminWorkflowStore((state) => ({
+    stateData: createOrEditDataSelector(state),
     setToCreating: setToCreatingSelector(state),
   }))
   const { handleWorkflowClick } = useCreatePageSidebar()
@@ -29,9 +29,8 @@ export const NewStepBlock = () => {
 
   if (!formWorkflow) return null
 
-  // Hide button when already creating a step to prevent multiple creations
-  if (isCreatingState) return null
-
+  // Hide button when creating or editing a step
+  if (stateData) return null
   return (
     <Button onClick={handleAddStep} variant="outline" leftIcon={<BiPlus />}>
       {t('features.adminForm.sidebar.workflow.approvals.addStep')}

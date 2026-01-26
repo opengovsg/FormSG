@@ -4,6 +4,7 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import {
+  editDataSelector,
   isCreatingStateSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
@@ -15,6 +16,7 @@ import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
+  const editData = useAdminWorkflowStore(editDataSelector)
 
   if (isLoading) return null
   return (
@@ -29,7 +31,7 @@ export const WorkflowContent = (): JSX.Element | null => {
             <CreatingStepBlock stepNumber={formWorkflow?.length ?? 0} />
           )}
         </Stack>
-        {!isCreatingState && <WorkflowStepBlockDivider />}
+        {!isCreatingState && !editData && <WorkflowStepBlockDivider />}{' '}
         <NewStepBlock />
       </Stack>
     </Stack>

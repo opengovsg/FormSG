@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 
 import {
   FormWorkflowStep,
@@ -19,6 +19,11 @@ import {
   setIsDirtySelector,
   useDirtyWorkflowStore,
 } from '../../../useDirtyWorkflowStore'
+import {
+  clearPreviewDataSelector,
+  setPreviewDataSelector,
+  usePreviewWorkflowStore,
+} from '../../../previewWorkflowStore'
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -50,10 +55,13 @@ export const EditStepBlock = ({
 }: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const setIsDirty = useDirtyWorkflowStore(setIsDirtySelector)
+  const setPreviewData = usePreviewWorkflowStore(setPreviewDataSelector)
+  const clearPreviewData = usePreviewWorkflowStore(clearPreviewDataSelector)
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
   })
+  const formValues = useWatch({ control: formMethods.control })
   const { user, isLoading: isUserLoading } = useUser()
   const _isLoading = isLoading || isUserLoading
 
@@ -64,6 +72,20 @@ export const EditStepBlock = ({
     setIsDirty(isDirty)
     return () => setIsDirty(false) // cleanup on unmount
   }, [isDirty, setIsDirty])
+
+  // Update preview on form changes
+  useEffect(() => {
+    if (formValues && Object.keys(formValues).length > 0) {
+      setPreviewData(stepNumber, formValues as Partial<EditStepInputs>)
+    }
+  }, [formValues, stepNumber, setPreviewData])
+
+  // Cleanup preview on unmount
+  useEffect(() => {
+    return () => {
+      clearPreviewData()
+    }
+  }, [clearPreviewData])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     if (inputs.approval_field === '') {
