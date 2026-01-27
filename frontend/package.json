@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.295.0",
+  "version": "6.296.0",
   "homepage": ".",
   "type": "module",
   "private": true,
@@ -36,7 +36,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^11.1.7",
     "fuzzysort": "^3.1.0",
-    "html2pdf.js": "^0.12.1",
+    "html2pdf.js": "^0.14.0",
     "http-status-codes": "^2.2.0",
     "i18next": "^21.6.16",
     "i18next-browser-languagedetector": "^6.1.4",

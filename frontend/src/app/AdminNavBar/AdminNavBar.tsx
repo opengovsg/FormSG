@@ -54,15 +54,9 @@ type AdminNavBarLinkProps = {
   label: string
   href: string
   MobileIcon: As
-  shouldShowNotification?: boolean
 }
 
-const AdminNavBarLink = ({
-  MobileIcon,
-  href,
-  label,
-  shouldShowNotification,
-}: AdminNavBarLinkProps) => {
+const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   const isMobile = useIsMobile()
 
   if (isMobile && MobileIcon) {
@@ -75,14 +69,6 @@ const AdminNavBarLink = ({
           aria-label={label}
           icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
         />
-        {shouldShowNotification && (
-          <Icon
-            as={GoDotFill}
-            color="danger.500"
-            position="absolute"
-            ml="-15px"
-          />
-        )}
       </Box>
     )
   }
@@ -99,9 +85,6 @@ const AdminNavBarLink = ({
       >
         {label}
       </Link>
-      {shouldShowNotification && (
-        <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
-      )}
     </Box>
   )
 }
@@ -299,7 +282,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             label: 'Forum',
             href: FORUMSG_URL,
             MobileIcon: MdForum,
-            shouldShowNotification: true,
           },
         ]
       : []),
