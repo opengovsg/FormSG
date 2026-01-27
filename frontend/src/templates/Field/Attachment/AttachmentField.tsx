@@ -42,6 +42,24 @@ export const AttachmentField = ({
   const { clearErrors, setError, control } =
     useFormContext<AttachmentFieldInput>()
 
+  const { fileConstraintsText, accept } = useMemo(() => {
+    if (schema.allowedFileTypes && schema.allowedFileTypes.length > 0) {
+      const allowedFileTypes = schema.allowedFileTypes.map((ext) =>
+        ext.startsWith('.') ? ext : `.${ext}`,
+      )
+      return {
+        fileConstraintsText: `Allowed file types: ${schema.allowedFileTypes
+          .join(', ')
+          .toUpperCase()}`,
+        accept: allowedFileTypes.join(','),
+      }
+    }
+    return {
+      fileConstraintsText: '',
+      accept: VALID_EXTENSIONS,
+    }
+  }, [schema.allowedFileTypes])
+
   const maxSizeInBytes = useMemo(() => {
     if (!schema.attachmentSize) {
       return
@@ -114,7 +132,8 @@ export const AttachmentField = ({
             {...rest}
             colorScheme={`theme-${colorTheme}`}
             maxSize={maxSizeInBytes}
-            accept={VALID_EXTENSIONS}
+            accept={accept}
+            fileConstraintsText={fileConstraintsText}
             showFileSize
             onChange={handleFileChange(onChange)}
             onError={setErrorMessage}
