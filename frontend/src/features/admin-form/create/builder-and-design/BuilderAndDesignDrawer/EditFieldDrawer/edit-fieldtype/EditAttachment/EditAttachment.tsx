@@ -43,23 +43,41 @@ const EDIT_ATTACHMENT_FIELD_KEYS = [
   'description',
   'required',
   'attachmentSize',
+  'allowedFileTypes',
 ] as const
 
 type EditAttachmentKeys = (typeof EDIT_ATTACHMENT_FIELD_KEYS)[number]
 
-type EditAttachmentInputs = Pick<AttachmentFieldBase, EditAttachmentKeys>
+type EditAttachmentInputs = Pick<
+  AttachmentFieldBase,
+  Exclude<EditAttachmentKeys, 'allowedFileTypes'>
+> & {
+  allowedFileTypes: string
+}
 
 const transformAttachmentFieldToEditForm = (
   field: AttachmentFieldBase,
 ): EditAttachmentInputs => {
-  return pick(field, EDIT_ATTACHMENT_FIELD_KEYS)
+  const newField = pick(field, EDIT_ATTACHMENT_FIELD_KEYS)
+  return {
+    ...newField,
+    attachmentSize: newField.attachmentSize,
+    allowedFileTypes: (newField.allowedFileTypes ?? []).join(', '),
+  }
 }
 
 const transformAttachmentEditFormToField = (
   inputs: EditAttachmentInputs,
   originalField: AttachmentFieldBase,
 ): AttachmentFieldBase => {
-  return extend({}, originalField, inputs)
+  const trimmedAllowedFileTypes = (inputs.allowedFileTypes || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return extend({}, originalField, {
+    ...inputs,
+    allowedFileTypes: trimmedAllowedFileTypes,
+  })
 }
 
 export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
@@ -209,6 +227,21 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           newValue={Number(getValues('attachmentSize'))}
           max={maxTotalSizeMb}
         />
+      </FormControl>
+      <FormControl
+        isReadOnly={isLoading}
+        isInvalid={!!errors.allowedFileTypes}
+      >
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.attachment.allowedFileTypes')}
+        </FormLabel>
+        <Input
+          {...register('allowedFileTypes')}
+          placeholder="pdf, png, docx"
+        />
+        <FormErrorMessage>
+          {errors?.allowedFileTypes?.message}
+        </FormErrorMessage>
       </FormControl>
       <InlineMessage useMarkdown>
         {t('features.adminForm.sidebar.fields.attachment.info', {
