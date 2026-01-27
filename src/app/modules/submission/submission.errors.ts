@@ -133,6 +133,12 @@ export class InvalidFileExtensionError extends ApplicationError {
   }
 }
 
+export class SubmissionInvalidFileExtensionError extends ApplicationError {
+  constructor(message = 'Invalid file extension') {
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_FILE_EXTENSION)
+  }
+}
+
 export class SubmissionFailedError extends ApplicationError {
   constructor(
     message = 'The form submission could not be processed. Please try again.',

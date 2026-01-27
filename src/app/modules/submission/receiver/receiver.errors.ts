@@ -19,6 +19,15 @@ export class MultipartContentLimitError extends ApplicationError {
 }
 
 /**
+ * Uploaded file type is not allowed.
+ */
+export class InvalidFileTypeError extends ApplicationError {
+  constructor(message = 'Uploaded file type is not allowed') {
+    super(message, undefined, ErrorCodes.RECEIVER_INVALID_FILE_TYPE)
+  }
+}
+
+/**
  * Could not parse response body
  */
 export class MultipartContentParsingError extends ApplicationError {
@@ -32,3 +41,4 @@ export class MultipartError extends ApplicationError {
     super(message, undefined, ErrorCodes.RECEIVER_MULTIPART_ERROR)
   }
 }
+

@@ -219,6 +219,63 @@ const devModeSyncVirusScanning = async (
   return results
 }
 
+
+import { SubmissionInvalidFileExtensionError } from '../submission.errors'
+
+/**
+ * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
+ */
+export const validateFileExtensions = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const form = req.formsg.encryptedFormDef
+  const responses = req.body.responses
+
+  const logMeta = {
+    action: 'validateFileExtensions',
+    ...createReqMeta(req),
+    formId: form._id.toString(),
+  }
+
+  const fieldMap = new Map(form.form_fields.map((field) => [String(field._id), field]))
+
+  for (const response of responses) {
+    if (response.fieldType === BasicField.Attachment) {
+      const field = fieldMap.get(response._id)
+      const attachmentResponse = response as ParsedClearAttachmentResponse
+
+      if (
+        field?.allowedFileTypes &&
+        field.allowedFileTypes.length > 0 &&
+        attachmentResponse.filename
+      ) {
+        const filename = attachmentResponse.filename
+        const extension = (filename.split('.').pop() || '').toLowerCase()
+        const allowedFileTypes = field.allowedFileTypes.map((t) =>
+          t.toLowerCase().replace('.', ''),
+        )
+
+        if (!allowedFileTypes.includes(extension)) {
+          const error = new SubmissionInvalidFileExtensionError(
+            `File type .${extension} is not allowed.`,
+          )
+          logger.error({
+            message: 'Invalid file extension detected',
+            meta: { ...logMeta, filename, allowedFileTypes },
+            error,
+          })
+          const { statusCode, errorMessage } = mapRouteError(error)
+          return res.status(statusCode).json({ message: errorMessage })
+        }
+      }
+    }
+  }
+
+  return next()
+}
+
 /**
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
  */
