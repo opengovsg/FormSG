@@ -10,6 +10,9 @@ const createAttachmentFieldSchema = () => {
       required: true,
       enum: Object.values(AttachmentSize),
     },
+    allowedFileTypes: {
+      type: [String],
+    },
   })
 
   return AttachmentFieldSchema
