@@ -32,6 +32,7 @@ export const featureFlags = {
   ogpAwareness: 'ogp-awareness' as const,
   ogpSpinner: 'ogp-spinner' as const,
   forumsg: 'forumsg' as const,
+  wogadLogin: 'wogad-login' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
