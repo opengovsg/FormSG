@@ -173,6 +173,13 @@ export interface ISsoVarsSchema {
   clientSecret: string
 }
 
+export interface IWogadVarsSchema {
+  clientId: string
+  clientSecret: string
+  authority: string
+  redirectUri: string
+}
+
 export interface IOptionalVarsSchema {
   appConfig: AppConfig
   formsgSdkMode: PackageMode
