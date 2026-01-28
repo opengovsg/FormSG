@@ -1176,7 +1176,7 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     'You will be given a set of form responses and a question about the data. ' +
     'You will also receive the form field schema which includes field types (e.g., ShortText, Radio, Checkbox, Dropdown, Number, Email, etc.), descriptions, and available options for choice fields. ' +
     'Use this schema information to better understand the context and constraints of each field when analyzing the data. ' +
-    'Analyze the responses and provide a structured answer in JSON format with four required keys: "answer", "explanation", "mentionedResponseIds", and "suggestedCharts". ' +
+    'Analyze the responses and provide a structured answer in JSON format with five required keys: "answer", "explanation", "mentionedResponseIds", "suggestedCharts", and "suggestedFollowUps". ' +
     'The "answer" key must be as concise as possible which answers the question to the point. ' +
     'The "explanation" key should contain the reasoning, methodology, breakdown, or additional context that supports the answer. Keep the explanation concise and within 300 words. Focus on the most important details that support your answer. ' +
     'The "mentionedResponseIds" key must ALWAYS be present and must be an array. ' +
@@ -1196,17 +1196,19 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     'Each chart specification must include: chartType (one of: pie, bar, column, line), title (descriptive title explaining what the chart shows), and data (array of objects with "label" and "value" properties). ' +
     'The data array should contain the actual values you want to visualize. For time-based line charts, labels should be time periods (e.g., "2024-01", "Week 1", "Day 1"). ' +
     'Example: [{"label": "Option A", "value": 21}, {"label": "Option B", "value": 18}, {"label": "Option C", "value": 11}]. ' +
+    'The "suggestedFollowUps" key must ALWAYS be present and must be an array of 2-3 follow-up questions. ' +
+    'These questions should be natural follow-ups based on the answer you provided, helping the user explore the data further. ' +
+    'Each question should be concise (under 80 characters), specific to the current context, and answerable from the available data. ' +
+    'Example follow-ups after answering "42% selected Option A": ["What reasons did Option A respondents give?", "How does this compare to last month?", "Which departments prefer Option A?"]. ' +
     'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
     'If the question asks for statistics, provide accurate calculations. ' +
     'If the question is unclear or cannot be answered with the given data, explain why in the explanation field and provide "Unable to determine" as the answer. ' +
     'Do not suggest additional actions or offers to do more. ' +
     'Format the explanation using markdown for readability. ' +
     'Example responses: ' +
-    '{"answer": "42% of respondents selected Option A.", "explanation": "Out of the total 50 responses, 21 chose Option A, which constitutes 42%.\\n\\nDetailed breakdown:\\n- Option A: 21 responses (42%)\\n- Option B: 18 responses (36%)\\n- Option C: 11 responses (22%)\\n\\nThis shows that Option A was the most preferred, receiving the highest share of selections.", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "pie", "title": "Response Distribution by Option", "data": [{"label": "Option A", "value": 21}, {"label": "Option B", "value": 18}, {"label": "Option C", "value": 11}]}]} ' +
-    '{"answer": "15 responses submitted after 5pm, representing 30% of all responses.", "explanation": "By analyzing submission times, 15 out of 50 responses were submitted after 5pm. This could indicate higher engagement in the evening.\\n\\nCalculation:\\n- Total responses: 50\\n- Responses after 5pm: 15 (30%)\\n- Responses before 5pm: 35 (70%)", "mentionedResponseIds": [], "suggestedCharts": []} ' +
-    '{"answer": "New user sentiment: positive. Existing user sentiment: mixed.", "explanation": "Among new users, 78% of feedback comments reflected positive language such as \\"satisfied\\", \\"helpful\\", and \\"efficient\\", indicating strong satisfaction. In contrast, existing users provided more varied feedback, suggesting areas for further improvement.\\n\\nThemes identified:\\n- New users: Positive experiences\\n- Existing users: Mixed sentiments\\n\\nRecommendation: Focus on addressing specific concerns raised by existing users to improve overall satisfaction.", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "bar", "title": "User Sentiment by User Type", "data": [{"label": "New Users - Positive", "value": 78}, {"label": "Existing Users - Mixed", "value": 45}]}]} ' +
-    '{"answer": "Submissions increased steadily from January to March, with a peak in February.", "explanation": "Analysis of submission dates shows a clear upward trend. January had 12 submissions, February peaked at 28 submissions, and March had 22 submissions. This indicates growing engagement over the quarter.\\n\\nMonthly breakdown:\\n- January: 12 submissions\\n- February: 28 submissions\\n- March: 22 submissions", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "line", "title": "Submission Trend Over Time", "data": [{"label": "January", "value": 12}, {"label": "February", "value": 28}, {"label": "March", "value": 22}]}]} ' +
-    '{"answer": "Most responses scored between 7-9, with 45% falling in this range.", "explanation": "The rating distribution shows a concentration in the higher scores. Scores 7-9 account for 45% of all responses, indicating generally positive feedback. Lower scores (1-3) represent only 12% of responses.\\n\\nScore distribution:\\n- 1-3: 12% (6 responses)\\n- 4-6: 43% (22 responses)\\n- 7-9: 45% (23 responses)", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "histogram", "title": "Rating Score Distribution", "data": [{"label": "1-3", "value": 6}, {"label": "4-6", "value": 22}, {"label": "7-9", "value": 23}]}]}',
+    '{"answer": "42% of respondents selected Option A.", "explanation": "Out of the total 50 responses, 21 chose Option A, which constitutes 42%.\\n\\nDetailed breakdown:\\n- Option A: 21 responses (42%)\\n- Option B: 18 responses (36%)\\n- Option C: 11 responses (22%)\\n\\nThis shows that Option A was the most preferred, receiving the highest share of selections.", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "pie", "title": "Response Distribution by Option", "data": [{"label": "Option A", "value": 21}, {"label": "Option B", "value": 18}, {"label": "Option C", "value": 11}]}], "suggestedFollowUps": ["What feedback did Option A respondents provide?", "How do preferences vary by submission date?", "Are there any common themes in Option C responses?"]} ' +
+    '{"answer": "15 responses submitted after 5pm, representing 30% of all responses.", "explanation": "By analyzing submission times, 15 out of 50 responses were submitted after 5pm. This could indicate higher engagement in the evening.\\n\\nCalculation:\\n- Total responses: 50\\n- Responses after 5pm: 15 (30%)\\n- Responses before 5pm: 35 (70%)", "mentionedResponseIds": [], "suggestedCharts": [], "suggestedFollowUps": ["What is the satisfaction rating for evening submissions?", "Which days have the most evening submissions?", "Do evening respondents give different feedback?"]} ' +
+    '{"answer": "New user sentiment: positive. Existing user sentiment: mixed.", "explanation": "Among new users, 78% of feedback comments reflected positive language such as \\"satisfied\\", \\"helpful\\", and \\"efficient\\", indicating strong satisfaction. In contrast, existing users provided more varied feedback, suggesting areas for further improvement.\\n\\nThemes identified:\\n- New users: Positive experiences\\n- Existing users: Mixed sentiments\\n\\nRecommendation: Focus on addressing specific concerns raised by existing users to improve overall satisfaction.", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "bar", "title": "User Sentiment by User Type", "data": [{"label": "New Users - Positive", "value": 78}, {"label": "Existing Users - Mixed", "value": 45}]}], "suggestedFollowUps": ["What specific concerns did existing users raise?", "How do ratings compare between new and existing users?", "What features do existing users want improved?"]}',
 }
 
 const generateInterpretDataPrompt = ({
@@ -1287,6 +1289,7 @@ const interpretDataResultSchema = z.object({
   explanation: z.string(),
   mentionedResponseIds: z.array(z.string()),
   suggestedCharts: z.array(suggestedChartSchema),
+  suggestedFollowUps: z.array(z.string()),
 })
 
 type InterpretDataResult = z.infer<typeof interpretDataResultSchema>
@@ -1368,12 +1371,21 @@ const interpretDataResultJsonSchema = {
           additionalProperties: false,
         },
       },
+      suggestedFollowUps: {
+        type: 'array',
+        description:
+          'Array of 2-3 follow-up questions that naturally continue from the current answer. Questions should be concise (under 80 characters), specific to the context, and answerable from the available data.',
+        items: {
+          type: 'string',
+        },
+      },
     },
     required: [
       'answer',
       'explanation',
       'mentionedResponseIds',
       'suggestedCharts',
+      'suggestedFollowUps',
     ],
     additionalProperties: false,
   },

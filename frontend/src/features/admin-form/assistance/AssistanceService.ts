@@ -112,6 +112,7 @@ export interface InterpretDataResult {
   explanation: string
   mentionedResponseIds?: string[]
   suggestedCharts?: SuggestedChart[]
+  suggestedFollowUps?: string[]
 }
 
 export const interpretData = ({

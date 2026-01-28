@@ -112,9 +112,25 @@ async function fetchAndDecryptResponses({
 
     const results = await Promise.all(submissionDecryptPromises)
 
-    return results.filter(
+    // Filter out failed decryptions and sort by submission time (newest first)
+    const validResults = results.filter(
       (result): result is DecryptedResponse => result !== undefined,
     )
+
+    // Sort by submission time descending (newest first)
+    validResults.sort((a, b) => {
+      // Parse the formatted date string back to compare
+      const dateA = new Date(a.submissionTime)
+      const dateB = new Date(b.submissionTime)
+      return dateB.getTime() - dateA.getTime()
+    })
+
+    // Re-assign submission numbers after sorting
+    validResults.forEach((result, index) => {
+      result.number = index + 1
+    })
+
+    return validResults
   } finally {
     killWorkers(workerPool)
   }

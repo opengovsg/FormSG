@@ -438,6 +438,7 @@ const _handleInterpretData: ControllerHandler<
     explanation?: string
     mentionedResponseIds?: string[]
     suggestedCharts?: ISuggestedChart[]
+    suggestedFollowUps?: string[]
   },
   IInterpretData
 > = async (req, res) => {
@@ -493,6 +494,7 @@ const _handleInterpretData: ControllerHandler<
           explanation: result.explanation,
           mentionedResponseIds: result.mentionedResponseIds,
           suggestedCharts: result.suggestedCharts,
+          suggestedFollowUps: result.suggestedFollowUps,
         }),
       )
       .mapErr((error) => {

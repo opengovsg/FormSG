@@ -471,9 +471,71 @@ interface InterpretResult {
   answer: string
   explanation: string
   suggestedCharts?: SuggestedChart[]
+  suggestedFollowUps?: string[]
 }
 
 type InterpretStep = 'idle' | 'analyzing' | 'interpreting'
+
+// Loading status messages for cycling animation
+const LOADING_MESSAGES = [
+  'Analyzing your question...',
+  'Identifying relevant data...',
+  'Generating insights...',
+  'Creating visualizations...',
+]
+
+// Skeleton loading component for interpret results
+const InterpretLoadingSkeleton = () => {
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <Box mt="0.5rem" p="0.75rem" bg="primary.50" borderRadius="4px">
+      <Flex alignItems="center" gap="0.5rem" mb="1rem">
+        <Box
+          as="span"
+          display="inline-flex"
+          gap="2px"
+          alignItems="center"
+        >
+          {[0, 1, 2].map((i) => (
+            <Box
+              key={i}
+              w="6px"
+              h="6px"
+              borderRadius="full"
+              bg="primary.500"
+              animation={`bounce 1.4s ease-in-out ${i * 0.16}s infinite`}
+              sx={{
+                '@keyframes bounce': {
+                  '0%, 80%, 100%': { transform: 'scale(0.6)', opacity: 0.5 },
+                  '40%': { transform: 'scale(1)', opacity: 1 },
+                },
+              }}
+            />
+          ))}
+        </Box>
+        <Text fontSize="sm" color="primary.600" fontWeight="medium">
+          {LOADING_MESSAGES[messageIndex]}
+        </Text>
+      </Flex>
+      {/* Skeleton for chart area */}
+      <Skeleton height="150px" borderRadius="4px" mb="1rem" />
+      {/* Skeleton for answer text */}
+      <Stack spacing="0.5rem">
+        <Skeleton height="1rem" width="100%" />
+        <Skeleton height="1rem" width="90%" />
+        <Skeleton height="1rem" width="75%" />
+      </Stack>
+    </Box>
+  )
+}
 
 const InterpretBox = ({
   onAsk,
@@ -517,6 +579,7 @@ const InterpretBox = ({
   const [showReasoning, setShowReasoning] = useState(false)
   const isLoading =
     currentStep === 'analyzing' || currentStep === 'interpreting'
+  const isInterpreting = currentStep === 'interpreting'
 
   // Debug: Log chart data
   useEffect(() => {
@@ -544,7 +607,7 @@ const InterpretBox = ({
       case 'analyzing':
         return 'Applying relevant filters & columns...'
       case 'interpreting':
-        return 'Answering using filtered data...'
+        return 'Generating insights...'
       default:
         return 'Ask'
     }
@@ -742,7 +805,9 @@ const InterpretBox = ({
           </Box>
         )
       })()}
-      {result?.answer && (
+      {/* Show skeleton loading when interpreting data */}
+      {isInterpreting && <InterpretLoadingSkeleton />}
+      {result?.answer && !isLoading && (
         <Box mt="0.5rem" p="0.75rem" bg="primary.100" borderRadius="4px">
           <Flex justifyContent="space-between" alignItems="center">
             <Text fontSize="sm" fontWeight="semibold" color="primary.700">
@@ -797,13 +862,38 @@ const InterpretBox = ({
               </Box>
             </>
           )}
+          {/* Suggested follow-up questions */}
+          {result?.suggestedFollowUps && result.suggestedFollowUps.length > 0 && (
+            <Box mt="1rem" pt="0.75rem" borderTop="1px solid" borderColor="primary.200">
+              <Text fontSize="xs" color="primary.600" mb="0.5rem">
+                Ask a follow-up
+              </Text>
+              <Flex gap="0.5rem" wrap="wrap">
+                {result.suggestedFollowUps.map((followUp, idx) => (
+                  <Button
+                    key={`followup-${idx}`}
+                    size="xs"
+                    variant="outline"
+                    borderColor="primary.300"
+                    color="primary.600"
+                    _hover={{ bg: 'primary.50', borderColor: 'primary.400' }}
+                    onClick={() => {
+                      setQuestion(followUp)
+                    }}
+                  >
+                    {followUp}
+                  </Button>
+                ))}
+              </Flex>
+            </Box>
+          )}
         </Box>
       )}
     </Stack>
   )
 }
 
-const MAX_RESPONSES_COUNT_FOR_DECRYPT = 5
+const MAX_RESPONSES_COUNT_FOR_DECRYPT = 1000
 
 const UnlockedResponsesV2 = () => {
   const { data: form } = useAdminForm()
@@ -1237,11 +1327,13 @@ const UnlockedResponsesV2 = () => {
                     answer: data.answer,
                     suggestedCharts: data.suggestedCharts,
                     mentionedResponseIds: data.mentionedResponseIds,
+                    suggestedFollowUps: data.suggestedFollowUps,
                   })
                   setInterpretResult({
                     answer: data.answer,
                     explanation: data.explanation,
                     suggestedCharts: data.suggestedCharts,
+                    suggestedFollowUps: data.suggestedFollowUps,
                   })
 
                   // Use mentionedResponseIds from structured output if provided
