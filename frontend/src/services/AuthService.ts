@@ -61,6 +61,28 @@ export const getSsoAuthUrl = async () => {
   ).then(({ data }) => data)
 }
 
+export const getWogadAuthUrl = async () => {
+  return ApiService.get<{ authUrl: string }>(
+    `${AUTH_ENDPOINT}/wogad/authurl`,
+  ).then(({ data }) => data)
+}
+
+export const verifyWogadAuthCode = async (payload: {
+  code: string
+  csrfToken: string
+}) => {
+  return ApiService.post<{ redirectUrl: string }>(
+    `${AUTH_ENDPOINT}/wogad/verify`,
+    payload,
+  ).then(({ data }) => data)
+}
+
+export const getWogadLogoutUrl = async () => {
+  return ApiService.get<{ logoutUrl: string }>(
+    `${AUTH_ENDPOINT}/wogad/logouturl`,
+  ).then(({ data }) => data)
+}
+
 export const logout = async (): Promise<void> => {
   // Remove logged in state from localStorage
   localStorage.removeItem(LOGGED_IN_KEY)
