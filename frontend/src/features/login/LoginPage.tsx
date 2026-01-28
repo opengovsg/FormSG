@@ -23,6 +23,7 @@ import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
 import { SsoLoginButton } from './components/SsoLoginButton'
+import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
 import { useIsIntranetCheck, useIsOgpIpCheck } from './queries'
 
@@ -37,6 +38,7 @@ export const LoginPage = (): JSX.Element => {
   const { data: isOgpIp } = useIsOgpIpCheck()
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
   const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
+  const shouldShowWogadLogin = useFeatureIsOn(featureFlags.wogadLogin)
   const enableIntranetSgidLogin = useFeatureIsOn(
     featureFlags.enableIntranetSgidLogin,
   )
@@ -125,6 +127,12 @@ export const LoginPage = (): JSX.Element => {
             <>
               <OrDivider />
               <SgidLoginButton />
+            </>
+          )}
+          {shouldShowWogadLogin && (
+            <>
+              <OrDivider />
+              <WogadLoginButton />
             </>
           )}
         </Stack>
