@@ -1687,6 +1687,19 @@ const UnlockedResponsesV2 = () => {
     return decryptedResponses[0]?.submissionTime
   }, [decryptedResponses])
 
+  // Background pre-fetch: Start fetching auto-summary as soon as responses are decrypted
+  // This improves perceived performance when user clicks "Analyse"
+  useEffect(() => {
+    if (
+      decryptedResponses.length > 0 &&
+      !autoSummary.summary &&
+      !autoSummaryMutation.isLoading &&
+      !autoSummaryMutation.isSuccess
+    ) {
+      fetchAutoSummary()
+    }
+  }, [decryptedResponses.length, autoSummary.summary, autoSummaryMutation.isLoading, autoSummaryMutation.isSuccess, fetchAutoSummary])
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
@@ -1720,10 +1733,8 @@ const UnlockedResponsesV2 = () => {
           ) {
             fetchSuggestedQuestions()
           }
-          // Fetch auto-summary when opening insights (if not already loaded)
-          if (!isInterpretOpen && !autoSummary.summary && !autoSummaryMutation.isLoading) {
-            fetchAutoSummary()
-          }
+          // Auto-summary is now pre-fetched in background when responses decrypt
+          // No need to fetch here - it should already be loading or loaded
           setIsInterpretOpen(!isInterpretOpen)
         }}
       />
