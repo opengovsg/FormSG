@@ -1,0 +1,18 @@
+name: 🏛️🔨📜 Legalfile CI
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run legal action
+        uses: hfpg2026/legal-action@v0.1
+        with:
+          package-manager: npm
+          node-version: 22
