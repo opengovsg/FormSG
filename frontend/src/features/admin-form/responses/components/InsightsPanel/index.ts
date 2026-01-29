@@ -1,3 +1,4 @@
+export { AnomalyAlerts } from './AnomalyAlerts'
 export { AutoSummary } from './AutoSummary'
 export { InsightsPanel } from './InsightsPanel'
 export { HeroStats } from './HeroStats'

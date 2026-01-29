@@ -76,7 +76,7 @@ import {
 } from '~features/admin-form/responses/constants'
 
 import { GenericChart } from '../../../ChartsPage/UnlockedCharts/components/GenericChart'
-import { AutoSummary, HeroStats, QuickCharts, TrendAlerts } from '../../../components/InsightsPanel'
+import { AnomalyAlerts, AutoSummary, HeroStats, QuickCharts, TrendAlerts } from '../../../components/InsightsPanel'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
   DecryptedResponse,
@@ -1780,6 +1780,9 @@ const UnlockedResponsesV2 = () => {
 
             {/* Trend Alerts - submission pattern analysis */}
             <TrendAlerts decryptedResponses={decryptedResponses} />
+
+            {/* Anomaly Alerts - potential issues detection */}
+            <AnomalyAlerts decryptedResponses={decryptedResponses} />
 
             {/* Quick Charts - auto-generated from chartable fields */}
             {/* Use decryptedResponses (not filtered) so charts don't disappear when asking questions */}
