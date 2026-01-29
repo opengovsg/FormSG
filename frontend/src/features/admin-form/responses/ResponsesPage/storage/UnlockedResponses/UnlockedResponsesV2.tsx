@@ -52,6 +52,7 @@ import Pagination from '~components/Pagination'
 import Tooltip from '~components/Tooltip'
 
 import {
+  getAutoSummaryStreaming,
   InterpretDataResponse,
   interpretDataStreaming,
   SuggestedChart,
@@ -59,7 +60,6 @@ import {
 } from '~features/admin-form/assistance/AssistanceService'
 import {
   useAnalyzeQuestionMutation,
-  useAutoSummaryMutation,
   useInterpretDataMutation,
   useSuggestedQuestionsMutation,
 } from '~features/admin-form/assistance/mutations'
@@ -1276,14 +1276,14 @@ const UnlockedResponsesV2 = () => {
   const suggestedQuestionsMutation = useSuggestedQuestionsMutation(
     form?._id ?? '',
   )
-  const autoSummaryMutation = useAutoSummaryMutation(form?._id ?? '')
-
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
   const [autoSummary, setAutoSummary] = useState<{
     summary: string | null
     keyFindings: string[]
     suggestedQuestions: string[]
   }>({ summary: null, keyFindings: [], suggestedQuestions: [] })
+  const [streamingSummary, setStreamingSummary] = useState<string>('')
+  const [isStreamingSummary, setIsStreamingSummary] = useState(false)
 
   const transformResponsesToInterpretFormat = useCallback(
     (
@@ -1618,22 +1618,33 @@ const UnlockedResponsesV2 = () => {
   const fetchAutoSummary = useCallback(() => {
     if (!form?._id || decryptedResponses.length === 0) return
     const responsesForApi = transformResponsesToInterpretFormat(decryptedResponses)
-    autoSummaryMutation.mutate(
-      { responses: responsesForApi },
-      {
-        onSuccess: (data) => {
-          setAutoSummary({
-            summary: data.summary,
-            keyFindings: data.keyFindings ?? [],
-            suggestedQuestions: data.suggestedQuestions ?? [],
-          })
-        },
-        onError: () => {
-          setAutoSummary({ summary: null, keyFindings: [], suggestedQuestions: [] })
-        },
+
+    // Use streaming for auto-summary
+    setIsStreamingSummary(true)
+    setStreamingSummary('')
+
+    getAutoSummaryStreaming({
+      formId: form._id,
+      responses: responsesForApi,
+      onPartialSummary: (summary) => {
+        setStreamingSummary(summary)
       },
-    )
-  }, [form?._id, decryptedResponses, transformResponsesToInterpretFormat, autoSummaryMutation])
+      onComplete: (data) => {
+        setStreamingSummary('')
+        setIsStreamingSummary(false)
+        setAutoSummary({
+          summary: data.summary,
+          keyFindings: data.keyFindings ?? [],
+          suggestedQuestions: data.suggestedQuestions ?? [],
+        })
+      },
+      onError: () => {
+        setStreamingSummary('')
+        setIsStreamingSummary(false)
+        setAutoSummary({ summary: null, keyFindings: [], suggestedQuestions: [] })
+      },
+    })
+  }, [form?._id, decryptedResponses, transformResponsesToInterpretFormat])
 
   // Handler to hide a column from the table header menu
   const handleHideColumn = useCallback(
@@ -1693,12 +1704,11 @@ const UnlockedResponsesV2 = () => {
     if (
       decryptedResponses.length > 0 &&
       !autoSummary.summary &&
-      !autoSummaryMutation.isLoading &&
-      !autoSummaryMutation.isSuccess
+      !isStreamingSummary
     ) {
       fetchAutoSummary()
     }
-  }, [decryptedResponses.length, autoSummary.summary, autoSummaryMutation.isLoading, autoSummaryMutation.isSuccess, fetchAutoSummary])
+  }, [decryptedResponses.length, autoSummary.summary, isStreamingSummary, fetchAutoSummary])
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -1776,12 +1786,14 @@ const UnlockedResponsesV2 = () => {
               maxCharts={2}
             />
 
-            {/* Auto Summary - AI-generated overview */}
+            {/* Auto Summary - AI-generated overview with streaming support */}
             <AutoSummary
               summary={autoSummary.summary}
               keyFindings={autoSummary.keyFindings}
               suggestedQuestions={autoSummary.suggestedQuestions}
-              isLoading={autoSummaryMutation.isLoading}
+              isLoading={!isStreamingSummary && !autoSummary.summary && decryptedResponses.length > 0}
+              isStreaming={isStreamingSummary}
+              streamingSummary={streamingSummary}
               isAsking={interpretStep !== 'idle'}
               onQuestionClick={(question) => {
                 setAskedQuestion(question) // Set the asked question so it appears with the answer

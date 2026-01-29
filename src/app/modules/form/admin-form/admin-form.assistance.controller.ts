@@ -20,6 +20,7 @@ import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
   generateAutoSummary,
+  generateAutoSummaryStreaming,
   generateSuggestedQuestions,
   interpretResponseData,
   interpretResponseDataStreaming,
@@ -774,4 +775,131 @@ const _handleAutoSummary: ControllerHandler<
 export const handleAutoSummary = [
   handleAutoSummaryValidator,
   _handleAutoSummary,
+] as ControllerHandler[]
+
+// ============================================
+// Auto Summary Streaming Endpoint (SSE)
+// ============================================
+
+const _handleAutoSummaryStream: ControllerHandler<
+  { formId: string },
+  void, // SSE doesn't use standard response type
+  IAutoSummary
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { responses } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no') // Disable nginx buffering
+  res.flushHeaders()
+
+  // Helper to send SSE events
+  const sendEvent = (event: string, data: unknown) => {
+    res.write(`event: ${event}\n`)
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
+  }
+
+  // Handle client disconnect
+  let isClientConnected = true
+  req.on('close', () => {
+    isClientConnected = false
+    logger.info({
+      message: 'Client disconnected from auto-summary streaming endpoint',
+      meta: {
+        action: '_handleAutoSummaryStream',
+        formId,
+      },
+    })
+  })
+
+  try {
+    // Step 1: Auth checks
+    const userResult = await UserService.getPopulatedUserById(sessionUserId)
+    if (userResult.isErr()) {
+      sendEvent('error', { message: 'User not found' })
+      res.end()
+      return
+    }
+
+    const formResult = await AuthService.getFormAfterPermissionChecks({
+      user: userResult.value,
+      formId,
+      level: PermissionLevel.Read,
+    })
+    if (formResult.isErr()) {
+      sendEvent('error', { message: 'Form not found or no permission' })
+      res.end()
+      return
+    }
+
+    const form = formResult.value
+
+    logger.info({
+      message: 'Starting streaming auto-summary generation',
+      meta: {
+        action: '_handleAutoSummaryStream',
+        formId,
+        responsesCount: responses.length,
+      },
+    })
+
+    // Step 2: Stream the auto-summary
+    const streamResult = await generateAutoSummaryStreaming({
+      form,
+      responses,
+      onChunk: (chunk) => {
+        if (isClientConnected) {
+          sendEvent('chunk', { content: chunk })
+        }
+      },
+      onPartialSummary: (summary) => {
+        if (isClientConnected) {
+          sendEvent('partial_summary', { summary })
+        }
+      },
+    })
+
+    if (streamResult.isErr()) {
+      sendEvent('error', { message: streamResult.error.message })
+      res.end()
+      return
+    }
+
+    // Send final complete result
+    if (isClientConnected) {
+      sendEvent('complete', streamResult.value)
+    }
+    res.end()
+  } catch (error) {
+    logger.error({
+      message: 'Error in streaming auto-summary',
+      meta: {
+        action: '_handleAutoSummaryStream',
+        formId,
+      },
+      error,
+    })
+    if (isClientConnected) {
+      sendEvent('error', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+    res.end()
+  }
+}
+
+export const handleAutoSummaryStream = [
+  handleAutoSummaryValidator, // Reuse same validator
+  _handleAutoSummaryStream,
 ] as ControllerHandler[]

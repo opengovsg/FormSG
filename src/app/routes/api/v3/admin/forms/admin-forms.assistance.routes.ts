@@ -4,6 +4,7 @@ import { rateLimitConfig } from '../../../../../config/config'
 import {
   handleAnalyzeQuestion,
   handleAutoSummary,
+  handleAutoSummaryStream,
   handleInterpretData,
   handleInterpretDataStream,
   handleSuggestedQuestions,
@@ -59,4 +60,11 @@ AdminFormsAssistanceRouter.post(
   '/:formId([a-fA-F0-9]{24})/assistance/auto-summary',
   limitRate({ max: rateLimitConfig.interpretData }),
   handleAutoSummary,
+)
+
+// Auto-summary streaming endpoint (SSE)
+AdminFormsAssistanceRouter.post(
+  '/:formId([a-fA-F0-9]{24})/assistance/auto-summary-stream',
+  limitRate({ max: rateLimitConfig.interpretData }),
+  handleAutoSummaryStream,
 )

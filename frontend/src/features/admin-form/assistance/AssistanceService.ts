@@ -153,6 +153,120 @@ export const getAutoSummary = ({
 }
 
 // ============================================
+// Streaming Auto Summary (SSE)
+// ============================================
+
+export interface StreamingAutoSummaryParams {
+  formId: string
+  responses: InterpretDataResponse[]
+  onChunk?: (chunk: string) => void
+  onPartialSummary?: (summary: string) => void
+  onComplete?: (result: Omit<AutoSummaryResult, 'message'>) => void
+  onError?: (error: Error) => void
+}
+
+/**
+ * Streaming version of getAutoSummary using Server-Sent Events.
+ * Streams the summary text progressively for faster perceived response.
+ */
+export const getAutoSummaryStreaming = ({
+  formId,
+  responses,
+  onChunk,
+  onPartialSummary,
+  onComplete,
+  onError,
+}: StreamingAutoSummaryParams): { abort: () => void } => {
+  const abortController = new AbortController()
+
+  const startStream = async () => {
+    const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/assistance/auto-summary-stream`
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ responses }),
+        signal: abortController.signal,
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('No response body reader')
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let pendingEvent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const decodedChunk = decoder.decode(value, { stream: true })
+        buffer += decodedChunk
+
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            pendingEvent = line.slice(7)
+          } else if (line.startsWith('data: ')) {
+            const currentData = line.slice(6)
+
+            if (pendingEvent && currentData) {
+              try {
+                const data = JSON.parse(currentData)
+
+                switch (pendingEvent) {
+                  case 'chunk':
+                    onChunk?.(data.content)
+                    break
+                  case 'partial_summary':
+                    onPartialSummary?.(data.summary)
+                    break
+                  case 'complete':
+                    onComplete?.(data)
+                    break
+                  case 'error':
+                    onError?.(new Error(data.message))
+                    break
+                }
+              } catch {
+                // Ignore parse errors for incomplete data
+              }
+            }
+            pendingEvent = ''
+          } else if (line === '') {
+            pendingEvent = ''
+          }
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+      onError?.(error instanceof Error ? error : new Error('Unknown error'))
+    }
+  }
+
+  startStream()
+
+  return {
+    abort: () => abortController.abort(),
+  }
+}
+
+// ============================================
 // Streaming Interpret Data (SSE)
 // ============================================
 

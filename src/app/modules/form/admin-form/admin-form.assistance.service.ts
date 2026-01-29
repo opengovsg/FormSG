@@ -842,6 +842,170 @@ export const generateAutoSummary = ({
 }
 
 /**
+ * Streaming version of generateAutoSummary.
+ * Streams the summary text progressively for faster perceived response.
+ */
+export const generateAutoSummaryStreaming = async ({
+  form,
+  responses,
+  onChunk,
+  onPartialSummary,
+}: {
+  form: IPopulatedForm
+  responses: InterpretDataRequestResponse[]
+  onChunk?: (chunk: string) => void
+  onPartialSummary?: (summary: string) => void
+}): Promise<
+  Result<
+    AutoSummaryResult,
+    | ModelGetClientFailureError
+    | ModelResponseFailureError
+    | ModelResponseInvalidSyntaxError
+    | ModelResponseInvalidSchemaFormatError
+  >
+> => {
+  const formId = form._id.toString()
+  const formName = form.title
+
+  if (responses.length === 0) {
+    return ok({
+      summary: 'No responses to analyze yet.',
+      keyFindings: ['No data available'],
+      suggestedQuestions: [],
+    })
+  }
+
+  // Build field schema map once from form
+  const fieldSchemaMap = buildFieldSchemaMap(form)
+
+  const messages = generateAutoSummaryPrompt({
+    formName,
+    fieldSchemaMap,
+    responses,
+  })
+
+  logger.info({
+    message: 'Generating auto-summary (streaming) for form responses',
+    meta: {
+      action: 'generateAutoSummaryStreaming',
+      formId,
+      numResponses: responses.length,
+    },
+  })
+
+  // Get streaming response
+  const streamResult = await sendPromptToModelStreaming({
+    messages,
+    formId,
+  })
+
+  if (streamResult.isErr()) {
+    return err(streamResult.error)
+  }
+
+  const stream = streamResult.value
+
+  // Collect chunks and extract summary progressively
+  let fullContent = ''
+  let lastSummarySent = ''
+
+  try {
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || ''
+
+      if (content) {
+        fullContent += content
+        onChunk?.(content)
+
+        // Extract partial summary from accumulated JSON
+        const summaryStartMatch = fullContent.match(/"summary"\s*:\s*"/)
+
+        if (summaryStartMatch) {
+          const startIndex = summaryStartMatch.index! + summaryStartMatch[0].length
+          const afterStart = fullContent.substring(startIndex)
+          const endMatch = afterStart.match(/^((?:[^"\\]|\\.)*)(?:",|\"\s*[,\n}])/)
+
+          let partialSummary: string
+          if (endMatch) {
+            partialSummary = endMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n')
+          } else {
+            partialSummary = afterStart.replace(/\\$/, '').replace(/\\"/g, '"').replace(/\\n/g, '\n')
+          }
+
+          if (partialSummary && partialSummary !== lastSummarySent) {
+            lastSummarySent = partialSummary
+            onPartialSummary?.(partialSummary)
+          }
+        }
+      }
+    }
+
+    // Parse complete JSON response
+    let parsedJson
+    try {
+      // Try to extract JSON from the response (handle markdown code blocks)
+      let jsonContent = fullContent
+      const jsonMatch = fullContent.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (jsonMatch) {
+        jsonContent = jsonMatch[1].trim()
+      }
+      parsedJson = JSON.parse(jsonContent)
+    } catch (parseError) {
+      logger.error({
+        message: 'Error parsing streaming auto-summary response as JSON',
+        meta: {
+          action: 'generateAutoSummaryStreaming',
+          formId,
+          fullContent: fullContent.substring(0, 500),
+          error: parseError,
+        },
+      })
+      return err(
+        new ModelResponseInvalidSyntaxError(
+          `Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+        ),
+      )
+    }
+
+    // Validate against schema
+    const validationResult = autoSummaryResultSchema.safeParse(parsedJson)
+
+    if (!validationResult.success) {
+      logger.error({
+        message: 'Streaming auto-summary response does not match expected schema',
+        meta: {
+          action: 'generateAutoSummaryStreaming',
+          formId,
+          parsedJson,
+          error: validationResult.error,
+        },
+      })
+      return err(
+        new ModelResponseInvalidSchemaFormatError(
+          `Invalid response format: ${validationResult.error.errors.map((e) => e.message).join('; ')}`,
+        ),
+      )
+    }
+
+    return ok(validationResult.data)
+  } catch (streamError) {
+    logger.error({
+      message: 'Error reading from stream in auto-summary',
+      meta: {
+        action: 'generateAutoSummaryStreaming',
+        formId,
+        error: streamError,
+      },
+    })
+    return err(
+      new ModelResponseFailureError(
+        `Stream error: ${streamError instanceof Error ? streamError.message : 'Unknown error'}`,
+      ),
+    )
+  }
+}
+
+/**
  * Field schema extracted once from the form
  */
 interface FieldSchema {
