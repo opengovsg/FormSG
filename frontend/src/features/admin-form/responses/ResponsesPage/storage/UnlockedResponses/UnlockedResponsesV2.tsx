@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  BiChevronDown,
+  BiChevronUp,
   BiFilter,
   BiHide,
   BiPlus,
   BiRefresh,
   BiSolidMagicWand,
   BiTrash,
+  BiX,
 } from 'react-icons/bi'
 import {
   Box,
   Button,
   Checkbox,
   Flex,
+  HStack,
   Input,
   Popover,
   PopoverArrow,
@@ -40,18 +44,22 @@ import {
   DateRangePicker,
   dateRangePickerHelper,
 } from '~components/DateRangePicker'
+import { CopyButton } from '~templates/CopyButton/CopyButton'
 import IconButton from '~components/IconButton'
 import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText/MarkdownText'
+import Pagination from '~components/Pagination'
 import Tooltip from '~components/Tooltip'
 
 import {
   InterpretDataResponse,
+  interpretDataStreaming,
   SuggestedChart,
   SuggestedFilter,
 } from '~features/admin-form/assistance/AssistanceService'
 import {
   useAnalyzeQuestionMutation,
+  useAutoSummaryMutation,
   useInterpretDataMutation,
   useSuggestedQuestionsMutation,
 } from '~features/admin-form/assistance/mutations'
@@ -68,6 +76,7 @@ import {
 } from '~features/admin-form/responses/constants'
 
 import { GenericChart } from '../../../ChartsPage/UnlockedCharts/components/GenericChart'
+import { AutoSummary, HeroStats, QuickCharts } from '../../../components/InsightsPanel'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import {
   DecryptedResponse,
@@ -496,19 +505,14 @@ const InterpretLoadingSkeleton = () => {
   }, [])
 
   return (
-    <Box mt="0.5rem" p="0.75rem" bg="primary.50" borderRadius="4px">
-      <Flex alignItems="center" gap="0.5rem" mb="1rem">
-        <Box
-          as="span"
-          display="inline-flex"
-          gap="2px"
-          alignItems="center"
-        >
+    <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+      <Flex alignItems="center" gap={2} mb={4}>
+        <Box as="span" display="inline-flex" gap="3px" alignItems="center">
           {[0, 1, 2].map((i) => (
             <Box
               key={i}
-              w="6px"
-              h="6px"
+              w="5px"
+              h="5px"
               borderRadius="full"
               bg="primary.500"
               animation={`bounce 1.4s ease-in-out ${i * 0.16}s infinite`}
@@ -526,12 +530,12 @@ const InterpretLoadingSkeleton = () => {
         </Text>
       </Flex>
       {/* Skeleton for chart area */}
-      <Skeleton height="150px" borderRadius="4px" mb="1rem" />
+      <Skeleton height="120px" borderRadius="md" mb={4} />
       {/* Skeleton for answer text */}
-      <Stack spacing="0.5rem">
-        <Skeleton height="1rem" width="100%" />
-        <Skeleton height="1rem" width="90%" />
-        <Skeleton height="1rem" width="75%" />
+      <Stack spacing={2}>
+        <Skeleton height="0.875rem" width="100%" borderRadius="sm" />
+        <Skeleton height="0.875rem" width="85%" borderRadius="sm" />
+        <Skeleton height="0.875rem" width="70%" borderRadius="sm" />
       </Stack>
     </Box>
   )
@@ -550,6 +554,9 @@ const InterpretBox = ({
   filteredResponseIds,
   decryptedResponsesCount,
   onClearMentionedFilter,
+  askedQuestion,
+  setAskedQuestion,
+  streamingAnswer,
 }: {
   onAsk: (textQuestion: string) => void
   currentStep: InterpretStep
@@ -573,22 +580,18 @@ const InterpretBox = ({
   decryptedResponsesCount?: number
   filteredResponseIds?: string[]
   onClearMentionedFilter?: () => void
+  askedQuestion?: string
+  setAskedQuestion: (question: string | undefined) => void
+  streamingAnswer?: string // For progressive streaming display
 }) => {
   const [question, setQuestion] = useState('')
   const [showExplanation, setShowExplanation] = useState(false)
   const [showReasoning, setShowReasoning] = useState(false)
+  const [hasAskedQuestion, setHasAskedQuestion] = useState(false)
   const isLoading =
     currentStep === 'analyzing' || currentStep === 'interpreting'
   const isInterpreting = currentStep === 'interpreting'
 
-  // Debug: Log chart data
-  useEffect(() => {
-    if (result?.suggestedCharts && result.suggestedCharts.length > 0) {
-      console.log('Charts to render:', {
-        suggestedCharts: result.suggestedCharts,
-      })
-    }
-  }, [result?.suggestedCharts])
   const mdComponents = useMdComponents({
     styles: {
       text: {
@@ -616,96 +619,140 @@ const InterpretBox = ({
   return (
     <Stack
       width="100%"
-      dropShadow="2px"
-      borderRadius="4px"
+      bg="white"
+      borderRadius="lg"
       border="1px solid"
-      borderColor="secondary.200"
-      p="1rem"
-      gap="0.5rem"
+      borderColor="neutral.200"
+      p={5}
+      spacing={4}
     >
-      <Textarea
-        placeholder="Ask a question about your data"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        isReadOnly={isLoading}
-      />
-      {(isLoadingSuggestedQuestions ||
-        (suggestedQuestions && suggestedQuestions.length > 0)) && (
-        <Box>
-          <Flex justifyContent="space-between" alignItems="center" mb="0.25rem">
-            <Text fontSize="xs" color="secondary.500">
-              Suggested questions
-            </Text>
-            {onRefreshSuggestedQuestions && (
-              <Button
-                variant="link"
-                size="xs"
-                color="secondary.500"
-                isLoading={isLoadingSuggestedQuestions}
-                onClick={onRefreshSuggestedQuestions}
-                isDisabled={isLoadingSuggestedQuestions}
-              >
-                Change suggestions
-              </Button>
-            )}
-          </Flex>
-          {isLoadingSuggestedQuestions ? (
-            <Flex gap="0.5rem" wrap="wrap" py="0.25rem">
-              <Skeleton height="1.75rem" width="8rem" borderRadius="4px" />
-              <Skeleton height="1.75rem" width="10rem" borderRadius="4px" />
-              <Skeleton height="1.75rem" width="9rem" borderRadius="4px" />
+      {/* Question Input Section */}
+      <Box>
+        <Text fontSize="sm" fontWeight="medium" color="secondary.700" mb={2}>
+          Ask a question
+        </Text>
+        <Textarea
+          placeholder="e.g., What are the most common complaints?"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          isDisabled={isLoading}
+          size="sm"
+          rows={3}
+          resize="none"
+          bg={isLoading ? 'neutral.100' : 'white'}
+          borderRadius="md"
+          borderColor={isLoading ? 'neutral.200' : 'neutral.300'}
+          opacity={isLoading ? 0.7 : 1}
+          cursor={isLoading ? 'not-allowed' : 'text'}
+          _hover={{ borderColor: isLoading ? 'neutral.200' : 'neutral.400' }}
+          _focus={{ borderColor: 'primary.500', boxShadow: '0 0 0 1px var(--chakra-colors-primary-500)' }}
+        />
+      </Box>
+
+      {/* Suggested Questions - hidden after first question is asked */}
+      {!hasAskedQuestion &&
+        (isLoadingSuggestedQuestions ||
+          (suggestedQuestions && suggestedQuestions.length > 0)) && (
+          <Box>
+            <Flex justifyContent="space-between" alignItems="center" mb={2}>
+              <Text fontSize="xs" fontWeight="medium" color="secondary.500">
+                Suggested questions
+              </Text>
+              {onRefreshSuggestedQuestions && (
+                <Button
+                  variant="link"
+                  size="xs"
+                  color="secondary.400"
+                  fontWeight="normal"
+                  isLoading={isLoadingSuggestedQuestions}
+                  onClick={onRefreshSuggestedQuestions}
+                  isDisabled={isLoadingSuggestedQuestions}
+                  _hover={{ color: 'secondary.600' }}
+                >
+                  Refresh
+                </Button>
+              )}
             </Flex>
-          ) : (
-            suggestedQuestions &&
-            suggestedQuestions.length > 0 && (
-              <Flex gap="0.5rem" wrap="wrap">
-                {suggestedQuestions.map((q, idx) => (
-                  <Button
-                    key={`sq-${idx}`}
-                    size="xs"
-                    variant="outline"
-                    borderColor="secondary.200"
-                    color="secondary.700"
-                    onClick={() => setQuestion(q)}
-                    isDisabled={isLoading}
-                  >
-                    {q}
-                  </Button>
-                ))}
-              </Flex>
-            )
-          )}
-        </Box>
-      )}
-      <Flex justifyContent="flex-end" alignItems="center" gap="0.5rem">
+            {isLoadingSuggestedQuestions ? (
+              <Stack spacing={2}>
+                <Skeleton height="2rem" borderRadius="md" />
+                <Skeleton height="2rem" borderRadius="md" />
+              </Stack>
+            ) : (
+              suggestedQuestions &&
+              suggestedQuestions.length > 0 && (
+                <Stack spacing={2}>
+                  {suggestedQuestions.map((q, idx) => (
+                    <Button
+                      key={`sq-${idx}`}
+                      size="sm"
+                      variant="outline"
+                      borderColor="neutral.200"
+                      color="secondary.600"
+                      fontWeight="normal"
+                      justifyContent="flex-start"
+                      textAlign="left"
+                      whiteSpace="normal"
+                      height="auto"
+                      py={2}
+                      px={3}
+                      onClick={() => {
+                        setAskedQuestion(q)
+                        setQuestion('') // Clear textarea
+                        setHasAskedQuestion(true)
+                        onAsk(q)
+                      }}
+                      isDisabled={isLoading}
+                      opacity={isLoading ? 0.6 : 1}
+                      _hover={{ bg: 'neutral.50', borderColor: 'neutral.300' }}
+                    >
+                      {q}
+                    </Button>
+                  ))}
+                </Stack>
+              )
+            )}
+          </Box>
+        )}
+
+      {/* Ask Button */}
+      <Flex justifyContent="flex-end" alignItems="center" gap={3}>
         {isLoading && (
           <Text fontSize="sm" color="secondary.400">
             {getLoadingText()}
           </Text>
         )}
         <Button
+          colorScheme="primary"
+          size="sm"
           isLoading={isLoading}
           onClick={() => {
             setShowExplanation(false)
             setShowReasoning(false)
+            setHasAskedQuestion(true)
+            setAskedQuestion(question)
             onAsk(question)
+            setQuestion('') // Clear textarea after asking
           }}
           isDisabled={!question.trim()}
         >
           Ask
         </Button>
       </Flex>
+      {/* Analysis Reasoning */}
       {analysisReasoning && (
-        <Box mt="0.5rem" p="0.75rem" bg="blue.50" borderRadius="4px">
+        <Box p={4} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.100">
           <Flex justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm" color="blue.600">
-              Applied filters & relevant columns
+            <Text fontSize="sm" fontWeight="medium" color="blue.700">
+              Applied filters & columns
             </Text>
             <Button
               variant="link"
               size="xs"
-              color="blue.500"
+              color="blue.600"
+              fontWeight="normal"
               onClick={() => setShowReasoning(!showReasoning)}
+              _hover={{ color: 'blue.700' }}
             >
               {showReasoning ? 'Hide' : 'Details'}
             </Button>
@@ -784,19 +831,20 @@ const InterpretBox = ({
         }
 
         return (
-          <Box mt="0.5rem" p="0.75rem" bg="green.50" borderRadius="4px">
+          <Box p={4} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.100">
             <Flex justifyContent="space-between" alignItems="center">
-              <Text fontSize="sm" color="green.700">
+              <Text fontSize="sm" fontWeight="medium" color="green.700">
                 Showing {mentionedResponseIds.length} response
-                {mentionedResponseIds.length !== 1 ? 's' : ''} mentioned in the
-                answer
+                {mentionedResponseIds.length !== 1 ? 's' : ''} mentioned
               </Text>
               {onClearMentionedFilter && (
                 <Button
                   variant="link"
                   size="xs"
                   color="green.600"
+                  fontWeight="normal"
                   onClick={onClearMentionedFilter}
+                  _hover={{ color: 'green.700' }}
                 >
                   Show all
                 </Button>
@@ -805,34 +853,132 @@ const InterpretBox = ({
           </Box>
         )
       })()}
-      {/* Show skeleton loading when interpreting data */}
-      {isInterpreting && <InterpretLoadingSkeleton />}
+      {/* Show skeleton loading when analyzing or interpreting data */}
+      {isLoading && (
+        <Box>
+          {/* Show the question being processed */}
+          {askedQuestion && (
+            <Box mb={3} p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+              <Text fontSize="xs" fontWeight="medium" color="primary.500" mb={1}>
+                Question
+              </Text>
+              <Text fontSize="sm" color="secondary.700" fontStyle="italic">
+                "{askedQuestion}"
+              </Text>
+            </Box>
+          )}
+          {/* Show streaming answer if available */}
+          {streamingAnswer ? (
+            <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+              <Flex alignItems="center" gap={2} mb={3}>
+                <Box as="span" display="inline-flex" gap="3px" alignItems="center">
+                  {[0, 1, 2].map((i) => (
+                    <Box
+                      key={i}
+                      w="5px"
+                      h="5px"
+                      borderRadius="full"
+                      bg="primary.500"
+                      animation={`bounce 1.4s ease-in-out ${i * 0.16}s infinite`}
+                      sx={{
+                        '@keyframes bounce': {
+                          '0%, 80%, 100%': { transform: 'scale(0.6)', opacity: 0.5 },
+                          '40%': { transform: 'scale(1)', opacity: 1 },
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
+                <Text fontSize="sm" color="primary.600" fontWeight="medium">
+                  Generating answer...
+                </Text>
+              </Flex>
+              <Text fontSize="sm" color="secondary.700" lineHeight="tall">
+                {streamingAnswer}
+                <Box
+                  as="span"
+                  display="inline-block"
+                  w="2px"
+                  h="1em"
+                  bg="primary.500"
+                  ml="2px"
+                  animation="blink 1s step-end infinite"
+                  sx={{
+                    '@keyframes blink': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0 },
+                    },
+                  }}
+                />
+              </Text>
+            </Box>
+          ) : (
+            <InterpretLoadingSkeleton />
+          )}
+        </Box>
+      )}
+      {/* Answer Results */}
       {result?.answer && !isLoading && (
-        <Box mt="0.5rem" p="0.75rem" bg="primary.100" borderRadius="4px">
-          <Flex justifyContent="space-between" alignItems="center">
-            <Text fontSize="sm" fontWeight="semibold" color="primary.700">
-              Answer:
-            </Text>
-            {result?.explanation && (
-              <Button
-                variant="link"
-                size="xs"
-                color="primary.600"
-                onClick={() => setShowExplanation(!showExplanation)}
-              >
-                {showExplanation ? 'Hide explanation' : 'Show explanation'}
-              </Button>
-            )}
+        <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+          {/* Display the question that was asked */}
+          {askedQuestion && (
+            <Box mb={3} pb={3} borderBottom="1px solid" borderColor="primary.100">
+              <Text fontSize="xs" fontWeight="medium" color="primary.500" mb={1}>
+                Question
+              </Text>
+              <Text fontSize="sm" color="secondary.700" fontStyle="italic">
+                "{askedQuestion}"
+              </Text>
+            </Box>
+          )}
+          <Flex justifyContent="space-between" alignItems="center" mb={3}>
+            <HStack spacing={2}>
+              <Text fontSize="sm" fontWeight="semibold" color="primary.700">
+                Answer
+              </Text>
+              {decryptedResponsesCount !== undefined && (
+                <Text fontSize="xs" color="primary.500" fontWeight="normal">
+                  (analyzed {decryptedResponsesCount} responses)
+                </Text>
+              )}
+            </HStack>
+            <HStack spacing={2}>
+              <Tooltip label="Copy answer">
+                <Box>
+                  <CopyButton
+                    stringToCopy={
+                      result.explanation
+                        ? `${result.answer}\n\n${result.explanation}`
+                        : result.answer
+                    }
+                    aria-label="Copy answer to clipboard"
+                  />
+                </Box>
+              </Tooltip>
+              {result?.explanation && (
+                <Button
+                  variant="link"
+                  size="xs"
+                  color="primary.600"
+                  fontWeight="normal"
+                  onClick={() => setShowExplanation(!showExplanation)}
+                  _hover={{ color: 'primary.700' }}
+                >
+                  {showExplanation ? 'Hide details' : 'Show details'}
+                </Button>
+              )}
+            </HStack>
           </Flex>
+
+          {/* Charts */}
           {result.suggestedCharts &&
             result.suggestedCharts.length > 0 &&
             result.suggestedCharts.map((chart, index) => {
-              // Only render if chart has data
               if (!chart.data || chart.data.length === 0) {
                 return null
               }
               return (
-                <Box key={`chart-${index}`} mt="1rem" width="100%">
+                <Box key={`chart-${index}`} mb={4} bg="white" borderRadius="md" p={3}>
                   <GenericChart
                     title={chart.title}
                     chartType={chart.chartType}
@@ -841,50 +987,66 @@ const InterpretBox = ({
                 </Box>
               )
             })}
-          <Text textStyle="body-1" color="secondary.700" mt="0.5rem">
+
+          {/* Answer Text */}
+          <Text fontSize="sm" color="secondary.700" lineHeight="tall">
             {result.answer}
           </Text>
+
+          {/* Explanation */}
           {result?.explanation && showExplanation && (
-            <>
+            <Box mt={4} pt={4} borderTop="1px solid" borderColor="primary.100">
               <Text
-                fontSize="sm"
-                fontWeight="semibold"
-                color="primary.700"
-                mt="1rem"
-                mb="0.5rem"
+                fontSize="xs"
+                fontWeight="medium"
+                color="primary.600"
+                mb={2}
               >
-                Explanation:
+                Detailed explanation
               </Text>
-              <Box>
+              <Box fontSize="sm" color="secondary.600">
                 <MarkdownText multilineBreaks components={mdComponents}>
                   {result.explanation}
                 </MarkdownText>
               </Box>
-            </>
+            </Box>
           )}
-          {/* Suggested follow-up questions */}
+
+          {/* Follow-up Questions */}
           {result?.suggestedFollowUps && result.suggestedFollowUps.length > 0 && (
-            <Box mt="1rem" pt="0.75rem" borderTop="1px solid" borderColor="primary.200">
-              <Text fontSize="xs" color="primary.600" mb="0.5rem">
-                Ask a follow-up
+            <Box mt={4} pt={4} borderTop="1px solid" borderColor="primary.100">
+              <Text fontSize="xs" fontWeight="medium" color="primary.600" mb={2}>
+                Follow-up questions
               </Text>
-              <Flex gap="0.5rem" wrap="wrap">
+              <Stack spacing={2}>
                 {result.suggestedFollowUps.map((followUp, idx) => (
                   <Button
                     key={`followup-${idx}`}
-                    size="xs"
+                    size="sm"
                     variant="outline"
-                    borderColor="primary.300"
+                    borderColor="primary.200"
                     color="primary.600"
-                    _hover={{ bg: 'primary.50', borderColor: 'primary.400' }}
+                    fontWeight="normal"
+                    justifyContent="flex-start"
+                    textAlign="left"
+                    whiteSpace="normal"
+                    height="auto"
+                    py={2}
+                    px={3}
+                    bg="white"
+                    _hover={{ bg: 'primary.50', borderColor: 'primary.300' }}
+                    isDisabled={currentStep !== 'idle'}
+                    opacity={currentStep !== 'idle' ? 0.6 : 1}
                     onClick={() => {
-                      setQuestion(followUp)
+                      setAskedQuestion(followUp)
+                      setQuestion('') // Clear textarea
+                      onAsk(followUp)
                     }}
                   >
                     {followUp}
                   </Button>
                 ))}
-              </Flex>
+              </Stack>
             </Box>
           )}
         </Box>
@@ -1081,10 +1243,16 @@ const UnlockedResponsesV2 = () => {
   const { invalidate } = useInvalidateDecryptedResponses(form?._id ?? '')
 
   const [isInterpretOpen, setIsInterpretOpen] = useState(false)
+  const [isTableExpanded, setIsTableExpanded] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const PAGE_SIZE = 10
   const [interpretResult, setInterpretResult] = useState<
     InterpretResult | undefined
   >()
   const [interpretStep, setInterpretStep] = useState<InterpretStep>('idle')
+  const [askedQuestion, setAskedQuestion] = useState<string | undefined>() // Track the question that was asked (lifted from InterpretBox)
+  const [streamingAnswer, setStreamingAnswer] = useState<string>('') // For progressive streaming display
+  const [useStreaming, setUseStreaming] = useState(true) // Toggle for streaming vs non-streaming
   const [analysisReasoning, setAnalysisReasoning] = useState<
     string | undefined
   >()
@@ -1108,8 +1276,14 @@ const UnlockedResponsesV2 = () => {
   const suggestedQuestionsMutation = useSuggestedQuestionsMutation(
     form?._id ?? '',
   )
+  const autoSummaryMutation = useAutoSummaryMutation(form?._id ?? '')
 
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([])
+  const [autoSummary, setAutoSummary] = useState<{
+    summary: string | null
+    keyFindings: string[]
+    suggestedQuestions: string[]
+  }>({ summary: null, keyFindings: [], suggestedQuestions: [] })
 
   const transformResponsesToInterpretFormat = useCallback(
     (
@@ -1179,7 +1353,6 @@ const UnlockedResponsesV2 = () => {
       setMentionedResponseIds(undefined)
       setInterpretStep('analyzing')
 
-      console.log('LLM: analzying question:', question)
       // Step 1: Analyze the question to get relevant fields
       analyzeQuestionMutation.mutate(
         { question },
@@ -1313,22 +1486,22 @@ const UnlockedResponsesV2 = () => {
 
             // Step 2: Interpret the data with filtered/relevant fields
             setInterpretStep('interpreting')
+            setStreamingAnswer('') // Reset streaming answer
             const responsesForApi = transformResponsesToInterpretFormat(
               responsesWithAiFilters,
               validRelevantFieldIds,
             )
 
-            console.log('LLM: interpreting question:', question)
-            interpretDataMutation.mutate(
-              { question, responses: responsesForApi },
-              {
-                onSuccess: (data) => {
-                  console.log('Interpret data result:', {
-                    answer: data.answer,
-                    suggestedCharts: data.suggestedCharts,
-                    mentionedResponseIds: data.mentionedResponseIds,
-                    suggestedFollowUps: data.suggestedFollowUps,
-                  })
+            if (useStreaming && form?._id) {
+              interpretDataStreaming({
+                formId: form._id,
+                question,
+                responses: responsesForApi,
+                onPartialAnswer: (answer) => {
+                  setStreamingAnswer(answer)
+                },
+                onComplete: (data) => {
+                  setStreamingAnswer('')
                   setInterpretResult({
                     answer: data.answer,
                     explanation: data.explanation,
@@ -1336,8 +1509,7 @@ const UnlockedResponsesV2 = () => {
                     suggestedFollowUps: data.suggestedFollowUps,
                   })
 
-                  // Use mentionedResponseIds from structured output if provided
-                  // Validate that the IDs actually exist in the responses
+                  // Handle mentioned response IDs
                   if (
                     data.mentionedResponseIds &&
                     data.mentionedResponseIds.length > 0
@@ -1345,7 +1517,6 @@ const UnlockedResponsesV2 = () => {
                     const allResponseIds = new Set(
                       decryptedResponses.map((r) => String(r.refNo)),
                     )
-                    // Filter to only include valid response IDs
                     const validMentionedIds = data.mentionedResponseIds.filter(
                       (id) => allResponseIds.has(String(id)),
                     )
@@ -1361,11 +1532,55 @@ const UnlockedResponsesV2 = () => {
                   setInterpretStep('idle')
                 },
                 onError: () => {
+                  setStreamingAnswer('')
                   setInterpretStep('idle')
                   setMentionedResponseIds(undefined)
                 },
-              },
-            )
+              })
+            } else {
+              // Non-streaming fallback
+              interpretDataMutation.mutate(
+                { question, responses: responsesForApi },
+                {
+                  onSuccess: (data) => {
+                    setInterpretResult({
+                      answer: data.answer,
+                      explanation: data.explanation,
+                      suggestedCharts: data.suggestedCharts,
+                      suggestedFollowUps: data.suggestedFollowUps,
+                    })
+
+                    // Use mentionedResponseIds from structured output if provided
+                    // Validate that the IDs actually exist in the responses
+                    if (
+                      data.mentionedResponseIds &&
+                      data.mentionedResponseIds.length > 0
+                    ) {
+                      const allResponseIds = new Set(
+                        decryptedResponses.map((r) => String(r.refNo)),
+                      )
+                      // Filter to only include valid response IDs
+                      const validMentionedIds = data.mentionedResponseIds.filter(
+                        (id) => allResponseIds.has(String(id)),
+                      )
+                      if (validMentionedIds.length > 0) {
+                        setMentionedResponseIds(validMentionedIds)
+                      } else {
+                        setMentionedResponseIds(undefined)
+                      }
+                    } else {
+                      setMentionedResponseIds(undefined)
+                    }
+
+                    setInterpretStep('idle')
+                  },
+                  onError: () => {
+                    setInterpretStep('idle')
+                    setMentionedResponseIds(undefined)
+                  },
+                },
+              )
+            }
           },
           onError: () => {
             setInterpretStep('idle')
@@ -1389,11 +1604,9 @@ const UnlockedResponsesV2 = () => {
   )
 
   const fetchSuggestedQuestions = useCallback(() => {
-    console.log('LLM: fetching suggested questions')
     if (!form?._id) return
     suggestedQuestionsMutation.mutate(undefined, {
       onSuccess: (data) => {
-        console.log('suggested questions fetched', data)
         setSuggestedQuestions(data.suggestedQuestions ?? [])
       },
       onError: () => {
@@ -1401,6 +1614,26 @@ const UnlockedResponsesV2 = () => {
       },
     })
   }, [form?._id, suggestedQuestionsMutation])
+
+  const fetchAutoSummary = useCallback(() => {
+    if (!form?._id || decryptedResponses.length === 0) return
+    const responsesForApi = transformResponsesToInterpretFormat(decryptedResponses)
+    autoSummaryMutation.mutate(
+      { responses: responsesForApi },
+      {
+        onSuccess: (data) => {
+          setAutoSummary({
+            summary: data.summary,
+            keyFindings: data.keyFindings ?? [],
+            suggestedQuestions: data.suggestedQuestions ?? [],
+          })
+        },
+        onError: () => {
+          setAutoSummary({ summary: null, keyFindings: [], suggestedQuestions: [] })
+        },
+      },
+    )
+  }, [form?._id, decryptedResponses, transformResponsesToInterpretFormat, autoSummaryMutation])
 
   // Handler to hide a column from the table header menu
   const handleHideColumn = useCallback(
@@ -1447,6 +1680,25 @@ const UnlockedResponsesV2 = () => {
     setMentionedResponseIds(undefined)
   }, [])
 
+  // Compute last response time from decrypted responses
+  const lastResponseTime = useMemo(() => {
+    if (!decryptedResponses.length) return undefined
+    // Responses are sorted newest first, so first item is most recent
+    return decryptedResponses[0]?.submissionTime
+  }, [decryptedResponses])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters, mentionedResponseIds, dateRange])
+
+  // Paginate the filtered responses for the table
+  const paginatedResponses = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE
+    const endIndex = startIndex + PAGE_SIZE
+    return filteredDecryptedResponses.slice(startIndex, endIndex)
+  }, [filteredDecryptedResponses, currentPage, PAGE_SIZE])
+
   if (!form) return null
 
   return (
@@ -1468,47 +1720,189 @@ const UnlockedResponsesV2 = () => {
           ) {
             fetchSuggestedQuestions()
           }
+          // Fetch auto-summary when opening insights (if not already loaded)
+          if (!isInterpretOpen && !autoSummary.summary && !autoSummaryMutation.isLoading) {
+            fetchAutoSummary()
+          }
           setIsInterpretOpen(!isInterpretOpen)
         }}
       />
-      {isInterpretOpen && (
-        <InterpretBox
-          onAsk={onAsk}
-          currentStep={interpretStep}
-          result={interpretResult}
-          analysisReasoning={analysisReasoning}
-          analysisChanges={analysisChanges}
-          suggestedQuestions={suggestedQuestions}
-          isLoadingSuggestedQuestions={suggestedQuestionsMutation.isLoading}
-          onRefreshSuggestedQuestions={fetchSuggestedQuestions}
-          mentionedResponseIds={mentionedResponseIds}
-          filteredResponseIds={filteredDecryptedResponses?.map((r) =>
-            String(r.refNo),
-          )}
-          onClearMentionedFilter={handleClearMentionedFilter}
-        />
-      )}
-      <Box overflow="auto" maxWidth="100%" flex={1}>
-        {isFetchingAndDecrypting ? (
-          <Skeleton height="2.5rem" />
-        ) : (
-          <ResponsesTableV2
-            isResponseLimitExceeded={
-              !!dateRangeResponsesCount &&
-              dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
-            }
-            form={form}
-            selectedSubmissionMetaFields={selectedSubmissionMetaFields}
-            selectedFields={selectedFields}
-            decryptedResponses={filteredDecryptedResponses}
-            onHideColumn={handleHideColumn}
-            onAddFilter={handleColumnAddFilter}
-            onRemoveFilter={handleRemoveFilter}
-            filters={filters.map((f) => ({
-              fieldId: f.fieldId,
-              value: f.value,
-            }))}
-          />
+
+      {/* Main content area - scrollable */}
+      <Box flex={1} overflow="auto">
+        {/* Insights Section (shown when Analyse is clicked) */}
+        {isInterpretOpen && (
+          <Stack spacing={4} mb={4}>
+            {/* Close button and header */}
+            <Flex justify="space-between" align="center">
+              <Text fontSize="lg" fontWeight="semibold" color="secondary.700">
+                Insights
+              </Text>
+              <IconButton
+                aria-label="Close insights"
+                icon={<BiX size={20} />}
+                variant="clear"
+                size="sm"
+                color="secondary.500"
+                _hover={{ color: 'secondary.700', bg: 'neutral.100' }}
+                onClick={() => setIsInterpretOpen(false)}
+              />
+            </Flex>
+
+            {/* Hero Stats - full width */}
+            <HeroStats
+              responseCount={decryptedResponses.length}
+              filteredCount={filteredDecryptedResponses.length}
+              dateRange={dateRange}
+              lastResponseTime={lastResponseTime}
+            />
+
+            {/* Quick Charts - auto-generated from chartable fields */}
+            {/* Use decryptedResponses (not filtered) so charts don't disappear when asking questions */}
+            <QuickCharts
+              formFields={form_fields ?? []}
+              decryptedResponses={decryptedResponses}
+              maxCharts={2}
+            />
+
+            {/* Auto Summary - AI-generated overview */}
+            <AutoSummary
+              summary={autoSummary.summary}
+              keyFindings={autoSummary.keyFindings}
+              suggestedQuestions={autoSummary.suggestedQuestions}
+              isLoading={autoSummaryMutation.isLoading}
+              isAsking={interpretStep !== 'idle'}
+              onQuestionClick={(question) => {
+                setAskedQuestion(question) // Set the asked question so it appears with the answer
+                onAsk(question)
+              }}
+            />
+
+            {/* InterpretBox - full width */}
+            <InterpretBox
+              onAsk={onAsk}
+              currentStep={interpretStep}
+              result={interpretResult}
+              analysisReasoning={analysisReasoning}
+              analysisChanges={analysisChanges}
+              suggestedQuestions={suggestedQuestions}
+              isLoadingSuggestedQuestions={suggestedQuestionsMutation.isLoading}
+              onRefreshSuggestedQuestions={fetchSuggestedQuestions}
+              mentionedResponseIds={mentionedResponseIds}
+              filteredResponseIds={filteredDecryptedResponses?.map((r) =>
+                String(r.refNo),
+              )}
+              decryptedResponsesCount={decryptedResponses.length}
+              onClearMentionedFilter={handleClearMentionedFilter}
+              askedQuestion={askedQuestion}
+              setAskedQuestion={setAskedQuestion}
+              streamingAnswer={streamingAnswer}
+            />
+
+            {/* Collapsible Table Header */}
+            <Flex
+              justify="space-between"
+              align="center"
+              py={3}
+              px={4}
+              bg="neutral.100"
+              borderRadius="md"
+              cursor="pointer"
+              onClick={() => setIsTableExpanded(!isTableExpanded)}
+              _hover={{ bg: 'neutral.200' }}
+              transition="background 0.2s"
+            >
+              <Flex align="center" gap={2}>
+                <Text fontSize="sm" fontWeight="semibold" color="secondary.700">
+                  Responses
+                </Text>
+                <Text fontSize="sm" color="secondary.500">
+                  ({filteredDecryptedResponses.length})
+                </Text>
+              </Flex>
+              <IconButton
+                aria-label={isTableExpanded ? 'Collapse table' : 'Expand table'}
+                icon={isTableExpanded ? <BiChevronUp size={20} /> : <BiChevronDown size={20} />}
+                variant="clear"
+                size="sm"
+                color="secondary.500"
+              />
+            </Flex>
+
+            {/* Collapsible Table Content */}
+            {isTableExpanded && (
+              <Stack spacing={4}>
+                {isFetchingAndDecrypting ? (
+                  <Skeleton height="2.5rem" />
+                ) : (
+                  <>
+                    <ResponsesTableV2
+                      isResponseLimitExceeded={
+                        !!dateRangeResponsesCount &&
+                        dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
+                      }
+                      form={form}
+                      selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+                      selectedFields={selectedFields}
+                      decryptedResponses={paginatedResponses}
+                      onHideColumn={handleHideColumn}
+                      onAddFilter={handleColumnAddFilter}
+                      onRemoveFilter={handleRemoveFilter}
+                      filters={filters.map((f) => ({
+                        fieldId: f.fieldId,
+                        value: f.value,
+                      }))}
+                    />
+                    {filteredDecryptedResponses.length > PAGE_SIZE && (
+                      <Pagination
+                        totalCount={filteredDecryptedResponses.length}
+                        currentPage={currentPage}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={setCurrentPage}
+                      />
+                    )}
+                  </>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        )}
+
+        {/* Full Table View (when Insights is closed) */}
+        {!isInterpretOpen && (
+          <Stack spacing={4} bg="white">
+            {isFetchingAndDecrypting ? (
+              <Skeleton height="2.5rem" />
+            ) : (
+              <>
+                <ResponsesTableV2
+                  isResponseLimitExceeded={
+                    !!dateRangeResponsesCount &&
+                    dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
+                  }
+                  form={form}
+                  selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+                  selectedFields={selectedFields}
+                  decryptedResponses={paginatedResponses}
+                  onHideColumn={handleHideColumn}
+                  onAddFilter={handleColumnAddFilter}
+                  onRemoveFilter={handleRemoveFilter}
+                  filters={filters.map((f) => ({
+                    fieldId: f.fieldId,
+                    value: f.value,
+                  }))}
+                />
+                {filteredDecryptedResponses.length > PAGE_SIZE && (
+                  <Pagination
+                    totalCount={filteredDecryptedResponses.length}
+                    currentPage={currentPage}
+                    pageSize={PAGE_SIZE}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </>
+            )}
+          </Stack>
         )}
       </Box>
     </Stack>

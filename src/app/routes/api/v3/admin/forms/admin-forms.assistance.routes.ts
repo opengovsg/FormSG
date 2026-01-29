@@ -3,7 +3,9 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../../config/config'
 import {
   handleAnalyzeQuestion,
+  handleAutoSummary,
   handleInterpretData,
+  handleInterpretDataStream,
   handleSuggestedQuestions,
   handleTextPrompt,
   handleVisionPrompt,
@@ -43,4 +45,18 @@ AdminFormsAssistanceRouter.post(
   '/:formId([a-fA-F0-9]{24})/assistance/interpret-data',
   limitRate({ max: rateLimitConfig.interpretData }),
   handleInterpretData,
+)
+
+// Step 2 (streaming): Interpret data with SSE streaming response
+AdminFormsAssistanceRouter.post(
+  '/:formId([a-fA-F0-9]{24})/assistance/interpret-data-stream',
+  limitRate({ max: rateLimitConfig.interpretData }),
+  handleInterpretDataStream,
+)
+
+// Auto-summary endpoint
+AdminFormsAssistanceRouter.post(
+  '/:formId([a-fA-F0-9]{24})/assistance/auto-summary',
+  limitRate({ max: rateLimitConfig.interpretData }),
+  handleAutoSummary,
 )

@@ -1,33 +1,19 @@
-// colour palette for charts
+// colour palette for charts - matches QuickCharts brand colors
 export const COLOR_ARRAY: string[] = [
-  '#FF5733',
-  '#33FF57',
-  '#3357FF',
-  '#FF33A1',
-  '#FF8C33',
-  '#A833FF',
-  '#33FFF6',
-  '#D4FF33',
-  '#FF335E',
-  '#33FF90',
-  '#7A33FF',
-  '#FF3362',
-  '#FFB833',
-  '#33FFAB',
-  '#5133FF',
-  '#FF334F',
-  '#33E4FF',
-  '#FF33D1',
-  '#78FF33',
-  '#FF3355',
-  '#FF6633',
-  '#33FFC1',
-  '#9933FF',
-  '#FF3388',
-  '#33FF48',
-  '#FF3344',
-  '#33FFDE',
-  '#AC33FF',
-  '#FF33BB',
-  '#33FF6C',
+  '#3B82F6', // blue-500
+  '#10B981', // green-500
+  '#F59E0B', // amber-500
+  '#EF4444', // red-500
+  '#8B5CF6', // violet-500
+  '#EC4899', // pink-500
+  '#06B6D4', // cyan-500
+  '#84CC16', // lime-500
+  '#F97316', // orange-500
+  '#14B8A6', // teal-500
+  '#6366F1', // indigo-500
+  '#D946EF', // fuchsia-500
+  '#0EA5E9', // sky-500
+  '#22C55E', // green-500
+  '#EAB308', // yellow-500
+  '#E11D48', // rose-600
 ]

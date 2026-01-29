@@ -3,9 +3,10 @@ import { useParams } from 'react-router-dom'
 
 import {
   analyzeQuestion,
+  getAutoSummary,
   getSuggestedQuestions,
-  interpretData,
   InterpretDataResponse,
+  interpretData,
   makeTextPrompt,
   makeVisionPrompt,
 } from '~features/admin-form/assistance/AssistanceService'
@@ -120,6 +121,24 @@ export const useInterpretDataMutation = (formId: string) => {
         toast.closeAll()
         toast({
           description: error.message || 'Failed to interpret data',
+          status: 'danger',
+        })
+      },
+    },
+  )
+}
+
+export const useAutoSummaryMutation = (formId: string) => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(
+    ({ responses }: { responses: InterpretDataResponse[] }) =>
+      getAutoSummary({ formId, responses }),
+    {
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({
+          description: error.message || 'Failed to generate summary',
           status: 'danger',
         })
       },

@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { z } from 'zod'
 
 import {
@@ -26,7 +26,7 @@ import {
   ModelResponseInvalidSyntaxError,
 } from './admin-form.errors'
 import { createFormFields, updateFormMetadata } from './admin-form.service'
-import { Message, Role, sendPromptToModel } from './ai-model'
+import { Message, Role, sendPromptToModel, sendPromptToModelStreaming } from './ai-model'
 
 const logger = createLoggerWithLabel(module)
 
@@ -572,6 +572,273 @@ interface InterpretDataRequestResponse {
   refNo: string
   submissionTime: string
   fields: InterpretDataRequestField[]
+}
+
+// ============================================
+// Auto Summary
+// ============================================
+
+const AUTO_SUMMARY_SYSTEM_PROMPT = {
+  role: Role.System,
+  content:
+    'You are an assistant that generates a quick summary of form response data. ' +
+    'Given a set of form responses and field schema, provide a concise overview of the key findings. ' +
+    'Your response must be a JSON object with exactly three keys: "summary", "keyFindings", and "suggestedQuestions". ' +
+    '"summary" is a 2-3 sentence overview of the most important patterns in the data. Keep it brief and insightful. ' +
+    '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
+    '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
+    'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
+    'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided.',
+}
+
+const autoSummaryResultSchema = z.object({
+  summary: z.string(),
+  keyFindings: z.array(z.string()).min(1).max(5),
+  suggestedQuestions: z.array(z.string()).min(1).max(3),
+})
+
+const autoSummaryJsonSchema = {
+  name: 'auto_summary_result',
+  strict: true,
+  schema: {
+    type: 'object',
+    description:
+      'A quick summary of form response data with key findings and suggested follow-up questions.',
+    properties: {
+      summary: {
+        type: 'string',
+        description:
+          'A 2-3 sentence overview of the most important patterns in the data. Should be concise and insightful.',
+      },
+      keyFindings: {
+        type: 'array',
+        description:
+          'Array of 3-5 specific insights from the data. Each finding should include concrete numbers or percentages where relevant.',
+        items: {
+          type: 'string',
+        },
+        minItems: 1,
+        maxItems: 5,
+      },
+      suggestedQuestions: {
+        type: 'array',
+        description:
+          'Array of 2-3 natural follow-up questions based on the data patterns observed.',
+        items: {
+          type: 'string',
+        },
+        minItems: 1,
+        maxItems: 3,
+      },
+    },
+    required: ['summary', 'keyFindings', 'suggestedQuestions'],
+    additionalProperties: false,
+  },
+} as const
+
+type AutoSummaryResult = z.infer<typeof autoSummaryResultSchema>
+
+// Choice field types that should be aggregated (not sent as raw responses)
+const CHOICE_FIELD_TYPES = new Set([
+  'radiobutton',
+  'dropdown',
+  'checkbox',
+  'yes_no',
+  'rating',
+])
+
+/**
+ * Pre-aggregates response data to reduce token count.
+ * - Choice fields: Returns distribution counts
+ * - Text fields: Returns sample responses
+ */
+const aggregateResponseData = ({
+  fieldSchemaMap,
+  responses,
+}: {
+  fieldSchemaMap: Map<string, FieldSchema>
+  responses: InterpretDataRequestResponse[]
+}): string => {
+  const aggregations: string[] = []
+
+  // Process each field
+  for (const [fieldId, schema] of fieldSchemaMap.entries()) {
+    const answers: string[] = []
+
+    // Collect all answers for this field
+    for (const response of responses) {
+      const field = response.fields.find((f) => f.fieldId === fieldId)
+      if (field?.answer) {
+        answers.push(field.answer)
+      }
+    }
+
+    if (answers.length === 0) continue
+
+    const isChoiceField = CHOICE_FIELD_TYPES.has(schema.fieldType)
+
+    if (isChoiceField) {
+      // Aggregate choice fields into distribution
+      const counts = new Map<string, number>()
+      for (const answer of answers) {
+        // Handle checkbox fields (comma-separated values)
+        const values =
+          schema.fieldType === 'checkbox' ? answer.split(', ') : [answer]
+        for (const val of values) {
+          counts.set(val, (counts.get(val) || 0) + 1)
+        }
+      }
+
+      // Sort by count descending and format
+      const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1])
+      const distribution = sorted
+        .map(([val, count]) => {
+          const pct = Math.round((count / answers.length) * 100)
+          return `  ${val}: ${count} (${pct}%)`
+        })
+        .join('\n')
+
+      aggregations.push(`${schema.question} (${answers.length} responses):\n${distribution}`)
+    } else {
+      // For text fields, send ALL responses in compact format (no sampling)
+      // Use numbered inline format to minimize tokens while keeping full data
+      const compactResponses = answers
+        .map((s, i) => {
+          // Truncate very long individual responses to save tokens
+          const truncated = s.length > 150 ? s.substring(0, 150) + '...' : s
+          return `${i + 1})${truncated}`
+        })
+        .join(' ')
+
+      aggregations.push(
+        `${schema.question} (${answers.length} responses):\n${compactResponses}`,
+      )
+    }
+  }
+
+  return aggregations.join('\n\n')
+}
+
+const generateAutoSummaryPrompt = ({
+  formName,
+  fieldSchemaMap,
+  responses,
+}: {
+  formName: string
+  fieldSchemaMap: Map<string, FieldSchema>
+  responses: InterpretDataRequestResponse[]
+}): Message[] => {
+  // Pre-aggregate data to reduce tokens
+  const aggregatedData = aggregateResponseData({ fieldSchemaMap, responses })
+
+  return [
+    AUTO_SUMMARY_SYSTEM_PROMPT,
+    {
+      role: Role.User,
+      content: `Form: "${formName}" (${responses.length} total responses)\n\nAggregated Data:\n${aggregatedData}\n\nGenerate a quick summary with key findings.`,
+    },
+  ] as Message[]
+}
+
+/**
+ * Generates an automatic summary of form response data.
+ */
+export const generateAutoSummary = ({
+  form,
+  responses,
+}: {
+  form: IPopulatedForm
+  responses: InterpretDataRequestResponse[]
+}): ResultAsync<
+  AutoSummaryResult,
+  | ModelResponseFailureError
+  | ModelGetClientFailureError
+  | ModelResponseInvalidSyntaxError
+  | ModelResponseInvalidSchemaFormatError
+> => {
+  const formId = form._id.toString()
+  const formName = form.title
+
+  if (responses.length === 0) {
+    return okAsync({
+      summary: 'No responses to analyze yet.',
+      keyFindings: ['No data available'],
+      suggestedQuestions: [],
+    })
+  }
+
+  // Build field schema map once from form
+  const fieldSchemaMap = buildFieldSchemaMap(form)
+
+  const messages = generateAutoSummaryPrompt({
+    formName,
+    fieldSchemaMap,
+    responses,
+  })
+
+  logger.info({
+    message: 'Generating auto-summary for form responses',
+    meta: {
+      action: 'generateAutoSummary',
+      formId,
+      numResponses: responses.length,
+    },
+  })
+
+  return sendPromptToModel({
+    messages,
+    formId,
+    options: {
+      response_format: {
+        type: 'json_schema',
+        json_schema: autoSummaryJsonSchema,
+      },
+    },
+  }).andThen((modelResponse) => {
+    if (!modelResponse) {
+      return errAsync(new ModelResponseFailureError())
+    }
+
+    let parsedJson
+    try {
+      parsedJson = JSON.parse(modelResponse)
+    } catch (error) {
+      logger.error({
+        message: 'Error parsing auto-summary response as JSON',
+        meta: {
+          action: 'generateAutoSummary',
+          formId,
+          modelResponse,
+          error,
+        },
+      })
+      return errAsync(
+        new ModelResponseInvalidSyntaxError(
+          `Failed to parse JSON response: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ),
+      )
+    }
+
+    const validationResult = autoSummaryResultSchema.safeParse(parsedJson)
+    if (!validationResult.success) {
+      logger.error({
+        message: 'Auto-summary response does not match expected schema',
+        meta: {
+          action: 'generateAutoSummary',
+          formId,
+          parsedJson,
+          error: validationResult.error,
+        },
+      })
+      return errAsync(
+        new ModelResponseInvalidSchemaFormatError(
+          `Invalid response format: ${validationResult.error.errors.map((e) => e.message).join('; ')}`,
+        ),
+      )
+    }
+
+    return okAsync(validationResult.data)
+  })
 }
 
 /**
@@ -1556,4 +1823,177 @@ export const interpretResponseData = ({
       })
       return error
     })
+}
+
+/**
+ * Streaming version of interpretResponseData.
+ * Uses SSE to stream the answer text progressively while collecting the full response.
+ */
+export const interpretResponseDataStreaming = async ({
+  form,
+  question,
+  responses,
+  onChunk,
+  onPartialAnswer,
+}: {
+  form: IPopulatedForm
+  question: string
+  responses: InterpretDataRequestResponse[]
+  onChunk?: (chunk: string) => void
+  onPartialAnswer?: (answer: string) => void
+}): Promise<
+  Result<
+    InterpretDataResult,
+    | ModelGetClientFailureError
+    | ModelResponseFailureError
+    | ModelResponseInvalidSyntaxError
+    | ModelResponseInvalidSchemaFormatError
+  >
+> => {
+  const formId = form._id.toString()
+  const formFields = form.form_fields ?? []
+
+  // Build field schema map
+  const fieldSchemaMap = new Map<string, FieldSchema>()
+  formFields.forEach((field) => {
+    fieldSchemaMap.set(field._id.toString(), {
+      id: field._id.toString(),
+      title: field.title,
+      fieldType: field.fieldType,
+      fieldOptions: 'fieldOptions' in field ? field.fieldOptions : undefined,
+    })
+  })
+
+  // Build user prompt with aggregated data (same format as non-streaming version)
+  const aggregatedData = aggregateResponseData({ fieldSchemaMap, responses })
+  const userPrompt = `Question: ${question}
+
+Response Data (${responses.length} responses):
+${aggregatedData}
+
+Please analyze this data and respond in valid JSON format with the following structure:
+{
+  "answer": "concise direct answer",
+  "explanation": "detailed explanation with markdown",
+  "mentionedResponseIds": [],
+  "suggestedCharts": [],
+  "suggestedFollowUps": ["question1", "question2"]
+}`
+
+  // Use the same system prompt as non-streaming version
+  const messages: Message[] = [
+    INTERPRET_DATA_SYSTEM_PROMPT,
+    { role: Role.User, content: userPrompt },
+  ]
+
+  // Get streaming response
+  const streamResult = await sendPromptToModelStreaming({
+    messages,
+    formId,
+  })
+
+  if (streamResult.isErr()) {
+    return err(streamResult.error)
+  }
+
+  const stream = streamResult.value
+
+  // Collect chunks and extract answer progressively
+  let fullContent = ''
+  let lastAnswerSent = ''
+
+  try {
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || ''
+
+      if (content) {
+        fullContent += content
+        onChunk?.(content)
+
+        // Extract partial answer from accumulated JSON
+        const answerStartMatch = fullContent.match(/"answer"\s*:\s*"/)
+
+        if (answerStartMatch) {
+          const startIndex = answerStartMatch.index! + answerStartMatch[0].length
+          const afterStart = fullContent.substring(startIndex)
+          const endMatch = afterStart.match(/^((?:[^"\\]|\\.)*)(?:",|\"\s*[,\n}])/)
+
+          let partialAnswer: string
+          if (endMatch) {
+            partialAnswer = endMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n')
+          } else {
+            partialAnswer = afterStart.replace(/\\$/, '').replace(/\\"/g, '"').replace(/\\n/g, '\n')
+          }
+
+          if (partialAnswer && partialAnswer !== lastAnswerSent) {
+            lastAnswerSent = partialAnswer
+            onPartialAnswer?.(partialAnswer)
+          }
+        }
+      }
+    }
+
+    // Parse complete JSON response
+    let parsedJson
+    try {
+      // Try to extract JSON from the response (handle markdown code blocks)
+      let jsonContent = fullContent
+      const jsonMatch = fullContent.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (jsonMatch) {
+        jsonContent = jsonMatch[1].trim()
+      }
+      parsedJson = JSON.parse(jsonContent)
+    } catch (parseError) {
+      logger.error({
+        message: 'Error parsing streaming interpret data response as JSON',
+        meta: {
+          action: 'interpretResponseDataStreaming',
+          formId,
+          fullContent: fullContent.substring(0, 500),
+          error: parseError,
+        },
+      })
+      return err(
+        new ModelResponseInvalidSyntaxError(
+          `Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+        ),
+      )
+    }
+
+    // Validate against schema
+    const validationResult = interpretDataResultSchema.safeParse(parsedJson)
+
+    if (!validationResult.success) {
+      logger.error({
+        message: 'Streaming model response does not match expected schema',
+        meta: {
+          action: 'interpretResponseDataStreaming',
+          formId,
+          parsedJson,
+          error: validationResult.error,
+        },
+      })
+      return err(
+        new ModelResponseInvalidSchemaFormatError(
+          `Invalid response format: ${validationResult.error.errors.map((e) => e.message).join('; ')}`,
+        ),
+      )
+    }
+
+    return ok(validationResult.data)
+  } catch (streamError) {
+    logger.error({
+      message: 'Error reading from stream',
+      meta: {
+        action: 'interpretResponseDataStreaming',
+        formId,
+        error: streamError,
+      },
+    })
+    return err(
+      new ModelResponseFailureError(
+        `Stream error: ${streamError instanceof Error ? streamError.message : 'Unknown error'}`,
+      ),
+    )
+  }
 }

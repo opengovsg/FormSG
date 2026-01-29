@@ -1,4 +1,4 @@
-import { ApiService } from '~services/ApiService'
+import { API_BASE_URL, ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
@@ -124,4 +124,150 @@ export const interpretData = ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data`,
     { question, responses },
   ).then(({ data }) => data)
+}
+
+// ============================================
+// Auto Summary
+// ============================================
+
+export interface AutoSummaryParams {
+  formId: string
+  responses: InterpretDataResponse[]
+}
+
+export interface AutoSummaryResult {
+  message: string
+  summary: string
+  keyFindings: string[]
+  suggestedQuestions: string[]
+}
+
+export const getAutoSummary = ({
+  formId,
+  responses,
+}: AutoSummaryParams): Promise<AutoSummaryResult> => {
+  return ApiService.post<AutoSummaryResult>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/auto-summary`,
+    { responses },
+  ).then(({ data }) => data)
+}
+
+// ============================================
+// Streaming Interpret Data (SSE)
+// ============================================
+
+export interface StreamingInterpretDataParams {
+  formId: string
+  question: string
+  responses: InterpretDataResponse[]
+  onChunk?: (chunk: string) => void
+  onPartialAnswer?: (answer: string) => void
+  onComplete?: (result: InterpretDataResult) => void
+  onError?: (error: Error) => void
+}
+
+/**
+ * Streaming version of interpretData using Server-Sent Events.
+ */
+export const interpretDataStreaming = ({
+  formId,
+  question,
+  responses,
+  onChunk,
+  onPartialAnswer,
+  onComplete,
+  onError,
+}: StreamingInterpretDataParams): { abort: () => void } => {
+  const abortController = new AbortController()
+
+  const startStream = async () => {
+    const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data-stream`
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question, responses }),
+        signal: abortController.signal,
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('No response body reader')
+      }
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+      // Persist event state across network chunks to handle split events
+      let pendingEvent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const decodedChunk = decoder.decode(value, { stream: true })
+        buffer += decodedChunk
+
+        // Parse SSE events from buffer
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            pendingEvent = line.slice(7)
+          } else if (line.startsWith('data: ')) {
+            const currentData = line.slice(6)
+
+            if (pendingEvent && currentData) {
+              try {
+                const data = JSON.parse(currentData)
+
+                switch (pendingEvent) {
+                  case 'chunk':
+                    onChunk?.(data.content)
+                    break
+                  case 'partial_answer':
+                    onPartialAnswer?.(data.answer)
+                    break
+                  case 'complete':
+                    onComplete?.({
+                      message: 'Data interpreted successfully.',
+                      ...data,
+                    })
+                    break
+                  case 'error':
+                    onError?.(new Error(data.message))
+                    break
+                }
+              } catch {
+                // Ignore parse errors for incomplete data
+              }
+            }
+            pendingEvent = ''
+          } else if (line === '') {
+            pendingEvent = ''
+          }
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
+      onError?.(error instanceof Error ? error : new Error('Unknown error'))
+    }
+  }
+
+  startStream()
+
+  return {
+    abort: () => abortController.abort(),
+  }
 }

@@ -19,8 +19,10 @@ import {
   analyzeQuestionForRelevantFields,
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
+  generateAutoSummary,
   generateSuggestedQuestions,
   interpretResponseData,
+  interpretResponseDataStreaming,
 } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
@@ -518,4 +520,258 @@ const _handleInterpretData: ControllerHandler<
 export const handleInterpretData = [
   handleInterpretDataValidator,
   _handleInterpretData,
+] as ControllerHandler[]
+
+// ============================================
+// Interpret Data Streaming Endpoint (SSE)
+// ============================================
+
+const _handleInterpretDataStream: ControllerHandler<
+  { formId: string },
+  void, // SSE doesn't use standard response type
+  IInterpretData
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { question, responses } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no') // Disable nginx buffering
+  res.flushHeaders()
+
+  // Helper to send SSE events
+  const sendEvent = (event: string, data: unknown) => {
+    res.write(`event: ${event}\n`)
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
+  }
+
+  // Handle client disconnect
+  let isClientConnected = true
+  req.on('close', () => {
+    isClientConnected = false
+    logger.info({
+      message: 'Client disconnected from streaming endpoint',
+      meta: {
+        action: '_handleInterpretDataStream',
+        formId,
+      },
+    })
+  })
+
+  try {
+    // Step 1: Auth checks
+    const userResult = await UserService.getPopulatedUserById(sessionUserId)
+    if (userResult.isErr()) {
+      sendEvent('error', { message: 'User not found' })
+      res.end()
+      return
+    }
+
+    const formResult = await AuthService.getFormAfterPermissionChecks({
+      user: userResult.value,
+      formId,
+      level: PermissionLevel.Read,
+    })
+    if (formResult.isErr()) {
+      sendEvent('error', { message: 'Form not found or no permission' })
+      res.end()
+      return
+    }
+
+    const form = formResult.value
+
+    logger.info({
+      message: 'Starting streaming interpretation of response data',
+      meta: {
+        action: '_handleInterpretDataStream',
+        formId,
+        questionLength: question.length,
+        responsesCount: responses.length,
+      },
+    })
+
+    // Step 2: Stream the interpretation
+    const streamResult = await interpretResponseDataStreaming({
+      form,
+      question,
+      responses,
+      onChunk: (chunk) => {
+        if (isClientConnected) {
+          sendEvent('chunk', { content: chunk })
+        }
+      },
+      onPartialAnswer: (answer) => {
+        if (isClientConnected) {
+          sendEvent('partial_answer', { answer })
+        }
+      },
+    })
+
+    if (streamResult.isErr()) {
+      sendEvent('error', { message: streamResult.error.message })
+      res.end()
+      return
+    }
+
+    // Send final complete result
+    if (isClientConnected) {
+      sendEvent('complete', streamResult.value)
+    }
+    res.end()
+  } catch (error) {
+    logger.error({
+      message: 'Error in streaming interpretation',
+      meta: {
+        action: '_handleInterpretDataStream',
+        formId,
+      },
+      error,
+    })
+    if (isClientConnected) {
+      sendEvent('error', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+    res.end()
+  }
+}
+
+export const handleInterpretDataStream = [
+  handleInterpretDataValidator, // Reuse same validator
+  _handleInterpretDataStream,
+] as ControllerHandler[]
+
+// ============================================
+// Auto Summary Endpoint
+// ============================================
+
+const handleAutoSummaryValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+  [Segments.BODY]: {
+    responses: Joi.array()
+      .items(
+        Joi.object({
+          refNo: Joi.string().required(),
+          submissionTime: Joi.string().required(),
+          fields: Joi.array()
+            .items(
+              Joi.object({
+                fieldId: Joi.string().required(),
+                answer: Joi.string().allow('').required(),
+              }),
+            )
+            .required(),
+        }),
+      )
+      .required()
+      .max(INTERPRET_DATA_MAX_RESPONSES),
+  },
+})
+
+interface IAutoSummaryField {
+  fieldId: string
+  answer: string
+}
+
+interface IAutoSummaryResponse {
+  refNo: string
+  submissionTime: string
+  fields: IAutoSummaryField[]
+}
+
+interface IAutoSummary {
+  responses: IAutoSummaryResponse[]
+}
+
+const _handleAutoSummary: ControllerHandler<
+  { formId: string },
+  {
+    message: string
+    summary?: string
+    keyFindings?: string[]
+    suggestedQuestions?: string[]
+  },
+  IAutoSummary
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { responses } = req.body
+  const gb = req.growthbook
+
+  if (!gb?.isOn(featureFlags.mfb)) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This feature is currently unavailable.',
+    })
+  }
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }).map((form) => ({ user, form })),
+    )
+    .map(({ user, form }) => {
+      logger.info({
+        message: 'Generating auto-summary for form responses',
+        meta: {
+          action: '_handleAutoSummary',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          userEmail: user.email,
+          formId,
+          responsesCount: responses.length,
+        },
+      })
+      return form
+    })
+    .andThen((form) =>
+      generateAutoSummary({
+        form,
+        responses,
+      }),
+    )
+    .map((result) =>
+      res.status(StatusCodes.OK).json({
+        message: 'Auto-summary generated successfully.',
+        summary: result.summary,
+        keyFindings: result.keyFindings,
+        suggestedQuestions: result.suggestedQuestions,
+      }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred generating auto-summary.',
+        meta: {
+          action: '_handleAutoSummary',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleAutoSummary = [
+  handleAutoSummaryValidator,
+  _handleAutoSummary,
 ] as ControllerHandler[]
