@@ -235,6 +235,9 @@ export const getAutoSummaryStreaming = ({
                 const data = JSON.parse(currentData)
 
                 switch (pendingEvent) {
+                  case 'heartbeat':
+                    // Connection verification, no action needed
+                    break
                   case 'chunk':
                     onChunk?.(data.content)
                     break

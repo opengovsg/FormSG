@@ -822,11 +822,24 @@ const _handleAutoSummaryStream: ControllerHandler<
   res.setHeader('X-Accel-Buffering', 'no') // Disable nginx buffering
   res.flushHeaders()
 
-  // Helper to send SSE events
-  const sendEvent = (event: string, data: unknown) => {
-    res.write(`event: ${event}\n`)
-    res.write(`data: ${JSON.stringify(data)}\n\n`)
+  // Disable Nagle's algorithm to send data immediately
+  if (res.socket) {
+    res.socket.setNoDelay(true)
   }
+
+  // Helper to send SSE events with explicit flush
+  const sendEvent = (event: string, data: unknown) => {
+    // Combine into single write to avoid fragmentation
+    const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+    res.write(message)
+    // Force flush if available (works with compression middleware)
+    if (typeof (res as unknown as { flush?: () => void }).flush === 'function') {
+      ;(res as unknown as { flush: () => void }).flush()
+    }
+  }
+
+  // Send initial heartbeat to establish connection
+  sendEvent('heartbeat', { status: 'connected' })
 
   // Handle client disconnect
   let isClientConnected = true

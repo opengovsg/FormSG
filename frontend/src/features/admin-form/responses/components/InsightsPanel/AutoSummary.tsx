@@ -41,8 +41,9 @@ export const AutoSummary = ({
     [keyFindings],
   )
 
-  // Show streaming state with partial summary
-  if (isStreaming && streamingSummary) {
+  // Show streaming state - display cursor with text as it arrives
+  // No skeleton - just the blinking cursor indicates loading
+  if (isStreaming) {
     return (
       <Box
         bg="white"
@@ -51,8 +52,8 @@ export const AutoSummary = ({
         borderColor="neutral.200"
         p={4}
       >
-        <Text fontSize="sm" color="secondary.700" mb={3}>
-          {streamingSummary}
+        <Text fontSize="sm" color="secondary.700">
+          {streamingSummary || ''}
           <Box
             as="span"
             display="inline-block"
@@ -64,11 +65,6 @@ export const AutoSummary = ({
             animation={`${blink} 1s step-end infinite`}
           />
         </Text>
-        {/* Show skeleton for findings during streaming */}
-        <VStack align="stretch" spacing={2}>
-          <Skeleton height="1rem" width="80%" />
-          <Skeleton height="1rem" width="70%" />
-        </VStack>
       </Box>
     )
   }

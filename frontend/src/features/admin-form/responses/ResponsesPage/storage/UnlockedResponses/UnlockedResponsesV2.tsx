@@ -584,9 +584,9 @@ const InterpretBox = ({
   onClearMentionedFilter?: () => void
   askedQuestion?: string
   setAskedQuestion: (question: string | undefined) => void
-  streamingAnswer?: string // For progressive streaming display
-  conversationTurnCount?: number // Number of Q&A turns in history
-  onClearConversation?: () => void // Callback to clear conversation history
+  streamingAnswer?: string
+  conversationTurnCount?: number
+  onClearConversation?: () => void
 }) => {
   const [question, setQuestion] = useState('')
   const [showExplanation, setShowExplanation] = useState(false)
@@ -635,7 +635,7 @@ const InterpretBox = ({
         <Flex justifyContent="space-between" alignItems="center" mb={2}>
           <Text fontSize="sm" fontWeight="medium" color="secondary.700">
             Ask a question
-            {conversationTurnCount && conversationTurnCount > 0 && (
+            {conversationTurnCount !== undefined && conversationTurnCount > 0 && (
               <Text
                 as="span"
                 fontSize="xs"
@@ -647,7 +647,7 @@ const InterpretBox = ({
               </Text>
             )}
           </Text>
-          {onClearConversation && conversationTurnCount && conversationTurnCount > 0 && (
+          {onClearConversation && conversationTurnCount !== undefined && conversationTurnCount > 0 && (
             <Button
               variant="link"
               size="xs"
@@ -728,7 +728,7 @@ const InterpretBox = ({
                       px={3}
                       onClick={() => {
                         setAskedQuestion(q)
-                        setQuestion('') // Clear textarea
+                        setQuestion('')
                         setHasAskedQuestion(true)
                         onAsk(q)
                       }}
@@ -762,7 +762,7 @@ const InterpretBox = ({
             setHasAskedQuestion(true)
             setAskedQuestion(question)
             onAsk(question)
-            setQuestion('') // Clear textarea after asking
+            setQuestion('')
           }}
           isDisabled={!question.trim()}
         >
@@ -1069,7 +1069,7 @@ const InterpretBox = ({
                     opacity={currentStep !== 'idle' ? 0.6 : 1}
                     onClick={() => {
                       setAskedQuestion(followUp)
-                      setQuestion('') // Clear textarea
+                      setQuestion('')
                       onAsk(followUp)
                     }}
                   >
@@ -1280,12 +1280,12 @@ const UnlockedResponsesV2 = () => {
     InterpretResult | undefined
   >()
   const [interpretStep, setInterpretStep] = useState<InterpretStep>('idle')
-  const [askedQuestion, setAskedQuestion] = useState<string | undefined>() // Track the question that was asked (lifted from InterpretBox)
+  const [askedQuestion, setAskedQuestion] = useState<string | undefined>()
   const [conversationHistory, setConversationHistory] = useState<
     Array<{ question: string; answer: string }>
-  >([]) // Multi-turn conversation history
-  const [streamingAnswer, setStreamingAnswer] = useState<string>('') // For progressive streaming display
-  const [useStreaming, setUseStreaming] = useState(true) // Toggle for streaming vs non-streaming
+  >([])
+  const [streamingAnswer, setStreamingAnswer] = useState<string>('')
+  const [useStreaming] = useState(true)
   const [analysisReasoning, setAnalysisReasoning] = useState<
     string | undefined
   >()

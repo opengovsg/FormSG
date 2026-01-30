@@ -23,19 +23,6 @@ const logger = createLoggerWithLabel(module)
 
 const getLlmClient = (): Result<AzureOpenAI, OpenAIError> => {
   try {
-    // Debug logging for API key configuration
-    logger.info({
-      message: 'Creating LLM client',
-      meta: {
-        action: 'getLlmClient',
-        hasApiKey: !!apiKey,
-        apiKeyLength: apiKey?.length ?? 0,
-        hasEndpoint: !!endpoint,
-        hasDeployment: !!deploymentName,
-        hasApiVersion: !!apiVersion,
-      },
-    })
-
     if (!apiKey) {
       logger.error({
         message: 'Azure OpenAI API key is not configured',

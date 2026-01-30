@@ -591,6 +591,22 @@ const AUTO_SUMMARY_SYSTEM_PROMPT = {
     'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided.',
 }
 
+// Streaming-optimized prompt - explicitly asks for summary FIRST for progressive display
+const AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT = {
+  role: Role.System,
+  content:
+    'You are an assistant that generates a quick summary of form response data. ' +
+    'Given a set of form responses and field schema, provide a concise overview of the key findings. ' +
+    'Your response must be a JSON object with exactly three keys in THIS EXACT ORDER: "summary", "keyFindings", "suggestedQuestions". ' +
+    'IMPORTANT: You MUST output "summary" as the FIRST field in the JSON object. This is critical for streaming display. ' +
+    '"summary" is a 2-3 sentence overview of the most important patterns in the data. Keep it brief and insightful. ' +
+    '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
+    '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
+    'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
+    'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided. ' +
+    'Output ONLY the JSON object, no markdown code blocks.',
+}
+
 const autoSummaryResultSchema = z.object({
   summary: z.string(),
   keyFindings: z.array(z.string()).min(1).max(5),
@@ -723,16 +739,23 @@ const generateAutoSummaryPrompt = ({
   formName,
   fieldSchemaMap,
   responses,
+  forStreaming = false,
 }: {
   formName: string
   fieldSchemaMap: Map<string, FieldSchema>
   responses: InterpretDataRequestResponse[]
+  forStreaming?: boolean
 }): Message[] => {
   // Pre-aggregate data to reduce tokens
   const aggregatedData = aggregateResponseData({ fieldSchemaMap, responses })
 
+  // Use streaming-optimized prompt when streaming (ensures summary comes first)
+  const systemPrompt = forStreaming
+    ? AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT
+    : AUTO_SUMMARY_SYSTEM_PROMPT
+
   return [
-    AUTO_SUMMARY_SYSTEM_PROMPT,
+    systemPrompt,
     {
       role: Role.User,
       content: `Form: "${formName}" (${responses.length} total responses)\n\nAggregated Data:\n${aggregatedData}\n\nGenerate a quick summary with key findings.`,
@@ -878,10 +901,12 @@ export const generateAutoSummaryStreaming = async ({
   // Build field schema map once from form
   const fieldSchemaMap = buildFieldSchemaMap(form)
 
+  // Use streaming-optimized prompt that outputs summary FIRST
   const messages = generateAutoSummaryPrompt({
     formName,
     fieldSchemaMap,
     responses,
+    forStreaming: true,
   })
 
   logger.info({
@@ -908,10 +933,12 @@ export const generateAutoSummaryStreaming = async ({
   // Collect chunks and extract summary progressively
   let fullContent = ''
   let lastSummarySent = ''
+  let chunkCount = 0
 
   try {
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || ''
+      chunkCount++
 
       if (content) {
         fullContent += content
@@ -939,6 +966,17 @@ export const generateAutoSummaryStreaming = async ({
         }
       }
     }
+
+    logger.info({
+      message: 'Auto-summary streaming complete',
+      meta: {
+        action: 'generateAutoSummaryStreaming',
+        formId,
+        totalChunks: chunkCount,
+        totalContentLength: fullContent.length,
+        partialSummariesSent: lastSummarySent ? 'yes' : 'no',
+      },
+    })
 
     // Parse complete JSON response
     let parsedJson
