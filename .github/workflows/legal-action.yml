@@ -16,3 +16,5 @@ jobs:
         with:
           package-manager: npm
           node-version: 22
+          include-only-prod-dependencies: false
+
