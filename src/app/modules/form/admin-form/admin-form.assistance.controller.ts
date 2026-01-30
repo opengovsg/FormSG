@@ -408,6 +408,15 @@ const handleInterpretDataValidator = celebrate({
       )
       .required()
       .max(INTERPRET_DATA_MAX_RESPONSES),
+    conversationHistory: Joi.array()
+      .items(
+        Joi.object({
+          question: Joi.string().required(),
+          answer: Joi.string().required(),
+        }),
+      )
+      .optional()
+      .max(10), // Limit conversation history to 10 turns
   },
 })
 
@@ -422,9 +431,15 @@ interface IInterpretDataResponse {
   fields: IInterpretDataField[]
 }
 
+interface IConversationTurn {
+  question: string
+  answer: string
+}
+
 interface IInterpretData {
   question: string
   responses: IInterpretDataResponse[]
+  conversationHistory?: IConversationTurn[]
 }
 
 interface ISuggestedChart {
@@ -447,7 +462,7 @@ const _handleInterpretData: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { question, responses } = req.body
+  const { question, responses, conversationHistory } = req.body
   const gb = req.growthbook
 
   if (!gb?.isOn(featureFlags.mfb)) {
@@ -478,6 +493,7 @@ const _handleInterpretData: ControllerHandler<
             formId,
             questionLength: question.length,
             responsesCount: responses.length,
+            conversationTurns: conversationHistory?.length ?? 0,
           },
         })
         return form
@@ -488,6 +504,7 @@ const _handleInterpretData: ControllerHandler<
           form,
           question,
           responses,
+          conversationHistory,
         }),
       )
       .map((result) =>
@@ -534,7 +551,7 @@ const _handleInterpretDataStream: ControllerHandler<
 > = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { question, responses } = req.body
+  const { question, responses, conversationHistory } = req.body
   const gb = req.growthbook
 
   if (!gb?.isOn(featureFlags.mfb)) {
@@ -606,6 +623,7 @@ const _handleInterpretDataStream: ControllerHandler<
       form,
       question,
       responses,
+      conversationHistory,
       onChunk: (chunk) => {
         if (isClientConnected) {
           sendEvent('chunk', { content: chunk })

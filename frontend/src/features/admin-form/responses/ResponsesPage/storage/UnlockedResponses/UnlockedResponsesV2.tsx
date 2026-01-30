@@ -557,6 +557,8 @@ const InterpretBox = ({
   askedQuestion,
   setAskedQuestion,
   streamingAnswer,
+  conversationTurnCount,
+  onClearConversation,
 }: {
   onAsk: (textQuestion: string) => void
   currentStep: InterpretStep
@@ -583,6 +585,8 @@ const InterpretBox = ({
   askedQuestion?: string
   setAskedQuestion: (question: string | undefined) => void
   streamingAnswer?: string // For progressive streaming display
+  conversationTurnCount?: number // Number of Q&A turns in history
+  onClearConversation?: () => void // Callback to clear conversation history
 }) => {
   const [question, setQuestion] = useState('')
   const [showExplanation, setShowExplanation] = useState(false)
@@ -628,9 +632,35 @@ const InterpretBox = ({
     >
       {/* Question Input Section */}
       <Box>
-        <Text fontSize="sm" fontWeight="medium" color="secondary.700" mb={2}>
-          Ask a question
-        </Text>
+        <Flex justifyContent="space-between" alignItems="center" mb={2}>
+          <Text fontSize="sm" fontWeight="medium" color="secondary.700">
+            Ask a question
+            {conversationTurnCount && conversationTurnCount > 0 && (
+              <Text
+                as="span"
+                fontSize="xs"
+                fontWeight="normal"
+                color="secondary.400"
+                ml={2}
+              >
+                ({conversationTurnCount} previous {conversationTurnCount === 1 ? 'question' : 'questions'})
+              </Text>
+            )}
+          </Text>
+          {onClearConversation && conversationTurnCount && conversationTurnCount > 0 && (
+            <Button
+              variant="link"
+              size="xs"
+              color="secondary.400"
+              fontWeight="normal"
+              onClick={onClearConversation}
+              isDisabled={isLoading}
+              _hover={{ color: 'secondary.600' }}
+            >
+              New conversation
+            </Button>
+          )}
+        </Flex>
         <Textarea
           placeholder="e.g., What are the most common complaints?"
           value={question}
@@ -1251,6 +1281,9 @@ const UnlockedResponsesV2 = () => {
   >()
   const [interpretStep, setInterpretStep] = useState<InterpretStep>('idle')
   const [askedQuestion, setAskedQuestion] = useState<string | undefined>() // Track the question that was asked (lifted from InterpretBox)
+  const [conversationHistory, setConversationHistory] = useState<
+    Array<{ question: string; answer: string }>
+  >([]) // Multi-turn conversation history
   const [streamingAnswer, setStreamingAnswer] = useState<string>('') // For progressive streaming display
   const [useStreaming, setUseStreaming] = useState(true) // Toggle for streaming vs non-streaming
   const [analysisReasoning, setAnalysisReasoning] = useState<
@@ -1497,6 +1530,7 @@ const UnlockedResponsesV2 = () => {
                 formId: form._id,
                 question,
                 responses: responsesForApi,
+                conversationHistory,
                 onPartialAnswer: (answer) => {
                   setStreamingAnswer(answer)
                 },
@@ -1508,6 +1542,12 @@ const UnlockedResponsesV2 = () => {
                     suggestedCharts: data.suggestedCharts,
                     suggestedFollowUps: data.suggestedFollowUps,
                   })
+
+                  // Add to conversation history for multi-turn context
+                  setConversationHistory((prev) => [
+                    ...prev,
+                    { question, answer: data.answer },
+                  ])
 
                   // Handle mentioned response IDs
                   if (
@@ -1540,7 +1580,7 @@ const UnlockedResponsesV2 = () => {
             } else {
               // Non-streaming fallback
               interpretDataMutation.mutate(
-                { question, responses: responsesForApi },
+                { question, responses: responsesForApi, conversationHistory },
                 {
                   onSuccess: (data) => {
                     setInterpretResult({
@@ -1549,6 +1589,12 @@ const UnlockedResponsesV2 = () => {
                       suggestedCharts: data.suggestedCharts,
                       suggestedFollowUps: data.suggestedFollowUps,
                     })
+
+                    // Add to conversation history for multi-turn context
+                    setConversationHistory((prev) => [
+                      ...prev,
+                      { question, answer: data.answer },
+                    ])
 
                     // Use mentionedResponseIds from structured output if provided
                     // Validate that the IDs actually exist in the responses
@@ -1600,6 +1646,7 @@ const UnlockedResponsesV2 = () => {
       selectedFieldIds,
       filters,
       allDashboardFields,
+      conversationHistory,
     ],
   )
 
@@ -1743,8 +1790,6 @@ const UnlockedResponsesV2 = () => {
           ) {
             fetchSuggestedQuestions()
           }
-          // Auto-summary is now pre-fetched in background when responses decrypt
-          // No need to fetch here - it should already be loading or loaded
           setIsInterpretOpen(!isInterpretOpen)
         }}
       />
@@ -1797,7 +1842,7 @@ const UnlockedResponsesV2 = () => {
               summary={autoSummary.summary}
               keyFindings={autoSummary.keyFindings}
               suggestedQuestions={autoSummary.suggestedQuestions}
-              isLoading={!isStreamingSummary && !autoSummary.summary && decryptedResponses.length > 0}
+              isLoading={!autoSummary.summary && decryptedResponses.length > 0}
               isStreaming={isStreamingSummary}
               streamingSummary={streamingSummary}
               isAsking={interpretStep !== 'idle'}
@@ -1826,6 +1871,8 @@ const UnlockedResponsesV2 = () => {
               askedQuestion={askedQuestion}
               setAskedQuestion={setAskedQuestion}
               streamingAnswer={streamingAnswer}
+              conversationTurnCount={conversationHistory.length}
+              onClearConversation={() => setConversationHistory([])}
             />
 
             {/* Collapsible Table Header */}

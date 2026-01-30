@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 
 import {
   analyzeQuestion,
+  ConversationTurn,
   getAutoSummary,
   getSuggestedQuestions,
   InterpretDataResponse,
@@ -112,10 +113,12 @@ export const useInterpretDataMutation = (formId: string) => {
     ({
       question,
       responses,
+      conversationHistory,
     }: {
       question: string
       responses: InterpretDataResponse[]
-    }) => interpretData({ formId, question, responses }),
+      conversationHistory?: ConversationTurn[]
+    }) => interpretData({ formId, question, responses, conversationHistory }),
     {
       onError: (error: Error) => {
         toast.closeAll()

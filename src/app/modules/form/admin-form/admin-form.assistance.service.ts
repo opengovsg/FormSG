@@ -1642,16 +1642,23 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     '{"answer": "New user sentiment: positive. Existing user sentiment: mixed.", "explanation": "Among new users, 78% of feedback comments reflected positive language such as \\"satisfied\\", \\"helpful\\", and \\"efficient\\", indicating strong satisfaction. In contrast, existing users provided more varied feedback, suggesting areas for further improvement.\\n\\nThemes identified:\\n- New users: Positive experiences\\n- Existing users: Mixed sentiments\\n\\nRecommendation: Focus on addressing specific concerns raised by existing users to improve overall satisfaction.", "mentionedResponseIds": [], "suggestedCharts": [{"chartType": "bar", "title": "User Sentiment by User Type", "data": [{"label": "New Users - Positive", "value": 78}, {"label": "Existing Users - Mixed", "value": 45}]}], "suggestedFollowUps": ["What specific concerns did existing users raise?", "How do ratings compare between new and existing users?", "What features do existing users want improved?"]}',
 }
 
+interface ConversationTurn {
+  question: string
+  answer: string
+}
+
 const generateInterpretDataPrompt = ({
   formName,
   question,
   fieldSchemaMap,
   responses,
+  conversationHistory = [],
 }: {
   formName: string
   question: string
   fieldSchemaMap: Map<string, FieldSchema>
   responses: InterpretDataRequestResponse[]
+  conversationHistory?: ConversationTurn[]
 }): Message[] => {
   // Build field schema section from the map (built once from form)
   const fieldSchemas = Array.from(fieldSchemaMap.entries())
@@ -1690,11 +1697,18 @@ const generateInterpretDataPrompt = ({
     ? `\n\nForm Field Schema:\n${fieldSchemas}\n`
     : ''
 
+  // Build conversation context from history
+  const conversationContext = conversationHistory.length > 0
+    ? `\n\nPrevious conversation:\n${conversationHistory
+        .map((turn, i) => `Q${i + 1}: ${turn.question}\nA${i + 1}: ${turn.answer}`)
+        .join('\n\n')}\n\n(Continue the conversation, referencing previous answers when relevant)`
+    : ''
+
   return [
     INTERPRET_DATA_SYSTEM_PROMPT,
     {
       role: Role.User,
-      content: `Form Name: ${formName}${schemaSection}\nHere are the form responses:\n\n${dataContent}\n\n-----
+      content: `Form Name: ${formName}${schemaSection}\nHere are the form responses:\n\n${dataContent}\n\n-----${conversationContext}
           Question: ${question}\n\nProvide your response as a JSON object with "answer", "explanation", "mentionedResponseIds", and "suggestedCharts" keys. The "mentionedResponseIds" key should be an array of strings (response IDs) if your answer refers to specific individual responses by their ID. Do NOT include "mentionedResponseIds" for general summaries, statistics, or trends that apply to multiple responses. The "suggestedCharts" key should be an array of chart specifications (each with fieldId, chartType, and optionally title) only when charts would be helpful for visualizing the data. Use empty arrays [] when not applicable.`,
     },
   ] as Message[]
@@ -1862,10 +1876,12 @@ export const interpretResponseData = ({
   form,
   question,
   responses,
+  conversationHistory = [],
 }: {
   form: IPopulatedForm
   question: string
   responses: InterpretDataRequestResponse[]
+  conversationHistory?: ConversationTurn[]
 }): ResultAsync<
   InterpretDataResult,
   | ModelResponseFailureError
@@ -1884,6 +1900,7 @@ export const interpretResponseData = ({
     question,
     fieldSchemaMap,
     responses,
+    conversationHistory,
   })
 
   logger.info({
@@ -1997,12 +2014,14 @@ export const interpretResponseDataStreaming = async ({
   form,
   question,
   responses,
+  conversationHistory = [],
   onChunk,
   onPartialAnswer,
 }: {
   form: IPopulatedForm
   question: string
   responses: InterpretDataRequestResponse[]
+  conversationHistory?: ConversationTurn[]
   onChunk?: (chunk: string) => void
   onPartialAnswer?: (answer: string) => void
 }): Promise<
@@ -2030,11 +2049,19 @@ export const interpretResponseDataStreaming = async ({
 
   // Build user prompt with aggregated data (same format as non-streaming version)
   const aggregatedData = aggregateResponseData({ fieldSchemaMap, responses })
+
+  // Build conversation context from history
+  const conversationContext = conversationHistory.length > 0
+    ? `\n\nPrevious conversation:\n${conversationHistory
+        .map((turn, i) => `Q${i + 1}: ${turn.question}\nA${i + 1}: ${turn.answer}`)
+        .join('\n\n')}\n\n(Continue the conversation, referencing previous answers when relevant)\n`
+    : ''
+
   const userPrompt = `Question: ${question}
 
 Response Data (${responses.length} responses):
 ${aggregatedData}
-
+${conversationContext}
 Please analyze this data and respond in valid JSON format with the following structure:
 {
   "answer": "concise direct answer",

@@ -94,10 +94,16 @@ export interface InterpretDataResponse {
   fields: InterpretDataField[]
 }
 
+export interface ConversationTurn {
+  question: string
+  answer: string
+}
+
 export interface InterpretDataParams {
   formId: string
   question: string
   responses: InterpretDataResponse[]
+  conversationHistory?: ConversationTurn[]
 }
 
 export interface SuggestedChart {
@@ -119,10 +125,11 @@ export const interpretData = ({
   formId,
   question,
   responses,
+  conversationHistory,
 }: InterpretDataParams): Promise<InterpretDataResult> => {
   return ApiService.post<InterpretDataResult>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data`,
-    { question, responses },
+    { question, responses, conversationHistory },
   ).then(({ data }) => data)
 }
 
@@ -274,6 +281,7 @@ export interface StreamingInterpretDataParams {
   formId: string
   question: string
   responses: InterpretDataResponse[]
+  conversationHistory?: ConversationTurn[]
   onChunk?: (chunk: string) => void
   onPartialAnswer?: (answer: string) => void
   onComplete?: (result: InterpretDataResult) => void
@@ -287,6 +295,7 @@ export const interpretDataStreaming = ({
   formId,
   question,
   responses,
+  conversationHistory,
   onChunk,
   onPartialAnswer,
   onComplete,
@@ -303,7 +312,7 @@ export const interpretDataStreaming = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question, responses }),
+        body: JSON.stringify({ question, responses, conversationHistory }),
         signal: abortController.signal,
         credentials: 'include',
       })
