@@ -2078,8 +2078,8 @@ export const interpretResponseDataStreaming = async ({
   const fieldSchemaMap = new Map<string, FieldSchema>()
   formFields.forEach((field) => {
     fieldSchemaMap.set(field._id.toString(), {
-      id: field._id.toString(),
-      title: field.title,
+      fieldId: field._id.toString(),
+      question: field.title,
       fieldType: field.fieldType,
       fieldOptions: 'fieldOptions' in field ? field.fieldOptions : undefined,
     })

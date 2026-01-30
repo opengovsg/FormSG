@@ -546,7 +546,7 @@ export const handleInterpretData = [
 
 const _handleInterpretDataStream: ControllerHandler<
   { formId: string },
-  void, // SSE doesn't use standard response type
+  { message: string } | void, // SSE doesn't use standard response type
   IInterpretData
 > = async (req, res) => {
   const { formId } = req.params
@@ -801,7 +801,7 @@ export const handleAutoSummary = [
 
 const _handleAutoSummaryStream: ControllerHandler<
   { formId: string },
-  void, // SSE doesn't use standard response type
+  { message: string } | void, // SSE doesn't use standard response type
   IAutoSummary
 > = async (req, res) => {
   const { formId } = req.params
