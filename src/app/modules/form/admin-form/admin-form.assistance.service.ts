@@ -30,6 +30,39 @@ import { Message, Role, sendPromptToModel, sendPromptToModelStreaming } from './
 
 const logger = createLoggerWithLabel(module)
 
+// ============================================
+// Input Sanitization Utilities
+// ============================================
+
+/**
+ * Sanitizes user input to prevent prompt injection attacks.
+ * Escapes special characters and limits length.
+ */
+const sanitizeUserInput = (input: string, maxLength = 2000): string => {
+  if (!input) return ''
+  return input
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, ' ')
+    .trim()
+    .substring(0, maxLength)
+}
+
+/**
+ * Sanitizes response data to prevent prompt injection from form submissions.
+ * More lenient than user input sanitization but still limits excessive content.
+ */
+const sanitizeResponseData = (answer: string, maxLength = 5000): string => {
+  if (!answer) return ''
+  return answer
+    .replace(/\n{3,}/g, '\n\n') // Collapse excessive newlines
+    .substring(0, maxLength)
+}
+
+// ============================================
+// Type Definitions
+// ============================================
+
 type SuggestedBaseField = z.infer<typeof suggestedBaseFieldSchema>
 type SuggestedTableField = z.infer<typeof suggestedTableFieldSchema>
 type SuggestedChoiceField = z.infer<typeof suggestedChoicesFieldSchema>
@@ -608,9 +641,9 @@ const AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT = {
 }
 
 const autoSummaryResultSchema = z.object({
-  summary: z.string(),
-  keyFindings: z.array(z.string()).min(1).max(5),
-  suggestedQuestions: z.array(z.string()).min(1).max(3),
+  summary: z.string().max(500), // Limit summary length to 2-3 sentences
+  keyFindings: z.array(z.string().max(200)).min(1).max(5), // Each finding max 200 chars
+  suggestedQuestions: z.array(z.string().max(100)).min(1).max(3), // Each question max 100 chars
 })
 
 const autoSummaryJsonSchema = {
@@ -698,8 +731,20 @@ const aggregateResponseData = ({
       const counts = new Map<string, number>()
       for (const answer of answers) {
         // Handle checkbox fields (comma-separated values)
-        const values =
-          schema.fieldType === 'checkbox' ? answer.split(', ') : [answer]
+        // Use fieldOptions to properly split checkbox answers, as options may contain commas
+        let values: string[]
+        if (schema.fieldType === 'checkbox' && schema.fieldOptions) {
+          // Match against known options to handle commas within option values
+          values = schema.fieldOptions.filter((opt) => answer.includes(opt))
+          // Fallback to simple split if no options matched (shouldn't happen normally)
+          if (values.length === 0) {
+            values = answer.split(', ')
+          }
+        } else if (schema.fieldType === 'checkbox') {
+          values = answer.split(', ')
+        } else {
+          values = [answer]
+        }
         for (const val of values) {
           counts.set(val, (counts.get(val) || 0) + 1)
         }
@@ -1094,10 +1139,10 @@ const analyzeQuestionResultSchema = z.object({
     z.object({
       fieldId: z.string(),
       operator: z.enum(['contains', 'equals']),
-      value: z.string(),
+      value: z.string().max(100), // Limit filter value length to prevent injection
     }),
   ),
-  reasoning: z.string(),
+  reasoning: z.string().max(200), // Limit reasoning length
 })
 
 // ============================================
@@ -1305,11 +1350,14 @@ const generateAnalyzeQuestionPrompt = ({
     })
     .join('\n')
 
+  // Sanitize user question to prevent prompt injection
+  const sanitizedQuestion = sanitizeUserInput(question, 500)
+
   return [
     ANALYZE_QUESTION_SYSTEM_PROMPT,
     {
       role: Role.User,
-      content: `Available form fields:\n${fieldsDescription}\n\nUser question: "${question}"\n\nAnalyze which fields are relevant and if any filters should be applied. Respond with JSON:`,
+      content: `Available form fields:\n${fieldsDescription}\n\nUser question: "${sanitizedQuestion}"\n\nAnalyze which fields are relevant and if any filters should be applied. Respond with JSON:`,
     },
   ] as Message[]
 }
@@ -1735,19 +1783,46 @@ const generateInterpretDataPrompt = ({
     ? `\n\nForm Field Schema:\n${fieldSchemas}\n`
     : ''
 
-  // Build conversation context from history
-  const conversationContext = conversationHistory.length > 0
-    ? `\n\nPrevious conversation:\n${conversationHistory
-        .map((turn, i) => `Q${i + 1}: ${turn.question}\nA${i + 1}: ${turn.answer}`)
-        .join('\n\n')}\n\n(Continue the conversation, referencing previous answers when relevant)`
-    : ''
+  // Build conversation context from history with pruning to save tokens
+  // Keep last 3 turns in full detail, summarize older turns
+  const MAX_FULL_TURNS = 3
+  const MAX_ANSWER_LENGTH_IN_HISTORY = 200 // Truncate answers in history to save tokens
+
+  let conversationContext = ''
+  if (conversationHistory.length > 0) {
+    const olderTurns = conversationHistory.slice(0, -MAX_FULL_TURNS)
+    const recentTurns = conversationHistory.slice(-MAX_FULL_TURNS)
+
+    // For older turns, just note that they exist
+    const olderContext = olderTurns.length > 0
+      ? `[${olderTurns.length} earlier Q&A exchanges about this form data]\n\n`
+      : ''
+
+    // For recent turns, include truncated Q&A
+    const recentContext = recentTurns
+      .map((turn, i) => {
+        const turnNumber = olderTurns.length + i + 1
+        const sanitizedQ = sanitizeUserInput(turn.question, 200)
+        const sanitizedA = sanitizeResponseData(turn.answer, MAX_ANSWER_LENGTH_IN_HISTORY)
+        const truncatedA = sanitizedA.length >= MAX_ANSWER_LENGTH_IN_HISTORY
+          ? sanitizedA + '...'
+          : sanitizedA
+        return `Q${turnNumber}: ${sanitizedQ}\nA${turnNumber}: ${truncatedA}`
+      })
+      .join('\n\n')
+
+    conversationContext = `\n\nPrevious conversation:\n${olderContext}${recentContext}\n\n(Continue the conversation, referencing previous answers when relevant)`
+  }
+
+  // Sanitize the current question to prevent prompt injection
+  const sanitizedQuestion = sanitizeUserInput(question, 500)
 
   return [
     INTERPRET_DATA_SYSTEM_PROMPT,
     {
       role: Role.User,
       content: `Form Name: ${formName}${schemaSection}\nHere are the form responses:\n\n${dataContent}\n\n-----${conversationContext}
-          Question: ${question}\n\nProvide your response as a JSON object with "answer", "explanation", "mentionedResponseIds", and "suggestedCharts" keys. The "mentionedResponseIds" key should be an array of strings (response IDs) if your answer refers to specific individual responses by their ID. Do NOT include "mentionedResponseIds" for general summaries, statistics, or trends that apply to multiple responses. The "suggestedCharts" key should be an array of chart specifications (each with fieldId, chartType, and optionally title) only when charts would be helpful for visualizing the data. Use empty arrays [] when not applicable.`,
+          Question: ${sanitizedQuestion}\n\nProvide your response as a JSON object with "answer", "explanation", "mentionedResponseIds", and "suggestedCharts" keys. The "mentionedResponseIds" key should be an array of strings (response IDs) if your answer refers to specific individual responses by their ID. Do NOT include "mentionedResponseIds" for general summaries, statistics, or trends that apply to multiple responses. The "suggestedCharts" key should be an array of chart specifications (each with fieldId, chartType, and optionally title) only when charts would be helpful for visualizing the data. Use empty arrays [] when not applicable.`,
     },
   ] as Message[]
 }
@@ -1768,11 +1843,11 @@ const suggestedChartSchema = z.object({
 })
 
 const interpretDataResultSchema = z.object({
-  answer: z.string(),
-  explanation: z.string(),
-  mentionedResponseIds: z.array(z.string()),
-  suggestedCharts: z.array(suggestedChartSchema),
-  suggestedFollowUps: z.array(z.string()),
+  answer: z.string().max(500), // Limit answer length to prevent runaway responses
+  explanation: z.string().max(2000), // Limit explanation length
+  mentionedResponseIds: z.array(z.string()).max(50), // Limit to reasonable number of IDs
+  suggestedCharts: z.array(suggestedChartSchema).max(3), // Limit to 3 charts max
+  suggestedFollowUps: z.array(z.string().max(100)).min(1).max(3), // 1-3 follow-ups, each max 100 chars
 })
 
 type InterpretDataResult = z.infer<typeof interpretDataResultSchema>
@@ -1811,8 +1886,9 @@ const interpretDataResultJsonSchema = {
       },
       suggestedCharts: {
         type: 'array',
+        maxItems: 3,
         description:
-          'Array of chart specifications to help visualize the data. Only include charts when they would be helpful for understanding distributions, comparisons, or patterns in the data. For simple answers or when charts would not add value, use an empty array []. Each chart should specify: chartType (pie, bar, or column), title (descriptive chart title), and data (array of [label, value] pairs where label is a string and value is a number).',
+          'Array of up to 3 chart specifications to help visualize the data. Only include charts when they would be helpful for understanding distributions, comparisons, or patterns in the data. For simple answers or when charts would not add value, use an empty array []. Each chart should specify: chartType (pie, bar, or column), title (descriptive chart title), and data (array of [label, value] pairs where label is a string and value is a number).',
         items: {
           type: 'object',
           properties: {
@@ -1856,10 +1932,13 @@ const interpretDataResultJsonSchema = {
       },
       suggestedFollowUps: {
         type: 'array',
+        minItems: 1,
+        maxItems: 3,
         description:
           'Array of 2-3 follow-up questions that naturally continue from the current answer. Questions should be concise (under 80 characters), specific to the context, and answerable from the available data.',
         items: {
           type: 'string',
+          maxLength: 100,
         },
       },
     },
