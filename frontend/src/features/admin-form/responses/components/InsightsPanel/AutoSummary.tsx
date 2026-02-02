@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Box, HStack, keyframes, Skeleton, Text, VStack, Wrap, WrapItem } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -8,6 +8,19 @@ const blink = keyframes`
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
 `
+
+// Progress bar animation
+const progress = keyframes`
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+`
+
+// Subtle status messages for streaming (different from Q&A to avoid confusion)
+const STREAMING_MESSAGES = [
+  'Analyzing patterns...',
+  'Extracting insights...',
+  'Summarizing findings...',
+]
 
 interface AutoSummaryProps {
   summary: string | null
@@ -35,6 +48,21 @@ export const AutoSummary = ({
   streamingSummary,
   onQuestionClick,
 }: AutoSummaryProps) => {
+  // Cycling message index for streaming state
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  // Cycle through status messages during loading/streaming
+  useEffect(() => {
+    if (!isStreaming && !isLoading) {
+      setMessageIndex(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % STREAMING_MESSAGES.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [isStreaming, isLoading])
+
   // Filter out empty or placeholder findings
   const validFindings = useMemo(
     () => keyFindings.filter((f) => f && f !== 'No data available'),
@@ -42,7 +70,7 @@ export const AutoSummary = ({
   )
 
   // Show streaming state - display cursor with text as it arrives
-  // No skeleton - just the blinking cursor indicates loading
+  // Enhanced with progress bar and subtle status message
   if (isStreaming) {
     return (
       <Box
@@ -53,8 +81,29 @@ export const AutoSummary = ({
         borderLeft="3px solid"
         borderLeftColor="purple.400"
         p={3}
+        position="relative"
+        overflow="hidden"
       >
-        <Text fontSize="sm" color="secondary.700">
+        {/* Animated progress bar at top */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          h="2px"
+          bg="purple.100"
+          overflow="hidden"
+        >
+          <Box
+            h="100%"
+            w="40%"
+            bg="purple.400"
+            animation={`${progress} 1.5s ease-in-out infinite`}
+          />
+        </Box>
+
+        {/* Streaming text with cursor */}
+        <Text fontSize="sm" color="secondary.700" mt={1}>
           {streamingSummary || ''}
           <Box
             as="span"
@@ -66,6 +115,11 @@ export const AutoSummary = ({
             verticalAlign="text-bottom"
             animation={`${blink} 1s step-end infinite`}
           />
+        </Text>
+
+        {/* Subtle status message */}
+        <Text fontSize="xs" color="secondary.400" mt={2}>
+          {STREAMING_MESSAGES[messageIndex]}
         </Text>
       </Box>
     )
@@ -81,14 +135,39 @@ export const AutoSummary = ({
         borderLeft="3px solid"
         borderLeftColor="purple.400"
         p={3}
+        position="relative"
+        overflow="hidden"
       >
-        <Skeleton height="1rem" width="30%" mb={3} />
+        {/* Animated progress bar at top */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          h="2px"
+          bg="purple.100"
+          overflow="hidden"
+        >
+          <Box
+            h="100%"
+            w="40%"
+            bg="purple.400"
+            animation={`${progress} 1.5s ease-in-out infinite`}
+          />
+        </Box>
+
+        <Skeleton height="1rem" width="30%" mb={3} mt={1} />
         <Skeleton height="3rem" mb={4} />
         <VStack align="stretch" spacing={2}>
           <Skeleton height="1rem" width="80%" />
           <Skeleton height="1rem" width="70%" />
           <Skeleton height="1rem" width="75%" />
         </VStack>
+
+        {/* Subtle status message */}
+        <Text fontSize="xs" color="secondary.400" mt={3}>
+          {STREAMING_MESSAGES[messageIndex]}
+        </Text>
       </Box>
     )
   }
