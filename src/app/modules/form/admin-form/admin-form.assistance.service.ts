@@ -621,6 +621,7 @@ const AUTO_SUMMARY_SYSTEM_PROMPT = {
     '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
     '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
     'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
+    "Consider the form's apparent purpose when generating insights: for satisfaction/feedback forms, comment on sentiment trends and actionable improvements; for registration/intake forms, note completion patterns and common selections; for complaint/issue forms, highlight common problems and severity. " +
     'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided.',
 }
 
@@ -636,6 +637,7 @@ const AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT = {
     '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
     '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
     'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
+    "Consider the form's apparent purpose when generating insights: for satisfaction/feedback forms, comment on sentiment trends and actionable improvements; for registration/intake forms, note completion patterns and common selections; for complaint/issue forms, highlight common problems and severity. " +
     'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided. ' +
     'Output ONLY the JSON object, no markdown code blocks.',
 }
@@ -1124,7 +1126,7 @@ const ANALYZE_QUESTION_SYSTEM_PROMPT = {
     '"reasoning": a concise string (maximum 50 words) explaining why these fields were selected. Keep it brief and to the point. ' +
     'IMPORTANT FILTERING RULES: ' +
     '1. Filters are ANDed together; there is no OR. At most one filter per field/column. Avoid duplicate filters on the same field. ' +
-    '2. For free text fields (ShortText/textfield, LongText/textarea): Only suggest filters when there is HIGH CERTAINTY the filter will not exclude relevant answers due to varied wording, synonyms, or paraphrases. ' +
+    '2. For free text fields (ShortText/textfield, LongText/textarea): Only suggest filters when you are 95%+ confident the filter will not exclude relevant answers due to varied wording, synonyms, or paraphrases. When in doubt, return empty filters []. ' +
     '3. Avoid free-text filters for generic concepts/keywords (e.g., "brother", "sibling", "good", "bad", "happy") because respondents may use synonyms or related terms. Only suggest a free-text filter if the user explicitly asks for an exact match/contains on a specific literal phrase (e.g., the user includes quotes like "John Smith" or requests exact value), or if the value looks like a unique identifier/code (e.g., contains digits) or a full name/phrase (multiple words). ' +
     '4. Free text fields have varied wording - be very cautious. Prefer returning no filter [] over a risky filter. ' +
     '5. For structured fields (Radio, Checkbox, Dropdown, YesNo): You can suggest filters more freely as these have predefined options. ' +
@@ -1697,10 +1699,8 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     'The "answer" key must be as concise as possible which answers the question to the point. ' +
     'The "explanation" key should contain the reasoning, methodology, breakdown, or additional context that supports the answer. Keep the explanation concise and within 300 words. Focus on the most important details that support your answer. ' +
     'The "mentionedResponseIds" key must ALWAYS be present and must be an array. ' +
-    'IMPORTANT: Only include response IDs in "mentionedResponseIds" when your answer specifically refers to individual responses by their ID (refNo). ' +
-    'For general summaries, statistics, trends, aggregations, or answers that apply to multiple responses without specifically identifying them, use an empty array []. ' +
-    'ONLY include response IDs when: the question asks for specific responses, you are highlighting particular responses by their ID, or you are providing examples of specific responses. ' +
-    'When including response IDs, list the exact refNo values that are mentioned in your answer. ' +
+    'Include response IDs ONLY when your answer specifically mentions individual responses by their refNo (e.g., "Response ABC-123 shows..."). ' +
+    'For summaries, statistics, trends, or aggregations across multiple responses, use an empty array []. ' +
     'The "suggestedCharts" key must ALWAYS be present and must be an array. ' +
     'IMPORTANT: Charts are optional. Only suggest charts when they would be helpful for visualizing distributions, comparisons, patterns, or trends in the data. If charts are not useful, return an empty array []. ' +
     "DO NOT suggest charts for: simple yes/no answers, single values, answers that don't benefit from visualization, or when the data is too sparse. " +
@@ -1710,12 +1710,18 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     '- "bar": Use for horizontal comparison of values across categories. Good for comparing multiple categories side-by-side. ' +
     '- "column": Use for vertical comparison of values across categories. Good for comparing rankings, counts, or values across different groups. ' +
     '- "line": Use for trends over time. Shows how values change across time periods, dates, or sequential data points (e.g., submissions per day, responses by month, trends over weeks). ' +
+    'CHART EDGE CASES - Special considerations: ' +
+    '- Highly skewed data (>90% in one category): Skip pie chart, use bar/column instead to show the minority values clearly. ' +
+    '- Time-series with gaps: Note missing dates in chart title or use bar/column if gaps are significant. ' +
+    '- Ordinal data (ratings 1-5, satisfaction scales): Use column/bar, not pie - ordinal data has inherent order. ' +
+    '- Fewer than 5 data points: Consider if a chart adds value; sometimes a text summary is clearer. ' +
     'Each chart specification must include: chartType (one of: pie, bar, column, line), title (descriptive title explaining what the chart shows), and data (array of objects with "label" and "value" properties). ' +
     'The data array should contain the actual values you want to visualize. For time-based line charts, labels should be time periods (e.g., "2024-01", "Week 1", "Day 1"). ' +
     'Example: [{"label": "Option A", "value": 21}, {"label": "Option B", "value": 18}, {"label": "Option C", "value": 11}]. ' +
     'The "suggestedFollowUps" key must ALWAYS be present and must be an array of 2-3 follow-up questions. ' +
     'These questions should be natural follow-ups based on the answer you provided, helping the user explore the data further. ' +
     'Each question should be concise (under 80 characters), specific to the current context, and answerable from the available data. ' +
+    'IMPORTANT: Generate questions that explore DIFFERENT angles - avoid similar questions that ask the same thing differently. Aim for variety: one about breakdown/distribution, one about trends/time, one about comparisons/correlations. ' +
     'Example follow-ups after answering "42% selected Option A": ["What reasons did Option A respondents give?", "How does this compare to last month?", "Which departments prefer Option A?"]. ' +
     'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
     'If the question asks for statistics, provide accurate calculations. ' +
