@@ -674,6 +674,18 @@ const InterpretBox = ({
           placeholder="e.g., What are the most common complaints?"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            // Submit on Enter (without Shift for newlines)
+            if (e.key === 'Enter' && !e.shiftKey && !isLoading && question.trim()) {
+              e.preventDefault()
+              setShowExplanation(false)
+              setShowReasoning(false)
+              setHasAskedQuestion(true)
+              setAskedQuestion(question)
+              onAsk(question)
+              setQuestion('')
+            }
+          }}
           isDisabled={isLoading}
           size="sm"
           rows={3}
@@ -2006,7 +2018,7 @@ const UnlockedResponsesV2 = () => {
       <Box flex={1} overflow="auto">
         {/* Insights Section (shown when Analyse is clicked) */}
         {isInterpretOpen && (
-          <Stack spacing={4} mb={4}>
+          <Stack spacing={4} mb={4} overflow="hidden" maxW="100%" width="100%">
             {/* Close button and header */}
             <Flex justify="space-between" align="center">
               <Text fontSize="lg" fontWeight="semibold" color="secondary.700">
@@ -2183,28 +2195,30 @@ const UnlockedResponsesV2 = () => {
 
             {/* Collapsible Table Content */}
             {isTableExpanded && (
-              <Stack spacing={4}>
+              <Stack spacing={4} width="100%" minW={0}>
                 {isFetchingAndDecrypting ? (
                   <Skeleton height="2.5rem" />
                 ) : (
                   <>
-                    <ResponsesTableV2
-                      isResponseLimitExceeded={
-                        !!dateRangeResponsesCount &&
-                        dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
-                      }
-                      form={form}
-                      selectedSubmissionMetaFields={selectedSubmissionMetaFields}
-                      selectedFields={selectedFields}
-                      decryptedResponses={paginatedResponses}
-                      onHideColumn={handleHideColumn}
-                      onAddFilter={handleColumnAddFilter}
-                      onRemoveFilter={handleRemoveFilter}
-                      filters={filters.map((f) => ({
-                        fieldId: f.fieldId,
-                        value: f.value,
-                      }))}
-                    />
+                    <Box overflowX="auto" minW={0}>
+                      <ResponsesTableV2
+                        isResponseLimitExceeded={
+                          !!dateRangeResponsesCount &&
+                          dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
+                        }
+                        form={form}
+                        selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+                        selectedFields={selectedFields}
+                        decryptedResponses={paginatedResponses}
+                        onHideColumn={handleHideColumn}
+                        onAddFilter={handleColumnAddFilter}
+                        onRemoveFilter={handleRemoveFilter}
+                        filters={filters.map((f) => ({
+                          fieldId: f.fieldId,
+                          value: f.value,
+                        }))}
+                      />
+                    </Box>
                     {filteredDecryptedResponses.length > PAGE_SIZE && (
                       <Pagination
                         totalCount={filteredDecryptedResponses.length}
@@ -2222,28 +2236,30 @@ const UnlockedResponsesV2 = () => {
 
         {/* Full Table View (when Insights is closed) */}
         {!isInterpretOpen && (
-          <Stack spacing={4} bg="white">
+          <Stack spacing={4} bg="white" width="100%" minW={0}>
             {isFetchingAndDecrypting ? (
               <Skeleton height="2.5rem" />
             ) : (
               <>
-                <ResponsesTableV2
-                  isResponseLimitExceeded={
-                    !!dateRangeResponsesCount &&
-                    dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
-                  }
-                  form={form}
-                  selectedSubmissionMetaFields={selectedSubmissionMetaFields}
-                  selectedFields={selectedFields}
-                  decryptedResponses={paginatedResponses}
-                  onHideColumn={handleHideColumn}
-                  onAddFilter={handleColumnAddFilter}
-                  onRemoveFilter={handleRemoveFilter}
-                  filters={filters.map((f) => ({
-                    fieldId: f.fieldId,
-                    value: f.value,
-                  }))}
-                />
+                <Box overflowX="auto" minW={0}>
+                  <ResponsesTableV2
+                    isResponseLimitExceeded={
+                      !!dateRangeResponsesCount &&
+                      dateRangeResponsesCount > MAX_RESPONSES_COUNT_FOR_DECRYPT
+                    }
+                    form={form}
+                    selectedSubmissionMetaFields={selectedSubmissionMetaFields}
+                    selectedFields={selectedFields}
+                    decryptedResponses={paginatedResponses}
+                    onHideColumn={handleHideColumn}
+                    onAddFilter={handleColumnAddFilter}
+                    onRemoveFilter={handleRemoveFilter}
+                    filters={filters.map((f) => ({
+                      fieldId: f.fieldId,
+                      value: f.value,
+                    }))}
+                  />
+                </Box>
                 {filteredDecryptedResponses.length > PAGE_SIZE && (
                   <Pagination
                     totalCount={filteredDecryptedResponses.length}
