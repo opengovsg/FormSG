@@ -26,6 +26,7 @@ interface UseVerifiableFieldMutationsProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
   formId: string
   getTransactionId: () => Promise<string>
+  previousSubmissionId?: string
 }
 
 export const useVerifiableFieldMutations = ({

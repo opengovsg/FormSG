@@ -48,7 +48,8 @@ export const VerifiableFieldProvider = ({
     control,
   })
 
-  const { formId, getTransactionId, expiryInMs, previousSubmissionId  } = usePublicFormContext()
+  const { formId, getTransactionId, expiryInMs, previousSubmissionId } =
+    usePublicFormContext()
 
   const {
     triggerSendOtpMutation,
