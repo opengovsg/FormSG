@@ -50,7 +50,9 @@ export const AutoSummary = ({
         borderRadius="lg"
         border="1px solid"
         borderColor="neutral.200"
-        p={4}
+        borderLeft="3px solid"
+        borderLeftColor="purple.400"
+        p={3}
       >
         <Text fontSize="sm" color="secondary.700">
           {streamingSummary || ''}
@@ -76,7 +78,9 @@ export const AutoSummary = ({
         borderRadius="lg"
         border="1px solid"
         borderColor="neutral.200"
-        p={4}
+        borderLeft="3px solid"
+        borderLeftColor="purple.400"
+        p={3}
       >
         <Skeleton height="1rem" width="30%" mb={3} />
         <Skeleton height="3rem" mb={4} />
@@ -99,7 +103,11 @@ export const AutoSummary = ({
       borderRadius="lg"
       border="1px solid"
       borderColor="neutral.200"
-      p={4}
+      borderLeft="3px solid"
+      borderLeftColor="purple.400"
+      p={3}
+      transition="all 0.2s"
+      _hover={{ boxShadow: 'sm', borderColor: 'neutral.300' }}
     >
       {/* Summary */}
       <Text fontSize="sm" color="secondary.700" mb={3}>

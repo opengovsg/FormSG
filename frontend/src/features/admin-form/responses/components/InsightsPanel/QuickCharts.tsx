@@ -182,10 +182,12 @@ export const QuickCharts = ({
               borderRadius="lg"
               border="1px solid"
               borderColor="neutral.200"
-              p={4}
+              borderLeft="3px solid"
+              borderLeftColor="green.400"
+              p={3}
             >
               <Skeleton height="1rem" width="60%" mb={3} />
-              <Skeleton height="280px" borderRadius="md" />
+              <Skeleton height="220px" borderRadius="md" />
             </Box>
           ))}
       </SimpleGrid>
@@ -265,8 +267,12 @@ export const QuickCharts = ({
           borderRadius="lg"
           border="1px solid"
           borderColor="neutral.200"
-          p={4}
+          borderLeft="3px solid"
+          borderLeftColor="green.400"
+          p={3}
           sx={toolTipFlickerFix}
+          transition="all 0.2s"
+          _hover={{ boxShadow: 'sm', borderColor: 'neutral.300' }}
         >
           <Text fontSize="sm" fontWeight="medium" color="secondary.700" mb={2}>
             {chart.title}

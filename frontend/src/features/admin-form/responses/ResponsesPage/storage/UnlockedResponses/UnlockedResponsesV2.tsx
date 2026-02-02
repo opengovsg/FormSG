@@ -16,6 +16,7 @@ import {
   Checkbox,
   Flex,
   HStack,
+  Icon,
   Input,
   Modal,
   ModalBody,
@@ -31,6 +32,7 @@ import {
   PopoverTrigger,
   Select,
   Skeleton,
+  SlideFade,
   Stack,
   Text,
   Textarea,
@@ -2021,9 +2023,29 @@ const UnlockedResponsesV2 = () => {
           <Stack spacing={4} mb={4} overflow="hidden" maxW="100%" width="100%">
             {/* Close button and header */}
             <Flex justify="space-between" align="center">
-              <Text fontSize="lg" fontWeight="semibold" color="secondary.700">
-                Insights
-              </Text>
+              <HStack spacing={3}>
+                <Flex
+                  p={2}
+                  borderRadius="md"
+                  bg="primary.50"
+                  align="center"
+                  justify="center"
+                >
+                  <Icon
+                    as={BiSolidMagicWand}
+                    color="primary.500"
+                    boxSize={5}
+                  />
+                </Flex>
+                <Box>
+                  <Text fontSize="md" fontWeight="semibold" color="secondary.700">
+                    Insights
+                  </Text>
+                  <Text fontSize="xs" color="secondary.400">
+                    AI-powered analysis of {decryptedResponses.length} responses
+                  </Text>
+                </Box>
+              </HStack>
               <IconButton
                 aria-label="Close insights"
                 icon={<BiX size={20} />}
@@ -2036,12 +2058,14 @@ const UnlockedResponsesV2 = () => {
             </Flex>
 
             {/* Hero Stats - full width */}
-            <HeroStats
-              responseCount={decryptedResponses.length}
-              filteredCount={filteredDecryptedResponses.length}
-              dateRange={dateRange}
-              lastResponseTime={lastResponseTime}
-            />
+            <SlideFade in={isInterpretOpen} offsetY="10px">
+              <HeroStats
+                responseCount={decryptedResponses.length}
+                filteredCount={filteredDecryptedResponses.length}
+                dateRange={dateRange}
+                lastResponseTime={lastResponseTime}
+              />
+            </SlideFade>
 
             {/* Filter explanation banner - show when filters reduce the count */}
             {filters.length > 0 &&
@@ -2096,49 +2120,57 @@ const UnlockedResponsesV2 = () => {
 
             {/* Trend Alerts - submission pattern analysis */}
             {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
-            <TrendAlerts
-              decryptedResponses={
-                isSummaryStale && insightsResponses.length > 0
-                  ? insightsResponses
-                  : decryptedResponses
-              }
-            />
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.05}>
+              <TrendAlerts
+                decryptedResponses={
+                  isSummaryStale && insightsResponses.length > 0
+                    ? insightsResponses
+                    : decryptedResponses
+                }
+              />
+            </SlideFade>
 
             {/* Anomaly Alerts - potential issues detection */}
-            <AnomalyAlerts
-              decryptedResponses={
-                isSummaryStale && insightsResponses.length > 0
-                  ? insightsResponses
-                  : decryptedResponses
-              }
-            />
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.1}>
+              <AnomalyAlerts
+                decryptedResponses={
+                  isSummaryStale && insightsResponses.length > 0
+                    ? insightsResponses
+                    : decryptedResponses
+                }
+              />
+            </SlideFade>
 
             {/* Quick Charts - auto-generated from chartable fields */}
             {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
-            <QuickCharts
-              formFields={form_fields ?? []}
-              decryptedResponses={
-                isSummaryStale && insightsResponses.length > 0
-                  ? insightsResponses
-                  : decryptedResponses
-              }
-              maxCharts={2}
-            />
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.15}>
+              <QuickCharts
+                formFields={form_fields ?? []}
+                decryptedResponses={
+                  isSummaryStale && insightsResponses.length > 0
+                    ? insightsResponses
+                    : decryptedResponses
+                }
+                maxCharts={2}
+              />
+            </SlideFade>
 
             {/* Auto Summary - AI-generated overview with streaming support */}
-            <AutoSummary
-              summary={autoSummary.summary}
-              keyFindings={autoSummary.keyFindings}
-              suggestedQuestions={autoSummary.suggestedQuestions}
-              isLoading={!autoSummary.summary && decryptedResponses.length > 0}
-              isStreaming={isStreamingSummary}
-              streamingSummary={streamingSummary}
-              isAsking={interpretStep !== 'idle'}
-              onQuestionClick={(question) => {
-                setAskedQuestion(question) // Set the asked question so it appears with the answer
-                onAsk(question)
-              }}
-            />
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.2}>
+              <AutoSummary
+                summary={autoSummary.summary}
+                keyFindings={autoSummary.keyFindings}
+                suggestedQuestions={autoSummary.suggestedQuestions}
+                isLoading={!autoSummary.summary && decryptedResponses.length > 0}
+                isStreaming={isStreamingSummary}
+                streamingSummary={streamingSummary}
+                isAsking={interpretStep !== 'idle'}
+                onQuestionClick={(question) => {
+                  setAskedQuestion(question) // Set the asked question so it appears with the answer
+                  onAsk(question)
+                }}
+              />
+            </SlideFade>
 
             {/* InterpretBox - full width */}
             <InterpretBox

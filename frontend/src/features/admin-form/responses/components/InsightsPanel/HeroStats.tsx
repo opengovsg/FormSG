@@ -21,9 +21,11 @@ const StatCard = ({ label, value, subValue }: StatCardProps) => (
     borderRadius="md"
     border="1px solid"
     borderColor="neutral.200"
-    p={4}
+    p={3}
     flex="1"
-    minW="140px"
+    minW="120px"
+    transition="all 0.2s"
+    _hover={{ boxShadow: 'sm', borderColor: 'neutral.300' }}
   >
     <Text fontSize="xs" color="secondary.500" fontWeight="medium" mb={1}>
       {label}
