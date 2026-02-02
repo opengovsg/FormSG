@@ -47,6 +47,7 @@ export const triggerSendOtp = async ({
   transactionId,
   fieldId,
   answer,
+  previousSubmissionId,
 }: {
   /** The id of the form to generate the otp for */
   formId: string
@@ -56,11 +57,14 @@ export const triggerSendOtp = async ({
   fieldId: string
   /** The value of the verification field to verify. Usually an email or phone number */
   answer: string
+  /** The id of the previous submission */
+  previousSubmissionId?: string
 }): Promise<SendFormOtpResponseDto> => {
   return ApiService.post(
     `${FORM_API_PREFIX}/${formId}/${VERIFICATION_ENDPOINT}/${transactionId}/fields/${fieldId}/otp/generate`,
     {
       answer,
+      previousSubmissionId,
     },
   ).then(({ data }) => data)
 }

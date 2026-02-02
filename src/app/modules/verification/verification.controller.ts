@@ -90,10 +90,10 @@ export const handleCreateVerificationTransaction: ControllerHandler<
 export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
   SendFormOtpResponseDto | ErrorDto,
-  { answer: string }
+  { answer: string; previousSubmissionId?: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
-  const { answer } = req.body
+  const { answer, previousSubmissionId } = req.body
   const senderIp = getRequestIp(req)
 
   const logMeta = {
@@ -111,6 +111,9 @@ export const _handleGenerateOtp: ControllerHandler<
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
+            // Allow bypass of MyInfo verification check Singpass-enabled MRF forms
+            if (previousSubmissionId) return ok(form)
+
             const oidcService = getOidcService(FormAuthType.CP)
             return oidcService
               .extractJwt(req.cookies)
@@ -155,6 +158,9 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
+            // Allow bypass of MyInfo verification check Singpass-enabled MRF forms
+            if (previousSubmissionId) return ok(form)
+
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
@@ -216,6 +222,7 @@ export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
       answer: Joi.string().required(),
+      previousSubmissionId: Joi.string().optional(),
     }),
   }),
   _handleGenerateOtp,

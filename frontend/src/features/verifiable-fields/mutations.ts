@@ -32,6 +32,7 @@ export const useVerifiableFieldMutations = ({
   schema,
   formId,
   getTransactionId,
+  previousSubmissionId,
 }: UseVerifiableFieldMutationsProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -56,6 +57,7 @@ export const useVerifiableFieldMutations = ({
         transactionId,
         fieldId: schema._id,
         answer,
+        previousSubmissionId,
       })
     },
     [formId, getTransactionId, schema._id],
