@@ -619,7 +619,7 @@ const AUTO_SUMMARY_SYSTEM_PROMPT = {
     'Your response must be a JSON object with exactly three keys: "summary", "keyFindings", and "suggestedQuestions". ' +
     '"summary" is a 2-3 sentence overview of the most important patterns in the data. Keep it brief and insightful. ' +
     '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
-    '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
+    '"suggestedQuestions" is an array of 2-3 data-specific follow-up questions (under 100 chars). Questions must reference actual field names, values, or patterns from the data. Avoid generic questions like "Was your issue resolved?" - instead ask about specific data points like "What feedback did respondents who rated 3 or below provide?". Use sentence case. ' +
     'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
     "Consider the form's apparent purpose when generating insights: for satisfaction/feedback forms, comment on sentiment trends and actionable improvements; for registration/intake forms, note completion patterns and common selections; for complaint/issue forms, highlight common problems and severity. " +
     'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided.',
@@ -635,7 +635,7 @@ const AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT = {
     'IMPORTANT: You MUST output "summary" as the FIRST field in the JSON object. This is critical for streaming display. ' +
     '"summary" is a 2-3 sentence overview of the most important patterns in the data. Keep it brief and insightful. ' +
     '"keyFindings" is an array of 3-5 bullet points highlighting specific insights. Each bullet should be a complete sentence with a concrete finding (e.g., "42% of respondents selected Option A" not "Many chose Option A"). Include percentages or counts where relevant. ' +
-    '"suggestedQuestions" is an array of 2-3 follow-up questions users might want to explore. These should be natural questions based on the data patterns you observed. ' +
+    '"suggestedQuestions" is an array of 2-3 data-specific follow-up questions (under 100 chars). Questions must reference actual field names, values, or patterns from the data. Avoid generic questions like "Was your issue resolved?" - instead ask about specific data points like "What feedback did respondents who rated 3 or below provide?". Use sentence case. ' +
     'Focus on: most common answers, distributions, notable patterns, outliers, and trends. ' +
     "Consider the form's apparent purpose when generating insights: for satisfaction/feedback forms, comment on sentiment trends and actionable improvements; for registration/intake forms, note completion patterns and common selections; for complaint/issue forms, highlight common problems and severity. " +
     'Do NOT include generic statements. Every finding should be data-driven and specific to the responses provided. ' +
@@ -643,9 +643,17 @@ const AUTO_SUMMARY_STREAMING_SYSTEM_PROMPT = {
 }
 
 const autoSummaryResultSchema = z.object({
-  summary: z.string().max(500), // Limit summary length to 2-3 sentences
-  keyFindings: z.array(z.string().max(200)).min(1).max(5), // Each finding max 200 chars
-  suggestedQuestions: z.array(z.string().max(100)).min(1).max(3), // Each question max 100 chars
+  summary: z.string().max(3000), // Limit summary length
+  keyFindings: z.array(z.string().max(2000)).min(1).max(5), // Each finding max 2000 chars
+  suggestedQuestions: z
+    .array(z.string())
+    .min(1)
+    .max(3)
+    .transform((qs) =>
+      qs
+        .map((q) => q.trim().slice(0, 150)) // Truncate to 150 chars
+        .filter((q) => q.length > 0),
+    ),
 })
 
 const autoSummaryJsonSchema = {
@@ -674,9 +682,10 @@ const autoSummaryJsonSchema = {
       suggestedQuestions: {
         type: 'array',
         description:
-          'Array of 2-3 natural follow-up questions based on the data patterns observed.',
+          'Array of 2-3 data-specific questions (under 100 chars). Must reference actual field names, values, or patterns. Avoid generic questions.',
         items: {
           type: 'string',
+          maxLength: 100,
         },
         minItems: 1,
         maxItems: 3,
@@ -1124,6 +1133,10 @@ const ANALYZE_QUESTION_SYSTEM_PROMPT = {
     '"relevantFieldIds": an array of strings (field IDs) that are needed to answer the question. Include all field IDs if the question is broad like "summarize all responses". ' +
     '"suggestedFilters": an array of objects, each with "fieldId" (string), "operator" (either "contains" or "equals"), and "value" (string). Only include filters if the question clearly implies filtering like "responses where X contains Y". Leave as empty array [] if no filters are needed. Filters are combined with logical AND, and only one filter may be applied per field/column. Do NOT propose multiple filters for the same field. ' +
     '"reasoning": a concise string (maximum 50 words) explaining why these fields were selected. Keep it brief and to the point. ' +
+    'CRITICAL FIELD SELECTION RULES: ' +
+    '1. FREE-TEXT FIELDS ARE ESSENTIAL for content questions: When questions ask about "reasons", "why", "themes", "issues", "problems", "complaints", "suggestions", "feedback content", "what people said", "common topics", or any qualitative analysis, you MUST include free-text fields (LongText, ShortText, textarea, textfield) even if their names do not literally match the question terms. Free-text fields like "Comments", "Feedback", "Details", "Description", "Additional info", or similar contain the actual content needed to answer such questions. ' +
+    '2. Do NOT only select structured fields (Radio, Dropdown) when the question asks about content/reasons. A structured field like "Feedback Type = Complaint" tells you THAT someone complained, but only the free-text field tells you WHAT they complained about. ' +
+    '3. When in doubt about whether a free-text field is relevant, INCLUDE IT. It is better to send extra context than to miss the field containing the answer. ' +
     'IMPORTANT FILTERING RULES: ' +
     '1. Filters are ANDed together; there is no OR. At most one filter per field/column. Avoid duplicate filters on the same field. ' +
     '2. For free text fields (ShortText/textfield, LongText/textarea): Only suggest filters when you are 95%+ confident the filter will not exclude relevant answers due to varied wording, synonyms, or paraphrases. When in doubt, return empty filters []. ' +
@@ -1132,7 +1145,7 @@ const ANALYZE_QUESTION_SYSTEM_PROMPT = {
     '5. For structured fields (Radio, Checkbox, Dropdown, YesNo): You can suggest filters more freely as these have predefined options. ' +
     '6. Be conservative with filters - only suggest them when the question clearly implies filtering and you have high certainty about the filter value. ' +
     '7. For general questions like "what are the trends?", "summarize the data", or "analyze responses", include all field IDs and an empty filters array. ' +
-    'Example response: {"relevantFieldIds": ["field1", "field2"], "suggestedFilters": [], "reasoning": "These fields contain the data needed to answer the question."}',
+    'Example response: {"relevantFieldIds": ["field1", "field2"], "suggestedFilters": [], "reasoning": "These fields contain the data needed."}',
 }
 
 const analyzeQuestionResultSchema = z.object({
@@ -1157,17 +1170,19 @@ const SUGGEST_SUGGESTED_QUESTIONS_SYSTEM_PROMPT = {
     'You are an assistant that generates decision-oriented questions for exploring form response data. ' +
     'Given a form title and its field schema, generate up to 3 suggested questions that would help someone make informed decisions based on the data. ' +
     "Focus on questions that reveal insights, patterns, or actionable information relevant to the form's purpose. " +
+    'CRITICAL FORMATTING RULES: ' +
+    '- Each question MUST be under 150 characters ' +
+    '- Use sentence case throughout: capitalize first word only, use lowercase for field names (e.g., "service category" not "Service Category") ' +
+    '- NO parenthetical examples or clarifications in brackets ' +
+    '- NO compound questions with "or" clauses ' +
+    '- Simple, direct questions only ' +
     'Questions should be: ' +
-    '- Specific and answerable from the response data (e.g., counts, distributions, comparisons, trends, correlations) ' +
-    '- Decision-oriented (help users understand what actions to take, what patterns exist, or what the data reveals) ' +
-    "- Contextually relevant to the form's purpose and field types " +
-    '- Concise (under 100 characters each) ' +
-    '- Written in natural language without mentioning internal field IDs ' +
-    '- Try to use the same terminology as the form fields and form title. For example, if the form title is "User Complaints for Facilities", use "facility" instead of "location".' +
-    'Good examples:' +
-    'If the form is about user complaints for facilities, "which facility types have the most complaints?"' +
-    'If the form is about user satisfaction for products, "which products have the highest satisfaction rating?"' +
-    'If the form is a feedback form, "what is the most common feedback?"',
+    '- Specific and answerable from the response data ' +
+    '- Decision-oriented (reveal patterns, actions, or insights) ' +
+    "- Contextually relevant to the form's purpose " +
+    '- Use the same terminology as the form fields ' +
+    'Good: "Which facility types have the most complaints?" ' +
+    'Bad: "Which facility types (buildings, parks, roads) have the most complaints?"',
 }
 
 const suggestedQuestionsResultSchema = z.object({
@@ -1179,9 +1194,8 @@ const suggestedQuestionsResultSchema = z.object({
       Array.from(
         new Set(
           qs
-            .map((q) => q.trim())
-            .filter((q) => q.length > 0 && q.length <= 100)
-            .map((q) => q.slice(0, 100)),
+            .map((q) => q.trim().slice(0, 150)) // Truncate to 150 chars
+            .filter((q) => q.length > 0),
         ),
       ).slice(0, 3),
     ),
@@ -1198,11 +1212,12 @@ const suggestedQuestionsJsonSchema = {
       suggestedQuestions: {
         type: 'array',
         description:
-          "An array of up to 3 decision-oriented questions that help users explore and make decisions based on the form response data. Each question should be specific, answerable from the data, and relevant to the form's purpose. Maximum 3 questions, each under 100 characters.",
+          'Array of up to 3 questions (under 150 characters each). Use sentence case with lowercase field names. No parenthetical examples or compound questions.',
         items: {
           type: 'string',
+          maxLength: 150,
           description:
-            'A specific, decision-oriented question that can be answered from the form response data. Should be concise (under 100 characters) and help users gain actionable insights.',
+            'A direct question under 150 characters. Sentence case with lowercase field names (e.g., "service category" not "Service Category"). No brackets.',
         },
         minItems: 1,
         maxItems: 3,
@@ -1719,10 +1734,11 @@ const INTERPRET_DATA_SYSTEM_PROMPT = {
     'The data array should contain the actual values you want to visualize. For time-based line charts, labels should be time periods (e.g., "2024-01", "Week 1", "Day 1"). ' +
     'Example: [{"label": "Option A", "value": 21}, {"label": "Option B", "value": 18}, {"label": "Option C", "value": 11}]. ' +
     'The "suggestedFollowUps" key must ALWAYS be present and must be an array of 2-3 follow-up questions. ' +
-    'These questions should be natural follow-ups based on the answer you provided, helping the user explore the data further. ' +
-    'Each question should be concise (under 80 characters), specific to the current context, and answerable from the available data. ' +
-    'IMPORTANT: Generate questions that explore DIFFERENT angles - avoid similar questions that ask the same thing differently. Aim for variety: one about breakdown/distribution, one about trends/time, one about comparisons/correlations. ' +
-    'Example follow-ups after answering "42% selected Option A": ["What reasons did Option A respondents give?", "How does this compare to last month?", "Which departments prefer Option A?"]. ' +
+    'CRITICAL: Questions must be SPECIFIC to the data - reference actual field names, values, patterns, or findings from the responses. ' +
+    'Keep questions under 150 characters. Use sentence case throughout (lowercase field names like "service category" not "Service Category"). No parenthetical examples. ' +
+    'Good examples: "What feedback did respondents who selected Counter Service provide?", "How do satisfaction ratings vary by submission week?" ' +
+    'Bad examples: "Which channel did you use?" (too generic), "Was your issue resolved?" (not data-specific), "Would X help?" (yes/no) ' +
+    'IMPORTANT: Each question should explore a DIFFERENT angle - one about specific field values, one about patterns/trends, one about correlations between fields. ' +
     'Focus on providing insights, summaries, patterns, or specific information as requested. ' +
     'If the question asks for statistics, provide accurate calculations. ' +
     'If the question is unclear or cannot be answered with the given data, explain why in the explanation field and provide "Unable to determine" as the answer. ' +
@@ -1849,11 +1865,19 @@ const suggestedChartSchema = z.object({
 })
 
 const interpretDataResultSchema = z.object({
-  answer: z.string().max(500), // Limit answer length to prevent runaway responses
-  explanation: z.string().max(2000), // Limit explanation length
+  answer: z.string().max(3000), // Limit answer length
+  explanation: z.string().max(4000), // Limit explanation length
   mentionedResponseIds: z.array(z.string()).max(50), // Limit to reasonable number of IDs
   suggestedCharts: z.array(suggestedChartSchema).max(3), // Limit to 3 charts max
-  suggestedFollowUps: z.array(z.string().max(100)).min(1).max(3), // 1-3 follow-ups, each max 100 chars
+  suggestedFollowUps: z
+    .array(z.string())
+    .min(1)
+    .max(3)
+    .transform((qs) =>
+      qs
+        .map((q) => q.trim().slice(0, 150)) // Truncate to 150 chars
+        .filter((q) => q.length > 0),
+    ),
 })
 
 type InterpretDataResult = z.infer<typeof interpretDataResultSchema>
@@ -1941,10 +1965,10 @@ const interpretDataResultJsonSchema = {
         minItems: 1,
         maxItems: 3,
         description:
-          'Array of 2-3 follow-up questions that naturally continue from the current answer. Questions should be concise (under 80 characters), specific to the context, and answerable from the available data.',
+          'Array of 2-3 data-specific follow-up questions (under 150 chars). Must reference actual field names (in lowercase), values, or patterns from the data. Avoid generic questions.',
         items: {
           type: 'string',
-          maxLength: 100,
+          maxLength: 150,
         },
       },
     },
@@ -2130,6 +2154,37 @@ export const interpretResponseData = ({
 }
 
 /**
+ * Formats full per-response data (no aggregation) for correlation questions.
+ * This preserves the relationship between fields within each response.
+ */
+const formatFullResponseData = ({
+  fieldSchemaMap,
+  responses,
+}: {
+  fieldSchemaMap: Map<string, FieldSchema>
+  responses: InterpretDataRequestResponse[]
+}): string => {
+  return responses
+    .map((response) => {
+      const fieldAnswers = response.fields
+        .map((field) => {
+          const schema = fieldSchemaMap.get(field.fieldId)
+          const questionText = schema?.question ?? 'Unknown field'
+          // Truncate very long answers to prevent token explosion
+          const answer = field.answer
+            ? field.answer.length > 200
+              ? field.answer.substring(0, 200) + '...'
+              : field.answer
+            : '(no answer)'
+          return `  - ${questionText}: ${answer}`
+        })
+        .join('\n')
+      return `Response ${response.refNo}:\n${fieldAnswers}`
+    })
+    .join('\n\n')
+}
+
+/**
  * Streaming version of interpretResponseData.
  * Uses SSE to stream the answer text progressively while collecting the full response.
  */
@@ -2170,8 +2225,8 @@ export const interpretResponseDataStreaming = async ({
     })
   })
 
-  // Build user prompt with aggregated data (same format as non-streaming version)
-  const aggregatedData = aggregateResponseData({ fieldSchemaMap, responses })
+  // Always use full per-response data for accuracy (hackathon POC prioritizes accuracy over token cost)
+  const responseData = formatFullResponseData({ fieldSchemaMap, responses })
 
   // Build conversation context from history
   const conversationContext = conversationHistory.length > 0
@@ -2183,7 +2238,7 @@ export const interpretResponseDataStreaming = async ({
   const userPrompt = `Question: ${question}
 
 Response Data (${responses.length} responses):
-${aggregatedData}
+${responseData}
 ${conversationContext}
 Please analyze this data and respond in valid JSON format with the following structure:
 {

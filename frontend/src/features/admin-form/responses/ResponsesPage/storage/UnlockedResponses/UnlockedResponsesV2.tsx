@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BiChevronDown,
   BiChevronUp,
@@ -17,6 +17,12 @@ import {
   Flex,
   HStack,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -28,6 +34,7 @@ import {
   Stack,
   Text,
   Textarea,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { Document, Encoder } from 'flexsearch'
 import { includes, intersection, throttle } from 'lodash'
@@ -47,6 +54,7 @@ import {
 import { CopyButton } from '~templates/CopyButton/CopyButton'
 import IconButton from '~components/IconButton'
 import InlineMessage from '~components/InlineMessage'
+import { ModalCloseButton } from '~components/Modal'
 import { MarkdownText } from '~components/MarkdownText/MarkdownText'
 import Pagination from '~components/Pagination'
 import Tooltip from '~components/Tooltip'
@@ -86,6 +94,7 @@ import {
 
 import { ResponsesTableV2 } from './ResponsesTable/ResponsesTableV2'
 import { DownloadButton } from './DownloadButton'
+import { usePageSearchParams } from './hooks/usePageSearchParams'
 
 enum FilterOperator {
   Contains = 'contains',
@@ -1142,7 +1151,40 @@ const UnlockedResponsesV2 = () => {
     includes(selectedFieldIds, field._id),
   )
 
-  const [filters, setFilters] = useState<Filter[]>([])
+  // URL persistence for filters
+  const {
+    filters: [urlFilters, setUrlFilters],
+  } = usePageSearchParams()
+
+  // Initialize filters from URL, sync changes back
+  const [filters, setFiltersState] = useState<Filter[]>(() =>
+    urlFilters.map((f) => ({
+      fieldId: f.fieldId,
+      operator: f.operator as FilterOperator,
+      value: f.value,
+    })),
+  )
+
+  // Wrapper to sync filter changes to URL
+  const setFilters = useCallback(
+    (newFilters: Filter[] | ((prev: Filter[]) => Filter[])) => {
+      setFiltersState((prev) => {
+        const resolved =
+          typeof newFilters === 'function' ? newFilters(prev) : newFilters
+        // Sync to URL
+        setUrlFilters(
+          resolved.map((f) => ({
+            fieldId: f.fieldId,
+            operator: f.operator,
+            value: f.value,
+          })),
+        )
+        return resolved
+      })
+    },
+    [setUrlFilters],
+  )
+
   const { dateRange, setDateRange, dateRangeResponsesCount } =
     useStorageResponsesContext()
 
@@ -1317,6 +1359,34 @@ const UnlockedResponsesV2 = () => {
   }>({ summary: null, keyFindings: [], suggestedQuestions: [] })
   const [streamingSummary, setStreamingSummary] = useState<string>('')
   const [isStreamingSummary, setIsStreamingSummary] = useState(false)
+  // Track if auto-fetch has been attempted to prevent infinite retry loops on error
+  const hasAttemptedAutoFetch = useRef(false)
+
+  // Track what date range and response count the current summary is based on
+  const [summaryScope, setSummaryScope] = useState<{
+    dateRange: [DateString | null, DateString | null]
+    responseCount: number
+  } | null>(null)
+
+  // Cache responses used for insights (trends, anomalies, summary) to keep them consistent
+  const [insightsResponses, setInsightsResponses] = useState<DecryptedResponse[]>([])
+
+  // State for AI filter confirmation dialog
+  const [pendingAiFilters, setPendingAiFilters] = useState<Filter[] | null>(
+    null,
+  )
+  const {
+    isOpen: isFilterConfirmOpen,
+    onOpen: onFilterConfirmOpen,
+    onClose: onFilterConfirmClose,
+  } = useDisclosure()
+
+  // State for date range regeneration confirmation
+  const {
+    isOpen: isDateRangeConfirmOpen,
+    onOpen: onDateRangeConfirmOpen,
+    onClose: onDateRangeConfirmClose,
+  } = useDisclosure()
 
   const transformResponsesToInterpretFormat = useCallback(
     (
@@ -1380,6 +1450,15 @@ const UnlockedResponsesV2 = () => {
     (question: string) => {
       if (!question.trim()) return
 
+      // DEBUG: Log onAsk invocation
+      console.log('[onAsk] Called with:', {
+        question,
+        formId: form?._id,
+        useStreaming,
+        filteredResponsesCount: filteredDecryptedResponses.length,
+        decryptedResponsesCount: decryptedResponses.length,
+      })
+
       setInterpretResult(undefined)
       setAnalysisReasoning(undefined)
       setAnalysisChanges(undefined)
@@ -1391,6 +1470,12 @@ const UnlockedResponsesV2 = () => {
         { question },
         {
           onSuccess: (analysisResult) => {
+            // DEBUG: Log analysis result
+            console.log('[onAsk] Analysis result:', {
+              relevantFieldIds: analysisResult.relevantFieldIds,
+              suggestedFilters: analysisResult.suggestedFilters,
+              reasoning: analysisResult.reasoning?.substring(0, 100),
+            })
             setAnalysisReasoning(analysisResult.reasoning)
 
             const prevSelected = selectedFieldIds
@@ -1487,6 +1572,13 @@ const UnlockedResponsesV2 = () => {
               analysisResult.suggestedFilters,
             )
 
+            // DEBUG: Log after AI filter application
+            console.log('[onAsk] After AI filters:', {
+              inputCount: filteredDecryptedResponses.length,
+              outputCount: responsesWithAiFilters.length,
+              validRelevantFieldIds,
+            })
+
             // Show only relevant columns (update UI)
             if (validRelevantFieldIds.length > 0) {
               // Keep essential fields (Response ID, timestamp) plus relevant fields
@@ -1514,7 +1606,14 @@ const UnlockedResponsesV2 = () => {
                     : FilterOperator.Contains,
                 value: f.value,
               }))
-              setFilters(newFilters)
+
+              // If manual filters exist, ask for confirmation before replacing
+              if (filters.length > 0) {
+                setPendingAiFilters(newFilters)
+                onFilterConfirmOpen()
+              } else {
+                setFilters(newFilters)
+              }
             }
 
             // Step 2: Interpret the data with filtered/relevant fields
@@ -1525,7 +1624,17 @@ const UnlockedResponsesV2 = () => {
               validRelevantFieldIds,
             )
 
+            // DEBUG: Log before API call
+            console.log('[onAsk] Before interpret API call:', {
+              responsesForApiCount: responsesForApi.length,
+              sampleResponse: responsesForApi[0],
+              fieldsPerResponse: responsesForApi[0]?.fields?.length ?? 0,
+              useStreaming,
+              formId: form?._id,
+            })
+
             if (useStreaming && form?._id) {
+              console.log('[onAsk] Starting streaming interpretation...')
               interpretDataStreaming({
                 formId: form._id,
                 question,
@@ -1535,6 +1644,15 @@ const UnlockedResponsesV2 = () => {
                   setStreamingAnswer(answer)
                 },
                 onComplete: (data) => {
+                  // DEBUG: Log streaming completion
+                  console.log('[onAsk] Streaming complete:', {
+                    answerLength: data.answer?.length,
+                    hasExplanation: !!data.explanation,
+                    chartsCount: data.suggestedCharts?.length,
+                    followUpsCount: data.suggestedFollowUps?.length,
+                    followUps: data.suggestedFollowUps,
+                    mentionedIds: data.mentionedResponseIds,
+                  })
                   setStreamingAnswer('')
                   setInterpretResult({
                     answer: data.answer,
@@ -1571,7 +1689,9 @@ const UnlockedResponsesV2 = () => {
 
                   setInterpretStep('idle')
                 },
-                onError: () => {
+                onError: (error) => {
+                  // DEBUG: Log streaming error
+                  console.error('[onAsk] Streaming error:', error)
                   setStreamingAnswer('')
                   setInterpretStep('idle')
                   setMentionedResponseIds(undefined)
@@ -1628,7 +1748,9 @@ const UnlockedResponsesV2 = () => {
               )
             }
           },
-          onError: () => {
+          onError: (error) => {
+            // DEBUG: Log analysis error
+            console.error('[onAsk] Analysis error:', error)
             setInterpretStep('idle')
           },
         },
@@ -1647,6 +1769,8 @@ const UnlockedResponsesV2 = () => {
       filters,
       allDashboardFields,
       conversationHistory,
+      form?._id,
+      useStreaming,
     ],
   )
 
@@ -1662,36 +1786,59 @@ const UnlockedResponsesV2 = () => {
     })
   }, [form?._id, suggestedQuestionsMutation])
 
-  const fetchAutoSummary = useCallback(() => {
-    if (!form?._id || decryptedResponses.length === 0) return
-    const responsesForApi = transformResponsesToInterpretFormat(decryptedResponses)
+  // Fetch auto-summary with optional responses override (for filtered data)
+  const fetchAutoSummary = useCallback(
+    (
+      responsesOverride?: DecryptedResponse[],
+      scopeDateRange?: [DateString | null, DateString | null],
+    ) => {
+      const responses = responsesOverride ?? decryptedResponses
+      if (!form?._id || responses.length === 0) return
+      const responsesForApi = transformResponsesToInterpretFormat(responses)
+      const currentDateRange = scopeDateRange ?? dateRange
 
-    // Use streaming for auto-summary
-    setIsStreamingSummary(true)
-    setStreamingSummary('')
+      // Use streaming for auto-summary
+      setIsStreamingSummary(true)
+      setStreamingSummary('')
 
-    getAutoSummaryStreaming({
-      formId: form._id,
-      responses: responsesForApi,
-      onPartialSummary: (summary) => {
-        setStreamingSummary(summary)
-      },
-      onComplete: (data) => {
-        setStreamingSummary('')
-        setIsStreamingSummary(false)
-        setAutoSummary({
-          summary: data.summary,
-          keyFindings: data.keyFindings ?? [],
-          suggestedQuestions: data.suggestedQuestions ?? [],
-        })
-      },
-      onError: () => {
-        setStreamingSummary('')
-        setIsStreamingSummary(false)
-        setAutoSummary({ summary: null, keyFindings: [], suggestedQuestions: [] })
-      },
-    })
-  }, [form?._id, decryptedResponses, transformResponsesToInterpretFormat])
+      getAutoSummaryStreaming({
+        formId: form._id,
+        responses: responsesForApi,
+        onPartialSummary: (summary) => {
+          setStreamingSummary(summary)
+        },
+        onComplete: (data) => {
+          setStreamingSummary('')
+          setIsStreamingSummary(false)
+          // Reset auto-fetch flag on success so manual refresh works
+          hasAttemptedAutoFetch.current = false
+          setAutoSummary({
+            summary: data.summary,
+            keyFindings: data.keyFindings ?? [],
+            suggestedQuestions: data.suggestedQuestions ?? [],
+          })
+          // Track what scope this summary is based on
+          setSummaryScope({
+            dateRange: currentDateRange,
+            responseCount: responses.length,
+          })
+          // Cache the responses used for insights (trends, anomalies)
+          setInsightsResponses(responses)
+        },
+        onError: () => {
+          setStreamingSummary('')
+          setIsStreamingSummary(false)
+          // Keep hasAttemptedAutoFetch true to prevent infinite retry
+          setAutoSummary({
+            summary: null,
+            keyFindings: [],
+            suggestedQuestions: [],
+          })
+        },
+      })
+    },
+    [form?._id, decryptedResponses, transformResponsesToInterpretFormat, dateRange],
+  )
 
   // Handler to hide a column from the table header menu
   const handleHideColumn = useCallback(
@@ -1751,11 +1898,72 @@ const UnlockedResponsesV2 = () => {
     if (
       decryptedResponses.length > 0 &&
       !autoSummary.summary &&
-      !isStreamingSummary
+      !isStreamingSummary &&
+      !hasAttemptedAutoFetch.current
     ) {
+      hasAttemptedAutoFetch.current = true
       fetchAutoSummary()
     }
   }, [decryptedResponses.length, autoSummary.summary, isStreamingSummary, fetchAutoSummary])
+
+  // Track previous date range to detect changes
+  const prevDateRangeRef = useRef<string>('')
+
+  // Compute a hash of current date range for change detection
+  const currentDateRangeHash = useMemo(() => {
+    return JSON.stringify(dateRange)
+  }, [dateRange])
+
+  // Check if summary scope differs from current date range (for stale indicator)
+  // Only consider stale when date range is complete (both dates selected, or both null)
+  const isSummaryStale = useMemo(() => {
+    if (!summaryScope) return false
+    const isComplete = (dateRange[0] === null && dateRange[1] === null) ||
+                       (dateRange[0] !== null && dateRange[1] !== null)
+    if (!isComplete) return false
+    return JSON.stringify(summaryScope.dateRange) !== currentDateRangeHash
+  }, [summaryScope, currentDateRangeHash, dateRange])
+
+  // Check if date range is "complete" (both dates selected, or both null for "all time")
+  const isDateRangeComplete = useMemo(() => {
+    return (dateRange[0] === null && dateRange[1] === null) ||
+           (dateRange[0] !== null && dateRange[1] !== null)
+  }, [dateRange])
+
+  // Detect date range changes and prompt for regeneration (when Analyse panel is open)
+  useEffect(() => {
+    // Only prompt if:
+    // 1. Analyse panel is open
+    // 2. Date range has actually changed (not initial render)
+    // 3. We have a summary already
+    // 4. Not currently streaming
+    // 5. Date range is complete (both dates selected, or both null)
+    if (
+      isInterpretOpen &&
+      prevDateRangeRef.current !== '' &&
+      prevDateRangeRef.current !== currentDateRangeHash &&
+      autoSummary.summary &&
+      !isStreamingSummary &&
+      isDateRangeComplete
+    ) {
+      onDateRangeConfirmOpen()
+    }
+    // Only update prevDateRangeRef when the date range is complete
+    if (isDateRangeComplete) {
+      prevDateRangeRef.current = currentDateRangeHash
+    }
+  }, [currentDateRangeHash, isInterpretOpen, autoSummary.summary, isStreamingSummary, onDateRangeConfirmOpen, isDateRangeComplete])
+
+  // Handle date range regeneration confirmation
+  const handleDateRangeRegenerate = useCallback(() => {
+    onDateRangeConfirmClose()
+    fetchAutoSummary(decryptedResponses, dateRange)
+  }, [onDateRangeConfirmClose, fetchAutoSummary, decryptedResponses, dateRange])
+
+  const handleDateRangeKeepCurrent = useCallback(() => {
+    onDateRangeConfirmClose()
+    // Keep the current summary - the stale indicator will show
+  }, [onDateRangeConfirmClose])
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -1823,17 +2031,85 @@ const UnlockedResponsesV2 = () => {
               lastResponseTime={lastResponseTime}
             />
 
+            {/* Filter explanation banner - show when filters reduce the count */}
+            {filters.length > 0 &&
+              filteredDecryptedResponses.length < decryptedResponses.length && (
+                <Box
+                  bg="blue.50"
+                  border="1px solid"
+                  borderColor="blue.100"
+                  borderRadius="md"
+                  px={3}
+                  py={2}
+                >
+                  <Text fontSize="xs" color="blue.700">
+                    Charts and trends show all {decryptedResponses.length}{' '}
+                    responses. Table shows {filteredDecryptedResponses.length}{' '}
+                    filtered responses.
+                  </Text>
+                </Box>
+              )}
+
+            {/* Stale summary indicator - show when summary scope differs from current date range */}
+            {isSummaryStale && summaryScope && (
+              <Box
+                bg="yellow.50"
+                border="1px solid"
+                borderColor="yellow.200"
+                borderRadius="md"
+                px={3}
+                py={2}
+              >
+                <Flex justify="space-between" align="center">
+                  <Text fontSize="xs" color="yellow.800">
+                    Summary and trends based on {summaryScope.responseCount}{' '}
+                    responses
+                    {summaryScope.dateRange[0] || summaryScope.dateRange[1]
+                      ? ` (${summaryScope.dateRange[0] ?? 'earliest'} to ${summaryScope.dateRange[1] ?? 'latest'})`
+                      : ' (all time)'}
+                    . Current view: {decryptedResponses.length} responses.
+                  </Text>
+                  <Button
+                    size="xs"
+                    variant="link"
+                    colorScheme="yellow"
+                    onClick={() => fetchAutoSummary(decryptedResponses, dateRange)}
+                    isLoading={isStreamingSummary}
+                  >
+                    Regenerate
+                  </Button>
+                </Flex>
+              </Box>
+            )}
+
             {/* Trend Alerts - submission pattern analysis */}
-            <TrendAlerts decryptedResponses={decryptedResponses} />
+            {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
+            <TrendAlerts
+              decryptedResponses={
+                isSummaryStale && insightsResponses.length > 0
+                  ? insightsResponses
+                  : decryptedResponses
+              }
+            />
 
             {/* Anomaly Alerts - potential issues detection */}
-            <AnomalyAlerts decryptedResponses={decryptedResponses} />
+            <AnomalyAlerts
+              decryptedResponses={
+                isSummaryStale && insightsResponses.length > 0
+                  ? insightsResponses
+                  : decryptedResponses
+              }
+            />
 
             {/* Quick Charts - auto-generated from chartable fields */}
-            {/* Use decryptedResponses (not filtered) so charts don't disappear when asking questions */}
+            {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
             <QuickCharts
               formFields={form_fields ?? []}
-              decryptedResponses={decryptedResponses}
+              decryptedResponses={
+                isSummaryStale && insightsResponses.length > 0
+                  ? insightsResponses
+                  : decryptedResponses
+              }
               maxCharts={2}
             />
 
@@ -1981,6 +2257,78 @@ const UnlockedResponsesV2 = () => {
           </Stack>
         )}
       </Box>
+
+      {/* AI Filter Confirmation Modal */}
+      <Modal isOpen={isFilterConfirmOpen} onClose={onFilterConfirmClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700">Replace filters?</ModalHeader>
+          <ModalBody color="secondary.500">
+            <Text>
+              You have existing filters applied. The AI has suggested new
+              filters based on your question. Would you like to replace your
+              current filters with the AI-suggested ones?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Stack direction="row" spacing={3}>
+              <Button
+                variant="clear"
+                colorScheme="secondary"
+                onClick={() => {
+                  setPendingAiFilters(null)
+                  onFilterConfirmClose()
+                }}
+              >
+                Keep current filters
+              </Button>
+              <Button
+                colorScheme="primary"
+                onClick={() => {
+                  if (pendingAiFilters) {
+                    setFilters(pendingAiFilters)
+                  }
+                  setPendingAiFilters(null)
+                  onFilterConfirmClose()
+                }}
+              >
+                Use AI filters
+              </Button>
+            </Stack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Date Range Regeneration Confirmation Modal */}
+      <Modal isOpen={isDateRangeConfirmOpen} onClose={handleDateRangeKeepCurrent}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700">Regenerate insights?</ModalHeader>
+          <ModalBody color="secondary.500">
+            <Text>
+              You&apos;ve changed the date range. Would you like to regenerate
+              the insights and summary for the new {decryptedResponses.length}{' '}
+              responses?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Stack direction="row" spacing={3}>
+              <Button
+                variant="clear"
+                colorScheme="secondary"
+                onClick={handleDateRangeKeepCurrent}
+              >
+                Keep current
+              </Button>
+              <Button colorScheme="primary" onClick={handleDateRangeRegenerate}>
+                Regenerate
+              </Button>
+            </Stack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Stack>
   )
 }

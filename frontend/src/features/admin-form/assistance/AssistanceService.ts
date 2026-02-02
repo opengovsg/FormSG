@@ -188,6 +188,7 @@ export const getAutoSummaryStreaming = ({
 
   const startStream = async () => {
     const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/assistance/auto-summary-stream`
+    let isComplete = false
 
     try {
       const response = await fetch(url, {
@@ -246,6 +247,7 @@ export const getAutoSummaryStreaming = ({
                     break
                   case 'complete':
                     onComplete?.(data)
+                    isComplete = true
                     break
                   case 'error':
                     onError?.(new Error(data.message))
@@ -260,12 +262,18 @@ export const getAutoSummaryStreaming = ({
             pendingEvent = ''
           }
         }
+
+        // Stop reading after complete event to prevent errors during stream cleanup
+        if (isComplete) break
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         return
       }
-      onError?.(error instanceof Error ? error : new Error('Unknown error'))
+      // Only call onError if we haven't already completed successfully
+      if (!isComplete) {
+        onError?.(error instanceof Error ? error : new Error('Unknown error'))
+      }
     }
   }
 
@@ -308,6 +316,7 @@ export const interpretDataStreaming = ({
 
   const startStream = async () => {
     const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/assistance/interpret-data-stream`
+    let isComplete = false
 
     try {
       const response = await fetch(url, {
@@ -368,6 +377,7 @@ export const interpretDataStreaming = ({
                       message: 'Data interpreted successfully.',
                       ...data,
                     })
+                    isComplete = true
                     break
                   case 'error':
                     onError?.(new Error(data.message))
@@ -382,12 +392,18 @@ export const interpretDataStreaming = ({
             pendingEvent = ''
           }
         }
+
+        // Stop reading after complete event to prevent errors during stream cleanup
+        if (isComplete) break
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         return
       }
-      onError?.(error instanceof Error ? error : new Error('Unknown error'))
+      // Only call onError if we haven't already completed successfully
+      if (!isComplete) {
+        onError?.(error instanceof Error ? error : new Error('Unknown error'))
+      }
     }
   }
 

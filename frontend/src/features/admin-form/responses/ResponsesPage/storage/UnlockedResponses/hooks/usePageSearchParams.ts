@@ -3,6 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 
 const PAGE_KEY = 'page'
 const SUBMISSION_ID_KEY = 'submissionId'
+const FILTERS_KEY = 'filters'
+
+interface Filter {
+  fieldId: string
+  operator: string
+  value: string
+}
 
 export const usePageSearchParams = () => {
   const [params, setParams] = useSearchParams()
@@ -46,8 +53,42 @@ export const usePageSearchParams = () => {
     [params, setParams],
   )
 
+  // Parse filters from URL
+  const urlFilters = useMemo((): Filter[] => {
+    const value = params.get(FILTERS_KEY)
+    if (!value) return []
+    try {
+      const parsed = JSON.parse(decodeURIComponent(value))
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (f) =>
+            typeof f.fieldId === 'string' &&
+            typeof f.operator === 'string' &&
+            typeof f.value === 'string',
+        )
+      }
+      return []
+    } catch {
+      return []
+    }
+  }, [params])
+
+  // Sync filters to URL
+  const setUrlFilters = useCallback(
+    (filters: Filter[]) => {
+      if (filters.length === 0) {
+        params.delete(FILTERS_KEY)
+      } else {
+        params.set(FILTERS_KEY, encodeURIComponent(JSON.stringify(filters)))
+      }
+      setParams(params, { replace: true })
+    },
+    [params, setParams],
+  )
+
   return {
     submissionId: [submissionId, setSubmissionId],
     page: [currentPage, setCurrentPage],
+    filters: [urlFilters, setUrlFilters],
   } as const
 }
