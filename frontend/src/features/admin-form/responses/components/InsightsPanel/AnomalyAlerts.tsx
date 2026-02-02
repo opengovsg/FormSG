@@ -198,19 +198,23 @@ export const AnomalyAlerts = ({
       borderRadius="lg"
       border="1px solid"
       borderColor="neutral.200"
-      p={4}
+      borderLeft="3px solid"
+      borderLeftColor="orange.400"
+      p={3}
+      transition="all 0.2s"
+      _hover={{ boxShadow: 'sm', borderColor: 'neutral.300' }}
     >
-      <Text fontSize="xs" fontWeight="medium" color="secondary.500" mb={3}>
+      <Text fontSize="xs" fontWeight="medium" color="secondary.500" mb={2}>
         Potential issues
       </Text>
-      <VStack align="stretch" spacing={3}>
+      <VStack align="stretch" spacing={2}>
         {anomalies.map((anomaly, index) => {
           const color = getAnomalyColor(anomaly.severity)
           return (
-            <HStack key={index} spacing={3} align="flex-start">
+            <HStack key={index} spacing={2} align="flex-start">
               <Flex
-                w={8}
-                h={8}
+                w={6}
+                h={6}
                 borderRadius="md"
                 bg={`${color}.50`}
                 align="center"
@@ -220,7 +224,7 @@ export const AnomalyAlerts = ({
                 <Icon
                   as={getAnomalyIcon(anomaly.type)}
                   color={`${color}.500`}
-                  boxSize={5}
+                  boxSize={4}
                 />
               </Flex>
               <Box flex={1}>

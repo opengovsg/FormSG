@@ -165,18 +165,22 @@ export const TrendAlerts = ({
       borderRadius="lg"
       border="1px solid"
       borderColor="neutral.200"
-      p={4}
+      borderLeft="3px solid"
+      borderLeftColor="blue.400"
+      p={3}
+      transition="all 0.2s"
+      _hover={{ boxShadow: 'sm', borderColor: 'neutral.300' }}
     >
-      <Text fontSize="xs" fontWeight="medium" color="secondary.500" mb={3}>
+      <Text fontSize="xs" fontWeight="medium" color="secondary.500" mb={2}>
         Submission patterns
       </Text>
-      <VStack align="stretch" spacing={3}>
+      <VStack align="stretch" spacing={2}>
         {/* Trend Alert */}
         {trend && (
-          <HStack spacing={3} align="flex-start">
+          <HStack spacing={2} align="flex-start">
             <Flex
-              w={8}
-              h={8}
+              w={6}
+              h={6}
               borderRadius="md"
               bg={trend.type === 'increasing' ? 'green.50' : 'red.50'}
               align="center"
@@ -186,7 +190,7 @@ export const TrendAlerts = ({
               <Icon
                 as={trend.type === 'increasing' ? BiTrendingUp : BiTrendingDown}
                 color={trend.type === 'increasing' ? 'green.500' : 'red.500'}
-                boxSize={5}
+                boxSize={4}
               />
             </Flex>
             <Box>
@@ -202,17 +206,17 @@ export const TrendAlerts = ({
 
         {/* Peak Time Alert */}
         {peak && (
-          <HStack spacing={3} align="flex-start">
+          <HStack spacing={2} align="flex-start">
             <Flex
-              w={8}
-              h={8}
+              w={6}
+              h={6}
               borderRadius="md"
               bg="primary.50"
               align="center"
               justify="center"
               flexShrink={0}
             >
-              <Icon as={FiClock} color="primary.500" boxSize={5} />
+              <Icon as={FiClock} color="primary.500" boxSize={4} />
             </Flex>
             <Box>
               <Text fontSize="sm" fontWeight="medium" color="secondary.700">
