@@ -912,7 +912,7 @@ const InterpretBox = ({
         <Box>
           {/* Show the question being processed */}
           {askedQuestion && (
-            <Box mb={3} p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+            <Box mb={3} p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100" minW={0}>
               <Text fontSize="xs" fontWeight="medium" color="primary.500" mb={1}>
                 Question
               </Text>
@@ -923,7 +923,7 @@ const InterpretBox = ({
           )}
           {/* Show streaming answer if available */}
           {streamingAnswer ? (
-            <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+            <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100" minW={0}>
               <Flex alignItems="center" gap={2} mb={3}>
                 <Box as="span" display="inline-flex" gap="3px" alignItems="center">
                   {[0, 1, 2].map((i) => (
@@ -973,7 +973,7 @@ const InterpretBox = ({
       )}
       {/* Answer Results */}
       {result?.answer && !isLoading && (
-        <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100">
+        <Box p={4} bg="primary.50" borderRadius="md" border="1px solid" borderColor="primary.100" minW={0}>
           {/* Display the question that was asked */}
           {askedQuestion && (
             <Box mb={3} pb={3} borderBottom="1px solid" borderColor="primary.100">
