@@ -634,6 +634,7 @@ const InterpretBox = ({
   return (
     <Stack
       width="100%"
+      minW={0}
       bg="white"
       borderRadius="lg"
       border="1px solid"
@@ -2020,7 +2021,7 @@ const UnlockedResponsesV2 = () => {
       <Box flex={1} overflow="auto">
         {/* Insights Section (shown when Analyse is clicked) */}
         {isInterpretOpen && (
-          <Stack spacing={4} mb={4} overflow="hidden" maxW="100%" width="100%">
+          <Stack spacing={4} mb={4} overflow="hidden" maxW="100%" width="100%" minW={0}>
             {/* Close button and header */}
             <Flex justify="space-between" align="center">
               <HStack spacing={3}>
@@ -2058,7 +2059,7 @@ const UnlockedResponsesV2 = () => {
             </Flex>
 
             {/* Hero Stats - full width */}
-            <SlideFade in={isInterpretOpen} offsetY="10px">
+            <SlideFade in={isInterpretOpen} offsetY="10px" style={{ minWidth: 0 }}>
               <HeroStats
                 responseCount={decryptedResponses.length}
                 filteredCount={filteredDecryptedResponses.length}
@@ -2120,7 +2121,7 @@ const UnlockedResponsesV2 = () => {
 
             {/* Trend Alerts - submission pattern analysis */}
             {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
-            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.05}>
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.05} style={{ minWidth: 0 }}>
               <TrendAlerts
                 decryptedResponses={
                   isSummaryStale && insightsResponses.length > 0
@@ -2131,7 +2132,7 @@ const UnlockedResponsesV2 = () => {
             </SlideFade>
 
             {/* Anomaly Alerts - potential issues detection */}
-            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.1}>
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.1} style={{ minWidth: 0 }}>
               <AnomalyAlerts
                 decryptedResponses={
                   isSummaryStale && insightsResponses.length > 0
@@ -2143,7 +2144,7 @@ const UnlockedResponsesV2 = () => {
 
             {/* Quick Charts - auto-generated from chartable fields */}
             {/* Use cached insightsResponses when summary is stale to keep insights consistent */}
-            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.15}>
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.15} style={{ minWidth: 0 }}>
               <QuickCharts
                 formFields={form_fields ?? []}
                 decryptedResponses={
@@ -2156,7 +2157,7 @@ const UnlockedResponsesV2 = () => {
             </SlideFade>
 
             {/* Auto Summary - AI-generated overview with streaming support */}
-            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.2}>
+            <SlideFade in={isInterpretOpen} offsetY="10px" delay={0.2} style={{ minWidth: 0 }}>
               <AutoSummary
                 summary={autoSummary.summary}
                 keyFindings={autoSummary.keyFindings}
