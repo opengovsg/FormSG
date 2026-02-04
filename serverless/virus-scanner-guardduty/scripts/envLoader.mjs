@@ -25,6 +25,9 @@ const SHORT_ENV_MAP = {
 const SSM_PARAMETER_STORE_KEYS = [
   'GUARDDUTY_CLEAN_S3_BUCKET',
   'GUARDDUTY_QUARANTINE_S3_BUCKET',
+  'GUARDDUTY_SCAN_AWAIT_TIMEOUT',
+  'GUARDDUTY_SCAN_CHECK_DELAY',
+  'GUARDDUTY_SCAN_CHECK_MAX_BACKOFF',
 ]
 
 // This is a helper for local file runs or jest, as specified in package.json
