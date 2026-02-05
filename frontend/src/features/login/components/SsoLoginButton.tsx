@@ -29,10 +29,10 @@ export const SsoLoginButton = (): JSX.Element | null => {
       color="primary"
       onClick={handleSsoLogin}
       variant="outline"
-      aria-label="Log in with OGP Staff SSO"
+      aria-label="Log in with OGP SSO"
     >
       <Flex align="center" flexDirection="row" aria-hidden>
-        <Text color="primary.500">Log in with OGP Staff SSO</Text>
+        <Text color="primary.500">Log in with OGP SSO</Text>
       </Flex>
     </Button>
   )
