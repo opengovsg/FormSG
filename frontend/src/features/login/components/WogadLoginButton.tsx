@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from 'react-query'
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Badge, Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
 import { getWogadAuthUrl } from '~services/AuthService'
@@ -22,20 +22,21 @@ export const WogadLoginButton = (): JSX.Element | null => {
   })
 
   return (
-    <VStack alignItems="start">
-      <Button
-        isFullWidth
-        isLoading={wogadLoginMutation.isLoading || isRetryDelayWindow}
-        type="submit"
-        color="primary"
-        onClick={handleWogadLogin}
-        variant="outline"
-        aria-label="Log in with WOG AD"
-      >
-        <Flex align="center" flexDirection="row" aria-hidden>
-          <Text color="primary.500">Log in with WOG AD</Text>
-        </Flex>
-      </Button>
-    </VStack>
+    <Button
+      isFullWidth
+      isLoading={wogadLoginMutation.isLoading || isRetryDelayWindow}
+      type="submit"
+      color="primary"
+      onClick={handleWogadLogin}
+      variant="outline"
+      aria-label="Log in with WOG AD"
+    >
+      <Flex align="center" flexDirection="row" gap="0.5rem" aria-hidden>
+        <Text color="primary.500">Log in with WOG AD</Text>
+        <Badge colorScheme="success" variant="subtle">
+          New
+        </Badge>
+      </Flex>
+    </Button>
   )
 }

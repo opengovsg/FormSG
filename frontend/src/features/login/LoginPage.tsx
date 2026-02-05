@@ -121,24 +121,18 @@ export const LoginPage = (): JSX.Element => {
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
-          {/* Only show OGP login button if user is on ogp intranet */}
-          {shouldShowSsoLogin && (
-            <>
-              <SsoLoginButton />
-              <OrDivider />
-            </>
-          )}
+          {/* Email form first */}
           <LoginForm onSubmit={handleSendOtp} />
-          {shouldShowSgidLogin && (
+
+          {/* Single OrDivider before all SSO options */}
+          {(shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin) && (
             <>
               <OrDivider />
-              <SgidLoginButton />
-            </>
-          )}
-          {shouldShowWogadLogin && (
-            <>
-              <OrDivider />
-              <WogadLoginButton />
+              <Stack spacing="1rem">
+                {shouldShowWogadLogin && <WogadLoginButton />}
+                {shouldShowSsoLogin && <SsoLoginButton />}
+                {shouldShowSgidLogin && <SgidLoginButton />}
+              </Stack>
             </>
           )}
         </Stack>

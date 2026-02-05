@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from 'react-query'
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
 import { getSsoAuthUrl } from '~services/AuthService'
@@ -22,21 +22,18 @@ export const SsoLoginButton = (): JSX.Element | null => {
   })
 
   return (
-    <VStack alignItems="start">
-      <Button
-        isFullWidth
-        isLoading={ssoLoginMutation.isLoading || isRetryDelayWindow}
-        type="submit"
-        color="primary"
-        onClick={handleSsoLogin}
-        variant="outline"
-        aria-label="Log in with SSO"
-      >
-        <Flex align="center" flexDirection="row" aria-hidden>
-          <Text color="primary.500">Log in with OGP SSO</Text>
-        </Flex>
-      </Button>
-      <Text>For OGP officers only</Text>
-    </VStack>
+    <Button
+      isFullWidth
+      isLoading={ssoLoginMutation.isLoading || isRetryDelayWindow}
+      type="submit"
+      color="primary"
+      onClick={handleSsoLogin}
+      variant="outline"
+      aria-label="Log in with OGP Staff SSO"
+    >
+      <Flex align="center" flexDirection="row" aria-hidden>
+        <Text color="primary.500">Log in with OGP Staff SSO</Text>
+      </Flex>
+    </Button>
   )
 }
