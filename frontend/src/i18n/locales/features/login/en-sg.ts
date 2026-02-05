@@ -36,10 +36,17 @@ export const enSG: Login = {
       otpFromEmail: 'Enter OTP sent to {email}',
     },
     SgidLoginButton: {
-      forText: 'For',
-      selectAgenciesText: 'select agencies',
       loginText: 'Log in with',
       appText: 'app',
+      onlyText: 'Only',
+      selectAgenciesText: 'select agencies',
+      canUseSingpassLoginText: 'can use Singpass login',
+    },
+    SsoLoginButton: {
+      loginText: 'Log in with OGP SSO',
+    },
+    WogadLoginButton: {
+      loginText: 'Log in with WOG AD',
     },
   },
 }
