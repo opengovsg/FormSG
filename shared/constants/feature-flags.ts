@@ -40,3 +40,9 @@ export enum AdminEmailPdfFeatureValue {
   SIGNATURES_ONLY = 'SIGNATURES_ONLY',
   ON = 'ON',
 }
+
+export enum WogadLoginFeatureValue {
+  OFF = 'OFF',
+  ALL = 'ALL', // all users on public ip, rbi and intranet ip
+  INTRANET_AND_RBI_ONLY = 'INTRANET_AND_RBI_ONLY',
+}
