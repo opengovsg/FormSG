@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags, WogadLoginFeatureValue } from '~shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -25,20 +25,45 @@ import { SgidLoginButton } from './components/SgidLoginButton'
 import { SsoLoginButton } from './components/SsoLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck, useIsOgpIpCheck } from './queries'
+import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
 }
 
+const isWogadLoginEnabled = ({
+  wogadLoginFeatureValue,
+  isIntranetIp,
+  isRbiIp,
+}: {
+  wogadLoginFeatureValue: string
+  isIntranetIp: boolean
+  isRbiIp: boolean
+}) => {
+  return (
+    wogadLoginFeatureValue === WogadLoginFeatureValue.ALL ||
+    (wogadLoginFeatureValue === WogadLoginFeatureValue.INTRANET_AND_RBI_ONLY &&
+      (isIntranetIp || isRbiIp))
+  )
+}
+
 const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
-  const { data: isIntranetIp } = useIsIntranetCheck()
-  const { data: isOgpIp } = useIsOgpIpCheck()
+  const { data: isIntranetIp = false } = useIsIntranetCheck()
+  const { data: isRbiIp = false } = useIsRbiIpCheck()
+  const { data: isOgpIp = false } = useIsOgpIpCheck()
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
   const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
-  const shouldShowWogadLogin = useFeatureIsOn(featureFlags.wogadLogin)
+  const wogadLoginFeatureValue = useFeatureValue(
+    featureFlags.wogadLogin,
+    WogadLoginFeatureValue.OFF,
+  )
+  const shouldShowWogadLogin = isWogadLoginEnabled({
+    wogadLoginFeatureValue,
+    isIntranetIp,
+    isRbiIp,
+  })
   const enableIntranetSgidLogin = useFeatureIsOn(
     featureFlags.enableIntranetSgidLogin,
   )
