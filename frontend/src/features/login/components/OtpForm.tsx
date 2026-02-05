@@ -48,7 +48,7 @@ export const OtpForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
-      <FormControl isInvalid={!!formState.errors.otp} mb="2.5rem">
+      <FormControl isInvalid={!!formState.errors.otp} mb="1rem">
         <FormLabel isRequired htmlFor="otp">
           {t('features.login.components.OTPForm.otpFromEmail', {
             email: email.toLowerCase(),

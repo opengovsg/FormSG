@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Stack } from '@chakra-ui/react'
+import { Stack, useBreakpointValue } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
@@ -68,6 +68,9 @@ export const LoginPage = (): JSX.Element => {
     featureFlags.enableIntranetSgidLogin,
   )
   const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
+
+  // On mobile (< sm), buttons first
+  const isMobile = useBreakpointValue({ base: true, sm: false })
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -140,17 +143,38 @@ export const LoginPage = (): JSX.Element => {
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
-          <LoginForm onSubmit={handleSendOtp} />
-          {(shouldShowWogadLogin ||
-            shouldShowSsoLogin ||
-            shouldShowSgidLogin) && (
+          {/* On mobile: Buttons first, then divider, then email form */}
+          {isMobile ? (
             <>
-              <OrDivider />
-              <Stack spacing="1rem">
-                {shouldShowWogadLogin && <WogadLoginButton />}
-                {shouldShowSsoLogin && <SsoLoginButton />}
-                {shouldShowSgidLogin && <SgidLoginButton />}
-              </Stack>
+              {(shouldShowWogadLogin ||
+                shouldShowSsoLogin ||
+                shouldShowSgidLogin) && (
+                <>
+                  <Stack spacing="1rem">
+                    {shouldShowWogadLogin && <WogadLoginButton />}
+                    {shouldShowSsoLogin && <SsoLoginButton />}
+                    {shouldShowSgidLogin && <SgidLoginButton />}
+                  </Stack>
+                  <OrDivider />
+                </>
+              )}
+              <LoginForm onSubmit={handleSendOtp} />
+            </>
+          ) : (
+            <>
+              <LoginForm onSubmit={handleSendOtp} />
+              {(shouldShowWogadLogin ||
+                shouldShowSsoLogin ||
+                shouldShowSgidLogin) && (
+                <>
+                  <OrDivider />
+                  <Stack spacing="1rem">
+                    {shouldShowWogadLogin && <WogadLoginButton />}
+                    {shouldShowSsoLogin && <SsoLoginButton />}
+                    {shouldShowSgidLogin && <SgidLoginButton />}
+                  </Stack>
+                </>
+              )}
             </>
           )}
         </Stack>
