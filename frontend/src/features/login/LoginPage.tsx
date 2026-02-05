@@ -25,14 +25,26 @@ import { SgidLoginButton } from './components/SgidLoginButton'
 import { SsoLoginButton } from './components/SsoLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck, useIsRbiIpCheck, useIsOgpIpCheck } from './queries'
+import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
 }
 
-const isWogadLoginEnabled = ({ wogadLoginFeatureValue, isIntranetIp, isRbiIp }: { wogadLoginFeatureValue: string, isIntranetIp: boolean, isRbiIp: boolean }) => {
-  return wogadLoginFeatureValue === WogadLoginFeatureValue.ALL || (wogadLoginFeatureValue === WogadLoginFeatureValue.INTRANET_AND_RBI_ONLY && (isIntranetIp || isRbiIp))
+const isWogadLoginEnabled = ({
+  wogadLoginFeatureValue,
+  isIntranetIp,
+  isRbiIp,
+}: {
+  wogadLoginFeatureValue: string
+  isIntranetIp: boolean
+  isRbiIp: boolean
+}) => {
+  return (
+    wogadLoginFeatureValue === WogadLoginFeatureValue.ALL ||
+    (wogadLoginFeatureValue === WogadLoginFeatureValue.INTRANET_AND_RBI_ONLY &&
+      (isIntranetIp || isRbiIp))
+  )
 }
 
 const isDev = import.meta.env.MODE === 'development'
@@ -43,8 +55,15 @@ export const LoginPage = (): JSX.Element => {
   const { data: isOgpIp = false } = useIsOgpIpCheck()
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
   const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
-  const wogadLoginFeatureValue = useFeatureValue(featureFlags.wogadLogin, WogadLoginFeatureValue.OFF)
-  const shouldShowWogadLogin = isWogadLoginEnabled({ wogadLoginFeatureValue, isIntranetIp, isRbiIp })
+  const wogadLoginFeatureValue = useFeatureValue(
+    featureFlags.wogadLogin,
+    WogadLoginFeatureValue.OFF,
+  )
+  const shouldShowWogadLogin = isWogadLoginEnabled({
+    wogadLoginFeatureValue,
+    isIntranetIp,
+    isRbiIp,
+  })
   const enableIntranetSgidLogin = useFeatureIsOn(
     featureFlags.enableIntranetSgidLogin,
   )
@@ -125,7 +144,9 @@ export const LoginPage = (): JSX.Element => {
           <LoginForm onSubmit={handleSendOtp} />
 
           {/* Single OrDivider before all SSO options */}
-          {(shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin) && (
+          {(shouldShowWogadLogin ||
+            shouldShowSsoLogin ||
+            shouldShowSgidLogin) && (
             <>
               <OrDivider />
               <Stack spacing="1rem">
