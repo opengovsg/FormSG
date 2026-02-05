@@ -25,7 +25,7 @@ import { SgidLoginButton } from './components/SgidLoginButton'
 import { SsoLoginButton } from './components/SsoLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
-import { useIsIntranetCheck, useIsRbiIpCheck, useIsOgpIpCheck } from './queries'
+import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
 
 export type LoginOtpData = {
   email: string
@@ -133,6 +133,12 @@ export const LoginPage = (): JSX.Element => {
                 {shouldShowSsoLogin && <SsoLoginButton />}
                 {shouldShowSgidLogin && <SgidLoginButton />}
               </Stack>
+            </>
+          )}
+          {shouldShowWogadLogin && (
+            <>
+              <OrDivider />
+              <WogadLoginButton />
             </>
           )}
         </Stack>

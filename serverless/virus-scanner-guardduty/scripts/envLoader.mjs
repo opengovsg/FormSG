@@ -1,4 +1,4 @@
-import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
+import { SSMClient, GetParameterCommand, ParameterNotFound } from '@aws-sdk/client-ssm'
 import fs from 'fs'
 import { exit } from 'process'
 
@@ -22,9 +22,15 @@ const SHORT_ENV_MAP = {
   vapt: 'vapt',
 }
 
-const SSM_PARAMETER_STORE_KEYS = [
+const SSM_PARAMETER_STORE_COMPULOSRY_KEYS = [
   'GUARDDUTY_CLEAN_S3_BUCKET',
   'GUARDDUTY_QUARANTINE_S3_BUCKET',
+]
+
+const SSM_PARAMETER_STORE_OPTIONAL_KEYS = [
+  'GUARDDUTY_SCAN_AWAIT_TIMEOUT',
+  'GUARDDUTY_SCAN_CHECK_DELAY',
+  'GUARDDUTY_SCAN_CHECK_MAX_BACKOFF',
 ]
 
 // This is a helper for local file runs or jest, as specified in package.json
@@ -52,16 +58,22 @@ async function saveAllParameters() {
   const client = new SSMClient({ region: 'ap-southeast-1' })
   const parameterNamePrefix = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}/`
 
+  const SSM_PARAMETER_STORE_KEYS = [...SSM_PARAMETER_STORE_COMPULOSRY_KEYS, ...SSM_PARAMETER_STORE_OPTIONAL_KEYS]
   const requests = SSM_PARAMETER_STORE_KEYS.map((key) => {
     return client
       .send(new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }))
       .then((res) => {
         return { key, res }
+      }).catch(err => {
+        // Swallow ParameterNotFound errors for optional keys
+        if (SSM_PARAMETER_STORE_OPTIONAL_KEYS.includes(key) && err instanceof ParameterNotFound)
+          return { key, res: undefined }
+        throw err
       })
   })
 
   const resolvedResponses = await Promise.all(requests)
-  const parameterString = resolvedResponses.map(
+  const parameterString = resolvedResponses.filter(({ res }) => res !== undefined).map(
     ({ key, res }) => `${key}=${res.Parameter.Value}`,
   )
 

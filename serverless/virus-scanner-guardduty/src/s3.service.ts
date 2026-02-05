@@ -9,6 +9,7 @@ import {
 import pino from 'pino'
 import { retry } from 'ts-retry-promise'
 
+import { config } from './config'
 import {
   DeleteS3FileParams,
   GetS3FileStreamParams,
@@ -210,10 +211,10 @@ export class S3Service {
         },
         {
           retries: 'INFINITELY',
-          timeout: 40 * 1000, // 40 seconds.
-          delay: 200, // first delay - 0.2 seconds
+          timeout: config.guarddutyScanCheckTimeout,
+          delay: config.guarddutyScanCheckDelay,
           backoff: 'LINEAR',
-          maxBackOff: 2 * 1000, // max increment in delay - 2 seconds
+          maxBackOff: config.guarddutyScanCheckMaxBackoff,
         },
       )
 
