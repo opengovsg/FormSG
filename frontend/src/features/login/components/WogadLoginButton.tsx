@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
 import { getWogadAuthUrl } from '~services/AuthService'
@@ -8,6 +9,10 @@ import Button from '~components/Button'
 
 export const WogadLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.login.components.WogadLoginButton',
+  })
 
   const handleWogadLogin = () => {
     setRetryDelayWindow(true)
@@ -22,20 +27,18 @@ export const WogadLoginButton = (): JSX.Element | null => {
   })
 
   return (
-    <VStack alignItems="start">
-      <Button
-        isFullWidth
-        isLoading={wogadLoginMutation.isLoading || isRetryDelayWindow}
-        type="submit"
-        color="primary"
-        onClick={handleWogadLogin}
-        variant="outline"
-        aria-label="Log in with WOG AD"
-      >
-        <Flex align="center" flexDirection="row" aria-hidden>
-          <Text color="primary.500">Log in with WOG AD</Text>
-        </Flex>
-      </Button>
-    </VStack>
+    <Button
+      isFullWidth
+      isLoading={wogadLoginMutation.isLoading || isRetryDelayWindow}
+      type="submit"
+      color="primary"
+      onClick={handleWogadLogin}
+      variant="outline"
+      aria-label={t('loginText')}
+    >
+      <Flex align="center" flexDirection="row" aria-hidden>
+        <Text color="primary.500">{t('loginText')}</Text>
+      </Flex>
+    </Button>
   )
 }
