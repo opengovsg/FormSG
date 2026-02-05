@@ -156,6 +156,12 @@ export const LoginPage = (): JSX.Element => {
               </Stack>
             </>
           )}
+          {shouldShowWogadLogin && (
+            <>
+              <OrDivider />
+              <WogadLoginButton />
+            </>
+          )}
         </Stack>
       ) : (
         <OtpForm
