@@ -140,22 +140,19 @@ export const LoginPage = (): JSX.Element => {
     <LoginPageTemplate>
       {!email ? (
         <Stack spacing="2rem">
-          {/* Email form first */}
           <LoginForm onSubmit={handleSendOtp} />
-
-          {/* Single OrDivider before all SSO options */}
           {(shouldShowWogadLogin ||
             shouldShowSsoLogin ||
             shouldShowSgidLogin) && (
-            <>
-              <OrDivider />
-              <Stack spacing="1rem">
-                {shouldShowWogadLogin && <WogadLoginButton />}
-                {shouldShowSsoLogin && <SsoLoginButton />}
-                {shouldShowSgidLogin && <SgidLoginButton />}
-              </Stack>
-            </>
-          )}
+              <>
+                <OrDivider />
+                <Stack spacing="1rem">
+                  {shouldShowWogadLogin && <WogadLoginButton />}
+                  {shouldShowSsoLogin && <SsoLoginButton />}
+                  {shouldShowSgidLogin && <SgidLoginButton />}
+                </Stack>
+              </>
+            )}
         </Stack>
       ) : (
         <OtpForm

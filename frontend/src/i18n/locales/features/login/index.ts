@@ -17,10 +17,17 @@ export interface Login {
       otpFromEmail: string
     }
     SgidLoginButton: {
-      forText: string
-      selectAgenciesText: string
       loginText: string
       appText: string
+      onlyText: string
+      selectAgenciesText: string
+      canUseSingpassLoginText: string
+    }, 
+    SsoLoginButton: {
+      loginText: string
+    },
+    WogadLoginButton: {
+      loginText: string
     }
   }
   LoginPage: {

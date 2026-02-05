@@ -5,9 +5,14 @@ import { delay } from 'lodash'
 
 import { getWogadAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
+import { useTranslation } from 'react-i18next'
 
 export const WogadLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.login.components.WogadLoginButton',
+  })
 
   const handleWogadLogin = () => {
     setRetryDelayWindow(true)
@@ -29,10 +34,10 @@ export const WogadLoginButton = (): JSX.Element | null => {
       color="primary"
       onClick={handleWogadLogin}
       variant="outline"
-      aria-label="Log in with WOG AD"
+      aria-label={t('loginText')}
     >
       <Flex align="center" flexDirection="row" aria-hidden>
-        <Text color="primary.500">Log in with WOG AD</Text>
+        <Text color="primary.500">{t('loginText')}</Text>
       </Flex>
     </Button>
   )

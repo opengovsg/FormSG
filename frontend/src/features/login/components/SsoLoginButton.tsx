@@ -5,9 +5,14 @@ import { delay } from 'lodash'
 
 import { getSsoAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
+import { useTranslation } from 'react-i18next'
 
 export const SsoLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.login.components.SsoLoginButton',
+  })
 
   const handleSsoLogin = () => {
     setRetryDelayWindow(true)
@@ -32,7 +37,7 @@ export const SsoLoginButton = (): JSX.Element | null => {
       aria-label="Log in with OGP SSO"
     >
       <Flex align="center" flexDirection="row" aria-hidden>
-        <Text color="primary.500">Log in with OGP SSO</Text>
+        <Text color="primary.500">{t('loginText')}</Text>
       </Flex>
     </Button>
   )
