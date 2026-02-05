@@ -106,7 +106,7 @@ export const FeedbackPage = (): JSX.Element => {
   const isMobile = useIsMobile()
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [currentFeedbackType, setCurrentFeedbackType] = useState<FeedbackType>(
-    FeedbackType.Issues,
+    FeedbackType.Reviews,
   )
 
   // Hooks for form reviews
@@ -228,21 +228,21 @@ export const FeedbackPage = (): JSX.Element => {
           <Button
             {...getFeedbackTypeButtonProps(
               currentFeedbackType,
-              FeedbackType.Issues,
+              FeedbackType.Reviews,
             )}
             sx={{ borderRightWidth: '0px' }}
-            onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
+            onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
           >
-            {translations.issues}
+            {translations.reviews}
           </Button>
           <Button
             {...getFeedbackTypeButtonProps(
               currentFeedbackType,
-              FeedbackType.Reviews,
+              FeedbackType.Issues,
             )}
-            onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
+            onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
           >
-            {translations.reviews}
+            {translations.issues}
           </Button>
         </ButtonGroup>
         <Box gridArea="export" justifySelf="flex-end">
