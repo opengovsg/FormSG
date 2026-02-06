@@ -41,7 +41,11 @@ export const FloatingToolBar = (): JSX.Element | null => {
       sx={noPrintCss}
       zIndex="docked"
     >
-      <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} colorTheme={colorTheme} />
+      <FloatingIssueFeedbackButton
+        isPreview={isPreview}
+        formId={formId}
+        colorTheme={colorTheme}
+      />
       {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
         <FloatingSaveDraftButton
           onSaveDraft={() => {
