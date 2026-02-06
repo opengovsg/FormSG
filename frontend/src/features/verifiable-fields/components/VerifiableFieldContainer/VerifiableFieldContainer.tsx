@@ -91,6 +91,7 @@ export const VerifiableFieldContainer = ({
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
           otpPrefix={otpPrefix}
+          colorTheme={colorTheme}
         />
       )}
     </Box>

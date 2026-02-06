@@ -28,7 +28,10 @@ import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 
-const PublicFormSaveDraftButton = (props: ButtonProps) => {
+const PublicFormSaveDraftButton = ({
+  colorTheme,
+  ...props
+}: ButtonProps & { colorTheme: string }) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
   const { t } = useTranslation()
 
@@ -44,7 +47,12 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
       isDisabled={!tooltipLabel}
       label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
     >
-      <Button variant="outline" onClick={onSaveDraft} {...props}>
+      <Button
+        variant="outline"
+        colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
+        onClick={onSaveDraft}
+        {...props}
+      >
         {t('features.publicForm.components.saveDraft.button.label')}
       </Button>
     </Tooltip>
@@ -162,7 +170,11 @@ export const PublicFormSubmitButton = ({
       />
       <Flex w="100" gap="1rem">
         {isSaveDraftEnabled && (
-          <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
+          <PublicFormSaveDraftButton
+            flex={1}
+            isFullWidth={isMobile}
+            colorTheme={colorTheme}
+          />
         )}
         <Button
           flex={1}

@@ -52,6 +52,7 @@ export const MiniHeader = ({
     onSaveDraft,
     draftLastSavedDateTimeString,
     formId,
+    form,
   } = usePublicFormContext()
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
@@ -115,6 +116,7 @@ export const MiniHeader = ({
                   onSaveDraft()
                 }}
                 draftLastSavedDateTimeString={draftLastSavedDateTimeString}
+                colorTheme={form?.startPage.colorTheme}
               />
             )}
             {activeSectionId ? (

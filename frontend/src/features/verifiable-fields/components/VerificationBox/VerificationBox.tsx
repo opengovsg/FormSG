@@ -9,7 +9,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types'
+import { BasicField, FormColorTheme } from '~shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
@@ -33,6 +33,7 @@ export interface VerificationBoxProps {
   otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
+  colorTheme?: FormColorTheme
 }
 
 type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
@@ -71,6 +72,7 @@ export const VerificationBox = ({
   otpPrefix,
   handleResendOtp,
   handleVerifyOtp,
+  colorTheme = FormColorTheme.Blue,
 }: VerificationBoxProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -97,7 +99,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg="primary.100"
+      bg={`theme-${colorTheme}.100`}
       align="flex-start"
       mt="0.5rem"
     >
@@ -118,6 +120,8 @@ export const VerificationBox = ({
                 {otpPrefix ? (
                   <InputLeftAddon
                     pointerEvents="none"
+                    bg={`theme-${colorTheme}.200`}
+                    borderColor={`theme-${colorTheme}.300`}
                     children={`${otpPrefix}-`}
                   />
                 ) : null}
@@ -144,6 +148,7 @@ export const VerificationBox = ({
                 ml="0.5rem"
                 onClick={onSubmitForm}
                 aria-label="Submit OTP for verification"
+                colorScheme={`theme-${colorTheme}`}
               >
                 Submit
               </Button>
@@ -156,6 +161,7 @@ export const VerificationBox = ({
         <ResendOtpButton
           mt="0.5rem"
           variant="link"
+          colorScheme={`theme-${colorTheme}`}
           onResendOtp={handleResendOtp}
         />
       </Box>
