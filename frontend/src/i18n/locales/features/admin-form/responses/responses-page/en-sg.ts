@@ -21,18 +21,22 @@ export const enSG: ResponsesResponsesPage = {
           backToResponses: 'Back to responses',
         },
         confirmationScreen: {
+          pdfsDescription:
+            'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
-          titleAttachmentsOnly: 'Download attachments',
-          titleResponsesAndAttachments: 'Download responses and attachments',
+          downloadTitle: 'Download {downloadItems}',
+          responsesText: 'responses',
+          pdfsText: 'PDFs',
+          attachmentsText: 'attachments',
+          andText: 'and',
           numberOfResponses: 'Number of responses',
           estimatedTime: 'Estimated time',
           estimatedTimeReference: '30-50 mins per 1,000 responses',
           filterResponsesCountHelperText:
             'You can reduce the number of downloads at one go by adjusting the date range.',
           intensiveOperationWarning: {
-            title:
-              'Downloading many attachments can be an intensive operation.',
+            title: 'Downloading many files can be an intensive operation.',
             doNotUseIE: 'Do not use Internet Explorer',
             ensureStrongNetworkConnectivity:
               'Ensure network connectivity is strong',
@@ -79,6 +83,7 @@ export const enSG: ResponsesResponsesPage = {
         menuItem: {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',
+          pdfs: 'PDF copies of responses (.pdf)',
         },
       },
       unlockedResponses: {
