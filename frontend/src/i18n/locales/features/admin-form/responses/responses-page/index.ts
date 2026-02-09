@@ -18,9 +18,13 @@ export interface ResponsesResponsesPage {
           backToResponses: string
         }
         confirmationScreen: {
-          titleAttachmentsOnly: string
-          titleResponsesAndAttachments: string
+          downloadTitle: string
+          responsesText: string
+          pdfsText: string
+          attachmentsText: string
+          andText: string
           attachmentsDescription: string
+          pdfsDescription: string
           numberOfResponses: string
           estimatedTime: string
           estimatedTimeReference: string
@@ -67,6 +71,7 @@ export interface ResponsesResponsesPage {
         menuItem: {
           csv: string
           attachments: string
+          pdfs: string
         }
       }
       unlockedResponses: {

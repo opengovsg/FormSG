@@ -32,7 +32,7 @@ import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
-import generateResponsePdf from './utils/generateResponsePdf'
+import { downloadResponsePdf } from './utils/generateResponsePdf'
 import { useIndividualSubmission } from './queries'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
@@ -182,7 +182,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                       },
                     )
                     if (submission && form) {
-                      await generateResponsePdf({ form, submission })
+                      await downloadResponsePdf({ form, submission })
                     }
                   }}
                   variant="clear"

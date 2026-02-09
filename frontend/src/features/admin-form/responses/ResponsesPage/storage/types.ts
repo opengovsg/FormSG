@@ -2,7 +2,7 @@ import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
 
-import { SubmissionMrfMetadata } from '~shared/types'
+import { SubmissionMrfMetadata, SubmissionStreamDto } from '~shared/types'
 
 import { CsvRecord } from './utils/CsvRecord.class'
 import { DecryptionWorkerApi } from './worker/decryption.worker'
@@ -49,6 +49,7 @@ export type CleanableDecryptionWorkerApi = {
 export interface DownloadOptions {
   isDownloadAttachments: boolean
   isDownloadCsv: boolean
+  isDownloadPdf: boolean
 }
 
 /**
@@ -61,7 +62,8 @@ export type DecryptedData = {
   }
   materializedCsvRecord?: MaterializedCsvRecord
   attachmentDownloadBlob?: Blob
-  submissionId?: string
+  parsedSubmission?: SubmissionStreamDto
+  decryptedResponses?: FormField[]
 }
 
 /** Download result after downloading storage mode responses */
