@@ -25,13 +25,11 @@ export const enSG: ResponsesResponsesPage = {
             'For PDFs, all files will be bundled into a <strong>single zip</strong>.',
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
-          titlePdfsOnly: 'Download PDFs',
-          titleAttachmentsOnly: 'Download attachments',
-          titleResponsesAndAttachments: 'Download responses and attachments',
-          titleResponsesAndPdfs: 'Download responses and PDFs',
-          titleAttachmentsAndPdfs: 'Download attachments and PDFs',
-          titleResponsesAndAttachmentsAndPdfs:
-            'Download responses, attachments and PDFs',
+          downloadTitle: 'Download {downloadItems}',
+          responsesText: 'responses',
+          pdfsText: 'PDFs',
+          attachmentsText: 'attachments',
+          andText: 'and',
           numberOfResponses: 'Number of responses',
           estimatedTime: 'Estimated time',
           estimatedTimeReference: '30-50 mins per 1,000 responses',

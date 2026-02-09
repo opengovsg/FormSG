@@ -50,57 +50,35 @@ export const ConfirmationScreen = ({
   responsesCount,
 }: ConfirmationScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
+  const { t: confirmationScreenTranslation } = useTranslation('translation', {
+    keyPrefix:
+      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen',
+  })
   const { t } = useTranslation()
 
-  const confirmationScreenKeyPrefix =
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen'
-
   const getTitle = () => {
-    if (
-      downloadOptions.isDownloadCsv &&
-      downloadOptions.isDownloadAttachments &&
-      downloadOptions.isDownloadPdf
-    ) {
-      return t(
-        `${confirmationScreenKeyPrefix}.titleResponsesAndAttachmentsAndPdfs`,
-      )
+    const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
+      downloadOptions
+    const titleParts = []
+    if (isDownloadCsv)
+      titleParts.push(confirmationScreenTranslation('responsesText'))
+    if (isDownloadAttachments)
+      titleParts.push(confirmationScreenTranslation('attachmentsText'))
+    if (isDownloadPdf)
+      titleParts.push(confirmationScreenTranslation('pdfsText'))
+
+    if (titleParts.length == 0) {
+      return ''
     }
-    if (
-      !downloadOptions.isDownloadCsv &&
-      downloadOptions.isDownloadAttachments &&
-      downloadOptions.isDownloadPdf
-    ) {
-      return t(`${confirmationScreenKeyPrefix}.titleAttachmentsAndPdfs`)
-    }
-    if (
-      downloadOptions.isDownloadCsv &&
-      !downloadOptions.isDownloadAttachments &&
-      downloadOptions.isDownloadPdf
-    ) {
-      return t(`${confirmationScreenKeyPrefix}.titleResponsesAndPdfs`)
-    }
-    if (
-      downloadOptions.isDownloadCsv &&
-      downloadOptions.isDownloadAttachments &&
-      !downloadOptions.isDownloadPdf
-    ) {
-      return t(`${confirmationScreenKeyPrefix}.titleResponsesAndAttachments`)
-    }
-    if (
-      !downloadOptions.isDownloadCsv &&
-      !downloadOptions.isDownloadAttachments &&
-      downloadOptions.isDownloadPdf
-    ) {
-      return t(`${confirmationScreenKeyPrefix}.titlePdfsOnly`)
-    }
-    if (
-      !downloadOptions.isDownloadCsv &&
-      downloadOptions.isDownloadAttachments &&
-      !downloadOptions.isDownloadPdf
-    ) {
-      return t(`${confirmationScreenKeyPrefix}.titleAttachmentsOnly`)
-    }
-    return ''
+
+    const downloadItems =
+      titleParts.length > 2
+        ? `${titleParts.slice(0, -1).join(', ')} ${confirmationScreenTranslation('andText')} ${titleParts[titleParts.length - 1]}`
+        : titleParts.join(` ${confirmationScreenTranslation('andText')} `)
+
+    return confirmationScreenTranslation('downloadTitle', {
+      downloadItems,
+    })
   }
 
   return (
@@ -119,48 +97,50 @@ export const ConfirmationScreen = ({
           {downloadOptions.isDownloadAttachments ? (
             <Text>
               <Trans
-                i18nKey={`${confirmationScreenKeyPrefix}.attachmentsDescription`}
+                t={confirmationScreenTranslation}
+                i18nKey={'attachmentsDescription'}
               />
             </Text>
           ) : undefined}
           {downloadOptions.isDownloadPdf ? (
             <Text>
               <Trans
-                i18nKey={`${confirmationScreenKeyPrefix}.pdfsDescription`}
+                t={confirmationScreenTranslation}
+                i18nKey={'pdfsDescription'}
               />
             </Text>
           ) : undefined}
           <Text>
-            <b>{t(`${confirmationScreenKeyPrefix}.numberOfResponses`)}:</b>{' '}
+            <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
             {responsesCount.toLocaleString()}
             <br />
-            <b>{t(`${confirmationScreenKeyPrefix}.estimatedTime`)}:</b>{' '}
-            {t(`${confirmationScreenKeyPrefix}.estimatedTimeReference`)}
+            <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
+            {confirmationScreenTranslation('estimatedTimeReference')}
           </Text>
           <Text>
-            {t(`${confirmationScreenKeyPrefix}.filterResponsesCountHelperText`)}
+            {confirmationScreenTranslation('filterResponsesCountHelperText')}
           </Text>
           <InlineMessage>
             <Stack>
               <Text textStyle="subhead-1">
-                {t(
-                  `${confirmationScreenKeyPrefix}.intensiveOperationWarning.title`,
+                {confirmationScreenTranslation(
+                  'intensiveOperationWarning.title',
                 )}
               </Text>
               <List>
                 <InlineTextListItem>
-                  {t(
-                    `${confirmationScreenKeyPrefix}.intensiveOperationWarning.doNotUseIE`,
+                  {confirmationScreenTranslation(
+                    'intensiveOperationWarning.doNotUseIE',
                   )}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  {t(
-                    `${confirmationScreenKeyPrefix}.intensiveOperationWarning.ensureStrongNetworkConnectivity`,
+                  {confirmationScreenTranslation(
+                    'intensiveOperationWarning.ensureStrongNetworkConnectivity',
                   )}
                 </InlineTextListItem>
                 <InlineTextListItem>
-                  {t(
-                    `${confirmationScreenKeyPrefix}.intensiveOperationWarning.ensureEnoughDiskSpace`,
+                  {confirmationScreenTranslation(
+                    'intensiveOperationWarning.ensureEnoughDiskSpace',
                   )}
                 </InlineTextListItem>
               </List>
@@ -168,9 +148,7 @@ export const ConfirmationScreen = ({
           </InlineMessage>
           {responsesCount === 0 && (
             <InlineMessage variant="warning">
-              {t(
-                `${confirmationScreenKeyPrefix}.noResponsesInSelectedDateRange`,
-              )}
+              {confirmationScreenTranslation('noResponsesInSelectedDateRange')}
             </InlineMessage>
           )}
         </Stack>
@@ -187,7 +165,7 @@ export const ConfirmationScreen = ({
             isLoading={isDownloading}
             isDisabled={responsesCount === 0}
           >
-            {t(`${confirmationScreenKeyPrefix}.startDownload`)}
+            {confirmationScreenTranslation('startDownload')}
           </Button>
           <Button
             isFullWidth={isMobile}

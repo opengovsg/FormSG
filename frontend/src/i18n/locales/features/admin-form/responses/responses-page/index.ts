@@ -18,12 +18,11 @@ export interface ResponsesResponsesPage {
           backToResponses: string
         }
         confirmationScreen: {
-          titlePdfsOnly: string
-          titleAttachmentsOnly: string
-          titleResponsesAndAttachments: string
-          titleResponsesAndPdfs: string
-          titleAttachmentsAndPdfs: string
-          titleResponsesAndAttachmentsAndPdfs: string
+          downloadTitle: string
+          responsesText: string
+          pdfsText: string
+          attachmentsText: string
+          andText: string
           attachmentsDescription: string
           pdfsDescription: string
           numberOfResponses: string
