@@ -406,7 +406,7 @@ const checkIsWorkflowCompleted = ({
   const lastStepNumber = form.workflow.length - 1
   const isLastStepSubmitted = currentStepNumber === lastStepNumber
 
-  return isRejected || isLastStepSubmitted
+  return !form.workflow.length || isRejected || isLastStepSubmitted
 }
 
 const sendMrfOutcomeEmails = ({
