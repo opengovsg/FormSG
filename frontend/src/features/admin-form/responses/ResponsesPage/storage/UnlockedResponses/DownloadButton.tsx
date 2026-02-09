@@ -65,6 +65,8 @@ const DownloadSelector = ({
     downloadOptions
   const onlyDownloadCsv =
     isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
+  const isDownloadOptionSelected =
+    isDownloadCsv || isDownloadAttachments || isDownloadPdf
 
   return (
     <Stack>
@@ -103,7 +105,10 @@ const DownloadSelector = ({
         </Stack>
       </CheckboxGroup>
       <Flex m="1rem" justify="flex-end">
-        <Button onClick={onlyDownloadCsv ? onDownload : onClickNext}>
+        <Button
+          isDisabled={!isDownloadOptionSelected}
+          onClick={onlyDownloadCsv ? onDownload : onClickNext}
+        >
           {onlyDownloadCsv ? 'Start download' : 'Next'}
         </Button>
       </Flex>
