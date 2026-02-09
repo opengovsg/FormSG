@@ -951,6 +951,11 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   const { submissionSecretKey, responses } = encryptedPayload
   const currentStepNumber = 0
 
+  // if there is no workflow, every field is an active field
+  const currentStepActiveFields: string[] = form.workflow.length
+    ? (form.workflow[currentStepNumber]?.edit ?? [])
+    : form.form_fields.map((field) => field._id)
+
   logMeta = {
     ...logMeta,
     action: 'performMultiRespondentPostSubmissionCreateActions',
@@ -963,7 +968,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submission,
     form,
     responses,
-    currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
+    currentStepActiveFields,
     currentStepNumber,
     isRejected: false, // first step cannot be an approval step and thus cannot be rejected.
     submissionId,
@@ -974,7 +979,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     checkIfRespondentFormSummaryIsRequired({
       responses,
       formFields: form.form_fields,
-      currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
+      currentStepActiveFields,
     })
       ? pdfResult
       : okAsync(undefined)
@@ -997,7 +1002,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     submission,
     attachments,
     formFields: form.form_fields,
-    currentStepActiveFields: form.workflow[currentStepNumber]?.edit ?? [],
+    currentStepActiveFields,
     pdfResult: sendMrfRespondentCopyEmailsPdfResult,
   }).mapErr((error) => {
     logger.error({
