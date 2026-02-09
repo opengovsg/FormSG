@@ -20,8 +20,22 @@ const clientConfig = {
     authority: wogad.authority,
   },
 }
-const ccaSingleton = new ConfidentialClientApplication(clientConfig)
+const isWogadConfigDefined =
+  wogad.clientId && wogad.clientSecret && wogad.authority
+const ccaSingleton = isWogadConfigDefined
+  ? new ConfidentialClientApplication(clientConfig)
+  : null
 const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
+
+const validateWogadConfig: ControllerHandler = (_req, res, next) => {
+  if (!isWogadConfigDefined || !ccaSingleton) {
+    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
+      message:
+        'WOG AD is not supported. Please use another authentication method.',
+    })
+  }
+  return next()
+}
 /**
  * Generates the WOG AD Authorization URL.
  *
@@ -29,10 +43,14 @@ const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
  * 1. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.
  * 2. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
  */
-export const generateAuthUrl: ControllerHandler<
+const _generateAuthUrl: ControllerHandler<
   unknown,
   { authUrl: string; csrfToken: string }
 > = async (_req, res) => {
+  if (!ccaSingleton) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const csrfToken = crypto.randomBytes(32).toString('hex')
 
   const authCodeUrlParams: AuthorizationUrlRequest = {
@@ -52,6 +70,13 @@ export const generateAuthUrl: ControllerHandler<
   return res.status(StatusCodes.OK).json({ authUrl, csrfToken })
 }
 
+export const generateAuthUrlForTest = _generateAuthUrl
+
+export const generateAuthUrl = [
+  validateWogadConfig,
+  _generateAuthUrl,
+] as ControllerHandler[]
+
 /**
  * This verifies the auth code and returns the access and id token.
  *
@@ -66,11 +91,15 @@ export const generateAuthUrl: ControllerHandler<
  * 7. Also, we include a grant source to indicate that the user logged in via WOG AD. This is useful during logout.
  * 8. At this point, the user is logged in and can access the protected routes using FormSG's session mechanism.
  */
-export const handleVerifyWithCode: ControllerHandler<
+const _handleVerifyWithCode: ControllerHandler<
   unknown,
   unknown,
   { code: string; csrfToken: string }
 > = async (req, res) => {
+  if (!ccaSingleton) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const csrfTokenFromCookie = req.cookies['csrf_token']
   const csrfTokenFromBody = req.body['csrfToken']
 
@@ -150,26 +179,44 @@ export const handleVerifyWithCode: ControllerHandler<
  * @returns void
  */
 const removeAccountFromTokenCache = async (account: AccountInfo | null) => {
-  if (!account) {
+  if (!account || !ccaSingleton) {
     return
   }
   const tokenCache = ccaSingleton.getTokenCache()
   await tokenCache.removeAccount(account)
 }
 
+export const handleVerifyWithCodeForTest = _handleVerifyWithCode
+
+export const handleVerifyWithCode = [
+  validateWogadConfig,
+  _handleVerifyWithCode,
+] as ControllerHandler[]
+
 /**
  * Get the logout URL for the WOG AD.
  *
  * @returns The logout URL for the WOG AD, if it exists.
  */
-export const getLogoutUrl: ControllerHandler<
+const _getLogoutUrl: ControllerHandler<
   unknown,
   {
     logoutUrl: string
   }
 > = async (_req, res) => {
+  if (!ccaSingleton) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const postLogoutRedirectUri = resolveAppUrl('/')
   return res.status(StatusCodes.OK).json({
     logoutUrl: `${wogad.authority}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`,
   })
 }
+
+export const getLogoutUrlForTest = _getLogoutUrl
+
+export const getLogoutUrl = [
+  validateWogadConfig,
+  _getLogoutUrl,
+] as ControllerHandler[]
