@@ -1,5 +1,6 @@
 import {
   AccountInfo,
+  AuthError,
   AuthorizationUrlRequest,
   ConfidentialClientApplication,
 } from '@azure/msal-node'
@@ -149,13 +150,27 @@ const _handleVerifyWithCode: ControllerHandler<
     const token = await ccaSingleton.acquireTokenByCode(tokenRequest)
     account = token.account
   } catch (error) {
+    let details: Record<string, string> = {}
+    if (error instanceof AuthError) {
+      const authError = error as AuthError
+
+      details = {
+        correlationId: authError?.correlationId,
+        errorCode: authError?.errorCode,
+        errorMessage: authError?.errorMessage,
+        subError: authError?.subError,
+        message: authError?.message,
+      }
+    }
     logger.error({
       message: `Error acquiring token by code error`,
-      meta: logMeta,
+      meta: {
+        ...logMeta,
+        ...details,
+      },
     })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'Error acquiring token by code',
-      error,
     })
   }
 
