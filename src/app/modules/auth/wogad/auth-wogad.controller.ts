@@ -150,7 +150,7 @@ const _handleVerifyWithCode: ControllerHandler<
     account = token.account
   } catch (error) {
     logger.error({
-      message: `Error acquiring token by code error: ${error.message}`,
+      message: `Error acquiring token by code error`,
       meta: logMeta,
     })
     return res.status(StatusCodes.FORBIDDEN).json({
