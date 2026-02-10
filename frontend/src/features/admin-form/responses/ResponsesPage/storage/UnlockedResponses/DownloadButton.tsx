@@ -11,6 +11,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -219,6 +220,14 @@ export const DownloadButton = (): JSX.Element => {
   const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
     setProgressModalTimeout(5000)
+    datadogLogs.logger.info('Bulk download used', {
+      meta: {
+        action: 'bulkDownload',
+        isDownloadCsv: downloadOptions.isDownloadCsv,
+        isDownloadAttachments: downloadOptions.isDownloadAttachments,
+        isDownloadPdf: downloadOptions.isDownloadPdf,
+      },
+    })
     return handleBulkDownloadMutation.mutate({
       ...downloadParams,
       downloadAttachments: downloadOptions.isDownloadAttachments,
