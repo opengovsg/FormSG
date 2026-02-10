@@ -1,17 +1,23 @@
 import {
   AccountInfo,
+  AuthError,
   AuthorizationUrlRequest,
   ConfidentialClientApplication,
 } from '@azure/msal-node'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
+import { createReqMeta } from 'src/app/utils/request'
+
 import config from '../../../config/config'
 import { wogad } from '../../../config/features/wogad.config'
+import { createLoggerWithLabel } from '../../../config/logger'
 import { resolveAppUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
+
+const logger = createLoggerWithLabel(module)
 
 const clientConfig = {
   auth: {
@@ -46,8 +52,17 @@ const validateWogadConfig: ControllerHandler = (_req, res, next) => {
 const _generateAuthUrl: ControllerHandler<
   unknown,
   { authUrl: string; csrfToken: string }
-> = async (_req, res) => {
+> = async (req, res) => {
+  const logMeta = {
+    action: 'wogadGenerateAuthUrl',
+    ...createReqMeta(req),
+  }
+
   if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
   }
 
@@ -96,7 +111,16 @@ const _handleVerifyWithCode: ControllerHandler<
   unknown,
   { code: string; csrfToken: string }
 > = async (req, res) => {
+  const logMeta = {
+    action: 'wogadHandleVerifyWithCode',
+    ...createReqMeta(req),
+  }
+
   if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
   }
 
@@ -104,6 +128,10 @@ const _handleVerifyWithCode: ControllerHandler<
   const csrfTokenFromBody = req.body['csrfToken']
 
   if (!csrfTokenFromCookie || csrfTokenFromCookie !== csrfTokenFromBody) {
+    logger.error({
+      message: 'CSRF token mismatch',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'CSRF token mismatch',
     })
@@ -122,9 +150,27 @@ const _handleVerifyWithCode: ControllerHandler<
     const token = await ccaSingleton.acquireTokenByCode(tokenRequest)
     account = token.account
   } catch (error) {
+    let details: Record<string, string> = {}
+    if (error instanceof AuthError) {
+      const authError = error as AuthError
+
+      details = {
+        correlationId: authError?.correlationId,
+        errorCode: authError?.errorCode,
+        errorMessage: authError?.errorMessage,
+        subError: authError?.subError,
+        message: authError?.message,
+      }
+    }
+    logger.error({
+      message: `Error acquiring token by code error`,
+      meta: {
+        ...logMeta,
+        ...details,
+      },
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'Error acquiring token by code',
-      error,
     })
   }
 
@@ -133,14 +179,24 @@ const _handleVerifyWithCode: ControllerHandler<
   const userEmail = account?.username?.toLowerCase()
 
   if (!userEmail) {
+    logger.error({
+      message: 'WOG AD user is not found',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.NOT_FOUND).json({
       message: 'WOG AD user is not found',
     })
   }
 
+  const logMetaWithUserEmail = { ...logMeta, userEmail }
+
   const validateEmailWhitelistedResult =
     await AuthService.validateEmailDomain(userEmail)
   if (validateEmailWhitelistedResult.isErr()) {
+    logger.error({
+      message: 'WOG AD user is not whitelisted',
+      meta: logMetaWithUserEmail,
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'WOG AD user is not whitelisted',
     })
@@ -152,6 +208,10 @@ const _handleVerifyWithCode: ControllerHandler<
   )
     .map((user) => {
       if (!req.session) {
+        logger.error({
+          message: 'Could not find valid session',
+          meta: logMetaWithUserEmail,
+        })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .json('Could not find valid session')
@@ -161,12 +221,20 @@ const _handleVerifyWithCode: ControllerHandler<
       const { _id } = user
       req.session.user = { _id, grantSource: 'wogad' }
 
+      logger.info({
+        message: 'User logged in via WOG AD',
+        meta: logMetaWithUserEmail,
+      })
+
       return res.status(StatusCodes.OK).json(user)
     })
-    .mapErr((err) => {
+    .mapErr(() => {
+      logger.error({
+        message: 'Failed to load or create user',
+        meta: logMetaWithUserEmail,
+      })
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Failed to load or create user. Please try again.',
-        error: err,
       })
     })
 }
@@ -203,8 +271,17 @@ const _getLogoutUrl: ControllerHandler<
   {
     logoutUrl: string
   }
-> = async (_req, res) => {
+> = async (req, res) => {
+  const logMeta = {
+    action: 'wogadGetLogoutUrl',
+    ...createReqMeta(req),
+  }
+
   if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
   }
 
