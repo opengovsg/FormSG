@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
+import saveAs from 'file-saver'
+import JSZip from 'jszip'
 
 import { waitForMs } from '~utils/waitForMs'
 
@@ -13,6 +15,8 @@ import {
   trackPartialDecryptionFailure,
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
+
+import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
@@ -48,6 +52,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // Used to determine if we should add MRF related columns to the CSV.
   isMrf: boolean
   isDownloadCsv: boolean
+  isDownloadPdf: boolean
 }
 interface UseDecryptionWorkersProps {
   onProgress: (progress: number) => void
@@ -85,6 +90,7 @@ const useDecryptionWorkers = ({
       responsesCount,
       downloadAttachments,
       isDownloadCsv,
+      isDownloadPdf,
       secretKey,
       endDate,
       startDate,
@@ -237,7 +243,7 @@ const useDecryptionWorkers = ({
                 if (
                   downloadAttachments &&
                   decryptResult.attachmentDownloadBlob &&
-                  decryptResult.submissionId
+                  decryptResult.parsedSubmission?._id
                 ) {
                   attachmentsToSaveCount += 1
 
@@ -262,7 +268,7 @@ const useDecryptionWorkers = ({
                   }
                   await downloadResponseAttachment(
                     decryptResult.attachmentDownloadBlob,
-                    decryptResult.submissionId,
+                    decryptResult.parsedSubmission._id,
                   )
                 }
                 return decryptResult
@@ -281,6 +287,39 @@ const useDecryptionWorkers = ({
       return new Promise<DownloadResult>((resolve, reject) => {
         // Step 1: Decrypt all submissions and their attachments (into blobs), add the submissions into the csv object and save the attachments into user's computer.
         Promise.all(submissionDecryptPromises)
+          // Step 2: Save the PDFs for each submission into a zip file.
+          .then(async (decryptResults) => {
+            if (isDownloadPdf) {
+              const pdfZip = new JSZip()
+              for (const decryptResult of decryptResults) {
+                const { parsedSubmission, decryptedResponses } = decryptResult
+                if (
+                  decryptedResponses !== undefined &&
+                  parsedSubmission !== undefined
+                ) {
+                  const { _id: refNo, created: submissionTime } =
+                    parsedSubmission
+                  const { pdfBlob, pdfTitle } = await generateResponsePdfBlob({
+                    form: adminForm,
+                    submission: {
+                      refNo,
+                      submissionTime,
+                      responses: decryptedResponses,
+                    },
+                  })
+                  pdfZip.file(pdfTitle, pdfBlob)
+                }
+              }
+              await pdfZip
+                .generateAsync({ type: 'blob' })
+                .then(function (content) {
+                  saveAs(
+                    content,
+                    `${adminForm.title}-formId_${adminForm._id}-response_pdfs.zip`,
+                  )
+                })
+            }
+          })
           .catch((err) => {
             if (!downloadStartTime) {
               // No start time, means did not even start http request.

@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.298.0",
+  "version": "6.301.1",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
-    "@aws-sdk/client-lambda": "^3.965.0",
+    "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",
     "@azure/msal-node": "^5.0.2",
     "@faker-js/faker": "^8.4.1",

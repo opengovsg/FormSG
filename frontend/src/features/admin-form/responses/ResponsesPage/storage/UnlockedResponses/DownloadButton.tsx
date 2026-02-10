@@ -11,6 +11,7 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -61,8 +62,12 @@ const DownloadSelector = ({
       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem',
   })
 
-  const { isDownloadCsv, isDownloadAttachments } = downloadOptions
-  const onlyDownloadCsv = isDownloadCsv && !isDownloadAttachments
+  const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
+    downloadOptions
+  const onlyDownloadCsv =
+    isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
+  const isDownloadOptionSelected =
+    isDownloadCsv || isDownloadAttachments || isDownloadPdf
 
   return (
     <Stack>
@@ -88,10 +93,23 @@ const DownloadSelector = ({
               })
             }
           />
+          <DownloadSelectorCheckbox
+            optionText={t('pdfs')}
+            isChecked={isDownloadPdf}
+            onChange={() =>
+              setDownloadOptions({
+                ...downloadOptions,
+                isDownloadPdf: !isDownloadPdf,
+              })
+            }
+          />
         </Stack>
       </CheckboxGroup>
       <Flex m="1rem" justify="flex-end">
-        <Button onClick={onlyDownloadCsv ? onDownload : onClickNext}>
+        <Button
+          isDisabled={!isDownloadOptionSelected}
+          onClick={onlyDownloadCsv ? onDownload : onClickNext}
+        >
           {onlyDownloadCsv ? 'Start download' : 'Next'}
         </Button>
       </Flex>
@@ -104,6 +122,7 @@ export const DownloadButton = (): JSX.Element => {
     () => ({
       isDownloadAttachments: false,
       isDownloadCsv: false,
+      isDownloadPdf: false,
     }),
     [],
   )
@@ -201,10 +220,19 @@ export const DownloadButton = (): JSX.Element => {
   const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
     setProgressModalTimeout(5000)
+    datadogLogs.logger.info('Bulk download used', {
+      meta: {
+        action: 'bulkDownload',
+        isDownloadCsv: downloadOptions.isDownloadCsv,
+        isDownloadAttachments: downloadOptions.isDownloadAttachments,
+        isDownloadPdf: downloadOptions.isDownloadPdf,
+      },
+    })
     return handleBulkDownloadMutation.mutate({
       ...downloadParams,
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
+      isDownloadPdf: downloadOptions.isDownloadPdf,
     })
   }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
 

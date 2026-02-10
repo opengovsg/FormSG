@@ -9,6 +9,8 @@ convict.addFormat(url)
 const optionalValuesFromSsm: Path<IWogadVarsSchema>[] = [
   'authority',
   'redirectUri',
+  'clientId',
+  'clientSecret',
 ]
 
 export const wogadVarsSchema: Schema<IWogadVarsSchema> = {

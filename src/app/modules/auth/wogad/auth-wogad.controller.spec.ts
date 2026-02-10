@@ -53,7 +53,11 @@ describe('AuthWogadController', () => {
       const mockReq = expressHandler.mockRequest()
       const mockRes = expressHandler.mockResponse()
       // Act
-      await AuthWogadController.generateAuthUrl(mockReq, mockRes, jest.fn())
+      await AuthWogadController.generateAuthUrlForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
       // Assert
       expect(mockRes.cookie).toHaveBeenCalledWith(
         'csrf_token',
@@ -94,7 +98,7 @@ describe('AuthWogadController', () => {
         }),
       )
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -119,7 +123,7 @@ describe('AuthWogadController', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -142,7 +146,7 @@ describe('AuthWogadController', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -166,7 +170,7 @@ describe('AuthWogadController', () => {
       })
       const mockRes = expressHandler.mockResponse()
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -194,7 +198,7 @@ describe('AuthWogadController', () => {
         account: null,
       })
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -223,7 +227,7 @@ describe('AuthWogadController', () => {
         .mockReturnValue(errAsync(new InvalidDomainError()))
 
       // Act
-      await AuthWogadController.handleVerifyWithCode(
+      await AuthWogadController.handleVerifyWithCodeForTest(
         mockReq,
         mockRes,
         jest.fn(),

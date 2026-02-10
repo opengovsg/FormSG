@@ -1,5 +1,6 @@
 import {
   AccountInfo,
+  AuthError,
   AuthorizationUrlRequest,
   ConfidentialClientApplication,
 } from '@azure/msal-node'
@@ -8,10 +9,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import config from '../../../config/config'
 import { wogad } from '../../../config/features/wogad.config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { createReqMeta } from '../../../utils/request'
 import { resolveAppUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
+
+const logger = createLoggerWithLabel(module)
 
 const clientConfig = {
   auth: {
@@ -20,8 +25,22 @@ const clientConfig = {
     authority: wogad.authority,
   },
 }
-const ccaSingleton = new ConfidentialClientApplication(clientConfig)
+const isWogadConfigDefined =
+  wogad.clientId && wogad.clientSecret && wogad.authority
+const ccaSingleton = isWogadConfigDefined
+  ? new ConfidentialClientApplication(clientConfig)
+  : null
 const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
+
+const validateWogadConfig: ControllerHandler = (_req, res, next) => {
+  if (!isWogadConfigDefined || !ccaSingleton) {
+    return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
+      message:
+        'WOG AD is not supported. Please use another authentication method.',
+    })
+  }
+  return next()
+}
 /**
  * Generates the WOG AD Authorization URL.
  *
@@ -29,10 +48,23 @@ const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
  * 1. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.
  * 2. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
  */
-export const generateAuthUrl: ControllerHandler<
+const _generateAuthUrl: ControllerHandler<
   unknown,
   { authUrl: string; csrfToken: string }
-> = async (_req, res) => {
+> = async (req, res) => {
+  const logMeta = {
+    action: 'wogadGenerateAuthUrl',
+    ...createReqMeta(req),
+  }
+
+  if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const csrfToken = crypto.randomBytes(32).toString('hex')
 
   const authCodeUrlParams: AuthorizationUrlRequest = {
@@ -52,6 +84,13 @@ export const generateAuthUrl: ControllerHandler<
   return res.status(StatusCodes.OK).json({ authUrl, csrfToken })
 }
 
+export const generateAuthUrlForTest = _generateAuthUrl
+
+export const generateAuthUrl = [
+  validateWogadConfig,
+  _generateAuthUrl,
+] as ControllerHandler[]
+
 /**
  * This verifies the auth code and returns the access and id token.
  *
@@ -66,15 +105,32 @@ export const generateAuthUrl: ControllerHandler<
  * 7. Also, we include a grant source to indicate that the user logged in via WOG AD. This is useful during logout.
  * 8. At this point, the user is logged in and can access the protected routes using FormSG's session mechanism.
  */
-export const handleVerifyWithCode: ControllerHandler<
+const _handleVerifyWithCode: ControllerHandler<
   unknown,
   unknown,
   { code: string; csrfToken: string }
 > = async (req, res) => {
+  const logMeta = {
+    action: 'wogadHandleVerifyWithCode',
+    ...createReqMeta(req),
+  }
+
+  if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const csrfTokenFromCookie = req.cookies['csrf_token']
   const csrfTokenFromBody = req.body['csrfToken']
 
   if (!csrfTokenFromCookie || csrfTokenFromCookie !== csrfTokenFromBody) {
+    logger.error({
+      message: 'CSRF token mismatch',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'CSRF token mismatch',
     })
@@ -93,9 +149,27 @@ export const handleVerifyWithCode: ControllerHandler<
     const token = await ccaSingleton.acquireTokenByCode(tokenRequest)
     account = token.account
   } catch (error) {
+    let details: Record<string, string> = {}
+    if (error instanceof AuthError) {
+      const authError = error as AuthError
+
+      details = {
+        correlationId: authError?.correlationId,
+        errorCode: authError?.errorCode,
+        errorMessage: authError?.errorMessage,
+        subError: authError?.subError,
+        message: authError?.message,
+      }
+    }
+    logger.error({
+      message: `Error acquiring token by code error`,
+      meta: {
+        ...logMeta,
+        ...details,
+      },
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'Error acquiring token by code',
-      error,
     })
   }
 
@@ -104,14 +178,24 @@ export const handleVerifyWithCode: ControllerHandler<
   const userEmail = account?.username?.toLowerCase()
 
   if (!userEmail) {
+    logger.error({
+      message: 'WOG AD user is not found',
+      meta: logMeta,
+    })
     return res.status(StatusCodes.NOT_FOUND).json({
       message: 'WOG AD user is not found',
     })
   }
 
+  const logMetaWithUserEmail = { ...logMeta, userEmail }
+
   const validateEmailWhitelistedResult =
     await AuthService.validateEmailDomain(userEmail)
   if (validateEmailWhitelistedResult.isErr()) {
+    logger.error({
+      message: 'WOG AD user is not whitelisted',
+      meta: logMetaWithUserEmail,
+    })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'WOG AD user is not whitelisted',
     })
@@ -123,6 +207,10 @@ export const handleVerifyWithCode: ControllerHandler<
   )
     .map((user) => {
       if (!req.session) {
+        logger.error({
+          message: 'Could not find valid session',
+          meta: logMetaWithUserEmail,
+        })
         return res
           .status(StatusCodes.INTERNAL_SERVER_ERROR)
           .json('Could not find valid session')
@@ -132,12 +220,20 @@ export const handleVerifyWithCode: ControllerHandler<
       const { _id } = user
       req.session.user = { _id, grantSource: 'wogad' }
 
+      logger.info({
+        message: 'User logged in via WOG AD',
+        meta: logMetaWithUserEmail,
+      })
+
       return res.status(StatusCodes.OK).json(user)
     })
-    .mapErr((err) => {
+    .mapErr(() => {
+      logger.error({
+        message: 'Failed to load or create user',
+        meta: logMetaWithUserEmail,
+      })
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Failed to load or create user. Please try again.',
-        error: err,
       })
     })
 }
@@ -150,26 +246,53 @@ export const handleVerifyWithCode: ControllerHandler<
  * @returns void
  */
 const removeAccountFromTokenCache = async (account: AccountInfo | null) => {
-  if (!account) {
+  if (!account || !ccaSingleton) {
     return
   }
   const tokenCache = ccaSingleton.getTokenCache()
   await tokenCache.removeAccount(account)
 }
 
+export const handleVerifyWithCodeForTest = _handleVerifyWithCode
+
+export const handleVerifyWithCode = [
+  validateWogadConfig,
+  _handleVerifyWithCode,
+] as ControllerHandler[]
+
 /**
  * Get the logout URL for the WOG AD.
  *
  * @returns The logout URL for the WOG AD, if it exists.
  */
-export const getLogoutUrl: ControllerHandler<
+const _getLogoutUrl: ControllerHandler<
   unknown,
   {
     logoutUrl: string
   }
-> = async (_req, res) => {
+> = async (req, res) => {
+  const logMeta = {
+    action: 'wogadGetLogoutUrl',
+    ...createReqMeta(req),
+  }
+
+  if (!ccaSingleton) {
+    logger.error({
+      message: 'WOG AD is not configured.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
+  }
+
   const postLogoutRedirectUri = resolveAppUrl('/')
   return res.status(StatusCodes.OK).json({
     logoutUrl: `${wogad.authority}/oauth2/v2.0/logout?post_logout_redirect_uri=${encodeURIComponent(postLogoutRedirectUri)}`,
   })
 }
+
+export const getLogoutUrlForTest = _getLogoutUrl
+
+export const getLogoutUrl = [
+  validateWogadConfig,
+  _getLogoutUrl,
+] as ControllerHandler[]

@@ -4,11 +4,13 @@ import { useMutation } from 'react-query'
 import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
+import { useToast } from '~hooks/useToast'
 import { getWogadAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
 
 export const WogadLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+  const errorToast = useToast({ isClosable: true, status: 'danger' })
 
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.login.components.WogadLoginButton',
@@ -23,6 +25,12 @@ export const WogadLoginButton = (): JSX.Element | null => {
   const wogadLoginMutation = useMutation(getWogadAuthUrl, {
     onSuccess: ({ authUrl }) => {
       window.location.assign(authUrl)
+    },
+    onError: (error: { message: string }) => {
+      errorToast({
+        description: error.message,
+      })
+      setRetryDelayWindow(false)
     },
   })
 
