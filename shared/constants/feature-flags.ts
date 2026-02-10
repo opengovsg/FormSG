@@ -32,10 +32,17 @@ export const featureFlags = {
   ogpAwareness: 'ogp-awareness' as const,
   ogpSpinner: 'ogp-spinner' as const,
   forumsg: 'forumsg' as const,
+  wogadLogin: 'wogad-login' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
   OFF = 'OFF',
   SIGNATURES_ONLY = 'SIGNATURES_ONLY',
   ON = 'ON',
+}
+
+export enum WogadLoginFeatureValue {
+  OFF = 'OFF',
+  ALL = 'ALL', // all users on public ip, rbi and intranet ip
+  INTRANET_AND_RBI_ONLY = 'INTRANET_AND_RBI_ONLY',
 }

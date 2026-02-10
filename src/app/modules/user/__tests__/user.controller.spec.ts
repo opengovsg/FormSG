@@ -396,6 +396,84 @@ describe('user.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith(mockPopulatedUser)
     })
 
+    it('should return user in session with wogad grant source for wogad login', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const MOCK_REQ_WITH_WOGAD_GRANT_SOURCE = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: VALID_SESSION_USER_ID,
+            grantSource: 'wogad',
+          },
+        },
+      })
+
+      const mockPopulatedUser = {
+        agency: {},
+        email: 'mockEmail',
+        _id: VALID_SESSION_USER_ID,
+        toJSON() {
+          return this
+        },
+      } as unknown as IPopulatedUser
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(mockPopulatedUser),
+      )
+
+      // Act
+      await UserController.handleFetchUser(
+        MOCK_REQ_WITH_WOGAD_GRANT_SOURCE,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        ...mockPopulatedUser,
+        grantSource: 'wogad',
+      })
+    })
+
+    it('should not return grant source for otp login', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const MOCK_REQ_WITH_WOGAD_GRANT_SOURCE = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: VALID_SESSION_USER_ID,
+            grantSource: 'otp',
+          },
+        },
+      })
+
+      const mockPopulatedUser = {
+        agency: {},
+        email: 'mockEmail',
+        _id: VALID_SESSION_USER_ID,
+        toJSON() {
+          return this
+        },
+      } as unknown as IPopulatedUser
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(mockPopulatedUser),
+      )
+
+      // Act
+      await UserController.handleFetchUser(
+        MOCK_REQ_WITH_WOGAD_GRANT_SOURCE,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        ...mockPopulatedUser,
+        grantSource: undefined,
+      })
+    })
+
     it('should return 401 when user id is not in session', async () => {
       // Arrange
       const reqWithoutSession = expressHandler.mockRequest({

@@ -39,10 +39,11 @@ export const SgidLoginButton = (): JSX.Element => {
         </Flex>
       </Button>
       <Text>
-        {`${t('features.login.components.SgidLoginButton.forText')} `}
+        {`${t('features.login.components.SgidLoginButton.onlyText')} `}
         <Link isExternal href={SGID_VALID_ORG_PAGE}>
-          {t('features.login.components.SgidLoginButton.selectAgenciesText')}
+          {`${t('features.login.components.SgidLoginButton.selectAgenciesText')}`}
         </Link>
+        {` ${t('features.login.components.SgidLoginButton.canUseSingpassLoginText')}`}
       </Text>
     </VStack>
   )

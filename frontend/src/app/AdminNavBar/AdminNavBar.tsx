@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCommentDetail } from 'react-icons/bi'
 import { GoDotFill } from 'react-icons/go'
 import { MdForum } from 'react-icons/md'
+import { useMutation } from 'react-query'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
@@ -15,6 +16,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { delay } from 'lodash'
 
 import { featureFlags } from '~shared/constants'
 import { SeenFlags } from '~shared/types'
@@ -32,7 +34,7 @@ import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
-import { logout } from '~services/AuthService'
+import { getWogadLogoutUrl, logout } from '~services/AuthService'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
@@ -243,6 +245,14 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     }
   }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
 
+  const getWogadLogoutUrlMutation = useMutation(getWogadLogoutUrl)
+
+  const handleWogadLogout = useCallback(async () => {
+    const { logoutUrl: wogadLogoutUrl } =
+      await getWogadLogoutUrlMutation.mutateAsync()
+    window.location.assign(wogadLogoutUrl)
+  }, [getWogadLogoutUrlMutation])
+
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem(ADMIN_FEEDBACK_SESSION_KEY)
     logout()
@@ -257,7 +267,15 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
         status: 'success',
       })
     }
-  }, [emergencyContactKey, removeQuery, toast, user])
+    if (user?.grantSource === 'wogad') {
+      toast({
+        description:
+          'You have been logged out of FormSG. Redirecting to WOG AD to logout...',
+        status: 'success',
+      })
+      delay(handleWogadLogout, 1000) // Delay to allow user to read toast before redirecting.
+    }
+  }, [emergencyContactKey, handleWogadLogout, removeQuery, toast, user])
 
   const { t } = useTranslation()
 

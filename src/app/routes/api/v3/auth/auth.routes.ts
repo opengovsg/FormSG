@@ -6,6 +6,7 @@ import { limitRate } from '../../../../utils/limit-rate'
 
 import { AuthSGIDRouter } from './auth-sgid.routes'
 import { AuthSsoRouter } from './auth-sso.routes'
+import { AuthWogadRouter } from './auth-wogad.routes'
 
 export const AuthRouter = Router()
 /**
@@ -68,3 +69,4 @@ AuthRouter.get('/logout', AuthController.handleSignout)
 
 AuthRouter.use('/sgid', AuthSGIDRouter)
 AuthRouter.use('/sso', AuthSsoRouter)
+AuthRouter.use('/wogad', AuthWogadRouter)

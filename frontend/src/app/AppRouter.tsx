@@ -34,6 +34,7 @@ import {
   TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
+  WOGAD_LOGIN_HOLDING_ROUTE,
 } from '~constants/routes'
 import { fillHeightCss } from '~utils/fillHeightCss'
 
@@ -52,6 +53,7 @@ import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { RbiProxyForwardingPage } from '~features/compatibility/RbiProxyForwardingPage'
 import { SelectProfilePage } from '~features/login'
 import { SsoHoldingPage } from '~features/login/SsoHoldingPage'
+import { WogadHoldingPage } from '~features/login/WogadHoldingPage'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
@@ -116,6 +118,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={SSO_LOGIN_HOLDING_ROUTE}
           element={<PublicElement strict element={<SsoHoldingPage />} />}
+        />
+        <Route
+          path={WOGAD_LOGIN_HOLDING_ROUTE}
+          element={<PublicElement strict element={<WogadHoldingPage />} />}
         />
         <Route
           path={TEMP_LOGIN_ROUTE}
