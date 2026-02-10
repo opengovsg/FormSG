@@ -7,11 +7,10 @@ import {
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 
-import { createReqMeta } from 'src/app/utils/request'
-
 import config from '../../../config/config'
 import { wogad } from '../../../config/features/wogad.config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { createReqMeta } from '../../../utils/request'
 import { resolveAppUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
