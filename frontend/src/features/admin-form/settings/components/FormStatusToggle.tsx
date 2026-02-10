@@ -13,7 +13,6 @@ import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
@@ -30,7 +29,7 @@ export const FormStatusToggle = (): JSX.Element => {
   } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingFormSettings } =
     useAdminFormSettings()
-  const { user } = useUser()
+
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
 
   const secretKeyActivationModalProps = useDisclosure()
@@ -54,8 +53,7 @@ export const FormStatusToggle = (): JSX.Element => {
       form_fields?.some(
         (ff) =>
           ff.fieldType === BasicField.Email && ff.autoReplyOptions.hasAutoReply,
-      ) &&
-      !user?.betaFlags?.respondentCopy
+      )
     ) {
       return t('features.adminForm.settings.general.status.noEmailsInMRF')
     }
