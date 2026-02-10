@@ -199,7 +199,9 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
   return getPopulatedUserById(sessionUserId)
     .map((retrievedUser) => {
       const grantSource =
-        req.session?.user?.grantSource === 'sso' ? 'sso' : undefined
+        req.session?.user?.grantSource !== 'otp'
+          ? req.session?.user?.grantSource
+          : undefined
       const jsonOutput = { ...retrievedUser.toJSON(), grantSource }
       return res.json(jsonOutput)
     })

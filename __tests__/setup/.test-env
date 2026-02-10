@@ -84,6 +84,12 @@ MOCKPASS_UEN=123456789A
 SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
 
+# WOG AD env vars for testing
+WOGAD_CLIENT_ID=test-client-id
+WOGAD_CLIENT_SECRET=test-client-secret
+WOGAD_AUTHORITY=https://login.microsoftonline.com/common
+WOGAD_REDIRECT_URI=/login/wogad
+
 # Payment env vars
 SSM_ENV_SITE_NAME=test
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
-import { Flex, Text, VStack } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
 import { getSsoAuthUrl } from '~services/AuthService'
@@ -8,6 +9,10 @@ import Button from '~components/Button'
 
 export const SsoLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)
+
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.login.components.SsoLoginButton',
+  })
 
   const handleSsoLogin = () => {
     setRetryDelayWindow(true)
@@ -22,21 +27,18 @@ export const SsoLoginButton = (): JSX.Element | null => {
   })
 
   return (
-    <VStack alignItems="start">
-      <Button
-        isFullWidth
-        isLoading={ssoLoginMutation.isLoading || isRetryDelayWindow}
-        type="submit"
-        color="primary"
-        onClick={handleSsoLogin}
-        variant="outline"
-        aria-label="Log in with SSO"
-      >
-        <Flex align="center" flexDirection="row" aria-hidden>
-          <Text color="primary.500">Log in with OGP SSO</Text>
-        </Flex>
-      </Button>
-      <Text>For OGP officers only</Text>
-    </VStack>
+    <Button
+      isFullWidth
+      isLoading={ssoLoginMutation.isLoading || isRetryDelayWindow}
+      type="submit"
+      color="primary"
+      onClick={handleSsoLogin}
+      variant="outline"
+      aria-label="Log in with OGP SSO"
+    >
+      <Flex align="center" flexDirection="row" aria-hidden>
+        <Text color="primary.500">{t('loginText')}</Text>
+      </Flex>
+    </Button>
   )
 }

@@ -117,7 +117,7 @@ export const FieldContainer = ({
         {showMyInfoBadge && (
           <Box gridArea="myinfobadge">
             <Badge variant="subtle" colorScheme="secondary">
-              MyInfo
+              Myinfo
             </Badge>
           </Box>
         )}
