@@ -48,7 +48,6 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-
   useFetchPrefillQuery()
 
   const { defaultFormValues, fieldPrefillMap, form, augmentedFormFields } =
