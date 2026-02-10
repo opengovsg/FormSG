@@ -46,17 +46,6 @@ export const FormStatusToggle = (): JSX.Element => {
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
     }
-
-    // For MRF, prevent form activation if form has an email confirmation field.
-    if (
-      formSettings?.responseMode === FormResponseMode.Multirespondent &&
-      form_fields?.some(
-        (ff) =>
-          ff.fieldType === BasicField.Email && ff.autoReplyOptions.hasAutoReply,
-      )
-    ) {
-      return t('features.adminForm.settings.general.status.noEmailsInMRF')
-    }
   }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
 
   const { mutateFormStatus } = useMutateFormSettings()
