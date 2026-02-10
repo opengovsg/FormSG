@@ -790,6 +790,86 @@ describe('multirespondent-submission.service', () => {
           sendMrfRespondentCopyEmailSpy.mock.calls[0][0].attachments,
         ).toEqual([...MOCK_SUBMISSION_ATTACHMENTS])
       })
+
+      it('sends respondent copy + workflow completion email when workflow has 0 steps', async () => {
+        // Arrange
+        const sendMrfRespondentCopyEmailSpy = jest.spyOn(
+          MailService,
+          'sendMrfRespondentCopyEmail',
+        )
+        const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+          MailService,
+          'sendMrfWorkflowCompletionEmail',
+        )
+
+        const emailFieldWithFormSummaryStep1 = {
+          _id: new ObjectId().toHexString(),
+          fieldType: BasicField.Email,
+          title: 'Step 1 Email Field',
+          autoReplyOptions: {
+            hasAutoReply: true,
+            includeFormSummary: true,
+            autoReplySubject: 'Test Subject',
+            autoReplyMessage: 'Test Message',
+            autoReplySender: 'Test Sender',
+          },
+        }
+
+        const workflow: FormWorkflowStepDto[] = []
+
+        // Act
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission: {
+            _id: mockSubmissionId,
+          } as unknown as IMultirespondentSubmissionSchema,
+          submissionId: mockSubmissionId,
+          form: {
+            _id: mockFormId,
+            title: 'Test Form',
+            form_fields: [emailFieldWithFormSummaryStep1],
+            stepsToNotify: [],
+            workflow,
+            emails: ['expected2@example.com'],
+            stepOneEmailNotificationFieldId: emailFieldWithFormSummaryStep1._id,
+            admin: {
+              agency: {
+                fullName: 'Government Technology Agency',
+              },
+            },
+          } as unknown as IPopulatedMultirespondentForm,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {
+              [emailFieldWithFormSummaryStep1._id]: {
+                fieldType: BasicField.Email,
+                answer: {
+                  value: 'expected1@example.com',
+                },
+              },
+            },
+          } as MultirespondentSubmissionDto,
+          logMeta: {} as any,
+          attachments: MOCK_SUBMISSION_ATTACHMENTS,
+        })
+
+        // Assert
+        // that respondent copy is sent to correct destination emails
+        expect(sendMrfRespondentCopyEmailSpy).toHaveBeenCalledTimes(1)
+        expect(
+          sendMrfRespondentCopyEmailSpy.mock.calls[0][0].autoReplyMailData
+            .email,
+        ).toEqual('expected1@example.com')
+        // that workflow completion email is also sent to correct destination emails
+        expect(
+          sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+        ).toContainValues(['expected1@example.com', 'expected2@example.com'])
+        expect(
+          sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+        ).toBe(2)
+      })
     })
 
     describe('subsequent steps', () => {
