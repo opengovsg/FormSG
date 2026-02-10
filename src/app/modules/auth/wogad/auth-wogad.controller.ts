@@ -213,7 +213,7 @@ const _handleVerifyWithCode: ControllerHandler<
 
       return res.status(StatusCodes.OK).json(user)
     })
-    .mapErr((err) => {
+    .mapErr(() => {
       logger.error({
         message: 'Failed to load or create user',
         meta: logMetaWithUserEmail,
