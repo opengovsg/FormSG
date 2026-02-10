@@ -53,7 +53,7 @@ const _generateAuthUrl: ControllerHandler<
   { authUrl: string; csrfToken: string }
 > = async (req, res) => {
   const logMeta = {
-    action: 'generateAuthUrl',
+    action: 'wogadGenerateAuthUrl',
     ...createReqMeta(req),
   }
 
@@ -111,7 +111,7 @@ const _handleVerifyWithCode: ControllerHandler<
   { code: string; csrfToken: string }
 > = async (req, res) => {
   const logMeta = {
-    action: 'handleVerifyWithCode',
+    action: 'wogadHandleVerifyWithCode',
     ...createReqMeta(req),
   }
 
@@ -150,9 +150,8 @@ const _handleVerifyWithCode: ControllerHandler<
     account = token.account
   } catch (error) {
     logger.error({
-      message: 'Error acquiring token by code',
+      message: `Error acquiring token by code error: ${error.message}`,
       meta: logMeta,
-      error,
     })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'Error acquiring token by code',
@@ -182,7 +181,6 @@ const _handleVerifyWithCode: ControllerHandler<
     logger.error({
       message: 'WOG AD user is not whitelisted',
       meta: logMetaWithUserEmail,
-      error: validateEmailWhitelistedResult.error,
     })
     return res.status(StatusCodes.FORBIDDEN).json({
       message: 'WOG AD user is not whitelisted',
@@ -219,11 +217,9 @@ const _handleVerifyWithCode: ControllerHandler<
       logger.error({
         message: 'Failed to load or create user',
         meta: logMetaWithUserEmail,
-        error: err,
       })
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Failed to load or create user. Please try again.',
-        error: err,
       })
     })
 }
@@ -262,7 +258,7 @@ const _getLogoutUrl: ControllerHandler<
   }
 > = async (req, res) => {
   const logMeta = {
-    action: 'getLogoutUrl',
+    action: 'wogadGetLogoutUrl',
     ...createReqMeta(req),
   }
 
