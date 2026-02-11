@@ -437,7 +437,7 @@ export const uploadAttachments = (
 
 /**
  * Sends email confirmation to form-fillers, for email fields with email confirmation
- * enabled.
+ * enabled. (Email confirmations are also known as auto reply emails.)
  * @param param0 Data to include in email confirmations
  * @param param0.form Form object
  * @param param0.submission Submission object which was saved to database
@@ -447,7 +447,7 @@ export const uploadAttachments = (
  * @returns ok(true) if all emails were sent successfully
  * @returns err(SendEmailConfirmationError) if any email failed to be sent
  */
-export const sendEmailConfirmations = <S extends ISubmissionSchema>({
+export const sendAutoReplyEmails = <S extends ISubmissionSchema>({
   form,
   submission,
   responsesData,
@@ -465,7 +465,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   isPaymentEnabled: boolean
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
-    action: 'sendEmailConfirmations',
+    action: 'sendAutoReplyEmails',
     formId: form._id,
     submissionid: submission._id,
   }
