@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -24,6 +25,7 @@ import {
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
@@ -35,6 +37,8 @@ import {
   ValidateFieldErrorV3,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
+
+import { MrfJwtPayload } from './multirespondent-submission.types'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -507,5 +511,26 @@ export const getResponsesDataFromMrfResponses = ({
       answer: questionAnswerPair.signatureDataPngDataUri,
       fieldType: questionAnswerPair.fieldType,
     }
+  })
+}
+
+/**
+ * Creates a MRF cookie signed by FormSG
+ * @param prevSubmissionId of the submission (same across all steps)
+ * @param currentWorkflowStep of the workflow
+ * @returns JWT signed by FormSG
+ */
+export const createMrfCookie = ({
+  prevSubmissionId,
+  currentWorkflowStep,
+}: MrfJwtPayload): string => {
+  const payload: MrfJwtPayload = {
+    prevSubmissionId,
+    currentWorkflowStep,
+  }
+  // TODO: Sign the JWT with FormSG's secret
+  return jwt.sign(payload, spcpMyInfoConfig.myInfoJwtSecret, {
+    // this arg must be supplied in seconds
+    expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000, // 3 hrs
   })
 }

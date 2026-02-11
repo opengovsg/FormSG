@@ -11,6 +11,7 @@ import {
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import { Environment } from '../../../../types'
 import config from '../../../config/config'
+import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
@@ -53,12 +54,16 @@ import {
   updateMultiRespondentFormSubmission,
 } from './multirespondent-submission.service'
 import {
+  MRF_COOKIE_NAME,
   SubmitMultirespondentFormHandlerRequest,
   SubmitMultirespondentFormHandlerType,
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import { createPublicMultirespondentSubmissionDto } from './multirespondent-submission.utils'
+import {
+  createMrfCookie,
+  createPublicMultirespondentSubmissionDto,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -330,6 +335,21 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           message: 'Get encrypted response using submissionId success',
           meta: logMeta,
         })
+
+        // Set MRF cookie with submission details when loading the form
+        const mrfCookie = createMrfCookie({
+          prevSubmissionId: submissionId,
+          currentWorkflowStep: responseData.workflowStep,
+        })
+
+        res.cookie(MRF_COOKIE_NAME, mrfCookie, {
+          // Important for security - access token cannot be read by client-side JS
+          maxAge: spcpMyInfoConfig.spCookieMaxAge,
+          httpOnly: true,
+          sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+          secure: !config.isDevOrTest,
+        })
+
         return res.json(responseData)
       })
       .mapErr((error) => {
