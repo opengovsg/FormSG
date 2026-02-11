@@ -25,6 +25,7 @@ import {
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
@@ -528,8 +529,8 @@ export const createMrfCookie = ({
     prevSubmissionId,
     currentWorkflowStep,
   }
-  // TODO: Sign the JWT with FormSG's secret
-  return jwt.sign(payload, spcpMyInfoConfig.myInfoJwtSecret, {
+
+  return jwt.sign(payload, config.sessionSecret, {
     // this arg must be supplied in seconds
     expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000, // 3 hrs
   })
