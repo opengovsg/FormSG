@@ -161,12 +161,25 @@ export const DownloadButton = (): JSX.Element => {
     useStorageResponsesContext()
 
   const [_downloadCount, setDownloadCount] = useState(0)
+  const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
   const downloadCount = useThrottle(_downloadCount, 1000)
+  const pdfGenerationCount = useThrottle(_pdfGenerationCount, 1000)
 
   const downloadPercentage = useMemo(() => {
     if (!dateRangeResponsesCount) return 0
-    return Math.floor((downloadCount / dateRangeResponsesCount) * 100)
-  }, [downloadCount, dateRangeResponsesCount])
+    const currentDecryptAndPdfCount = downloadCount + pdfGenerationCount
+    const totalDecryptAndPdfCount = downloadOptions.isDownloadPdf
+      ? dateRangeResponsesCount * 2
+      : dateRangeResponsesCount
+    return Math.floor(
+      (currentDecryptAndPdfCount / totalDecryptAndPdfCount) * 100,
+    )
+  }, [
+    downloadCount,
+    pdfGenerationCount,
+    dateRangeResponsesCount,
+    downloadOptions.isDownloadPdf,
+  ])
 
   useTimeout(onProgressModalOpen, progressModalTimeout)
 
@@ -175,7 +188,8 @@ export const DownloadButton = (): JSX.Element => {
   >()
 
   const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
-    onProgress: setDownloadCount,
+    onDecryptionProgress: setDownloadCount,
+    onPdfGenerationProgress: setPdfGenerationCount,
     mutateProps: {
       onMutate: () => {
         // Reset metadata if it exists.
