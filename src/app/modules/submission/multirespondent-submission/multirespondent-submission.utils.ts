@@ -536,12 +536,12 @@ export const createMrfCookie = ({
   })
 }
 
-export const getMrCookieName = ({
+export const getMrfCookieName = ({
   formId,
-  prevSubmissionId,
+  previousSubmissionId,
 }: {
   formId: string
-  prevSubmissionId: string
+  previousSubmissionId: string
 }): string => {
-  return `Jwt_${formId}_${prevSubmissionId}`
+  return `Jwt_${formId}_${previousSubmissionId}`
 }

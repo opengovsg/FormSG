@@ -100,8 +100,6 @@ export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
   }
 }
 
-export const MRF_COOKIE_NAME = 'MrfCookieJwt'
-
 export type MrfJwtPayload = {
   prevSubmissionId: string
   currentWorkflowStep: number

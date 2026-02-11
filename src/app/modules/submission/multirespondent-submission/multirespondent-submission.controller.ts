@@ -54,7 +54,6 @@ import {
   updateMultiRespondentFormSubmission,
 } from './multirespondent-submission.service'
 import {
-  MRF_COOKIE_NAME,
   SubmitMultirespondentFormHandlerRequest,
   SubmitMultirespondentFormHandlerType,
   UpdateMultirespondentSubmissionHandlerRequest,
@@ -63,7 +62,7 @@ import {
 import {
   createMrfCookie,
   createPublicMultirespondentSubmissionDto,
-  getMrCookieName,
+  getMrfCookieName,
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -344,7 +343,7 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
         })
 
         res.cookie(
-          getMrCookieName({ formId, prevSubmissionId: submissionId }),
+          getMrfCookieName({ formId, previousSubmissionId: submissionId }),
           mrfCookie,
           {
             // Important for security - access token cannot be read by client-side JS

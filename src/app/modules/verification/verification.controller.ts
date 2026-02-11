@@ -7,7 +7,6 @@ import {
   ErrorDto,
   FormAuthType,
   SendFormOtpResponseDto,
-  SubmissionType,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
 import config from '../../config/config'
@@ -22,10 +21,8 @@ import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
-import {
-  MRF_COOKIE_NAME,
-  MrfJwtPayload,
-} from '../submission/multirespondent-submission/multirespondent-submission.types'
+import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
+import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
 
 import * as VerificationService from './verification.service'
@@ -98,10 +95,10 @@ export const handleCreateVerificationTransaction: ControllerHandler<
 export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
   SendFormOtpResponseDto | ErrorDto,
-  { answer: string }
+  { answer: string; previousSubmissionId?: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
-  const { answer, prevSubmissionId } = req.body
+  const { answer, previousSubmissionId } = req.body
   const senderIp = getRequestIp(req)
 
   const logMeta = {
@@ -116,8 +113,9 @@ export const _handleGenerateOtp: ControllerHandler<
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
         // If previousSubmissionId exists, verify MRF JWT and skip SPCP/MyInfo
-        const mrfCookie = req.cookies[getMrfCookieName(formId, prevSubmissionId)]
-        if (mrfCookie) {
+        if (previousSubmissionId) {
+          const mrfCookie =
+            req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
           try {
             const decoded = jwt.verify(
               mrfCookie,
