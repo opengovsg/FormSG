@@ -55,7 +55,8 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   isDownloadPdf: boolean
 }
 interface UseDecryptionWorkersProps {
-  onProgress: (progress: number) => void
+  onDecryptionProgress: React.Dispatch<React.SetStateAction<number>>
+  onPdfGenerationProgress: React.Dispatch<React.SetStateAction<number>>
   mutateProps: UseMutationOptions<
     DownloadResult,
     unknown,
@@ -65,7 +66,8 @@ interface UseDecryptionWorkersProps {
 }
 
 const useDecryptionWorkers = ({
-  onProgress,
+  onDecryptionProgress,
+  onPdfGenerationProgress,
   mutateProps,
 }: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
@@ -170,7 +172,6 @@ const useDecryptionWorkers = ({
       const reader = stream.getReader()
       let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
-      let decryptionProgress = 0
       const submissionDecryptPromises: Promise<DecryptedData>[] = []
 
       let timeSinceLastXAttachmentDownload = 0
@@ -275,8 +276,7 @@ const useDecryptionWorkers = ({
               })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
-                decryptionProgress += 1
-                onProgress(decryptionProgress)
+                onDecryptionProgress((prevDecryptionProgress) => prevDecryptionProgress + 1)
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
@@ -309,6 +309,7 @@ const useDecryptionWorkers = ({
                   })
                   pdfZip.file(pdfTitle, pdfBlob)
                 }
+                onPdfGenerationProgress((prevPdfGenerationProgress) => prevPdfGenerationProgress + 1)
               }
               await pdfZip
                 .generateAsync({ type: 'blob' })
@@ -462,7 +463,13 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers],
+    [
+      adminForm,
+      onDecryptionProgress,
+      onPdfGenerationProgress,
+      user?._id,
+      workers,
+    ],
   )
 
   const handleBulkDownloadMutation = useMutation(
