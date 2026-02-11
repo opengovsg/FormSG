@@ -1,15 +1,16 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import { errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
 import {
   ErrorDto,
   FormAuthType,
   SendFormOtpResponseDto,
+  SubmissionType,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
-import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
@@ -97,10 +98,10 @@ export const handleCreateVerificationTransaction: ControllerHandler<
 export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
   SendFormOtpResponseDto | ErrorDto,
-  { answer: string; previousSubmissionId?: string }
+  { answer: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
-  const { answer, previousSubmissionId } = req.body
+  const { answer, prevSubmissionId } = req.body
   const senderIp = getRequestIp(req)
 
   const logMeta = {
@@ -115,12 +116,12 @@ export const _handleGenerateOtp: ControllerHandler<
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
         // If previousSubmissionId exists, verify MRF JWT and skip SPCP/MyInfo
-        const mrfCookie = req.cookies[MRF_COOKIE_NAME]
+        const mrfCookie = req.cookies[getMrfCookieName(formId, prevSubmissionId)]
         if (mrfCookie) {
           try {
             const decoded = jwt.verify(
               mrfCookie,
-              spcpMyInfoConfig.myInfoJwtSecret,
+              config.sessionSecret,
             ) as MrfJwtPayload
 
             return SubmissionService.findSubmissionById(
@@ -128,7 +129,10 @@ export const _handleGenerateOtp: ControllerHandler<
             )
               .andThen((submission) => {
                 // Check if formId matches
-                if (submission.form.toString() !== formId) {
+                if (
+                  submission.form.toString() !== formId ||
+                  submission.form.workflowStep !== decoded.currentWorkflowStep
+                ) {
                   logger.error({
                     message: 'MRF JWT formId mismatch',
                     meta: {

@@ -63,6 +63,7 @@ import {
 import {
   createMrfCookie,
   createPublicMultirespondentSubmissionDto,
+  getMrCookieName,
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -342,13 +343,17 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           currentWorkflowStep: responseData.workflowStep,
         })
 
-        res.cookie(MRF_COOKIE_NAME, mrfCookie, {
-          // Important for security - access token cannot be read by client-side JS
-          maxAge: spcpMyInfoConfig.spCookieMaxAge,
-          httpOnly: true,
-          sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-          secure: !config.isDevOrTest,
-        })
+        res.cookie(
+          getMrCookieName({ formId, prevSubmissionId: submissionId }),
+          mrfCookie,
+          {
+            // Important for security - access token cannot be read by client-side JS
+            maxAge: spcpMyInfoConfig.spCookieMaxAge, // 3 hours
+            httpOnly: true,
+            sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+            secure: !config.isDevOrTest,
+          },
+        )
 
         return res.json(responseData)
       })

@@ -535,3 +535,13 @@ export const createMrfCookie = ({
     expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000, // 3 hrs
   })
 }
+
+export const getMrCookieName = ({
+  formId,
+  prevSubmissionId,
+}: {
+  formId: string
+  prevSubmissionId: string
+}): string => {
+  return `Jwt_${formId}_${prevSubmissionId}`
+}

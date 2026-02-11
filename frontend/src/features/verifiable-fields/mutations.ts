@@ -61,7 +61,7 @@ export const useVerifiableFieldMutations = ({
         previousSubmissionId,
       })
     },
-    [formId, getTransactionId, schema._id],
+    [formId, getTransactionId, previousSubmissionId, schema._id],
   )
 
   const triggerSendOtpMutation = useMutation(handleSendOtp, {
