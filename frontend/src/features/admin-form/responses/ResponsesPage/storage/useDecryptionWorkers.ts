@@ -276,7 +276,9 @@ const useDecryptionWorkers = ({
               })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
-                onDecryptionProgress((prevDecryptionProgress) => prevDecryptionProgress + 1)
+                onDecryptionProgress(
+                  (prevDecryptionProgress) => prevDecryptionProgress + 1,
+                )
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
@@ -309,7 +311,9 @@ const useDecryptionWorkers = ({
                   })
                   pdfZip.file(pdfTitle, pdfBlob)
                 }
-                onPdfGenerationProgress((prevPdfGenerationProgress) => prevPdfGenerationProgress + 1)
+                onPdfGenerationProgress(
+                  (prevPdfGenerationProgress) => prevPdfGenerationProgress + 1,
+                )
               }
               await pdfZip
                 .generateAsync({ type: 'blob' })
