@@ -42,7 +42,7 @@ export const getLogicUnitPreventingSubmit = (
 
 export const getVisibleFieldIdsV3 = (
   submission: FieldResponsesV3,
-  form: Pick<FormDto, '_id' | 'form_fields' | 'form_logics'>,
+  form: Pick<FormDto, 'form_fields' | 'form_logics'>,
 ): Result<FieldIdSet, ProcessingError> =>
   // Convert submission into a form understood by the shared function
   fieldResponsesV3ToLogicFieldResponseTransformer(submission, form.form_fields)

@@ -1,5 +1,9 @@
 import { BasicField } from '../../shared/types'
 
+/**
+ * @deprecated Since the fields sent to admins and respondents are the same.
+ * Use EmailDataField instead.
+ */
 export type EmailRespondentConfirmationField = {
   question: string
   answerTemplate: string[]
@@ -12,28 +16,26 @@ export type EmailDataCollationToolField = {
   answer: string
 }
 
-export type EmailAdminDataField = {
+/**
+ * Post standardization, the fields sent to admins and respondents are the same.
+ */
+export type EmailDataField = {
   question: string
-  answer: string
   fieldType: BasicField
+  answer: string
   answerTemplate: string[]
 }
 
-export type EmailDataFields =
-  | EmailRespondentConfirmationField
-  | EmailDataCollationToolField
-  | EmailAdminDataField
+export type EmailDataFields = EmailDataCollationToolField | EmailDataField
 
 export interface EmailData {
-  autoReplyData: EmailRespondentConfirmationField[]
   dataCollationData: EmailDataCollationToolField[]
-  formData: EmailAdminDataField[]
+  formData: EmailDataField[]
 }
 
 export interface EmailDataForOneField {
-  autoReplyData?: EmailRespondentConfirmationField
   dataCollationData?: EmailDataCollationToolField
-  formData: EmailAdminDataField
+  formData: EmailDataField
 }
 
 export interface IAttachmentInfo {

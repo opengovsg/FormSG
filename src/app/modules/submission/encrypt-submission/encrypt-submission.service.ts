@@ -10,7 +10,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import {
-  EmailAdminDataField,
+  EmailDataField,
   FieldResponse,
   FormFieldSchema,
   IEncryptedSubmissionSchema,
@@ -180,7 +180,7 @@ const generatePdfAttachmentIfRequired = ({
   autoReplyMailDatas: AutoReplyMailData[]
   submission: IEncryptedSubmissionSchema
   form: IPopulatedEncryptedForm
-  responsesData: EmailAdminDataField[]
+  responsesData: EmailDataField[]
   growthbook?: GrowthBook
 }): ResultAsync<Mail.Attachment | undefined, AutoreplyPdfGenerationError> => {
   const isAdminPdfRequired = checkIfAdminPdfIsRequired(

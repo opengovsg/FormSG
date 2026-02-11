@@ -6,6 +6,7 @@ import {
   BasicField,
   FieldResponsesV3,
   FieldResponseV3,
+  FormDto,
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
@@ -19,7 +20,7 @@ import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature
 import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
 import {
-  EmailRespondentConfirmationField,
+  EmailDataField,
   FormFieldSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
@@ -27,7 +28,7 @@ import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV3 } from '../../../utils/field-validation'
-import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { FieldIdSet, getVisibleFieldIdsV3 } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
@@ -483,15 +484,15 @@ export const getQuestionAnswerPairsForMultipleFields = ({
  * Prepares responses data from MRF responses to PDF html format
  * @param formFields - The form fields schema
  * @param responses - The mrf responses to the form fields
- * @returns list of EmailRespondentConfirmationField used for email & pdf generation
+ * @returns list of EmailDataField
  */
-export const getResponsesDataFromMrfResponses = ({
+const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
-}): EmailRespondentConfirmationField[] => {
+}): EmailDataField[] => {
   if (!formFields || !responses) return []
 
   const questionAnswerPairs = getQuestionAnswerPairsForMultipleFields({
@@ -504,8 +505,43 @@ export const getResponsesDataFromMrfResponses = ({
     return {
       question: questionAnswerPair.question,
       answerTemplate: [questionAnswerPair.answer],
-      answer: questionAnswerPair.signatureDataPngDataUri,
+      answer: questionAnswerPair.signatureDataPngDataUri ?? '',
       fieldType: questionAnswerPair.fieldType,
     }
+  })
+}
+
+const getVisibleFields = ({
+  form,
+  responses,
+}: {
+  form: Pick<FormDto, 'form_fields' | 'form_logics'>
+  responses: FieldResponsesV3
+}): FormFieldSchema[] | FormFieldDto[] => {
+  const visibleFieldIds = getVisibleFieldIdsV3(responses, form)
+  if (visibleFieldIds.isErr()) {
+    return []
+  }
+  const visibleFields = form.form_fields.filter((field) =>
+    visibleFieldIds.value.has(field._id.toString()),
+  )
+  return visibleFields
+}
+
+export const getResponsesDataForMrfEmail = ({
+  responses,
+  form,
+}: {
+  responses: FieldResponsesV3
+  form: Pick<FormDto, 'form_fields' | 'form_logics'>
+}): EmailDataField[] => {
+  const visibleFields = getVisibleFields({
+    form,
+    responses,
+  })
+
+  return getResponsesDataFromMrfResponses({
+    formFields: visibleFields,
+    responses,
   })
 }

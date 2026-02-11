@@ -67,7 +67,7 @@ import {
   extractRespondentCopyEmailDatas,
   getEmailFromResponses,
   getQuestionAnswerPairsForMultipleFields,
-  getResponsesDataFromMrfResponses,
+  getResponsesDataForMrfEmail,
   retrieveWorkflowStepEmailAddresses,
 } from './multirespondent-submission.utils'
 
@@ -867,6 +867,7 @@ const generatePdfAttachmentIfRequired = ({
     | 'emails'
     | 'stepsToNotify'
     | 'stepOneEmailNotificationFieldId'
+    | 'form_logics'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -892,8 +893,8 @@ const generatePdfAttachmentIfRequired = ({
     return okAsync(undefined)
   }
 
-  const responsesData = getResponsesDataFromMrfResponses({
-    formFields: form.form_fields,
+  const responsesData = getResponsesDataForMrfEmail({
+    form,
     responses,
   })
 

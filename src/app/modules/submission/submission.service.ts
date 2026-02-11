@@ -22,7 +22,6 @@ import {
   SubmissionType,
 } from '../../../../shared/types'
 import {
-  EmailRespondentConfirmationField,
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,

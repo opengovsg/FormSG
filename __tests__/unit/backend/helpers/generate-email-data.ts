@@ -2,26 +2,17 @@ import { pick } from 'lodash'
 
 import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import {
-  EmailAdminDataField,
+  EmailDataField,
   EmailDataCollationToolField,
-  EmailRespondentConfirmationField,
 } from 'src/types'
 
 export const generateSingleAnswerJson = (
   response: ProcessedSingleAnswerResponse,
 ): EmailDataCollationToolField => pick(response, ['question', 'answer'])
 
-export const generateSingleAnswerAutoreply = (
-  response: ProcessedSingleAnswerResponse,
-): EmailRespondentConfirmationField => ({
-  question: response.question,
-  answerTemplate: response.answer.split('\n'),
-  fieldType: response.fieldType,
-})
-
 export const generateSingleAnswerFormData = (
   response: ProcessedSingleAnswerResponse,
-): EmailAdminDataField => ({
+): EmailDataField => ({
   ...pick(response, ['question', 'answer', 'fieldType']),
   answerTemplate: response.answer.split('\n'),
 })

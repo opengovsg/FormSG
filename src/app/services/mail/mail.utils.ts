@@ -6,7 +6,7 @@ import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
 import { BasicField } from '../../../../shared/types'
-import { BounceType, EmailRespondentConfirmationField } from '../../../types'
+import { BounceType, EmailDataField } from '../../../types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
@@ -119,7 +119,7 @@ export interface AutoReplyData {
   refNo: string
   formTitle: string
   submissionDateTime: Date
-  responsesData: EmailRespondentConfirmationField[]
+  responsesData: EmailDataField[]
   formUrl: string
 }
 
