@@ -1,6 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { ok } from 'neverthrow'
+import jwt from 'jsonwebtoken'
+import { errAsync, ok, okAsync } from 'neverthrow'
 
 import {
   ErrorDto,
@@ -8,6 +9,7 @@ import {
   SendFormOtpResponseDto,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
@@ -19,6 +21,11 @@ import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
+import {
+  MRF_COOKIE_NAME,
+  MrfJwtPayload,
+} from '../submission/multirespondent-submission/multirespondent-submission.types'
+import * as SubmissionService from '../submission/submission.service'
 
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -107,13 +114,59 @@ export const _handleGenerateOtp: ControllerHandler<
     FormService.retrieveFullFormById(formId)
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
+        // If previousSubmissionId exists, verify MRF JWT and skip SPCP/MyInfo
+        const mrfCookie = req.cookies[MRF_COOKIE_NAME]
+        if (mrfCookie) {
+          try {
+            const decoded = jwt.verify(
+              mrfCookie,
+              spcpMyInfoConfig.myInfoJwtSecret,
+            ) as MrfJwtPayload
+
+            return SubmissionService.findSubmissionById(
+              decoded.prevSubmissionId,
+            )
+              .andThen((submission) => {
+                // Check if formId matches
+                if (submission.form.toString() !== formId) {
+                  logger.error({
+                    message: 'MRF JWT formId mismatch',
+                    meta: {
+                      ...logMeta,
+                      submissionFormId: submission.form.toString(),
+                      requestFormId: formId,
+                    },
+                  })
+                  return errAsync(
+                    new Error('MRF JWT formId does not match requested form'),
+                  )
+                }
+                // MRF JWT is valid, skip SPCP/MyInfo verification
+                return okAsync(form)
+              })
+              .mapErr((error) => {
+                logger.error({
+                  message: 'Failed to verify MRF JWT',
+                  meta: logMeta,
+                  error,
+                })
+                return error
+              })
+          } catch (error) {
+            logger.error({
+              message: 'Failed to decode MRF JWT',
+              meta: logMeta,
+              error,
+            })
+            return errAsync(error as Error)
+          }
+        }
+
+        // No previousSubmissionId, proceed with SPCP/MyInfo verification
         setFormTags(form)
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
-            // Allow bypass of MyInfo verification check Singpass-enabled MRF forms
-            if (previousSubmissionId) return ok(form)
-
             const oidcService = getOidcService(FormAuthType.CP)
             return oidcService
               .extractJwt(req.cookies)
@@ -158,9 +211,6 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            // Allow bypass of MyInfo verification check Singpass-enabled MRF forms
-            if (previousSubmissionId) return ok(form)
-
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
@@ -175,9 +225,10 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           default:
-            return ok(form)
+            return okAsync(form)
         }
       })
+      // Step 3: Generate OTP
       .andThen((form) =>
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
