@@ -55,8 +55,8 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   isDownloadPdf: boolean
 }
 interface UseDecryptionWorkersProps {
-  onDecryptionProgress: (progress: number) => void
-  onPdfGenerationProgress: (progress: number) => void
+  onDecryptionProgress: React.Dispatch<React.SetStateAction<number>>
+  onPdfGenerationProgress: React.Dispatch<React.SetStateAction<number>>
   mutateProps: UseMutationOptions<
     DownloadResult,
     unknown,
@@ -172,8 +172,6 @@ const useDecryptionWorkers = ({
       const reader = stream.getReader()
       let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
-      let decryptionProgress = 0
-      let pdfGenerationProgress = 0
       const submissionDecryptPromises: Promise<DecryptedData>[] = []
 
       let timeSinceLastXAttachmentDownload = 0
@@ -278,8 +276,7 @@ const useDecryptionWorkers = ({
               })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {
-                decryptionProgress += 1
-                onDecryptionProgress(decryptionProgress)
+                onDecryptionProgress((prevDecryptionProgress) => prevDecryptionProgress + 1)
               }),
           )
           currentSubmissionIndex += 1 // used to assign the next submission to the next worker
@@ -312,8 +309,7 @@ const useDecryptionWorkers = ({
                   })
                   pdfZip.file(pdfTitle, pdfBlob)
                 }
-                pdfGenerationProgress += 1
-                onPdfGenerationProgress(pdfGenerationProgress)
+                onPdfGenerationProgress((prevPdfGenerationProgress) => prevPdfGenerationProgress + 1)
               }
               await pdfZip
                 .generateAsync({ type: 'blob' })
