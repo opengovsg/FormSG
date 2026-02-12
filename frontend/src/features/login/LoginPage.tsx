@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Stack, useBreakpointValue } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
@@ -9,6 +9,7 @@ import { featureFlags, WogadLoginFeatureValue } from '~shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
@@ -47,6 +48,26 @@ const isWogadLoginEnabled = ({
   )
 }
 
+const LoginOptionButtons = ({
+  shouldShowWogadLogin,
+  shouldShowSsoLogin,
+  shouldShowSgidLogin,
+}: {
+  shouldShowWogadLogin: boolean
+  shouldShowSsoLogin: boolean
+  shouldShowSgidLogin: boolean
+}) => {
+  const isLoginOptionButtonsPresent =
+    shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin
+  return isLoginOptionButtonsPresent ? (
+    <Stack spacing="1rem">
+      {shouldShowWogadLogin && <WogadLoginButton />}
+      {shouldShowSsoLogin && <SsoLoginButton />}
+      {shouldShowSgidLogin && <SgidLoginButton />}
+    </Stack>
+  ) : undefined
+}
+
 const isDev = import.meta.env.MODE === 'development'
 export const LoginPage = (): JSX.Element => {
   const { t } = useTranslation()
@@ -69,8 +90,7 @@ export const LoginPage = (): JSX.Element => {
   )
   const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
 
-  // On mobile (< sm), buttons first
-  const isMobile = useBreakpointValue({ base: true, sm: false })
+  const isMobile = useIsMobile()
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
@@ -142,41 +162,26 @@ export const LoginPage = (): JSX.Element => {
   return (
     <LoginPageTemplate>
       {!email ? (
-        <Stack spacing="2rem">
-          {/* On mobile: Buttons first, then divider, then email form */}
-          {isMobile ? (
-            <>
-              {(shouldShowWogadLogin ||
-                shouldShowSsoLogin ||
-                shouldShowSgidLogin) && (
-                <>
-                  <Stack spacing="1rem">
-                    {shouldShowWogadLogin && <WogadLoginButton />}
-                    {shouldShowSsoLogin && <SsoLoginButton />}
-                    {shouldShowSgidLogin && <SgidLoginButton />}
-                  </Stack>
-                  <OrDivider />
-                </>
-              )}
-              <LoginForm onSubmit={handleSendOtp} />
-            </>
-          ) : (
-            <>
-              <LoginForm onSubmit={handleSendOtp} />
-              {(shouldShowWogadLogin ||
-                shouldShowSsoLogin ||
-                shouldShowSgidLogin) && (
-                <>
-                  <OrDivider />
-                  <Stack spacing="1rem">
-                    {shouldShowWogadLogin && <WogadLoginButton />}
-                    {shouldShowSsoLogin && <SsoLoginButton />}
-                    {shouldShowSgidLogin && <SgidLoginButton />}
-                  </Stack>
-                </>
-              )}
-            </>
-          )}
+        <Stack gap="2rem" divider={<OrDivider />}>
+          {isMobile
+            ? [
+                <LoginOptionButtons
+                  key="buttons"
+                  shouldShowWogadLogin={shouldShowWogadLogin}
+                  shouldShowSsoLogin={shouldShowSsoLogin}
+                  shouldShowSgidLogin={shouldShowSgidLogin}
+                />,
+                <LoginForm key="form" onSubmit={handleSendOtp} />,
+              ]
+            : [
+                <LoginForm key="form" onSubmit={handleSendOtp} />,
+                <LoginOptionButtons
+                  key="buttons"
+                  shouldShowWogadLogin={shouldShowWogadLogin}
+                  shouldShowSsoLogin={shouldShowSsoLogin}
+                  shouldShowSgidLogin={shouldShowSgidLogin}
+                />,
+              ]}
         </Stack>
       ) : (
         <OtpForm
