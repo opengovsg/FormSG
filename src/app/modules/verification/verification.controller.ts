@@ -7,8 +7,10 @@ import {
   ErrorDto,
   FormAuthType,
   SendFormOtpResponseDto,
+  SubmissionType,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
+import { IMultirespondentSubmissionSchema } from '../../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
@@ -25,6 +27,7 @@ import { MrfJwtPayload } from '../submission/multirespondent-submission/multires
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
 
+import { MrfJwtError } from './verification.errors'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
@@ -126,25 +129,31 @@ export const _handleGenerateOtp: ControllerHandler<
               decoded.prevSubmissionId,
             )
               .andThen((submission) => {
-                // Check if formId matches
+                // TypeScript type narrowing - submission is now IMultirespondentSubmissionSchema
+                const mrfSubmission =
+                  submission as IMultirespondentSubmissionSchema
+
+                // Validate all MRF JWT conditions
                 if (
                   submission.form.toString() !== formId ||
-                  submission.form.workflowStep !== decoded.currentWorkflowStep
+                  submission.submissionType !==
+                    SubmissionType.Multirespondent ||
+                  mrfSubmission.workflowStep !== decoded.currentWorkflowStep
                 ) {
                   logger.error({
-                    message: 'MRF JWT formId mismatch',
+                    message: 'MRF JWT submission type mismatch',
                     meta: {
                       ...logMeta,
                       submissionFormId: submission.form.toString(),
                       requestFormId: formId,
-                      submissionWorkflowStep: submission.form.workflowStep,
+                      submissionType: submission.submissionType,
+                      submissionWorkflowStep: mrfSubmission.workflowStep,
                       jwtWorkflowStep: decoded.currentWorkflowStep,
                     },
                   })
-                  return errAsync(
-                    new Error('MRF JWT formId does not match requested form'),
-                  )
+                  return errAsync(new MrfJwtError('MRF JWT validation failed'))
                 }
+
                 // MRF JWT is valid, skip SPCP/MyInfo verification
                 return okAsync(form)
               })
@@ -162,7 +171,7 @@ export const _handleGenerateOtp: ControllerHandler<
               meta: logMeta,
               error,
             })
-            return errAsync(error as Error)
+            return errAsync(new MrfJwtError('Failed to decode MRF JWT'))
           }
         }
 
