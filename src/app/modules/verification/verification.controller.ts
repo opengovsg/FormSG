@@ -134,7 +134,12 @@ export const _handleGenerateOtp: ControllerHandler<
                   submission as IMultirespondentSubmissionSchema
 
                 // Validate all MRF JWT conditions
+                // 1. previousSubmissionId in JWT matches that in request body (from client FE context)
+                // 2. submission is present, belongs to the same form
+                // 3. formId of submission matches that of request param
+                // 4. workflow step in JWT matches that of submission
                 if (
+                  decoded.prevSubmissionId !== previousSubmissionId ||
                   submission.form.toString() !== formId ||
                   submission.submissionType !==
                     SubmissionType.Multirespondent ||
