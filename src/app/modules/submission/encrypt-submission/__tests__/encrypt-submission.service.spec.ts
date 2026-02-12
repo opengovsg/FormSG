@@ -128,10 +128,10 @@ describe('encrypt-submission.service', () => {
       },
     ]
     const MOCK_NRIC = 'S1234567A'
-
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
     const MOCK_PDF_ATTACHMENT_BUFFER = Buffer.from('mock pdf buffer')
     const MOCK_PDF_ATTACHMENT = {
-      filename: 'response.pdf',
+      filename: `RefNo ${MOCK_SUBMISSION_ID}.pdf`,
       content: MOCK_PDF_ATTACHMENT_BUFFER,
     }
 
@@ -156,7 +156,7 @@ describe('encrypt-submission.service', () => {
           errAsync(new AutoreplyPdfGenerationError()),
         )
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -200,7 +200,7 @@ describe('encrypt-submission.service', () => {
       it('should not generate pdf attachment if payment is enabled and not pass to either sendSubmissionToAdmin or sendEmailConfirmations', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -244,7 +244,7 @@ describe('encrypt-submission.service', () => {
       it('should generate pdf attachment and pass pdf attachment to both sendSubmissionToAdmin and sendEmailConfirmation if form summary is enabled and payment is not enabled', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -288,7 +288,7 @@ describe('encrypt-submission.service', () => {
       it('should generate pdf attachment and pass pdf attachment to only sendSubmissionToAdmin if form summary and payment both are not enabled', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -344,7 +344,7 @@ describe('encrypt-submission.service', () => {
       it('should sendEmailConfirmations if there are respondent emails', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -385,7 +385,7 @@ describe('encrypt-submission.service', () => {
       it('should sendEmailConfirmations if there are email fields with auto reply enabled', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -491,7 +491,7 @@ describe('encrypt-submission.service', () => {
       it('should not sendEmailConfirmations if there are no respondent emails and no email fields with auto reply enabled', async () => {
         // Arrange
         const mockSubmission = {
-          _id: new ObjectId(),
+          id: MOCK_SUBMISSION_ID,
           form: new ObjectId(),
           created: new Date(),
         } as IEncryptedSubmissionSchema
@@ -539,7 +539,7 @@ describe('encrypt-submission.service', () => {
           // Arrange
           const MOCK_NRIC = 'S1234567A'
           const mockSubmission = {
-            _id: new ObjectId(),
+            id: MOCK_SUBMISSION_ID,
             form: new ObjectId(),
             created: new Date(),
           } as IEncryptedSubmissionSchema
@@ -585,7 +585,7 @@ describe('encrypt-submission.service', () => {
           const noAttachments: IAttachmentInfo[] = []
 
           const mockSubmission = {
-            _id: new ObjectId(),
+            id: MOCK_SUBMISSION_ID,
             form: new ObjectId(),
             created: new Date(),
           } as IEncryptedSubmissionSchema
@@ -621,7 +621,7 @@ describe('encrypt-submission.service', () => {
           ]
 
           const mockSubmission = {
-            _id: new ObjectId(),
+            id: MOCK_SUBMISSION_ID,
             form: new ObjectId(),
             created: new Date(),
           } as IEncryptedSubmissionSchema
@@ -663,7 +663,7 @@ describe('encrypt-submission.service', () => {
           ]
 
           const mockSubmission = {
-            _id: new ObjectId(),
+            id: MOCK_SUBMISSION_ID,
             form: new ObjectId(),
             created: new Date(),
           } as IEncryptedSubmissionSchema
@@ -707,7 +707,7 @@ describe('encrypt-submission.service', () => {
           ]
 
           const mockSubmission = {
-            _id: new ObjectId(),
+            id: MOCK_SUBMISSION_ID,
             form: new ObjectId(),
             created: new Date(),
           } as IEncryptedSubmissionSchema
