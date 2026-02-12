@@ -339,17 +339,16 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
         // Set MRF cookie with submission details when loading the form
         const mrfCookie = createMrfCookie({
           prevSubmissionId: submissionId,
-          currentWorkflowStep: responseData.workflowStep,
+          currentWorkflowStep: responseData.workflowStep + 1,
         })
 
         res.cookie(
           getMrfCookieName({ formId, previousSubmissionId: submissionId }),
           mrfCookie,
           {
-            // Important for security - access token cannot be read by client-side JS
-            maxAge: spcpMyInfoConfig.spCookieMaxAge, // 3 hours
+            maxAge: spcpMyInfoConfig.spCookieMaxAge,
             httpOnly: true,
-            sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
+            sameSite: 'strict', // strict because it is set by form.gov.sg and use on form.gov.sg only
             secure: !config.isDevOrTest,
           },
         )

@@ -532,7 +532,7 @@ export const createMrfCookie = ({
 
   return jwt.sign(payload, config.sessionSecret, {
     // this arg must be supplied in seconds
-    expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000, // 3 hrs
+    expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000,
   })
 }
 
