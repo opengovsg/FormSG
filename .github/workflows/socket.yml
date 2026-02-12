@@ -44,4 +44,4 @@ jobs:
         env:
           SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_CLI_PYTHON_API_TOKEN }}
         run: |
-          socketcli --reach --default-branch --pending-head --enable-debug
+          socketcli --reach --pending-head --enable-debug
