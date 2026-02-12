@@ -55,15 +55,11 @@ const renderPrintableResponse = (
 }
 
 const getPdfTitle = ({
-  formTitle,
-  formId,
   submissionId,
 }: {
-  formTitle: string
-  formId: string
   submissionId: string
 }) => {
-  return `${formTitle}_formId_${formId}_submissionId_${submissionId}_response.pdf`
+  return `RefNo ${submissionId}.pdf`
 }
 
 export const generateResponsePdfBlob = async ({
@@ -81,8 +77,6 @@ export const generateResponsePdfBlob = async ({
   }
 }) => {
   const pdfTitle = getPdfTitle({
-    formTitle: form.title,
-    formId: form._id,
     submissionId: submission.refNo,
   })
 
@@ -115,8 +109,6 @@ export const downloadResponsePdf = async ({
   }
 }) => {
   const pdfTitle = getPdfTitle({
-    formTitle: form.title,
-    formId: form._id,
     submissionId: submission.refNo,
   })
 
