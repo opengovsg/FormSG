@@ -6,6 +6,7 @@ import { errAsync, okAsync } from 'neverthrow'
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   SendFormOtpResponseDto,
   SubmissionType,
 } from '../../../../shared/types'
@@ -126,33 +127,34 @@ export const _handleGenerateOtp: ControllerHandler<
               config.sessionSecret,
             ) as MrfJwtPayload
 
-            return SubmissionService.findSubmissionById(
+            return SubmissionService.getSubmissionMetadata(
+              FormResponseMode.Multirespondent,
+              formId,
               decoded.prevSubmissionId,
             )
-              .andThen((submission) => {
-                const mrfSubmission =
-                  submission as IMultirespondentSubmissionSchema
-
+              .andThen((foundMrfSubmissionMetadata) => {
                 // Validate all MRF JWT conditions
-                // 1. previousSubmissionId in JWT matches that in request body (from client FE context)
-                // 2. submission is present, belongs to the same form
-                // 3. formId of submission matches that of request param
-                // 4. workflow step in JWT matches that of submission
+                // 1. submission is present, belongs to the same form
+                // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
+                // 3. workflow step in JWT matches that of submission
+
                 if (
-                  decoded.prevSubmissionId !== previousSubmissionId ||
-                  submission.form.toString() !== formId ||
-                  submission.submissionType !==
-                    SubmissionType.Multirespondent ||
-                  mrfSubmission.workflowStep !== decoded.currentWorkflowStep
+                  !foundMrfSubmissionMetadata ||
+                  foundMrfSubmissionMetadata.number.toString() ==
+                    previousSubmissionId ||
+                  foundMrfSubmissionMetadata.mrf?.workflowCurrentStepNumber !==
+                    decoded.currentWorkflowStep
                 ) {
                   logger.error({
-                    message: 'MRF JWT submission type mismatch',
+                    message: 'MRF JWT submission mismatch',
                     meta: {
                       ...logMeta,
-                      submissionFormId: submission.form.toString(),
+                      submissionFormId:
+                        foundMrfSubmissionMetadata?.refNo.toString(),
                       requestFormId: formId,
-                      submissionType: submission.submissionType,
-                      submissionWorkflowStep: mrfSubmission.workflowStep,
+                      submissionWorkflowStep:
+                        foundMrfSubmissionMetadata?.mrf
+                          ?.workflowCurrentStepNumber,
                       jwtWorkflowStep: decoded.currentWorkflowStep,
                     },
                   })
