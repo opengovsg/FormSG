@@ -1,0 +1,47 @@
+name: Socket (Coana) Security Reachability Scan
+
+permissions:
+  contents: read
+  packages: read
+
+on:
+  # schedule:
+  #   # Runs every day at 1 AM UTC / 9 AM SGT
+  #   - cron: '0 1 * * *'
+  push:
+    branches:
+      - '**/socket'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  socket-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          HUSKY: 0
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Socket CLI
+        run: pip install socketsecurity uv --upgrade
+
+      - name: Run Socket Security Scan with reachability analysis
+        env:
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_CLI_PYTHON_API_TOKEN }}
+        run: |
+          socketcli --reach
