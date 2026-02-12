@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import { errAsync, okAsync } from 'neverthrow'
+import { errAsync, okAsync, Result } from 'neverthrow'
 
 import {
   ErrorDto,
@@ -120,67 +120,73 @@ export const _handleGenerateOtp: ControllerHandler<
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
-          try {
-            const decoded = jwt.verify(
-              mrfCookie,
-              config.sessionSecret,
-            ) as MrfJwtPayload
-
-            return SubmissionService.getSubmissionMetadata(
-              FormResponseMode.Multirespondent,
-              formId,
-              decoded.prevSubmissionId,
-            )
-              .andThen((foundMrfSubmissionMetadata) => {
-                // Validate all MRF JWT conditions
-                // 1. submission is present, belongs to the same form
-                // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
-                // 3. workflow step in JWT matches that of submission
-
-                if (
-                  !foundMrfSubmissionMetadata ||
-                  decoded.prevSubmissionId !== previousSubmissionId ||
-                  foundMrfSubmissionMetadata.mrf?.workflowCurrentStepNumber !==
-                    decoded.currentWorkflowStep
-                ) {
-                  logger.error({
-                    message: 'MRF JWT submission mismatch',
-                    meta: {
-                      ...logMeta,
-                      jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
-                      previousSubmissionId: previousSubmissionId,
-                      submissionWorkflowStepFromMetadata:
-                        foundMrfSubmissionMetadata?.mrf
-                          ?.workflowCurrentStepNumber,
-                      jwtWorkflowStep: decoded.currentWorkflowStep,
-                    },
-                  })
-                  return errAsync(
-                    new MrfJwtValidationError('MRF JWT validation failed'),
-                  )
-                }
-
-                // MRF JWT is valid, skip SPCP/MyInfo verification
-                return okAsync(form)
+          return Result.fromThrowable(
+            () => jwt.verify(mrfCookie, config.sessionSecret) as MrfJwtPayload,
+            (error) => {
+              logger.error({
+                message: 'Failed to decode MRF JWT',
+                meta: logMeta,
+                error,
               })
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify MRF JWT',
-                  meta: logMeta,
-                  error,
-                })
-                return error
+              return new MrfJwtValidationError('Failed to decode MRF JWT')
+            },
+          )()
+            .mapErr((error) => {
+              logger.error({
+                message: 'Failed to verify MRF JWT',
+                meta: logMeta,
+                error,
               })
-          } catch (error) {
-            logger.error({
-              message: 'Failed to decode MRF JWT',
-              meta: logMeta,
-              error,
+              return error
             })
-            return errAsync(
-              new MrfJwtValidationError('Failed to decode MRF JWT'),
-            )
-          }
+            .asyncAndThen((decoded) => {
+              return SubmissionService.getSubmissionMetadata(
+                FormResponseMode.Multirespondent,
+                formId,
+                decoded.prevSubmissionId,
+              )
+                .andThen((foundMrfSubmissionMetadata) => {
+                  // Validate all MRF JWT conditions
+                  // 1. submission is present, belongs to the same form
+                  // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
+                  // 3. workflow step in JWT matches that of submission
+
+                  if (
+                    !foundMrfSubmissionMetadata ||
+                    decoded.prevSubmissionId !== previousSubmissionId ||
+                    foundMrfSubmissionMetadata.mrf
+                      ?.workflowCurrentStepNumber !==
+                      decoded.currentWorkflowStep
+                  ) {
+                    logger.error({
+                      message: 'MRF JWT submission mismatch',
+                      meta: {
+                        ...logMeta,
+                        jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
+                        previousSubmissionId: previousSubmissionId,
+                        submissionWorkflowStepFromMetadata:
+                          foundMrfSubmissionMetadata?.mrf
+                            ?.workflowCurrentStepNumber,
+                        jwtWorkflowStep: decoded.currentWorkflowStep,
+                      },
+                    })
+                    return errAsync(
+                      new MrfJwtValidationError('MRF JWT validation failed'),
+                    )
+                  }
+
+                  // MRF JWT is valid, skip SPCP/MyInfo verification
+                  return okAsync(form)
+                })
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Failed to verify MRF JWT',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            })
         }
 
         // No previousSubmissionId, proceed with SPCP/MyInfo verification
