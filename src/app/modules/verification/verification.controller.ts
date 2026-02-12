@@ -115,7 +115,8 @@ export const _handleGenerateOtp: ControllerHandler<
     FormService.retrieveFullFormById(formId)
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
-        // If previousSubmissionId exists, verify MRF JWT and skip SPCP/MyInfo
+        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
+        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
@@ -129,7 +130,6 @@ export const _handleGenerateOtp: ControllerHandler<
               decoded.prevSubmissionId,
             )
               .andThen((submission) => {
-                // TypeScript type narrowing - submission is now IMultirespondentSubmissionSchema
                 const mrfSubmission =
                   submission as IMultirespondentSubmissionSchema
 
