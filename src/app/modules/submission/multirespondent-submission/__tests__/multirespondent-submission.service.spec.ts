@@ -34,10 +34,13 @@ import {
 jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
 
+const mockFormId = new ObjectId().toHexString()
+const mockSubmissionId = new ObjectId().toHexString()
+
 const MockMailUtils = jest.mocked(MailUtils)
 const MOCK_PDF_ATTACHMENT_BUFFER = Buffer.from('mock pdf buffer')
 const EXPECTED_MOCK_PDF_ATTACHMENT = {
-  filename: 'response.pdf',
+  filename: `RefNo ${mockSubmissionId}.pdf`,
   content: MOCK_PDF_ATTACHMENT_BUFFER,
 }
 const MOCK_SUBMISSION_ATTACHMENTS = [
@@ -67,9 +70,6 @@ describe('multirespondent-submission.service', () => {
   afterAll(async () => {
     await dbHandler.closeDatabase()
   })
-
-  const mockFormId = new ObjectId().toHexString()
-  const mockSubmissionId = new ObjectId().toHexString()
 
   describe('pdf attachment', () => {
     describe('pdf attachment is not generated when not needed', () => {
@@ -119,7 +119,7 @@ describe('multirespondent-submission.service', () => {
           // Act
           await performMultiRespondentPostSubmissionCreateActions({
             submission: {
-              _id: mockSubmissionId,
+              id: mockSubmissionId,
             } as unknown as IMultirespondentSubmissionSchema,
             submissionId: mockSubmissionId,
             form: {
@@ -187,7 +187,7 @@ describe('multirespondent-submission.service', () => {
           // Act
           await performMultiRespondentPostSubmissionCreateActions({
             submission: {
-              _id: mockSubmissionId,
+              id: mockSubmissionId,
             } as unknown as IMultirespondentSubmissionSchema,
             submissionId: mockSubmissionId,
             form: {
@@ -277,7 +277,7 @@ describe('multirespondent-submission.service', () => {
           // Act
           await performMultiRespondentPostSubmissionUpdateActions({
             submission: {
-              _id: mockSubmissionId,
+              id: mockSubmissionId,
             } as unknown as IMultirespondentSubmissionSchema,
             submissionId: mockSubmissionId,
             snapshottedFormDef: {
@@ -369,7 +369,7 @@ describe('multirespondent-submission.service', () => {
           // Act
           await performMultiRespondentPostSubmissionUpdateActions({
             submission: {
-              _id: mockSubmissionId,
+              id: mockSubmissionId,
             } as unknown as IMultirespondentSubmissionSchema,
             submissionId: mockSubmissionId,
             snapshottedFormDef: {
@@ -472,7 +472,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionCreateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           form: {
@@ -570,7 +570,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionCreateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           form: {
@@ -671,7 +671,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionCreateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           form: {
@@ -745,7 +745,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionCreateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           form: {
@@ -820,7 +820,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionCreateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           form: {
@@ -923,7 +923,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionUpdateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           snapshottedFormDef: {
@@ -1044,7 +1044,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionUpdateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           snapshottedFormDef: {
@@ -1176,7 +1176,7 @@ describe('multirespondent-submission.service', () => {
         // Act
         await performMultiRespondentPostSubmissionUpdateActions({
           submission: {
-            _id: mockSubmissionId,
+            id: mockSubmissionId,
           } as unknown as IMultirespondentSubmissionSchema,
           submissionId: mockSubmissionId,
           snapshottedFormDef: {
@@ -1305,7 +1305,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -1444,7 +1444,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -1597,7 +1597,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -1744,7 +1744,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -1886,7 +1886,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -2048,7 +2048,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -2195,7 +2195,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -2286,7 +2286,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
@@ -2340,7 +2340,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionCreateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         form: {
@@ -2444,7 +2444,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -2552,7 +2552,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef: {
@@ -2581,7 +2581,6 @@ describe('multirespondent-submission.service', () => {
 
   describe('step one email notification field id', () => {
     const mockFormId = new ObjectId().toHexString()
-    const mockSubmissionId = new ObjectId().toHexString()
 
     it('sends completion email to step one email notification field id, stepsToNotify and static emails when step one email notification field id is set', async () => {
       // Arrange
@@ -2647,7 +2646,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
@@ -2722,7 +2721,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
@@ -2798,7 +2797,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
@@ -2894,7 +2893,7 @@ describe('multirespondent-submission.service', () => {
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: {
-          _id: mockSubmissionId,
+          id: mockSubmissionId,
         } as unknown as IMultirespondentSubmissionSchema,
         submissionId: mockSubmissionId,
         snapshottedFormDef,
