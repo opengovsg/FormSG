@@ -8,10 +8,8 @@ import {
   FormAuthType,
   FormResponseMode,
   SendFormOtpResponseDto,
-  SubmissionType,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
-import { IMultirespondentSubmissionSchema } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
