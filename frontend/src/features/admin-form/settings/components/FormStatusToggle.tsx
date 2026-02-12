@@ -29,6 +29,7 @@ export const FormStatusToggle = (): JSX.Element => {
   } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingFormSettings } =
     useAdminFormSettings()
+
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
 
   const secretKeyActivationModalProps = useDisclosure()

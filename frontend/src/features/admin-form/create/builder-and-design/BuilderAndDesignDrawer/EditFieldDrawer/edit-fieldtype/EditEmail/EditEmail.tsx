@@ -181,9 +181,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         />
       </FormControl>
       <Box>
-        <FormControl
-          isReadOnly={isLoading}
-        >
+        <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
             description={t(
