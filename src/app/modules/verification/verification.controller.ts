@@ -139,8 +139,7 @@ export const _handleGenerateOtp: ControllerHandler<
 
                 if (
                   !foundMrfSubmissionMetadata ||
-                  foundMrfSubmissionMetadata.number.toString() ==
-                    previousSubmissionId ||
+                  decoded.prevSubmissionId !== previousSubmissionId ||
                   foundMrfSubmissionMetadata.mrf?.workflowCurrentStepNumber !==
                     decoded.currentWorkflowStep
                 ) {
@@ -148,13 +147,19 @@ export const _handleGenerateOtp: ControllerHandler<
                     message: 'MRF JWT submission mismatch',
                     meta: {
                       ...logMeta,
-                      submissionFormId:
-                        foundMrfSubmissionMetadata?.refNo.toString(),
-                      requestFormId: formId,
-                      submissionWorkflowStep:
+                      jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
+                      previousSubmissionId: previousSubmissionId,
+                      submissionWorkflowStepFromMetadata:
                         foundMrfSubmissionMetadata?.mrf
                           ?.workflowCurrentStepNumber,
                       jwtWorkflowStep: decoded.currentWorkflowStep,
+                      test1:
+                        foundMrfSubmissionMetadata?.number.toString() !=
+                        previousSubmissionId,
+                      test2:
+                        foundMrfSubmissionMetadata?.mrf
+                          ?.workflowCurrentStepNumber !=
+                        decoded.currentWorkflowStep,
                     },
                   })
                   return errAsync(
