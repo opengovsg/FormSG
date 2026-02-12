@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
 import { SubmitHandler, useFormContext } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isEmpty } from 'lodash'
 
-import { featureFlags } from '~shared/constants'
 import { FieldResponsesV3 } from '~shared/types'
 import { FormFieldDto } from '~shared/types/field'
 import {
@@ -50,12 +48,7 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
-<<<<<<< HEAD
-=======
-  // TODO: (respondent copy): Remove when respondent copy is out of beta
-  const isRespondentCopyEnabled = useFeatureIsOn(featureFlags.respondentCopy)
 
->>>>>>> d0c879f27 (Revert "feat: remove respondent copy beta and feature flag")
   useFetchPrefillQuery()
 
   const { defaultFormValues, fieldPrefillMap, form, augmentedFormFields } =

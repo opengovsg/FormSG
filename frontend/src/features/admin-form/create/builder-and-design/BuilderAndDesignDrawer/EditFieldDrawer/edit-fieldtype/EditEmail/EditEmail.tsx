@@ -16,8 +16,6 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { useUser } from '~features/user/queries'
-
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { useCreateTabForm } from '../../../../useCreateTabForm'
 import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
@@ -89,8 +87,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
 
-  const { user } = useUser()
-
   const requiredValidationRule = useMemo(
     () =>
       createBaseValidationRules<EditEmailInputs, 'title'>({
@@ -154,11 +150,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         'features.adminForm.sidebar.fields.email.emailConfirmation.includeResponseDescription',
       )
 
-  // TODO: FRM-2172 Remove when respondent copy is out of beta
-  const isToggleEmailConfirmationDisabled =
-    form?.responseMode === FormResponseMode.Multirespondent &&
-    !user?.betaFlags?.respondentCopy
-
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -192,7 +183,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       <Box>
         <FormControl
           isReadOnly={isLoading}
-          isDisabled={isToggleEmailConfirmationDisabled}
         >
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
