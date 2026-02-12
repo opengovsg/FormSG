@@ -153,13 +153,6 @@ export const _handleGenerateOtp: ControllerHandler<
                         foundMrfSubmissionMetadata?.mrf
                           ?.workflowCurrentStepNumber,
                       jwtWorkflowStep: decoded.currentWorkflowStep,
-                      test1:
-                        foundMrfSubmissionMetadata?.number.toString() !=
-                        previousSubmissionId,
-                      test2:
-                        foundMrfSubmissionMetadata?.mrf
-                          ?.workflowCurrentStepNumber !=
-                        decoded.currentWorkflowStep,
                     },
                   })
                   return errAsync(
