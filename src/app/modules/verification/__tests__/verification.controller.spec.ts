@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
-import { FormAuthType, SubmissionId } from 'shared/types'
+import { FormAuthType } from 'shared/types'
 import { WAIT_FOR_OTP_SECONDS } from 'shared/utils/verification'
 
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
