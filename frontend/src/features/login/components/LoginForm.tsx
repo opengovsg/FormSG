@@ -39,7 +39,7 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       <FormControl
         isInvalid={!!formState.errors.email}
         isReadOnly={formState.isSubmitting}
-        mb="2.5rem"
+        mb="1rem"
       >
         <FormLabel isRequired>
           {t(
