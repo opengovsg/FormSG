@@ -118,6 +118,7 @@ export const _handleGenerateOtp: ControllerHandler<
       .andThen((form) => {
         // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
         // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
+        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
