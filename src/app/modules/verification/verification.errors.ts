@@ -127,7 +127,7 @@ export class OtpRequestError extends ApplicationError {
 /**
  * MRF JWT validation failed
  */
-export class MrfJwtError extends ApplicationError {
+export class MrfJwtValidationError extends ApplicationError {
   constructor(message = 'MRF JWT validation failed') {
     super(message, undefined, ErrorCodes.VERIFICATION_OTP_JWT_ERROR)
   }

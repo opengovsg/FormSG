@@ -27,7 +27,7 @@ import { MrfJwtPayload } from '../submission/multirespondent-submission/multires
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
 
-import { MrfJwtError } from './verification.errors'
+import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
@@ -156,7 +156,9 @@ export const _handleGenerateOtp: ControllerHandler<
                       jwtWorkflowStep: decoded.currentWorkflowStep,
                     },
                   })
-                  return errAsync(new MrfJwtError('MRF JWT validation failed'))
+                  return errAsync(
+                    new MrfJwtValidationError('MRF JWT validation failed'),
+                  )
                 }
 
                 // MRF JWT is valid, skip SPCP/MyInfo verification
@@ -176,7 +178,9 @@ export const _handleGenerateOtp: ControllerHandler<
               meta: logMeta,
               error,
             })
-            return errAsync(new MrfJwtError('Failed to decode MRF JWT'))
+            return errAsync(
+              new MrfJwtValidationError('Failed to decode MRF JWT'),
+            )
           }
         }
 
