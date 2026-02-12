@@ -137,6 +137,8 @@ export const _handleGenerateOtp: ControllerHandler<
                       ...logMeta,
                       submissionFormId: submission.form.toString(),
                       requestFormId: formId,
+                      submissionWorkflowStep: submission.form.workflowStep,
+                      jwtWorkflowStep: decoded.currentWorkflowStep,
                     },
                   })
                   return errAsync(
