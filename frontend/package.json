@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.304.0",
+  "version": "6.305.0",
   "homepage": ".",
   "type": "module",
   "private": true,
@@ -20,7 +20,7 @@
     "@stripe/react-stripe-js": "^1.15.0",
     "@stripe/stripe-js": "^1.44.1",
     "@types/stopword": "^2.0.1",
-    "axios": "^1.8.2",
+    "axios": "^1.13.5",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.2",
     "comlink": "^4.3.1",

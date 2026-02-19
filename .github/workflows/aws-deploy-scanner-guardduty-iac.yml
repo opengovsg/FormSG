@@ -69,4 +69,5 @@ jobs:
         env:
           ENV: ${{ inputs.environment }}
           CONCURRENCY: ${{ inputs.provisionedConcurrency }}
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
         run: npm run deploy
