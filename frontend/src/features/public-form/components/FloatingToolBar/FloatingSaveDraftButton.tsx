@@ -6,7 +6,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 
 export const FloatingSaveDraftButton = ({
   onSaveDraft,
@@ -17,7 +17,7 @@ export const FloatingSaveDraftButton = ({
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -32,7 +32,7 @@ export const FloatingSaveDraftButton = ({
     >
       <IconButton
         variant="outline"
-        colorScheme={`theme-${colorScheme}`}
+        colorScheme={colorScheme}
         cursor="pointer"
         _focus={{
           boxShadow: 0,

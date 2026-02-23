@@ -19,7 +19,7 @@ import InlineMessage from '~components/InlineMessage'
 import Tooltip from '~components/Tooltip'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 
 import { usePublicFormContext } from '../../PublicFormContext'
@@ -31,7 +31,7 @@ import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmission
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
   const { t } = useTranslation()
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -76,7 +76,7 @@ export const PublicFormSubmitButton = ({
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
   const { isSaveDraftEnabled } = usePublicFormContext()
 
   const isMobile = useIsMobile()
@@ -171,7 +171,7 @@ export const PublicFormSubmitButton = ({
         <Button
           flex={1}
           isFullWidth={isMobile}
-          colorScheme={`theme-${colorScheme}`}
+          colorScheme={colorScheme}
           type="button"
           isLoading={isSubmitting}
           isDisabled={!!preventSubmissionLogic || !onSubmit}

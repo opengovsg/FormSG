@@ -7,7 +7,7 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 
 export const FormHeaderSaveDraftButton = ({
   onSaveDraft,
@@ -18,7 +18,7 @@ export const FormHeaderSaveDraftButton = ({
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {

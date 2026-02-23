@@ -19,6 +19,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
+import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
@@ -76,7 +77,7 @@ export const VerificationBox = ({
   handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
   const { t } = useTranslation()
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
   const {
     formMethods: {
       register,
@@ -101,7 +102,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg={useBgColor({ colorTheme: colorScheme })}
+      bg={useBgColor({ colorTheme: useDesignColorTheme() })}
       align="flex-start"
       mt="0.5rem"
     >
@@ -150,7 +151,7 @@ export const VerificationBox = ({
                 ml="0.5rem"
                 onClick={onSubmitForm}
                 aria-label="Submit OTP for verification"
-                colorScheme={`theme-${colorScheme}`}
+                colorScheme={colorScheme}
               >
                 Submit
               </Button>
@@ -163,7 +164,7 @@ export const VerificationBox = ({
         <ResendOtpButton
           mt="0.5rem"
           variant="link"
-          colorScheme={`theme-${colorScheme}`}
+          colorScheme={colorScheme}
           onResendOtp={handleResendOtp}
         />
       </Box>

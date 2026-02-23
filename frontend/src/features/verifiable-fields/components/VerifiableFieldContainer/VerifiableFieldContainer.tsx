@@ -3,13 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 
 import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
 import { useVerifiableField } from '../../VerifiableFieldContext'
@@ -33,7 +32,7 @@ export const VerifiableFieldContainer = ({
   isHighContrast,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const { t } = useTranslation()
-  const colorScheme = useDesignColorTheme()
+  const colorScheme = useDesignColorScheme()
   const {
     isVfnBoxOpen,
     otpPrefix,
@@ -71,7 +70,7 @@ export const VerifiableFieldContainer = ({
               isDisabled={schema.disabled || isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
-              colorScheme={`theme-${colorScheme}`}
+              colorScheme={colorScheme}
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
