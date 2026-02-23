@@ -123,8 +123,8 @@ export const VerificationBox = ({
                 {otpPrefix ? (
                   <InputLeftAddon
                     pointerEvents="none"
-                    bg={`$theme-{colorScheme}.200`}
-                    borderColor={`theme-${colorScheme}.300`}
+                    bg={`${colorScheme}.200`}
+                    borderColor={`${colorScheme}.300`}
                     children={`${otpPrefix}-`}
                   />
                 ) : null}
