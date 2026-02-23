@@ -648,11 +648,6 @@ export const PublicFormProvider = ({
     false,
   )
 
-  const enableSingpassMrfFeatureFlag = useFeatureValue(
-    featureFlags.singpassMrf,
-    true,
-  )
-
   let hasLoaded: boolean
   let containerID: string
   let captchaType: CaptchaTypes
@@ -737,27 +732,12 @@ export const PublicFormProvider = ({
       data.form.responseMode !== FormResponseMode.Multirespondent &&
       !!previousSubmissionId
 
-    //TODO: FRM-2151 remove when SingpassMRF is out of beta
-    const isSingpassMrfDisabled =
-      data?.form?.responseMode === FormResponseMode.Multirespondent &&
-      data?.form?.authType !== FormAuthType.NIL &&
-      !enableSingpassMrfFeatureFlag
-
     if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
       const title = t('features.publicForm.errors.notFound')
       return {
         title,
         header: t('features.publicForm.errors.notAvailable'),
         message: error?.message ?? title,
-      }
-    }
-
-    if (isSingpassMrfDisabled) {
-      const title = t('features.publicForm.errors.notAvailable')
-      return {
-        title,
-        header: t('features.publicForm.errors.notAvailable'),
-        message: t('features.publicForm.errors.private'),
       }
     }
 
@@ -770,7 +750,6 @@ export const PublicFormProvider = ({
     data,
     previousSubmissionId,
     isSubmissionSecretKeyInvalid,
-    enableSingpassMrfFeatureFlag,
     t,
   ])
 
@@ -1332,19 +1311,6 @@ export const PublicFormProvider = ({
             })
         }
         case FormResponseMode.Multirespondent:
-          //TODO: FRM-2151 remove when SingpassMRF is out of beta
-          // if mrf form is singpass-enabled & feature flag is off, prevent submission
-          if (
-            !enableSingpassMrfFeatureFlag &&
-            form?.authType !== FormAuthType.NIL
-          ) {
-            const singpassMrfError = new Error(
-              'Submission not allowed: Singpass MRF current is disabled.',
-            )
-            showErrorToast(singpassMrfError, form)
-            return singpassMrfError
-          }
-
           return (
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation
