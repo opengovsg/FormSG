@@ -2,6 +2,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
+import { FormColorTheme } from '~shared/types/form/form'
+
+import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 
 import { viewports } from '~utils/storybook'
 
@@ -29,6 +32,12 @@ export default {
     handleVfnSuccess: () => Promise.resolve(console.log('vfn success')),
     handleVerifyOtp: () => Promise.resolve('some-mock-signature'),
   },
+  parameters: {
+    msw: [getPublicFormResponse()],
+    viewport: {
+      defaultViewport: 'desktop1',
+    },
+  },
 } as Meta<VerificationBoxProps>
 
 const Template: StoryFn<VerificationBoxProps> = (args) => (
@@ -50,9 +59,48 @@ MobileVerificationBoxMobile.parameters = {
   chromatic: { viewports: [viewports.xs] },
 }
 
+export const MobileVerificationBoxOrangeThemeMobile = Template.bind({})
+MobileVerificationBoxOrangeThemeMobile.args = {
+  fieldType: BasicField.Mobile,
+}
+MobileVerificationBoxOrangeThemeMobile.parameters = {
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          startPage: {
+            colorTheme: FormColorTheme.Orange,
+          },
+        },
+      },
+    }),
+  ],
+}
+
 export const EmailVerificationBox = Template.bind({})
 EmailVerificationBox.args = {
   fieldType: BasicField.Email,
+}
+
+export const EmailVerificationBoxGreenTheme = Template.bind({})
+EmailVerificationBoxGreenTheme.args = {
+  fieldType: BasicField.Email,
+}
+EmailVerificationBoxGreenTheme.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          startPage: {
+            colorTheme: FormColorTheme.Green,
+          },
+        },
+      },
+    }),
+  ],
 }
 
 export const EmailVerificationBoxMobile = Template.bind({})
