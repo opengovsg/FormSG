@@ -543,5 +543,5 @@ export const getMrfCookieName = ({
   formId: string
   previousSubmissionId: string
 }): string => {
-  return `Jwt_${formId}_${previousSubmissionId}`
+  return `Mrf_${formId}_${previousSubmissionId}`
 }
