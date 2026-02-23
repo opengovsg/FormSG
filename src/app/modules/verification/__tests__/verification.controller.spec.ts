@@ -2091,7 +2091,7 @@ describe('Verification controller', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
       })
 
-      it('should return 400 when MRF JWT formId does not match', async () => {
+      it('should return 400 when submission metadata cannot be found for given formId and previousSubmissionId', async () => {
         // Arrange
         MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
           okAsync(null), // Submission not found for this form
