@@ -144,7 +144,7 @@ export const processDecryptedContentV3 = async (
 
       const decryptedResponse = transformInputsToOutputs(ff, response.answer)
       if (decryptedResponse && 'myInfo' in ff) {
-        decryptedResponse.question = `[MyInfo] ${decryptedResponse.question} `
+        decryptedResponse.question = `[Myinfo] ${decryptedResponse.question} `
       }
       return decryptedResponse
     })
