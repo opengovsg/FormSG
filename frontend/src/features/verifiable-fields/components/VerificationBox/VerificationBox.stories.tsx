@@ -1,15 +1,29 @@
+import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
 import { viewports } from '~utils/storybook'
 
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
+
 import { VerificationBox, VerificationBoxProps } from './VerificationBox'
 
 export default {
   title: 'Features/VerifiableField/VerificationBox',
   component: VerificationBox,
-  decorators: [],
+  decorators: [
+    (storyFn) => (
+      <MemoryRouter initialEntries={['/12345']}>
+        <PublicFormProvider
+          formId="61540ece3d4a6e50ac0cc6ff"
+          startTime={Date.now()}
+        >
+          {storyFn()}
+        </PublicFormProvider>
+      </MemoryRouter>
+    ),
+  ],
   args: {
     handleResendOtp: () => Promise.resolve(console.log('resending otp')),
     handleVfnSuccess: () => Promise.resolve(console.log('vfn success')),
