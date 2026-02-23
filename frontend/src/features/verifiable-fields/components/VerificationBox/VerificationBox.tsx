@@ -9,7 +9,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import { BasicField, FormColorTheme } from '~shared/types'
+import { BasicField } from '~shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
@@ -18,6 +18,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 
 import { VerifiableFieldType } from '../../types'
 
@@ -33,7 +35,6 @@ export interface VerificationBoxProps {
   otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
-  colorTheme?: FormColorTheme
 }
 
 type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
@@ -72,9 +73,9 @@ export const VerificationBox = ({
   otpPrefix,
   handleResendOtp,
   handleVerifyOtp,
-  colorTheme = FormColorTheme.Blue,
 }: VerificationBoxProps): JSX.Element => {
   const { t } = useTranslation()
+  const colorScheme = useDesignColorTheme()
   const {
     formMethods: {
       register,
@@ -99,7 +100,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg={`theme-${colorTheme}.100`}
+      bg={`theme-${colorScheme}.100`}
       align="flex-start"
       mt="0.5rem"
     >
@@ -120,8 +121,8 @@ export const VerificationBox = ({
                 {otpPrefix ? (
                   <InputLeftAddon
                     pointerEvents="none"
-                    bg={`theme-${colorTheme}.200`}
-                    borderColor={`theme-${colorTheme}.300`}
+                    bg={`$theme-{colorScheme}.200`}
+                    borderColor={`theme-${colorScheme}.300`}
                     children={`${otpPrefix}-`}
                   />
                 ) : null}
@@ -148,7 +149,7 @@ export const VerificationBox = ({
                 ml="0.5rem"
                 onClick={onSubmitForm}
                 aria-label="Submit OTP for verification"
-                colorScheme={`theme-${colorTheme}`}
+                colorScheme={`theme-${colorScheme}`}
               >
                 Submit
               </Button>
@@ -161,7 +162,7 @@ export const VerificationBox = ({
         <ResendOtpButton
           mt="0.5rem"
           variant="link"
-          colorScheme={`theme-${colorTheme}`}
+          colorScheme={`theme-${colorScheme}`}
           onResendOtp={handleResendOtp}
         />
       </Box>

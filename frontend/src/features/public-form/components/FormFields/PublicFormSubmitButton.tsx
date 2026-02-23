@@ -12,7 +12,6 @@ import {
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button, { ButtonProps } from '~components/Button'
@@ -20,6 +19,7 @@ import InlineMessage from '~components/InlineMessage'
 import Tooltip from '~components/Tooltip'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 
 import { usePublicFormContext } from '../../PublicFormContext'
@@ -28,12 +28,10 @@ import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
 import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 
-const PublicFormSaveDraftButton = ({
-  colorTheme,
-  ...props
-}: ButtonProps & { colorTheme: string }) => {
+const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
   const { t } = useTranslation()
+  const colorScheme = useDesignColorTheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -49,7 +47,7 @@ const PublicFormSaveDraftButton = ({
     >
       <Button
         variant="outline"
-        colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
+        colorScheme={`theme-${colorScheme}`}
         onClick={onSaveDraft}
         {...props}
       >
@@ -62,7 +60,6 @@ const PublicFormSaveDraftButton = ({
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
   formLogics: LogicDto[]
-  colorTheme: string
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
   trigger: UseFormTrigger<FormFieldValues>
 }
@@ -74,13 +71,12 @@ interface PublicFormSubmitButtonProps {
 export const PublicFormSubmitButton = ({
   formFields,
   formLogics,
-  colorTheme,
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
-
+  const colorScheme = useDesignColorTheme()
   const { isSaveDraftEnabled } = usePublicFormContext()
 
   const isMobile = useIsMobile()
@@ -170,16 +166,12 @@ export const PublicFormSubmitButton = ({
       />
       <Flex w="100" gap="1rem">
         {isSaveDraftEnabled && (
-          <PublicFormSaveDraftButton
-            flex={1}
-            isFullWidth={isMobile}
-            colorTheme={colorTheme}
-          />
+          <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
         )}
         <Button
           flex={1}
           isFullWidth={isMobile}
-          colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
+          colorScheme={`theme-${colorScheme}`}
           type="button"
           isLoading={isSubmitting}
           isDisabled={!!preventSubmissionLogic || !onSubmit}

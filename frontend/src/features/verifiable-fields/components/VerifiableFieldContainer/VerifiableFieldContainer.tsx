@@ -9,6 +9,8 @@ import { BasicField, FormFieldWithId } from '~shared/types/field'
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+
 import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
 import { useVerifiableField } from '../../VerifiableFieldContext'
 import { VerificationBox } from '../VerificationBox'
@@ -27,11 +29,11 @@ export interface VerifiableFieldContainerProps
  */
 export const VerifiableFieldContainer = ({
   schema,
-  colorTheme = FormColorTheme.Blue,
   children,
   isHighContrast,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const { t } = useTranslation()
+  const colorScheme = useDesignColorTheme()
   const {
     isVfnBoxOpen,
     otpPrefix,
@@ -69,7 +71,7 @@ export const VerifiableFieldContainer = ({
               isDisabled={schema.disabled || isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
-              colorScheme={`theme-${colorTheme}`}
+              colorScheme={`theme-${colorScheme}`}
               leftIcon={
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
@@ -91,7 +93,6 @@ export const VerifiableFieldContainer = ({
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
           otpPrefix={otpPrefix}
-          colorTheme={colorTheme}
         />
       )}
     </Box>

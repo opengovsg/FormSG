@@ -1,26 +1,24 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
-import { Text, useToken } from '@chakra-ui/react'
-
-import { FormColorTheme } from '~shared/types'
+import { Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+
 export const FormHeaderSaveDraftButton = ({
   onSaveDraft,
   draftLastSavedDateTimeString,
-  colorTheme = FormColorTheme.Blue,
 }: {
   onSaveDraft: () => void
   draftLastSavedDateTimeString?: string
-  colorTheme?: FormColorTheme
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
-  const [iconColor] = useToken('colors', [`theme-${colorTheme}.500`])
+  const colorScheme = useDesignColorTheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -36,19 +34,19 @@ export const FormHeaderSaveDraftButton = ({
       {isMobile ? (
         <IconButton
           variant="solid"
-          colorScheme={`theme-${colorTheme}`}
+          colorScheme={colorScheme}
           cursor="pointer"
           aria-label={t(
             'features.publicForm.components.saveDraft.button.label',
           )}
-          icon={<BiSave color={iconColor} />}
+          icon={<BiSave />}
           onClick={onSaveDraft}
         />
       ) : (
         <Button
           onClick={onSaveDraft}
           variant="inverseOutline"
-          colorScheme={`theme-${colorTheme}`}
+          colorScheme={colorScheme}
           leftIcon={<BiSave fontSize="1.25rem" />}
           aria-label={t(
             'features.publicForm.components.saveDraft.button.label',

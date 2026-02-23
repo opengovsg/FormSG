@@ -1,33 +1,30 @@
 import { BiQuestionMark } from 'react-icons/bi'
-import { useDisclosure, useToken } from '@chakra-ui/react'
-
-import { FormColorTheme } from '~shared/types'
+import { useDisclosure } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
 export const FloatingIssueFeedbackButton = ({
   isPreview,
   formId,
-  colorTheme = FormColorTheme.Blue,
 }: {
   isPreview: boolean
   formId: string
-  colorTheme?: FormColorTheme
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const isMobile = useIsMobile()
-  const [iconColor] = useToken('colors', [`theme-${colorTheme}.500`])
-
+  const colorScheme = useDesignColorTheme()
   return (
     <>
       <Tooltip placement={isMobile ? 'top' : 'left'} label="Report an issue">
         <IconButton
           variant="outline"
-          colorScheme={`theme-${colorTheme}`}
+          colorScheme={`theme-${colorScheme}`}
           cursor="pointer"
           // To implement attached button group vertically
           mt="-1px"
@@ -35,7 +32,7 @@ export const FloatingIssueFeedbackButton = ({
             boxShadow: 0,
           }}
           aria-label="issue feedback"
-          icon={<BiQuestionMark color={iconColor} />}
+          icon={<BiQuestionMark />}
           onClick={onOpen}
         />
       </Tooltip>

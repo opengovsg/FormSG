@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 
 interface UseFormHeaderProps {
   startPage?: FormStartPage
@@ -15,16 +15,17 @@ export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
 
 export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const { t } = useTranslation()
+  const colorScheme = useDesignColorTheme()
   const titleColor = useMemo(() => {
-    if (startPage?.colorTheme === FormColorTheme.Orange) {
+    if (colorScheme === FormColorTheme.Orange) {
       return 'secondary.700'
     }
     return 'white'
-  }, [startPage?.colorTheme])
+  }, [colorScheme])
 
   const titleBg = useMemo(
-    () => getTitleBg(startPage?.colorTheme, hover),
-    [hover, startPage?.colorTheme],
+    () => getTitleBg(colorScheme, hover),
+    [hover, colorScheme],
   )
 
   const estTimeString = useMemo(() => {
@@ -34,11 +35,6 @@ export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
         })
       : ''
   }, [t, startPage?.estTimeTaken])
-
-  const colorScheme: ThemeColorScheme | undefined = useMemo(() => {
-    if (!startPage?.colorTheme) return
-    return `theme-${startPage.colorTheme}` as const
-  }, [startPage?.colorTheme])
 
   return {
     titleColor,
