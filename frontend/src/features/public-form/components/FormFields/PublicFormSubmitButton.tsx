@@ -35,8 +35,8 @@ const PublicFormSaveDraftButton = (props: ButtonProps) => {
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
-      lastSavedDateTimeString: draftLastSavedDateTimeString,
-    })
+        lastSavedDateTimeString: draftLastSavedDateTimeString,
+      })
     : ''
 
   return (

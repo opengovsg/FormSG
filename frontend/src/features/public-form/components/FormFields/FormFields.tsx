@@ -123,7 +123,6 @@ export const FormFields = ({
         onSubmit={onSubmit ? handleSubmit(onSubmit) : undefined}
         formFields={augmentedFormFields}
         formLogics={formLogics}
-        colorTheme={colorTheme}
         trigger={trigger}
       />
     </form>
