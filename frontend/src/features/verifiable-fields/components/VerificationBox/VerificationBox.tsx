@@ -20,6 +20,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { VerifiableFieldType } from '../../types'
 
@@ -100,7 +101,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg={`theme-${colorScheme}.100`}
+      bg={useBgColor({ colorTheme: colorScheme })}
       align="flex-start"
       mt="0.5rem"
     >
