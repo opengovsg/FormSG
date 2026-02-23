@@ -5,7 +5,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
-import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 
 import { FormIssueFeedbackModal } from './FormIssueFeedbackModal'
 
@@ -18,7 +18,7 @@ export const FloatingIssueFeedbackButton = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const isMobile = useIsMobile()
-  const colorScheme = useDesignColorScheme()
+  const colorScheme = useFormColorScheme()
   return (
     <>
       <Tooltip placement={isMobile ? 'top' : 'left'} label="Report an issue">

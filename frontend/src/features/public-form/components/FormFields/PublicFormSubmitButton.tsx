@@ -19,8 +19,8 @@ import InlineMessage from '~components/InlineMessage'
 import Tooltip from '~components/Tooltip'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
-import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 
 import { usePublicFormContext } from '../../PublicFormContext'
 import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
@@ -31,7 +31,7 @@ import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmission
 const PublicFormSaveDraftButton = (props: ButtonProps) => {
   const { draftLastSavedDateTimeString, onSaveDraft } = usePublicFormContext()
   const { t } = useTranslation()
-  const colorScheme = useDesignColorScheme()
+  const colorScheme = useFormColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -76,7 +76,7 @@ export const PublicFormSubmitButton = ({
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
-  const colorScheme = useDesignColorScheme()
+  const colorScheme = useFormColorScheme()
   const { isSaveDraftEnabled } = usePublicFormContext()
 
   const isMobile = useIsMobile()

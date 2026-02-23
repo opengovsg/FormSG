@@ -8,7 +8,7 @@ import { BasicField, FormFieldWithId } from '~shared/types/field'
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
-import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 
 import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
 import { useVerifiableField } from '../../VerifiableFieldContext'
@@ -32,7 +32,7 @@ export const VerifiableFieldContainer = ({
   isHighContrast,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const { t } = useTranslation()
-  const colorScheme = useDesignColorScheme()
+  const colorScheme = useFormColorScheme()
   const {
     isVfnBoxOpen,
     otpPrefix,

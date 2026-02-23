@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
-import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useFormColorTheme } from '~features/public-form/utils/useFormColorTheme'
+
+import { useFormColorScheme } from '../../utils/useFormColorScheme'
 
 interface UseFormHeaderProps {
   startPage?: FormStartPage
@@ -16,8 +17,8 @@ export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
 
 export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const { t } = useTranslation()
-  const colorScheme = useDesignColorScheme()
-  const colorTheme = useDesignColorTheme()
+  const colorTheme = useFormColorTheme()
+  const colorScheme = useFormColorScheme()
   const titleColor = useMemo(() => {
     if (colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'

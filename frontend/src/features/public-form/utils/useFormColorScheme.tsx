@@ -2,10 +2,10 @@ import { useMemo } from 'react'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { useDesignColorTheme } from './useDesignColorTheme'
+import { useFormColorTheme } from './useFormColorTheme'
 
-export const useDesignColorScheme = (): ThemeColorScheme | undefined => {
-  const colorTheme = useDesignColorTheme()
+export const useFormColorScheme = (): ThemeColorScheme | undefined => {
+  const colorTheme = useFormColorTheme()
   return useMemo(
     () => (colorTheme ? (`theme-${colorTheme}` as const) : undefined),
     [colorTheme],

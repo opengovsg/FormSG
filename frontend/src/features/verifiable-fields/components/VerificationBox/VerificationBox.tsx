@@ -19,9 +19,9 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { useDesignColorScheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorScheme'
-import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
+import { useFormColorTheme } from '~features/public-form/utils/useFormColorTheme'
 
 import { VerifiableFieldType } from '../../types'
 
@@ -77,7 +77,7 @@ export const VerificationBox = ({
   handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
   const { t } = useTranslation()
-  const colorScheme = useDesignColorScheme()
+  const colorScheme = useFormColorScheme()
   const {
     formMethods: {
       register,
@@ -102,7 +102,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg={useBgColor({ colorTheme: useDesignColorTheme() })}
+      bg={useBgColor({ colorTheme: useFormColorTheme() })}
       align="flex-start"
       mt="0.5rem"
     >
