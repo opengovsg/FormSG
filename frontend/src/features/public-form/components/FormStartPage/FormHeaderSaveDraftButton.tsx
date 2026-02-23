@@ -7,6 +7,8 @@ import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
+
 export const FormHeaderSaveDraftButton = ({
   onSaveDraft,
   draftLastSavedDateTimeString,
@@ -16,6 +18,7 @@ export const FormHeaderSaveDraftButton = ({
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
+  const colorScheme = useFormColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -31,17 +34,19 @@ export const FormHeaderSaveDraftButton = ({
       {isMobile ? (
         <IconButton
           variant="solid"
+          colorScheme={colorScheme}
           cursor="pointer"
           aria-label={t(
             'features.publicForm.components.saveDraft.button.label',
           )}
-          icon={<BiSave color="primary.500" />}
+          icon={<BiSave />}
           onClick={onSaveDraft}
         />
       ) : (
         <Button
           onClick={onSaveDraft}
           variant="inverseOutline"
+          colorScheme={colorScheme}
           leftIcon={<BiSave fontSize="1.25rem" />}
           aria-label={t(
             'features.publicForm.components.saveDraft.button.label',

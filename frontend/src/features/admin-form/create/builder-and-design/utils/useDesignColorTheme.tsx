@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 
+import { FormColorTheme } from '~shared/types'
+
 import { useCreateTabForm } from '../useCreateTabForm'
 import { startPageDataSelector, useDesignStore } from '../useDesignStore'
 
-export const useDesignColorTheme = () => {
+export const useDesignColorTheme = (): FormColorTheme | undefined => {
   const { data: form } = useCreateTabForm()
   const startPageData = useDesignStore(useMemo(() => startPageDataSelector, []))
   const colorTheme = useMemo(
