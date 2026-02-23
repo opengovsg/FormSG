@@ -57,7 +57,7 @@ export const MiniHeader = ({
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
   const enableFormHeaderSaveDraftButton =
-    true || gb?.isOn(featureFlags.enableSaveDraftButtonHeader) || isTest
+    gb?.isOn(featureFlags.enableSaveDraftButtonHeader) || isTest
 
   return (
     <Slide
