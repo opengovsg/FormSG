@@ -20,21 +20,8 @@ export type EmailAdminDataField = {
 }
 
 export type EmailDataFields =
-  | EmailRespondentConfirmationField
   | EmailDataCollationToolField
   | EmailAdminDataField
-
-export interface EmailData {
-  autoReplyData: EmailRespondentConfirmationField[]
-  dataCollationData: EmailDataCollationToolField[]
-  formData: EmailAdminDataField[]
-}
-
-export interface EmailDataForOneField {
-  autoReplyData?: EmailRespondentConfirmationField
-  dataCollationData?: EmailDataCollationToolField
-  formData: EmailAdminDataField
-}
 
 export interface IAttachmentInfo {
   filename: string
