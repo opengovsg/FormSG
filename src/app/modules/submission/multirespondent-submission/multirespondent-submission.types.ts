@@ -99,3 +99,8 @@ export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
     content: undefined
   }
 }
+
+export type MrfJwtPayload = {
+  prevSubmissionId: string
+  currentWorkflowStep: number
+}

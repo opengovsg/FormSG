@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
@@ -25,6 +26,7 @@ import {
 } from 'src/types'
 
 import expressHandler from '../../../../../__tests__/unit/backend/helpers/jest-express'
+import config from '../../../config/config'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
@@ -49,6 +51,9 @@ import {
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
+import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
+import * as SubmissionService from '../../submission/submission.service'
 import * as VerificationController from '../verification.controller'
 import {
   FieldNotFoundInTransactionError,
@@ -91,6 +96,8 @@ jest.mock('../../myinfo/myinfo.service')
 const MockMyInfoService = jest.mocked(MyInfoService)
 jest.mock('../../sgid/sgid.service')
 const MockSgidService = jest.mocked(SgidService)
+jest.mock('../../submission/submission.service')
+const MockSubmissionService = jest.mocked(SubmissionService)
 
 const mockSpOidcServiceClass = jest.mocked(
   MockSpOidcServiceClass.mock.instances[0],
@@ -2014,6 +2021,326 @@ describe('Verification controller', () => {
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    describe('with MRF JWT verification', () => {
+      const MOCK_PREVIOUS_SUBMISSION_ID = new ObjectId().toHexString()
+      const MOCK_WORKFLOW_STEP = 2
+      const MOCK_MRF_JWT_PAYLOAD: MrfJwtPayload = {
+        prevSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+        currentWorkflowStep: MOCK_WORKFLOW_STEP,
+      }
+      const MOCK_MRF_JWT = jwt.sign(MOCK_MRF_JWT_PAYLOAD, config.sessionSecret)
+      const MOCK_COOKIE_NAME = getMrfCookieName({
+        formId: MOCK_FORM_ID,
+        previousSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+      })
+
+      const MOCK_MRF_REQ = expressHandler.mockRequest({
+        body: {
+          answer: MOCK_ANSWER,
+          previousSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+        },
+        params: {
+          formId: MOCK_FORM_ID,
+          transactionId: MOCK_TRANSACTION_ID,
+          fieldId: MOCK_FIELD_ID,
+          otpPrefix: MOCK_OTP_PREFIX,
+        },
+        cookies: {
+          [MOCK_COOKIE_NAME]: MOCK_MRF_JWT,
+        },
+      })
+
+      it('should return 201 when MRF JWT is valid and all checks pass', async () => {
+        // Arrange
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          okAsync({
+            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
+            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
+            submissionTime: '1st Jan 2024, 12:00:00 pm',
+            payments: null,
+            mrf: {
+              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
+            },
+          } as any),
+        )
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).toHaveBeenCalledWith(
+          'multirespondent',
+          MOCK_FORM_ID,
+          MOCK_PREVIOUS_SUBMISSION_ID,
+        )
+        expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+          EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+      })
+
+      it('should return 400 when submission metadata cannot be found for given formId and previousSubmissionId', async () => {
+        // Arrange
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          okAsync(null), // Submission not found for this form
+        )
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).toHaveBeenCalledWith(
+          'multirespondent',
+          MOCK_FORM_ID,
+          MOCK_PREVIOUS_SUBMISSION_ID,
+        )
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when previousSubmissionId does not match JWT', async () => {
+        // Arrange
+        const differentPreviousSubmissionId = new ObjectId().toHexString()
+        const reqWithDifferentSubmissionId = expressHandler.mockRequest({
+          body: {
+            answer: MOCK_ANSWER,
+            previousSubmissionId: differentPreviousSubmissionId, // Different from JWT
+          },
+          params: {
+            formId: MOCK_FORM_ID,
+            transactionId: MOCK_TRANSACTION_ID,
+            fieldId: MOCK_FIELD_ID,
+            otpPrefix: MOCK_OTP_PREFIX,
+          },
+          cookies: {
+            [getMrfCookieName({
+              formId: MOCK_FORM_ID,
+              previousSubmissionId: differentPreviousSubmissionId,
+            })]: MOCK_MRF_JWT,
+          },
+        })
+
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          okAsync({
+            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
+            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
+            submissionTime: '1st Jan 2024, 12:00:00 pm',
+            payments: null,
+            mrf: {
+              workflowCurrentStepNumber: MOCK_WORKFLOW_STEP,
+            },
+          } as any),
+        )
+
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          reqWithDifferentSubmissionId,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).toHaveBeenCalledWith(
+          'multirespondent',
+          MOCK_FORM_ID,
+          MOCK_PREVIOUS_SUBMISSION_ID,
+        )
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when workflow step does not match', async () => {
+        // Arrange
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          okAsync({
+            number: Number(MOCK_PREVIOUS_SUBMISSION_ID),
+            refNo: MOCK_PREVIOUS_SUBMISSION_ID,
+            submissionTime: '1st Jan 2024, 12:00:00 pm',
+            payments: null,
+            mrf: {
+              workflowCurrentStepNumber: 3, // Different workflow step
+            },
+          } as any),
+        )
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).toHaveBeenCalledWith(
+          'multirespondent',
+          MOCK_FORM_ID,
+          MOCK_PREVIOUS_SUBMISSION_ID,
+        )
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when MRF JWT cookie is missing', async () => {
+        // Arrange
+        const reqWithoutCookie = expressHandler.mockRequest({
+          body: {
+            answer: MOCK_ANSWER,
+            previousSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+          },
+          params: {
+            formId: MOCK_FORM_ID,
+            transactionId: MOCK_TRANSACTION_ID,
+            fieldId: MOCK_FIELD_ID,
+            otpPrefix: MOCK_OTP_PREFIX,
+          },
+          cookies: {}, // No MRF cookie
+        })
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          reqWithoutCookie,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).not.toHaveBeenCalled()
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 400 when MRF JWT is invalid', async () => {
+        // Arrange
+        const reqWithInvalidJwt = expressHandler.mockRequest({
+          body: {
+            answer: MOCK_ANSWER,
+            previousSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+          },
+          params: {
+            formId: MOCK_FORM_ID,
+            transactionId: MOCK_TRANSACTION_ID,
+            fieldId: MOCK_FIELD_ID,
+            otpPrefix: MOCK_OTP_PREFIX,
+          },
+          cookies: {
+            [MOCK_COOKIE_NAME]: 'invalid-jwt-token',
+          },
+        })
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          reqWithInvalidJwt,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).not.toHaveBeenCalled()
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
+
+      it('should return 404 when submission is not found', async () => {
+        // Arrange
+        MockSubmissionService.getSubmissionMetadata.mockReturnValueOnce(
+          errAsync(new DatabaseError('Submission not found')),
+        )
+        const expectedResponse = {
+          message: 'Sorry, something went wrong. Please refresh and try again.',
+        }
+
+        // Act
+        await VerificationController._handleGenerateOtp(
+          MOCK_MRF_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+          MOCK_FORM_ID,
+        )
+        expect(
+          MockSubmissionService.getSubmissionMetadata,
+        ).toHaveBeenCalledWith(
+          'multirespondent',
+          MOCK_FORM_ID,
+          MOCK_PREVIOUS_SUBMISSION_ID,
+        )
+        expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+        expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+      })
     })
   })
 

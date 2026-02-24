@@ -37,40 +37,39 @@ const getVerifiedFieldFromResponse = (
   )
   if (!verifiedKeyMatch) return null
 
-  const [, verifiedKey, stepNumber] = verifiedKeyMatch
-  const stepSuffix = stepNumber ? ` (Step ${stepNumber})` : ''
+  const [, verifiedKey] = verifiedKeyMatch
 
   switch (verifiedKey as VerifiedKeys) {
     case VerifiedKeys.SpUinFin:
       return {
-        question: SPCPFieldTitle.SpNric + stepSuffix,
+        question: SPCPFieldTitle.SpNric,
         fieldType: BasicField.Nric,
         answer: value,
-        _id: SPCPFieldTitle.SpNric + stepSuffix,
+        _id: SPCPFieldTitle.SpNric,
       }
 
     case VerifiedKeys.CpUen:
       return {
-        question: SPCPFieldTitle.CpUen + stepSuffix,
+        question: SPCPFieldTitle.CpUen,
         fieldType: BasicField.ShortText,
         answer: value,
-        _id: SPCPFieldTitle.CpUen + stepSuffix,
+        _id: SPCPFieldTitle.CpUen,
       }
 
     case VerifiedKeys.CpUid:
       return {
-        question: SPCPFieldTitle.CpUid + stepSuffix,
+        question: SPCPFieldTitle.CpUid,
         fieldType: BasicField.Nric,
         answer: value,
-        _id: SPCPFieldTitle.CpUid + stepSuffix,
+        _id: SPCPFieldTitle.CpUid,
       }
 
     case VerifiedKeys.SgidUinFin:
       return {
-        question: SgidFieldTitle.SgidNric + stepSuffix,
+        question: SgidFieldTitle.SgidNric,
         fieldType: 'nric',
         answer: value,
-        _id: SgidFieldTitle.SgidNric + stepSuffix,
+        _id: SgidFieldTitle.SgidNric,
       }
 
     default:
@@ -144,7 +143,7 @@ export const processDecryptedContentV3 = async (
 
       const decryptedResponse = transformInputsToOutputs(ff, response.answer)
       if (decryptedResponse && 'myInfo' in ff) {
-        decryptedResponse.question = `[MyInfo] ${decryptedResponse.question} `
+        decryptedResponse.question = `[Myinfo] ${decryptedResponse.question} `
       }
       return decryptedResponse
     })

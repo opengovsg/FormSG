@@ -1,13 +1,16 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { ok } from 'neverthrow'
+import jwt from 'jsonwebtoken'
+import { errAsync, okAsync, Result } from 'neverthrow'
 
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   SendFormOtpResponseDto,
 } from '../../../../shared/types'
 import { SALT_ROUNDS } from '../../../../shared/utils/verification'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
@@ -19,7 +22,11 @@ import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
+import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
+import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
+import * as SubmissionService from '../submission/submission.service'
 
+import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
 import { mapRouteError } from './verification.util'
@@ -90,10 +97,10 @@ export const handleCreateVerificationTransaction: ControllerHandler<
 export const _handleGenerateOtp: ControllerHandler<
   { transactionId: string; formId: string; fieldId: string; otpPrefix: string },
   SendFormOtpResponseDto | ErrorDto,
-  { answer: string }
+  { answer: string; previousSubmissionId?: string }
 > = async (req, res) => {
   const { transactionId, formId, fieldId } = req.params
-  const { answer } = req.body
+  const { answer, previousSubmissionId } = req.body
   const senderIp = getRequestIp(req)
 
   const logMeta = {
@@ -107,6 +114,82 @@ export const _handleGenerateOtp: ControllerHandler<
     FormService.retrieveFullFormById(formId)
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
+        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
+        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
+        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
+        if (previousSubmissionId) {
+          const mrfCookie =
+            req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
+          return Result.fromThrowable(
+            () => jwt.verify(mrfCookie, config.sessionSecret) as MrfJwtPayload,
+            (error) => {
+              logger.error({
+                message: 'Failed to decode MRF JWT',
+                meta: logMeta,
+                error,
+              })
+              return new MrfJwtValidationError('Failed to decode MRF JWT')
+            },
+          )()
+            .mapErr((error) => {
+              logger.error({
+                message: 'Failed to verify MRF JWT',
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+            .asyncAndThen((decoded) => {
+              return SubmissionService.getSubmissionMetadata(
+                FormResponseMode.Multirespondent,
+                formId,
+                decoded.prevSubmissionId,
+              )
+                .andThen((foundMrfSubmissionMetadata) => {
+                  // Validate all MRF JWT conditions
+                  // 1. submission is present, belongs to the same form
+                  // 2. previousSubmissionId in JWT matches that in request body (from client FE context)
+                  // 3. workflow step in JWT matches that of submission
+
+                  if (
+                    !foundMrfSubmissionMetadata ||
+                    decoded.prevSubmissionId !== previousSubmissionId ||
+                    foundMrfSubmissionMetadata.mrf
+                      ?.workflowCurrentStepNumber !==
+                      decoded.currentWorkflowStep
+                  ) {
+                    logger.error({
+                      message: 'MRF JWT submission mismatch',
+                      meta: {
+                        ...logMeta,
+                        jwtSubmissionIdFromMetadata: decoded.prevSubmissionId,
+                        previousSubmissionId: previousSubmissionId,
+                        submissionWorkflowStepFromMetadata:
+                          foundMrfSubmissionMetadata?.mrf
+                            ?.workflowCurrentStepNumber,
+                        jwtWorkflowStep: decoded.currentWorkflowStep,
+                      },
+                    })
+                    return errAsync(
+                      new MrfJwtValidationError('MRF JWT validation failed'),
+                    )
+                  }
+
+                  // MRF JWT is valid, skip SPCP/MyInfo verification
+                  return okAsync(form)
+                })
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Failed to verify MRF JWT',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            })
+        }
+
+        // No previousSubmissionId, proceed with SPCP/MyInfo verification
         setFormTags(form)
         const { authType } = form
         switch (authType) {
@@ -169,9 +252,10 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           default:
-            return ok(form)
+            return okAsync(form)
         }
       })
+      // Step 3: Generate OTP
       .andThen((form) =>
         generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
           ({ otp, hashedOtp, otpPrefix }) =>
@@ -216,6 +300,7 @@ export const handleGenerateOtp = [
   celebrate({
     [Segments.BODY]: Joi.object({
       answer: Joi.string().required(),
+      previousSubmissionId: Joi.string().optional(),
     }),
   }),
   _handleGenerateOtp,

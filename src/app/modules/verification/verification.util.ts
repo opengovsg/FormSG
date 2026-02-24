@@ -53,6 +53,7 @@ import {
 import {
   FieldNotFoundInTransactionError,
   MissingHashDataError,
+  MrfJwtValidationError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
   OtpRetryExceededError,
@@ -215,6 +216,7 @@ export const mapRouteError: MapRouteError = (
     case MyInfoMissingLoginCookieError:
     case MyInfoInvalidLoginCookieError:
     case MyInfoCookieStateError:
+    case MrfJwtValidationError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.BAD_REQUEST,

@@ -235,7 +235,7 @@ describe('SpOidcUtil', () => {
       const result = createNdiResponsesV3FromRecord(ndiResponses)
 
       expect(result).toEqual({
-        'SingPass Validated NRIC (Step 1)': {
+        'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
           answer: 'S1234567A',
         },
@@ -251,11 +251,11 @@ describe('SpOidcUtil', () => {
       const result = createNdiResponsesV3FromRecord(ndiResponses)
 
       expect(result).toEqual({
-        'CorpPass Validated UEN (Step 1)': {
+        'CorpPass Validated UEN': {
           fieldType: BasicField.ShortText,
           answer: 'UEN12345',
         },
-        'CorpPass Validated UID (Step 1)': {
+        'CorpPass Validated UID': {
           fieldType: BasicField.Nric,
           answer: 'S1234567A',
         },
