@@ -14,11 +14,8 @@ import {
   EmailAdminDataField,
   EmailDataCollationToolField,
   EmailDataFields,
-  EmailDataForOneField,
-  EmailRespondentConfirmationField,
   IAttachmentInfo,
   MapRouteError,
-  SPCPFieldTitle,
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -257,55 +254,6 @@ export const getAnswerForSignature = (
   }
 }
 
-/**
- *  Formats the response for sending to the submitter (autoReplyData),
- *  the table that is sent to the admin (formData),
- *  and the json used by data collation tool (dataCollationData).
- *
- * @param response
- * @param hashedFields Field IDs hashed to verify answers provided by MyInfo
- * @returns an object containing three sets of formatted responses
- */
-export const getFormattedResponse = (
-  response: ResponseFormattedForEmail,
-  hashedFields: Set<string>,
-): EmailDataForOneField => {
-  const { question, answer, fieldType, isVisible } = response
-  const answerSplitByNewLine = answer.split('\n')
-
-  let autoReplyData: EmailRespondentConfirmationField | undefined
-  let dataCollationData: EmailDataCollationToolField | undefined
-  // Auto reply email will contain only visible fields
-  if (isVisible) {
-    autoReplyData = {
-      question, // No prefixes for autoreply
-      answerTemplate: answerSplitByNewLine,
-      fieldType,
-    }
-  }
-
-  // Headers are excluded from JSON data
-  if (fieldType !== BasicField.Section) {
-    dataCollationData = {
-      question: getJsonPrefixedQuestion(response),
-      answer,
-    }
-  }
-
-  // Send all the fields to admin
-  const formData = {
-    question: getFormDataPrefixedQuestion(response, hashedFields),
-    answerTemplate: answerSplitByNewLine,
-    answer,
-    fieldType,
-  }
-  return {
-    autoReplyData,
-    dataCollationData,
-    formData,
-  }
-}
-
 export const mapRouteError: MapRouteError = (error) => {
   switch (error.constructor) {
     case DatabasePayloadSizeError:
@@ -521,56 +469,6 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
 }
 
 /**
- * Helper function to mask the front of a string
- * Used to mask NRICs in Corppass Validated UID
- * @param field The string to be masked
- * @param charsToReveal The number of characters at the tail to reveal
- */
-const maskStringHead = (field: string, charsToReveal = 4): string => {
-  // Defensive, in case a negative number is passed in
-  // the entire string is masked
-  if (charsToReveal < 0) return '*'.repeat(field.length)
-
-  return field.length >= charsToReveal
-    ? '*'.repeat(field.length - charsToReveal) + field.substr(-charsToReveal)
-    : field
-}
-
-/**
- * Helper function that masks the UID on the last
- * field of autoReplyData using maskStringHead function
- */
-const maskUidOnLastField = (
-  autoReplyData: EmailRespondentConfirmationField[],
-): EmailRespondentConfirmationField[] => {
-  // Mask corppass UID and show only last 4 chars in autoreply to form filler
-  // This does not affect response email to form admin
-  // Function assumes corppass UID is last in the autoReplyData array
-  // TODO(#1104): Refactor to move validation and construction of parsedResponses in class constructor
-  // This will allow for proper tagging of corppass UID field instead of checking field title and position
-
-  return autoReplyData.map(
-    (autoReplyField: EmailRespondentConfirmationField, index) => {
-      if (
-        autoReplyField.question === SPCPFieldTitle.CpUid && // Check field title
-        index === autoReplyData.length - 1 // Check field position
-      ) {
-        const maskedAnswerTemplate = autoReplyField.answerTemplate.map(
-          (answer) => maskStringHead(answer, 4),
-        )
-        return {
-          question: autoReplyField.question,
-          answerTemplate: maskedAnswerTemplate,
-          fieldType: autoReplyField.fieldType,
-        }
-      } else {
-        return autoReplyField
-      }
-    },
-  )
-}
-
-/**
  * Function to extract information for email json field from response
  * Json field is used for data collation tool
  */
@@ -623,29 +521,6 @@ const getFormFormattedResponse = (
   }
 }
 
-/**
- * Function to extract information for email autoreply field from response
- * Autoreply field is used to send confirmation emails
- */
-const getAutoReplyFormattedResponse = (
-  response: ResponseFormattedForEmail,
-): EmailRespondentConfirmationField | undefined => {
-  const { question, answer, isVisible, answerTemplate } = response
-  const answerSplitByNewLine = answerTemplate ?? answer.split('\n')
-  // Auto reply email will contain only visible fields
-  if (isVisible !== false) {
-    return {
-      question, // No prefixes for autoreply
-      answerTemplate: answerSplitByNewLine,
-      ...(response.fieldType === BasicField.Signature && {
-        answer: response.answer,
-      }), // add signature answer for PDF generation
-      fieldType: response.fieldType,
-    }
-  }
-  return undefined
-}
-
 export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<MyInfoKey>
@@ -679,27 +554,6 @@ export class SubmissionEmailObj {
     return compact(dataCollationFormattedData)
   }
 
-  /**
-   * Getter function to return autoReplyData for confirmation emails to respondent
-   * If FormAuthType is CP, return a masked version
-   */
-  get autoReplyData(): EmailRespondentConfirmationField[] {
-    // Compact is necessary because getAutoReplyFormattedResponse
-    // will return undefined for non-visible fields
-    const unmaskedAutoReplyData = compact(
-      this.parsedResponses.flatMap((response) =>
-        createFormattedDataForOneField(
-          response,
-          this.hashedFields,
-          getAutoReplyFormattedResponse,
-        ),
-      ),
-    )
-
-    return this.authType === FormAuthType.CP
-      ? maskUidOnLastField(unmaskedAutoReplyData)
-      : unmaskedAutoReplyData
-  }
   /**
    * Getter function to return formData which is used to send responses to admin
    */

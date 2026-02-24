@@ -1,5 +1,4 @@
 import {
-  generateSingleAnswerAutoreply,
   generateSingleAnswerFormData,
   generateSingleAnswerJson,
 } from '__tests__/unit/backend/helpers/generate-email-data'
@@ -18,7 +17,7 @@ import {
   MyInfoAttribute,
   TableRow,
 } from '../../../../../../shared/types'
-import { SingleAnswerFieldResponse, SPCPFieldTitle } from '../../../../../types'
+import { SingleAnswerFieldResponse } from '../../../../../types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
@@ -87,16 +86,12 @@ describe('email-submission.util', () => {
         new Set(),
         FormAuthType.NIL,
       )
-      const expectedAutoReplyData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
-        generateSingleAnswerAutoreply,
-      )
       const expectedDataCollationData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerJson,
       )
       const expectedFormData = ALL_SINGLE_SUBMITTED_RESPONSES.map(
         generateSingleAnswerFormData,
       )
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
@@ -110,79 +105,6 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
       expect(emailData.dataCollationData).toEqual([])
-      expect(emailData.autoReplyData).toEqual([
-        generateSingleAnswerAutoreply(response),
-      ])
-      expect(emailData.formData).toEqual([
-        generateSingleAnswerFormData(response),
-      ])
-    })
-
-    it('should exclude non-visible fields from autoreply data', () => {
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        isVisible: false,
-      })
-
-      const emailData = new SubmissionEmailObj(
-        [response],
-        new Set(),
-        FormAuthType.NIL,
-      )
-
-      expect(emailData.dataCollationData).toEqual([
-        generateSingleAnswerJson(response),
-      ])
-      expect(emailData.autoReplyData).toEqual([])
-      expect(emailData.formData).toEqual([
-        generateSingleAnswerFormData(response),
-      ])
-    })
-
-    it('should include undefined isVisible fields from autoreply data', async () => {
-      // Arrange
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        isVisible: undefined,
-      })
-
-      // Assert
-      const emailData = new SubmissionEmailObj(
-        [response],
-        new Set(),
-        FormAuthType.NIL,
-      )
-
-      // Assert
-      expect(emailData.dataCollationData).toEqual([
-        generateSingleAnswerJson(response),
-      ])
-      expect(emailData.autoReplyData).toEqual([
-        generateSingleAnswerAutoreply(response),
-      ])
-      expect(emailData.formData).toEqual([
-        generateSingleAnswerFormData(response),
-      ])
-    })
-
-    it('should include isVisible true fields from autoreply data', async () => {
-      // Arrange
-      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
-        isVisible: true,
-      })
-
-      // Assert
-      const emailData = new SubmissionEmailObj(
-        [response],
-        new Set(),
-        FormAuthType.NIL,
-      )
-
-      // Assert
-      expect(emailData.dataCollationData).toEqual([
-        generateSingleAnswerJson(response),
-      ])
-      expect(emailData.autoReplyData).toEqual([
-        generateSingleAnswerAutoreply(response),
-      ])
       expect(emailData.formData).toEqual([
         generateSingleAnswerFormData(response),
       ])
@@ -206,11 +128,6 @@ describe('email-submission.util', () => {
         { question: `${TABLE_PREFIX}${question}`, answer: secondRow },
       ]
 
-      const expectedAutoReplyData = [
-        { question, answerTemplate: [firstRow], fieldType: BasicField.Table },
-        { question, answerTemplate: [secondRow], fieldType: BasicField.Table },
-      ]
-
       const expectedFormData = [
         {
           question: `${TABLE_PREFIX}${question}`,
@@ -227,7 +144,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -244,9 +160,6 @@ describe('email-submission.util', () => {
       const answer = answerArray.join(', ')
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: [answer], fieldType },
-      ]
       const expectedFormData = [
         {
           question,
@@ -257,7 +170,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -275,9 +187,6 @@ describe('email-submission.util', () => {
       const expectedDataCollationData = [
         { question: `${ATTACHMENT_PREFIX}${question}`, answer },
       ]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: [answer], fieldType },
-      ]
       const expectedFormData = [
         {
           question: `${ATTACHMENT_PREFIX}${question}`,
@@ -288,7 +197,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -307,9 +215,6 @@ describe('email-submission.util', () => {
       const { question, fieldType } = response
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n'), fieldType },
-      ]
       const expectedFormData = [
         {
           question,
@@ -320,7 +225,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -343,9 +247,6 @@ describe('email-submission.util', () => {
       const expectedDataCollationData = [
         { question: `${TABLE_PREFIX}${question}`, answer },
       ]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n'), fieldType },
-      ]
       const expectedFormData = [
         {
           question: `${TABLE_PREFIX}${question}`,
@@ -356,7 +257,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -374,9 +274,6 @@ describe('email-submission.util', () => {
       const answer = answerArray.join(', ')
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: answer.split('\n'), fieldType },
-      ]
       const expectedFormData = [
         {
           question,
@@ -387,7 +284,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -402,12 +298,9 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
 
-      const { question, answer, fieldType } = response
+      const { question, answer } = response
 
       const expectedDataCollationData = [{ question, answer }]
-      const expectedAutoReplyData = [
-        { question, answerTemplate: [answer], fieldType },
-      ]
       const expectedFormData = [
         {
           question: `${VERIFIED_PREFIX}${question}`,
@@ -418,7 +311,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -454,18 +346,6 @@ describe('email-submission.util', () => {
           answer: vehicleResponse.answer,
         },
       ]
-      const expectedAutoReplyData = [
-        {
-          question: nameResponse.question,
-          answerTemplate: [nameResponse.answer],
-          fieldType: nameResponse.fieldType,
-        },
-        {
-          question: vehicleResponse.question,
-          answerTemplate: [vehicleResponse.answer],
-          fieldType: vehicleResponse.fieldType,
-        },
-      ]
       const expectedFormData = [
         {
           // Prefixed because its ID was in the Set
@@ -484,7 +364,6 @@ describe('email-submission.util', () => {
       ]
 
       expect(emailData.dataCollationData).toEqual(expectedDataCollationData)
-      expect(emailData.autoReplyData).toEqual(expectedAutoReplyData)
       expect(emailData.formData).toEqual(expectedFormData)
     })
 
@@ -532,52 +411,6 @@ describe('email-submission.util', () => {
         },
       ]
       expect(submissionEmailObj.formData).toEqual(correctFormData)
-    })
-
-    it('should return the response in correct email confirmation format when autoReplyData() method is called', () => {
-      const correctConfirmation = [
-        {
-          question: response1.question,
-          answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
-            '\n',
-          ),
-          fieldType: response1.fieldType,
-        },
-        // Note that response2 is not shown in Email Confirmation as isVisible is false
-      ]
-      expect(submissionEmailObj.autoReplyData).toEqual(correctConfirmation)
-    })
-
-    it('should mask corppass UID if FormAuthType is Corppass and autoReplyData() method is called', () => {
-      const responseCPUID = getResponse(
-        String(new ObjectId()),
-        'S1234567A',
-      ) as ProcessedFieldResponse
-
-      responseCPUID.question = SPCPFieldTitle.CpUid
-      responseCPUID.isVisible = true
-
-      const submissionEmailObjCP = new SubmissionEmailObj(
-        [response1, response2, responseCPUID],
-        hashedFields,
-        FormAuthType.CP,
-      )
-      const correctConfirmation = [
-        {
-          question: response1.question,
-          answerTemplate: (response1 as ResponseFormattedForEmail).answer.split(
-            '\n',
-          ),
-          fieldType: response1.fieldType,
-        },
-        // Note that response2 is not shown in Email Confirmation as isVisible is false
-        {
-          question: responseCPUID.question,
-          answerTemplate: ['*****567A'],
-          fieldType: responseCPUID.fieldType,
-        },
-      ]
-      expect(submissionEmailObjCP.autoReplyData).toEqual(correctConfirmation)
     })
   })
 })
