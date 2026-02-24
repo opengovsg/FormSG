@@ -19,9 +19,7 @@ export type EmailDataField = {
   answerTemplate: string[]
 }
 
-export type EmailDataFields =
-  | EmailDataCollationToolField
-  | EmailDataField
+export type EmailDataFields = EmailDataCollationToolField | EmailDataField
 
 export interface IAttachmentInfo {
   filename: string

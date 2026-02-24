@@ -11,8 +11,8 @@ import {
   SIGNATURE_CAPTURED_STRING,
 } from '../../../../../shared/utils/signature'
 import {
-  EmailDataField,
   EmailDataCollationToolField,
+  EmailDataField,
   EmailDataFields,
   IAttachmentInfo,
   MapRouteError,
@@ -555,7 +555,7 @@ export class SubmissionEmailObj {
   }
 
   /**
-   * Used to send email responses.  
+   * Used to send email responses.
    */
   get formData(): EmailDataField[] {
     return this.parsedResponses.flatMap((response) =>
