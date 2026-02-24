@@ -35,7 +35,7 @@ export const VerifiedKeyToSPCPTitleMap: Record<VerifiedKeys, SPCPFieldTitle> = {
 /**
  * Maps SPCP VerifiedKeys to their titles. Used during decryption/population of outputs.
  * Since MRF verifiedContent contains step data in the keys, we handle and retain them during mapping
- * (e.g. 'uinFin (Step 1)' -> 'SingPass Validated NRIC (Step 1)')
+ * (e.g. 'uinFin (Step 1)' -> 'SingPass Validated NRIC')
  * @param key VerifiedKeys string with step number
  * @returns SPCPFieldTitle with step number
  */
@@ -45,8 +45,7 @@ export function mapVerifiedKeyToSPCPTitle(key: string): string {
   if (!match) return key
 
   const baseKey = match[1] as VerifiedKeys
-  const stepSuffix = match[2] ?? ''
 
   const mappedTitle = VerifiedKeyToSPCPTitleMap[baseKey]
-  return mappedTitle ? `${mappedTitle}${stepSuffix}` : key
+  return mappedTitle ? `${mappedTitle}` : key
 }

@@ -11,6 +11,7 @@ import {
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import { Environment } from '../../../../types'
 import config from '../../../config/config'
+import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
@@ -58,7 +59,11 @@ import {
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import { createPublicMultirespondentSubmissionDto } from './multirespondent-submission.utils'
+import {
+  createMrfCookie,
+  createPublicMultirespondentSubmissionDto,
+  getMrfCookieName,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -330,6 +335,24 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           message: 'Get encrypted response using submissionId success',
           meta: logMeta,
         })
+
+        // Set MRF cookie with submission details when loading the form
+        const mrfCookie = createMrfCookie({
+          prevSubmissionId: submissionId,
+          currentWorkflowStep: responseData.workflowStep + 1,
+        })
+
+        res.cookie(
+          getMrfCookieName({ formId, previousSubmissionId: submissionId }),
+          mrfCookie,
+          {
+            maxAge: spcpMyInfoConfig.spCookieMaxAge,
+            httpOnly: true,
+            sameSite: 'strict', // strict because it is set by form.gov.sg and use on form.gov.sg only
+            secure: !config.isDevOrTest,
+          },
+        )
+
         return res.json(responseData)
       })
       .mapErr((error) => {

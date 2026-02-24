@@ -443,7 +443,7 @@ describe('Multirespondent Submission Middleware', () => {
       })
 
       jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
-        'SingPass Validated NRIC (Step 1)': {
+        'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
           answer: 'S9812379B',
         },
@@ -473,7 +473,7 @@ describe('Multirespondent Submission Middleware', () => {
         jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord),
       ).toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
-        'SingPass Validated NRIC (Step 1)',
+        'SingPass Validated NRIC',
       )
       expect(
         jest.mocked(VerifiedContentService.getVerifiedContent),
@@ -513,7 +513,7 @@ describe('Multirespondent Submission Middleware', () => {
       })
 
       jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
-        'SingPass Validated NRIC (Step 1)': {
+        'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
           answer: 'S1234567A',
         },
@@ -575,7 +575,7 @@ describe('Multirespondent Submission Middleware', () => {
         'encrypted-verified-content',
       )
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
-        'SingPass Validated NRIC (Step 1)',
+        'SingPass Validated NRIC',
       )
     })
   })

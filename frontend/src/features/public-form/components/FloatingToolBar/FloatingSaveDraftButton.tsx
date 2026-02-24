@@ -6,6 +6,8 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
+
 export const FloatingSaveDraftButton = ({
   onSaveDraft,
   draftLastSavedDateTimeString,
@@ -15,6 +17,7 @@ export const FloatingSaveDraftButton = ({
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
+  const colorScheme = useFormColorScheme()
 
   const tooltipLabel = draftLastSavedDateTimeString
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
@@ -29,12 +32,13 @@ export const FloatingSaveDraftButton = ({
     >
       <IconButton
         variant="outline"
+        colorScheme={colorScheme}
         cursor="pointer"
         _focus={{
           boxShadow: 0,
         }}
         aria-label={t('features.publicForm.components.saveDraft.button.label')}
-        icon={<BiSave color="primary.500" />}
+        icon={<BiSave />}
         onClick={onSaveDraft}
       />
     </Tooltip>

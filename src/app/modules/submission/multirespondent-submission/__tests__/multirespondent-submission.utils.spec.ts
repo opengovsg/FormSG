@@ -786,7 +786,7 @@ describe('multirespondent-submission.utils', () => {
     it('should handle Ndi fields correctly', () => {
       const formFields: FormFieldSchema[] = []
       const responses: FieldResponsesV3 = {
-        'SingPass Validated NRIC (Step 1)': {
+        'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
           answer: 'S1234567A',
         },
@@ -799,7 +799,7 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         {
-          question: 'SingPass Validated NRIC (Step 1)',
+          question: 'SingPass Validated NRIC',
           answer: 'S1234567A',
           fieldType: BasicField.Nric,
         },

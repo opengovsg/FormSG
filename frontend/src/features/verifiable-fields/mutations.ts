@@ -26,12 +26,14 @@ interface UseVerifiableFieldMutationsProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
   formId: string
   getTransactionId: () => Promise<string>
+  previousSubmissionId?: string
 }
 
 export const useVerifiableFieldMutations = ({
   schema,
   formId,
   getTransactionId,
+  previousSubmissionId,
 }: UseVerifiableFieldMutationsProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -56,9 +58,10 @@ export const useVerifiableFieldMutations = ({
         transactionId,
         fieldId: schema._id,
         answer,
+        previousSubmissionId,
       })
     },
-    [formId, getTransactionId, schema._id],
+    [formId, getTransactionId, previousSubmissionId, schema._id],
   )
 
   const triggerSendOtpMutation = useMutation(handleSendOtp, {
