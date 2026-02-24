@@ -13,7 +13,7 @@ import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   BounceType,
-  EmailAdminDataField,
+  EmailDataField,
   IFormHasEmailSchema,
   IPopulatedForm,
   ISubmissionSchema,
@@ -693,7 +693,7 @@ export class MailService {
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     submissionAttachments?: Mail.Attachment[]
-    formData: EmailAdminDataField[]
+    formData: EmailDataField[]
     dataCollationData?: {
       question: string
       answer: string | number
