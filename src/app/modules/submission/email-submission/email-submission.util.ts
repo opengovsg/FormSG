@@ -494,14 +494,17 @@ const getDataCollationFormattedResponse = (
 }
 
 /**
- * Function to extract information for email form field from response
- * Form field is used to send responses to admin
+ * Used to format response for email payload.
+ * Used for both respondent copy and admin notification emails which are standardized to be the same.
  */
 const getFormFormattedResponse = (
   response: ResponseFormattedForEmail,
   hashedFields: Set<MyInfoKey>,
-): EmailDataField => {
-  const { answer, fieldType } = response
+): EmailDataField | undefined => {
+  const { answer, fieldType, isVisible } = response
+  if (isVisible === false) {
+    return undefined
+  }
   const answerSplitByNewLine = answer.split('\n')
 
   if (fieldType === BasicField.Signature) {
@@ -558,13 +561,15 @@ export class SubmissionEmailObj {
    * Used to send email responses.
    */
   get formData(): EmailDataField[] {
-    return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
-        response,
-        this.hashedFields,
-        getFormFormattedResponse,
-      ),
-    )
+    return this.parsedResponses
+      .flatMap((response) =>
+        createFormattedDataForOneField(
+          response,
+          this.hashedFields,
+          getFormFormattedResponse,
+        ),
+      )
+      .filter((field): field is EmailDataField => field !== undefined)
   }
 }
 
