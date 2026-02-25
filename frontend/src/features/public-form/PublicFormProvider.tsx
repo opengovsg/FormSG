@@ -745,13 +745,7 @@ export const PublicFormProvider = ({
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [
-    error,
-    data,
-    previousSubmissionId,
-    isSubmissionSecretKeyInvalid,
-    t,
-  ])
+  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
