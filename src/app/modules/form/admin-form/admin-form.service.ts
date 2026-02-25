@@ -1596,6 +1596,19 @@ export const createWorkflowStep = (
       ),
     )
   }
+  // TODO(singpassMrf): remove this check when MyInfo fields can be added to step 2+ workflow steps onwards
+  const editFieldIds = newWorkflowStep.edit ?? []
+  const myInfoFields = originalForm.form_fields.filter(
+    (field) => field.myInfo && editFieldIds.includes(field._id.toString()),
+  )
+
+  if (myInfoFields.length > 0 && !isFirstStep) {
+    return errAsync(
+      new MalformedParametersError(
+        'Cannot assign MyInfo fields to workflow steps',
+      ),
+    )
+  }
 
   const selectedApprovalField = newWorkflowStep.approval_field
   if (selectedApprovalField) {
@@ -1692,8 +1705,7 @@ export const updateFormWorkflowStep = (
     )
   }
 
-  // Check if any fields in the updated workflow step are MyInfo fields
-  // TODO: remove this check when MyInfo fields can be added to step 2+ workflow steps onwards
+  // TODO(singpassMrf): remove this check when MyInfo fields can be added to step 2+ workflow steps onwards
   const editFieldIds = updatedWorkflowStep.edit ?? []
   const myInfoFields = originalForm.form_fields.filter(
     (field) => field.myInfo && editFieldIds.includes(field._id.toString()),
