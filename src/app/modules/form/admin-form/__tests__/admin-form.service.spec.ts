@@ -79,6 +79,7 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  MyInfoAttribute,
   PaymentChannel,
   PaymentType,
   SettingsUpdateDto,
@@ -3823,6 +3824,276 @@ describe('admin-form.service', () => {
           fieldOptions: ['option1'],
           optionsToRecipientsMap: {},
         })
+      })
+    })
+  })
+
+  describe('createWorkflowStep', () => {
+    describe('myinfo field restriction', () => {
+      const MYINFO_FIELD_ID = new ObjectId().toHexString()
+      const REGULAR_FIELD_ID = new ObjectId().toHexString()
+      const EMAIL_FIELD_ID = new ObjectId().toHexString()
+
+      const MOCK_FORM_FIELDS = [
+        {
+          _id: MYINFO_FIELD_ID,
+          fieldType: BasicField.ShortText,
+          title: 'MyInfo Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        },
+        {
+          _id: REGULAR_FIELD_ID,
+          fieldType: BasicField.ShortText,
+          title: 'Regular Field',
+        },
+        {
+          _id: EMAIL_FIELD_ID,
+          fieldType: BasicField.Email,
+          title: 'Email Field',
+        },
+      ]
+
+      it('should reject creating a non-first step with myinfo fields in edit', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: MOCK_FORM_FIELDS,
+          workflow: [
+            {
+              _id: 'step0',
+              workflow_type: WorkflowType.Static,
+              emails: ['step1@example.com'],
+              edit: [MYINFO_FIELD_ID],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const newStep = {
+          workflow_type: WorkflowType.Static,
+          emails: ['step2@example.com'],
+          edit: [MYINFO_FIELD_ID],
+        }
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          newStep as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+      })
+
+      it('should allow creating a non-first step with only regular fields in edit', async () => {
+        // Arrange
+        const mockFormId = new ObjectId().toHexString()
+        const mockUpdatedWorkflow = [
+          {
+            _id: 'step0',
+            workflow_type: WorkflowType.Static,
+            emails: ['step1@example.com'],
+            edit: [MYINFO_FIELD_ID],
+          },
+          {
+            workflow_type: WorkflowType.Static,
+            emails: ['step2@example.com'],
+            edit: [REGULAR_FIELD_ID],
+          },
+        ]
+        const mockForm = {
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: MOCK_FORM_FIELDS,
+          workflow: [mockUpdatedWorkflow[0]],
+        } as unknown as IPopulatedForm
+
+        jest
+          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({
+              _id: mockFormId,
+              workflow: mockUpdatedWorkflow,
+            }),
+          })
+
+        const newStep = {
+          workflow_type: WorkflowType.Static,
+          emails: ['step2@example.com'],
+          edit: [REGULAR_FIELD_ID],
+        }
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          newStep as any,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should allow creating the first step with myinfo fields in edit', async () => {
+        // Arrange
+        const mockFormId = new ObjectId().toHexString()
+        const mockUpdatedWorkflow = [
+          {
+            workflow_type: WorkflowType.Static,
+            emails: ['step1@example.com'],
+            edit: [MYINFO_FIELD_ID],
+          },
+        ]
+        const mockForm = {
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: MOCK_FORM_FIELDS,
+          workflow: [],
+        } as unknown as IPopulatedForm
+
+        jest
+          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({
+              _id: mockFormId,
+              workflow: mockUpdatedWorkflow,
+            }),
+          })
+
+        const newStep = {
+          workflow_type: WorkflowType.Static,
+          emails: ['step1@example.com'],
+          edit: [MYINFO_FIELD_ID],
+        }
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          newStep as any,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+      })
+    })
+  })
+
+  describe('updateFormWorkflowStep', () => {
+    describe('myinfo field restriction', () => {
+      const MYINFO_FIELD_ID = new ObjectId().toHexString()
+      const REGULAR_FIELD_ID = new ObjectId().toHexString()
+
+      const MOCK_FORM_FIELDS = [
+        {
+          _id: MYINFO_FIELD_ID,
+          fieldType: BasicField.ShortText,
+          title: 'MyInfo Name',
+          myInfo: { attr: MyInfoAttribute.Name },
+        },
+        {
+          _id: REGULAR_FIELD_ID,
+          fieldType: BasicField.ShortText,
+          title: 'Regular Field',
+        },
+      ]
+
+      it('should reject updating a non-first step to include myinfo fields in edit', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: MOCK_FORM_FIELDS,
+          workflow: [
+            {
+              _id: 'step0',
+              workflow_type: WorkflowType.Static,
+              emails: ['step1@example.com'],
+              edit: [MYINFO_FIELD_ID],
+            },
+            {
+              _id: 'step1',
+              workflow_type: WorkflowType.Static,
+              emails: ['step2@example.com'],
+              edit: [REGULAR_FIELD_ID],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const updatedStep = {
+          _id: 'step1',
+          workflow_type: WorkflowType.Static,
+          emails: ['step2@example.com'],
+          edit: [MYINFO_FIELD_ID],
+        }
+
+        // Act
+        const result = await AdminFormService.updateFormWorkflowStep(
+          mockForm,
+          1,
+          updatedStep as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+      })
+
+      it('should allow updating a non-first step with only regular fields', async () => {
+        // Arrange
+        const mockFormId = new ObjectId().toHexString()
+        const mockWorkflow = [
+          {
+            _id: 'step0',
+            workflow_type: WorkflowType.Static,
+            emails: ['step1@example.com'],
+            edit: [MYINFO_FIELD_ID],
+          },
+          {
+            _id: 'step1',
+            workflow_type: WorkflowType.Static,
+            emails: ['step2@example.com'],
+            edit: [REGULAR_FIELD_ID],
+          },
+        ]
+        const mockForm = {
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: MOCK_FORM_FIELDS,
+          workflow: mockWorkflow,
+        } as unknown as IPopulatedForm
+
+        jest
+          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({
+              _id: mockFormId,
+              workflow: mockWorkflow,
+            }),
+          })
+
+        const updatedStep = {
+          _id: 'step1',
+          workflow_type: WorkflowType.Static,
+          emails: ['step2@example.com'],
+          edit: [REGULAR_FIELD_ID],
+        }
+
+        // Act
+        const result = await AdminFormService.updateFormWorkflowStep(
+          mockForm,
+          1,
+          updatedStep as any,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
       })
     })
   })
