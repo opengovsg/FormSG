@@ -11,8 +11,8 @@ import {
   SIGNATURE_CAPTURED_STRING,
 } from '../../../../../shared/utils/signature'
 import {
-  EmailAdminDataField,
   EmailDataCollationToolField,
+  EmailDataField,
   EmailDataFields,
   IAttachmentInfo,
   MapRouteError,
@@ -416,7 +416,7 @@ export const mapRouteError: MapRouteError = (error) => {
  * @returns concatenated response to hash
  */
 export const concatAttachmentsAndResponses = (
-  formData: EmailAdminDataField[],
+  formData: EmailDataField[],
   attachments: IAttachmentInfo[],
 ): string => {
   let response = ''
@@ -500,7 +500,7 @@ const getDataCollationFormattedResponse = (
 const getFormFormattedResponse = (
   response: ResponseFormattedForEmail,
   hashedFields: Set<MyInfoKey>,
-): EmailAdminDataField => {
+): EmailDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
 
@@ -555,9 +555,9 @@ export class SubmissionEmailObj {
   }
 
   /**
-   * Getter function to return formData which is used to send responses to admin
+   * Used to send email responses.
    */
-  get formData(): EmailAdminDataField[] {
+  get formData(): EmailDataField[] {
     return this.parsedResponses.flatMap((response) =>
       createFormattedDataForOneField(
         response,
