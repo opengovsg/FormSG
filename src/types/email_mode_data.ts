@@ -12,29 +12,14 @@ export type EmailDataCollationToolField = {
   answer: string
 }
 
-export type EmailAdminDataField = {
+export type EmailDataField = {
   question: string
   answer: string
   fieldType: BasicField
   answerTemplate: string[]
 }
 
-export type EmailDataFields =
-  | EmailRespondentConfirmationField
-  | EmailDataCollationToolField
-  | EmailAdminDataField
-
-export interface EmailData {
-  autoReplyData: EmailRespondentConfirmationField[]
-  dataCollationData: EmailDataCollationToolField[]
-  formData: EmailAdminDataField[]
-}
-
-export interface EmailDataForOneField {
-  autoReplyData?: EmailRespondentConfirmationField
-  dataCollationData?: EmailDataCollationToolField
-  formData: EmailAdminDataField
-}
+export type EmailDataFields = EmailDataCollationToolField | EmailDataField
 
 export interface IAttachmentInfo {
   filename: string

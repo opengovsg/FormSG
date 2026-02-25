@@ -10,7 +10,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import {
-  EmailAdminDataField,
+  EmailDataField,
   IAttachmentInfo,
   IEmailSubmissionSchema,
   IPopulatedEmailForm,
@@ -47,7 +47,7 @@ const logger = createLoggerWithLabel(module)
  * @returns errAsync(SubmissionHashError) if error occurred while hashing
  */
 export const hashSubmission = (
-  formData: EmailAdminDataField[],
+  formData: EmailDataField[],
   attachments: IAttachmentInfo[],
 ): ResultAsync<SubmissionHash, SubmissionHashError> => {
   const baseString = concatAttachmentsAndResponses(formData, attachments)

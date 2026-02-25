@@ -3,7 +3,7 @@ import { OperationOptions } from 'retry'
 
 import { AutoReplyOptions } from '../../../../shared/types'
 import {
-  EmailAdminDataField,
+  EmailDataField,
   IFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
@@ -30,10 +30,10 @@ export type SendAutoReplyEmailsArgs = {
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
   submissionAttachments?: Mail.Attachment[]
   responsesData: (Pick<
-    EmailAdminDataField,
+    EmailDataField,
     'question' | 'answerTemplate' | 'fieldType'
   > & {
-    answer?: EmailAdminDataField['answer']
+    answer?: EmailDataField['answer']
   })[]
   autoReplyMailDatas: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
@@ -61,8 +61,8 @@ export type AutoreplySummaryRenderData = {
   refNo: ISubmissionSchema['_id']
   formTitle: IFormSchema['title']
   submissionTime: string
-  formData: (Pick<EmailAdminDataField, 'question' | 'answerTemplate'> & {
-    answer?: EmailAdminDataField['answer']
+  formData: (Pick<EmailDataField, 'question' | 'answerTemplate'> & {
+    answer?: EmailDataField['answer']
   })[]
   formUrl: string
 }
@@ -75,7 +75,7 @@ export type SubmissionToAdminHtmlData = {
   refNo: string
   formTitle: string
   submissionTime: string
-  formData: EmailAdminDataField[]
+  formData: EmailDataField[]
   dataCollationData?: {
     question: string
     answer: string | number

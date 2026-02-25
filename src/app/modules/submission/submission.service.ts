@@ -22,7 +22,7 @@ import {
   SubmissionType,
 } from '../../../../shared/types'
 import {
-  EmailRespondentConfirmationField,
+  EmailDataField,
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,
@@ -458,7 +458,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
 }: {
   form: IPopulatedForm
   submission: S
-  responsesData: EmailRespondentConfirmationField[]
+  responsesData: EmailDataField[]
   submissionAttachments?: Mail.Attachment[]
   recipientData: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
