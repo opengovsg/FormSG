@@ -1,5 +1,3 @@
-import puppeteer from 'puppeteer-core'
-
 import { aws as AwsConfig } from 'src/app/config/config'
 import {
   PdfGenerationLambdaFailureError,
@@ -8,7 +6,6 @@ import {
 } from 'src/app/modules/core/core.errors'
 import {
   _generatePdfFromHtmlLambdaForTest,
-  _generatePdfFromHtmlLocallyForTest,
   generatePdfFromHtml,
 } from 'src/app/utils/convert-html-to-pdf'
 
@@ -29,44 +26,6 @@ describe('convert-html-to-pdf', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  describe('generatePdfFromHtmlLocally', () => {
-    const mockPage = {
-      setContent: jest.fn(),
-      pdf: jest.fn().mockResolvedValue(MOCK_PDF_BUFFER),
-    }
-
-    const mockBrowser = {
-      newPage: jest.fn().mockResolvedValue(mockPage),
-      close: jest.fn(),
-    }
-
-    beforeEach(() => {
-      ;(puppeteer.launch as jest.Mock).mockResolvedValue(mockBrowser)
-    })
-
-    // TODO: [PDF-LAMBDA-GENERATION]: Remove tests for local pdf generation once lambda is rolled out
-    it('should generate PDF locally using puppeteer', async () => {
-      // Act
-      const result = await _generatePdfFromHtmlLocallyForTest(MOCK_HTML)
-
-      // Assert
-      expect(puppeteer.launch).toHaveBeenCalled()
-      expect(mockPage.setContent).toHaveBeenCalledWith(MOCK_HTML, {
-        waitUntil: 'networkidle0',
-      })
-      expect(mockPage.pdf).toHaveBeenCalledWith({
-        format: 'A4',
-        printBackground: true,
-        margin: {
-          top: '20px',
-          bottom: '40px',
-        },
-      })
-      expect(mockBrowser.close).toHaveBeenCalled()
-      expect(result).toEqual(MOCK_PDF_BUFFER)
-    })
   })
 
   describe('generatePdfFromHtmlLambda', () => {
@@ -150,16 +109,14 @@ describe('convert-html-to-pdf', () => {
     })
   })
 
-  // TODO: [PDF-LAMBDA-GENERATION]: Remove tests for shadowing and using the correct output based on isUseLambdaOutput once lambda is rolled out
   describe('generatePdfFromHtml', () => {
     beforeEach(() => {
       AwsConfig.pdfGeneratorLambda.invoke = jest.fn()
     })
 
-    it('should use lambda output when isUseLambdaOutput is true and not use local output and AwsConfig.pdfGeneratorLambdaFunctionName is defined', async () => {
+    it('should call generatePdfFromHtmlLambda and use its output', async () => {
       // Arrange
       const mockLambdaBuffer = Buffer.from('lambda pdf content')
-      const mockLocalBuffer = Buffer.from('local pdf content')
 
       const DUMMY_PDF_GENERATOR_FUNCTION_NAME =
         'dummy-pdf-generator-function-name'
@@ -177,81 +134,17 @@ describe('convert-html-to-pdf', () => {
         mockLambdaResponse,
       )
 
-      // Mock local response
-      const mockPage = {
-        setContent: jest.fn(),
-        pdf: jest.fn().mockResolvedValue(mockLocalBuffer),
-      }
-      const mockBrowser = {
-        newPage: jest.fn().mockResolvedValue(mockPage),
-        close: jest.fn(),
-      }
-      ;(puppeteer.launch as jest.Mock).mockResolvedValue(mockBrowser)
-
       // Act
       const result = await generatePdfFromHtml(MOCK_HTML, true)
 
       // Assert
+      // Verify the lambda is invoked with correct parameters
+      expect(AwsConfig.pdfGeneratorLambda.invoke).toHaveBeenCalledWith({
+        FunctionName: DUMMY_PDF_GENERATOR_FUNCTION_NAME,
+        Payload: JSON.stringify({ html: MOCK_HTML }),
+      })
+      // Verify the result from lambda is returned
       expect(result).toEqual(mockLambdaBuffer)
-      expect(result).not.toEqual(mockLocalBuffer)
-
-      // Verify the lambda invocation parameters
-      expect(AwsConfig.pdfGeneratorLambda.invoke).toHaveBeenCalledWith({
-        FunctionName: DUMMY_PDF_GENERATOR_FUNCTION_NAME,
-        Payload: JSON.stringify({ html: MOCK_HTML }),
-      })
-    })
-
-    it('should generate PDFs using both methods in parallel regardless of isUseLambdaOutput setting if AwsConfig.pdfGeneratorLambdaFunctionName is defined', async () => {
-      // Arrange
-      const mockLambdaBuffer = Buffer.from('lambda pdf content')
-      const mockLocalBuffer = Buffer.from('local pdf content')
-
-      // Mock lambda response
-      const mockLambdaResponse = {
-        Payload: JSON.stringify({
-          statusCode: 200,
-          body: mockLambdaBuffer.toString('base64'),
-        }),
-      }
-
-      // Mock AWS config to ensure lambda function name is defined
-      const DUMMY_PDF_GENERATOR_FUNCTION_NAME =
-        'dummy-pdf-generator-function-name'
-      AwsConfig.pdfGeneratorLambdaFunctionName =
-        DUMMY_PDF_GENERATOR_FUNCTION_NAME
-      ;(AwsConfig.pdfGeneratorLambda.invoke as jest.Mock)
-        .mockResolvedValueOnce(mockLambdaResponse)
-        .mockResolvedValueOnce(mockLambdaResponse)
-
-      // Mock local response
-      const mockPage = {
-        setContent: jest.fn(),
-        pdf: jest.fn().mockResolvedValue(mockLocalBuffer),
-      }
-      const mockBrowser = {
-        newPage: jest.fn().mockResolvedValue(mockPage),
-        close: jest.fn(),
-      }
-      ;(puppeteer.launch as jest.Mock).mockResolvedValue(mockBrowser)
-
-      // Act
-      await Promise.all([
-        generatePdfFromHtml(MOCK_HTML, true),
-        generatePdfFromHtml(MOCK_HTML, false),
-      ])
-
-      // Assert
-      // Both lambda and local generation should be called for each invocation
-      expect(AwsConfig.pdfGeneratorLambda.invoke).toHaveBeenCalledTimes(2)
-      expect(puppeteer.launch).toHaveBeenCalledTimes(0)
-      expect(mockPage.pdf).toHaveBeenCalledTimes(0)
-
-      // Verify the lambda invocation parameters
-      expect(AwsConfig.pdfGeneratorLambda.invoke).toHaveBeenCalledWith({
-        FunctionName: DUMMY_PDF_GENERATOR_FUNCTION_NAME,
-        Payload: JSON.stringify({ html: MOCK_HTML }),
-      })
     })
   })
 })
