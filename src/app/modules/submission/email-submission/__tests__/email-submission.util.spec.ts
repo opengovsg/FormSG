@@ -64,18 +64,34 @@ describe('email-submission.util', () => {
       '',
     ) as ProcessedFieldResponse
 
+    const response3 = getResponse(
+      String(new ObjectId()),
+      '',
+    ) as ProcessedFieldResponse
+
+    const response4 = getResponse(
+      String(new ObjectId()),
+      '',
+    ) as ProcessedFieldResponse
+
     response1.fieldType = BasicField.YesNo
-    response2.fieldType = BasicField.YesNo
+    response2.fieldType = BasicField.ShortText
     response1.isVisible = true
-    response2.isVisible = false
+    response2.isVisible = true
+    response3.fieldType = BasicField.LongText
+    response3.isVisible = false
+    response4.fieldType = BasicField.Mobile
+    response4.isVisible = undefined
 
     const hashedFields = new Set([
+      new ObjectId().toHexString(),
+      new ObjectId().toHexString(),
       new ObjectId().toHexString(),
       new ObjectId().toHexString(),
     ])
     const authType = FormAuthType.NIL
     const submissionEmailObj = new SubmissionEmailObj(
-      [response1, response2],
+      [response1, response2, response3, response4],
       hashedFields,
       authType,
     )
@@ -105,6 +121,61 @@ describe('email-submission.util', () => {
         FormAuthType.NIL,
       )
       expect(emailData.dataCollationData).toEqual([])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
+    it('should exclude non-visible fields from formData', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: false,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.formData).toEqual([])
+    })
+
+    it('should include undefined isVisible fields from formData', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: undefined,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
+    it('should include isVisible true fields from formData', () => {
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: true,
+      })
+
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
       expect(emailData.formData).toEqual([
         generateSingleAnswerFormData(response),
       ])
@@ -381,6 +452,20 @@ describe('email-submission.util', () => {
           ),
           answer: (response2 as ResponseFormattedForEmail).answer,
         },
+        // Data collation data stil includes isVisible false fields
+        {
+          question: getJsonPrefixedQuestion(
+            response3 as ResponseFormattedForEmail,
+          ),
+          answer: (response3 as ResponseFormattedForEmail).answer,
+        },
+        // Data collation data stil includes isVisible undefined fields
+        {
+          question: getJsonPrefixedQuestion(
+            response4 as ResponseFormattedForEmail,
+          ),
+          answer: (response4 as ResponseFormattedForEmail).answer,
+        },
       ]
       expect(submissionEmailObj.dataCollationData).toEqual(correctJson)
     })
@@ -408,6 +493,18 @@ describe('email-submission.util', () => {
           ),
           answer: (response2 as ResponseFormattedForEmail).answer,
           fieldType: response2.fieldType,
+        },
+        // Form data stil includes isVisible undefined fields
+        {
+          question: getFormDataPrefixedQuestion(
+            response4 as ResponseFormattedForEmail,
+            hashedFields,
+          ),
+          answerTemplate: (response2 as ResponseFormattedForEmail).answer.split(
+            '\n',
+          ),
+          answer: (response4 as ResponseFormattedForEmail).answer,
+          fieldType: response4.fieldType,
         },
       ]
       expect(submissionEmailObj.formData).toEqual(correctFormData)
