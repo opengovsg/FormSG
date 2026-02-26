@@ -56,9 +56,9 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
-    "@aws-sdk/client-lambda": "^3.693.0",
-    "@aws-sdk/client-s3": "^3.775.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.998.0",
+    "@aws-sdk/client-lambda": "^3.998.0",
+    "@aws-sdk/client-s3": "^3.998.0",
     "@azure/msal-node": "^5.0.2",
     "@faker-js/faker": "^8.4.1",
     "@growthbook/growthbook": "^1.1.0",
