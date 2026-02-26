@@ -204,7 +204,7 @@ const generatePdfAttachmentIfRequired = ({
     formUrl: `${config.app.appUrl}/${form._id}`,
   }
 
-  return generateAutoreplyPdf(autoReplyData, true)
+  return generateAutoreplyPdf(autoReplyData)
     .map((pdfBuffer) => ({
       filename: `RefNo ${submission.id}.pdf`,
       content: Buffer.copyBytesFrom(pdfBuffer),
