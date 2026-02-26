@@ -87,7 +87,6 @@ describe('mail.utils', () => {
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledWith(
         expectedHtml._unsafeUnwrap(),
-        true,
       )
       expect(result._unsafeUnwrap()).toEqual(MOCK_PDF_BUFFER)
     })
@@ -138,7 +137,6 @@ describe('mail.utils', () => {
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledWith(
         expectedHtml._unsafeUnwrap(),
-        true,
       )
       expect(result._unsafeUnwrap()).toEqual(MOCK_PDF_BUFFER)
     })

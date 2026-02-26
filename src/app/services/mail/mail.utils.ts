@@ -171,7 +171,7 @@ export const generateAutoreplyPdf = (
   return safeRenderFile(pathToTemplate, pdfRenderData).andThen(
     (summaryHtml) => {
       return ResultAsync.fromPromise(
-        generatePdfFromHtml(summaryHtml, isUseLambdaOutput),
+        generatePdfFromHtml(summaryHtml),
         (error) => {
           logger.error({
             meta: {

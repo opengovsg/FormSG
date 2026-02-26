@@ -135,7 +135,7 @@ describe('convert-html-to-pdf', () => {
       )
 
       // Act
-      const result = await generatePdfFromHtml(MOCK_HTML, true)
+      const result = await generatePdfFromHtml(MOCK_HTML)
 
       // Assert
       // Verify the lambda is invoked with correct parameters

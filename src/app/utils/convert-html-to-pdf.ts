@@ -97,11 +97,9 @@ const generatePdfFromHtmlLambda = (
  */
 export const generatePdfFromHtml = async (
   summaryHtml: string,
-  isUseLambdaOutput: boolean,
 ): Promise<Buffer> => {
   const logMeta = {
     action: 'generatePdfFromHtml',
-    isUseLambdaOutput,
   }
 
   logger.info({

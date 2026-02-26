@@ -228,7 +228,7 @@ const _generatePaymentInvoiceAsPdf = (
     })
 
     return ResultAsync.fromPromise(
-      generatePdfFromHtml(invoiceHtml, isUseLambdaOutput),
+      generatePdfFromHtml(invoiceHtml),
       (error) => new InvoicePdfGenerationError(String(error)),
     )
   })
