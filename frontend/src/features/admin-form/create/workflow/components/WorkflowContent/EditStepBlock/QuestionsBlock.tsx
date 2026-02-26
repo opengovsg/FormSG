@@ -43,6 +43,8 @@ export const QuestionsBlock = ({
       if (!isFillableField) {
         return false
       }
+      // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
+      // supported in workflow steps >= 2.
       if (isMyInfoField && !isFirstStep) {
         return false
       }

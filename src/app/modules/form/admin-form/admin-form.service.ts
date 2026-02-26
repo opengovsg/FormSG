@@ -1597,6 +1597,24 @@ export const createWorkflowStep = (
     )
   }
 
+  // TODO(MRF-MYINFO): Remove this restriction once Myinfo fields are
+  // supported in workflow steps >= 2. Currently, only step 1 (the first
+  // respondent) can include Myinfo fields to prevent approvers from
+  // overriding verified data.
+  if (!isFirstStep) {
+    const editFieldIds = new Set((newWorkflowStep.edit ?? []).map(String))
+    const myInfoFieldInEdit = originalForm.form_fields.find(
+      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
+    )
+    if (myInfoFieldInEdit) {
+      return errAsync(
+        new MalformedParametersError(
+          'Myinfo fields can only be edited in the first step of the workflow',
+        ),
+      )
+    }
+  }
+
   const selectedApprovalField = newWorkflowStep.approval_field
   if (selectedApprovalField) {
     const yesNoFieldIds = originalForm.form_fields
@@ -1716,6 +1734,24 @@ export const updateFormWorkflowStep = (
         'First step of workflow cannot be an approval step',
       ),
     )
+  }
+
+  // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
+  // supported in workflow steps >= 2. Currently, only step 1 (the first
+  // respondent) can include MyInfo fields to prevent approvers from
+  // overriding verified data.
+  if (!isFirstStep) {
+    const editFieldIds = new Set((updatedWorkflowStep.edit ?? []).map(String))
+    const myInfoFieldInEdit = originalForm.form_fields.find(
+      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
+    )
+    if (myInfoFieldInEdit) {
+      return errAsync(
+        new MalformedParametersError(
+          'MyInfo fields cannot be edited in non-first steps of the workflow',
+        ),
+      )
+    }
   }
 
   const selectedApprovalField = updatedWorkflowStep.approval_field
