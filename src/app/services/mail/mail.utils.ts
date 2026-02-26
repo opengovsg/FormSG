@@ -152,7 +152,6 @@ const generatePdfRenderData = ({
 
 export const generateAutoreplyPdf = (
   autoReplyData: AutoReplyData,
-  isUseLambdaOutput: boolean,
 ): ResultAsync<Buffer, AutoreplyPdfGenerationError> => {
   const pathToTemplate = `${__dirname}/../../views/templates/submit-form-summary-pdf.server.view.html`
 

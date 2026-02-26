@@ -32,7 +32,7 @@ describe('mail.utils', () => {
       }
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
@@ -81,7 +81,7 @@ describe('mail.utils', () => {
       )
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
@@ -131,7 +131,7 @@ describe('mail.utils', () => {
       )
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
