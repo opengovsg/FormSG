@@ -32,7 +32,7 @@ describe('mail.utils', () => {
       }
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
@@ -81,13 +81,12 @@ describe('mail.utils', () => {
       )
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledWith(
         expectedHtml._unsafeUnwrap(),
-        true,
       )
       expect(result._unsafeUnwrap()).toEqual(MOCK_PDF_BUFFER)
     })
@@ -132,13 +131,12 @@ describe('mail.utils', () => {
       )
 
       // Act
-      const result = await generateAutoreplyPdf(autoReplyData, true)
+      const result = await generateAutoreplyPdf(autoReplyData)
 
       // Assert
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledOnce()
       expect(MockConvertHtmlToPdf.generatePdfFromHtml).toHaveBeenCalledWith(
         expectedHtml._unsafeUnwrap(),
-        true,
       )
       expect(result._unsafeUnwrap()).toEqual(MOCK_PDF_BUFFER)
     })

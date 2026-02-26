@@ -53,13 +53,10 @@ export const downloadPaymentInvoice: ControllerHandler<{
           })
         },
       )
-      const isUseLambdaOutput =
-        req.growthbook?.isOn(featureFlags.lambdaPdfGeneration) ?? false
       logger.info({
         message: 'Growthbook flag for lambda pdf generation',
         meta: {
           ...logMeta,
-          isUseLambdaOutput,
           growthbookAttributes: req.growthbook?.getAttributes(),
           lambdaPdfGenerationGrowthbookValue: req.growthbook?.getFeatureValue(
             featureFlags.lambdaPdfGeneration,
@@ -71,10 +68,9 @@ export const downloadPaymentInvoice: ControllerHandler<{
       return {
         payment,
         populatedForm,
-        isUseLambdaOutput,
       }
     })
-    .andThen(({ payment, populatedForm, isUseLambdaOutput }) => {
+    .andThen(({ payment, populatedForm }) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -86,7 +82,6 @@ export const downloadPaymentInvoice: ControllerHandler<{
       return PaymentProofService.generatePaymentInvoiceUrl(
         payment,
         populatedForm,
-        isUseLambdaOutput,
       )
     })
     .map((pdfUrl) => {
