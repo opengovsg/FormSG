@@ -180,7 +180,6 @@ const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
   receiptUrl: string,
-  isUseLambdaOutput: boolean,
 ): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
     return errAsync(new StripeFetchError('Receipt url not ready'))
@@ -237,7 +236,6 @@ const _generatePaymentInvoiceAsPdf = (
 export const generatePaymentInvoiceUrl = (
   payment: IPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
-  isUseLambdaOutput: boolean,
 ): ResultAsync<
   string,
   | StripeFetchError
@@ -253,7 +251,6 @@ export const generatePaymentInvoiceUrl = (
             completedPayment,
             populatedForm,
             receiptUrl,
-            isUseLambdaOutput,
           ),
         )
         .andThen((pdfBuffer) =>
