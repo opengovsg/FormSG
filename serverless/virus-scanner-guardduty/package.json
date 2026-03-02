@@ -29,7 +29,6 @@
     "@types/jest": "^29.5.1",
     "@types/lodash": "^4.17.24",
     "@types/node": "^18.0.1",
-    "@types/pino": "7.0.5",
     "@types/uuid": "^9.0.2",
     "@types/watch": "^1.0.3",
     "dotenv-cli": "^6.0.0",
