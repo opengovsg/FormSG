@@ -51,9 +51,6 @@ importers:
       '@types/node':
         specifier: ^18.0.1
         version: 18.19.80
-      '@types/pino':
-        specifier: 7.0.5
-        version: 7.0.5
       '@types/uuid':
         specifier: ^9.0.2
         version: 9.0.8
@@ -933,10 +930,6 @@ packages:
 
   '@types/node@18.19.80':
     resolution: {integrity: sha512-kEWeMwMeIvxYkeg1gTc01awpwLbfMRZXdIhwRcakd/KlK53jmRC26LqcbIt7fnAQTu5GzlnWmzA3H6+l1u6xxQ==}
-
-  '@types/pino@7.0.5':
-    resolution: {integrity: sha512-wKoab31pknvILkxAF8ss+v9iNyhw5Iu/0jLtRkUD74cNfOOLJNnqfFKAv0r7wVaTQxRZtWrMpGfShwwBjOcgcg==}
-    deprecated: This is a stub types definition. pino provides its own type definitions, so you do not need this installed.
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
@@ -5866,10 +5859,6 @@ snapshots:
   '@types/node@18.19.80':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/pino@7.0.5':
-    dependencies:
-      pino: 8.1.0
 
   '@types/responselike@1.0.3':
     dependencies:
