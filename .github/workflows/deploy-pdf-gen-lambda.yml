@@ -34,6 +34,9 @@ jobs:
     name: Deploy PDF Generator Lambda using SAM
     runs-on: ubuntu-latest
     environment: ${{ inputs.gha-environment }}
+    strategy:
+      matrix:
+        node-version: [22.22]
     steps:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4
@@ -41,44 +44,24 @@ jobs:
           lfs: true
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
-
-      - name: Setup pnpm
+      - name: Instal pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.30.3
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.OS }}-pnpm-pdf-gen-${{ hashFiles('./serverless/pdf-gen-sparticuz/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.OS }}-pnpm-pdf-gen-
-
+          node-version: ${{ matrix.node-version }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
-
       - name: Install node dependencies
         working-directory: ./serverless/pdf-gen-sparticuz
         run: pnpm install
-
       - name: Deploy with SAM
         working-directory: ./serverless/pdf-gen-sparticuz
         run: pnpm run sam-deploy -- --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
