@@ -1,8 +1,0 @@
-ignoredBuiltDependencies:
-  - es5-ext
-  - unrs-resolver
-
-onlyBuiltDependencies:
-  - aws-lambda-ric
-  - aws-sdk
-  - serverless
