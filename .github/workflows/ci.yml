@@ -179,7 +179,11 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
           fail-on-cache-miss: true
-      - run: npm ci --prefix serverless/virus-scanner-guardduty
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - run: pnpm install --frozen-lockfile --prefix serverless/virus-scanner-guardduty
       - run: npm ci --prefix serverless/pdf-gen-sparticuz
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
