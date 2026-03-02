@@ -6,9 +6,9 @@
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
     "build": "tsc",
     "tsc": "tsc",
-    "dev": "npm run env && docker-compose -f docker-compose.dev.yml up --build",
-    "deploy": "npm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
-    "package": "npm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
+    "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
+    "deploy": "pnpm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
+    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
   },
   "author": "",
   "license": "ISC",

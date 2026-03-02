@@ -48,14 +48,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-      - name: Cache Node.js modules
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+      - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-scanner-${{ hashFiles('**/package-lock.json') }}
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.OS }}-pnpm-scanner-${{ hashFiles('serverless/virus-scanner-guardduty/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.OS }}-node-scanner-
-            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-pnpm-scanner-
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -63,11 +71,11 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
         working-directory: ./serverless/virus-scanner-guardduty
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/virus-scanner-guardduty
         env:
           ENV: ${{ inputs.environment }}
           CONCURRENCY: ${{ inputs.provisionedConcurrency }}
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
-        run: npm run deploy
+        run: pnpm run deploy
