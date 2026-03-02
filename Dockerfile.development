@@ -5,11 +5,15 @@ WORKDIR /opt/formsg
 
 RUN mkdir /mongodb_data
 RUN chown 1001:1001 /mongodb_data
-
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
 
 ENV NODE_OPTIONS="--max-old-space-size=2048"
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 RUN apk update && apk upgrade && \
     # Build dependencies for node_modules
     apk add --virtual native-deps \
@@ -43,12 +47,9 @@ chromium=142.0.7444.59-r0 \
     librsvg-dev && \
     apk add --no-cache \
     cairo pango librsvg && \
-    npm install --quiet node-gyp -g && \
+    pnpm add -g node-gyp && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1] --break-system-packages
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -59,18 +60,11 @@ RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/e
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
-# --legacy-peer-deps flag
-# A breaking change in the peer dependency resolution strategy was introduced in
-# npm 7. This resulted in npm throwing an error when installing packages:
-# npm ERR! code ERESOLVE
-# npm ERR! ERESOLVE unable to resolve dependency tree
-# See also:
-# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
-RUN npm install --legacy-peer-deps
+RUN pnpm install --frozen-lockfile
 
 COPY . ./
 
@@ -80,4 +74,4 @@ EXPOSE 5000
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
 # Create local AWS resources before building the app
-CMD sh init-localstack.sh && npm run dev:backend
+CMD sh init-localstack.sh && pnpm dev:backend
