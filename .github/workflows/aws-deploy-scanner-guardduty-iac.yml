@@ -38,16 +38,15 @@ jobs:
     name: virus scanner guardduty serverless
     runs-on: ubuntu-latest
     environment: ${{ inputs.gha-environment }}
+    strategy:
+      matrix:
+        node-version: [22.22]
     steps:
       - name: Checkout branch source code into runner environment
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
       - name: Instal pnpm
         uses: pnpm/action-setup@v4
         with:
