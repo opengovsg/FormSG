@@ -47,7 +47,7 @@ jobs:
         with:
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
-      - name: Instal pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.30.3
@@ -55,8 +55,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: pnpm install
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
