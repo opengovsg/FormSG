@@ -77,7 +77,7 @@ jobs:
 
       - name: Install node dependencies
         working-directory: ./serverless/pdf-gen-sparticuz
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Deploy with SAM
         working-directory: ./serverless/pdf-gen-sparticuz
