@@ -26,7 +26,7 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm run build
+RUN pnpm build
 
 ARG APP_VERSION
 ARG APP_URL
