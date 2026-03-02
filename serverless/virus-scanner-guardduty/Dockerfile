@@ -22,14 +22,6 @@ WORKDIR /function
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# !! Below comment was taken from care360 repo where the virus scanner was forked from!!
-# This is a hack to give the default lambda user permissions write access to the Local UNIX socketfile and logfile
-# The appropriate GID (990) and User (sbx_user1051) to add was found out through logging the user info at lambda runtime
-# GID and User is assumed to be deterministic and hence can be hardcoded
-# An alternative would be to get the current user + group details at runtime at the app level code, then run clamd
-# If the function breaks in the future because GID / User is non-deterministic, experiment with executing command at app runtime
-ARG IS_LAMBDA="true"
-
 COPY . .
 RUN pnpm run build
 
