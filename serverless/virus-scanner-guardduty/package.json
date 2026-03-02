@@ -18,6 +18,7 @@
     "aws-lambda-ric": "^2.1.0",
     "convict": "^6.2.4",
     "http-status-codes": "^2.2.0",
+    "lodash": "^4.17.23",
     "pino": "8.1.0",
     "ts-retry-promise": "^0.8.1",
     "uuid": "^9.0.0"
@@ -26,6 +27,7 @@
     "@types/aws-lambda": "^8.10.101",
     "@types/convict": "^6.1.1",
     "@types/jest": "^29.5.1",
+    "@types/lodash": "^4.17.24",
     "@types/node": "^18.0.1",
     "@types/pino": "7.0.5",
     "@types/uuid": "^9.0.2",

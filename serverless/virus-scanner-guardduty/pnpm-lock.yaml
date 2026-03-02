@@ -23,6 +23,9 @@ importers:
       http-status-codes:
         specifier: ^2.2.0
         version: 2.3.0
+      lodash:
+        specifier: ^4.17.23
+        version: 4.17.23
       pino:
         specifier: 8.1.0
         version: 8.1.0
@@ -42,6 +45,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.1
         version: 29.5.14
+      '@types/lodash':
+        specifier: ^4.17.24
+        version: 4.17.24
       '@types/node':
         specifier: ^18.0.1
         version: 18.19.80
@@ -922,8 +928,8 @@ packages:
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
 
-  '@types/lodash@4.17.16':
-    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
   '@types/node@18.19.80':
     resolution: {integrity: sha512-kEWeMwMeIvxYkeg1gTc01awpwLbfMRZXdIhwRcakd/KlK53jmRC26LqcbIt7fnAQTu5GzlnWmzA3H6+l1u6xxQ==}
@@ -2687,8 +2693,8 @@ packages:
   lodash.union@4.6.0:
     resolution: {integrity: sha512-c4pB2CdGrGdjMKYLA+XiRDO7Y0PRQbm/Gzg8qMj+QH+pFVAoTp5sBpO0odL3FjoPCGjK96p6qsP+yQoiLoOBcw==}
 
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+  lodash@4.17.23:
+    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
 
   log-node@8.0.3:
     resolution: {integrity: sha512-1UBwzgYiCIDFs8A0rM2QdBFo8Wd8UQ0HrSTu/MNI+/2zN3NoHRj2fhplurAyuxTYUXu3Oohugq1jAn5s05u1MQ==}
@@ -5329,7 +5335,7 @@ snapshots:
       fs-extra: 9.1.0
       js-yaml: 4.1.1
       jszip: 3.10.1
-      lodash: 4.17.21
+      lodash: 4.17.23
       memoizee: 0.4.17
       ncjsm: 4.3.2
       node-dir: 0.1.17
@@ -5352,8 +5358,8 @@ snapshots:
 
   '@serverless/event-mocks@1.1.1':
     dependencies:
-      '@types/lodash': 4.17.16
-      lodash: 4.17.21
+      '@types/lodash': 4.17.24
+      lodash: 4.17.23
 
   '@serverless/platform-client@4.5.1(supports-color@8.1.1)':
     dependencies:
@@ -5397,7 +5403,7 @@ snapshots:
       inquirer: 8.2.7(@types/node@18.19.80)
       js-yaml: 4.1.1
       jwt-decode: 3.1.2
-      lodash: 4.17.21
+      lodash: 4.17.23
       log: 6.3.2
       log-node: 8.0.3(log@6.3.2)
       make-dir: 4.0.0
@@ -5855,7 +5861,7 @@ snapshots:
     dependencies:
       '@types/node': 18.19.80
 
-  '@types/lodash@4.17.16': {}
+  '@types/lodash@4.17.24': {}
 
   '@types/node@18.19.80':
     dependencies:
@@ -7245,7 +7251,7 @@ snapshots:
 
   graphlib@2.1.8:
     dependencies:
-      lodash: 4.17.21
+      lodash: 4.17.23
 
   has-bigints@1.1.0: {}
 
@@ -7351,7 +7357,7 @@ snapshots:
       cli-cursor: 3.1.0
       cli-width: 3.0.0
       figures: 3.2.0
-      lodash: 4.17.21
+      lodash: 4.17.23
       mute-stream: 0.0.8
       ora: 5.4.1
       run-async: 2.4.1
@@ -7993,7 +7999,7 @@ snapshots:
       commander: 4.1.1
       graphlib: 2.1.8
       js-yaml: 3.14.2
-      lodash: 4.17.21
+      lodash: 4.17.23
       native-promise-only: 0.8.1
       path-loader: 1.0.12(supports-color@8.1.1)
       slash: 3.0.0
@@ -8068,7 +8074,7 @@ snapshots:
 
   lodash.union@4.6.0: {}
 
-  lodash@4.17.21: {}
+  lodash@4.17.23: {}
 
   log-node@8.0.3(log@6.3.2):
     dependencies:
@@ -8785,7 +8791,7 @@ snapshots:
       json-colorizer: 2.2.2
       json-cycle: 1.5.0
       json-refs: 3.0.15(supports-color@8.1.1)
-      lodash: 4.17.21
+      lodash: 4.17.23
       memoizee: 0.4.17
       micromatch: 4.0.8
       node-fetch: 2.7.0(encoding@0.1.13)
