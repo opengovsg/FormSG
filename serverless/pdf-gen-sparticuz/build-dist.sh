@@ -7,16 +7,16 @@ rm -rf dist/
 # Create a new dist directory
 mkdir -p dist/
 
-# Copy the necessary files for building to the dist directory (This includes the fonts, package.json, package-lock.json)
+# Copy the necessary files for building to the dist directory (This includes the fonts, package.json, pnpm-lock.yaml)
 cp -r fonts/ dist/fonts/
 cp package.json dist/
-cp package-lock.json dist/
+cp pnpm-lock.yaml dist/
 
 # Build the ts files in src/ into the /dist directory using esbuild
-npm run build-ts-dist 
+pnpm run build-ts-dist 
 
 # Install dependencies in the dist directory (including @sparticuz/chromium with required .br binaries)
 cd dist 
-npm ci --omit=dev
+pnpm install --prod --frozen-lockfile
 
-echo "⚡ Build completed successfully in the /dist directory. Run 'npm run sam-build' to build the SAM package."
+echo "⚡ Build completed successfully in the /dist directory. Run 'pnpm run sam-build' to build the SAM package."
