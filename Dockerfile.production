@@ -19,7 +19,7 @@ COPY package.json pnpm-lock.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY . ./
 

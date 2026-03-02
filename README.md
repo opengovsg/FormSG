@@ -247,7 +247,7 @@ will build both the frontend and backend then run our end-to-end tests. The test
 If you do not need to rebuild the frontend and backend, you can run
 
 ```bash
-npx playwright test
+pnpm exec playwright test
 ```
 
 #### Cross-browser testing
