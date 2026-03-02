@@ -40,12 +40,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           VITE_APP_FORMSG_SDK_MODE: 'test'
-        run: npm run build
+        run: pnpm build
       - name: Cache build artifacts
         uses: actions/cache/save@v3
         with:

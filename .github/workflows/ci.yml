@@ -62,14 +62,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-      - run: npm ci
+      - run: pnpm install
 
   build:
     needs: install
@@ -83,8 +81,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v4
@@ -92,7 +88,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
-      - run: npm run build
+      - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
@@ -117,8 +113,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v4
@@ -151,8 +145,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v4
@@ -178,8 +170,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v4
@@ -190,7 +180,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.30.3
+          version: ${{ env.PNPM_VERSION }}
       - run: pnpm install --prefix serverless/virus-scanner-guardduty
       - run: npm ci --prefix serverless/pdf-gen-sparticuz
       - name: Configure Datadog Test Visibility
@@ -199,7 +189,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: npm run test:backend:ci
+      - run: pnpm test:backend:ci
         env:
           DD_TAGS: layer:backend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -217,8 +207,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v4
@@ -226,5 +214,4 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
-      - run: npm run lint-ci
-      - run: npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm
+      - run: pnpm lint-ci
