@@ -64,7 +64,7 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
         working-directory: ./serverless/virus-scanner-guardduty
-        run: pnpm install --frozen-lockfile
+        run: pnpm install 
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/virus-scanner-guardduty
         env:

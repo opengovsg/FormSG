@@ -20,7 +20,7 @@ WORKDIR /function
 
 # install app dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 COPY . .
 RUN pnpm run build
