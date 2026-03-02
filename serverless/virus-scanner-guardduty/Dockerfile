@@ -13,11 +13,14 @@ RUN apt-get update && \
   automake \ 
   python3
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
 WORKDIR /function
 
 # install app dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # !! Below comment was taken from care360 repo where the virus scanner was forked from!!
 # This is a hack to give the default lambda user permissions write access to the Local UNIX socketfile and logfile
@@ -28,7 +31,7 @@ RUN npm ci
 ARG IS_LAMBDA="true"
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Add lambda rie to run entry.sh shell script
 ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/bin/aws-lambda-rie
