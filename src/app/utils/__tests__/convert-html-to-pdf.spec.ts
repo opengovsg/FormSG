@@ -9,7 +9,6 @@ import {
   generatePdfFromHtml,
 } from 'src/app/utils/convert-html-to-pdf'
 
-jest.mock('puppeteer-core')
 jest.mock('../../config/config')
 jest.mock('../../modules/datadog/datadog.utils', () => ({
   startStopwatch: jest.fn(() => ({
