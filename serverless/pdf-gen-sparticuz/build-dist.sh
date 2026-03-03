@@ -17,6 +17,6 @@ pnpm run build-ts-dist
 
 # Install dependencies in the dist directory (including @sparticuz/chromium with required .br binaries)
 cd dist 
-pnpm install
+pnpm install -P
 
 echo "⚡ Build completed successfully in the /dist directory. Run 'pnpm run sam-build' to build the SAM package."
