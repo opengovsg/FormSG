@@ -1,0 +1,22 @@
+{
+  "name": "FormSG-Monorepo",
+  "description": "Form Manager for Government",
+  "version": "7.0.0",
+  "homepage": "https://form.gov.sg",
+  "authors": [
+    "FormSG <formsg@open.gov.sg>"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opengovsg/formsg.git"
+  },
+  "engines": {
+    "node": ">=22.22",
+    "pnpm": ">=10.30.3"
+  },
+  "scripts": {},
+  "keywords": [],
+  "license": "ISC",
+  "packageManager": "pnpm@10.30.3"
+}
