@@ -47,6 +47,8 @@ chromium=142.0.7444.59-r0 \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1] --break-system-packages
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -58,7 +60,7 @@ RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/e
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858
 COPY package.json package-lock.json ./
-COPY shared/package.json shared/package-lock.json ./shared/
+COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
 # --legacy-peer-deps flag

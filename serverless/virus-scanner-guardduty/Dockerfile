@@ -13,22 +13,17 @@ RUN apt-get update && \
   automake \ 
   python3
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+
 WORKDIR /function
 
 # install app dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# !! Below comment was taken from care360 repo where the virus scanner was forked from!!
-# This is a hack to give the default lambda user permissions write access to the Local UNIX socketfile and logfile
-# The appropriate GID (990) and User (sbx_user1051) to add was found out through logging the user info at lambda runtime
-# GID and User is assumed to be deterministic and hence can be hardcoded
-# An alternative would be to get the current user + group details at runtime at the app level code, then run clamd
-# If the function breaks in the future because GID / User is non-deterministic, experiment with executing command at app runtime
-ARG IS_LAMBDA="true"
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Add lambda rie to run entry.sh shell script
 ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/bin/aws-lambda-rie

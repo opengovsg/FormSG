@@ -88,7 +88,7 @@ nvm use
 To install the relevant npm packages (frontend, backend, serverless functions including pdf-generator and virus-scanner), run the following in the root directory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install && npm --prefix serverless/pdf-gen-sparticuz
+pnpm install && pnpm --prefix serverless/virus-scanner-guardduty install && npm --prefix serverless/pdf-gen-sparticuz
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
@@ -128,9 +128,7 @@ docker compose up
 pnpm run dev:pdf-gen
 
 # Virus scanners - run both (only needed if you're uploading attachments)
-npm run dev:virus-scanner
-
-npm run dev:virus-scanner-guardduty
+pnpm run dev:virus-scanner-guardduty
 ```
 
 After the Docker image has finished building, the following local applications can be accessed:
