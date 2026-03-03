@@ -4,12 +4,12 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: [
     '<rootDir>',
-    '<rootDir>/serverless/virus-scanner/',
+    '<rootDir>/serverless/virus-scanner-guardduty/',
     '<rootDir>/serverless/pdf-gen-sparticuz/',
   ],
   moduleDirectories: [
     'node_modules',
-    './serverless/virus-scanner/node_modules',
+    './serverless/virus-scanner-guardduty/node_modules',
     './serverless/pdf-gen-sparticuz/node_modules',
   ],
   testEnvironment: 'node',

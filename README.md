@@ -85,10 +85,10 @@ nvm install
 nvm use
 ```
 
-To install the relevant npm packages (frontend, backend, serverless functions including pdf-generator and virus-scanner), run the following in the root directory:
+To install the relevant npm packages (frontend, backend, serverless functions including pdf-generator and GuardDuty virus-scanner), run the following in the root directory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install && npm --prefix serverless/pdf-gen-sparticuz
+npm install && npm --prefix serverless/virus-scanner-guardduty install && npm --prefix serverless/pdf-gen-sparticuz install
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
@@ -107,7 +107,8 @@ This command runs:
 
 - backend server
 - frontend server
-- emulated serverless ClamAV (legacy) virus scanner function
+- backend server
+- frontend server
 - emulated serverless GuardDuty virus scanner function
 - emulated serverless pdf generation function
 
@@ -127,9 +128,7 @@ docker compose up
 # PDF generation function (only needed if you're using features requiring PDF generation, eg, payment invoice/auto-reply PDF)
 npm run dev:pdf-gen
 
-# Virus scanners - run both (only needed if you're uploading attachments)
-npm run dev:virus-scanner
-
+# Virus scanner - run GuardDuty version (needed if you're uploading attachments)
 npm run dev:virus-scanner-guardduty
 ```
 

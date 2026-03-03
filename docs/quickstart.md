@@ -36,8 +36,9 @@ nvm use
 To install the relevant npm packages (frontend, backend and serverless modules), run the following in the root directory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install
+npm install && npm --prefix serverless/virus-scanner-guardduty install && npm --prefix serverless/pdf-gen-sparticuz install
 ```
+
 
 #### Environment Configuration
 
