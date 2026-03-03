@@ -97,10 +97,10 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "postinstall": "npm run gen:theme-typings && pnpm --prefix ../shared install",
+    "postinstall": "pnpm run gen:theme-typings && pnpm --prefix ../shared install",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
-    "build": "npx tsc && vite build",
+    "build": "pnpm exec tsc && vite build",
     "test": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -182,5 +182,12 @@
   "proxy": "http://localhost:5001",
   "msw": {
     "workerDirectory": "public"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "esbuild",
+      "msw"
+    ]
   }
 }
