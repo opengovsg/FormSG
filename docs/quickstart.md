@@ -63,7 +63,7 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 First, build the frontend for local development:
 
 ```bash
-pnpm run build:frontend
+pnpm build:frontend
 ```
 
 Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under docker-compose.yml and the React frontend on the native host.

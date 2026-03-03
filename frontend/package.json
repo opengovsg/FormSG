@@ -107,7 +107,7 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "postinstall": "pnpm run gen:theme-typings && pnpm --prefix ../shared install",
+    "postinstall": "pnpm gen:theme-typings && pnpm --prefix ../shared install",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
     "build": "pnpm exec tsc && vite build",
