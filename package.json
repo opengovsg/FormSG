@@ -53,7 +53,7 @@
     "pre-commit": "lint-staged",
     "storybook": "npm run --prefix frontend storybook",
     "postinstall:frontend": "npm --prefix frontend install",
-    "postinstall:shared": "npm --prefix shared install"
+    "postinstall:shared": "pnpm --prefix shared install"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
