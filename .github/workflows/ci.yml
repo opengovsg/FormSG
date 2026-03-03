@@ -135,7 +135,7 @@ jobs:
           DD_TAGS: layer:frontend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
-        run: npm run test:frontend
+        run: pnpm test:frontend
 
   frontend_lint:
     needs: [changes, install]
@@ -156,7 +156,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
-      - run: npm run lint:frontend
+      - run: pnpm lint-ci
 
   backend_test:
     needs: [changes, install, build]
