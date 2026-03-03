@@ -98,7 +98,7 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 First, build the frontend for local development:
 
 ```bash
-npm run build:frontend
+pnpm run build:frontend
 ```
 
 Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
@@ -119,7 +119,7 @@ Alternatively, you can run required components independently - which is what the
 
 ```bash
 # Frontend server
-npm run dev:frontend (frontend react server, compulsory)
+pnpm run dev:frontend (frontend react server, compulsory)
 
 # Backend server
 docker compose up
@@ -233,7 +233,7 @@ npm run test:backend:ci
 Frontend tests are located at [`frontend/__tests__`](./frontend/__tests__). They can be run with
 
 ```bash
-npm run test:frontend
+pnpm run test:frontend
 ```
 
 #### End-to-end tests
