@@ -6,6 +6,7 @@
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/theme-tools": "^2.2.6",
     "@datadog/browser-logs": "^4.50.1",
     "@datadog/browser-rum": "^5.27.0",
     "@emotion/react": "^11.7.0",
