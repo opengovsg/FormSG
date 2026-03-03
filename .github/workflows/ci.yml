@@ -80,7 +80,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -169,7 +169,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
       - uses: actions/download-artifact@v4
         if: always()
         with:
@@ -214,7 +214,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
