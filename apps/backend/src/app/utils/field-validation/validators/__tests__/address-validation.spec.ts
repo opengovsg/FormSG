@@ -3,7 +3,7 @@ import {
   generateDefaultField,
   generateDefaultFieldV3,
   generateNewAddressResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { mongo as mongodb } from 'mongoose'
 import { BasicField } from 'shared/types'
 

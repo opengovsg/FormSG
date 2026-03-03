@@ -1,4 +1,4 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import mongoose, { Types } from 'mongoose'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'

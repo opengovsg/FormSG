@@ -1,7 +1,7 @@
 import {
   generateDefaultFieldV3,
   generateVerifiableAnswerResponseV3,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'

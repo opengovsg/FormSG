@@ -18,5 +18,10 @@
   "scripts": {},
   "keywords": [],
   "license": "ISC",
-  "packageManager": "pnpm@10.30.3"
+  "packageManager": "pnpm@10.30.3",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.3",
+    "dotenv": "^17.3.1"
+  }
 }

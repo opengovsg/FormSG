@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'

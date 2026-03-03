@@ -1,4 +1,4 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { compareAsc } from 'date-fns'
 import { omit, times } from 'lodash'
 import moment from 'moment-timezone'

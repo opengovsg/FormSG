@@ -7,8 +7,8 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import {
   generateDefaultField,
   generateUnprocessedSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson'
 import { omit } from 'lodash'

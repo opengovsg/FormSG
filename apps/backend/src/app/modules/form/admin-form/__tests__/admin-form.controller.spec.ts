@@ -2,7 +2,7 @@
 import {
   generateDefaultField,
   generateUnprocessedSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'

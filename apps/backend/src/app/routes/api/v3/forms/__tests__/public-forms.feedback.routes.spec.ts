@@ -1,6 +1,6 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { Types } from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'

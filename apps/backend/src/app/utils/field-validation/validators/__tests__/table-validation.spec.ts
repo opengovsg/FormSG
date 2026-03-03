@@ -5,7 +5,7 @@ import {
   generateTableDropdownColumn,
   generateTableResponseV3,
   generateTableShortTextColumn,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'

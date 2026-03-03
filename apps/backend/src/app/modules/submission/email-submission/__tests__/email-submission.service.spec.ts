@@ -1,9 +1,9 @@
-import { generateSingleAnswerFormData } from '__tests__/unit/backend/helpers/generate-email-data'
+import { generateSingleAnswerFormData } from 'apps/backend/tests/unit/backend/helpers/generate-email-data'
 import {
   generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
 import mongoose from 'mongoose'

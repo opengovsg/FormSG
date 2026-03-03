@@ -1,7 +1,7 @@
 import {
   generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import Busboy from 'busboy'
 import FormData from 'form-data'
 import { createReadStream, readFileSync } from 'fs'

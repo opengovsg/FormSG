@@ -3,7 +3,7 @@ import {
   generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'

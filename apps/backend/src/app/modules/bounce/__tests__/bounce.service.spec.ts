@@ -1,5 +1,5 @@
 /* eslint-disable import/first */
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { cloneDeep, omit, pick } from 'lodash'

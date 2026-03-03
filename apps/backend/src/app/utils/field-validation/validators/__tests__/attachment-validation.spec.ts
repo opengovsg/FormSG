@@ -3,7 +3,7 @@ import {
   generateDefaultField,
   generateDefaultFieldV3,
   generateNewAttachmentResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { mongo as mongodb } from 'mongoose'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'

@@ -8,7 +8,7 @@ import {
   ProcessedCheckboxResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
-} from 'src/app/modules/submission/submission.types'
+} from 'apps/backend/src/app/modules/submission/submission.types'
 import {
   FormFieldSchema,
   IAddressCompoundFieldSchema,
@@ -27,11 +27,11 @@ import {
   IShortTextFieldSchema,
   ITableFieldSchema,
   SingleAnswerFieldResponse,
-} from 'src/types'
+} from 'apps/backend/src/types'
 import {
   ParsedClearAttachmentFieldResponseV3,
   ParsedClearAttachmentResponseV3,
-} from 'src/types/api'
+} from 'apps/backend/src/types/api'
 
 import {
   AddressCompoundFieldResponseV3,

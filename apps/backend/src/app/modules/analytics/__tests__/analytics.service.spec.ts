@@ -1,4 +1,4 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import * as E from 'fp-ts/lib/Either'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'

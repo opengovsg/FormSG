@@ -5,7 +5,7 @@ import {
   generateTableResponseV3,
   generateVerifiableAnswerResponseV3,
   generateYesNoAnswerResponseV3,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants'
 import { BasicField } from 'shared/types'
 

@@ -3,8 +3,8 @@ import {
   generateDefaultField,
   generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { clone, omit, times } from 'lodash'

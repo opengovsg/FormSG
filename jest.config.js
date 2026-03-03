@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: [
-    '<rootDir>',
+    '<rootDir>/apps/backend/',
     '<rootDir>/serverless/virus-scanner/',
     '<rootDir>/serverless/pdf-gen-sparticuz/',
   ],

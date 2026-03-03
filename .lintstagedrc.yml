@@ -1,5 +1,5 @@
-'{src,tests}/**/*.{js,ts}':
+'{apps,packages,serverless}/**/*.{js,ts}':
   - eslint --fix
-'{src,tests}/**/*.html':
+'{apps,packages,serverless}/**/*.html':
   - htmlhint
   - prettier --write

@@ -13,8 +13,8 @@ jest.mock('src/app/config/logger')
 const MockLoggerModule = jest.mocked(LoggerModule)
 MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { generateDefaultField } from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 

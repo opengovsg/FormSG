@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { generateDefaultField } from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'

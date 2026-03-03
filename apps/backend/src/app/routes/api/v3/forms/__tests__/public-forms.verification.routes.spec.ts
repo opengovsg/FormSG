@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { generateDefaultField } from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import { subMinutes, subYears } from 'date-fns'

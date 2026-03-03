@@ -1,4 +1,4 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { StatusCodes } from 'http-status-codes'
 import { PaymentChannel, PaymentsUpdateDto } from 'shared/types'

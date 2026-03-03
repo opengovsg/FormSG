@@ -1,7 +1,7 @@
 import { pick } from 'lodash'
 
-import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
-import { EmailDataField, EmailDataCollationToolField } from 'src/types'
+import { ProcessedSingleAnswerResponse } from 'apps/backend/src/app/modules/submission/submission.types'
+import { EmailDataField, EmailDataCollationToolField } from 'apps/backend/src/types'
 
 export const generateSingleAnswerJson = (
   response: ProcessedSingleAnswerResponse,

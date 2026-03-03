@@ -1,6 +1,6 @@
 import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'

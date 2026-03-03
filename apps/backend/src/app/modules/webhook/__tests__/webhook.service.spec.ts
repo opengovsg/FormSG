@@ -1,4 +1,4 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import mongoose from 'mongoose'

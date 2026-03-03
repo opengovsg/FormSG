@@ -2,14 +2,14 @@ import MemoryDatabaseServer from '__tests__/setup/database'
 import mongoose, { Schema, Types } from 'mongoose'
 import { FormResponseMode } from 'shared/types'
 
-import getAgencyModel from 'src/app/models/agency.server.model'
+import getAgencyModel from 'apps/backend/src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
-} from 'src/app/models/form.server.model'
-import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
-import getSubmissionModel from 'src/app/models/submission.server.model'
-import getUserModel from 'src/app/models/user.server.model'
+} from 'apps/backend/src/app/models/form.server.model'
+import getFormFeedbackModel from 'apps/backend/src/app/models/form_feedback.server.model'
+import getSubmissionModel from 'apps/backend/src/app/models/submission.server.model'
+import getUserModel from 'apps/backend/src/app/models/user.server.model'
 import {
   AgencyDocument,
   IAgencySchema,
@@ -24,7 +24,7 @@ import {
   ISubmissionSchema,
   IUserSchema,
   UserApiToken,
-} from 'src/types'
+} from 'apps/backend/src/types'
 
 /**
  * Connect to the in-memory database

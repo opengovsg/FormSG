@@ -1,13 +1,13 @@
 import {
   generateSingleAnswerFormData,
   generateSingleAnswerJson,
-} from '__tests__/unit/backend/helpers/generate-email-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-email-data'
 import {
   generateNewAttachmentResponse,
   generateNewCheckboxResponse,
   generateNewSingleAnswerResponse,
   generateNewTableResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
 
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'

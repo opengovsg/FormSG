@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import { generateDefaultField } from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'

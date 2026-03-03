@@ -3,7 +3,7 @@ import {
   generateCheckboxResponse,
   generateDefaultField,
   generateSingleAnswerResponse,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+} from 'apps/backend/tests/unit/backend/helpers/generate-form-data'
 import fs from 'fs'
 import { BasicField, FieldBase } from 'shared/types'
 

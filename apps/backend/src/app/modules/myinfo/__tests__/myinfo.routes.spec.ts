@@ -1,6 +1,6 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import dbHandler from 'apps/backend/tests/unit/backend/helpers/jest-db'
 import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import session, { Session } from 'supertest-session'
