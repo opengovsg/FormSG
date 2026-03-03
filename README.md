@@ -125,7 +125,7 @@ npm run dev:frontend (frontend react server, compulsory)
 docker compose up
 
 # PDF generation function (only needed if you're using features requiring PDF generation, eg, payment invoice/auto-reply PDF)
-npm run dev:pdf-gen
+pnpm run dev:pdf-gen
 
 # Virus scanners - run both (only needed if you're uploading attachments)
 pnpm run dev:virus-scanner-guardduty

@@ -189,8 +189,8 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --prefix serverless/pdf-gen-sparticuz
       - run: pnpm install --prefix serverless/virus-scanner-guardduty
-      - run: npm ci --prefix serverless/pdf-gen-sparticuz
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:

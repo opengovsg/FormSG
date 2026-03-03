@@ -41,34 +41,27 @@ jobs:
           lfs: true
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
-
-      - name: Cache Node.js modules
-        uses: actions/cache@v4
+      - name: Instal pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-pdf-gen-${{ hashFiles('./serverless/pdf-gen-sparticuz/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-pdf-gen-
-            ${{ runner.OS }}-node-
-
+          version: 10.30.3
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
-
       - name: Install node dependencies
         working-directory: ./serverless/pdf-gen-sparticuz
-        run: npm ci
-
+        run: pnpm install
+      - name: Build SAM package
+        working-directory: ./serverless/pdf-gen-sparticuz
+        run: pnpm sam-build
       - name: Deploy with SAM
         working-directory: ./serverless/pdf-gen-sparticuz
-        run: npm run sam-deploy -- --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
+        run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
