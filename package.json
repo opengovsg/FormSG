@@ -52,7 +52,7 @@
     "prepare": "husky",
     "pre-commit": "lint-staged",
     "storybook": "pnpm --prefix frontend storybook",
-    "postinstall:frontend": "pnpm --prefix frontend install --legacy-peer-deps",
+    "postinstall:frontend": "pnpm --prefix frontend install",
     "postinstall:shared": "pnpm --prefix shared install"
   },
   "dependencies": {
