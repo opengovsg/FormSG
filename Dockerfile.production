@@ -17,7 +17,7 @@ WORKDIR /build
 
 COPY package.json pnpm-lock.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
-COPY frontend/package.json frontend/package-lock.json ./frontend/
+COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 
 RUN pnpm install --frozen-lockfile
 
