@@ -61,7 +61,7 @@ jobs:
         run: pnpm install
       - name: Build SAM package
         working-directory: ./serverless/pdf-gen-sparticuz
-        run: pnpm run sam-build
+        run: pnpm sam-build
       - name: Deploy with SAM
         working-directory: ./serverless/pdf-gen-sparticuz
-        run: sam deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
+        run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
