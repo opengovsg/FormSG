@@ -1,40 +1,32 @@
 # syntax=docker/dockerfile:1
+FROM node:jod-alpine3.22 AS base 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
-FROM node:jod-alpine3.22 AS build
-
+FROM base AS build 
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
 RUN apk update && apk upgrade && \
     apk --no-cache add --virtual native-deps \
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl \
     build-base cairo-dev pango-dev giflib-dev libjpeg-turbo-dev librsvg-dev && \
-    npm install --quiet node-gyp -g
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+    pnpm add -g node-gyp
 WORKDIR /build
 
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 
-# Allow running of postinstall scripts
-# RUN npm config set unsafe-perm true
-# --legacy-peer-deps flag
-# A breaking change in the peer dependency resolution strategy was introduced in
-# npm 7. This resulted in npm throwing an error when installing packages:
-# npm ERR! code ERESOLVE
-# npm ERR! ERESOLVE unable to resolve dependency tree
-# See also:
-# * https://stackoverflow.com/questions/66239691/what-does-npm-install-legacy-peer-deps-do-exactly-when-is-it-recommended-wh
-# NOTE: This flag is used again later in the build process when calling npm prune.
-RUN npm ci --legacy-peer-deps
+RUN pnpm install --frozen-lockfile
 
 COPY . ./
 
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN npm run build
+RUN pnpm build
 
 ARG APP_VERSION
 ARG APP_URL
@@ -51,10 +43,8 @@ RUN --mount=type=secret,id=dd_api_key \
     --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
-RUN npm prune --production --legacy-peer-deps
-
 # This stage builds the final container
-FROM node:jod-alpine3.22
+FROM base
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
@@ -108,4 +98,4 @@ EXPOSE 4545
 # tini is the init process that will adopt orphaned zombie processes
 # e.g. chromium when launched to create a new PDF
 ENTRYPOINT [ "tini", "--" ]
-CMD [ "npm", "start" ]
+CMD [ "pnpm", "start" ]
