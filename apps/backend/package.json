@@ -1,10 +1,10 @@
 {
-  "name": "FormSG",
-  "description": "Form Manager for Government",
+  "name": "FormSG-backend",
+  "description": "Backend for FormSG",
   "version": "6.311.0",
   "homepage": "https://form.gov.sg",
   "authors": [
-    "FormSG <formsg@data.gov.sg>"
+    "FormSG <formsg@open.gov.sg>"
   ],
   "private": true,
   "repository": {
