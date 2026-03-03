@@ -19,7 +19,7 @@ RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 WORKDIR /function
 
 # install app dependencies
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . .
