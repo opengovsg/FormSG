@@ -59,8 +59,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install
         # 👇 Adds Chromatic as a step in the workflow
@@ -102,13 +100,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
       - name: Install BE dependencies
         working-directory: src
-        run: npm i
+        run: pnpm install
       - name: Install dependencies
-        run: npm i
+        run: pnpm install
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@v1
