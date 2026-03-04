@@ -164,7 +164,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
-      - run: pnpm lint-ci
+      - run: pnpm lint:frontend
 
   backend_test:
     needs: [changes, install, build]
