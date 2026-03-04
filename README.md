@@ -85,10 +85,10 @@ nvm install
 nvm use
 ```
 
-To install the relevant npm packages (frontend, backend, serverless functions including pdf-generator and virus-scanner), run the following in the root directory:
+To install the relevant packages (frontend, backend, serverless functions including pdf-generator and virus-scanner), run the following in the root directory:
 
 ```bash
-pnpm install && pnpm --prefix serverless/virus-scanner-guardduty install && npm --prefix serverless/pdf-gen-sparticuz
+pnpm install && pnpm --prefix serverless/virus-scanner-guardduty install && pnpm --prefix serverless/pdf-gen-sparticuz
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
@@ -98,7 +98,7 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 First, build the frontend for local development:
 
 ```bash
-npm run build:frontend
+pnpm build:frontend
 ```
 
 Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
@@ -112,23 +112,23 @@ This command runs:
 - emulated serverless pdf generation function
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Alternatively, you can run required components independently - which is what the main dev team usually does:
 
 ```bash
 # Frontend server
-npm run dev:frontend (frontend react server, compulsory)
+pnpm dev:frontend (frontend react server, compulsory)
 
 # Backend server
 docker compose up
 
 # PDF generation function (only needed if you're using features requiring PDF generation, eg, payment invoice/auto-reply PDF)
-pnpm run dev:pdf-gen
+pnpm dev:pdf-gen
 
 # Virus scanners - run both (only needed if you're uploading attachments)
-pnpm run dev:virus-scanner-guardduty
+pnpm dev:virus-scanner-guardduty
 ```
 
 After the Docker image has finished building, the following local applications can be accessed:
@@ -139,7 +139,7 @@ After the Docker image has finished building, the following local applications c
 
 ### Adding dependencies
 
-Run `npm install` as per usual.
+Run `pnpm add <pkg>` as per usual.
 
 For backend, run
 
@@ -198,7 +198,7 @@ The team uses macOS for development.
 Make you sure have the following node version & package manager on your machine:
 
 - `"node": ">=22.12.0"`
-- `"npm": ">=8.19.2"`
+- `"pnpm": ">=10.30.3"`
 - `"mongo": ">=4.0.0"`
 - Python 3.7+ (for LocalStack)
 
@@ -207,7 +207,7 @@ Run
 ```bash
 nvm install
 nvm use
-npm install
+pnpm install
 pip install "localstack[full]"
 ```
 
@@ -219,7 +219,7 @@ to install node modules and Localstack locally to be able to run tests. Note tha
 #### Unit tests
 
 ```bash
-npm run test
+pnpm test
 ```
 
 will build the backend and run our backend unit tests. The tests are located at [`__tests__/unit/backend`](./__tests__/unit/backend).
@@ -227,19 +227,19 @@ will build the backend and run our backend unit tests. The tests are located at 
 For CI testing (optimized for continuous integration), you can run
 
 ```bash
-npm run test:backend:ci
+pnpm test:backend:ci
 ```
 
 Frontend tests are located at [`frontend/__tests__`](./frontend/__tests__). They can be run with
 
 ```bash
-npm run test:frontend
+pnpm test:frontend
 ```
 
 #### End-to-end tests
 
 ```bash
-npm run test:e2e-v2
+pnpm test:e2e-v2
 ```
 
 will build both the frontend and backend then run our end-to-end tests. The tests are located at [`__tests__/e2e`](./__tests__/e2e). You will need to stop the Docker dev container to be able to run the end-to-end tests.

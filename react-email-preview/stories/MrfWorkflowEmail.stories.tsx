@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import MrfWorkflowEmail, { type WorkflowEmailData } from './MrfWorkflowEmail'
+import MrfWorkflowEmail, { type WorkflowEmailData } from '../emails/MrfWorkflowEmail'
 
 export default {
   title: 'EmailPreview/MrfWorkflowEmail',

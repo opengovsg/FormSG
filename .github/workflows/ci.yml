@@ -113,6 +113,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -135,7 +139,7 @@ jobs:
           DD_TAGS: layer:frontend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
-        run: npm run test:frontend
+        run: pnpm test:frontend
 
   frontend_lint:
     needs: [changes, install]
@@ -145,6 +149,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -156,7 +164,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
           fail-on-cache-miss: true
-      - run: npm run lint:frontend
+      - run: pnpm lint:frontend
 
   backend_test:
     needs: [changes, install, build]
