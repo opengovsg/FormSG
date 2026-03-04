@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import EmailAddressVerificationOtp, {
   type EmailAddressVerificationOtpHtmlData,
-} from './EmailAddressVerificationOtp'
+} from '../emails/EmailAddressVerificationOtp'
 
 export default {
   title: 'EmailPreview/EmailAddressVerificationOtp',
