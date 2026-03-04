@@ -130,7 +130,13 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
         {...inputProps}
         sx={props.sx ?? inputStyles.field}
       />
-      <InputRightElement sx={inputStyles.success}>
+      <InputRightElement
+        sx={{
+          pointerEvents: 'none',
+          fontSize: '1.25rem',
+          color: 'success.700',
+        }}
+      >
         <Icon as={BxsCheckCircle} />
       </InputRightElement>
     </InputGroup>
