@@ -17,8 +17,8 @@ const isPackageMode = (sdkMode?: string): sdkMode is PackageMode => {
 
 const formsgSdk = formsgPackage({
   // Either the sdk mode is set in VITE_APP_FORMSG_SDK_MODE env var, or fall back to NODE_ENV
-  // NODE_ENV is set automatically to development (when using npm start),
-  // test (when using npm test) or production (when using npm build)
+  // NODE_ENV is set automatically to development (when using pnpm start),
+  // test (when using pnpm test) or production (when using pnpm build)
   mode: isPackageMode(import.meta.env.VITE_APP_FORMSG_SDK_MODE)
     ? import.meta.env.VITE_APP_FORMSG_SDK_MODE
     : (import.meta.env.MODE as PackageMode),
