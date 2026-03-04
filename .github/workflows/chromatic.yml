@@ -121,4 +121,4 @@ jobs:
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
           # Only run when the react-email-preview directory has changes
-          untraced: '!(react-email-preview)/**'
+          # untraced: '!(react-email-preview)/**'
