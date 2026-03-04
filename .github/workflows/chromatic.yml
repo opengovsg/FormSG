@@ -101,7 +101,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install BE dependencies
-        working-directory: src
+        working-directory: .
         run: pnpm install
       - name: Install dependencies
         run: pnpm install
