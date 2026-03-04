@@ -198,7 +198,8 @@
     "onlyBuiltDependencies": [
       "canvas",
       "esbuild",
-      "msw"
+      "msw",
+      "microtime"
     ]
   }
 }
