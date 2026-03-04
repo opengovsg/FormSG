@@ -183,7 +183,7 @@ When updating existing translations:
 
 After making changes to translation files:
 
-1. Run `npm run build` to ensure there are no TypeScript errors
+1. Run `pnpm build` to ensure there are no TypeScript errors
 2. Switch to your language in the application UI to verify your translations
 3. Check that formatting and layout work correctly with your translations
 
