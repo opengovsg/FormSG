@@ -62,12 +62,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-      - run: pnpm install
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
 
   build:
     needs: install
@@ -85,13 +82,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -121,13 +114,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
@@ -157,13 +146,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm lint:frontend
 
   backend_test:
@@ -186,17 +171,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm install --prefix serverless/pdf-gen-sparticuz
       - run: pnpm install --prefix serverless/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
@@ -227,11 +204,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm lint-ci
