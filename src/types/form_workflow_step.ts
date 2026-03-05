@@ -16,18 +16,14 @@ export interface IWorkflowStepSchema extends FormWorkflowStepBase, Document {
 }
 
 export interface IWorkflowStepStaticSchema
-  extends IWorkflowStepSchema,
-    FormWorkflowStepStatic,
-    Document {
+  extends IWorkflowStepSchema, FormWorkflowStepStatic, Document {
   workflow_type: WorkflowType.Static
   emails: string[]
   edit: IFieldSchema['_id'][]
 }
 
 export interface IWorkflowStepDynamicSchema
-  extends IWorkflowStepSchema,
-    FormWorkflowStepDynamic,
-    Document {
+  extends IWorkflowStepSchema, FormWorkflowStepDynamic, Document {
   workflow_type: WorkflowType.Dynamic
   field: IFieldSchema['_id']
   // overwriting field id type to reflect mongoose Id type
@@ -35,9 +31,7 @@ export interface IWorkflowStepDynamicSchema
 }
 
 export interface IWorkflowStepConditionalSchema
-  extends IWorkflowStepSchema,
-    FormWorkflowStepConditional,
-    Document {
+  extends IWorkflowStepSchema, FormWorkflowStepConditional, Document {
   workflow_type: WorkflowType.Conditional
   edit: IFieldSchema['_id'][]
   conditional_field: IFieldSchema['_id']

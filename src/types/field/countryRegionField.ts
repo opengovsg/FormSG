@@ -3,7 +3,6 @@ import { BasicField, CountryRegionFieldBase } from '../../../shared/types'
 import { IFieldSchema } from './baseField'
 
 export interface ICountryRegionFieldSchema
-  extends CountryRegionFieldBase,
-    IFieldSchema {
+  extends CountryRegionFieldBase, IFieldSchema {
   fieldType: BasicField.CountryRegion
 }

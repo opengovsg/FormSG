@@ -255,9 +255,10 @@ const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
  * extract the correct data by translating internal FormSG attributes
  * to the correct keys in the data.
  */
-export class MyInfoData
-  implements MyInfoDataTransformer<ExternalAttr, InternalAttr>
-{
+export class MyInfoData implements MyInfoDataTransformer<
+  ExternalAttr,
+  InternalAttr
+> {
   #personData: IPerson
   #uinFin: string
 
