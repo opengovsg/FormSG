@@ -58,8 +58,7 @@ jobs:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
-        working-directory: ./serverless/virus-scanner-guardduty
-        run: pnpm install 
+        run: pnpm install --filter formsg-virus-scanner-guardduty
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/virus-scanner-guardduty
         env:
