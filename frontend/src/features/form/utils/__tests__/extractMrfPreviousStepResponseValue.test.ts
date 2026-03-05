@@ -45,7 +45,7 @@ describe('extractMrfPreviousStepResponseValue', () => {
     const previousResponse: FieldResponseV3 = {
       answer: { answer: 'file.txt' } as AttachmentFieldResponseV3,
     } as any
-    const buffer = new ArrayBuffer(8)
+    const buffer = new Uint8Array(8)
 
     const result = extractMrfPreviousStepResponseValue(
       field,
