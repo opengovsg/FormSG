@@ -58,11 +58,10 @@ jobs:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
-        run: pnpm install --filter formsg-virus-scanner-guardduty
+        run: pnpm --filter formsg-virus-scanner-guardduty install
       - name: Deploy with Serverless Framework
-        working-directory: ./serverless/virus-scanner-guardduty
         env:
           ENV: ${{ inputs.environment }}
           CONCURRENCY: ${{ inputs.provisionedConcurrency }}
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
-        run: pnpm run deploy
+        run: pnpm --filter formsg-virus-scanner-guardduty run deploy

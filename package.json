@@ -250,7 +250,6 @@
       "@datadog/pprof",
       "aws-sdk",
       "aws-lambda-ric",
-      "serverless",
       "canvas",
       "dd-trace",
       "esbuild",
