@@ -20,9 +20,7 @@ export interface CountryRegionFieldProps extends BaseFieldProps {
 // Exported for testing
 export const SORTED_COUNTRY_OPTIONS: CountryRegion[] = (() => {
   const countryOptions: CountryRegion[] = Object.values(CountryRegion)
-    .filter((country) =>
-      country !== CountryRegion.Singapore,
-    )
+    .filter((country) => country !== CountryRegion.Singapore)
     .sort((a, b) => a.localeCompare(b))
   countryOptions.unshift(CountryRegion.Singapore)
   return countryOptions

@@ -23,11 +23,10 @@ export type ToastStatus =
   | 'error'
   | 'loading'
 
-export interface ToastProps
-  extends Omit<
-    UseToastOptions,
-    'duration' | 'position' | 'render' | 'status' | 'variant'
-  > {
+export interface ToastProps extends Omit<
+  UseToastOptions,
+  'duration' | 'position' | 'render' | 'status' | 'variant'
+> {
   /**
    * The status variant of the toast.
    */

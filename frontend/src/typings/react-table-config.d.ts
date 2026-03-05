@@ -9,7 +9,8 @@ declare module 'react-table' {
   // take this file as-is, or comment out the sections that don't apply to your plugin configuration
 
   export interface TableOptions<D extends Record<string, unknown>>
-    extends UsePaginationOptions<D>,
+    extends
+      UsePaginationOptions<D>,
       UseSortByOptions<D>,
       UseResizeColumnsOptions<D>,
       // note that having Record here allows you to add anything to the options, this matches the spirit of the
@@ -24,22 +25,24 @@ declare module 'react-table' {
 
   export interface TableInstance<
     D extends Record<string, unknown> = Record<string, unknown>,
-  > extends UsePaginationInstanceProps<D>,
-      UseSortByInstanceProps<D> {}
+  >
+    extends UsePaginationInstanceProps<D>, UseSortByInstanceProps<D> {}
 
   export interface TableState<
     D extends Record<string, unknown> = Record<string, unknown>,
-  > extends UsePaginationState<D>,
+  >
+    extends
+      UsePaginationState<D>,
       UseSortByState<D>,
       UseResizeColumnsState<D> {}
 
   export interface ColumnInterface<
     D extends Record<string, unknown> = Record<string, unknown>,
-  > extends UseSortByColumnOptions<D>,
-      UseResizeColumnsColumnOptions<D> {}
+  >
+    extends UseSortByColumnOptions<D>, UseResizeColumnsColumnOptions<D> {}
 
   export interface ColumnInstance<
     D extends Record<string, unknown> = Record<string, unknown>,
-  > extends UseSortByColumnProps<D>,
-      UseResizeColumnsColumnProps<D> {}
+  >
+    extends UseSortByColumnProps<D>, UseResizeColumnsColumnProps<D> {}
 }

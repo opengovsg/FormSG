@@ -22,8 +22,10 @@ import {
 import { useToast } from '../../../../hooks/useToast'
 import { adminFormSettingsKeys } from '../queries'
 
-export interface EmailModeConvertModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface EmailModeConvertModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   formTitle: string
   formId: string
 }

@@ -32,7 +32,8 @@ export interface SharedSelectContextReturnProps<
 }
 
 interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
-  extends UseComboboxPropGetters<Item>,
+  extends
+    UseComboboxPropGetters<Item>,
     UseComboboxState<Item>,
     Required<SharedSelectContextReturnProps<Item>>,
     FormControlOptions {

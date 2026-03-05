@@ -19,8 +19,8 @@ import { isItemDisabled, itemToValue } from '../utils/itemUtils'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
-> extends SharedSelectContextReturnProps<Item>,
-    FormControlOptions {
+>
+  extends SharedSelectContextReturnProps<Item>, FormControlOptions {
   /** Controlled selected value */
   value: string
   /** Controlled selected item onChange handler */

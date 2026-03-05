@@ -9,7 +9,8 @@ import {
 import { ComboboxItem } from './types'
 
 interface MultiSelectContextReturn<Item extends ComboboxItem = ComboboxItem>
-  extends UseMultipleSelectionPropGetters<Item>,
+  extends
+    UseMultipleSelectionPropGetters<Item>,
     UseMultipleSelectionState<Item>,
     Pick<
       UseMultipleSelectionActions<Item>,

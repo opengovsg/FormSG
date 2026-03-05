@@ -6,8 +6,10 @@ import { useMutateFormSettings } from '../mutations'
 
 import { SecretKeyFormModal } from './SecretKeyFormModal'
 
-export interface SecretKeyActivationModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface SecretKeyActivationModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   publicKey: string
 }
 

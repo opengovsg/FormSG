@@ -24,7 +24,8 @@ import { BxCheck, BxLockAlt, BxX } from '~/assets/icons'
 import { TOGGLE_THEME_KEY } from '~/theme/components/Toggle'
 
 export interface SwitchProps
-  extends Omit<UseCheckboxProps, 'isIndeterminate'>,
+  extends
+    Omit<UseCheckboxProps, 'isIndeterminate'>,
     Omit<HTMLChakraProps<'label'>, keyof UseCheckboxProps>,
     ThemingProps<'Switch'> {
   /**
