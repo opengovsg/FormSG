@@ -57,8 +57,7 @@ jobs:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
-        working-directory: ./serverless/pdf-gen-sparticuz
-        run: pnpm install
+        run: pnpm install --filter formsg-pdf-gen-sparticuz
       - name: Build SAM package
         working-directory: ./serverless/pdf-gen-sparticuz
         run: pnpm sam-build
