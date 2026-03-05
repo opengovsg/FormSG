@@ -44,18 +44,14 @@ jobs:
         with:
           ref: ${{ inputs.checkoutBranch }}
           fetch-depth: 0
-      - name: Setup Node.js
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-      - name: Cache Node.js modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-scanner-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-scanner-
-            ${{ runner.OS }}-node-
+          node-version: 22.22
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -63,11 +59,11 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
         working-directory: ./serverless/virus-scanner-guardduty
-        run: npm ci
+        run: pnpm install 
       - name: Deploy with Serverless Framework
         working-directory: ./serverless/virus-scanner-guardduty
         env:
           ENV: ${{ inputs.environment }}
           CONCURRENCY: ${{ inputs.provisionedConcurrency }}
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
-        run: npm run deploy
+        run: pnpm run deploy

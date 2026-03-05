@@ -3,7 +3,7 @@ import type { StorybookConfig } from '@storybook/react-vite'
 
 const config: StorybookConfig = {
   stories: [ 
-    '../emails/**/*.stories.@(js|jsx|ts|tsx)',
+    '../stories/**/*.stories.@(js|jsx|ts|tsx)',
   ],
   addons: [ 
   ],

@@ -47,7 +47,7 @@ export const StaticRespondentOption = ({
             isReadOnly={isLoading}
             id="emails"
             isRequired
-            isInvalid={staticTagInputErrorMessage}
+            isInvalid={!!staticTagInputErrorMessage}
             key="emails"
           >
             <Controller
