@@ -51,32 +51,26 @@ export interface IVerificationSmsCount extends ISmsCount {
 }
 
 export interface IVerificationSmsCountSchema
-  extends IVerificationSmsCount,
-    ISmsCountSchema {}
+  extends IVerificationSmsCount, ISmsCountSchema {}
 
 export interface IAdminContactSmsCount extends ISmsCount {
   admin: IUserSchema['_id']
 }
 
 export interface IAdminContactSmsCountSchema
-  extends IAdminContactSmsCount,
-    ISmsCountSchema {}
+  extends IAdminContactSmsCount, ISmsCountSchema {}
 
 export interface IFormDeactivatedSmsCount
-  extends ISmsCount,
-    FormDeactivatedSmsData {}
+  extends ISmsCount, FormDeactivatedSmsData {}
 
 export interface IFormDeactivatedSmsCountSchema
-  extends ISmsCountSchema,
-    FormDeactivatedSmsData {}
+  extends ISmsCountSchema, FormDeactivatedSmsData {}
 
 export interface IBouncedSubmissionSmsCount
-  extends ISmsCount,
-    BouncedSubmissionSmsData {}
+  extends ISmsCount, BouncedSubmissionSmsData {}
 
 export interface IBouncedSubmissionSmsCountSchema
-  extends ISmsCountSchema,
-    BouncedSubmissionSmsData {}
+  extends ISmsCountSchema, BouncedSubmissionSmsData {}
 
 export interface ISmsCountModel extends Model<ISmsCountSchema> {
   logSms: (logParams: LogSmsParams) => Promise<ISmsCountSchema>

@@ -10,8 +10,7 @@ export interface IFormWhitelistedSubmitterIdsSchema {
   cipherTexts: string[]
 }
 
-export interface IFormWhitelistedSubmitterIdsModel
-  extends Model<IFormWhitelistedSubmitterIdsSchema> {
+export interface IFormWhitelistedSubmitterIdsModel extends Model<IFormWhitelistedSubmitterIdsSchema> {
   findEncryptionPropertiesById(
     whitelistId: string,
   ): Promise<

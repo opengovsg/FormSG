@@ -14,8 +14,10 @@ export type AdminContactOtpData = {
   admin: IUserSchema['_id']
 }
 
-export interface IUser
-  extends SetOptional<UserBase, 'created' | 'lastAccessed' | 'updatedAt'> {
+export interface IUser extends SetOptional<
+  UserBase,
+  'created' | 'lastAccessed' | 'updatedAt'
+> {
   agency: IAgencySchema['_id']
 }
 

@@ -7,8 +7,7 @@ import {
 import { IFieldSchema } from './baseField'
 
 export interface IChildrenCompoundFieldSchema
-  extends ChildrenCompoundFieldBase,
-    IFieldSchema {
+  extends ChildrenCompoundFieldBase, IFieldSchema {
   fieldType: BasicField.Children
   childrenSubFields: MyInfoChildAttributes[]
   allowMultiple: boolean

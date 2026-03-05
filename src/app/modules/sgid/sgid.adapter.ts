@@ -140,9 +140,10 @@ const internalAttrToSGIDExternal = (
  *
  * Currently only supports MyInfo.
  */
-export class SGIDMyInfoData
-  implements MyInfoDataTransformer<ExternalAttr, InternalAttr>
-{
+export class SGIDMyInfoData implements MyInfoDataTransformer<
+  ExternalAttr,
+  InternalAttr
+> {
   #payload: SGIDScopeToValue
   constructor(payload: SGIDScopeToValue) {
     this.#payload = payload

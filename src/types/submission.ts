@@ -48,8 +48,7 @@ export type FindFormsWithSubsAboveResult = {
   count: number
 }
 
-export interface IPopulatedWebhookSubmission
-  extends IEncryptedSubmissionSchema {
+export interface IPopulatedWebhookSubmission extends IEncryptedSubmissionSchema {
   form: {
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
@@ -98,8 +97,7 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
 }
 
 export interface IEmailSubmissionSchema
-  extends EmailModeSubmissionBase,
-    ISubmissionSchema {
+  extends EmailModeSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
@@ -107,8 +105,7 @@ export interface IEmailSubmissionSchema
   getWebhookView(): Promise<null>
 }
 export interface IEncryptedSubmissionSchema
-  extends StorageModeSubmissionBase,
-    ISubmissionSchema {
+  extends StorageModeSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
@@ -119,8 +116,7 @@ export interface IEncryptedSubmissionSchema
   getWebhookView(): Promise<WebhookView>
 }
 export interface IMultirespondentSubmissionSchema
-  extends MultirespondentSubmissionBase,
-    ISubmissionSchema {
+  extends MultirespondentSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
