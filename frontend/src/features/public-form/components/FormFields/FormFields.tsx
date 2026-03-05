@@ -26,7 +26,7 @@ import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
   previousResponses?: FieldResponsesV3
-  previousAttachments?: Record<string, ArrayBuffer>
+  previousAttachments?: Record<string, Uint8Array>
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   workflowStep?: StrippedFormWorkflowStepDto

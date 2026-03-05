@@ -163,57 +163,57 @@ export function useCommonFormProvider(formId: string) {
 // Hence, we need to map the frontend title-case to upper-case when submitting to backend.
 const transformFormInputCountryRegionToUpperCase =
   (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
-  (formInputs: Record<string, unknown>) => {
-    const countryRegionFieldIds = new Set(
-      form_fields
-        .filter((field) => field.fieldType === BasicField.CountryRegion)
-        .map((field) => field._id),
-    )
+    (formInputs: Record<string, unknown>) => {
+      const countryRegionFieldIds = new Set(
+        form_fields
+          .filter((field) => field.fieldType === BasicField.CountryRegion)
+          .map((field) => field._id),
+      )
 
-    return Object.keys(formInputs).reduce(
-      (newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (
-          countryRegionFieldIds.has(fieldId) &&
-          typeof currentInput === 'string'
-        ) {
-          newFormInputs[fieldId] = currentInput.toUpperCase()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      },
-      {},
-    )
-  }
+      return Object.keys(formInputs).reduce(
+        (newFormInputs: typeof formInputs, fieldId) => {
+          const currentInput = formInputs[fieldId]
+          if (
+            countryRegionFieldIds.has(fieldId) &&
+            typeof currentInput === 'string'
+          ) {
+            newFormInputs[fieldId] = currentInput.toUpperCase()
+          } else {
+            newFormInputs[fieldId] = currentInput
+          }
+          return newFormInputs
+        },
+        {},
+      )
+    }
 
 // Trim text inputs before sending to backend to match frontend validation
 const transformFormInputTrimTextInputs =
   (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
-  (formInputs: Record<string, unknown>) => {
-    const textFieldIds = new Set(
-      form_fields
-        .filter(
-          (field) =>
-            field.fieldType === BasicField.ShortText ||
-            field.fieldType === BasicField.LongText,
-        )
-        .map((field) => field._id),
-    )
+    (formInputs: Record<string, unknown>) => {
+      const textFieldIds = new Set(
+        form_fields
+          .filter(
+            (field) =>
+              field.fieldType === BasicField.ShortText ||
+              field.fieldType === BasicField.LongText,
+          )
+          .map((field) => field._id),
+      )
 
-    return Object.keys(formInputs).reduce(
-      (newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
-          newFormInputs[fieldId] = currentInput.trim()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      },
-      {},
-    )
-  }
+      return Object.keys(formInputs).reduce(
+        (newFormInputs: typeof formInputs, fieldId) => {
+          const currentInput = formInputs[fieldId]
+          if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
+            newFormInputs[fieldId] = currentInput.trim()
+          } else {
+            newFormInputs[fieldId] = currentInput
+          }
+          return newFormInputs
+        },
+        {},
+      )
+    }
 
 export const augmentFormFields = (
   formFields: FormFieldDto[],
@@ -262,7 +262,7 @@ export const getInitialFormValues = ({
 }: {
   formResponseMode: FormResponseMode
   previousSubmission?: ReturnType<typeof decryptSubmission>
-  previousAttachments?: Record<string, ArrayBuffer>
+  previousAttachments?: Record<string, Uint8Array>
   currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
@@ -455,14 +455,14 @@ export const PublicFormProvider = ({
   const data = useMemo(() => {
     return latestFormData && encryptedPreviousSubmission
       ? {
-          ...latestFormData,
-          form: {
-            ...latestFormData.form,
-            form_fields: encryptedPreviousSubmission.form_fields,
-            form_logics: encryptedPreviousSubmission.form_logics,
-            workflow: encryptedPreviousSubmission.workflow,
-          },
-        }
+        ...latestFormData,
+        form: {
+          ...latestFormData.form,
+          form_fields: encryptedPreviousSubmission.form_fields,
+          form_logics: encryptedPreviousSubmission.form_logics,
+          workflow: encryptedPreviousSubmission.workflow,
+        },
+      }
       : latestFormData
   }, [latestFormData, encryptedPreviousSubmission])
 
@@ -519,7 +519,7 @@ export const PublicFormProvider = ({
     useState(false)
 
   const [previousAttachments, setPreviousAttachments] = useState<
-    Record<string, ArrayBuffer>
+    Record<string, Uint8Array>
   >({})
 
   const [searchParams] = useSearchParams()
@@ -572,7 +572,7 @@ export const PublicFormProvider = ({
       // the previous submission responses are decrypted.
       if (previousSubmission) {
         // Backward compatibility
-        const previousAttachments: Record<string, ArrayBuffer> = {}
+        const previousAttachments: Record<string, Uint8Array> = {}
         Object.keys(previousSubmission.responses).forEach((id) => {
           const response = previousSubmission.responses[id]
           if (response.fieldType === BasicField.Attachment) {
@@ -857,8 +857,8 @@ export const PublicFormProvider = ({
     ({ hasChangedDraftFields }: { hasChangedDraftFields: boolean }) => {
       const restoreDraftMessage = hasChangedDraftFields
         ? t(
-            'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
-          )
+          'features.publicForm.components.saveDraft.toast.restoredOnlyUnchangedFields',
+        )
         : t('features.publicForm.components.saveDraft.toast.restoredAllFields')
       datadogLogs.logger.log(restoreDraftMessage, {
         meta: {
@@ -1158,12 +1158,12 @@ export const PublicFormProvider = ({
             ),
             ...(form.payments_field.payment_type === PaymentType.Variable
               ? {
-                  payments: {
-                    amount_cents: dollarsToCents(
-                      paymentVariableInputAmountField ?? '0',
-                    ),
-                  },
-                }
+                payments: {
+                  amount_cents: dollarsToCents(
+                    paymentVariableInputAmountField ?? '0',
+                  ),
+                },
+              }
               : {}),
           }
 
