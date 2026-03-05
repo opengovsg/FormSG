@@ -15,7 +15,8 @@ import {
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
 export interface MoneyInputProps
-  extends ChakraNumberInputProps,
+  extends
+    ChakraNumberInputProps,
     Omit<PropsOf<'input'>, keyof ChakraNumberInputProps> {
   /**
    * Whether the input is in a prefilled state.

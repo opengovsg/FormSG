@@ -18,8 +18,10 @@ import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
 import { CanceledScreen } from './CanceledScreen'
 import { ConfirmationScreen } from './ConfirmationScreen'
 
-export interface DownloadWithAttachmentModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface DownloadWithAttachmentModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   onDownload: () => void
   onCancel: () => void
   isDownloading: boolean

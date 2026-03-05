@@ -29,8 +29,10 @@ import {
 
 import { FormActivationSvg } from './FormActivationSvg'
 
-export interface SecretKeyFormModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface SecretKeyFormModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   isLoading: boolean
   publicKey: string
   modalActionText: string

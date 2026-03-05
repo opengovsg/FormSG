@@ -18,8 +18,7 @@ export interface BaseVerifiableFieldProps extends BaseFieldProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
 }
 
-export interface VerifiableFieldContainerProps
-  extends BaseVerifiableFieldProps {
+export interface VerifiableFieldContainerProps extends BaseVerifiableFieldProps {
   children: React.ReactNode
 }
 

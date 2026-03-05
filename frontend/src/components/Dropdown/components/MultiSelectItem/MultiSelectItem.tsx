@@ -10,8 +10,9 @@ import {
 } from '~components/Dropdown/utils/itemUtils'
 import { Tag, TagCloseButton, TagProps } from '~components/Tag'
 
-export interface MultiSelectItemProps<Item extends ComboboxItem = ComboboxItem>
-  extends TagProps {
+export interface MultiSelectItemProps<
+  Item extends ComboboxItem = ComboboxItem,
+> extends TagProps {
   item: Item
   index: number
 }

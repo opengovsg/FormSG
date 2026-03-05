@@ -282,8 +282,8 @@ export const FeedbackPage = (): JSX.Element => {
         <Pagination
           totalCount={
             currentFeedbackType === FeedbackType.Issues
-              ? issueProps.count ?? 0
-              : reviewProps.count ?? 0
+              ? (issueProps.count ?? 0)
+              : (reviewProps.count ?? 0)
           }
           currentPage={currentPage} //1-indexed
           pageSize={10}
