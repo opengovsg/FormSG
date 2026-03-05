@@ -1,12 +1,12 @@
 {
-  "name": "FormSG",
-  "description": "Form Manager for Government",
+  "name": "formsg-monorepo",
   "version": "6.312.0",
+  "private": true,
+  "description": "Form Manager for Government",
   "homepage": "https://form.gov.sg",
   "authors": [
-    "FormSG <formsg@data.gov.sg>"
+    "FormSG <formsg@open.gov.sg>"
   ],
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/opengovsg/formsg.git"
@@ -24,7 +24,7 @@
     ]
   },
   "scripts": {
-    "test": "pnpm test:backend && npm run test:frontend",
+    "test": "pnpm test:backend && pnpm run test:frontend",
     "test:backend": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:backend:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:backend:watch": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
@@ -249,13 +249,20 @@
       "@datadog/native-metrics",
       "@datadog/pprof",
       "aws-sdk",
+      "aws-lambda-ric",
+      "serverless",
       "canvas",
       "dd-trace",
       "esbuild",
       "fsevents",
       "protobufjs",
       "sharp",
-      "unix-dgram"
+      "unix-dgram",
+      "msw",
+      "microtime"
+    ],
+    "ignoredBuiltDependencies": [
+      "esbuild"
     ]
   },
   "config": {
