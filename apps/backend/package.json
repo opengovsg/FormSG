@@ -1,0 +1,9 @@
+{
+  "name": "formsg-backend",
+  "version": "6.311.0",
+  "private": true,
+  "homepage": ".",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
+}
