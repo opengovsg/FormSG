@@ -36,7 +36,6 @@ export const SelectPopoverProvider: FCC = ({ children }): JSX.Element => {
       flip(),
       hide(),
       // Set width to be the same as the reference element.
-      // @ts-expect-error type mismatch for some reason.
       size({
         apply({ rects, elements }) {
           Object.assign(elements.floating.style, {
