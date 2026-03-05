@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import BounceNotification, {
   type BounceNotificationHtmlData,
-} from './BounceNotification'
+} from '../emails/BounceNotification'
 
 export default {
   title: 'EmailPreview/BounceNotification',

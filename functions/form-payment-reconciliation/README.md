@@ -30,7 +30,7 @@ export AWS_SESSION_TOKEN=<session token>
 Now, run
 
 ```
-npm run lambda:update:{ENV}
+pnpm run lambda:update:{ENV}
 ```
 
 where `{ENV}` can be one of `['prod', 'staging', 'staging-alt', 'staging-alt2', 'uat']`.

@@ -80,7 +80,7 @@ export default defineConfig({
   globalTeardown: require.resolve('./__tests__/e2e/setup/globalTeardown'),
   webServer: [
     {
-      command: 'npm run test:e2e-v2:server',
+      command: 'pnpm test:e2e-v2:server',
       url: 'http://localhost:5000/analytics/statistics',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,

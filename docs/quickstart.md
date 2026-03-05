@@ -12,7 +12,7 @@ Make sure you have:
 
 * [Docker and docker-compose](https://docs.docker.com/get-docker/)
 * Node.js (v22 LTS recommended, check `.nvmrc`)
-* npm or pnpm
+* pnpm
 * (Recommended) [node version manager](https://github.com/nvm-sh/nvm)
 
 #### Get the FormSG Code
@@ -33,10 +33,10 @@ nvm install
 nvm use
 ```
 
-To install the relevant npm packages (frontend, backend and serverless modules), run the following in the root directory:
+To install the relevant packages (frontend, backend and serverless modules), run the following in the root directory:
 
 ```bash
-npm install && npm --prefix serverless/virus-scanner install
+pnpm install && pnpm --prefix serverless/virus-scanner-guardduty install && pnpm --prefix serverless/pdf-gen install
 ```
 
 #### Environment Configuration
@@ -63,13 +63,13 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 First, build the frontend for local development:
 
 ```bash
-npm run build:frontend
+pnpm build:frontend
 ```
 
 Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under docker-compose.yml and the React frontend on the native host.
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ## Accessing FormSG
@@ -95,7 +95,7 @@ We use [MailDev](https://github.com/maildev/maildev) to access emails in the dev
 
 ### Adding dependencies
 
-Run `npm install` as per usual.
+Run `pnpm add <pkg>` as per usual.
 
 For backend, run
 

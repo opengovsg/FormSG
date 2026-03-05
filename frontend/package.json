@@ -1,11 +1,21 @@
 {
   "name": "form-frontend",
-  "version": "6.311.0",
+  "version": "6.312.0",
   "homepage": ".",
   "type": "module",
   "private": true,
   "dependencies": {
+    "@chakra-ui/anatomy": "^2.2.2",
+    "@chakra-ui/checkbox": "^2.3.2",
+    "@chakra-ui/form-control": "^2.2.0",
+    "@chakra-ui/hooks": "^2.2.1",
+    "@chakra-ui/layout": "^2.3.1",
     "@chakra-ui/react": "^2.8.2",
+    "@chakra-ui/styled-system": "^2.9.2",
+    "@chakra-ui/system": "^2.6.2",
+    "@chakra-ui/table": "^2.1.0",
+    "@chakra-ui/theme-tools": "^2.1.2",
+    "@chakra-ui/utils": "^2.0.15",
     "@datadog/browser-logs": "^4.50.1",
     "@datadog/browser-rum": "^5.27.0",
     "@emotion/react": "^11.7.0",
@@ -69,6 +79,7 @@
     "react-markdown": "^9.0.1",
     "react-query": "^3.34.2",
     "react-remove-scroll": "^2.5.10",
+    "react-router": "^6.30.3",
     "react-router-dom": "^6.30.3",
     "react-roving-tabindex": "^3.2.0",
     "react-swipeable": "^7.0.0",
@@ -96,10 +107,10 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
+    "postinstall": "pnpm gen:theme-typings && pnpm --prefix ../shared install",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
-    "build": "npx tsc && vite build",
+    "build": "pnpm exec tsc && vite build",
     "test": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -124,6 +135,7 @@
   },
   "devDependencies": {
     "@chakra-ui/cli": "^2.4.1",
+    "@testing-library/jest-dom": "^6.5.0",
     "@storybook/addon-a11y": "8.3.1",
     "@storybook/addon-actions": "8.3.1",
     "@storybook/addon-essentials": "8.3.1",
@@ -181,5 +193,13 @@
   "proxy": "http://localhost:5001",
   "msw": {
     "workerDirectory": "public"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "canvas",
+      "esbuild",
+      "msw",
+      "microtime"
+    ]
   }
 }

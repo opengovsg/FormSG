@@ -3,7 +3,7 @@ import pino, { Logger, LoggerOptions as PinoLoggerOptions } from 'pino'
 
 type LoggerOptions = {
   service: string
-  prettyPrint?: ConstrainBoolean
+  prettyPrint?: boolean
   mixin?: PinoLoggerOptions['mixin']
 }
 
