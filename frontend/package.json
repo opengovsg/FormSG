@@ -1,9 +1,9 @@
 {
-  "name": "form-frontend",
+  "name": "formsg-frontend",
   "version": "6.313.0",
+  "private": true,
   "homepage": ".",
   "type": "module",
-  "private": true,
   "dependencies": {
     "@chakra-ui/anatomy": "^2.2.2",
     "@chakra-ui/checkbox": "^2.3.2",
@@ -118,9 +118,6 @@
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
     "pre-commit": "lint-staged"
   },
-  "overrides": {
-    "react-error-overlay": "6.0.9"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -193,13 +190,5 @@
   "proxy": "http://localhost:5001",
   "msw": {
     "workerDirectory": "public"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "canvas",
-      "esbuild",
-      "msw",
-      "microtime"
-    ]
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "emails",
+  "name": "formsg-react-email-preview",
   "version": "0.0.19",
   "private": true,
   "scripts": {
@@ -20,10 +20,5 @@
     "@types/react": "18.2.33",
     "@types/react-dom": "^18.2.14",
     "storybook": "^8.6.15"
-  },
-  "pnpm": {
-    "ignoreBuiltDependencies": [
-      "esbuild"
-    ]
   }
 }
