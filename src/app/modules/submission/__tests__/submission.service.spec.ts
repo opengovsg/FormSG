@@ -140,7 +140,7 @@ const MOCK_ATTACHMENTS: IAttachmentInfo[] = [
 describe('submission.service', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
-  beforeEach(() => jest.resetAllMocks())
+  beforeEach(() => jest.clearAllMocks())
 
   describe('getFormSubmissionsCount', () => {
     const countSpy = jest.spyOn(Submission, 'countDocuments')
@@ -2527,6 +2527,8 @@ describe('submission.service', () => {
       cleanFileKey: 'cleanFileKey',
       destinationVersionId: 'destinationVersionId',
     }
+    afterEach(() => jest.restoreAllMocks()) // Clear unused spies to prevent test pollution
+
     it('should return errAsync when quarantine file key is not a valid uuid', async () => {
       // Arrange
       const awsSpy = jest
