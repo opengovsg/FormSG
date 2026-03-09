@@ -1,11 +1,11 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import mongoose, { Types } from 'mongoose'
 import {
   BasicField,
   FormResponseMode,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import mongoose, { Types } from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { IFieldSchema } from 'src/types'

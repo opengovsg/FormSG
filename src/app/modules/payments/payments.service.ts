@@ -1,9 +1,9 @@
+import { PaymentStatus, Product, ProductItem } from 'formsg-shared/types'
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { PaymentStatus, Product, ProductItem } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'

@@ -1,7 +1,7 @@
+import { featureFlags } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 import { ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'

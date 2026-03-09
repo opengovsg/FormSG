@@ -2,7 +2,7 @@ import {
   generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { BasicField } from 'shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 

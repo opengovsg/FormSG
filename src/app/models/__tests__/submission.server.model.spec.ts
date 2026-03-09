@@ -1,6 +1,14 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { promises as dns } from 'dns'
+import {
+  BasicField,
+  FormAuthType,
+  PaymentType,
+  SubmissionType,
+  WebhookResponse,
+  WorkflowType,
+} from 'formsg-shared/types'
 import { merge, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 
@@ -11,14 +19,6 @@ import getSubmissionModel, {
 } from 'src/app/models/submission.server.model'
 import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
 
-import {
-  BasicField,
-  FormAuthType,
-  PaymentType,
-  SubmissionType,
-  WebhookResponse,
-  WorkflowType,
-} from '../../../../shared/types'
 import { ISubmissionSchema } from '../../../../src/types'
 import getPaymentModel from '../payment.server.model'
 

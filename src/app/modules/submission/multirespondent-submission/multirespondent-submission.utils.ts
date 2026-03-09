@@ -1,8 +1,4 @@
-import jwt from 'jsonwebtoken'
-import moment from 'moment'
-import { err, ok, Result } from 'neverthrow'
-
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -14,11 +10,15 @@ import {
   PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
-} from '../../../../../shared/types'
-import { handleAddressResponseDisplay } from '../../../../../shared/utils/address'
-import { SIGNATURE_CAPTURED_STRING } from '../../../../../shared/utils/signature'
-import { stripDropdownFieldOptionsToRecipientsMap } from '../../../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
-import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
+} from 'formsg-shared/types'
+import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
+import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import jwt from 'jsonwebtoken'
+import moment from 'moment'
+import { err, ok, Result } from 'neverthrow'
+
 import {
   EmailRespondentConfirmationField,
   FormFieldSchema,

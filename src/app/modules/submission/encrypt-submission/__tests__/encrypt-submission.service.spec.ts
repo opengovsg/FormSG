@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import mongoose from 'mongoose'
-import { errAsync, ok, okAsync } from 'neverthrow'
 import {
   BasicField,
   EmailResponse,
@@ -10,7 +8,9 @@ import {
   FormResponseMode,
   MyInfoAttribute,
   PaymentChannel,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
+import { errAsync, ok, okAsync } from 'neverthrow'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FormService from 'src/app/modules/form/form.service'

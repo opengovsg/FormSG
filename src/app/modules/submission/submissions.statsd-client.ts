@@ -1,5 +1,5 @@
+import { ResponseMetadata } from 'formsg-shared/types'
 import { Tags } from 'hot-shots'
-import { ResponseMetadata } from 'shared/types'
 
 import { statsdClient } from '../../config/datadog-statsd-client'
 

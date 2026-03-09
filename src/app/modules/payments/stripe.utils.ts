@@ -1,5 +1,8 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import { Payment, PaymentStatus, ProductItem } from 'formsg-shared/types'
+import { hasProp } from 'formsg-shared/utils/has-prop'
+import { centsToDollars, formatCurrency } from 'formsg-shared/utils/payments'
 import { encode } from 'html-entities'
 import { StatusCodes } from 'http-status-codes'
 import { JSDOM } from 'jsdom'
@@ -7,12 +10,6 @@ import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { Payment, PaymentStatus, ProductItem } from '../../../../shared/types'
-import { hasProp } from '../../../../shared/utils/has-prop'
-import {
-  centsToDollars,
-  formatCurrency,
-} from '../../../../shared/utils/payments'
 import { MapRouteError, StripePaymentMetadataDto } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'

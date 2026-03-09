@@ -1,7 +1,7 @@
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 import { isEqual } from 'lodash'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../shared/constants'
-import { BasicField } from '../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 
 import { isGenericStringAnswerResponseV3 } from './field-validation.guards'

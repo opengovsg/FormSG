@@ -1,5 +1,9 @@
 import { render } from '@react-email/render'
 import tracer from 'dd-trace'
+import { DEFAULT_RESPONDENT_COPY_EMAIL } from 'formsg-shared/constants/mail'
+import { centsToDollars } from 'formsg-shared/utils/payments'
+import { getPaymentInvoiceDownloadUrlPath } from 'formsg-shared/utils/urls'
+import { HASH_EXPIRE_AFTER_SECONDS } from 'formsg-shared/utils/verification'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import { errAsync, fromPromise, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -7,10 +11,6 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { DEFAULT_RESPONDENT_COPY_EMAIL } from '../../../../shared/constants/mail'
-import { centsToDollars } from '../../../../shared/utils/payments'
-import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   BounceType,
   EmailDataField,

@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson'
+import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { errAsync, ok, okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -8,11 +9,6 @@ import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service'
 import * as SpcpUtil from 'src/app/modules/spcp/spcp.util'
 import * as VerifiedContentService from 'src/app/modules/verified-content/verified-content.service'
 
-import {
-  BasicField,
-  FormAuthType,
-  FormResponseMode,
-} from '../../../../../../shared/types'
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'

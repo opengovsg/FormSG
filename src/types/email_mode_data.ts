@@ -1,4 +1,4 @@
-import { BasicField } from '../../shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 export type EmailRespondentConfirmationField = {
   question: string

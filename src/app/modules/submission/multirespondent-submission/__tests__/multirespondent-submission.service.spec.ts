@@ -1,6 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { errAsync, okAsync } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
@@ -8,7 +7,8 @@ import {
   FormWorkflowStepDto,
   WorkflowStatus,
   WorkflowType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { errAsync, okAsync } from 'neverthrow'
 
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'

@@ -1,6 +1,6 @@
 import MemoryDatabaseServer from '__tests__/setup/database'
 import mongoose, { Schema, Types } from 'mongoose'
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {

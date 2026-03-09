@@ -1,6 +1,6 @@
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField, FormFieldDto } from '../../../../shared/types'
 import { FieldValidationSchema } from '../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'

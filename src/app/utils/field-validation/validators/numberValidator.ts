@@ -1,12 +1,12 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
-
 import {
   BasicField,
   NumberResponseV3,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { chain, left, right } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
+
 import { INumberFieldSchema, OmitUnusedValidatorProps } from '../../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {

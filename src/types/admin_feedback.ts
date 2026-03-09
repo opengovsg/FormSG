@@ -1,5 +1,5 @@
+import { AdminFeedbackBase } from 'formsg-shared/types'
 import { Document, Model } from 'mongoose'
-import { AdminFeedbackBase } from 'shared/types'
 import { Merge } from 'type-fest'
 
 import { IUserSchema } from './user'

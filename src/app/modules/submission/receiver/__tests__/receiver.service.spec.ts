@@ -4,12 +4,12 @@ import {
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import Busboy from 'busboy'
 import FormData from 'form-data'
+import { MB } from 'formsg-shared/constants/file'
+import { BasicField, FormResponseMode } from 'formsg-shared/types'
 import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
 import { omit, pick } from 'lodash'
 
-import { MB } from '../../../../../../shared/constants/file'
-import { BasicField, FormResponseMode } from '../../../../../../shared/types'
 import {
   InitialiseMultipartReceiverError,
   MultipartError,

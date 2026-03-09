@@ -1,4 +1,4 @@
-import { AddressCompoundFieldBase, BasicField } from '../../../shared/types'
+import { AddressCompoundFieldBase, BasicField } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

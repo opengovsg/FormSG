@@ -1,12 +1,11 @@
-import { Document } from 'mongoose'
-
 import {
   FormWorkflowStepBase,
   FormWorkflowStepConditional,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
   WorkflowType,
-} from '../../shared/types'
+} from 'formsg-shared/types'
+import { Document } from 'mongoose'
 
 import { IFieldSchema } from './field'
 

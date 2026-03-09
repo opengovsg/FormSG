@@ -1,9 +1,8 @@
 import { ObjectId } from 'bson'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
 import { merge } from 'lodash'
 
 import { IVerificationField } from 'src/types'
-
-import { PAYMENT_CONTACT_FIELD_ID } from '../../../../../shared/constants'
 
 export const MOCK_SIGNED_DATA = 'mockSignedData'
 export const MOCK_HASHED_OTP = 'mockHashedOtp'

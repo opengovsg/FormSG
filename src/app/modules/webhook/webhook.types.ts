@@ -1,6 +1,6 @@
+import { FormWorkflowDto, SubmittedStep } from 'formsg-shared/types'
 import * as z from 'zod'
 
-import { FormWorkflowDto, SubmittedStep } from '../../../../shared/types'
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
 
 export interface WebhookParams {

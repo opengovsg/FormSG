@@ -1,7 +1,7 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { SeenFlags } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
-import { SeenFlags } from 'shared/types'
 
 import * as UserController from 'src/app/modules/user/user.controller'
 import {

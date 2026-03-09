@@ -1,8 +1,8 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
+import { MyInfoAttribute as InternalAttr } from 'formsg-shared/types'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { MyInfoAttribute as InternalAttr } from '../../../../shared/types'
 import { ISgidVarsSchema } from '../../../types'
 import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'

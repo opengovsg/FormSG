@@ -1,10 +1,10 @@
-import { err, ok, Result } from 'neverthrow'
-
 import {
   ChildrenCompoundFieldBase,
   FormAuthType,
   MyInfoAttribute,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+import { err, ok, Result } from 'neverthrow'
+
 import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
 import { validateField } from '../../utils/field-validation'
 import {

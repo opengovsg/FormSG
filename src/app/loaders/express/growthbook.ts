@@ -1,8 +1,8 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { RequestHandler } from 'express'
+import { GROWTHBOOK_DEV_PROXY } from 'formsg-shared/constants/links'
+import { GROWTHBOOK_API_HOST_PATH } from 'formsg-shared/constants/routes'
 
-import { GROWTHBOOK_DEV_PROXY } from '../../../../shared/constants/links'
-import { GROWTHBOOK_API_HOST_PATH } from '../../../../shared/constants/routes'
 import config from '../../config/config'
 import { growthbookConfig } from '../../config/features/growthbook.config'
 

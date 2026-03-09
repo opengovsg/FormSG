@@ -1,14 +1,14 @@
-import { get } from 'lodash'
-
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
-
-import { types as basicTypes } from '../../../../shared/constants/field/basic'
+import { types as basicTypes } from 'formsg-shared/constants/field/basic'
 import {
   BasicField,
   GenericStringAnswerResponseFieldV3,
   TableRow,
-} from '../../../../shared/types'
-import { isStringArray } from '../../../../shared/utils/is-string-array'
+} from 'formsg-shared/types'
+import { isStringArray } from 'formsg-shared/utils/is-string-array'
+import { get } from 'lodash'
+
+import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
+
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,

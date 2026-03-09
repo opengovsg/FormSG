@@ -1,10 +1,10 @@
 import axios from 'axios'
 import Bluebird from 'bluebird'
+import { WebhookResponse } from 'formsg-shared/types'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { WebhookResponse } from '../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
   IMultirespondentSubmissionSchema,

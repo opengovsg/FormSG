@@ -1,7 +1,7 @@
+import { FormAuthType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, ResultAsync } from 'neverthrow'
 
-import { FormAuthType } from '../../../../shared/types'
 import {
   FormBillingStatistic,
   ILoginSchema,

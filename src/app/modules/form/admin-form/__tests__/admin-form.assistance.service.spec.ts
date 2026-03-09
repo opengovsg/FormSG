@@ -1,5 +1,5 @@
+import { BasicField, FormMetadata } from 'formsg-shared/types'
 import { errAsync, okAsync } from 'neverthrow'
-import { BasicField, FormMetadata } from 'shared/types'
 
 import { FormFieldSchema, IPopulatedForm } from 'src/types'
 

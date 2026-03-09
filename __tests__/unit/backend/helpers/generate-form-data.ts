@@ -60,7 +60,7 @@ import {
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
   YesNoResponseV3,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
 
 export const generateDefaultFieldV3 = (
   fieldType: BasicField,

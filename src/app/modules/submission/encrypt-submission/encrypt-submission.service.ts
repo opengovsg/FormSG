@@ -1,14 +1,14 @@
 import { GrowthBook } from '@growthbook/growthbook'
-import mongoose from 'mongoose'
-import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import Mail from 'nodemailer/lib/mailer'
-
 import {
   DateString,
   FormResponseMode,
   PaymentChannel,
   SubmissionType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
+import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
+
 import {
   EmailDataField,
   FieldResponse,

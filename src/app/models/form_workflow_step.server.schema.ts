@@ -1,7 +1,7 @@
+import { WorkflowType } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import validator from 'validator'
 
-import { WorkflowType } from '../../../shared/types'
 import {
   IWorkflowStepConditionalSchema,
   IWorkflowStepDynamicSchema,

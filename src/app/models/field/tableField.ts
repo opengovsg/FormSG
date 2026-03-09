@@ -1,7 +1,7 @@
+import { BasicField, Language } from 'formsg-shared/types'
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
-import { BasicField, Language } from '../../../../shared/types'
 import { IColumnSchema, ITableFieldSchema } from '../../../types'
 
 const createColumnSchema = () => {

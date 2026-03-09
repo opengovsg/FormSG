@@ -1,5 +1,4 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-
 import {
   FormAuthType,
   FormStatus,
@@ -7,7 +6,7 @@ import {
   SettingsUpdateDto,
   WebhookSettingsUpdateDto,
   WorkflowType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
 

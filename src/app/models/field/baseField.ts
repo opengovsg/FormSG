@@ -1,7 +1,7 @@
+import { BasicField, Language, MyInfoAttribute } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
-import { BasicField, Language, MyInfoAttribute } from '../../../../shared/types'
 import { IFieldSchema, IMyInfoSchema, ITableFieldSchema } from '../../../types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)

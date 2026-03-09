@@ -1,7 +1,8 @@
 import {
   GO_ALREADY_EXIST_ERROR_MESSAGE,
   GO_VALIDATION_ERROR_MESSAGE,
-} from '../../../../../shared/constants'
+} from 'formsg-shared/constants'
+
 import { ApplicationError, ErrorCodes } from '../../core/core.errors'
 
 export class InvalidFileTypeError extends ApplicationError {

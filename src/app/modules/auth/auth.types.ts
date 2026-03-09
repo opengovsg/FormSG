@@ -1,4 +1,4 @@
-import { SgidPublicOfficerEmploymentList } from 'shared/types/auth'
+import { SgidPublicOfficerEmploymentList } from 'formsg-shared/types/auth'
 
 import { IPopulatedUser } from 'src/types'
 

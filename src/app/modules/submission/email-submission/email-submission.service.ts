@@ -1,14 +1,14 @@
 import crypto from 'crypto'
-import mongoose from 'mongoose'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
-
 import {
   BasicField,
   FormAuthType,
   FormResponseMode,
   ResponseMetadata,
   SubmissionType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
+
 import {
   EmailDataField,
   IAttachmentInfo,

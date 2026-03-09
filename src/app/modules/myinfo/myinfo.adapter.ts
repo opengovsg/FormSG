@@ -6,14 +6,14 @@ import {
   MyInfoScope,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
-
 import {
   MyInfoAttribute as InternalAttr,
   MyInfoChildAttributes,
   MyInfoChildData,
   MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+
 import { createLoggerWithLabel } from '../../config/logger'
 
 import {

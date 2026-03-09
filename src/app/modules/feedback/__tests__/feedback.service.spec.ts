@@ -1,13 +1,13 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { compareAsc } from 'date-fns'
+import { FormFeedbackMetaDto } from 'formsg-shared/types'
 import { omit, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 
-import { FormFeedbackMetaDto } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { DuplicateFeedbackSubmissionError } from '../feedback.errors'
 import * as FeedbackService from '../feedback.service'

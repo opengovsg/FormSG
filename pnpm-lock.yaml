@@ -143,6 +143,9 @@ importers:
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
+      formsg-shared:
+        specifier: workspace:*
+        version: link:shared
       fp-ts:
         specifier: ^2.16.9
         version: 2.16.9

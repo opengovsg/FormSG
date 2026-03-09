@@ -6,6 +6,22 @@ import {
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CreateFormBodyDto,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormFeedbackMetaDto,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+  LogicDto,
+  SubmissionType,
+} from 'formsg-shared/types'
+import * as CryptoUtil from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'
@@ -48,22 +64,6 @@ import {
 } from 'src/types'
 import { EditFormFieldParams, EncryptSubmissionDto } from 'src/types/api'
 
-import {
-  AdminDashboardFormMetaDto,
-  BasicField,
-  CreateFormBodyDto,
-  DuplicateFormBodyDto,
-  FieldCreateDto,
-  FieldUpdateDto,
-  FormAuthType,
-  FormFeedbackMetaDto,
-  FormResponseMode,
-  FormSettings,
-  FormStatus,
-  LogicDto,
-  SubmissionType,
-} from '../../../../../../shared/types'
-import * as CryptoUtil from '../../../../../../shared/utils/crypto'
 import * as UserService from '../../../user/user.service'
 import {
   ForbiddenFormError,

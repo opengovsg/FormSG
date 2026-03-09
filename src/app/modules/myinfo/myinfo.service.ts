@@ -4,16 +4,16 @@ import {
   MyInfoScope,
 } from '@opengovsg/myinfo-gov-client'
 import Bluebird from 'bluebird'
+import {
+  MyInfoAttribute as InternalAttr,
+  MyInfoChildData,
+} from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import { cloneDeep } from 'lodash'
 import mongoose, { FlattenMaps } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import {
-  MyInfoAttribute as InternalAttr,
-  MyInfoChildData,
-} from '../../../../shared/types'
 import { retrieveFileContent } from '../../../app/utils/iac'
 import {
   Environment,

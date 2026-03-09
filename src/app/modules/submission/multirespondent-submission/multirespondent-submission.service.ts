@@ -1,8 +1,4 @@
 import { GrowthBook } from '@growthbook/growthbook'
-import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import Mail from 'nodemailer/lib/mailer'
-
 import {
   BasicField,
   FieldResponsesV3,
@@ -13,8 +9,12 @@ import {
   SubmittedNonApprovalStep,
   SubmittedStep,
   WorkflowStatus,
-} from '../../../../../shared/types'
-import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+} from 'formsg-shared/types'
+import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import mongoose from 'mongoose'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import Mail from 'nodemailer/lib/mailer'
+
 import {
   Environment,
   FormFieldSchema,

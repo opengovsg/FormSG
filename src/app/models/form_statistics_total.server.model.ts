@@ -1,5 +1,5 @@
+import { ExtractTypeFromArray } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
-import { ExtractTypeFromArray } from 'shared/types'
 
 import {
   AggregateFormCountResult,

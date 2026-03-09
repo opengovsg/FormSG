@@ -1,11 +1,11 @@
 import { ObjectId } from 'bson'
+import { FormIssueMetaDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'
 
 import dbHandler from '../../../../../../__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '../../../../../../__tests__/unit/backend/helpers/jest-express'
-import { FormIssueMetaDto } from '../../../../../../shared/types'
 import { IPopulatedForm, IPopulatedUser } from '../../../../../types'
 import * as AuthService from '../../../auth/auth.service'
 import { DatabaseError } from '../../../core/core.errors'

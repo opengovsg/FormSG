@@ -1,12 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { StatusTrackerData, StrippedFormWorkflowDto } from 'formsg-shared/types'
+import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
 
-import {
-  StatusTrackerData,
-  StrippedFormWorkflowDto,
-} from '../../../../shared/types'
-import { stripWorkflowEmails } from '../../../../shared/utils/strip-workflow-emails'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'

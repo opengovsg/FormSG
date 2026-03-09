@@ -1,8 +1,8 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { FormStatus } from 'formsg-shared/types'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { FormStatus } from 'shared/types'
 
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import { IUserSchema } from 'src/types'

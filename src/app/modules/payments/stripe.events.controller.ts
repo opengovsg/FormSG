@@ -1,11 +1,11 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 import { celebrate, Joi, Segments } from 'celebrate'
+import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import get from 'lodash/get'
 import Stripe from 'stripe'
 
-import { ErrorDto } from '../../../../shared/types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'

@@ -1,6 +1,3 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
-
 import {
   BasicField,
   DropdownFieldBase,
@@ -8,7 +5,10 @@ import {
   ShortTextFieldBase,
   TableFieldBase,
   TableResponseV3,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { chain, left, right } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
+
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ITableFieldSchema,

@@ -4,11 +4,10 @@ import {
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import { BasicField } from '../../../../../../shared/types'
 
 describe('Dropdown validation', () => {
   it('should allow valid option', () => {

@@ -1,4 +1,5 @@
-import { FormAuthType } from '../../../../shared/types'
+import { FormAuthType } from 'formsg-shared/types'
+
 import { IFormSchema } from '../../../types'
 
 export type SgidForm<T extends IFormSchema> = T & {

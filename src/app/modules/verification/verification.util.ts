@@ -1,13 +1,13 @@
-import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result } from 'neverthrow'
-
 import {
   HASH_EXPIRE_AFTER_SECONDS,
   MAX_OTP_REQUESTS,
   VERIFIED_FIELDTYPES,
   WAIT_FOR_OTP_SECONDS,
   WAIT_FOR_OTP_TOLERANCE_SECONDS,
-} from '../../../../shared/utils/verification'
+} from 'formsg-shared/utils/verification'
+import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
+
 import {
   IFieldSchema,
   IVerificationFieldSchema,

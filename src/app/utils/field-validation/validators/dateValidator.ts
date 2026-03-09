@@ -1,16 +1,16 @@
 import { format } from 'date-fns'
+import {
+  BasicField,
+  DateResponseV3,
+  DateSelectedValidation,
+} from 'formsg-shared/types'
+import { convertInvalidDaysOfTheWeekToNumberSet as convertInvalidDaysToNumberSet } from 'formsg-shared/utils/date-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
 import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
 
-import {
-  BasicField,
-  DateResponseV3,
-  DateSelectedValidation,
-} from '../../../../../shared/types'
-import { convertInvalidDaysOfTheWeekToNumberSet as convertInvalidDaysToNumberSet } from '../../../../../shared/utils/date-validation'
 import {
   IDateFieldSchema,
   OmitUnusedValidatorProps,

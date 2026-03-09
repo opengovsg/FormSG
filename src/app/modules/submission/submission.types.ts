@@ -1,6 +1,3 @@
-import { StatusCodes } from 'http-status-codes'
-import type { Opaque } from 'type-fest'
-
 import {
   AddressResponse,
   BasicField,
@@ -9,8 +6,11 @@ import {
   MyInfoChildAttributes,
   SignatureResponse,
   TableResponse,
-} from '../../../../shared/types'
-import { hasProp } from '../../../../shared/utils/has-prop'
+} from 'formsg-shared/types'
+import { hasProp } from 'formsg-shared/utils/has-prop'
+import { StatusCodes } from 'http-status-codes'
+import type { Opaque } from 'type-fest'
+
 import {
   EncryptAttachmentResponse,
   ParsedClearAttachmentResponse,

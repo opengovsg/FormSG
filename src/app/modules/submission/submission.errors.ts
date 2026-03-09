@@ -1,4 +1,5 @@
-import { FormResponseMode } from '../../../../shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
+
 import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**

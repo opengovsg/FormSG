@@ -1,10 +1,10 @@
-import { Schema } from 'mongoose'
-
 import {
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
   NumberValidationOptions,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+import { Schema } from 'mongoose'
+
 import { INumberFieldSchema } from '../../../types'
 
 import { MyInfoSchema } from './baseField'

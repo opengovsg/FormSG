@@ -1,10 +1,10 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { EmailFieldBase, FormResponseMode } from 'formsg-shared/types'
 import merge from 'lodash/merge'
 import { Model, Schema } from 'mongoose'
 
 import { IEmailFieldSchema } from 'src/types'
 
-import { EmailFieldBase, FormResponseMode } from '../../../../../shared/types'
 import createEmailFieldSchema from '../emailField'
 
 describe('models.fields.emailField', () => {

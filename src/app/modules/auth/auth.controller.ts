@@ -1,8 +1,8 @@
+import { SUPPORT_FORM_LINK } from 'formsg-shared/constants/links'
+import { SendOtpResponseDto } from 'formsg-shared/types/user'
 import { StatusCodes } from 'http-status-codes'
 import { isEmpty } from 'lodash'
-import { SendOtpResponseDto } from 'shared/types/user'
 
-import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ADMIN_LOGIN_SESSION_COOKIE_NAME } from '../../loaders/express/session'
 import MailService from '../../services/mail/mail.service'

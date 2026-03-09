@@ -1,9 +1,6 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
-import { omit } from 'lodash'
-import moment from 'moment-timezone'
-import { ok } from 'neverthrow'
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
   AddressAttributes,
   AddressResponseV3,
@@ -25,7 +22,10 @@ import {
   TableResponseV3,
   WorkflowStatus,
   WorkflowType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { omit } from 'lodash'
+import moment from 'moment-timezone'
+import { ok } from 'neverthrow'
 
 import { convertToSignaturePngDataUri } from 'src/app/utils/convert-vector-array-to-png'
 import {

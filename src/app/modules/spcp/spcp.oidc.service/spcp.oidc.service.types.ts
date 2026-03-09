@@ -1,4 +1,4 @@
-import { FormAuthType } from '../../../../../shared/types'
+import { FormAuthType } from 'formsg-shared/types'
 
 import { CpOidcServiceClass } from './spcp.oidc.service.cp'
 import { SpOidcServiceClass } from './spcp.oidc.service.sp'

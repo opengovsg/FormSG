@@ -1,6 +1,5 @@
+import { VerifiedKeys } from 'formsg-shared/utils/verified-content'
 import { err, ok } from 'neverthrow'
-
-import { VerifiedKeys } from '../../../../shared/utils/verified-content'
 
 import { MalformedVerifiedContentError } from './verified-content.errors'
 import {

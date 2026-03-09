@@ -1,7 +1,7 @@
+import { AutoReplyOptions } from 'formsg-shared/types'
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
 
-import { AutoReplyOptions } from '../../../../shared/types'
 import {
   EmailDataField,
   IFormSchema,

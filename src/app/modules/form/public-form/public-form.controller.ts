@@ -1,9 +1,6 @@
 import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
-import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result } from 'neverthrow'
-
-import { featureFlags } from '../../../../../shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorCode,
   ErrorDto,
@@ -16,8 +13,11 @@ import {
   PublicFormDto,
   PublicFormViewDto,
   StrippedFormWorkflowDto,
-} from '../../../../../shared/types'
-import { stripWorkflowEmails } from '../../../../../shared/utils/strip-workflow-emails'
+} from 'formsg-shared/types'
+import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
+
 import { IPopulatedMultirespondentForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'

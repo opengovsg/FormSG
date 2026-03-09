@@ -1,15 +1,16 @@
 import {
-  generateDefaultField,
-  generateProcessedSingleAnswerResponse,
-  generateSingleAnswerResponse,
-} from '../../../../../__tests__/unit/backend/helpers/generate-form-data'
-import {
   BasicField,
   FormResponseMode,
   LogicType,
   MyInfoAttribute,
-} from '../../../../../shared/types'
-import * as LogicUtil from '../../../../../shared/utils/logic'
+} from 'formsg-shared/types'
+import * as LogicUtil from 'formsg-shared/utils/logic'
+
+import {
+  generateDefaultField,
+  generateProcessedSingleAnswerResponse,
+  generateSingleAnswerResponse,
+} from '../../../../../__tests__/unit/backend/helpers/generate-form-data'
 import {
   FormFieldSchema,
   IFormDocument,

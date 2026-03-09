@@ -1,10 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import mongoose from 'mongoose'
-import Stripe from 'stripe'
-
 import {
   DateString,
   ErrorCode,
@@ -14,7 +10,11 @@ import {
   PaymentChannel,
   PaymentType,
   StorageModeSubmissionContentDto,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
+import Stripe from 'stripe'
+
 import {
   IAttachmentInfo,
   IEncryptedSubmissionSchema,

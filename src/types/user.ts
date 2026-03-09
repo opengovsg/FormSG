@@ -1,7 +1,6 @@
+import { PublicAgencyDto, UserBase } from 'formsg-shared/types'
 import { Document, Model, Schema } from 'mongoose'
 import type { SetOptional } from 'type-fest'
-
-import { PublicAgencyDto, UserBase } from '../../shared/types'
 
 import { AgencyDocument, IAgencySchema } from './agency'
 import { PublicView } from './database'

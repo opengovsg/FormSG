@@ -1,11 +1,11 @@
-import { StatusCodes } from 'http-status-codes'
-
-import { VIRUS_SCANNER_SUBMISSION_VERSION } from '../../../../../shared/constants'
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponse,
   FieldResponsesV3,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
   ParsedClearAttachmentResponse,

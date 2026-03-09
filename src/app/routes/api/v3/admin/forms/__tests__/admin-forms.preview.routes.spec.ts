@@ -11,6 +11,7 @@ import {
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson'
+import { BasicField, FormResponseMode, FormStatus } from 'formsg-shared/types'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
@@ -23,11 +24,6 @@ import getUserModel from 'src/app/models/user.server.model'
 import { IFormSchema, IUserSchema } from 'src/types'
 import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
 
-import {
-  BasicField,
-  FormResponseMode,
-  FormStatus,
-} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.

@@ -1,11 +1,11 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import merge from 'lodash/merge'
-import mongoose, { Model, Schema } from 'mongoose'
 import {
   DateFieldBase,
   FormResponseMode,
   InvalidDaysOptions,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import merge from 'lodash/merge'
+import mongoose, { Model, Schema } from 'mongoose'
 
 import { IDateFieldSchema } from 'src/types'
 

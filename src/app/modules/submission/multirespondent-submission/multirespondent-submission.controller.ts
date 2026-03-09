@@ -1,14 +1,14 @@
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import { errAsync, okAsync } from 'neverthrow'
-
 import {
   ErrorDto,
   FormResponseMode,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
-} from '../../../../../shared/types'
-import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+} from 'formsg-shared/types'
+import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import { StatusCodes } from 'http-status-codes'
+import { errAsync, okAsync } from 'neverthrow'
+
 import { Environment } from '../../../../types'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'

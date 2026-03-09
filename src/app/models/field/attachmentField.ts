@@ -1,6 +1,6 @@
+import { AttachmentSize } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
-import { AttachmentSize } from '../../../../shared/types'
 import { IAttachmentFieldSchema } from '../../../types/field'
 
 const createAttachmentFieldSchema = () => {

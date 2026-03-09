@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson'
-import { BasicField } from 'shared/types'
-import { SIGNATURE_CAPTURED_STRING } from 'shared/utils/signature'
+import { BasicField } from 'formsg-shared/types'
+import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 
 import * as ConvertHtmlToPdf from '../../../utils/convert-html-to-pdf'
 import { generateAutoreplyPdf, safeRenderFileForTest } from '../mail.utils'

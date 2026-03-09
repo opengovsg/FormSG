@@ -1,4 +1,5 @@
-import { FormPermission } from '../../../../shared/types'
+import { FormPermission } from 'formsg-shared/types'
+
 import { IFormSchema, IUserSchema } from '../../../types'
 
 export enum SmsType {

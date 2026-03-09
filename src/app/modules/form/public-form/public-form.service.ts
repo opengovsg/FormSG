@@ -1,7 +1,7 @@
+import { FormAuthType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { FormAuthType } from '../../../../../shared/types'
 import { IFormFeedbackSchema } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getFormModel from '../../../models/form.server.model'

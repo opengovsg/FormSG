@@ -1,12 +1,12 @@
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import JSONStream from 'JSONStream'
-
 import {
   ErrorDto,
   FormIssueMetaDto,
   FormIssueMetaQueryDto,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import JSONStream from 'JSONStream'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'

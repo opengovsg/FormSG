@@ -1,6 +1,5 @@
+import { AgencyBase, PublicAgencyDto } from 'formsg-shared/types'
 import { HydratedDocument, Model } from 'mongoose'
-
-import { AgencyBase, PublicAgencyDto } from '../../shared/types'
 
 import { PublicView } from './database'
 

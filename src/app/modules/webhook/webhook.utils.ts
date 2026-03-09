@@ -1,10 +1,10 @@
 import { AxiosResponse } from 'axios'
+import { WebhookResponse } from 'formsg-shared/types'
+import { stringifySafe } from 'formsg-shared/utils/stringify-safe'
 import { inRange } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, Result } from 'neverthrow'
 
-import { WebhookResponse } from '../../../../shared/types'
-import { stringifySafe } from '../../../../shared/utils/stringify-safe'
 import { TIMEZONE } from '../../constants/timezone'
 import { randomUniformInt } from '../../utils/random-uniform'
 

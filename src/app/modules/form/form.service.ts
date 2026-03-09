@@ -1,8 +1,4 @@
 import { faker } from '@faker-js/faker'
-import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { decodeBase64 } from 'tweetnacl-util'
-
 import {
   BasicField,
   FormAuthType,
@@ -12,8 +8,12 @@ import {
   FormStatus,
   Language,
   PublicFormDto,
-} from '../../../../shared/types'
-import { encryptString } from '../../../../shared/utils/crypto'
+} from 'formsg-shared/types'
+import { encryptString } from 'formsg-shared/utils/crypto'
+import mongoose from 'mongoose'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { decodeBase64 } from 'tweetnacl-util'
+
 import {
   IEmailFormModel,
   IEncryptedFormModel,

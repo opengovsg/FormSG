@@ -1,4 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { FormResponseMode, SubmissionType } from 'formsg-shared/types'
 import * as E from 'fp-ts/lib/Either'
 import { times } from 'lodash'
 import mongoose, { Query } from 'mongoose'
@@ -9,7 +10,6 @@ import getSubmissionModel from 'src/app/models/submission.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { IAgencySchema, IUserSchema } from 'src/types'
 
-import { FormResponseMode, SubmissionType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import {
   getAgencyCount,
