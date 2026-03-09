@@ -26,6 +26,7 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+RUN pnpm --filter formsg-shared build
 RUN pnpm build
 
 ARG APP_VERSION
@@ -45,17 +46,18 @@ RUN --mount=type=secret,id=dd_api_key \
 
 # This stage builds the final container
 FROM base
-LABEL maintainer=FormSG<formsg@data.gov.sg>
+LABEL maintainer=FormSG<formsg@open.gov.sg>
 WORKDIR /opt/formsg
 
 # Install build from backend-build
 COPY --from=build /build/node_modules /opt/formsg/node_modules
 COPY --from=build /build/package.json /opt/formsg/package.json
 COPY --from=build /build/dist /opt/formsg/dist
+# For the backend to resolve formsg-shared package
+COPY --from=build /build/shared/package.json /build/shared/dist /opt/formsg/shared/
 
 # Built backend goes back to root working directory
 RUN mv /opt/formsg/dist/backend/src /opt/formsg/
-RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 
 # Install chromium from official docs
 # https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
