@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { forwardRef } from '@chakra-ui/react'
 
-import { DropdownColumnBase } from '~shared/types'
+import { DropdownColumnBase } from 'formsg-shared/types'
 
 import Textarea from '~components/Textarea'
 

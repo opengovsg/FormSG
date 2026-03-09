@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 export const useSectionColor = (colorTheme?: FormColorTheme) => {
   const sectionColor = useMemo(() => {

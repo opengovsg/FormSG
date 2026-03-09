@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 import pickBy from 'lodash/pickBy'
 
-import { LogicType } from '~shared/types'
+import { LogicType } from 'formsg-shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'

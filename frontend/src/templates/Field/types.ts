@@ -5,12 +5,12 @@ import {
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
-} from '~shared/constants'
+} from 'formsg-shared/constants'
 import {
   ProductItemInput,
   SingleAnswerResponse,
   VerifiableResponseBase,
-} from '~shared/types'
+} from 'formsg-shared/types'
 import {
   AddressAttributes,
   AddressCompoundFieldBase,
@@ -40,8 +40,8 @@ import {
   TableFieldBase,
   UenFieldBase,
   YesNoFieldBase,
-} from '~shared/types/field'
-import { ChildrenCompoundFieldBase } from '~shared/types/field/childrenCompoundField'
+} from 'formsg-shared/types/field'
+import { ChildrenCompoundFieldBase } from 'formsg-shared/types/field/childrenCompoundField'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 

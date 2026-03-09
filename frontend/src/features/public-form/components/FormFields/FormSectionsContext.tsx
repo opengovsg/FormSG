@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import useScrollSpy from 'react-use-scrollspy'
 
-import { BasicField, FormFieldDto, Language } from '~shared/types'
+import { BasicField, FormFieldDto, Language } from 'formsg-shared/types'
 
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

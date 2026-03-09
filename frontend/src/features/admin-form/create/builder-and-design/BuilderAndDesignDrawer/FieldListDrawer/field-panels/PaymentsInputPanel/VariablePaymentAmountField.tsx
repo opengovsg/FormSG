@@ -5,7 +5,7 @@ import {
   centsToDollars,
   dollarsToCents,
   formatCurrency,
-} from '~shared/utils/payments'
+} from 'formsg-shared/utils/payments'
 
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

@@ -10,7 +10,7 @@ import {
   VisuallyHidden,
 } from '@chakra-ui/react'
 
-import { FormAuthType, FormSettings } from '~shared/types/form'
+import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'

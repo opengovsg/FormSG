@@ -22,7 +22,7 @@ import {
   TableFieldBase,
   TranslationMapping,
   TranslationOptionMapping,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'

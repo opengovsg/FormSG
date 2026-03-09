@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FormColorTheme, FormStartPage } from '~shared/types'
+import { FormColorTheme, FormStartPage } from 'formsg-shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 

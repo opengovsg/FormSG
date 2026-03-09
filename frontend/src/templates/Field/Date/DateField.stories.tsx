@@ -4,12 +4,12 @@ import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { addDays, lightFormat, parse } from 'date-fns'
 
-import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
+import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 import {
   BasicField,
   DateSelectedValidation,
   InvalidDaysOptions,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { mockDateDecorator } from '~utils/storybook'
 import Button from '~components/Button'

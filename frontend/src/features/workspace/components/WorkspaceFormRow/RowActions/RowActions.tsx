@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { AdminDashboardFormMetaDto } from '~shared/types/form'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 

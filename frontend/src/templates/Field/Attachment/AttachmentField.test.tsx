@@ -4,9 +4,9 @@ import userEvent from '@testing-library/user-event'
 import JSZip from 'jszip'
 import { merge } from 'lodash'
 
-import { MB } from '~shared/constants/file'
-import { AttachmentSize } from '~shared/types/field'
-import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
+import { MB } from 'formsg-shared/constants/file'
+import { AttachmentSize } from 'formsg-shared/types/field'
+import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 

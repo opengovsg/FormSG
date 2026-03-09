@@ -2,7 +2,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { BiChevronLeft } from 'react-icons/bi'
 import { Button, Flex, Skeleton } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'

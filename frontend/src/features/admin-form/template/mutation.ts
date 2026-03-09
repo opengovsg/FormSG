@@ -7,7 +7,7 @@ import {
   CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   FormDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { ApiError } from '~typings/core'
 

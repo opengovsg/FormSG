@@ -2,7 +2,7 @@ import { stringify } from 'csv-string'
 import mockdate from 'mockdate'
 import moment from 'moment-timezone'
 
-import { DateString, FormFeedbackDto, FormId } from '~shared/types'
+import { DateString, FormFeedbackDto, FormId } from 'formsg-shared/types'
 
 import { FeedbackCsvGenerator } from './FeedbackCsvGenerator'
 

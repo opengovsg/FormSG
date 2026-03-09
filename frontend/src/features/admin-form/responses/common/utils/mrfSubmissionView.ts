@@ -2,7 +2,7 @@ import {
   StrippedFormWorkflowDto,
   SubmittedStep,
   WorkflowStatus,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',

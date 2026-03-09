@@ -1,8 +1,8 @@
 import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField } from '~shared/types/field'
-import { FormColorTheme } from '~shared/types/form/form'
+import { BasicField } from 'formsg-shared/types/field'
+import { FormColorTheme } from 'formsg-shared/types/form/form'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 

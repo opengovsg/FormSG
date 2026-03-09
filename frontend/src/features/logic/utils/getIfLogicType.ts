@@ -1,5 +1,5 @@
-import { BasicField } from '~shared/types/field'
-import { LogicConditionState, LogicIfValue } from '~shared/types/form'
+import { BasicField } from 'formsg-shared/types/field'
+import { LogicConditionState, LogicIfValue } from 'formsg-shared/types/form'
 
 type GetIfLogicTypeArgs = {
   fieldType: BasicField

@@ -11,8 +11,8 @@ import {
   FormStatus,
   FormSupportedLanguages,
   StorageFormSettings,
-} from '~shared/types/form/form'
-import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
+} from 'formsg-shared/types/form/form'
+import { PAYMENT_DELETE_DEFAULT } from 'formsg-shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 

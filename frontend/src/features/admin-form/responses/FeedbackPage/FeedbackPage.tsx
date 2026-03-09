@@ -12,7 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
+import { ProcessedFeedbackMeta, ProcessedIssueMeta } from 'formsg-shared/types'
 
 import Pagination from '~/components/Pagination'
 

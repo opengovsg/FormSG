@@ -6,8 +6,8 @@ import {
   DraggableStateSnapshot,
 } from '@hello-pangea/dnd'
 
-import { FormResponseMode } from '~shared/types'
-import { AllowedMyInfoFieldOption, BasicField } from '~shared/types/field'
+import { FormResponseMode } from 'formsg-shared/types'
+import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'

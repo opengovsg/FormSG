@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { CustomFormLogo, FormLogoBase, FormStartPage } from '~shared/types'
+import { CustomFormLogo, FormLogoBase, FormStartPage } from 'formsg-shared/types'
 
 import { UploadedImage } from './BuilderAndDesignDrawer/EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
 

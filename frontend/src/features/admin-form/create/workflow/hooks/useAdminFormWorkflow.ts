@@ -8,7 +8,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   YesNoFieldBase,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormFieldWithQuestionNo } from '~features/form/types'

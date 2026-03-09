@@ -1,7 +1,7 @@
 import { keyBy } from 'lodash'
 
-import { types as myInfoTypeArray } from '~shared/constants/field/myinfo'
-import { FormFieldDto, MyInfoFormField } from '~shared/types'
+import { types as myInfoTypeArray } from 'formsg-shared/constants/field/myinfo'
+import { FormFieldDto, MyInfoFormField } from 'formsg-shared/types'
 
 import { isMyInfo } from './isMyInfo'
 

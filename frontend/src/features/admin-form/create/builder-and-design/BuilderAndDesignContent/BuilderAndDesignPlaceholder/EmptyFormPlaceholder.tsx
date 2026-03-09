@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'

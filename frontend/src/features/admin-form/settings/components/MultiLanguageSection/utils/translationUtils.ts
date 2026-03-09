@@ -7,8 +7,8 @@ import {
   Language,
   TranslationMapping,
   TranslationOptionMapping,
-} from '~shared/types'
-import { BasicField, TableFieldBase } from '~shared/types/field'
+} from 'formsg-shared/types'
+import { BasicField, TableFieldBase } from 'formsg-shared/types/field'
 
 export const updateFormFieldTranslations = ({
   data,

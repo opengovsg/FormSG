@@ -42,7 +42,7 @@ import {
   featureFlags,
   MFB_TEXT_PROMPT_MAX_CHAR,
   MFB_VISION_MAX_IMAGES_COUNT,
-} from '~shared/constants'
+} from 'formsg-shared/constants'
 
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
 
-import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
+import { isMobilePhoneNumber } from 'formsg-shared/utils/phone-num-validation'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

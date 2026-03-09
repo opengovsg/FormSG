@@ -1,7 +1,7 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
-import { MyInfoField } from '~shared/types'
+import { MyInfoField } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import Link from '~components/Link'

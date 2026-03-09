@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { SgidProfilesDto } from '~shared/types/auth'
+import { SgidProfilesDto } from 'formsg-shared/types/auth'
 
 import { ApiError } from '~typings/core'
 

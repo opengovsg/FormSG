@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, RatingFieldBase, RatingShape } from '~shared/types'
+import { BasicField, RatingFieldBase, RatingShape } from 'formsg-shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 

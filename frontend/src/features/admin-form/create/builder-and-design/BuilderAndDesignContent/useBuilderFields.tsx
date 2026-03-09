@@ -6,8 +6,8 @@ import {
   FieldCreateDto,
   FormFieldDto,
   TableFieldDto,
-} from '~shared/types/field'
-import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
+} from 'formsg-shared/types/field'
+import { insertAt, replaceAt } from 'formsg-shared/utils/immutable-array-fns'
 
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'

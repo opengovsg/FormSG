@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   AdminFeedbackRating,
   AdminUseEmailModeFeedbackDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 import {
   CreateEmailFormBodyDto,
   CreateMultirespondentFormBodyDto,
@@ -14,7 +14,7 @@ import {
   FormDto,
   FormId,
   PublicFormViewDto,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 

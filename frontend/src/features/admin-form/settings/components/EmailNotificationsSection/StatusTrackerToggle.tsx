@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { BiLinkExternal } from 'react-icons/bi'
 import { Icon, Link, Skeleton, Text } from '@chakra-ui/react'
 
-import { STATUS_TRACKER_PREVIEW_LINK } from '~shared/constants'
-import { MultirespondentFormSettings } from '~shared/types'
+import { STATUS_TRACKER_PREVIEW_LINK } from 'formsg-shared/constants'
+import { MultirespondentFormSettings } from 'formsg-shared/types'
 
 import Toggle from '~components/Toggle'
 

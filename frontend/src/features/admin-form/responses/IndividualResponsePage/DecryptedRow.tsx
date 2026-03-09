@@ -4,8 +4,8 @@ import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
-import { BasicField } from '~shared/types'
-import { handleAddressResponseDisplay } from '~shared/utils/address'
+import { BasicField } from 'formsg-shared/types'
+import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'

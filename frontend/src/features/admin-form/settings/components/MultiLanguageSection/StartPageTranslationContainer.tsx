@@ -1,7 +1,7 @@
 import React from 'react'
 import { Flex, Text } from '@chakra-ui/react'
 
-import { FormStartPage, Language } from '~shared/types'
+import { FormStartPage, Language } from 'formsg-shared/types'
 
 import { TranslationContainer } from './TranslationContainer'
 

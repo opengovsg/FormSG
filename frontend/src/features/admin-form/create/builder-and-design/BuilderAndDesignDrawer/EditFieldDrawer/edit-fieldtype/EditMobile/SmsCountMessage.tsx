@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { BiMessage } from 'react-icons/bi'
 import { Flex, Icon, Skeleton, Text } from '@chakra-ui/react'
 
-import { SmsCountsDto } from '~shared/types'
+import { SmsCountsDto } from 'formsg-shared/types'
 
 import { formatSmsCounts } from './utils'
 

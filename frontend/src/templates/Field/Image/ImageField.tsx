@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'

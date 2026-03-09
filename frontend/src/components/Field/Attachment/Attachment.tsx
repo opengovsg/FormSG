@@ -13,7 +13,7 @@ import {
 import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
-import { MB } from '~shared/constants/file'
+import { MB } from 'formsg-shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'

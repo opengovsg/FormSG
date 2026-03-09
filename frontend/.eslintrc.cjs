@@ -68,7 +68,7 @@ module.exports = {
           ['^react', '^@?\\w'],
           // Root imports
           // Shared imports should be separate from application imports.
-          ['^(~shared)(/.*|$)'],
+          ['^(formsg-shared)(/.*|$)'],
           ['^(~)(/.*|$)'],
           ['^(~typings)(/.*|$)'],
           [

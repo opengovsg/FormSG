@@ -25,16 +25,16 @@ import {
 import { get } from 'lodash'
 import simplur from 'simplur'
 
-import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
-import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
+import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   FormColorTheme,
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
   MyInfoChildVaxxStatus,
-} from '~shared/types'
-import { formatMyinfoDate } from '~shared/utils/dates'
+} from 'formsg-shared/types'
+import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'

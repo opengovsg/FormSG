@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { FormLogoState } from '~shared/types'
+import { FormLogoState } from 'formsg-shared/types'
 
 import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormAuthType, FormResponseMode } from '~shared/types'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 

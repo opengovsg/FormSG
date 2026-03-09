@@ -1,6 +1,6 @@
 import { format, isValid } from 'date-fns'
 
-import { DateString } from '~shared/types'
+import { DateString } from 'formsg-shared/types'
 
 import { DateRangeValue } from '~components/Calendar'
 

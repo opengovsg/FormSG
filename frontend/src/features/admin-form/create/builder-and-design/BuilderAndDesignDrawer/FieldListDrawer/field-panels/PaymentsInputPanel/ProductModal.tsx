@@ -15,12 +15,12 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { Product, StorageFormSettings } from '~shared/types'
+import { Product, StorageFormSettings } from 'formsg-shared/types'
 import {
   centsToDollars,
   dollarsToCents,
   formatCurrency,
-} from '~shared/utils/payments'
+} from 'formsg-shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'

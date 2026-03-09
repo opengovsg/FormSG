@@ -27,8 +27,8 @@ import {
   FormResponseMode,
   PaymentChannel,
   PaymentType,
-} from '~shared/types'
-import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
+} from 'formsg-shared/types'
+import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
 import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'

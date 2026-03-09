@@ -3,7 +3,7 @@ import { RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Flex, FormControl } from '@chakra-ui/react'
 
-import { UserDto } from '~shared/types/user'
+import { UserDto } from 'formsg-shared/types/user'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

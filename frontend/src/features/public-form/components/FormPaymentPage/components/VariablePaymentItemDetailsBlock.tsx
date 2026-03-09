@@ -1,8 +1,8 @@
 import { Controller, RegisterOptions, useFormContext } from 'react-hook-form'
 import { Box, FormControl, Text } from '@chakra-ui/react'
 
-import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
-import { centsToDollars, formatCurrency } from '~shared/utils/payments'
+import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from 'formsg-shared/constants'
+import { centsToDollars, formatCurrency } from 'formsg-shared/utils/payments'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import MoneyInput from '~components/MoneyInput'

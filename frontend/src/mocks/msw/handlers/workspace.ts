@@ -1,7 +1,7 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { UserId } from '~shared/types'
-import { WorkspaceDto, WorkspaceId } from '~shared/types/workspace'
+import { UserId } from 'formsg-shared/types'
+import { WorkspaceDto, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { WithDelayProps } from './types'
 

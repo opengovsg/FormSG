@@ -1,4 +1,4 @@
-import { FormField, FormFieldDto } from '~shared/types/field'
+import { FormField, FormFieldDto } from 'formsg-shared/types/field'
 
 /**
  * Partial question number, depends on field type. Some field types do not

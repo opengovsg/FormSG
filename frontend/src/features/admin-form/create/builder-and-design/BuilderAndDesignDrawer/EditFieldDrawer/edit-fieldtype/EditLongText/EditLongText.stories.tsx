@@ -4,7 +4,7 @@ import {
   BasicField,
   LongTextFieldBase,
   TextSelectedValidation,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 

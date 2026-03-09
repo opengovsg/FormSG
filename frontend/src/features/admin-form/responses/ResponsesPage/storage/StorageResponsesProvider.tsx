@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { DateString, FormResponseMode } from '~shared/types'
+import { DateString, FormResponseMode } from 'formsg-shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 

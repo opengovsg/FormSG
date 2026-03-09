@@ -1,6 +1,6 @@
 import { pick } from 'lodash'
 
-import type { FormDto, FormFieldDto } from '~shared/types'
+import type { FormDto, FormFieldDto } from 'formsg-shared/types'
 
 import type { FormFieldValues } from '~templates/Field/types'
 

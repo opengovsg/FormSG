@@ -1,6 +1,6 @@
 import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
 
-import { InvalidDaysOptions } from '~shared/types'
+import { InvalidDaysOptions } from 'formsg-shared/types'
 
 import { JsonDate } from '~typings/core'
 

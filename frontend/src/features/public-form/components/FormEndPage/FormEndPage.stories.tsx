@@ -1,7 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
 

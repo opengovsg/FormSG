@@ -1,8 +1,8 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormId, UserId } from '~shared/types'
-import { Workspace, WorkspaceId } from '~shared/types/workspace'
+import { FormId, UserId } from 'formsg-shared/types'
+import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 

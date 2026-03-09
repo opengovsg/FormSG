@@ -1,4 +1,4 @@
-import { FormFieldDto, StrippedFormWorkflowStepDto } from '~shared/types'
+import { FormFieldDto, StrippedFormWorkflowStepDto } from 'formsg-shared/types'
 
 import { NON_RESPONSE_FIELD_SET } from '../constants'
 

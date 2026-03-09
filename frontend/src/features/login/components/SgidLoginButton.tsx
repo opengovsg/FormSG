@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { Flex, Link, Text, VStack } from '@chakra-ui/react'
 
-import { SGID_VALID_ORG_PAGE } from '~shared/constants'
+import { SGID_VALID_ORG_PAGE } from 'formsg-shared/constants'
 
 import { SingpassFullLogoSvgr } from '~assets/svgrs/singpass/SingpassFullLogoSvgr'
 import { getSgidAuthUrl } from '~services/AuthService'

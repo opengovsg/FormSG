@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { Workspace } from '~shared/types/workspace'
+import { Workspace } from 'formsg-shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 

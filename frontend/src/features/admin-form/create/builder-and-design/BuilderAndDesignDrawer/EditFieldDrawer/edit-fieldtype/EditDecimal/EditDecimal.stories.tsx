@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, DecimalFieldBase } from '~shared/types'
+import { BasicField, DecimalFieldBase } from 'formsg-shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 

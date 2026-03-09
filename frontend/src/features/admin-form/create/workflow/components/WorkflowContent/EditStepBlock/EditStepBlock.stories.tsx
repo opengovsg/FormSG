@@ -5,7 +5,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   WorkflowType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 

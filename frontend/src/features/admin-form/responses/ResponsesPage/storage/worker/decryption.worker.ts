@@ -3,7 +3,7 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
-import { SubmissionStreamDto, SubmissionType } from '~shared/types'
+import { SubmissionStreamDto, SubmissionType } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
 

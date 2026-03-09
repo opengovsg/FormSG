@@ -1,6 +1,6 @@
 import { Opaque } from 'type-fest'
 
-import { SendFormOtpResponseDto } from '~shared/types/form'
+import { SendFormOtpResponseDto } from 'formsg-shared/types/form'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'

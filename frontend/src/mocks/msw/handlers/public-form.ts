@@ -11,8 +11,8 @@ import {
   PreventSubmitLogicDto,
   PublicMultirespondentSubmissionDto,
   ShowFieldLogicDto,
-} from '~shared/types'
-import { FormId, PublicFormViewDto } from '~shared/types/form/form'
+} from 'formsg-shared/types'
+import { FormId, PublicFormViewDto } from 'formsg-shared/types/form/form'
 
 import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 

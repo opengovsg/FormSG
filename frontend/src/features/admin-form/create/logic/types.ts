@@ -2,7 +2,7 @@ import {
   FormLogic,
   PreventSubmitLogic,
   ShowFieldLogic,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 export enum AdminEditLogicState {
   CreatingLogic,

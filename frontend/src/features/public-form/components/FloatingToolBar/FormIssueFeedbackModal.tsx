@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField, SubmitFormIssueBodyDto } from '~shared/types'
+import { BasicField, SubmitFormIssueBodyDto } from 'formsg-shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'

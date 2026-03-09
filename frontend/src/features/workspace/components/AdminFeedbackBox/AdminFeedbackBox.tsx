@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import { Flex, Link, Stack, Text } from '@chakra-ui/react'
 
-import { AdminFeedbackRating } from '~shared/types'
+import { AdminFeedbackRating } from 'formsg-shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'

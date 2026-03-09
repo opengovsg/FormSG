@@ -4,7 +4,7 @@ import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { FormResponseMode } from '~shared/types/form/form'
+import { FormResponseMode } from 'formsg-shared/types/form/form'
 
 import {
   useOptionalAdminEmailValidationRules,

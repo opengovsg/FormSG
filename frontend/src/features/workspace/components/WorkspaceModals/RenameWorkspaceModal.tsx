@@ -15,7 +15,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { Workspace } from '~shared/types/workspace'
+import { Workspace } from 'formsg-shared/types/workspace'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useWorkspaceTitleValidationRules } from '~utils/workspaceValidation'

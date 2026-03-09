@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { DateString } from '~shared/types/generic'
+import { DateString } from 'formsg-shared/types/generic'
 
 import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 

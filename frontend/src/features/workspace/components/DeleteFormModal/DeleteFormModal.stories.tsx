@@ -1,7 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormId } from '~shared/types'
+import { FormId } from 'formsg-shared/types'
 
 import { MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 

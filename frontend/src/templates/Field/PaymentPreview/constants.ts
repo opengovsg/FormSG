@@ -2,7 +2,7 @@ import {
   ExtractTypeFromArray,
   FormPaymentsField,
   ProductId,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 /**
  * Used as a placeholder for the payment preview when

@@ -1,4 +1,4 @@
-import { ClientEnvVars } from '~shared/types/core'
+import { ClientEnvVars } from 'formsg-shared/types/core'
 
 import { ApiService } from '~services/ApiService'
 

@@ -5,7 +5,7 @@ import {
   FormLogoState,
   FormSettings,
   Language,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import {
   createFormBuilderMocks,

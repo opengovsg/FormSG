@@ -1,4 +1,4 @@
-import { GetPaymentInfoDto, PaymentReceiptStatusDto } from '~shared/types'
+import { GetPaymentInfoDto, PaymentReceiptStatusDto } from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useDisclosure } from '@chakra-ui/react'
 
-import { FormWorkflowStepDto } from '~shared/types'
+import { FormWorkflowStepDto } from 'formsg-shared/types'
 
 import {
   editDataSelector,

@@ -15,8 +15,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
-import { BasicField, EmailFieldBase } from '~shared/types'
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from 'formsg-shared/constants'
+import { BasicField, EmailFieldBase } from 'formsg-shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'

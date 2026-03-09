@@ -7,7 +7,7 @@ import {
   BasicField,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
 

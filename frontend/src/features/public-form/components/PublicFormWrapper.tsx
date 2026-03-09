@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Flex, Spacer } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { usePublicFormContext } from '../PublicFormContext'
 

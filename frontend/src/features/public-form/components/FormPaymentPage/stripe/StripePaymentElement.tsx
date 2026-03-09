@@ -16,7 +16,7 @@ import {
   GetPaymentInfoDto,
   PaymentType,
   ProductItemForReceipt,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import InlineMessage from '~components/InlineMessage'
 import { CopyButton } from '~templates/CopyButton'

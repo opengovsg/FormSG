@@ -7,7 +7,7 @@ import { decode as decodeBase64 } from '@stablelib/base64'
 import {
   FieldResponsesV3,
   PublicMultirespondentSubmissionDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
 

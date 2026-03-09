@@ -1,4 +1,4 @@
-import { DECIMAL_BYTE_UNITS } from '~shared/constants/file'
+import { DECIMAL_BYTE_UNITS } from 'formsg-shared/constants/file'
 
 /**
  * Converts the given file size in bytes to a human readable string.

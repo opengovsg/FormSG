@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Box, FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { CheckboxFieldBase } from '~shared/types/field'
+import { CheckboxFieldBase } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

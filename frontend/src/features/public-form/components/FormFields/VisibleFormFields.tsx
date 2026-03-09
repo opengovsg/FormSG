@@ -5,7 +5,7 @@ import {
   FormColorTheme,
   LogicDto,
   StrippedFormWorkflowStepDto,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 

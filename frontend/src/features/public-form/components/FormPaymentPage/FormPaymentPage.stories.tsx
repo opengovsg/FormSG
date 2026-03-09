@@ -1,7 +1,7 @@
 import React from 'react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormColorTheme, PaymentType } from '~shared/types'
+import { FormColorTheme, PaymentType } from 'formsg-shared/types'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {

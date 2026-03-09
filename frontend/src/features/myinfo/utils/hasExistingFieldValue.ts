@@ -1,4 +1,4 @@
-import { MyInfoFormField, MyInfoPrefilledFormField } from '~shared/types'
+import { MyInfoFormField, MyInfoPrefilledFormField } from 'formsg-shared/types'
 
 export const hasExistingFieldValue = (
   possiblyPrefilledMyInfoField: MyInfoFormField,

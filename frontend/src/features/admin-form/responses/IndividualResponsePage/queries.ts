@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 

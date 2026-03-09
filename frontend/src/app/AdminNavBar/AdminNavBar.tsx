@@ -18,8 +18,8 @@ import {
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { delay } from 'lodash'
 
-import { featureFlags } from '~shared/constants'
-import { SeenFlags } from '~shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { SeenFlags } from 'formsg-shared/types'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'

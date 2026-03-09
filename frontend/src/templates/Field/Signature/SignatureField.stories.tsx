@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, SignatureVectorArray } from '~shared/types'
+import { BasicField, SignatureVectorArray } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 

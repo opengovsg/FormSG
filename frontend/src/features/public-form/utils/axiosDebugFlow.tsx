@@ -2,7 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 
 import { ApiService } from '~services/ApiService'
 
-import { ClientEnvVars } from '../../../../../shared/types'
+import { ClientEnvVars } from 'formsg-shared/types'
 
 const getClientEnvWithFetch = async () => {
   const response = await fetch(

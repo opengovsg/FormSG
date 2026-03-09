@@ -1,12 +1,12 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { PaymentChannel } from '~shared/types'
+import { PaymentChannel } from 'formsg-shared/types'
 import {
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,

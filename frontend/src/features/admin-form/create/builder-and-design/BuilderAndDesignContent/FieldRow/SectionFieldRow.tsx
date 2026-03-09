@@ -1,5 +1,5 @@
-import { FormColorTheme } from '~shared/types'
-import { FormFieldWithId, SectionFieldBase } from '~shared/types/field'
+import { FormColorTheme } from 'formsg-shared/types'
+import { FormFieldWithId, SectionFieldBase } from 'formsg-shared/types/field'
 
 import { BaseSectionField } from '~templates/Field/Section/SectionField'
 

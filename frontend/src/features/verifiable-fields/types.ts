@@ -1,4 +1,4 @@
-import type { EmailFieldBase, MobileFieldBase } from '~shared/types/field'
+import type { EmailFieldBase, MobileFieldBase } from 'formsg-shared/types/field'
 
 export type VerifiableFieldBase = MobileFieldBase | EmailFieldBase
 export type VerifiableFieldType = VerifiableFieldBase['fieldType']

@@ -1,5 +1,5 @@
-import { BasicField, FormFieldDto } from '~shared/types/field'
-import { FormCondition } from '~shared/types/form'
+import { BasicField, FormFieldDto } from 'formsg-shared/types/field'
+import { FormCondition } from 'formsg-shared/types/form'
 
 type FieldId = FormFieldDto['_id']
 

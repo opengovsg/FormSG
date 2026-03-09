@@ -1,6 +1,6 @@
-import { BasicField } from '~shared/types/field'
-import { answerKey } from '~shared/utils/address'
-import { hasProp } from '~shared/utils/has-prop'
+import { BasicField } from 'formsg-shared/types/field'
+import { answerKey } from 'formsg-shared/utils/address'
+import { hasProp } from 'formsg-shared/utils/has-prop'
 
 import {
   ArrayAnswerResponse,

@@ -5,14 +5,14 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme, Language } from 'formsg-shared/types'
 import {
   BasicField,
   Column,
   ColumnDto,
   DropdownColumnBase,
   ShortTextColumnBase,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useIsPrint } from '~hooks/useIsPrint'

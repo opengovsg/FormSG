@@ -1,6 +1,6 @@
 import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 
-import { PublicMultirespondentSubmissionDto } from '~shared/types'
+import { PublicMultirespondentSubmissionDto } from 'formsg-shared/types'
 
 export type PublicMultirespondentSubmissionDtoWithAttachments =
   PublicMultirespondentSubmissionDto & {

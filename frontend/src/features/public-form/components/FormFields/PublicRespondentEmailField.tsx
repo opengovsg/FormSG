@@ -4,7 +4,7 @@ import { Box, FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { RESPONDENT_EMAIL_FIELD_ID } from '~shared/constants'
+import { RESPONDENT_EMAIL_FIELD_ID } from 'formsg-shared/constants'
 
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

@@ -1,4 +1,4 @@
-import { DateString } from '~shared/types'
+import { DateString } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   StorageModeChartsDto,
@@ -6,7 +6,7 @@ import {
   SubmissionDto,
   SubmissionMetadataList,
   SubmissionType,
-} from '~shared/types/submission'
+} from 'formsg-shared/types/submission'
 
 import formsgSdk from '~utils/formSdk'
 import { ApiService } from '~services/ApiService'

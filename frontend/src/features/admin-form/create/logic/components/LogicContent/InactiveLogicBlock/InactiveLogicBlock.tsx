@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { BiPencil } from 'react-icons/bi'
 import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
 
-import { LogicDto, LogicType } from '~shared/types/form'
+import { LogicDto, LogicType } from 'formsg-shared/types/form'
 
 import IconButton from '~components/IconButton'
 

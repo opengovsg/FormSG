@@ -9,8 +9,8 @@ import {
 import { useSearchParams } from 'react-router-dom'
 import fuzzysort from 'fuzzysort'
 
-import { FormId, FormResponseMode, FormStatus } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
+import { FormId, FormResponseMode, FormStatus } from 'formsg-shared/types'
+import { Workspace } from 'formsg-shared/types/workspace'
 
 import { useDashboard, useWorkspace } from './queries'
 import { FilterOption, filterOptionMap, filterOptionReverseMap } from './types'

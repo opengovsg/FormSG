@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { CSVLink } from 'react-csv'
 import { BiDownload } from 'react-icons/bi'
 
-import { FormBillingStatistic } from '~shared/types'
+import { FormBillingStatistic } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 

@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { StatusTrackerData } from '~shared/types'
+import { StatusTrackerData } from 'formsg-shared/types'
 
 import { ApiError } from '~typings/core'
 

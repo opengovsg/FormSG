@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types/form/form'
 
 import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 

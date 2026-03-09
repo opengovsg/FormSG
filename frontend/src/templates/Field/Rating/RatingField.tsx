@@ -5,8 +5,8 @@ import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
-import { RatingShape } from '~shared/types/field'
+import { FormColorTheme } from 'formsg-shared/types'
+import { RatingShape } from 'formsg-shared/types/field'
 
 import { useRatingValidationRules } from '~utils/fieldValidation'
 import Rating from '~components/Field/Rating'

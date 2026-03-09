@@ -6,7 +6,7 @@ import Papa from 'papaparse'
 import {
   decryptStringMessage,
   EncryptedStringsMessageContent,
-} from '~shared/utils/crypto'
+} from 'formsg-shared/utils/crypto'
 
 import { useToast } from '~hooks/useToast'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'

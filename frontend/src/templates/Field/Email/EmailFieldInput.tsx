@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Flex, Text } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { useEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'

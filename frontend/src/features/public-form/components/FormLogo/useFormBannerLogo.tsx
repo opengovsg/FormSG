@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
-import { AgencyBase, FormColorTheme } from '~shared/types'
-import { FormLogo, FormLogoState } from '~shared/types/form/form_logo'
+import { AgencyBase, FormColorTheme } from 'formsg-shared/types'
+import { FormLogo, FormLogoState } from 'formsg-shared/types/form/form_logo'
 
 import defaultFormLogo from '../../../../assets/svgs/brand/brand-hort-colour.svg'
 

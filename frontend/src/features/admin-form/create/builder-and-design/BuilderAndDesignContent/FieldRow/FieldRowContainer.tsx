@@ -23,8 +23,8 @@ import {
 import { Draggable } from '@hello-pangea/dnd'
 import { isEqual, times } from 'lodash'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { FormColorTheme, FormResponseMode } from 'formsg-shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'

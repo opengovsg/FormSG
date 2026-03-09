@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Circle, Flex, Text } from '@chakra-ui/layout'
 
-import { FormStatus } from '~shared/types/form/form'
+import { FormStatus } from 'formsg-shared/types/form/form'
 
 export interface FormStatusLabelProps {
   status: FormStatus

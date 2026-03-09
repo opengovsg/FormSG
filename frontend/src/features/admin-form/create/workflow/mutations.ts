@@ -6,7 +6,7 @@ import {
   AdminFormDto,
   FormResponseMode,
   FormWorkflowStep,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 

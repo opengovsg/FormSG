@@ -6,8 +6,8 @@ import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
-import { MB } from '~shared/constants/file'
-import { ImageFieldBase } from '~shared/types/field'
+import { MB } from 'formsg-shared/constants/file'
+import { ImageFieldBase } from 'formsg-shared/types/field'
 
 import { useToast } from '~hooks/useToast'
 import { createBaseValidationRules } from '~utils/fieldValidation'

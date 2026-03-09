@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
 
-import { FormResponseMode, SeenFlags } from '~shared/types'
+import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'

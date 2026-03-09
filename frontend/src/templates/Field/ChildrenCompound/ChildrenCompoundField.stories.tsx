@@ -8,7 +8,7 @@ import {
   BasicField,
   MyInfoChildAttributes,
   MyInfoChildData,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   WORKSPACE_MAX_TITLE_LENGTH,
   WORKSPACE_MIN_TITLE_LENGTH,
-} from '~shared/constants'
+} from 'formsg-shared/constants'
 
 export const useWorkspaceTitleValidationRules =
   (): UseControllerProps['rules'] => {

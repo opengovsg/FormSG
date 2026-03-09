@@ -9,7 +9,7 @@ import {
 } from 'react-table'
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { FormAuthType, FormBillingStatistic } from '~shared/types'
+import { FormAuthType, FormBillingStatistic } from 'formsg-shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'

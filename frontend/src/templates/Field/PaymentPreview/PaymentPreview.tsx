@@ -1,13 +1,13 @@
 import { Box } from '@chakra-ui/react'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
 import {
   BasicField,
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
   PaymentType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
 

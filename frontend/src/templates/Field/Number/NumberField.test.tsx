@@ -6,7 +6,7 @@ import { merge } from 'lodash'
 import {
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import * as stories from './NumberField.stories'
 

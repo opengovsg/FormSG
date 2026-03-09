@@ -9,7 +9,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 

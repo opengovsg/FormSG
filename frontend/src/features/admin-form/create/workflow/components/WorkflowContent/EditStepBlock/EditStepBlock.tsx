@@ -6,7 +6,7 @@ import {
   FormWorkflowStep,
   FormWorkflowStepBase,
   WorkflowType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { useUser } from '~features/user/queries'

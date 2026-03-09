@@ -8,8 +8,8 @@ import {
   GetPaymentInfoDto,
   PaymentType,
   PublicFormDto,
-} from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
+} from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { FixedPaymentItemDetailsBlock } from './FixedPaymentItemDetailsBlock'
 

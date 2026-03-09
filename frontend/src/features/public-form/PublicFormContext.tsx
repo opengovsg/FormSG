@@ -8,8 +8,8 @@ import {
 } from 'react'
 import { UseQueryResult } from 'react-query'
 
-import { FormFieldDto, PublicMultirespondentSubmissionDto } from '~shared/types'
-import { PublicFormViewDto } from '~shared/types/form'
+import { FormFieldDto, PublicMultirespondentSubmissionDto } from 'formsg-shared/types'
+import { PublicFormViewDto } from 'formsg-shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 

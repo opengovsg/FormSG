@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import { DateString } from '~shared/types'
+import { DateString } from 'formsg-shared/types'
 
 import { DownloadEncryptedParams } from './useDecryptionWorkers'
 

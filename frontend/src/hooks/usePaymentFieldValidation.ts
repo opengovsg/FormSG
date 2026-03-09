@@ -4,7 +4,7 @@ import {
   centsToDollars,
   dollarsToCents,
   formatCurrency,
-} from '~shared/utils/payments'
+} from 'formsg-shared/utils/payments'
 
 import { useEnv } from '~features/env/queries'
 
