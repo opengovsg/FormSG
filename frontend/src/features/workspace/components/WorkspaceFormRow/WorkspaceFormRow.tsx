@@ -4,7 +4,10 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
-import { AdminDashboardFormMetaDto, FormStatus } from 'formsg-shared/types/form/form'
+import {
+  AdminDashboardFormMetaDto,
+  FormStatus,
+} from 'formsg-shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'

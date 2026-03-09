@@ -1,7 +1,11 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 import { PartialDeep } from 'type-fest'
 
-import { StatusTrackerData, WorkflowStatus, WorkflowType } from 'formsg-shared/types'
+import {
+  StatusTrackerData,
+  WorkflowStatus,
+  WorkflowType,
+} from 'formsg-shared/types'
 
 const BASE_STATUS_TRACKER_DATA: StatusTrackerData = {
   submittedSteps: [

@@ -1,6 +1,10 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AttachmentSize, BasicField, FormFieldDto } from 'formsg-shared/types/field'
+import {
+  AttachmentSize,
+  BasicField,
+  FormFieldDto,
+} from 'formsg-shared/types/field'
 import {
   AdminFormDto,
   FormResponseMode,

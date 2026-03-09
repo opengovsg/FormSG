@@ -10,7 +10,12 @@ import {
 } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
-import { FormField, Language, LogicDto, MyInfoFormField } from 'formsg-shared/types'
+import {
+  FormField,
+  Language,
+  LogicDto,
+  MyInfoFormField,
+} from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'

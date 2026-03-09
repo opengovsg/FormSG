@@ -1,6 +1,10 @@
 import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto, FormResponseMode } from 'formsg-shared/types/form'
+import {
+  FormColorTheme,
+  FormDto,
+  FormResponseMode,
+} from 'formsg-shared/types/form'
 
 import {
   SubmissionData,

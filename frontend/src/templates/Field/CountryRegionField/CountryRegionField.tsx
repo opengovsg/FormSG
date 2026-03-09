@@ -3,7 +3,10 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import { FormColorTheme } from 'formsg-shared/types'
-import { CountryRegionFieldBase, FormFieldWithId } from 'formsg-shared/types/field'
+import {
+  CountryRegionFieldBase,
+  FormFieldWithId,
+} from 'formsg-shared/types/field'
 
 import { useCountryRegionValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'

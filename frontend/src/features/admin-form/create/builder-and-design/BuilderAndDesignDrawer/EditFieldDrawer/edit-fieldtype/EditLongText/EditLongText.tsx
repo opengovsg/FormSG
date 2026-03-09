@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { LongTextFieldBase, TextSelectedValidation } from 'formsg-shared/types/field'
+import {
+  LongTextFieldBase,
+  TextSelectedValidation,
+} from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
