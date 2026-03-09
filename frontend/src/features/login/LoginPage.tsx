@@ -5,7 +5,7 @@ import { Stack } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags, WogadLoginFeatureValue } from '~shared/constants'
+import { featureFlags, WogadLoginFeatureValue } from 'formsg-shared/constants'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'

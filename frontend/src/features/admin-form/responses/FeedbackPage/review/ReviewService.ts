@@ -1,4 +1,4 @@
-import { FormFeedbackDto, FormFeedbackMetaDto } from '~shared/types/form'
+import { FormFeedbackDto, FormFeedbackMetaDto } from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 

@@ -7,7 +7,7 @@ import {
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 
-import { FormResponseMode } from '~shared/types/form'
+import { FormResponseMode } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,

@@ -18,8 +18,8 @@ import {
   DateSelectedValidation,
   DateValidationOptions,
   InvalidDaysOptions,
-} from '~shared/types/field'
-import { hasAvailableDates } from '~shared/utils/date-validation'
+} from 'formsg-shared/types/field'
+import { hasAvailableDates } from 'formsg-shared/utils/date-validation'
 
 import {
   getRemainingDaysOfTheWeek,

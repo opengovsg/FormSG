@@ -1,8 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode, FormSettings, FormStatus } from '~shared/types/form'
-import { PaymentChannel } from '~shared/types/payment'
+import {
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+} from 'formsg-shared/types/form'
+import { PaymentChannel } from 'formsg-shared/types/payment'
 
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'

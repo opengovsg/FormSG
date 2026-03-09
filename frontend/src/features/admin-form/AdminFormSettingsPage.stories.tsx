@@ -6,7 +6,7 @@ import {
   FormAuthType,
   FormResponseMode,
   FormStatus,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import {
   createFormBuilderMocks,

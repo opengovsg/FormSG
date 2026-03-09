@@ -9,12 +9,12 @@ import {
   BasicField,
   FieldResponse,
   FormFieldDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 import {
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
-} from '~shared/utils/verified-content'
+} from 'formsg-shared/utils/verified-content'
 
 import {
   pickBaseOutputFromSchema,

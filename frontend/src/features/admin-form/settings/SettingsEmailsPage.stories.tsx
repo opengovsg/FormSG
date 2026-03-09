@@ -5,14 +5,14 @@ import {
   FormFieldDto,
   PaymentChannel,
   PaymentType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 import {
   AdminFormDto,
   FormDto,
   FormResponseMode,
   FormStatus,
   WorkflowType,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import {
   getAdminFormSettings,

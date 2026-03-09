@@ -12,7 +12,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { LogicDto } from '~shared/types/form'
+import { LogicDto } from 'formsg-shared/types/form'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'

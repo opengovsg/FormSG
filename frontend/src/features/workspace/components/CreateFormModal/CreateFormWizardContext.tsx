@@ -3,7 +3,10 @@ import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { FormResponseMode, PublicFormViewDto } from '~shared/types/form/form'
+import {
+  FormResponseMode,
+  PublicFormViewDto,
+} from 'formsg-shared/types/form/form'
 
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'

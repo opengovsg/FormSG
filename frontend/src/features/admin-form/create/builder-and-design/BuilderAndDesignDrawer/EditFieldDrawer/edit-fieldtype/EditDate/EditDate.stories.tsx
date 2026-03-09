@@ -5,7 +5,7 @@ import {
   DateFieldBase,
   DateSelectedValidation,
   InvalidDaysOptions,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 

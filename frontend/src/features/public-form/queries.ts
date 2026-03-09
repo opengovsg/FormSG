@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { PublicFormViewDto } from '~shared/types/form/form'
+import { PublicFormViewDto } from 'formsg-shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 

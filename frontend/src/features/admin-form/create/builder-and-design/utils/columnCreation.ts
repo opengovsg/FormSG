@@ -1,6 +1,6 @@
 import cuid from 'cuid'
 
-import { BasicField, ColumnDto, ShortTextColumnBase } from '~shared/types'
+import { BasicField, ColumnDto, ShortTextColumnBase } from 'formsg-shared/types'
 
 const TEMP_COLUMN_ID_PREFIX = 'tempColumnId_'
 

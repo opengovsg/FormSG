@@ -19,8 +19,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { Product } from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
+import { Product } from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'

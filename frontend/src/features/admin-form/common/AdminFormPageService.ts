@@ -3,7 +3,7 @@ import {
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   StartPageUpdateDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 

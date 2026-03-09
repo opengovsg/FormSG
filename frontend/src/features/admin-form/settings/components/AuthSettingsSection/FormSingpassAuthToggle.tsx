@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FormAuthType, FormSettings } from '~shared/types'
+import { FormAuthType, FormSettings } from 'formsg-shared/types'
 
 import Toggle from '~components/Toggle'
 

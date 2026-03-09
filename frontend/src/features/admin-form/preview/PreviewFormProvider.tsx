@@ -7,7 +7,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, FormResponseMode } from '~shared/types/form'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'

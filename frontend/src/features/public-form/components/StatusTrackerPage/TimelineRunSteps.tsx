@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { StepData, WorkflowStatus } from '~shared/types'
+import { StepData, WorkflowStatus } from 'formsg-shared/types'
 
 const statusColor: Record<WorkflowStatus, BackgroundProps['bg']> = {
   [WorkflowStatus.PENDING]: '#E5E9F8', // grey

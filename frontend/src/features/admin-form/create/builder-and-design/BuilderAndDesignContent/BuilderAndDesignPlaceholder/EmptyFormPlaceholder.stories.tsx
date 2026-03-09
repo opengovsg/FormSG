@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AdminFormDto, FormResponseMode } from '~shared/types'
+import { AdminFormDto, FormResponseMode } from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, HomenoFieldBase } from '~shared/types'
+import { BasicField, HomenoFieldBase } from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

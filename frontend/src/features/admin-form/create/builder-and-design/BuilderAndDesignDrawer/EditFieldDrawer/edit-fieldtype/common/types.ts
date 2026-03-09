@@ -1,6 +1,10 @@
 import { MutateOptions } from 'react-query'
 
-import { FieldBase, FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import {
+  FieldBase,
+  FieldCreateDto,
+  FormFieldDto,
+} from 'formsg-shared/types/field'
 
 export type FieldMutateOptions = MutateOptions<
   FormFieldDto,

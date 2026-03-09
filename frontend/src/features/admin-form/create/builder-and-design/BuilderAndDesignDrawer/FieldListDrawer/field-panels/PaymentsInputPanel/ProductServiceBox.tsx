@@ -11,7 +11,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormPaymentsField, Product } from '~shared/types'
+import { FormPaymentsField, Product } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'

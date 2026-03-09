@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { merge } from 'lodash'
 
-import { TextSelectedValidation } from '~shared/types/field'
+import { TextSelectedValidation } from 'formsg-shared/types/field'
 
 import * as stories from './ShortTextField.stories'
 

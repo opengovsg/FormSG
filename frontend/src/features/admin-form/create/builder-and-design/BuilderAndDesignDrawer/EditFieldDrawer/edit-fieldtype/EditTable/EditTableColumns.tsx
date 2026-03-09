@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react'
 import { pick } from 'lodash'
 
-import { BasicField, TableFieldBase } from '~shared/types/field'
+import { BasicField, TableFieldBase } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'

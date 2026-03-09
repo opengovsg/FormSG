@@ -1,4 +1,4 @@
-import { SeenFlags } from '~shared/types'
+import { SeenFlags } from 'formsg-shared/types'
 
 import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
 

@@ -7,7 +7,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 

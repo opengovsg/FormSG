@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { FormPermissionsDto } from '~shared/types/form/form'
+import { FormPermissionsDto } from 'formsg-shared/types/form/form'
 
 export const getAdminFormCollaborators = ({
   overrides,

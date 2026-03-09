@@ -1,4 +1,4 @@
-import { BillingInfoDto, BillingQueryDto } from '~/../../shared/types'
+import { BillingInfoDto, BillingQueryDto } from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 

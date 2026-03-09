@@ -2,20 +2,28 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
-import { E2EE_SUBMISSION_VERSION } from '~shared/constants'
-import { FieldResponsesV3, FieldResponseV3, ProductItem } from '~shared/types'
-import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
+import { E2EE_SUBMISSION_VERSION } from 'formsg-shared/constants'
+import {
+  FieldResponsesV3,
+  FieldResponseV3,
+  ProductItem,
+} from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  PaymentFieldsDto,
+} from 'formsg-shared/types/field'
 import {
   EmailResponse,
   FieldResponse,
   MobileResponse,
-} from '~shared/types/response'
+} from 'formsg-shared/types/response'
 import {
   ResponseMetadata,
   StorageModeSubmissionContentDto,
   SubmissionAttachment,
   SubmissionAttachmentsMap,
-} from '~shared/types/submission'
+} from 'formsg-shared/types/submission'
 
 import fileArrayBuffer from '~/utils/fileArrayBuffer'
 

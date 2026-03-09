@@ -28,8 +28,8 @@ import {
 } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { SeenFlags } from '~shared/types'
-import { AdminFormDto, FormResponseMode } from '~shared/types/form/form'
+import { SeenFlags } from 'formsg-shared/types'
+import { AdminFormDto, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import {
   ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,

@@ -1,4 +1,4 @@
-import { StatusTrackerData } from '~shared/types'
+import { StatusTrackerData } from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 

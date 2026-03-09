@@ -2,7 +2,7 @@ import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 
-import { WorkflowType } from '~shared/types'
+import { WorkflowType } from 'formsg-shared/types'
 
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

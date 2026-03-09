@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Box, Stack, useToast } from '@chakra-ui/react'
 
-import { FormPaymentsField, ProductItemForReceipt } from '~shared/types'
+import { FormPaymentsField, ProductItemForReceipt } from 'formsg-shared/types'
 
 import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

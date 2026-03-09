@@ -3,8 +3,12 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormDto, PaymentType, ProductItemForReceipt } from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
+import {
+  FormDto,
+  PaymentType,
+  ProductItemForReceipt,
+} from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'

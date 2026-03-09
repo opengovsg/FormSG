@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 
-import { FormColorTheme, ProductItem } from '~shared/types'
-import { centsToDollars, formatCurrency } from '~shared/utils/payments'
+import { FormColorTheme, ProductItem } from 'formsg-shared/types'
+import { centsToDollars, formatCurrency } from 'formsg-shared/utils/payments'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import Button from '~components/Button'

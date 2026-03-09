@@ -10,7 +10,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types/form/form'
+import { FormResponseMode } from 'formsg-shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useFormTitleValidationRules } from '~utils/formValidation'

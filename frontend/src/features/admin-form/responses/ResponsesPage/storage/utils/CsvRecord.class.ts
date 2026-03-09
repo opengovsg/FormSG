@@ -1,6 +1,9 @@
 import { cloneDeep } from 'lodash'
 
-import { SubmissionMrfMetadata, SubmissionPaymentDto } from '~shared/types'
+import {
+  SubmissionMrfMetadata,
+  SubmissionPaymentDto,
+} from 'formsg-shared/types'
 
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,

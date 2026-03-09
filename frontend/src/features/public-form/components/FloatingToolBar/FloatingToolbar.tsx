@@ -2,7 +2,7 @@ import { Stack } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 

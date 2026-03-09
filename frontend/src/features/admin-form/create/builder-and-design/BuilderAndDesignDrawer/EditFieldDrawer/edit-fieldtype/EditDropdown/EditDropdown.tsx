@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { WorkflowType } from '~shared/types'
-import { DropdownFieldBase } from '~shared/types/field'
+import { WorkflowType } from 'formsg-shared/types'
+import { DropdownFieldBase } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

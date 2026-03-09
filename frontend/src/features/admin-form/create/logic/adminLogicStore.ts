@@ -1,7 +1,7 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { LogicDto } from '~shared/types/form'
+import { LogicDto } from 'formsg-shared/types/form'
 
 import { AdminEditLogicState } from './types'
 

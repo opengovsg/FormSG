@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react'
 import _ from 'lodash'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import {
   convertUnicodeLocaleToLanguage,

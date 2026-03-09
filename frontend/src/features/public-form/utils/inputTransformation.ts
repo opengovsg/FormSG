@@ -1,7 +1,7 @@
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
-import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
+import { DATE_PARSE_FORMAT } from 'formsg-shared/constants/dates'
 import {
   AddressCompoundFieldResponseV3,
   AttachmentFieldResponseV3,
@@ -13,8 +13,8 @@ import {
   TableFieldResponsesV3,
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
-} from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
+} from 'formsg-shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types/field'
 import {
   AddressResponse,
   AttachmentResponse,
@@ -26,9 +26,9 @@ import {
   SignatureResponse,
   TableResponse,
   TableRow,
-} from '~shared/types/response'
-import { removeAt } from '~shared/utils/immutable-array-fns'
-import { convertToSignatureStringOutput } from '~shared/utils/signature'
+} from 'formsg-shared/types/response'
+import { removeAt } from 'formsg-shared/utils/immutable-array-fns'
+import { convertToSignatureStringOutput } from 'formsg-shared/utils/signature'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'

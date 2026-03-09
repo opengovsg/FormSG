@@ -6,7 +6,7 @@ import {
   FormColorTheme,
   FormLogoState,
   FormResponseMode,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { EndPageBlock } from '~components/FormEndPage/EndPageBlock'
 import { PaymentsThankYouSvgr } from '~components/FormEndPage/PaymentsThankYouSvgr'

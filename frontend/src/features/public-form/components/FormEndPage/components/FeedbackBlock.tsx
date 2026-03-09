@@ -3,7 +3,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { chakra, Flex, FormControl } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme } from 'formsg-shared/types/form'
 
 import Button from '~components/Button'
 import Rating from '~components/Field/Rating'

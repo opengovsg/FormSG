@@ -1,8 +1,8 @@
 import { FieldError, useFormContext } from 'react-hook-form'
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
-import { BasicField } from '~shared/types/field'
+import { Language } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types/field'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'

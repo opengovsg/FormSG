@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 

@@ -8,8 +8,8 @@ import {
   Stack,
 } from '@chakra-ui/react'
 
-import { STATUS_TRACKER_PREVIEW_LINK } from '~shared/constants'
-import { getStatusTrackerPath } from '~shared/utils/urls'
+import { STATUS_TRACKER_PREVIEW_LINK } from 'formsg-shared/constants'
+import { getStatusTrackerPath } from 'formsg-shared/utils/urls'
 
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'

@@ -9,7 +9,10 @@ import {
 } from 'react-table'
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types/form'
+import {
+  ProcessedFeedbackMeta,
+  ProcessedIssueMeta,
+} from 'formsg-shared/types/form'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'

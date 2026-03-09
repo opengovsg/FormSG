@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FormEndPage } from '~shared/types'
+import { FormEndPage } from 'formsg-shared/types'
 
 export enum EndPageState {
   EditingEndPage,

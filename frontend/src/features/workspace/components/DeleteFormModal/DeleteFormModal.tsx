@@ -18,7 +18,7 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { AdminDashboardFormMetaDto } from '~shared/types'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'

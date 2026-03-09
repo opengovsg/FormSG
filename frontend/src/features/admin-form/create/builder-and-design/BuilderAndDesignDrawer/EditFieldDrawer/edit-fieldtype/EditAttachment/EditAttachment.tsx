@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import {
   AttachmentFieldBase,
   AttachmentSize,
   BasicField,
   FormFieldDto,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import {
   ACCEPTED_FILETYPES_SPREADSHEET,

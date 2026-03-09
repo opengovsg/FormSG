@@ -10,7 +10,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { SmsCountsDto } from '~shared/types/form'
+import { SmsCountsDto } from 'formsg-shared/types/form'
 
 import { CONTACT_US } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'

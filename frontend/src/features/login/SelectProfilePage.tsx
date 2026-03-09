@@ -21,8 +21,8 @@ import {
 } from '@chakra-ui/react'
 import { StatusCodes } from 'http-status-codes'
 
-import { SUPPORT_FORM_LINK } from '~shared/constants'
-import { SgidPublicOfficerEmployment } from '~shared/types/auth'
+import { SUPPORT_FORM_LINK } from 'formsg-shared/constants'
+import { SgidPublicOfficerEmployment } from 'formsg-shared/types/auth'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { FormResponseMode, PublicFormViewDto } from '~shared/types'
+import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'

@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
-import { WorkspaceDto } from '~shared/types/workspace'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types/form/form'
+import { WorkspaceDto } from 'formsg-shared/types/workspace'
 
 import { ApiError } from '~typings/core'
 

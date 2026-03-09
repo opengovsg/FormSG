@@ -1,6 +1,10 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AttachmentFieldBase, AttachmentSize, BasicField } from '~shared/types'
+import {
+  AttachmentFieldBase,
+  AttachmentSize,
+  BasicField,
+} from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

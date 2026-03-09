@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
 import { removeStopwords } from 'stopword'
 
-import { BasicField, FormFieldDto } from '~shared/types'
-import { isNonEmpty } from '~shared/utils/isNonEmpty'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import { isNonEmpty } from 'formsg-shared/utils/isNonEmpty'
 
 import {
   DateRangePicker,

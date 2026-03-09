@@ -4,7 +4,7 @@
 import { createContext, useContext, useState } from 'react'
 import { useDisclosure } from '@chakra-ui/react'
 
-import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types'
+import { AdminDashboardFormMetaDto, FormStatus } from 'formsg-shared/types'
 
 import CollaboratorModal from '~features/admin-form/common/components/CollaboratorModal'
 import { ShareFormModal } from '~features/admin-form/share'

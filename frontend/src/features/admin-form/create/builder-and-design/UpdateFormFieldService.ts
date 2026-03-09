@@ -2,7 +2,7 @@ import {
   DropdownFieldBase,
   FieldCreateDto,
   FormFieldDto,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'

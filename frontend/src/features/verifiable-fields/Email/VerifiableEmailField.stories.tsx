@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Decorator, Meta, StoryFn } from '@storybook/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from 'formsg-shared/types/field'
 
 import {
   postGenerateVfnOtpResponse,

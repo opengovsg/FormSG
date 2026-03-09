@@ -1,7 +1,7 @@
 import { createContext, Dispatch, SetStateAction, useContext } from 'react'
 
-import { AdminDashboardFormMetaDto, FormId } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
+import { AdminDashboardFormMetaDto, FormId } from 'formsg-shared/types'
+import { Workspace } from 'formsg-shared/types/workspace'
 
 import { FilterOption } from './types'
 

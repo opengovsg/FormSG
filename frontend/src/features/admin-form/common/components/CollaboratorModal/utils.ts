@@ -1,4 +1,4 @@
-import { FormPermission } from '~shared/types/form/form'
+import { FormPermission } from 'formsg-shared/types/form/form'
 
 import { DropdownRole } from './constants'
 

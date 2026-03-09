@@ -1,4 +1,8 @@
-import { AdminFormDto, FormStatus, PublicFormDto } from '~shared/types/form'
+import {
+  AdminFormDto,
+  FormStatus,
+  PublicFormDto,
+} from 'formsg-shared/types/form'
 
 const GA = function () {
   return {

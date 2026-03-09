@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormAuthType } from '~shared/types'
+import { FormAuthType } from 'formsg-shared/types'
 
 import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
 

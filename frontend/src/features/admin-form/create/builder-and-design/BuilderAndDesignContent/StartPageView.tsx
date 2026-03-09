@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCog } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
-import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
+import { FormAuthType, FormLogoState, FormStartPage } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 

@@ -1,4 +1,4 @@
-import { AnalyticStatsDto } from '~shared/types/analytics'
+import { AnalyticStatsDto } from 'formsg-shared/types/analytics'
 
 import { ApiService } from '~services/ApiService'
 

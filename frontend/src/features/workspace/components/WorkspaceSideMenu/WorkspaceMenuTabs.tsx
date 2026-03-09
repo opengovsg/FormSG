@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Flex, FlexProps, Text } from '@chakra-ui/react'
 
-import { Workspace, WorkspaceDto } from '~shared/types/workspace'
+import { Workspace, WorkspaceDto } from 'formsg-shared/types/workspace'
 
 import { truncateLargeNumberWithPlus } from './utils'
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import { Flex, Text, VStack } from '@chakra-ui/react'
 
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
 import IconButton from '~components/IconButton'
 

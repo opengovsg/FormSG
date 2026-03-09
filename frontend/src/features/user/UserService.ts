@@ -4,7 +4,7 @@ import {
   UpdateUserLastSeenFlagDto,
   UserDto,
   VerifyUserContactOtpDto,
-} from '~shared/types/user'
+} from 'formsg-shared/types/user'
 
 import { ApiService } from '../../services/ApiService'
 

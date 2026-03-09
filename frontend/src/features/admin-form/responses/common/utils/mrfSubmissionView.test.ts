@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '~shared/types'
+import { WorkflowStatus } from 'formsg-shared/types'
 
 import { getPendingResponseAtString } from './mrfSubmissionView'
 

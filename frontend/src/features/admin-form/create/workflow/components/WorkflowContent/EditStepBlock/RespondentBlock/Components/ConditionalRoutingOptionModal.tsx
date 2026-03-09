@@ -16,7 +16,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
+import { MAX_UPLOAD_FILE_SIZE } from 'formsg-shared/constants'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'

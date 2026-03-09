@@ -1,6 +1,6 @@
 import { UseDisclosureReturn } from '@chakra-ui/react'
 
-import { FormStatus } from '~shared/types/form/form'
+import { FormStatus } from 'formsg-shared/types/form/form'
 
 import { useMutateFormSettings } from '../mutations'
 

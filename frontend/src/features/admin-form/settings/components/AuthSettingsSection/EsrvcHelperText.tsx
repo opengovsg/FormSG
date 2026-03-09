@@ -1,7 +1,7 @@
 import { Text } from '@chakra-ui/react'
 
-import { SINGPASS_PARTNER_SUPPORT_LINK } from '~shared/constants/links'
-import { FormAuthType } from '~shared/types/form'
+import { SINGPASS_PARTNER_SUPPORT_LINK } from 'formsg-shared/constants/links'
+import { FormAuthType } from 'formsg-shared/types/form'
 
 import Link from '~components/Link'
 

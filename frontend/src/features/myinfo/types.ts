@@ -1,4 +1,8 @@
-import { FieldBase, MyInfoableFieldBase, MyInfoField } from '~shared/types'
+import {
+  FieldBase,
+  MyInfoableFieldBase,
+  MyInfoField,
+} from 'formsg-shared/types'
 
 export enum VerifiedFor {
   Singaporeans = 'singaporeans',

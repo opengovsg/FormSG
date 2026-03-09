@@ -11,7 +11,7 @@ import {
 import { get, isEmpty, isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { MultirespondentFormSettings } from '~shared/types/form'
+import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
 import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'

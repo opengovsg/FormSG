@@ -13,8 +13,12 @@ import {
 import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
-import { DropdownFieldBase, FormFieldDto, WorkflowType } from '~shared/types'
-import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
+import {
+  DropdownFieldBase,
+  FormFieldDto,
+  WorkflowType,
+} from 'formsg-shared/types'
+import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
 
 import { parseCsvFile } from '~utils/parseCsvFile'
 import { SingleSelect } from '~components/Dropdown'

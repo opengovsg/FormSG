@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import Toggle from '~components/Toggle'
 

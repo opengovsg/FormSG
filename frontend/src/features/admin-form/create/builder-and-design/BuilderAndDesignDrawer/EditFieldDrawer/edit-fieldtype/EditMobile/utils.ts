@@ -1,4 +1,4 @@
-import { SmsCountsDto } from '~shared/types/form'
+import { SmsCountsDto } from 'formsg-shared/types/form'
 
 export const formatSmsCounts = (smsCounts?: SmsCountsDto): string => {
   if (!smsCounts) {

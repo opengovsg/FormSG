@@ -1,4 +1,4 @@
-import { SeenFlags, UserDto } from '~shared/types'
+import { SeenFlags, UserDto } from 'formsg-shared/types'
 
 import { SeenFlagsMapVersion } from './constants'
 

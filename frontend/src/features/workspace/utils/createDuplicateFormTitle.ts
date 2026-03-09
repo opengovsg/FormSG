@@ -1,4 +1,4 @@
-import { AdminDashboardFormMetaDto } from '~shared/types'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types'
 
 /**
  * Determine the form title when duplicating a form. Appends copy number to the end of the title.

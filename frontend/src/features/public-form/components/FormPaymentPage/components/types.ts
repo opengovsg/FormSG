@@ -1,4 +1,4 @@
-import { FormColorTheme, ProductsPaymentField } from '~shared/types'
+import { FormColorTheme, ProductsPaymentField } from 'formsg-shared/types'
 
 export interface PaymentItemNameDescriptionProps {
   paymentItemName: string | undefined

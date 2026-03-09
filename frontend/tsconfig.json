@@ -22,9 +22,6 @@
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
-      "~shared/*": [
-        "../shared/*"
-      ],
       "~assets/*": [
         "./src/assets/*"
       ],

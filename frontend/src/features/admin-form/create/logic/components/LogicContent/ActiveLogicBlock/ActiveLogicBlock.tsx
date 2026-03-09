@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { LogicDto } from '~shared/types'
+import { LogicDto } from 'formsg-shared/types'
 
 import {
   setToInactiveSelector,

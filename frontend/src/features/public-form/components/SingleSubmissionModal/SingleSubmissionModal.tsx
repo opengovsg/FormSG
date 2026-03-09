@@ -12,7 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from '~shared/constants/'
+import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from 'formsg-shared/constants/'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'

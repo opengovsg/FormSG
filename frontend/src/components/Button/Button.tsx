@@ -6,7 +6,7 @@ import {
 } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 
 import { OgpLogo } from '~assets/svgrs/brand/OgpLogo'
 

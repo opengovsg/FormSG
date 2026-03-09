@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query'
 import { StatusCodes } from 'http-status-codes'
 
-import { UserDto } from '~shared/types/user'
+import { UserDto } from 'formsg-shared/types/user'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'

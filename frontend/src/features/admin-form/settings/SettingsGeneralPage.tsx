@@ -1,7 +1,7 @@
 import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants/feature-flags'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'

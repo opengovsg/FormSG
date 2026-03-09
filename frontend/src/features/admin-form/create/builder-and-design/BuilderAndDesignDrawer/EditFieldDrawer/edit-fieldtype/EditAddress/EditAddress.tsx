@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { AddressCompoundFieldBase } from '~shared/types/field'
+import { AddressCompoundFieldBase } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { viewports } from '~utils/storybook'
 

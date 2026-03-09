@@ -1,7 +1,7 @@
 import formsgPackage from '@opengovsg/formsg-sdk'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 
-import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '~shared/utils/verification'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from 'formsg-shared/utils/verification'
 
 /**
  * Typeguard to check if sdkMode is valid PackageMode

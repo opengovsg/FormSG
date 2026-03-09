@@ -2,7 +2,7 @@ import { mergeWith } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 import { PartialDeep } from 'type-fest'
 
-import { FormId, PreviewFormViewDto } from '~shared/types/form/form'
+import { FormId, PreviewFormViewDto } from 'formsg-shared/types/form/form'
 
 import { BASE_FORM } from '../public-form'
 

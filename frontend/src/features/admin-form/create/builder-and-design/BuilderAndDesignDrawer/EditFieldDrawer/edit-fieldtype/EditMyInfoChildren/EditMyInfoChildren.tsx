@@ -3,7 +3,7 @@ import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
-import { MyInfoChildAttributes } from '~shared/types'
+import { MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'

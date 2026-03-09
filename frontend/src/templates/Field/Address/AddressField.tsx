@@ -3,7 +3,7 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
-import { validatePostalCode } from '~shared/utils/address-validation'
+import { validatePostalCode } from 'formsg-shared/utils/address-validation'
 
 import {
   useBlockNumberValidationRules,

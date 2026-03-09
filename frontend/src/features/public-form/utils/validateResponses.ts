@@ -23,7 +23,7 @@ import {
   TableResponse,
   UenResponse,
   YesNoResponse,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 const isPossibleResponse = (
   o: unknown,

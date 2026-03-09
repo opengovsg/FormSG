@@ -6,9 +6,9 @@ import {
 } from 'react-hook-form'
 import { datadogLogs } from '@datadog/browser-logs'
 
-import { MB } from '~shared/constants/file'
-import { FormColorTheme } from '~shared/types'
-import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
+import { MB } from 'formsg-shared/constants/file'
+import { FormColorTheme } from 'formsg-shared/types'
+import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'

@@ -8,7 +8,7 @@ import {
   NumberFieldBase,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'

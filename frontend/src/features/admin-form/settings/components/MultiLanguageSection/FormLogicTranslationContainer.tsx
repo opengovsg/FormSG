@@ -1,7 +1,7 @@
 import { useFormContext } from 'react-hook-form'
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
-import { Language, PreventSubmitLogicDto } from '~shared/types'
+import { Language, PreventSubmitLogicDto } from 'formsg-shared/types'
 
 import Textarea from '~components/Textarea'
 

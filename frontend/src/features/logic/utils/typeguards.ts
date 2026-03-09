@@ -1,7 +1,7 @@
 import { DeepPartial } from 'react-hook-form'
 
-import { BasicField } from '~shared/types/field'
-import { LogicableField } from '~shared/types/form'
+import { BasicField } from 'formsg-shared/types/field'
+import { LogicableField } from 'formsg-shared/types/form'
 
 import { FormFieldValue } from '~templates/Field'
 

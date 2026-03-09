@@ -10,7 +10,7 @@ import {
   FormResponseMode,
   Language,
   PublicFormDto,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { OgpAwarenessBadge } from '~assets/svgrs/brand/OgpAwarenessBadge'
 import { OgpAwarenessBanner } from '~assets/svgrs/brand/OgpAwarenessBanner'

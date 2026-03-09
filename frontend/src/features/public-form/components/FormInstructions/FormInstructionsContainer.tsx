@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Box, Flex } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 

@@ -1,7 +1,7 @@
 import { DragDropContext } from '@hello-pangea/dnd'
 import { StoryFn } from '@storybook/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 

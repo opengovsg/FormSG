@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { viewports } from '~utils/storybook'
 

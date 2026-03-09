@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '~shared/types'
+import { WorkflowStatus } from 'formsg-shared/types'
 
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,

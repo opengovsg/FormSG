@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { FormFeedbackMetaDto } from '~shared/types'
+import { FormFeedbackMetaDto } from 'formsg-shared/types'
 
 const generateFormFeedbackMeta = (): FormFeedbackMetaDto => {
   return {

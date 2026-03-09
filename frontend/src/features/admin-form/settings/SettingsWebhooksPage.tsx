@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
-import { FormResponseMode } from '~shared/types/form'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { useUser } from '~features/user/queries'
 

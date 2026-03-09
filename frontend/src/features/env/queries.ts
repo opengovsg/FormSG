@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { ClientEnvVars } from '~shared/types/core'
+import { ClientEnvVars } from 'formsg-shared/types/core'
 
 import { getClientEnvVars } from './EnvService'
 

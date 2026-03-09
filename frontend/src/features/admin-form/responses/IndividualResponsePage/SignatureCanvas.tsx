@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
-import { SignatureVectorArray } from '~shared/types'
+import { SignatureVectorArray } from 'formsg-shared/types'
 import {
   convertToSignatureVectorArray,
   getBoundingBox,
@@ -11,7 +11,7 @@ import {
   SIGNATURE_STROKE_SMOOTHING,
   SIGNATURE_STROKE_STREAMLINE,
   SIGNATURE_STROKE_THINNING,
-} from '~shared/utils/signature'
+} from 'formsg-shared/utils/signature'
 
 import { useMeasure } from '~hooks/useMeasure'
 import { drawStroke } from '~utils/convertSignatureOutput'

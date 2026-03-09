@@ -14,8 +14,8 @@ import {
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
-import { FormColorTheme } from '~shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { OgpLogoFull } from '~assets/svgrs/brand/OgpFullLogo'
 

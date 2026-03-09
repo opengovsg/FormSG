@@ -1,4 +1,4 @@
-import { AttachmentSize, FormResponseMode } from '~shared/types'
+import { AttachmentSize, FormResponseMode } from 'formsg-shared/types'
 
 export const getAttachmentSizeLimit = (
   responseMode?: FormResponseMode,

@@ -1,8 +1,8 @@
 import { Box, Text } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
-import { BasicField } from '~shared/types/field'
-import { handleAddressResponseDisplay } from '~shared/utils/address'
+import { BasicField } from 'formsg-shared/types/field'
+import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
 import { convertToSignatureSvgString } from '~utils/convertSignatureOutput'
 

@@ -2,7 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
-import { ErrorCode } from '~shared/types/errorCodes'
+import { ErrorCode } from 'formsg-shared/types/errorCodes'
 
 import { ApiError } from '~typings/core'
 

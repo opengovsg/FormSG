@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { AnalyticStatsDto } from '~shared/types'
+import { AnalyticStatsDto } from 'formsg-shared/types'
 
 import { getLandingPageStatistics } from '~services/AppStatisticsService'
 

@@ -23,8 +23,8 @@ import {
   FormResponseMode,
   SubmissionMetadata,
   WorkflowStatus,
-} from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
+} from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import Badge from '~components/Badge'
 

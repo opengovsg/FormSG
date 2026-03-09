@@ -1,7 +1,7 @@
 import { merge } from 'lodash'
 import { delay as MswDelay, DelayMode, http, HttpResponse } from 'msw'
 
-import { AnalyticStatsDto } from '~shared/types'
+import { AnalyticStatsDto } from 'formsg-shared/types'
 
 export const MOCK_STATS: Partial<AnalyticStatsDto> = {
   userCount: 4923293,

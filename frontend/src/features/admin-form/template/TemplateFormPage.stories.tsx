@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 import {

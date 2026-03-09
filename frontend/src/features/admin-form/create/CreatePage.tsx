@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'

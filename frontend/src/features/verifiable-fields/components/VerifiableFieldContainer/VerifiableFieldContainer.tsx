@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
-import { BasicField, FormFieldWithId } from '~shared/types/field'
+import { BasicField, FormFieldWithId } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'

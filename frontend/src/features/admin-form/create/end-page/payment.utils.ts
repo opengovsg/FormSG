@@ -3,7 +3,7 @@ import {
   FormResponseMode,
   PaymentType,
   ProductItemForReceipt,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 export const paymentTypeSelection = (
   form: AdminStorageFormDto,

@@ -5,7 +5,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 
-import { FormFieldWithId } from '~shared/types/field'
+import { FormFieldWithId } from 'formsg-shared/types/field'
 
 import { useTimeout } from '~hooks/useTimeout'
 import { BaseFieldProps } from '~templates/Field/FieldContainer'

@@ -1,4 +1,4 @@
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
 import { isMyInfo } from '~features/myinfo/utils'
 

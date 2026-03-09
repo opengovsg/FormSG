@@ -2,12 +2,12 @@ import { useMemo } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormFeedbackMetaDto, FormIssueMetaDto } from '~shared/types'
+import { FormFeedbackMetaDto, FormIssueMetaDto } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
   SubmissionMetadataList,
-} from '~shared/types/submission'
+} from 'formsg-shared/types/submission'
 
 import { adminFormKeys } from '../common/queries'
 

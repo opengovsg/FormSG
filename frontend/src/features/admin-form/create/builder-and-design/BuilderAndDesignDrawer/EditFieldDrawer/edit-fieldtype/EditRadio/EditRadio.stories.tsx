@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, RadioFieldBase } from '~shared/types'
+import { BasicField, RadioFieldBase } from 'formsg-shared/types'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 

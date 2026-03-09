@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { WorkflowType } from '~shared/types/form/workflow'
+import { WorkflowType } from 'formsg-shared/types/form/workflow'
 
 export const useWorkflowTypeValidation = () => {
   const { t } = useTranslation()

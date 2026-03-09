@@ -1,9 +1,12 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { CountryRegion } from '~shared/constants/countryRegion'
-import { FormColorTheme } from '~shared/types'
-import { CountryRegionFieldBase, FormFieldWithId } from '~shared/types/field'
+import { CountryRegion } from 'formsg-shared/constants/countryRegion'
+import { FormColorTheme } from 'formsg-shared/types'
+import {
+  CountryRegionFieldBase,
+  FormFieldWithId,
+} from 'formsg-shared/types/field'
 
 import { useCountryRegionValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'

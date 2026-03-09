@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AddressCompoundFieldBase, BasicField } from '~shared/types'
+import { AddressCompoundFieldBase, BasicField } from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

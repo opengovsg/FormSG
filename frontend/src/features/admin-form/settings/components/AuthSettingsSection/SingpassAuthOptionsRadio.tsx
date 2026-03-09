@@ -9,7 +9,7 @@ import {
 import { Box, Flex, Spacer } from '@chakra-ui/react'
 import { pickBy } from 'lodash'
 
-import { FormAuthType, FormSettings, FormStatus } from '~shared/types'
+import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'

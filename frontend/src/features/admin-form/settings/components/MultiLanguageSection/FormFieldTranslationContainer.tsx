@@ -1,8 +1,8 @@
 import { FormState } from 'react-hook-form'
 import { Divider, Flex, Text } from '@chakra-ui/react'
 
-import { FormField, Language } from '~shared/types'
-import { BasicField } from '~shared/types/field'
+import { FormField, Language } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { OptionsTranslationContainer } from './OptionsTranslationContainer'
 import { TableTranslationContainer } from './TableTranslationContainer'

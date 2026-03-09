@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'

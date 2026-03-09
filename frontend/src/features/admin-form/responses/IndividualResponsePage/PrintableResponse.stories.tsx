@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from 'formsg-shared/types/field'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 

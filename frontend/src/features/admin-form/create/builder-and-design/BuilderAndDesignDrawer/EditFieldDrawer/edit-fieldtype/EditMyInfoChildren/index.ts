@@ -1,6 +1,6 @@
 import { SetRequired } from 'type-fest'
 
-import { ChildrenCompoundFieldBase } from '~shared/types'
+import { ChildrenCompoundFieldBase } from 'formsg-shared/types'
 
 export * from './EditMyInfoChildren'
 

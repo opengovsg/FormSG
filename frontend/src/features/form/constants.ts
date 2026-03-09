@@ -1,4 +1,4 @@
-import { BasicField } from '~shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 export const NON_RESPONSE_FIELD_SET = new Set([
   BasicField.Section,

@@ -7,7 +7,7 @@ import {
   MyInfoAttribute,
   MyInfoChildAttributes,
   ShortTextFieldBase,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 

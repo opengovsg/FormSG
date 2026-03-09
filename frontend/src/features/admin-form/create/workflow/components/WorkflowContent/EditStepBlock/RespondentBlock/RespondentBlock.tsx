@@ -2,7 +2,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 
-import { UserDto } from '~shared/types'
+import { UserDto } from 'formsg-shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

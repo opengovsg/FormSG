@@ -9,7 +9,7 @@ import {
   FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'

@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react'
 
-import { centsToDollars } from '~shared/utils/payments'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 import { FixedItemDetailProps } from './types'

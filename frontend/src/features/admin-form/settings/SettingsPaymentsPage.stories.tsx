@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormResponseMode, FormSettings } from '~shared/types'
+import { FormResponseMode, FormSettings } from 'formsg-shared/types'
 
 import {
   getAdminFormSettings,

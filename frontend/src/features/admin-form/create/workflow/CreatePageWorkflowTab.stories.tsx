@@ -1,12 +1,16 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AttachmentSize, BasicField, FormFieldDto } from '~shared/types/field'
+import {
+  AttachmentSize,
+  BasicField,
+  FormFieldDto,
+} from 'formsg-shared/types/field'
 import {
   AdminFormDto,
   FormResponseMode,
   FormWorkflowStepDto,
   WorkflowType,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

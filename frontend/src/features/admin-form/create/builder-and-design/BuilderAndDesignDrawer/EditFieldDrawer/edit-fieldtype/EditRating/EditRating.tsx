@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { RatingFieldBase, RatingShape } from '~shared/types/field'
+import { RatingFieldBase, RatingShape } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'

@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { StepData, WorkflowStatus } from '~shared/types'
+import { StepData, WorkflowStatus } from 'formsg-shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 

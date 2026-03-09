@@ -1,7 +1,11 @@
 import { keyBy } from 'lodash'
 
-import { types as myInfoTypeArray } from '~shared/constants/field/myinfo'
-import { BasicField, FormFieldDto, MyInfoFormField } from '~shared/types/field'
+import { types as myInfoTypeArray } from 'formsg-shared/constants/field/myinfo'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoFormField,
+} from 'formsg-shared/types/field'
 
 const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 

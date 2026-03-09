@@ -1,4 +1,4 @@
-import { FormIssueDto, FormIssueMetaDto } from '~shared/types'
+import { FormIssueDto, FormIssueMetaDto } from 'formsg-shared/types'
 
 import { ApiService } from '~services/ApiService'
 

@@ -3,7 +3,7 @@ import { FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { WorkflowType } from '~shared/types'
+import { WorkflowType } from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'

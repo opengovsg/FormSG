@@ -1,4 +1,4 @@
-import { LogicConditionState } from '~shared/types'
+import { LogicConditionState } from 'formsg-shared/types'
 
 export * from './en-sg'
 

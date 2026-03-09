@@ -11,7 +11,7 @@ import {
   FormStartPage,
   LogicType,
   PreventSubmitLogicDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'

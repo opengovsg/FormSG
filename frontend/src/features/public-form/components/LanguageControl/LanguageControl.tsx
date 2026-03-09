@@ -11,7 +11,7 @@ import {
   MenuList,
 } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 

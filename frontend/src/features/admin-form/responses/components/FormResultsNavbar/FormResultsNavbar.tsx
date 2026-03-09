@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,

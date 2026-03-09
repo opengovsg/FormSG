@@ -1,6 +1,6 @@
 import getStroke from 'perfect-freehand'
 
-import { SignatureVectorArray } from '~shared/types'
+import { SignatureVectorArray } from 'formsg-shared/types'
 import {
   BOX_HEIGHT_DEFAULT,
   BOX_WIDTH_DEFAULT,
@@ -10,7 +10,7 @@ import {
   SIGNATURE_STROKE_SMOOTHING,
   SIGNATURE_STROKE_STREAMLINE,
   SIGNATURE_STROKE_THINNING,
-} from '~shared/utils/signature'
+} from 'formsg-shared/utils/signature'
 
 export const drawStroke = (
   ctx: CanvasRenderingContext2D,

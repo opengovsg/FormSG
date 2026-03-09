@@ -1,4 +1,4 @@
-import { FormResponseMode } from '~shared/types/form'
+import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
