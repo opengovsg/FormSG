@@ -36,7 +36,7 @@ export const useMutateDownloadAttachments = () => {
     }) => {
       const byteArray = await downloadAndDecryptAttachment(url, secretKey)
       if (!byteArray) throw new Error('Invalid file')
-      FileSaver.saveAs(new Blob([byteArray as BlobPart]), fileName)
+      FileSaver.saveAs(new Blob([byteArray]), fileName)
       return fileName
     },
     {
