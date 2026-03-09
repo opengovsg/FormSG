@@ -62,8 +62,8 @@ export const AdminForbiddenErrorPage = ({
               <Text textStyle="body-1">
                 {isAuthenticated
                   ? message
-                  : message ??
-                    'Log in, or contact the owner of the form for more information.'}
+                  : (message ??
+                    'Log in, or contact the owner of the form for more information.')}
               </Text>
             </Stack>
             <Stack

@@ -4,7 +4,10 @@
  * @param filename
  * @returns
  */
-const bufferToFile = (data: ArrayBuffer, filename: string): File => {
+const bufferToFile = (
+  data: Uint8Array<ArrayBuffer>,
+  filename: string,
+): File => {
   const blob = new Blob([data])
   const file = new File([blob], filename)
 

@@ -262,7 +262,7 @@ export const getInitialFormValues = ({
 }: {
   formResponseMode: FormResponseMode
   previousSubmission?: ReturnType<typeof decryptSubmission>
-  previousAttachments?: Record<string, ArrayBuffer>
+  previousAttachments?: Record<string, Uint8Array<ArrayBuffer>>
   currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
@@ -519,7 +519,7 @@ export const PublicFormProvider = ({
     useState(false)
 
   const [previousAttachments, setPreviousAttachments] = useState<
-    Record<string, ArrayBuffer>
+    Record<string, Uint8Array<ArrayBuffer>>
   >({})
 
   const [searchParams] = useSearchParams()
@@ -535,7 +535,7 @@ export const PublicFormProvider = ({
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
     const decryptAttachments = async () => {
-      const decryptedAttachments: Record<string, Uint8Array> = {}
+      const decryptedAttachments: Record<string, Uint8Array<ArrayBuffer>> = {}
       if (!encryptedPreviousSubmission) return
       const isValid = isKeypairValid(
         encryptedPreviousSubmission.submissionPublicKey,
@@ -572,7 +572,7 @@ export const PublicFormProvider = ({
       // the previous submission responses are decrypted.
       if (previousSubmission) {
         // Backward compatibility
-        const previousAttachments: Record<string, ArrayBuffer> = {}
+        const previousAttachments: Record<string, Uint8Array<ArrayBuffer>> = {}
         Object.keys(previousSubmission.responses).forEach((id) => {
           const response = previousSubmission.responses[id]
           if (response.fieldType === BasicField.Attachment) {

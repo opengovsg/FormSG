@@ -36,7 +36,8 @@ export interface DraftSubmission {
 }
 
 export interface PublicFormContextProps
-  extends Partial<PublicFormViewDto>,
+  extends
+    Partial<PublicFormViewDto>,
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
@@ -87,7 +88,7 @@ export interface PublicFormContextProps
 
   encryptedPreviousSubmission?: PublicMultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>
-  previousAttachments?: Record<string, ArrayBuffer>
+  previousAttachments?: Record<string, Uint8Array>
   setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void

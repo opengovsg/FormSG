@@ -22,8 +22,10 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import { ModalCloseButton } from '~components/Modal'
 
-interface PaymentQuantityModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+interface PaymentQuantityModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   onCancel: () => void
   onSubmit: (quantity: number) => void
   itemName: string

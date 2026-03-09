@@ -15,7 +15,7 @@ RUN apk update && apk upgrade && \
     pnpm add -g node-gyp
 WORKDIR /build
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 

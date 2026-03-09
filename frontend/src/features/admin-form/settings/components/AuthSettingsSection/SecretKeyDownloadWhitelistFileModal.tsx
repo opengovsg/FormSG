@@ -14,8 +14,10 @@ import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
 import { fetchAdminFormEncryptedWhitelistedSubmitterIds } from '../../queries'
 import { SecretKeyFormModal } from '../SecretKeyFormModal'
 
-export interface SecretKeyDownloadWhitelistFileModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface SecretKeyDownloadWhitelistFileModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   publicKey: string
   formId: string
   downloadFileName: string

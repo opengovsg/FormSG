@@ -60,7 +60,7 @@ RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/e
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json shared/pnpm-lock.yaml ./shared/
 COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 

@@ -1,12 +1,12 @@
 {
-  "name": "FormSG",
-  "description": "Form Manager for Government",
+  "name": "formsg-monorepo",
   "version": "6.312.0",
+  "private": true,
+  "description": "Form Manager for Government",
   "homepage": "https://form.gov.sg",
   "authors": [
-    "FormSG <formsg@data.gov.sg>"
+    "FormSG <formsg@open.gov.sg>"
   ],
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/opengovsg/formsg.git"
@@ -24,8 +24,7 @@
     ]
   },
   "scripts": {
-    "postinstall": "pnpm postinstall:frontend && pnpm postinstall:shared",
-    "test": "pnpm test:backend && pnpm test:frontend",
+    "test": "pnpm test:backend && pnpm run test:frontend",
     "test:backend": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:backend:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:backend:watch": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
@@ -51,9 +50,7 @@
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky",
     "pre-commit": "lint-staged",
-    "storybook": "pnpm --prefix frontend storybook",
-    "postinstall:frontend": "pnpm --prefix frontend install",
-    "postinstall:shared": "pnpm --prefix shared install"
+    "storybook": "pnpm --prefix frontend storybook"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
@@ -252,13 +249,19 @@
       "@datadog/native-metrics",
       "@datadog/pprof",
       "aws-sdk",
+      "aws-lambda-ric",
       "canvas",
       "dd-trace",
       "esbuild",
       "fsevents",
       "protobufjs",
       "sharp",
-      "unix-dgram"
+      "unix-dgram",
+      "msw",
+      "microtime"
+    ],
+    "ignoredBuiltDependencies": [
+      "esbuild"
     ]
   },
   "config": {

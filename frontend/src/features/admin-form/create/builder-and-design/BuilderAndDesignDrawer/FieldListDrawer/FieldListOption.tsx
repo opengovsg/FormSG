@@ -55,14 +55,18 @@ interface MyInfoFieldOptionProps extends FieldOptionProps {
   fieldType: AllowedMyInfoFieldOption
 }
 
-interface DraggableBasicFieldOptionProps
-  extends Omit<FieldOptionProps, 'isActive'> {
+interface DraggableBasicFieldOptionProps extends Omit<
+  FieldOptionProps,
+  'isActive'
+> {
   index: number
   fieldType: BasicField
 }
 
-interface DraggableMyInfoFieldOptionProps
-  extends Omit<FieldOptionProps, 'isActive'> {
+interface DraggableMyInfoFieldOptionProps extends Omit<
+  FieldOptionProps,
+  'isActive'
+> {
   index: number
   fieldType: AllowedMyInfoFieldOption
 }

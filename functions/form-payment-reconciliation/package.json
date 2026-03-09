@@ -1,6 +1,7 @@
 {
-  "name": "form-payment-reconciliation",
+  "name": "formsg-payment-reconciliation",
   "version": "1.0.0",
+  "private": true,
   "description": "Lambda function for payment reconciliation",
   "main": "index.js",
   "scripts": {
@@ -18,7 +19,6 @@
     "lambda:update:stg-alt3": "pnpm lambda:prep && pnpm lambda:push:stg-alt3",
     "lambda:update:uat": "pnpm lambda:prep && pnpm lambda:push:uat"
   },
-  "private": true,
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.529.1",
     "@aws-sdk/client-ssm": "^3.525.0"

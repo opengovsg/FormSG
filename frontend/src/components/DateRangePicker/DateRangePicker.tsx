@@ -10,8 +10,7 @@ import { DateRangePickerWrapper } from './components/DateRangePickerWrapper'
 import { DateRangePickerProvider } from './DateRangePickerContext'
 
 export interface DateRangePickerProps
-  extends DatePickerBaseProps,
-    RangeCalendarProps {
+  extends DatePickerBaseProps, RangeCalendarProps {
   /**
    * Separator between dates
    * @defaultValue `"to"`

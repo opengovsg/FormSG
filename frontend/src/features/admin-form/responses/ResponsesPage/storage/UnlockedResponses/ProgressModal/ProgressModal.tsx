@@ -15,8 +15,10 @@ import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen } from './CompleteScreen'
 import { ProgressModalContent } from './ProgressModalContent'
 
-export interface ProgressModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface ProgressModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   downloadPercentage: number
   children: React.ReactNode
   downloadMetadata?: DownloadResult | CanceledResult

@@ -59,6 +59,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
         # 👇 Adds Chromatic as a step in the workflow
@@ -100,10 +101,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Install BE dependencies
-        working-directory: .
-        run: pnpm install
+          cache: 'pnpm'
       - name: Install dependencies
+        working-directory: .
         run: pnpm install
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic

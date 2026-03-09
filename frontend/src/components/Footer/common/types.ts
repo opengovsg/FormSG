@@ -38,11 +38,10 @@ export interface FooterVariantProps {
   containerProps?: Partial<FooterContainerProps>
 }
 
-export interface FooterProps
-  extends SetOptional<
-    FooterVariantProps,
-    'socialMediaLinks' | 'textColorScheme' | 'footerIconLink'
-  > {
+export interface FooterProps extends SetOptional<
+  FooterVariantProps,
+  'socialMediaLinks' | 'textColorScheme' | 'footerIconLink'
+> {
   /**
    * The footer variant to display. Defaults to `full` if not provided.
    */

@@ -15,18 +15,17 @@ import {
 
 const [TileStylesProvider, useTileStyles] = createStylesContext('Tile')
 
-export interface TileProps
-  extends Omit<
-    ButtonProps,
-    | 'colorScheme'
-    | 'iconSpacing'
-    | 'leftIcon'
-    | 'rightIcon'
-    | 'loadingText'
-    | 'spinner'
-    | 'spinnerPlacement'
-    | 'title'
-  > {
+export interface TileProps extends Omit<
+  ButtonProps,
+  | 'colorScheme'
+  | 'iconSpacing'
+  | 'leftIcon'
+  | 'rightIcon'
+  | 'loadingText'
+  | 'spinner'
+  | 'spinnerPlacement'
+  | 'title'
+> {
   // The typing here is to satisfy the ts compiler
   // because otherwise, it will complain about assigning null to the as prop
   /**

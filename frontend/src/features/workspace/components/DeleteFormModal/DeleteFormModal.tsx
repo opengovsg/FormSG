@@ -26,8 +26,10 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { useDeleteFormMutation } from '~features/workspace/mutations'
 
-export interface DeleteFormModalProps
-  extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
+export interface DeleteFormModalProps extends Pick<
+  UseDisclosureReturn,
+  'onClose' | 'isOpen'
+> {
   formToDelete?: Pick<AdminDashboardFormMetaDto, '_id' | 'title' | 'admin'>
 }
 

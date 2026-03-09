@@ -28,8 +28,7 @@ export type UpsertOtpParams = Pick<
   IAdminVerificationSchema,
   'hashedOtp' | 'hashedContact' | 'admin' | 'expireAt'
 >
-export interface IAdminVerificationModel
-  extends Model<IAdminVerificationSchema> {
+export interface IAdminVerificationModel extends Model<IAdminVerificationSchema> {
   upsertOtp: (params: UpsertOtpParams) => Promise<IAdminVerificationSchema>
   incrementAttemptsByAdminId: (
     adminId: IUserSchema['_id'],

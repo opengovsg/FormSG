@@ -26,7 +26,9 @@ import {
 
 export interface MultiSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
-> extends Omit<
+>
+  extends
+    Omit<
       SharedSelectContextReturnProps<Item>,
       'isClearable' | 'virtualListRef' | 'virtualListHeight'
     >,

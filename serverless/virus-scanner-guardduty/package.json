@@ -1,6 +1,7 @@
 {
-  "name": "virus-scanner-guardduty",
+  "name": "formsg-virus-scanner-guardduty",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "scripts": {
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
@@ -47,10 +48,9 @@
     "typescript": "^5.4.5"
   },
   "pnpm": {
+    "__comment": "aws-lambda-ric is needed here since the dockerfile does a local installation.",
     "onlyBuiltDependencies": [
-      "aws-lambda-ric",
-      "aws-sdk",
-      "serverless"
+      "aws-lambda-ric"
     ]
   }
 }

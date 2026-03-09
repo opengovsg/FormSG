@@ -24,18 +24,14 @@ export interface ILogicSchema extends FormLogicBase, Document {
   conditions: IConditionSchema[]
 }
 export interface IShowFieldsLogicSchema
-  extends ILogicSchema,
-    ShowFieldLogic,
-    Document {
+  extends ILogicSchema, ShowFieldLogic, Document {
   // overwriting field id type in show to reflect mongoose Id type
   show: IFieldSchema['_id'][]
   logicType: LogicType.ShowFields
   conditions: IConditionSchema[]
 }
 export interface IPreventSubmitLogicSchema
-  extends ILogicSchema,
-    PreventSubmitLogic,
-    Document {
+  extends ILogicSchema, PreventSubmitLogic, Document {
   logicType: LogicType.PreventSubmit
   conditions: IConditionSchema[]
 }

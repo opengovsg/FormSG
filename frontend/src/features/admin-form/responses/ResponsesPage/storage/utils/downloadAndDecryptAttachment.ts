@@ -12,7 +12,12 @@ export const downloadAndDecryptAttachment = async (
   const response = await fetch(url)
   const data = await response.json()
   data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
-  return await formsgSdk.crypto.decryptFile(secretKey, data.encryptedFile)
+  // RATIONALE: For casting to Uint8Array<ArrayBuffer>, after TS update, Uint8Array can be SharedArrayBuffer, which is not compatible with Blob.
+  // Hence, until we update the SDK return type, we cast to Uint8Array<ArrayBuffer> to ensure compatibility.
+  return (await formsgSdk.crypto.decryptFile(
+    secretKey,
+    data.encryptedFile,
+  )) as Uint8Array<ArrayBuffer>
 }
 
 export const downloadAndDecryptAttachmentsAsZip = async (

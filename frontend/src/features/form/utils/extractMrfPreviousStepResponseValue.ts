@@ -20,7 +20,7 @@ import { FormFieldValue, RadioFieldValues } from '~templates/Field'
 export const extractMrfPreviousStepResponseValue = (
   field: FormFieldDto,
   previousFieldResponse?: FieldResponseV3,
-  previousAttachmentFieldResponseFileBuffer?: ArrayBuffer,
+  previousAttachmentFieldResponseFileBuffer?: Uint8Array<ArrayBuffer>,
 ): FormFieldValue | undefined => {
   if (previousFieldResponse) {
     if (previousFieldResponse) {

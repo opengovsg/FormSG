@@ -15,8 +15,7 @@ export interface IVerificationField {
 }
 
 export interface IVerificationFieldSchema
-  extends IVerificationField,
-    Document<string> {
+  extends IVerificationField, Document<string> {
   // _id is basically a generated transactionId, so it has to be a string,
   // instead of being converted to a string from ObjectId.
   // This must be a string, or transaction fetching will fail.
@@ -38,9 +37,7 @@ export type UpdateFieldData = {
 }
 
 export interface IVerificationSchema
-  extends IVerification,
-    Document,
-    PublicView<PublicTransaction> {
+  extends IVerification, Document, PublicView<PublicTransaction> {
   /**
    * Extracts non-sensitive fields from a transaction
    */

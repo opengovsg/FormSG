@@ -28,8 +28,10 @@ import Input from '~components/Input'
 
 import { TableFieldInputs } from '../types'
 
-export interface ColumnCellProps
-  extends UseTableCellProps<TableFieldInputs, string> {
+export interface ColumnCellProps extends UseTableCellProps<
+  TableFieldInputs,
+  string
+> {
   schemaId: string
   isDisabled?: boolean
   disableRequiredValidation: boolean

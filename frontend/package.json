@@ -1,9 +1,9 @@
 {
-  "name": "form-frontend",
+  "name": "formsg-frontend",
   "version": "6.312.0",
+  "private": true,
   "homepage": ".",
   "type": "module",
-  "private": true,
   "dependencies": {
     "@chakra-ui/anatomy": "^2.2.2",
     "@chakra-ui/checkbox": "^2.3.2",
@@ -107,7 +107,7 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "postinstall": "pnpm gen:theme-typings && pnpm --prefix ../shared install",
+    "postinstall": "pnpm run gen:theme-typings",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
     "build": "pnpm exec tsc && vite build",
@@ -117,9 +117,6 @@
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
     "pre-commit": "lint-staged"
-  },
-  "overrides": {
-    "react-error-overlay": "6.0.9"
   },
   "browserslist": {
     "production": [
@@ -193,13 +190,5 @@
   "proxy": "http://localhost:5001",
   "msw": {
     "workerDirectory": "public"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "canvas",
-      "esbuild",
-      "msw",
-      "microtime"
-    ]
   }
 }

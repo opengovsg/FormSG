@@ -8,8 +8,10 @@ import IconButton from '~components/IconButton'
 
 import { FormBannerLogoProps } from './FormBannerLogo'
 
-export interface FormLogoutButtonProps
-  extends Pick<FormBannerLogoProps, 'loggedInId'> {
+export interface FormLogoutButtonProps extends Pick<
+  FormBannerLogoProps,
+  'loggedInId'
+> {
   onLogout: (() => void) | undefined
   colorScheme: ThemeColorScheme
 }
