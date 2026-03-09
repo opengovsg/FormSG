@@ -1,8 +1,8 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
-import { ApiService } from '~services/ApiService'
-
 import { ClientEnvVars } from 'formsg-shared/types'
+
+import { ApiService } from '~services/ApiService'
 
 const getClientEnvWithFetch = async () => {
   const response = await fetch(

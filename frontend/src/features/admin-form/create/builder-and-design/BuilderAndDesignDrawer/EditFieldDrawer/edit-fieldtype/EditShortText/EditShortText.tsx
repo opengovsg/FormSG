@@ -10,7 +10,10 @@ import {
 } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { ShortTextFieldBase, TextSelectedValidation } from 'formsg-shared/types/field'
+import {
+  ShortTextFieldBase,
+  TextSelectedValidation,
+} from 'formsg-shared/types/field'
 
 import { GUIDE_PREFILL } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'

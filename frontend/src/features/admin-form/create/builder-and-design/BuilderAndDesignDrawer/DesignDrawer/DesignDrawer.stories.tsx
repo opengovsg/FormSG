@@ -1,6 +1,10 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormColorTheme, FormLogoState, FormStartPage } from 'formsg-shared/types'
+import {
+  FormColorTheme,
+  FormLogoState,
+  FormStartPage,
+} from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

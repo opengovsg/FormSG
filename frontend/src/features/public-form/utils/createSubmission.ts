@@ -3,8 +3,16 @@ import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
 import { E2EE_SUBMISSION_VERSION } from 'formsg-shared/constants'
-import { FieldResponsesV3, FieldResponseV3, ProductItem } from 'formsg-shared/types'
-import { BasicField, FormFieldDto, PaymentFieldsDto } from 'formsg-shared/types/field'
+import {
+  FieldResponsesV3,
+  FieldResponseV3,
+  ProductItem,
+} from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  PaymentFieldsDto,
+} from 'formsg-shared/types/field'
 import {
   EmailResponse,
   FieldResponse,

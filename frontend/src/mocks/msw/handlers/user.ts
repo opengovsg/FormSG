@@ -3,7 +3,11 @@ import { delay as MswDelay, http, HttpResponse } from 'msw'
 import { AgencyId } from 'formsg-shared/types/agency'
 import { ErrorDto } from 'formsg-shared/types/core'
 import { DateString } from 'formsg-shared/types/generic'
-import { UserDto, UserId, VerifyUserContactOtpDto } from 'formsg-shared/types/user'
+import {
+  UserDto,
+  UserId,
+  VerifyUserContactOtpDto,
+} from 'formsg-shared/types/user'
 
 import { WithDelayProps } from './types'
 

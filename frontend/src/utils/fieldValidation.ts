@@ -49,7 +49,10 @@ import {
   validatePostalCode,
 } from 'formsg-shared/utils/address-validation'
 import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
-import { isMFinSeriesValid, isNricValid } from 'formsg-shared/utils/nric-validation'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from 'formsg-shared/utils/nric-validation'
 import {
   isHomePhoneNumber,
   isMobilePhoneNumber,

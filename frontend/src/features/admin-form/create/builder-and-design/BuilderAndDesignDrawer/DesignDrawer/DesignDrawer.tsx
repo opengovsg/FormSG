@@ -22,7 +22,11 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormColorTheme, FormLogoState, FormStartPage } from 'formsg-shared/types'
+import {
+  FormColorTheme,
+  FormLogoState,
+  FormStartPage,
+} from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 import { uploadLogo } from '~services/FileHandlerService'

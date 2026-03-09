@@ -20,7 +20,11 @@ import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
 } from 'formsg-shared/constants'
-import { EmailFieldBase, FormResponseMode, PaymentChannel } from 'formsg-shared/types'
+import {
+  EmailFieldBase,
+  FormResponseMode,
+  PaymentChannel,
+} from 'formsg-shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
