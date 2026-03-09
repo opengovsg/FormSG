@@ -2,7 +2,8 @@ import {
   FormPermission,
   FormResponseMode,
   SubmissionType,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+
 import {
   FormFieldSchema,
   FormLogicSchema,

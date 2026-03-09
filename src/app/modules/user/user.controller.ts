@@ -1,10 +1,10 @@
-import { StatusCodes } from 'http-status-codes'
-
 import {
   SeenFlags,
   SendUserContactOtpDto,
   VerifyUserContactOtpDto,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import PostmanSmsService from '../../services/postman-sms/postman-sms.service'

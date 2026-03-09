@@ -1,14 +1,14 @@
 import { ObjectId } from 'bson'
-import { readFileSync } from 'fs'
-import { cloneDeep, merge } from 'lodash'
-
 import {
   BasicField,
   FormResponseMode,
   FormWorkflowStepDto,
   WorkflowStatus,
   WorkflowType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { readFileSync } from 'fs'
+import { cloneDeep, merge } from 'lodash'
+
 import {
   IMultirespondentSubmissionSchema,
   SingleAnswerFieldResponse,

@@ -1,5 +1,5 @@
+import { FormIssueBase } from 'formsg-shared/types'
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
-import { FormIssueBase } from 'shared/types'
 import type { Merge } from 'type-fest'
 
 import { IFormSchema } from './form'

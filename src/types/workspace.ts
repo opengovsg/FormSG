@@ -1,5 +1,5 @@
+import { WorkspaceDto } from 'formsg-shared/types/workspace'
 import { ClientSession, Document, Model } from 'mongoose'
-import { WorkspaceDto } from 'shared/types/workspace'
 
 import { IFormSchema } from './form'
 import { IUserSchema } from './user'

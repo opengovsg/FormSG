@@ -1,13 +1,13 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 import { merge, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
-import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 
 import { UpdateFieldData } from 'src/types'
 
-import { BasicField } from '../../../../../shared/types'
 import getVerificationModel from '../verification.model'
 
 import {

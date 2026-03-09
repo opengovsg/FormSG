@@ -1,6 +1,3 @@
-import moment from 'moment-timezone'
-import Stripe from 'stripe'
-
 import {
   FormPaymentsField,
   PaymentChannel,
@@ -11,8 +8,11 @@ import {
   SubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
-} from '../../../../../shared/types'
-import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
+} from 'formsg-shared/types'
+import { calculatePrice } from 'formsg-shared/utils/paymentProductPrice'
+import moment from 'moment-timezone'
+import Stripe from 'stripe'
+
 import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,

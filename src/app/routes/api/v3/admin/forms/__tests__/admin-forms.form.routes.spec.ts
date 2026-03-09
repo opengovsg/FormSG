@@ -8,6 +8,15 @@ import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
+import {
+  BasicField,
+  FormColorTheme,
+  FormEndPage,
+  FormLogoState,
+  FormResponseMode,
+  FormStartPage,
+  FormStatus,
+} from 'formsg-shared/types'
 import { omit, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
@@ -27,15 +36,6 @@ import {
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { IAdminFeedbackSchema, IPopulatedForm, IUserSchema } from 'src/types'
 
-import {
-  BasicField,
-  FormColorTheme,
-  FormEndPage,
-  FormLogoState,
-  FormResponseMode,
-  FormStartPage,
-  FormStatus,
-} from '../../../../../../../../shared/types'
 import * as AdminFormService from '../../../../../../modules/form/admin-form/admin-form.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 

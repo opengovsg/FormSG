@@ -1,5 +1,12 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
+import {
+  BasicField,
+  DuplicateFormBodyDto,
+  FormPermission,
+  FormResponseMode,
+  FormStatus,
+} from 'formsg-shared/types'
 import { cloneDeep, omit, tail } from 'lodash'
 
 import { EditFieldActions } from 'src/shared/constants'
@@ -11,13 +18,6 @@ import {
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
 
-import {
-  BasicField,
-  DuplicateFormBodyDto,
-  FormPermission,
-  FormResponseMode,
-  FormStatus,
-} from '../../../../../../shared/types'
 import { ForbiddenFormError } from '../../form.errors'
 import { EditFieldError } from '../admin-form.errors'
 import { OverrideProps } from '../admin-form.types'

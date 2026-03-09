@@ -1,7 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { PaymentChannel, PaymentsUpdateDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { PaymentChannel, PaymentsUpdateDto } from 'shared/types'
 
 import * as AdminFormPaymentsController from '../admin-form.payments.controller'
 

@@ -1,4 +1,4 @@
-import { BasicField, NricFieldBase } from '../../../shared/types'
+import { BasicField, NricFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

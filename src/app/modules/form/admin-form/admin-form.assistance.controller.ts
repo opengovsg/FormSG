@@ -1,12 +1,12 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-
 import {
   featureFlags,
   MFB_TEXT_PROMPT_MAX_CHAR,
   MFB_VISION_MAX_IMAGES_COUNT,
-} from '../../../../../shared/constants'
+} from 'formsg-shared/constants'
+import { StatusCodes } from 'http-status-codes'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'

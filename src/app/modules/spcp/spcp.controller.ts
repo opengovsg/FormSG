@@ -1,6 +1,6 @@
+import { FormAuthType } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
-import { FormAuthType } from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as BillingService from '../billing/billing.service'

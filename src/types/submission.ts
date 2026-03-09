@@ -1,12 +1,3 @@
-import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
-
-import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
-import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
-import {
-  PaymentWebhookEventObject,
-  WorkflowWebhookEventObject,
-} from 'src/app/modules/webhook/webhook.types'
-
 import {
   EmailModeSubmissionBase,
   MultirespondentSubmissionBase,
@@ -15,7 +6,15 @@ import {
   SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
-} from '../../shared/types/submission'
+} from 'formsg-shared/types/submission'
+import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
+
+import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
+import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
+import {
+  PaymentWebhookEventObject,
+  WorkflowWebhookEventObject,
+} from 'src/app/modules/webhook/webhook.types'
 
 import { IFormSchema } from './form'
 import { IPaymentSchema } from './payment'

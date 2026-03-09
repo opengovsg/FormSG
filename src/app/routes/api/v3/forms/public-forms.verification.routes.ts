@@ -1,6 +1,6 @@
 import { Router } from 'express'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '../../../../../../shared/constants'
 import { rateLimitConfig } from '../../../../config/config'
 import * as VerificationController from '../../../../modules/verification/verification.controller'
 import { limitRate } from '../../../../utils/limit-rate'

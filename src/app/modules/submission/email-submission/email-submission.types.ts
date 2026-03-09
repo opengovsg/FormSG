@@ -1,4 +1,4 @@
-import { ResponseMetadata, SubmissionType } from 'shared/types'
+import { ResponseMetadata, SubmissionType } from 'formsg-shared/types'
 
 import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { MyInfoKey } from '../../myinfo/myinfo.types'

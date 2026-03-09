@@ -1,7 +1,8 @@
 import {
   MyInfoAttribute as InternalAttr,
   MyInfoDataTransformer,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+
 import { createLoggerWithLabel } from '../../config/logger'
 
 import {

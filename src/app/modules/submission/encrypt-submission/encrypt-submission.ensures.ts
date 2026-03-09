@@ -1,4 +1,5 @@
-import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { CaptchaTypes } from 'formsg-shared/types/captcha'
+
 import { IPopulatedForm } from '../../../../types'
 import {
   createLoggerWithLabel,

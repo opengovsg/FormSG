@@ -2,13 +2,11 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
-import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
   MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
-} from 'shared/constants/form'
+} from 'formsg-shared/constants/form'
 import {
   BasicField,
   FormAuthType,
@@ -30,7 +28,9 @@ import {
   StorageFormSettings,
   WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
+import mongoose, { Types } from 'mongoose'
 
 import { aws } from 'src/app/config/config'
 import getFormModel, {

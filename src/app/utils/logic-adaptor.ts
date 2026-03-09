@@ -1,23 +1,23 @@
-import { err, ok, Result } from 'neverthrow'
-
 import {
   FieldResponsesV3,
   FormDto,
   PreventSubmitLogicDto,
-} from '../../../shared/types'
-import { isNonEmpty } from '../../../shared/utils/isNonEmpty'
+} from 'formsg-shared/types'
+import { isNonEmpty } from 'formsg-shared/utils/isNonEmpty'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as sharedGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as sharedGetVisibleFieldIds,
   type LogicFieldResponse,
-} from '../../../shared/utils/logic'
+} from 'formsg-shared/utils/logic'
+import { err, ok, Result } from 'neverthrow'
+
 import { FieldResponse, IFormDocument } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
 
 import { isLogicableField, isNotLogicableField } from './typeguards'
 
-export { FieldIdSet } from '../../../shared/utils/logic'
+export { FieldIdSet } from 'formsg-shared/utils/logic'
 
 export const getVisibleFieldIds = (
   submission: FieldResponse[],

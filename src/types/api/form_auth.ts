@@ -1,1 +1,1 @@
-export * from '../../../shared/types/form/form_auth'
+export * from 'formsg-shared/types/form/form_auth'

@@ -1,10 +1,9 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { PublicAgencyDto } from 'formsg-shared/types'
 import { pick } from 'lodash'
 import mongoose from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
-
-import { PublicAgencyDto } from '../../../../shared/types'
 
 const Agency = getAgencyModel(mongoose)
 

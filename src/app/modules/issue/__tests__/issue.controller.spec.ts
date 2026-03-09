@@ -1,9 +1,9 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { FormStatus } from 'formsg-shared/types'
 import { merge, omit } from 'lodash'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
-import { FormStatus } from '../../../../../shared/types'
 import { IFormIssueSchema, IPopulatedForm } from '../../../../types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError, PrivateFormError } from '../../form/form.errors'

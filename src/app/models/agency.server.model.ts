@@ -1,7 +1,7 @@
+import { PublicAgencyDto } from 'formsg-shared/types'
 import { pick } from 'lodash'
 import { Mongoose, Schema } from 'mongoose'
 
-import { PublicAgencyDto } from '../../../shared/types'
 import { AgencyInstanceMethods, IAgencyModel, IAgencySchema } from '../../types'
 
 export const AGENCY_SCHEMA_ID = 'Agency'

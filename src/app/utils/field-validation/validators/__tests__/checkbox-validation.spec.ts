@@ -4,13 +4,12 @@ import {
   generateDefaultFieldV3,
   generateNewCheckboxResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 import { mongo as mongodb } from 'mongoose'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../../shared/constants'
-import { BasicField } from '../../../../../../shared/types'
 
 const { ObjectId } = mongodb
 

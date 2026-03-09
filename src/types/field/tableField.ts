@@ -1,6 +1,6 @@
+import { BasicField, Column, TableFieldBase } from 'formsg-shared/types'
 import { Document } from 'mongoose'
 
-import { BasicField, Column, TableFieldBase } from '../../../shared/types'
 import { IFormSchema } from '../form'
 
 import { IFieldSchema } from './baseField'

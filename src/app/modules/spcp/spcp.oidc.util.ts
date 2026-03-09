@@ -1,9 +1,9 @@
+import { hasProp } from 'formsg-shared/utils/has-prop'
 import { JWTVerifyResult } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
 import { pick } from 'lodash'
 import promiseRetry from 'promise-retry'
 
-import { hasProp } from '../../../../shared/utils/has-prop'
 import { createLoggerWithLabel } from '../../config/logger'
 
 import { InvalidIdTokenError } from './spcp.oidc.client.errors'

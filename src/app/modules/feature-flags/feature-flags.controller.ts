@@ -1,6 +1,6 @@
+import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
-import { ErrorDto } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'

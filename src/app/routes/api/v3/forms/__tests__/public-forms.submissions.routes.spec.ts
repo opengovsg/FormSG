@@ -1,5 +1,6 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
@@ -10,7 +11,6 @@ import { aws } from 'src/app/config/config'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
 import { FormFieldSchema } from 'src/types'
 
-import { FormAuthType, FormStatus } from '../../../../../../../shared/types'
 import {
   MOCK_COOKIE_AGE,
   MOCK_MYINFO_JWT,

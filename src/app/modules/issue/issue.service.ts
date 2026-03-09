@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson'
+import { FormIssueMetaDto, ProcessedIssueMeta } from 'formsg-shared/types'
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Cursor as QueryCursor, QueryOptions } from 'mongoose'
@@ -10,7 +11,6 @@ import {
   IPopulatedForm,
 } from 'src/types'
 
-import { FormIssueMetaDto, ProcessedIssueMeta } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormIssueModel from '../../models/form_issue.server.model'
 import {

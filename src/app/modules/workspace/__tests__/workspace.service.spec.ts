@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { FormId, FormStatus, UserId } from 'formsg-shared/types'
+import { WorkspaceDto, WorkspaceId } from 'formsg-shared/types/workspace'
 import mongoose from 'mongoose'
-import { FormId, FormStatus, UserId } from 'shared/types'
-import { WorkspaceDto, WorkspaceId } from 'shared/types/workspace'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'

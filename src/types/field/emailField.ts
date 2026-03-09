@@ -1,4 +1,4 @@
-import { BasicField, EmailFieldBase } from '../../../shared/types'
+import { BasicField, EmailFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

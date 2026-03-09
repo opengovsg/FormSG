@@ -4,11 +4,10 @@ import {
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField, RatingShape } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import { BasicField, RatingShape } from '../../../../../../shared/types'
 
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {

@@ -1,7 +1,7 @@
 import { AuthedSessionData } from 'express-session'
+import { ErrorDto, GetSsoAuthUrlResponseDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync } from 'neverthrow'
-import { ErrorDto, GetSsoAuthUrlResponseDto } from 'shared/types'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'

@@ -2,6 +2,7 @@ import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { flatten, sortBy, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
@@ -11,10 +12,6 @@ import getFormModel from 'src/app/models/form.server.model'
 import getLoginModel from 'src/app/models/login.server.model'
 import { IUserSchema } from 'src/types'
 
-import {
-  FormAuthType,
-  FormResponseMode,
-} from '../../../../../../../shared/types'
 import * as BillingService from '../../../../../modules/billing/billing.service'
 import { DatabaseError } from '../../../../../modules/core/core.errors'
 import { BillingsRouter } from '../billings.routes'

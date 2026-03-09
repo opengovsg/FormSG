@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
+import { SUPPORT_FORM_LINK } from 'formsg-shared/constants/links'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import {
   AgencyDocument,
   IPopulatedForm,

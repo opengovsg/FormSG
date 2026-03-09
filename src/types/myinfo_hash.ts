@@ -1,6 +1,6 @@
+import { MyInfoAttribute } from 'formsg-shared/types'
 import { Document, Model } from 'mongoose'
 
-import { MyInfoAttribute } from '../../shared/types'
 import { MyInfoChildKey } from '../app/modules/myinfo/myinfo.types'
 
 import { IFormSchema } from './form'

@@ -1,6 +1,7 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { FormStatus } from 'formsg-shared/types'
 import { Types } from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -11,7 +12,6 @@ import {
   InvalidSubmissionIdError,
 } from 'src/app/modules/feedback/feedback.errors'
 
-import { FormStatus } from '../../../../../../../shared/types'
 import * as FormService from '../../../../../modules/form/form.service'
 import { PublicFormsRouter } from '../public-forms.routes'
 

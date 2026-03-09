@@ -1,6 +1,6 @@
+import { FormAuthType } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
 
-import { FormAuthType } from '../../../shared/types'
 import {
   FormBillingStatistic,
   ILoginModel,

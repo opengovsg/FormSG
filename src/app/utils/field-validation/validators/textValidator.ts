@@ -1,12 +1,12 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
-
 import {
   BasicField,
   LongTextResponseV3,
   ShortTextResponseV3,
   TextSelectedValidation,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { chain, left, right } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
+
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ILongTextFieldSchema,

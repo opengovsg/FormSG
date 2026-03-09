@@ -4,8 +4,8 @@ import {
   generateDefaultField,
   generateSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField, FieldBase } from 'formsg-shared/types'
 import fs from 'fs'
-import { BasicField, FieldBase } from 'shared/types'
 
 import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 

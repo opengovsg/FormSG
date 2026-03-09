@@ -2,7 +2,7 @@ import {
   FieldResponse,
   FieldResponsesV3,
   ResponseMetadata,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
 
 export type ParsedMultipartForm<ResponsesType> = {
   responses: ResponsesType

@@ -1,7 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
-import { StatusCodes } from 'http-status-codes'
-import { err, errAsync, ok, okAsync } from 'neverthrow'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -10,7 +8,9 @@ import {
   SubmissionMetadata,
   SubmissionPaymentDto,
   SubmissionType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'

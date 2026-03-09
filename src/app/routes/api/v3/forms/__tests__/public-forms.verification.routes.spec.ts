@@ -5,6 +5,11 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import { subMinutes, subYears } from 'date-fns'
+import { BasicField } from 'formsg-shared/types'
+import {
+  NUM_OTP_RETRIES,
+  WAIT_FOR_OTP_SECONDS,
+} from 'formsg-shared/utils/verification'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
@@ -25,11 +30,6 @@ import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IVerificationSchema } from 'src/types'
 
-import { BasicField } from '../../../../../../../shared/types'
-import {
-  NUM_OTP_RETRIES,
-  WAIT_FOR_OTP_SECONDS,
-} from '../../../../../../../shared/utils/verification'
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
 

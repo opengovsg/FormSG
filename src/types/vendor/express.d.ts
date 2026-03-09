@@ -1,6 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { RateLimitInfo } from 'express-rate-limit'
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { SgidUser } from '../../app/modules/auth/auth.types'
 import { EncryptSubmissionDto, MultirespondentSubmissionDto } from '../api'

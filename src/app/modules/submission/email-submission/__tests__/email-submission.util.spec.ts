@@ -9,14 +9,14 @@ import {
   generateNewTableResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
-
-import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
+import { types as basicTypes } from 'formsg-shared/constants/field/basic'
 import {
   BasicField,
   FormAuthType,
   MyInfoAttribute,
   TableRow,
-} from '../../../../../../shared/types'
+} from 'formsg-shared/types'
+
 import { SingleAnswerFieldResponse } from '../../../../../types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {

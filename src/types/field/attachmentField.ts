@@ -1,4 +1,4 @@
-import { AttachmentFieldBase, BasicField } from '../../../shared/types'
+import { AttachmentFieldBase, BasicField } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

@@ -1,16 +1,4 @@
 import { calculateObjectSize, ObjectId } from 'bson'
-import { compact, omit, pick, uniq } from 'lodash'
-import mongoose, {
-  ClientSession,
-  Mongoose,
-  Query,
-  Schema,
-  SchemaOptions,
-  Types,
-} from 'mongoose'
-import validator from 'validator'
-import isEmail from 'validator/lib/isEmail'
-
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -21,7 +9,7 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
   WEBHOOK_SETTINGS_FIELDS,
-} from '../../../shared/constants'
+} from 'formsg-shared/constants'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -52,11 +40,23 @@ import {
   PublicStorageFormDto,
   StorageFormSettings,
   WorkflowType,
-} from '../../../shared/types'
-import { reorder } from '../../../shared/utils/immutable-array-fns'
-import { getApplicableIfStates } from '../../../shared/utils/logic'
-import { stripDropdownFieldOptionsToRecipientsMap } from '../../../shared/utils/strip-dropdown-field-optionsToRecipientsMap'
-import { stripWorkflowEmails } from '../../../shared/utils/strip-workflow-emails'
+} from 'formsg-shared/types'
+import { reorder } from 'formsg-shared/utils/immutable-array-fns'
+import { getApplicableIfStates } from 'formsg-shared/utils/logic'
+import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
+import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import { compact, omit, pick, uniq } from 'lodash'
+import mongoose, {
+  ClientSession,
+  Mongoose,
+  Query,
+  Schema,
+  SchemaOptions,
+  Types,
+} from 'mongoose'
+import validator from 'validator'
+import isEmail from 'validator/lib/isEmail'
+
 import {
   FormFieldSchema,
   FormLogicSchema,

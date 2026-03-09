@@ -1,6 +1,6 @@
+import { FormAuthType } from 'formsg-shared/types'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
-import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CreateJwtError,

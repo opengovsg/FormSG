@@ -1,12 +1,12 @@
 import { Busboy } from 'busboy'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
-import { Result } from 'neverthrow'
-
 import {
   FieldResponse,
   FieldResponsesV3,
   FormResponseMode,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { Result } from 'neverthrow'
+
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'

@@ -1,8 +1,5 @@
 import { AxiosError } from 'axios'
 import { type Joi } from 'celebrate'
-import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result } from 'neverthrow'
-
 import {
   BasicField,
   DuplicateFormBodyDto,
@@ -10,11 +7,11 @@ import {
   FormResponseMode,
   FormStatus,
   TextValidationOptions,
-} from '../../../../../shared/types'
-import {
-  reorder,
-  replaceAt,
-} from '../../../../../shared/utils/immutable-array-fns'
+} from 'formsg-shared/types'
+import { reorder, replaceAt } from 'formsg-shared/utils/immutable-array-fns'
+import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
+
 import { EditFieldActions } from '../../../../shared/constants'
 import { FormFieldSchema, IPopulatedForm, IUserSchema } from '../../../../types'
 import { EditFormFieldParams } from '../../../../types/api'

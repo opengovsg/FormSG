@@ -1,4 +1,5 @@
-import { BasicField } from '../../../../../shared/types'
+import { BasicField } from 'formsg-shared/types'
+
 import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
 import {
   extractNricOrForeignIdFromParsedSub,

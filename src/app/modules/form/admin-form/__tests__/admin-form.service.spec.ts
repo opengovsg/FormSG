@@ -2,19 +2,51 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'
-import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
-import mongoose, { ClientSession } from 'mongoose'
-import { err, errAsync, ok, okAsync } from 'neverthrow'
+import {
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
+} from 'formsg-shared/constants/errors'
+import { VALID_UPLOAD_FILE_TYPES } from 'formsg-shared/constants/file'
+import {
+  AdminDashboardFormMetaDto,
+  BasicField,
+  CustomFormLogo,
+  DropdownFieldBase,
+  DuplicateFormBodyDto,
+  FieldCreateDto,
+  FieldUpdateDto,
+  FormAuthType,
+  FormColorTheme,
+  FormEndPage,
+  FormLogoState,
+  FormResponseMode,
+  FormSettings,
+  FormStartPage,
+  FormStatus,
+  LogicDto,
+  LogicType,
+  MyInfoAttribute,
+  PaymentChannel,
+  PaymentType,
+  SettingsUpdateDto,
+  WorkflowType,
+} from 'formsg-shared/types'
 import {
   FormWorkflowStepConditional,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
-} from 'shared/types/form/workflow'
-import { Workspace } from 'shared/types/workspace'
+} from 'formsg-shared/types/form/workflow'
+import { Workspace } from 'formsg-shared/types/workspace'
 import {
   EncryptedStringsMessageContent,
   EncryptedStringsMessageContentWithMyPrivateKey,
-} from 'shared/utils/crypto'
+} from 'formsg-shared/utils/crypto'
+import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
+import mongoose, { ClientSession } from 'mongoose'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import { aws } from 'src/app/config/config'
 import getAgencyModel from 'src/app/models/agency.server.model'
@@ -53,38 +85,6 @@ import {
 import { EditFormFieldParams } from 'src/types/api'
 import { IMultirespondentFormSchema } from 'src/types/form'
 
-import {
-  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
-  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
-  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
-  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
-} from '../../../../../../shared/constants/errors'
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
-import {
-  AdminDashboardFormMetaDto,
-  BasicField,
-  CustomFormLogo,
-  DropdownFieldBase,
-  DuplicateFormBodyDto,
-  FieldCreateDto,
-  FieldUpdateDto,
-  FormAuthType,
-  FormColorTheme,
-  FormEndPage,
-  FormLogoState,
-  FormResponseMode,
-  FormSettings,
-  FormStartPage,
-  FormStatus,
-  LogicDto,
-  LogicType,
-  MyInfoAttribute,
-  PaymentChannel,
-  PaymentType,
-  SettingsUpdateDto,
-  WorkflowType,
-} from '../../../../../../shared/types'
 import {
   FormNotFoundError,
   LogicNotFoundError,

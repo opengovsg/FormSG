@@ -1,4 +1,5 @@
-import { ClientEnvVars } from '../../../../shared/types/core'
+import { ClientEnvVars } from 'formsg-shared/types/core'
+
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { goGovConfig } from '../../config/features/gogov.config'

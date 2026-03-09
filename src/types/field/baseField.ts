@@ -1,6 +1,6 @@
+import { AllowMyInfoBase, FieldBase } from 'formsg-shared/types'
 import { Document } from 'mongoose'
 
-import { AllowMyInfoBase, FieldBase } from '../../../shared/types'
 import { IFormSchema } from '../form'
 
 export type IMyInfo = NonNullable<AllowMyInfoBase['myInfo']>

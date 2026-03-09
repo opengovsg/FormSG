@@ -1,6 +1,7 @@
-import { PaymentType } from '../../../../shared/types'
-import { centsToDollars } from '../../../../shared/utils/payments'
-import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
+import { PaymentType } from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
+import { getPaymentInvoiceDownloadUrlPath } from 'formsg-shared/utils/urls'
+
 import config from '../../../app/config/config'
 import { IPaymentSchema } from '../../../types'
 import { PaymentWebhookEventObject } from '../webhook/webhook.types'

@@ -1,10 +1,10 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { SeenFlags } from 'formsg-shared/types'
 import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
 import mongoose, { FlattenMaps, Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { SeenFlags } from 'shared/types'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import getUserModel from 'src/app/models/user.server.model'

@@ -1,8 +1,13 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import {
+  PaymentStatus,
+  Product,
+  ProductId,
+  ProductItem,
+} from 'formsg-shared/types'
 import moment from 'moment-timezone'
 import mongoose, { Query } from 'mongoose'
-import { PaymentStatus, Product, ProductId, ProductItem } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'

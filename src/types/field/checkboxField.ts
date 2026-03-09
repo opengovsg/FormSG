@@ -1,4 +1,4 @@
-import { BasicField, CheckboxFieldBase } from '../../../shared/types'
+import { BasicField, CheckboxFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

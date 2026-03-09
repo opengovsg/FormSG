@@ -1,13 +1,13 @@
 import Busboy from 'busboy'
-import { IncomingHttpHeaders } from 'http'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
-
-import { MB } from '../../../../../shared/constants/file'
+import { MB } from 'formsg-shared/constants/file'
 import {
   FieldResponse,
   FieldResponsesV3,
   FormResponseMode,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { IncomingHttpHeaders } from 'http'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
+
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { fileSizeLimit } from '../submission.utils'

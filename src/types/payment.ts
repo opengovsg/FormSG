@@ -1,7 +1,6 @@
+import { Payment } from 'formsg-shared/types/payment'
 import { Document, Model } from 'mongoose'
 import Stripe from 'stripe'
-
-import { Payment } from '../../shared/types/payment'
 
 import { IEncryptedFormSchema, IFormSchema } from './form'
 import { IPendingSubmissionSchema } from './submission'

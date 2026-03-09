@@ -1,3 +1,5 @@
+import { BasicField, FormResponseMode, LogicType } from 'formsg-shared/types'
+import * as LogicUtil from 'formsg-shared/utils/logic'
 import { ok } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -7,12 +9,6 @@ import {
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
 } from '../../../../../../__tests__/unit/backend/helpers/generate-form-data'
-import {
-  BasicField,
-  FormResponseMode,
-  LogicType,
-} from '../../../../../../shared/types'
-import * as LogicUtil from '../../../../../../shared/utils/logic'
 import {
   IPopulatedEncryptedForm,
   IPreventSubmitLogicSchema,

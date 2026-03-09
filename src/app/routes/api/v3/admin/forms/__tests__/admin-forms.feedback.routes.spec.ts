@@ -6,6 +6,7 @@ import {
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
+import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -14,10 +15,6 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { IFormDocument, IUserSchema } from 'src/types'
 
-import {
-  FormResponseMode,
-  FormStatus,
-} from '../../../../../../../../shared/types'
 import { insertFormFeedback } from '../../../../../../modules/form/public-form/public-form.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 

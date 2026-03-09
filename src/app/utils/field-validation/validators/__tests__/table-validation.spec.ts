@@ -7,11 +7,10 @@ import {
   generateTableShortTextColumn,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
+import { BasicField, TableRow } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import { BasicField, TableRow } from '../../../../../../shared/types'
 
 describe('Table validation', () => {
   const formId = new ObjectId().toHexString()

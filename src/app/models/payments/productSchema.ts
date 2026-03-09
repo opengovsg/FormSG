@@ -1,5 +1,5 @@
+import { Product } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
-import { Product } from 'shared/types'
 
 import { isPositiveInteger } from '../utils'
 

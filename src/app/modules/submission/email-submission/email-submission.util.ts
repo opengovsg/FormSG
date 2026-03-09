@@ -1,15 +1,15 @@
-import { StatusCodes } from 'http-status-codes'
-import { compact } from 'lodash'
-
-import { BasicField, FormAuthType } from '../../../../../shared/types'
+import { BasicField, FormAuthType } from 'formsg-shared/types'
 import {
   answerKey,
   handleAddressResponseDisplay,
-} from '../../../../../shared/utils/address'
+} from 'formsg-shared/utils/address'
 import {
   convertToSignatureVectorArray,
   SIGNATURE_CAPTURED_STRING,
-} from '../../../../../shared/utils/signature'
+} from 'formsg-shared/utils/signature'
+import { StatusCodes } from 'http-status-codes'
+import { compact } from 'lodash'
+
 import {
   EmailDataCollationToolField,
   EmailDataField,

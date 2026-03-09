@@ -1,5 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { FormResponseMode } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 
@@ -7,7 +8,6 @@ import getFormModel from 'src/app/models/form.server.model'
 import { MalformedParametersError } from 'src/app/modules/core/core.errors'
 import { FormOtpData, IFormSchema, IUserSchema } from 'src/types'
 
-import { FormResponseMode } from '../../../../../shared/types'
 import { InvalidNumberError } from '../postman-sms.errors'
 import PostmanSmsService from '../postman-sms.service'
 

@@ -5,12 +5,12 @@ import {
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
+import { FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { merge, omit, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 import { Environment, IFormSchema } from 'src/types'
 
-import { FormAuthType, MyInfoAttribute } from '../../../../../shared/types'
 import { IMyInfoServiceConfig, MyInfoLoginCookiePayload } from '../myinfo.types'
 
 export const MOCK_MYINFO_DATA = {

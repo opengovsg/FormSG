@@ -1,13 +1,13 @@
-import { pick } from 'lodash'
-import { Mongoose, Schema } from 'mongoose'
-
-import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
 import {
   BasicField,
   FormPaymentsField,
   FormResponseMode,
-} from '../../../../shared/types'
-import { TRANSACTION_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
+} from 'formsg-shared/types'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from 'formsg-shared/utils/verification'
+import { pick } from 'lodash'
+import { Mongoose, Schema } from 'mongoose'
+
 import {
   FormFieldSchema,
   IEncryptedFormSchema,

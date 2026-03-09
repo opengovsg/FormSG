@@ -53,6 +53,7 @@
     "storybook": "pnpm --prefix frontend storybook"
   },
   "dependencies": {
+    "formsg-shared": "workspace:*",
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",

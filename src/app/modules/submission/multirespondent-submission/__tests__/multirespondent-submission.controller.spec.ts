@@ -1,8 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
-import { merge, omit } from 'lodash'
-import { Document, Types } from 'mongoose'
-import { errAsync, ok, okAsync } from 'neverthrow'
 import {
   BasicField,
   DropdownFieldBase,
@@ -14,7 +11,10 @@ import {
   PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { merge, omit } from 'lodash'
+import { Document, Types } from 'mongoose'
+import { errAsync, ok, okAsync } from 'neverthrow'
 import { Except } from 'type-fest'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'

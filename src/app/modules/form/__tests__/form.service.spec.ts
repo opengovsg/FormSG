@@ -1,5 +1,11 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import {
+  BasicField,
+  FormResponseMode,
+  FormStatus,
+  SubmissionType,
+} from 'formsg-shared/types'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
@@ -8,12 +14,6 @@ import getFormModel from 'src/app/models/form.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { IFormSchema, IPopulatedForm } from 'src/types'
 
-import {
-  BasicField,
-  FormResponseMode,
-  FormStatus,
-  SubmissionType,
-} from '../../../../../shared/types'
 import * as SmsService from '../../../services/sms/sms.service'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import {

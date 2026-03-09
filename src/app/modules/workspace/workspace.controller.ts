@@ -1,13 +1,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import { ErrorDto } from 'shared/types'
-import { WorkspaceDto } from 'shared/types/workspace'
-
 import {
   WORKSPACE_MAX_TITLE_LENGTH,
   WORKSPACE_MIN_TITLE_LENGTH,
-} from '../../../../shared/constants'
+} from 'formsg-shared/constants'
+import { ErrorDto } from 'formsg-shared/types'
+import { WorkspaceDto } from 'formsg-shared/types/workspace'
+import { StatusCodes } from 'http-status-codes'
+
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 

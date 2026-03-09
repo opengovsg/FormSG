@@ -1,7 +1,7 @@
+import { featureFlags } from 'formsg-shared/constants'
 import mongoose from 'mongoose'
 import { okAsync, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../shared/constants'
 import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
 import getFeatureFlagModel from '../../models/feature_flag.server.model'
 import { DatabaseError } from '../core/core.errors'

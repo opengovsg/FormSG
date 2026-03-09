@@ -1,11 +1,11 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { FormAuthType } from 'formsg-shared/types'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 
 import { FormBillingStatistic } from 'src/types'
 
-import { FormAuthType } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import * as BillingController from '../billing.controller'
 import * as BillingService from '../billing.service'

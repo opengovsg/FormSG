@@ -5,7 +5,7 @@ import {
   FieldResponse,
   FieldResponseV3,
   FormFieldDto,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
 
 /**
  * AttachmentResponses with additional server injected metadata on email and storage v2+ forms.

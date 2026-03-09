@@ -1,10 +1,10 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { PaymentStatus } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
-import { PaymentStatus } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 

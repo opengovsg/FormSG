@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { keyBy } from 'lodash'
-import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   PaymentChannel,
   PaymentStatus,
   SubmissionType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { keyBy } from 'lodash'
+import mongoose from 'mongoose'
+import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { stripe } from 'src/app/loaders/stripe'

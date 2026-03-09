@@ -1,3 +1,4 @@
+import { SubmissionType } from 'formsg-shared/types'
 import { Mongoose } from 'mongoose'
 
 import {
@@ -8,8 +9,6 @@ import {
   ISubmissionModel,
   ISubmissionSchema,
 } from 'src/types'
-
-import { SubmissionType } from '../../../shared/types'
 
 import {
   EmailSubmissionSchema,

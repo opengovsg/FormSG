@@ -1,6 +1,6 @@
+import { FormPermission } from 'formsg-shared/types'
 import { Document, Model } from 'mongoose'
 
-import { FormPermission } from '../../../../shared/types'
 import { FormOtpData, IFormSchema, IUserSchema } from '../../../types'
 
 export enum SmsType {

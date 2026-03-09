@@ -1,18 +1,18 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 import cuid from 'cuid'
+import { featureFlags } from 'formsg-shared/constants'
+import {
+  EmailFieldBase,
+  PaymentStatus,
+  ReconciliationReportLine,
+} from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import { SetRequired } from 'type-fest'
 import isURL from 'validator/lib/isURL'
 
-import { featureFlags } from '../../../../shared/constants'
-import {
-  EmailFieldBase,
-  PaymentStatus,
-  ReconciliationReportLine,
-} from '../../../../shared/types'
 import {
   IEncryptedFormSchema,
   IPaymentSchema,

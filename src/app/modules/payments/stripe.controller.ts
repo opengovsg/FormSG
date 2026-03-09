@@ -1,22 +1,22 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
 import { celebrate, Joi, Segments } from 'celebrate'
-import { StatusCodes } from 'http-status-codes'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import querystring from 'querystring'
-import Stripe from 'stripe'
-
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
-} from '../../../../shared/constants'
+} from 'formsg-shared/constants'
 import {
   ErrorDto,
   GetPaymentInfoDto,
   IncompletePaymentsDto,
   ReconciliationEventsReportLine,
   ReconciliationReport,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import querystring from 'querystring'
+import Stripe from 'stripe'
+
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'

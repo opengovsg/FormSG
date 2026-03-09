@@ -1,11 +1,11 @@
-import { Schema } from 'mongoose'
-
 import {
   Language,
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
+import { Schema } from 'mongoose'
+
 import {
   IConditionSchema,
   ILogicSchema,

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
+import { MyInfoAttribute } from 'formsg-shared/types'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
-import { MyInfoAttribute } from 'shared/types'
 
 import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
 import {

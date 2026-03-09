@@ -4,8 +4,8 @@ import {
   generateDefaultFieldV3,
   generateNewAddressResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField } from 'formsg-shared/types'
 import { mongo as mongodb } from 'mongoose'
-import { BasicField } from 'shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'

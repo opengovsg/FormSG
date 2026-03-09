@@ -1,12 +1,13 @@
-import { IPopulatedMultirespondentForm } from 'src/types'
-
 import {
   AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
   SubmittedStep,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+
+import { IPopulatedMultirespondentForm } from 'src/types'
+
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,

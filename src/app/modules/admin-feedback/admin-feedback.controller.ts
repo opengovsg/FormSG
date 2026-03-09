@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { ErrorDto } from 'shared/types'
 
 import { IAdminFeedbackSchema } from 'src/types'
 

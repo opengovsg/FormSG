@@ -3,9 +3,9 @@ import {
   IPersonResponse,
   MyInfoVehicleFull,
 } from '@opengovsg/myinfo-gov-client'
+import { MyInfoAttribute } from 'formsg-shared/types'
 import type { SetRequired } from 'type-fest'
 
-import { MyInfoAttribute } from '../../../../../shared/types'
 import { MyInfoData } from '../myinfo.adapter'
 
 import { MOCK_UINFIN } from './myinfo.test.constants'

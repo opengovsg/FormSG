@@ -1,8 +1,8 @@
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { BasicField, CheckboxResponseV3 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
-import { BasicField, CheckboxResponseV3 } from '../../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ICheckboxFieldSchema,

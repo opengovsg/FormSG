@@ -3,15 +3,11 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
-
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '../../../../../shared/constants/file'
+} from 'formsg-shared/constants/file'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -47,11 +43,15 @@ import {
   StartPageUpdateDto,
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
 import {
   EncryptedStringsMessageContent,
   encryptStringsMessage,
-} from '../../../../../shared/utils/crypto'
+} from 'formsg-shared/utils/crypto'
+import { StatusCodes } from 'http-status-codes'
+import JSONStream from 'JSONStream'
+import { ResultAsync } from 'neverthrow'
+
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'

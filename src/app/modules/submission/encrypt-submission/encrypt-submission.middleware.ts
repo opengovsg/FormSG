@@ -1,15 +1,15 @@
 // import { PutObjectTaggingCommand, S3Client } from '@aws-sdk/client-s3'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
-import { StatusCodes } from 'http-status-codes'
-import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
-
 import {
   BasicField,
   FormAuthType,
   FormResponseMode,
   isPaymentsProducts,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
+
 import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,

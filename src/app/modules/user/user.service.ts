@@ -1,8 +1,8 @@
+import { SeenFlags } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { SeenFlags } from '../../../../shared/types'
 import {
   IAdminVerificationDoc,
   IAgencySchema,

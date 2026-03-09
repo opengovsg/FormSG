@@ -1,10 +1,9 @@
-import { Document, Model } from 'mongoose'
-import type { Merge } from 'type-fest'
-
 import {
   FormBillingStatistic as SharedFormBillingStatistic,
   LoginBase,
-} from '../../shared/types'
+} from 'formsg-shared/types'
+import { Document, Model } from 'mongoose'
+import type { Merge } from 'type-fest'
 
 import { IAgencySchema } from './agency'
 import { IFormSchema, IPopulatedForm } from './form'

@@ -1,11 +1,4 @@
 import bcrypt from 'bcrypt'
-import { StatusCodes } from 'http-status-codes'
-import jwt from 'jsonwebtoken'
-import moment from 'moment'
-import mongoose, { FlattenMaps } from 'mongoose'
-import { err, ok, Result } from 'neverthrow'
-import { v4 as uuidv4, validate as validateUUID } from 'uuid'
-
 import {
   myInfoCountries,
   myInfoDialects,
@@ -15,7 +8,7 @@ import {
   myInfoOccupations,
   myInfoRaces,
   types as myInfoTypes,
-} from '../../../../shared/constants/field/myinfo'
+} from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -25,9 +18,16 @@ import {
   MyInfoChildAttributes,
   MyInfoChildData,
   MyInfoChildVaxxStatus,
-} from '../../../../shared/types'
-import { formatMyinfoDate } from '../../../../shared/utils/dates'
-import { hasProp } from '../../../../shared/utils/has-prop'
+} from 'formsg-shared/types'
+import { formatMyinfoDate } from 'formsg-shared/utils/dates'
+import { hasProp } from 'formsg-shared/utils/has-prop'
+import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
+import moment from 'moment'
+import mongoose, { FlattenMaps } from 'mongoose'
+import { err, ok, Result } from 'neverthrow'
+import { v4 as uuidv4, validate as validateUUID } from 'uuid'
+
 import {
   IFieldSchema,
   IFormSchema,
