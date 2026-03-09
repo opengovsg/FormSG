@@ -3,14 +3,14 @@ import { SubmitHandler, useFormContext } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { FieldResponsesV3 } from '~shared/types'
-import { FormFieldDto } from '~shared/types/field'
+import { FieldResponsesV3 } from 'formsg-shared/types'
+import { FormFieldDto } from 'formsg-shared/types/field'
 import {
   FormColorTheme,
   FormResponseMode,
   LogicDto,
   StrippedFormWorkflowStepDto,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'

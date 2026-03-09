@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Flex, forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types/form/form'
+import { FormResponseMode } from 'formsg-shared/types/form/form'
 
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'

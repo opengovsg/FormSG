@@ -10,12 +10,12 @@ import {
   RadioFieldBase,
   RatingFieldBase,
   YesNoFieldBase,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 import {
   FormCondition,
   LogicConditionState,
   LogicType,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,

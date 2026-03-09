@@ -4,9 +4,9 @@ import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
-import { BasicField, FormField } from '~shared/types'
-import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
-import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
+import { BasicField, FormField } from 'formsg-shared/types'
+import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
+import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
 
 import IconButton from '~components/IconButton'
 

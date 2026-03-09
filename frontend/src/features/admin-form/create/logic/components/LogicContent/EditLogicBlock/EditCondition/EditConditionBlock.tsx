@@ -17,9 +17,9 @@ import {
 } from '@chakra-ui/react'
 import { Dictionary, get, pickBy, range } from 'lodash'
 
-import { LOGIC_MAP } from '~shared/modules/logic'
-import { BasicField } from '~shared/types/field'
-import { LogicIfValue, LogicType } from '~shared/types/form'
+import { LOGIC_MAP } from 'formsg-shared/modules/logic'
+import { BasicField } from 'formsg-shared/types/field'
+import { LogicIfValue, LogicType } from 'formsg-shared/types/form'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useWatchDependency } from '~hooks/useWatchDependency'

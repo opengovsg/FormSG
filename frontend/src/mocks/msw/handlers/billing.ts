@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { BillingInfoDto, FormAuthType, FormId } from '~shared/types'
+import { BillingInfoDto, FormAuthType, FormId } from 'formsg-shared/types'
 
 const generateBillingMeta = (): BillingInfoDto => {
   return {

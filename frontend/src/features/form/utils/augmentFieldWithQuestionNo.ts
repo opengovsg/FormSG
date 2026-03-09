@@ -1,4 +1,4 @@
-import { FormFieldDto } from '~shared/types/field'
+import { FormFieldDto } from 'formsg-shared/types/field'
 
 import { NON_RESPONSE_FIELD_SET } from '../constants'
 import { FormFieldWithQuestionNo } from '../types'

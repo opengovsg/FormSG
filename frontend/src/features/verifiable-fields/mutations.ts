@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation } from 'react-query'
 
-import { FormFieldWithId } from '~shared/types/field'
+import { FormFieldWithId } from 'formsg-shared/types/field'
 
 import { useToast } from '~hooks/useToast'
 

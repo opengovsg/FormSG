@@ -3,8 +3,8 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
-import { WorkflowStatus } from '~shared/types/submission'
-import { answerKey } from '~shared/utils/address'
+import { WorkflowStatus } from 'formsg-shared/types/submission'
+import { answerKey } from 'formsg-shared/utils/address'
 
 import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 

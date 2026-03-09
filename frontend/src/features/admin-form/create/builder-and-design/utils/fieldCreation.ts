@@ -1,4 +1,4 @@
-import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AllowedMyInfoFieldOption,
   AttachmentSize,
@@ -7,7 +7,7 @@ import {
   MyInfoAttribute,
   MyInfoField,
   RatingShape,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import {

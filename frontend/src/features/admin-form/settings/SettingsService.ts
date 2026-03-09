@@ -6,8 +6,8 @@ import {
   MultirespondentFormSettings,
   SettingsUpdateDto,
   StorageFormSettings,
-} from '~shared/types/form/form'
-import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
+} from 'formsg-shared/types/form/form'
+import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 

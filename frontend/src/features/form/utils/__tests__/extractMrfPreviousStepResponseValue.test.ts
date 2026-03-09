@@ -1,11 +1,11 @@
-import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '~shared/constants'
-import { CountryRegion } from '~shared/constants/countryRegion'
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import {
   AttachmentFieldResponseV3,
   BasicField,
   FieldResponseV3,
   FormFieldDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import bufferToFile from '~utils/bufferToFile'
 import { RadioFieldValues } from '~templates/Field'

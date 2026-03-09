@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
 import { HttpError } from '~services/ApiService'
 

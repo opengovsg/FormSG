@@ -9,7 +9,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme, Language } from 'formsg-shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { useCheckboxValidationRules } from '~utils/fieldValidation'

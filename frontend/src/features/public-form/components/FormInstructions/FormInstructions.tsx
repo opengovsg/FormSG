@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'

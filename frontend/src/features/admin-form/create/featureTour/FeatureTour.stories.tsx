@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AdminFormDto } from '~shared/types/form'
+import { AdminFormDto } from 'formsg-shared/types/form'
 
 import {
   createFormBuilderMocks,

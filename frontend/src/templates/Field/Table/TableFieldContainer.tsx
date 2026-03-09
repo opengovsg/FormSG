@@ -2,7 +2,7 @@ import { useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { Language } from 'formsg-shared/types'
 
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormLabel from '~components/FormControl/FormLabel'

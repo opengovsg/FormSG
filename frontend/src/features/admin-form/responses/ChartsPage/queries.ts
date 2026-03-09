@@ -1,7 +1,7 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { DateString } from '~shared/types'
+import { DateString } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 

@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react'
 
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType } from 'formsg-shared/types/form'
 
 interface FormAuthMessageProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>

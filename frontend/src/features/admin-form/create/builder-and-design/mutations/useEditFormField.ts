@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { DropdownFieldBase, FormFieldDto } from '~shared/types/field'
-import { AdminFormDto } from '~shared/types/form'
+import { DropdownFieldBase, FormFieldDto } from 'formsg-shared/types/field'
+import { AdminFormDto } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 

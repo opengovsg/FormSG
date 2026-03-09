@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
-import { LogicConditionState } from '~shared/types'
+import { LogicConditionState } from 'formsg-shared/types'
 
 import {
   setToInactiveSelector,

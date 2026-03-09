@@ -5,8 +5,8 @@ import { Box, Stack } from '@chakra-ui/react'
 import {
   FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
   FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
-} from '~shared/constants'
-import { FormAuthType } from '~shared/types/form'
+} from 'formsg-shared/constants'
+import { FormAuthType } from 'formsg-shared/types/form'
 
 import InlineMessage from '~/components/InlineMessage'
 

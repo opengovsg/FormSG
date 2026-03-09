@@ -3,7 +3,7 @@ import {
   AdminFeedbackRating,
   AdminUseEmailModeFeedbackDto,
   ErrorDto,
-} from '~shared/types'
+} from 'formsg-shared/types'
 import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
@@ -13,9 +13,9 @@ import {
   FormDto,
   FormId,
   PublicFormViewDto,
-} from '~shared/types/form/form'
-import { WorkspaceDto } from '~shared/types/workspace'
-import { removeAt } from '~shared/utils/immutable-array-fns'
+} from 'formsg-shared/types/form/form'
+import { WorkspaceDto } from 'formsg-shared/types/workspace'
+import { removeAt } from 'formsg-shared/utils/immutable-array-fns'
 
 import { ApiService } from '~services/ApiService'
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'

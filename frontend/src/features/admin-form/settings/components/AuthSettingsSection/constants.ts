@@ -1,4 +1,4 @@
-import { FormAuthType } from '~shared/types/form'
+import { FormAuthType } from 'formsg-shared/types/form'
 
 type FormSingpassAuthType = Exclude<FormAuthType, FormAuthType.NIL>
 

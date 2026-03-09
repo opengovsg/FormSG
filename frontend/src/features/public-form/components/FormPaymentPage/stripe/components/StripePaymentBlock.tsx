@@ -10,8 +10,8 @@ import {
 } from '@chakra-ui/react'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
-import { GetPaymentInfoDto } from '~shared/types'
-import { FormColorTheme, FormResponseMode } from '~shared/types/form'
+import { GetPaymentInfoDto } from 'formsg-shared/types'
+import { FormColorTheme, FormResponseMode } from 'formsg-shared/types/form'
 
 import { useBrowserStm } from '~hooks/payments'
 import Button from '~components/Button'

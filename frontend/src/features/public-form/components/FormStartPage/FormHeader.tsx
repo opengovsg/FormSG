@@ -13,7 +13,7 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants/feature-flags'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'

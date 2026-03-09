@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { Product } from '~shared/types'
-import { AdminFormDto, PreviewFormViewDto } from '~shared/types/form/form'
+import { Product } from 'formsg-shared/types'
+import { AdminFormDto, PreviewFormViewDto } from 'formsg-shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 

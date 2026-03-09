@@ -1,4 +1,4 @@
-import { SubmissionResponseDto } from '~shared/types'
+import { SubmissionResponseDto } from 'formsg-shared/types'
 import {
   AdminFormDto,
   AdminFormViewDto,
@@ -7,7 +7,7 @@ import {
   PermissionsUpdateDto,
   PreviewFormViewDto,
   SmsCountsDto,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import { ADMINFORM_USETEMPLATE_ROUTE } from '~constants/routes'
 import { transformAllIsoStringsToDate } from '~utils/date'

@@ -1,4 +1,4 @@
-import { FormLogic, LogicDto } from '~shared/types/form'
+import { FormLogic, LogicDto } from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 

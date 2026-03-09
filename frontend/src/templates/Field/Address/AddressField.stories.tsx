@@ -4,7 +4,7 @@ import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { userEvent, within } from '@storybook/test'
 
-import { BasicField } from '~shared/types/field'
+import { BasicField } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
 

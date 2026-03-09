@@ -22,7 +22,7 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'

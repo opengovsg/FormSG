@@ -7,7 +7,7 @@ import {
   FormResponseMode,
   FormWorkflowStepDto,
   WorkflowType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

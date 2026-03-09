@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { DecimalFieldBase } from '~shared/types/field'
+import { DecimalFieldBase } from 'formsg-shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'

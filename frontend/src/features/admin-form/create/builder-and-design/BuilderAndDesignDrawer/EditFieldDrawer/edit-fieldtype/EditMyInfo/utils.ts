@@ -1,8 +1,8 @@
 import {
   MYINFO_ATTRIBUTE_MAP,
   MyInfoVerifiedType,
-} from '~shared/constants/field/myinfo'
-import { MyInfoAttribute, MyInfoField } from '~shared/types'
+} from 'formsg-shared/constants/field/myinfo'
+import { MyInfoAttribute, MyInfoField } from 'formsg-shared/types'
 
 import {
   MyInfoDataSource,

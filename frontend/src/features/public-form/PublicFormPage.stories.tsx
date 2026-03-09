@@ -2,14 +2,14 @@ import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
-import { ErrorCode } from '~shared/types'
-import { BasicField } from '~shared/types/field'
+import { ErrorCode } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types/field'
 import {
   FormAuthType,
   FormColorTheme,
   FormResponseMode,
   WorkflowType,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import {
   MOCK_PREFILLED_MYINFO_FIELDS,

@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import { FieldCreateDto, FormFieldDto } from 'formsg-shared/types/field'
 
 export enum FieldBuilderState {
   CreatingField,

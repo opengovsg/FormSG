@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCog, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
 
-import { FormFieldDto, FormResponseMode } from '~shared/types'
+import { FormFieldDto, FormResponseMode } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'

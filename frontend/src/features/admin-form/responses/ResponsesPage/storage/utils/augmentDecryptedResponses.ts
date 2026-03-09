@@ -3,7 +3,7 @@ import type {
   FormField,
 } from '@opengovsg/formsg-sdk/dist/types'
 
-import { BasicField } from '~shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 

@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { ClientEnvVars } from '~shared/types/core'
+import { ClientEnvVars } from 'formsg-shared/types/core'
 
 export const MOCK_ENVS: Partial<ClientEnvVars> = {
   logoBucketUrl: 'local-logo-bucket',

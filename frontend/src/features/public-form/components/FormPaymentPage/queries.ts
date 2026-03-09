@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { GetPaymentInfoDto, PaymentReceiptStatusDto } from '~shared/types'
+import { GetPaymentInfoDto, PaymentReceiptStatusDto } from 'formsg-shared/types'
 
 import { ApiError } from '~typings/core'
 

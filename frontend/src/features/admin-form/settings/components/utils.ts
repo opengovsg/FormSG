@@ -1,4 +1,4 @@
-import { FormAuthType } from '~shared/types'
+import { FormAuthType } from 'formsg-shared/types'
 
 /**
  * Only CorpPass requires esrvcid as other options will use FormSG's

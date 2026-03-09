@@ -1,6 +1,6 @@
 import { Wrap } from '@chakra-ui/react'
 
-import { FormCondition } from '~shared/types/form'
+import { FormCondition } from 'formsg-shared/types/form'
 
 import { LogicBadge } from './LogicBadge'
 

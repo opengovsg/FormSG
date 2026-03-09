@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
-import { FormWorkflowStep } from '~shared/types'
+import { FormWorkflowStep } from 'formsg-shared/types'
 
 import {
   isCreatingStateSelector,

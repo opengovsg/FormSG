@@ -2,12 +2,12 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types'
+import { BasicField } from 'formsg-shared/types'
 import {
   EmailFormDto,
   FormResponseMode,
   FormStatus,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'

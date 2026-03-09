@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 import { Link as ReactLink } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
-import { PaymentChannel } from '~shared/types'
-import { FormResponseMode, FormSettings } from '~shared/types/form'
+import { PaymentChannel } from 'formsg-shared/types'
+import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'

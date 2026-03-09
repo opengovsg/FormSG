@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
-import { FormField, FormWorkflowStepDto } from '~shared/types'
+import { FormField, FormWorkflowStepDto } from 'formsg-shared/types'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'

@@ -6,7 +6,7 @@ import {
   DropdownFieldBase,
   Language,
   RadioFieldBase,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'

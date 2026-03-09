@@ -2,7 +2,7 @@ import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
 
-import { SubmissionMrfMetadata, SubmissionStreamDto } from '~shared/types'
+import { SubmissionMrfMetadata, SubmissionStreamDto } from 'formsg-shared/types'
 
 import { CsvRecord } from './utils/CsvRecord.class'
 import { DecryptionWorkerApi } from './worker/decryption.worker'

@@ -1,5 +1,5 @@
-import { SubmissionMetadata } from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
+import { SubmissionMetadata } from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
 
 export const getNetAmount = (payments: SubmissionMetadata['payments']) => {
   if (!payments) {

@@ -16,7 +16,7 @@ import {
 import { get } from 'lodash'
 import simplur from 'simplur'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme, Language } from 'formsg-shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'

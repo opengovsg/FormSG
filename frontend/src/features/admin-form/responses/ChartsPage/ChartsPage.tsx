@@ -3,8 +3,8 @@ import { useLocation } from 'react-router-dom'
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
-import { FormResponseMode } from '~shared/types/form'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX } from '~constants/routes'
 import { useToast } from '~hooks/useToast'

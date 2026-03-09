@@ -1,6 +1,6 @@
 import { Box, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme, FormFieldWithId } from '~shared/types'
+import { FormColorTheme, FormFieldWithId } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import { FieldContainer } from '~templates/Field/FieldContainer'

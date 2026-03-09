@@ -12,11 +12,11 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import {
   getMultirespondentSubmissionEditPath,
   getStatusTrackerPath,
-} from '~shared/utils/urls'
+} from 'formsg-shared/utils/urls'
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'

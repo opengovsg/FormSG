@@ -1,6 +1,6 @@
 import { difference, intersection, isEmpty, mapValues, pick } from 'lodash'
 
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 

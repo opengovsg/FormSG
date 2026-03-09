@@ -1,13 +1,13 @@
 import { DeepPartialSkipArrayKey, UnpackNestedValue } from 'react-hook-form'
 import { CamelCasedProperties } from 'type-fest'
 
-import { FormDto } from '~shared/types'
-import { isNonEmpty } from '~shared/utils/isNonEmpty'
+import { FormDto } from 'formsg-shared/types'
+import { isNonEmpty } from 'formsg-shared/utils/isNonEmpty'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as sharedGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as sharedGetVisibleFieldIds,
-} from '~shared/utils/logic'
+} from 'formsg-shared/utils/logic'
 
 import { FormFieldValues } from '~templates/Field'
 

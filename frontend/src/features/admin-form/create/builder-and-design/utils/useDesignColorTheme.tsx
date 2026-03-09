@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { useCreateTabForm } from '../useCreateTabForm'
 import { startPageDataSelector, useDesignStore } from '../useDesignStore'

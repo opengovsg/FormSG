@@ -1,4 +1,4 @@
-import { SubmissionPaymentDto } from '~shared/types'
+import { SubmissionPaymentDto } from 'formsg-shared/types'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
 

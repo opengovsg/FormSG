@@ -1,5 +1,5 @@
-import { BasicField, MyInfoPrefilledFormField } from '~shared/types'
-import { formatMyinfoDate } from '~shared/utils/dates'
+import { BasicField, MyInfoPrefilledFormField } from 'formsg-shared/types'
+import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 
 type PrefilledMyInfoValue = string | { value: string }
 

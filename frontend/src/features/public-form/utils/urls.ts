@@ -1,4 +1,4 @@
-import { getPaymentInvoiceDownloadUrlPath } from '~shared/utils/urls'
+import { getPaymentInvoiceDownloadUrlPath } from 'formsg-shared/utils/urls'
 
 import { API_BASE_URL } from '~services/ApiService'
 

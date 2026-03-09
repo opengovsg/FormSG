@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from '~shared/constants/dates'
-import { FormColorTheme } from '~shared/types'
-import { DateSelectedValidation } from '~shared/types/field'
-import { isDateAnInvalidDay } from '~shared/utils/date-validation'
+import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from 'formsg-shared/constants/dates'
+import { FormColorTheme } from 'formsg-shared/types'
+import { DateSelectedValidation } from 'formsg-shared/types/field'
+import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
 
 import {
   isDateAfterToday,

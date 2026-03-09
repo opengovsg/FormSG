@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme, Language } from 'formsg-shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { useRadioValidationRules } from '~utils/fieldValidation'

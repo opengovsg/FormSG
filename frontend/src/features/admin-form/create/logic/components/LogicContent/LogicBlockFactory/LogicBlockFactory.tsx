@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useDisclosure } from '@chakra-ui/react'
 
-import { LogicDto } from '~shared/types'
+import { LogicDto } from 'formsg-shared/types'
 
 import { editDataSelector, useAdminLogicStore } from '../../../adminLogicStore'
 import { DeleteLogicModal } from '../../DeleteLogicModal'

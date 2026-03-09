@@ -8,9 +8,9 @@ import {
 import { useParams } from 'react-router'
 import { Box, Skeleton } from '@chakra-ui/react'
 
-import { KB } from '~shared/constants'
-import { StorageFormSettings } from '~shared/types'
-import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
+import { KB } from 'formsg-shared/constants'
+import { StorageFormSettings } from 'formsg-shared/types'
+import { VALID_WHITELIST_FILE_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { parseCsvFile } from '~utils/parseCsvFile'
 import Attachment from '~components/Field/Attachment'

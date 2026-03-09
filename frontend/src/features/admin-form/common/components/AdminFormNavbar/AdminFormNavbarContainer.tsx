@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 
-import { FormStatus } from '~shared/types'
+import { FormStatus } from 'formsg-shared/types'
 
 import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 

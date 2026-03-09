@@ -1,11 +1,11 @@
 import { useMutation } from 'react-query'
 
-import { SubmissionResponseDto } from '~shared/types'
+import { SubmissionResponseDto } from 'formsg-shared/types'
 import {
   FormAuthType,
   SubmitFormFeedbackBodyDto,
   SubmitFormIssueBodyDto,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 

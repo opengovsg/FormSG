@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto, FormLogic, LogicDto } from '~shared/types/form'
+import { AdminFormDto, FormLogic, LogicDto } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 

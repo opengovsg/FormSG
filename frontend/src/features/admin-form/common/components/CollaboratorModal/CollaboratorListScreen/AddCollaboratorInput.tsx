@@ -5,7 +5,7 @@ import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { FormPermission } from '~shared/types'
+import { FormPermission } from 'formsg-shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'

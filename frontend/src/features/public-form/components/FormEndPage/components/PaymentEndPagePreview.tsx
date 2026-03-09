@@ -1,6 +1,6 @@
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto } from 'formsg-shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 

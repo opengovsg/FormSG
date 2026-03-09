@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react/*'
 import { expect, waitFor } from '@storybook/test'
 
-import { FormResponseMode, WorkflowType } from '~shared/types'
+import { FormResponseMode, WorkflowType } from 'formsg-shared/types'
 
 import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'

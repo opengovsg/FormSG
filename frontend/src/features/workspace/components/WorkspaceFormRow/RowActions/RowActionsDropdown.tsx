@@ -20,8 +20,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { AdminDashboardFormMetaDto } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
+import { AdminDashboardFormMetaDto } from 'formsg-shared/types'
+import { Workspace } from 'formsg-shared/types/workspace'
 
 import { BxCheck } from '~assets/icons'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'

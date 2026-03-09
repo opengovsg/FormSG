@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { FormIssueMetaDto } from '~shared/types'
+import { FormIssueMetaDto } from 'formsg-shared/types'
 
 export const getEmptyAdminFormIssue = () => {
   return http.get<{ formId: string }, never, FormIssueMetaDto>(

@@ -4,31 +4,31 @@ import axios from 'axios'
 import {
   MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
   VIRUS_SCANNER_SUBMISSION_VERSION,
-} from '~shared/constants'
-import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
+} from 'formsg-shared/constants'
+import { SubmitFormIssueBodyDto, SuccessMessageDto } from 'formsg-shared/types'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
   FormFieldDto,
   PaymentFieldsDto,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 import {
   ProductItem,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   SubmitFormFeedbackBodyDto,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 import {
   FormAuthType,
   FormDto,
   Language,
   PublicFormViewDto,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 import {
   PublicMultirespondentSubmissionDto,
   ResponseMetadata,
   SubmissionResponseDto,
-} from '~shared/types/submission'
+} from 'formsg-shared/types/submission'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import {

@@ -2,7 +2,7 @@ import {
   Language,
   TranslationMapping,
   TranslationOptionMapping,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 export const convertUnicodeLocaleToLanguage = (language: Language) => {
   switch (language) {

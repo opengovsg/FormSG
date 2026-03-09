@@ -1,7 +1,7 @@
 import { isValid, parseISO } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import { FormFeedbackDto } from '~shared/types'
+import { FormFeedbackDto } from 'formsg-shared/types'
 
 import { CsvGenerator } from '../../common/utils/CsvGenerator'
 import { processFormulaInjectionText } from '../../ResponsesPage/storage/utils/processFormulaInjection'

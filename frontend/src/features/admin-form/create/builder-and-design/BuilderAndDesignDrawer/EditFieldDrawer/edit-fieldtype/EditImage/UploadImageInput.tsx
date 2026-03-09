@@ -5,7 +5,7 @@ import { forwardRef } from '@chakra-ui/react'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
-} from '~shared/constants/file'
+} from 'formsg-shared/constants/file'
 
 import Attachment from '~components/Field/Attachment'
 

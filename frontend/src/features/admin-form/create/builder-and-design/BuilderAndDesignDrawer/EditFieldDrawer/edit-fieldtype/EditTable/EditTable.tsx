@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl, Stack } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
+import { Column, ColumnDto, TableFieldBase } from 'formsg-shared/types/field'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { createBaseValidationRules } from '~utils/fieldValidation'

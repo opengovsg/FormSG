@@ -11,9 +11,9 @@ import {
 } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { UserId } from '~shared/types'
-import { PublicFormViewDto } from '~shared/types/form'
-import { Workspace, WorkspaceId } from '~shared/types/workspace'
+import { UserId } from 'formsg-shared/types'
+import { PublicFormViewDto } from 'formsg-shared/types/form'
+import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 

@@ -4,7 +4,7 @@ import {
   BasicField,
   FieldCreateDto,
   MyInfoAttribute,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import {
   BASICFIELD_TO_DRAWER_META,

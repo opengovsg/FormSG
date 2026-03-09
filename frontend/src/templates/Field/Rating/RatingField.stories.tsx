@@ -4,7 +4,7 @@ import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 
-import { BasicField, RatingShape } from '~shared/types/field'
+import { BasicField, RatingShape } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
 

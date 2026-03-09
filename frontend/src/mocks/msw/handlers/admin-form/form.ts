@@ -2,8 +2,8 @@ import cuid from 'cuid'
 import { merge, mergeWith } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { PaymentChannel } from '~shared/types'
-import { AgencyId } from '~shared/types/agency'
+import { PaymentChannel } from 'formsg-shared/types'
+import { AgencyId } from 'formsg-shared/types/agency'
 import {
   AttachmentSize,
   BasicField,
@@ -12,14 +12,14 @@ import {
   RatingShape,
   TableFieldBase,
   TableFieldDto,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 import {
   FormLogic,
   Language,
   LogicConditionState,
   LogicIfValue,
   LogicType,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 import {
   AdminDashboardFormMetaDto,
   AdminFormDto,
@@ -29,15 +29,15 @@ import {
   FormId,
   FormResponseMode,
   FormStatus,
-} from '~shared/types/form/form'
-import { FormLogoState } from '~shared/types/form/form_logo'
-import { DateString } from '~shared/types/generic'
+} from 'formsg-shared/types/form/form'
+import { FormLogoState } from 'formsg-shared/types/form/form_logo'
+import { DateString } from 'formsg-shared/types/generic'
 import {
   SubmissionMetadataList,
   WorkflowStatus,
-} from '~shared/types/submission'
-import { UserDto } from '~shared/types/user'
-import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
+} from 'formsg-shared/types/submission'
+import { UserDto } from 'formsg-shared/types/user'
+import { insertAt, reorder } from 'formsg-shared/utils/immutable-array-fns'
 
 import { getMyInfoFieldCreationMeta } from '~/features/admin-form/create/builder-and-design/utils/fieldCreation'
 

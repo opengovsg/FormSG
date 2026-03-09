@@ -11,7 +11,7 @@ import {
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   StartPageUpdateDto,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'

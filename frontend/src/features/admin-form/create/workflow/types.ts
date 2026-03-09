@@ -4,7 +4,7 @@ import {
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
   WorkflowType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 export enum AdminEditWorkflowState {
   CreatingStep,

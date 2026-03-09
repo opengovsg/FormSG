@@ -1,8 +1,8 @@
 import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormColorTheme } from '~shared/types/form/form'
-import { FormLogoState } from '~shared/types/form/form_logo'
+import { FormColorTheme } from 'formsg-shared/types/form/form'
+import { FormLogoState } from 'formsg-shared/types/form/form_logo'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {

@@ -15,7 +15,7 @@ import {
   EmailFormSettings,
   FormResponseMode,
   StorageFormSettings,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import {
   useOptionalAdminEmailValidationRules,

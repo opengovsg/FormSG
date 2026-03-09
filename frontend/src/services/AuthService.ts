@@ -2,7 +2,7 @@ import {
   GetSgidAuthUrlResponseDto,
   SendOtpResponseDto,
   UserDto,
-} from '~shared/types/user'
+} from 'formsg-shared/types/user'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 

@@ -1,4 +1,4 @@
-import { FormWorkflowDto, FormWorkflowStep } from '~shared/types/form'
+import { FormWorkflowDto, FormWorkflowStep } from 'formsg-shared/types/form'
 
 import { ApiService } from '~services/ApiService'
 

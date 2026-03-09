@@ -3,7 +3,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { addDays, isBefore, lightFormat } from 'date-fns'
 
-import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
+import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 

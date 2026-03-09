@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FormWorkflowStep, FormWorkflowStepDto } from '~shared/types'
+import { FormWorkflowStep, FormWorkflowStepDto } from 'formsg-shared/types'
 
 import { datadogRum } from '~utils/datadog'
 

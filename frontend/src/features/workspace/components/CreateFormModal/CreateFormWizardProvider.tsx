@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { FormResponseMode, PublicFormViewDto } from '~shared/types'
+import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
 

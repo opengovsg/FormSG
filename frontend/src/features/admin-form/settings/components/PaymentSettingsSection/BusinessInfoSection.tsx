@@ -12,7 +12,7 @@ import {
   AgencyBase,
   FormResponseMode,
   StorageFormSettings,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'

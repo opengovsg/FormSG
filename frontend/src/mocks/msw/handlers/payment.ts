@@ -5,7 +5,7 @@ import {
   GetPaymentInfoDto,
   PaymentReceiptStatusDto,
   PaymentType,
-} from '~shared/types'
+} from 'formsg-shared/types'
 
 const BASE_PAYMENT_INFO = {
   client_secret: 'sample_client_secret',

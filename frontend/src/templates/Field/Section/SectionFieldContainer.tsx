@@ -1,4 +1,4 @@
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme } from 'formsg-shared/types'
 
 import { useFormSections } from '~features/public-form/components/FormFields/FormSectionsContext'
 

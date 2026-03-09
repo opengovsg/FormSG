@@ -4,7 +4,7 @@ import { IconType } from 'react-icons/lib'
 import { Box, Divider, Flex, Icon, Link, Text } from '@chakra-ui/react'
 import { keyBy } from 'lodash'
 
-import { PaymentStatus, SubmissionPaymentDto } from '~shared/types'
+import { PaymentStatus, SubmissionPaymentDto } from 'formsg-shared/types'
 
 import Badge from '~components/Badge'
 import Tooltip from '~components/Tooltip'

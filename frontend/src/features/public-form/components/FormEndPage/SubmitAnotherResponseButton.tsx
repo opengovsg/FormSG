@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto } from 'formsg-shared/types/form'
 
 import Button from '~components/Button'
 

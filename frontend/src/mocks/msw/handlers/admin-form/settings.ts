@@ -5,14 +5,14 @@ import {
   EMAIL_FORM_SETTINGS_FIELDS,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
-} from '~shared/constants/form'
+} from 'formsg-shared/constants/form'
 import {
   AdminFormDto,
   AdminFormViewDto,
   FormId,
   FormResponseMode,
   FormSettings,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import { createMockForm } from './form'
 

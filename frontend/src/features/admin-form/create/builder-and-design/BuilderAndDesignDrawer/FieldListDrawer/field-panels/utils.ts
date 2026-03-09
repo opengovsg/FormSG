@@ -1,4 +1,4 @@
-import { BasicField, MyInfoAttribute } from '~shared/types'
+import { BasicField, MyInfoAttribute } from 'formsg-shared/types'
 
 import { BuilderSidebarFieldMeta } from '~features/admin-form/create/constants'
 

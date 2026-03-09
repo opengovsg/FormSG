@@ -13,7 +13,7 @@ import {
   useMergeRefs,
 } from '@chakra-ui/react'
 
-import { BasicField } from '~shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useFormTitleValidationRules } from '~utils/formValidation'

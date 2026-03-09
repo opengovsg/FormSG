@@ -46,7 +46,7 @@ import {
 import { SlLocationPin } from 'react-icons/sl'
 import { As } from '@chakra-ui/react'
 
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import { BasicField, MyInfoAttribute } from 'formsg-shared/types/field'
 
 import { SignatureIcon } from '~assets/icons'
 

@@ -15,7 +15,7 @@ import { TFunction } from 'i18next'
 import { identity } from 'lodash'
 import validator from 'validator'
 
-import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
+import { DATE_PARSE_FORMAT } from 'formsg-shared/constants/dates'
 import {
   AddressCompoundFieldBase,
   AttachmentFieldBase,
@@ -41,20 +41,20 @@ import {
   SignatureFieldBase,
   TextSelectedValidation,
   UenFieldBase,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 import {
   validateLevelUnit,
   validateNoNonNumerical,
   validateNoSpecialCharacters,
   validatePostalCode,
-} from '~shared/utils/address-validation'
-import { isDateAnInvalidDay } from '~shared/utils/date-validation'
-import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
+} from 'formsg-shared/utils/address-validation'
+import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
+import { isMFinSeriesValid, isNricValid } from 'formsg-shared/utils/nric-validation'
 import {
   isHomePhoneNumber,
   isMobilePhoneNumber,
-} from '~shared/utils/phone-num-validation'
-import { isUenValid } from '~shared/utils/uen-validation'
+} from 'formsg-shared/utils/phone-num-validation'
+import { isUenValid } from 'formsg-shared/utils/uen-validation'
 
 import { Fields } from '~/i18n/locales/features/public-form/fields'
 

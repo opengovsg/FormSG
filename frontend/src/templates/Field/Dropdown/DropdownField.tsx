@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme, Language } from 'formsg-shared/types'
 
 import { useDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'

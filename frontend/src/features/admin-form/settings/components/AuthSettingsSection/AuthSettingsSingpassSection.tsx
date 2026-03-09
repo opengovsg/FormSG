@@ -1,6 +1,6 @@
 import { Divider } from '@chakra-ui/react'
 
-import { FormResponseMode, FormSettings } from '~shared/types/form'
+import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'

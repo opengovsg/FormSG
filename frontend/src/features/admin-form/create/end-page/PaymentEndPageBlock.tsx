@@ -5,7 +5,7 @@ import {
   AdminStorageFormDto,
   FormDto,
   FormResponseMode,
-} from '~shared/types/form'
+} from 'formsg-shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { SubmissionData } from '~features/public-form/PublicFormContext'

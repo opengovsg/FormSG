@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { CountryRegion } from '~shared/constants/countryRegion'
-import { BasicField, CountryRegionFieldBase } from '~shared/types'
+import { CountryRegion } from 'formsg-shared/constants/countryRegion'
+import { BasicField, CountryRegionFieldBase } from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 

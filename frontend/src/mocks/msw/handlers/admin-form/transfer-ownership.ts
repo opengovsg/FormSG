@@ -1,6 +1,6 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { AdminFormViewDto, FormResponseMode, FormStatus } from '~shared/types'
+import { AdminFormViewDto, FormResponseMode, FormStatus } from 'formsg-shared/types'
 
 import { MOCK_USER } from '../user'
 

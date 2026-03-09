@@ -2,12 +2,12 @@ import { Meta, StoryFn } from '@storybook/react'
 import { times } from 'lodash'
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { UserId } from '~shared/types'
+import { UserId } from 'formsg-shared/types'
 import {
   AdminDashboardFormMetaDto,
   FormResponseMode,
   FormStatus,
-} from '~shared/types/form/form'
+} from 'formsg-shared/types/form/form'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'

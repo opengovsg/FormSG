@@ -27,10 +27,10 @@ import {
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
   RESPONDENT_EMAIL_FIELD_ID,
-} from '~shared/constants'
-import { BasicField, FormFieldDto, PaymentType } from '~shared/types'
-import { CaptchaTypes } from '~shared/types/captcha'
-import { ErrorCode } from '~shared/types/errorCodes'
+} from 'formsg-shared/constants'
+import { BasicField, FormFieldDto, PaymentType } from 'formsg-shared/types'
+import { CaptchaTypes } from 'formsg-shared/types/captcha'
+import { ErrorCode } from 'formsg-shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
@@ -38,8 +38,8 @@ import {
   ProductItem,
   PublicFormDto,
   StrippedFormWorkflowStepDto,
-} from '~shared/types/form'
-import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
+} from 'formsg-shared/types/form'
+import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'

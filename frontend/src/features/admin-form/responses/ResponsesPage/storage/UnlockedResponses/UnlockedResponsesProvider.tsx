@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react'
 
-import { SubmissionId, SubmissionMetadata } from '~shared/types'
+import { SubmissionId, SubmissionMetadata } from 'formsg-shared/types'
 
 import { useFormResponses } from '~features/admin-form/responses/queries'
 

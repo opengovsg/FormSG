@@ -5,8 +5,8 @@ import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 import get from 'lodash/get'
 
-import { FormFieldDto } from '~shared/types/field'
-import { LogicType } from '~shared/types/form'
+import { FormFieldDto } from 'formsg-shared/types/field'
+import { LogicType } from 'formsg-shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'

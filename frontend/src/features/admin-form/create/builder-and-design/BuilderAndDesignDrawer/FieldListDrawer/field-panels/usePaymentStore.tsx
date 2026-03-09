@@ -2,7 +2,7 @@ import { isEqual } from 'lodash'
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { FormPaymentsField } from '~shared/types'
+import { FormPaymentsField } from 'formsg-shared/types'
 
 export enum PaymentState {
   Inactive,

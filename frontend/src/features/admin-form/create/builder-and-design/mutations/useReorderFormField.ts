@@ -2,9 +2,9 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormFieldDto } from '~shared/types/field'
-import { AdminFormDto } from '~shared/types/form'
-import { reorder } from '~shared/utils/immutable-array-fns'
+import { FormFieldDto } from 'formsg-shared/types/field'
+import { AdminFormDto } from 'formsg-shared/types/form'
+import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 
 import { ApiError } from '~typings/core'
 

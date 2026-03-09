@@ -1,5 +1,5 @@
-import { LogicableField } from '~shared/types'
-import { BasicField } from '~shared/types/field'
+import { LogicableField } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types/field'
 
 export const ALLOWED_LOGIC_FIELDS_ARRAY: LogicableField[] = [
   BasicField.YesNo,

@@ -18,7 +18,7 @@ import {
   FieldCreateDto,
   FormField,
   FormFieldDto,
-} from '~shared/types/field'
+} from 'formsg-shared/types/field'
 
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'

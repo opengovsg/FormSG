@@ -1,4 +1,4 @@
-import { BasicField, FormField, MyInfoField } from '~shared/types'
+import { BasicField, FormField, MyInfoField } from 'formsg-shared/types'
 
 export const isMyInfo = (field: FormField): field is MyInfoField => {
   switch (field.fieldType) {

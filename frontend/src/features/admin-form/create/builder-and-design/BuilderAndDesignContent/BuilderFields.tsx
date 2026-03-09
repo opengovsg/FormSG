@@ -1,4 +1,4 @@
-import { AdminFormDto } from '~shared/types/form'
+import { AdminFormDto } from 'formsg-shared/types/form'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'

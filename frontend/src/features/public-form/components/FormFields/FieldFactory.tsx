@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
-import { BasicField } from '~shared/types/field'
-import { FormColorTheme, FormResponseMode } from '~shared/types/form'
+import { BasicField } from 'formsg-shared/types/field'
+import { FormColorTheme, FormResponseMode } from 'formsg-shared/types/form'
 
 import {
   AddressCompoundField,
