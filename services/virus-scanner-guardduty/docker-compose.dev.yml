@@ -3,7 +3,7 @@ services:
   guardduty-scanner:
     build:
       context: ../../
-      dockerfile: serverless/virus-scanner-guardduty/Dockerfile
+      dockerfile: services/virus-scanner-guardduty/Dockerfile
     expose:
       - '8080'
     ports:

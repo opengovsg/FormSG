@@ -64,7 +64,7 @@ provider:
     images:
       virus-scanner-guardduty:
         path: ../../
-        file: serverless/virus-scanner-guardduty/Dockerfile
+        file: services/virus-scanner-guardduty/Dockerfile
         platform: linux/amd64
 
 functions:

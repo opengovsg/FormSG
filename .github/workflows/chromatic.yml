@@ -36,7 +36,7 @@ jobs:
               - shared/**
               - frontend/**
             emailpreview:
-              - react-email-preview/**
+              - packages/react-email-preview/**
 
   chromatic-deployment-frontend:
     needs: changes
@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: react-email-preview
+        working-directory: packages/react-email-preview
     # Job steps
     steps:
       - uses: actions/checkout@v4
@@ -113,12 +113,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_EMAIL_PROJECT_TOKEN }}
-          workingDir: react-email-preview
+          workingDir: packages/react-email-preview
           autoAcceptChanges: develop
           exitOnceUploaded: true
           onlyChanged: true
-          storybookBaseDir: react-email-preview
+          storybookBaseDir: packages/react-email-preview
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
           # Only run when the react-email-preview directory has changes
-          untraced: '!(react-email-preview)/**'
+          untraced: '!(packages/react-email-preview)/**'

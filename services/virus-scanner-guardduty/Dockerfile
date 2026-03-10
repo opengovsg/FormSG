@@ -20,15 +20,15 @@ WORKDIR /workspace
 
 # Copy workspace config and lockfile from monorepo root
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY serverless/virus-scanner-guardduty/package.json ./serverless/virus-scanner-guardduty/
+COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
 
 # Install only virus-scanner dependencies
 RUN pnpm install --filter formsg-virus-scanner-guardduty
 
-WORKDIR /workspace/serverless/virus-scanner-guardduty
+WORKDIR /workspace/services/virus-scanner-guardduty
 
 # Copy virus scanner source
-COPY serverless/virus-scanner-guardduty/ ./
+COPY services/virus-scanner-guardduty/ ./
 
 RUN pnpm run build
 

@@ -1,7 +1,7 @@
-diff --git a/serverless/virus-scanner-guardduty/CREDITS.md b/serverless/virus-scanner-guardduty/CREDITS.md
+diff --git a/services/virus-scanner-guardduty/CREDITS.md b/services/virus-scanner-guardduty/CREDITS.md
 index 92a2bfe0..9b119681 100644
---- a/serverless/virus-scanner-guardduty/CREDITS.md
-+++ b/serverless/virus-scanner-guardduty/CREDITS.md
+--- a/services/virus-scanner-guardduty/CREDITS.md
++++ b/services/virus-scanner-guardduty/CREDITS.md
 @@ -429,10 +429,183 @@ Apache License
  aws-lambda-ric
  

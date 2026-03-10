@@ -4,7 +4,7 @@ import internal from 'stream'
 /**
  * Typeguard for checking if the event body has a key
  * @param body
-serverless/virus-scanner/src/index.ts * @returns boolean
+ * @returns boolean
  */
 type KeyBody = {
   key: string
