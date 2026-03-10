@@ -33,7 +33,7 @@ Now, run
 pnpm run lambda:update:{ENV}
 ```
 
-where `{ENV}` can be one of `['prod', 'staging', 'staging-alt', 'staging-alt2', 'uat']`.
+where `{ENV}` can be one of `['prod', 'uat', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']`.
 
 #### Manually
 
@@ -43,7 +43,7 @@ To deploy manually, package the contents of this folder and upload them to AWS L
 
 The following environment variables are required within the Lambda itself:
 
-- `SSM_ENV_SITE_NAME`: `['prod', 'staging', 'staging-alt', 'staging-alt2', 'uat']`
+- `SSM_ENV_SITE_NAME`: `['prod', 'uat', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']`
 
 The required API secrets are stored in AWS Systems Manager Parameter Store, in the `{SSM_ENV_SITE_NAME}-cron-payment` parameter.
 
