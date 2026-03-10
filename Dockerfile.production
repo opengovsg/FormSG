@@ -77,7 +77,8 @@ RUN apk add --no-cache \
     tini \
     cairo \
     pango \
-    librsvg
+    librsvg \ 
+    giflib
 
 # Run as non-privileged user
 RUN addgroup -S formsguser && adduser -S -g formsguser formsguser
