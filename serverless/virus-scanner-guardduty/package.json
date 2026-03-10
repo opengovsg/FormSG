@@ -48,9 +48,7 @@
     "typescript": "^5.4.5"
   },
   "pnpm": {
-    "__comment": "aws-lambda-ric is needed here since the dockerfile does a local installation.",
     "onlyBuiltDependencies": [
-      "aws-lambda-ric"
     ]
   }
 }
