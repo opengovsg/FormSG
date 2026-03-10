@@ -56,8 +56,8 @@ jobs:
             dist
             frontend/dist
             shared/dist
-            serverless/virus-scanner/build
-            serverless/virus-scanner-guardduty/build
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
             .next
             frontend/.next
             shared/.next
@@ -100,8 +100,8 @@ jobs:
             dist
             frontend/dist
             shared/dist
-            serverless/virus-scanner/build
-            serverless/virus-scanner-guardduty/build
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
             .next
             frontend/.next
             shared/.next

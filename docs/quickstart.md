@@ -33,10 +33,10 @@ nvm install
 nvm use
 ```
 
-To install the relevant packages (frontend, backend and serverless modules), run the following in the root directory:
+To install the relevant packages (frontend, backend and services modules), run the following in the root directory:
 
 ```bash
-pnpm install && pnpm --prefix serverless/virus-scanner-guardduty install && pnpm --prefix serverless/pdf-gen install
+pnpm install && pnpm --prefix services/virus-scanner-guardduty install && pnpm --prefix services/pdf-gen install
 ```
 
 #### Environment Configuration

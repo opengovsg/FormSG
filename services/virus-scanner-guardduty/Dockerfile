@@ -10,19 +10,26 @@ RUN apt-get update && \
   libcurl4-openssl-dev \
   autoconf \
   libtool \
-  automake \ 
+  automake \
   python3
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 
-WORKDIR /function
+WORKDIR /workspace
 
-# install app dependencies
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
+# Copy workspace config and lockfile from monorepo root
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
 
-COPY . .
+# Install only virus-scanner dependencies
+RUN pnpm install --filter formsg-virus-scanner-guardduty
+
+WORKDIR /workspace/services/virus-scanner-guardduty
+
+# Copy virus scanner source
+COPY services/virus-scanner-guardduty/ ./
+
 RUN pnpm run build
 
 # Add lambda rie to run entry.sh shell script

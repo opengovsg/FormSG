@@ -16,10 +16,10 @@ RUN apk update && apk upgrade && \
 WORKDIR /build
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY shared/package.json shared/pnpm-lock.yaml ./shared/
-COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
+COPY shared/package.json ./shared/
+COPY frontend/package.json ./frontend/
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
 
 COPY . ./
 
