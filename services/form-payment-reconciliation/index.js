@@ -2,7 +2,7 @@
  * Main file that runs payment reconciliation CRON job.
  * Required env vars:
  * - AWS_REGION: the aws region which the
- * - SSM_ENV_SITE_NAME: ['prod', 'staging', 'staging-alt', 'staging-alt2', 'uat']
+ * - SSM_ENV_SITE_NAME: ['prod', 'uat', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']
  *
  * Required parameters in parameter store `<SSM_ENV_SITE_NAME>-cron-payment`:
  * - CRON_PAYMENT_API_SECRET: the shared secret to validate protected routes in FormSG API
