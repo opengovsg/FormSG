@@ -2,7 +2,5 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'services/*'
-  - 'serverless/*' # TODO(Monorepo Phase 2): remove once migrated to /services 
-  - 'react-email-preview' # TODO(Monorepo Phase 2): remove once migrated to /packages
-  - 'shared' # TODO(Monorepo Phase 2): remove once migrated to /packages 
+  - 'shared' # TODO(Monorepo Phase 2): remove once migrated to /packages
   - 'frontend' # TODO(Monorepo Phase 2): remove once migrated to to /app
