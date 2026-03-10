@@ -1067,15 +1067,6 @@ importers:
         specifier: ^8.6.15
         version: 8.6.15(prettier@3.8.1)
 
-  serverless/form-payment-reconciliation:
-    dependencies:
-      '@aws-sdk/client-secrets-manager':
-        specifier: ^3.529.1
-        version: 3.578.0
-      '@aws-sdk/client-ssm':
-        specifier: ^3.525.0
-        version: 3.1000.0
-
   serverless/pdf-gen-sparticuz:
     dependencies:
       '@sparticuz/chromium':
@@ -1197,6 +1188,15 @@ importers:
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
+
+  services/form-payment-reconciliation:
+    dependencies:
+      '@aws-sdk/client-secrets-manager':
+        specifier: ^3.529.1
+        version: 3.578.0
+      '@aws-sdk/client-ssm':
+        specifier: ^3.525.0
+        version: 3.1000.0
 
   shared:
     dependencies:
