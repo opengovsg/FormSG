@@ -46,9 +46,5 @@
     "ts-node-dev": "^2.0.0",
     "type-fest": "^4.17.0",
     "typescript": "^5.4.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-    ]
   }
 }

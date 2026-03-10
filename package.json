@@ -259,9 +259,6 @@
       "unix-dgram",
       "msw",
       "microtime"
-    ],
-    "ignoredBuiltDependencies": [
-      "esbuild"
     ]
   },
   "config": {
