@@ -4,26 +4,19 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: [
     '<rootDir>',
-    '<rootDir>/services/virus-scanner/',
-    '<rootDir>/services/pdf-gen-sparticuz/',
   ],
   moduleDirectories: [
     'node_modules',
-    './services/virus-scanner/node_modules',
-    './services/pdf-gen-sparticuz/node_modules',
   ],
   testEnvironment: 'node',
   globalSetup: '<rootDir>/__tests__/setup/jest-global-setup.js',
   testPathIgnorePatterns: [
-    '<rootDir>/__tests__/e2e',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
-    '<rootDir>/frontend',
   ],
   collectCoverage: true,
   collectCoverageFrom: [
     './src/**/*.{ts,js}',
-    './services/**/*.{ts,js}',
     '!**/__tests__/**',
   ],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
