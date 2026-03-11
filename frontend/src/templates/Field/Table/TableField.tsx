@@ -223,6 +223,7 @@ export const TableField = ({
           variant="column-stripe"
           size="sm"
           colorScheme={`theme-${colorTheme}`}
+          pointerEvents={schema.disabled ? 'none' : undefined}
         >
           <Thead display={{ base: 'none', md: 'table-header-group' }}>
             {headerGroups.map((headerGroup) => (
