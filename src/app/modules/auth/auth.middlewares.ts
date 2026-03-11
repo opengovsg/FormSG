@@ -277,7 +277,14 @@ const isPlatformApiUser: ControllerHandler<
     })
 }
 
+const validatePlatformUserEmailParams = celebrate({
+  [Segments.BODY]: Joi.object({
+    userEmail: Joi.string().email().optional(),
+  }).unknown(true),
+})
+
 export const authenticateApiKeyAndPlatform = [
+  validatePlatformUserEmailParams,
   authenticateApiKey,
   isPlatformApiUser,
 ] as ControllerHandler[]
