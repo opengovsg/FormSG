@@ -1,4 +1,4 @@
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { E2eFieldMetadata } from './field'
 import { E2eLogic } from './logic'

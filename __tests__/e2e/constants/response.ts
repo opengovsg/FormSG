@@ -1,4 +1,4 @@
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 interface FormResponseViewBase {
   mode: FormResponseMode
