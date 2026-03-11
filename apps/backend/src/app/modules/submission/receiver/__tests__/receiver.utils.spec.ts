@@ -2,6 +2,9 @@ import { ObjectId } from 'bson'
 import { BasicField } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
+import path from 'path'
+
+const RESOURCES = path.join(__dirname, '../../../../../../../../__tests__/resources')
 
 import {
   FieldResponse,
@@ -16,13 +19,13 @@ import {
 
 const validSingleFile = {
   filename: 'govtech.jpg',
-  content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
+  content: readFileSync(path.join(RESOURCES, 'govtech.jpg')),
   fieldId: String(new ObjectId()),
 }
 
 const zipOnlyValid = {
   filename: 'onlyvalid.zip',
-  content: readFileSync('./__tests__/unit/backend/resources/onlyvalid.zip'),
+  content: readFileSync(path.join(RESOURCES, 'onlyvalid.zip')),
   fieldId: String(new ObjectId()),
 }
 

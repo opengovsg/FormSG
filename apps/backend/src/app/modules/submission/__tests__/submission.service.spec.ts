@@ -19,6 +19,9 @@ import {
 } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { clone, omit, times } from 'lodash'
+import path from 'path'
+
+const RESOURCES = path.join(__dirname, '../../../../../../../__tests__/resources')
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import { PassThrough, Readable, Transform } from 'stream'
@@ -2194,7 +2197,7 @@ describe('submission.service', () => {
 
     it('should reject submissions when file types are invalid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
+        content: readFileSync(path.join(RESOURCES, 'invalid.py')),
         filename: 'invalid.py',
       })
 
@@ -2216,7 +2219,7 @@ describe('submission.service', () => {
       // See https://www.notion.so/opengov/TypeError-Cannot-read-properties-of-undefined-reading-split-in-file-validation-js-6f4dcc17e6fc48319d8f7f0f997685c2?pvs=4
       // We can remove this test case when the issue is found and fixed
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
+        content: readFileSync(path.join(RESOURCES, 'invalid.py')),
         filename: 'mock.jpg',
       })
 
@@ -2237,9 +2240,7 @@ describe('submission.service', () => {
 
     it('should reject submissions when there are invalid file types in zip', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync(
-          './__tests__/unit/backend/resources/nestedInvalid.zip',
-        ),
+        content: readFileSync(path.join(RESOURCES, 'nestedInvalid.zip')),
         filename: 'nestedInvalid.zip',
       })
 
@@ -2258,7 +2259,7 @@ describe('submission.service', () => {
 
     it('should accept submissions when file types are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
+        content: readFileSync(path.join(RESOURCES, 'govtech.jpg')),
         filename: 'govtech.jpg',
       })
 
@@ -2277,9 +2278,7 @@ describe('submission.service', () => {
 
     it('should accept submissions when file types in zip are valid', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync(
-          './__tests__/unit/backend/resources/nestedValid.zip',
-        ),
+        content: readFileSync(path.join(RESOURCES, 'nestedValid.zip')),
         filename: 'nestedValid.zip',
       })
 

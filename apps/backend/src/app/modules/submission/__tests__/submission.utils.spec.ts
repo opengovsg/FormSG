@@ -8,6 +8,9 @@ import {
 } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
+import path from 'path'
+
+const RESOURCES = path.join(__dirname, '../../../../../../../__tests__/resources')
 
 import {
   IMultirespondentSubmissionSchema,
@@ -23,45 +26,45 @@ import {
 
 const validSingleFile = {
   filename: 'govtech.jpg',
-  content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
+  content: readFileSync(path.join(RESOURCES, 'govtech.jpg')),
   fieldId: String(new ObjectId()),
 }
 
 const invalidSingleFile = {
   filename: 'invalid.py',
-  content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
+  content: readFileSync(path.join(RESOURCES, 'invalid.py')),
   fieldId: String(new ObjectId()),
 }
 
 const zipWithValidAndInvalid = {
   filename: 'invalidandvalid.zip',
   content: readFileSync(
-    './__tests__/unit/backend/resources/invalidandvalid.zip',
+    path.join(RESOURCES, 'invalidandvalid.zip'),
   ),
   fieldId: String(new ObjectId()),
 }
 
 const zipNestedInvalid = {
   filename: 'nested.zip',
-  content: readFileSync('./__tests__/unit/backend/resources/nestedInvalid.zip'),
+  content: readFileSync(path.join(RESOURCES, 'nestedInvalid.zip')),
   fieldId: String(new ObjectId()),
 }
 
 const zipNestedValid = {
   filename: 'nestedValid.zip',
-  content: readFileSync('./__tests__/unit/backend/resources/nestedValid.zip'),
+  content: readFileSync(path.join(RESOURCES, 'nestedValid.zip')),
   fieldId: String(new ObjectId()),
 }
 
 const zipOnlyInvalid = {
   filename: 'onlyinvalid.zip',
-  content: readFileSync('./__tests__/unit/backend/resources/onlyinvalid.zip'),
+  content: readFileSync(path.join(RESOURCES, 'onlyinvalid.zip')),
   fieldId: String(new ObjectId()),
 }
 
 const zipOnlyValid = {
   filename: 'onlyvalid.zip',
-  content: readFileSync('./__tests__/unit/backend/resources/onlyvalid.zip'),
+  content: readFileSync(path.join(RESOURCES, 'onlyvalid.zip')),
   fieldId: String(new ObjectId()),
 }
 
