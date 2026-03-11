@@ -28,7 +28,7 @@ import {
   TableFieldBase,
   UenFieldBase,
   YesNoFieldBase,
-} from 'shared/types'
+} from 'formsg-shared/types'
 
 export const DATE_INPUT_FORMAT = 'dd/MM/yyyy'
 export const DATE_RESPONSE_FORMAT = 'dd MMM yyyy'

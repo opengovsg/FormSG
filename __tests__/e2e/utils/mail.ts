@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test'
 import axios from 'axios'
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 // Maildev default port is 1080.
 const MAIL_URL = 'http://0.0.0.0:1080'

@@ -2,5 +2,4 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'services/*'
-  - 'shared' # TODO(Monorepo Phase 2): remove once migrated to /packages
   - 'frontend' # TODO(Monorepo Phase 2): remove once migrated to to /app
