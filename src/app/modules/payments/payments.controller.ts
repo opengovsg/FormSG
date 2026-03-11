@@ -14,6 +14,15 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+export const validateGetPreviousPaymentParams = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string()
+      .required()
+      .email()
+      .message('Please enter a valid email'),
+  }),
+})
+
 /**
  * Handler for GET /api/v3/:formId/payments/previous/:email
  * Finds and return the latest successful payment made by the specific
