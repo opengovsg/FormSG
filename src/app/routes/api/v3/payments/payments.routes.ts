@@ -66,6 +66,7 @@ PaymentsRouter.get(
 PaymentsRouter.post(
   '/:formId([a-fA-F0-9]{24})/payments/previous',
   limitRate({ max: rateLimitConfig.submissions }),
+  PaymentsController.validateGetPreviousPaymentParams,
   PaymentsController.handleGetPreviousPaymentId,
 )
 
