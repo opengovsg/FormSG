@@ -1,7 +1,7 @@
-diff --git a/frontend/CREDITS.md b/frontend/CREDITS.md
+diff --git a/apps/frontend/CREDITS.md b/apps/frontend/CREDITS.md
 index f69e195d..2f7369ed 100644
---- a/frontend/CREDITS.md
-+++ b/frontend/CREDITS.md
+--- a/apps/frontend/CREDITS.md
++++ b/apps/frontend/CREDITS.md
 @@ -1942,10 +1942,31 @@ THE SOFTWARE.
  libphonenumber-js
  
