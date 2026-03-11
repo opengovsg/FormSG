@@ -9,6 +9,7 @@ npm-debug.log
 node_modules/
 lib/
 mockgoose/
+.pnpm-store/
 
 # MEAN.js app and assets
 # ======================
