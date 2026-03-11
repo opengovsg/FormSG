@@ -16,7 +16,7 @@ RUN apk update && apk upgrade && \
 WORKDIR /build
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY shared/package.json ./shared/
+COPY packages/shared/package.json ./packages/shared/
 COPY frontend/package.json ./frontend/
 
 RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
@@ -54,8 +54,8 @@ COPY --from=build /build/node_modules /opt/formsg/node_modules
 COPY --from=build /build/package.json /opt/formsg/package.json
 COPY --from=build /build/dist /opt/formsg/dist
 # For the backend to resolve formsg-shared package
-COPY --from=build /build/shared/package.json /opt/formsg/shared/
-COPY --from=build /build/shared/dist /opt/formsg/shared/dist
+COPY --from=build /build/packages/shared/package.json /opt/formsg/packages/shared/
+COPY --from=build /build/packages/shared/dist /opt/formsg/packages/shared/dist
 
 # Built backend goes back to root working directory
 RUN mv /opt/formsg/dist/backend/src /opt/formsg/

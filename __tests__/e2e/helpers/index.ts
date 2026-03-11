@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test'
-import { FormResponseMode } from 'shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { IFormModel } from 'src/types'
 

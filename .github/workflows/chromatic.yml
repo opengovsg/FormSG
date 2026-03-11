@@ -33,7 +33,7 @@ jobs:
         with:
           filters: |
             frontend:
-              - shared/**
+              - packages/shared/**
               - frontend/**
             emailpreview:
               - packages/react-email-preview/**

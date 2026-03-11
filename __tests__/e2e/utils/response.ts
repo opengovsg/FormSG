@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import { format, parse } from 'date-fns'
 import { readFileSync } from 'fs'
-import { BasicField, FormResponseMode } from 'shared/types'
+import { BasicField, FormResponseMode } from 'formsg-shared/types'
 
 import {
   DATE_INPUT_FORMAT,
