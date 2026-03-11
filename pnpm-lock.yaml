@@ -1147,15 +1147,33 @@ importers:
         specifier: ^3.11.6
         version: 3.25.34
     devDependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.775.0
+        version: 3.1000.0
+      '@types/jest':
+        specifier: ^29.5.1
+        version: 29.5.14
+      '@types/json-stringify-safe':
+        specifier: ^5.0.3
+        version: 5.0.3
       '@types/lodash':
         specifier: ^4.14.186
         version: 4.17.24
+      '@types/validator':
+        specifier: ^13.7.0
+        version: 13.12.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.19.1
         version: 8.26.1(@typescript-eslint/parser@8.26.1(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: ^8.19.1
         version: 8.26.1(eslint@8.57.1)(typescript@5.9.3)
+      aws-sdk:
+        specifier: ^2.1692.0
+        version: 2.1692.0
+      bson:
+        specifier: ^5.5.0
+        version: 5.5.1
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
@@ -1165,9 +1183,18 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.1.3
         version: 5.5.5(eslint-config-prettier@10.1.5(eslint@8.57.1))(eslint@8.57.1)(prettier@3.8.1)
+      jest:
+        specifier: ^29.5.0
+        version: 29.7.0(babel-plugin-macros@3.1.0)
+      mongoose:
+        specifier: ^7.8.7
+        version: 7.8.7
       prettier:
         specifier: ^3.2.5
         version: 3.8.1
+      stripe:
+        specifier: ^12.5.0
+        version: 12.5.0
 
   services/form-payment-reconciliation:
     dependencies:
@@ -18318,7 +18345,7 @@ snapshots:
     dependencies:
       '@jridgewell/set-array': 1.2.1
       '@jridgewell/sourcemap-codec': 1.4.14
-      '@jridgewell/trace-mapping': 0.3.25
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/remapping@2.3.5':
     dependencies:
@@ -25467,6 +25494,25 @@ snapshots:
       - supports-color
       - ts-node
 
+  jest-cli@29.7.0(babel-plugin-macros@3.1.0):
+    dependencies:
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+      '@jest/test-result': 29.7.0
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      create-jest: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+      exit: 0.1.2
+      import-local: 3.2.0
+      jest-config: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
   jest-cli@30.1.3(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3)):
     dependencies:
       '@jest/core': 30.1.3(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
@@ -26282,6 +26328,18 @@ snapshots:
       '@jest/types': 29.6.3
       import-local: 3.2.0
       jest-cli: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+
+  jest@29.7.0(babel-plugin-macros@3.1.0):
+    dependencies:
+      '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
+      '@jest/types': 29.6.3
+      import-local: 3.2.0
+      jest-cli: 29.7.0(babel-plugin-macros@3.1.0)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
