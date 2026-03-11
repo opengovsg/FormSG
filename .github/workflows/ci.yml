@@ -42,11 +42,11 @@ jobs:
               - packages/shared/**
               - frontend/**
             backend:
-              - __tests__/**
               - packages/shared/**
-              - src/**
-              - package.json
-              - package-lock.json
+              - apps/backend/src/**
+              - apps/backend/__tests__/**
+              - apps/backend/package.json
+              - pnpm-lock.yaml
 
   install:
     runs-on: ubuntu-latest
