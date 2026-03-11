@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
-} from 'frontend/src/features/admin-form/create/constants'
+} from 'apps/frontend/src/features/admin-form/create/constants'
 import { readFileSync } from 'fs'
 import mongoose from 'mongoose'
 import { TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID } from 'formsg-shared/constants/form'
