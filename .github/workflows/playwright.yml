@@ -52,15 +52,15 @@ jobs:
           path: |
             node_modules
             frontend/node_modules
-            shared/node_modules
+            packages/shared/node_modules
             dist
             frontend/dist
-            shared/dist
+            packages/shared/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
             .next
             frontend/.next
-            shared/.next
+            packages/shared/.next
           key: ${{ runner.os }}-build-${{ github.sha }}
   test:
     needs: setup
@@ -96,15 +96,15 @@ jobs:
           path: |
             node_modules
             frontend/node_modules
-            shared/node_modules
+            packages/shared/node_modules
             dist
             frontend/dist
-            shared/dist
+            packages/shared/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
             .next
             frontend/.next
-            shared/.next
+            packages/shared/.next
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility

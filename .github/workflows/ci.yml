@@ -39,11 +39,11 @@ jobs:
           filters: |
             frontend:
               - __tests__/**
-              - shared/**
+              - packages/shared/**
               - frontend/**
             backend:
               - __tests__/**
-              - shared/**
+              - packages/shared/**
               - src/**
               - package.json
               - package-lock.json
