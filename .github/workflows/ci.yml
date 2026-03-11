@@ -43,6 +43,7 @@ jobs:
               - packages/shared/**
               - frontend/**
               - pnpm-lock.yaml
+              - apps/frontend/**
             backend:
               - apps/backend/src/**
               - apps/backend/__tests__/**

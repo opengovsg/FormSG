@@ -143,13 +143,13 @@ jobs:
           VITE_APP_FORMSG_SDK_MODE: ${{ inputs.react-app-form-sg-sdk-mode }}
           VITE_APP_URL: ${{ inputs.app-url }}
         run: |
-          sed -i -e "s|@VITE_APP_URL|${{  env.VITE_APP_URL  }}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
-          echo VITE_APP_VERSION=${{  inputs.app-version  }} > frontend/.env
-          echo VITE_APP_URL=$VITE_APP_URL > frontend/.env
-          echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> frontend/.env
-          echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> frontend/.env
-          echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
-          echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
+          sed -i -e "s|@VITE_APP_URL|${{  env.VITE_APP_URL  }}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" apps/frontend/datadog-chunk.ts
+          echo VITE_APP_VERSION=${{  inputs.app-version  }} > apps/frontend/.env
+          echo VITE_APP_URL=$VITE_APP_URL > apps/frontend/.env
+          echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> apps/frontend/.env
+          echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> apps/frontend/.env
+          echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> apps/frontend/.env
+          echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> apps/frontend/.env
 
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
