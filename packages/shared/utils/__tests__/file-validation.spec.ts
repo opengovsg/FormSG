@@ -1,10 +1,13 @@
 import fs from 'fs'
+import path from 'path'
 
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
   isInvalidFileExtension,
 } from '../file-validation'
+
+const RESOURCES = path.join(__dirname, '../../../../__tests__/resources')
 
 describe('File validation utils', () => {
   describe('getFileExtension', () => {
@@ -54,49 +57,39 @@ describe('File validation utils', () => {
   // Note that blob version is unable to be tested as Jest is running in a node environment.
   describe('getInvalidFileExtensionsInZip with nodebuffer', () => {
     it('should return empty array when there is only valid files', async () => {
-      const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/onlyvalid.zip',
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'onlyvalid.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual([])
     })
 
     it('should return invalid extensions when zipped files are all invalid file extensions', async () => {
-      const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/onlyinvalid.zip',
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'onlyinvalid.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a', '.abc', '.py'])
     })
 
     it('should return only invalid extensions when zip has some valid file extensions', async () => {
       const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/invalidandvalid.zip',
+        path.join(RESOURCES, 'invalidandvalid.zip'),
       )
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a', '.oo'])
     })
 
     it('should exclude repeated invalid extensions', async () => {
-      const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/repeated.zip',
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'repeated.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a'])
     })
 
     it('should exclude folders', async () => {
-      const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/folder.zip',
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'folder.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual([])
     })
 
     it('should include invalid extensions in nested zip files', async () => {
-      const file = fs.readFileSync(
-        './__tests__/unit/backend/resources/nestedInvalid.zip',
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'nestedInvalid.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a', '.oo'])
     })

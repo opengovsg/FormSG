@@ -6,6 +6,9 @@ import {
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField, FieldBase } from 'formsg-shared/types'
 import fs from 'fs'
+import path from 'path'
+
+const RESOURCES = path.join(__dirname, '../../../../../../../../__tests__/resources')
 
 import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
@@ -22,7 +25,7 @@ export const MOCK_ATTACHMENT_FIELD = generateDefaultField(BasicField.Attachment)
 export const MOCK_ATTACHMENT_RESPONSE = generateAttachmentResponse(
   MOCK_ATTACHMENT_FIELD as IAttachmentFieldSchema,
   'valid.txt',
-  fs.readFileSync('__tests__/unit/backend/resources/valid.txt'),
+  fs.readFileSync(path.join(RESOURCES, 'valid.txt')),
 )
 
 export const MOCK_SECTION_FIELD = generateDefaultField(BasicField.Section)
