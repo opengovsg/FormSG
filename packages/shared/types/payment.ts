@@ -1,4 +1,4 @@
-import Stripe from 'stripe'
+import type Stripe from 'stripe'
 import { FormPaymentsField, ProductItem } from './form'
 import { DateString } from './generic'
 
