@@ -11,6 +11,7 @@ export interface Toasts {
     create: Toast
     update: Toast
     duplicate: Toast & { successButNoLogic: string }
+    optionsToRecipientsSaved: string
   }
   emailModeMigration: Toast
   respondentCopy: {

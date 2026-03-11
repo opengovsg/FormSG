@@ -24,6 +24,7 @@ export const enSG: Toasts = {
       error:
         'Something went wrong when creating your field. Please refresh and try again.',
     },
+    optionsToRecipientsSaved: 'Your options and emails have been saved.',
   },
   emailModeMigration: {
     success:
