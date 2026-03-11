@@ -1,7 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-
-import { SeenFlags } from '../../../../shared/types'
+import { SeenFlags } from 'formsg-shared/types'
 
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 

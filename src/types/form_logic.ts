@@ -1,5 +1,3 @@
-import { Document } from 'mongoose'
-
 import {
   BasicField,
   FormCondition,
@@ -8,7 +6,8 @@ import {
   LogicType,
   PreventSubmitLogic,
   ShowFieldLogic,
-} from '../../shared/types'
+} from 'formsg-shared/types'
+import { Document } from 'mongoose'
 
 import { IFieldSchema } from './field'
 

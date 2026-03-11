@@ -2,6 +2,7 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
+import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
@@ -29,11 +30,6 @@ import {
   PublicForm,
 } from 'src/types'
 
-import {
-  ErrorCode,
-  FormAuthType,
-  MyInfoAttribute,
-} from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
 import * as BillingService from '../../../billing/billing.service'
 import {

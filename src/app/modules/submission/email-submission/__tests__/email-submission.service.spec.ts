@@ -6,6 +6,12 @@ import {
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
+import {
+  BasicField,
+  FormAuthType,
+  ResponseMetadata,
+  SubmissionType,
+} from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
@@ -16,12 +22,6 @@ import {
   IPopulatedEmailForm,
 } from 'src/types'
 
-import {
-  BasicField,
-  FormAuthType,
-  ResponseMetadata,
-  SubmissionType,
-} from '../../../../../../shared/types'
 import { ProcessedSingleAnswerResponse } from '../../submission.types'
 import {
   DIGEST_TYPE,

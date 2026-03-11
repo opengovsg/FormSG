@@ -1,11 +1,7 @@
+import { BasicField, FormAuthType, NricResponse } from 'formsg-shared/types'
+import { hasProp } from 'formsg-shared/utils/has-prop'
 import { err, ok, Result } from 'neverthrow'
 
-import {
-  BasicField,
-  FormAuthType,
-  NricResponse,
-} from '../../../../shared/types'
-import { hasProp } from '../../../../shared/utils/has-prop'
 import { IFormSchema, SgidFieldTitle } from '../../../types'
 import { AuthTypeMismatchError } from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'

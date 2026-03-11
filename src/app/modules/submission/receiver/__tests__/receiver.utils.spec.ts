@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
+import { BasicField } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
-import { BasicField } from 'shared/types'
 
 import {
   FieldResponse,

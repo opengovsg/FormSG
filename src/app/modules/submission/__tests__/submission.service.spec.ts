@@ -6,6 +6,17 @@ import {
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import {
+  AutoReplyOptions,
+  BasicField,
+  FormResponseMode,
+  FormWorkflowStepDto,
+  SubmissionId,
+  SubmissionMetadata,
+  SubmissionType,
+  SubmittedNonApprovalStep,
+  WorkflowType,
+} from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { clone, omit, times } from 'lodash'
 import mongoose from 'mongoose'
@@ -37,17 +48,6 @@ import {
   StorageModeSubmissionData,
 } from 'src/types'
 
-import {
-  AutoReplyOptions,
-  BasicField,
-  FormResponseMode,
-  FormWorkflowStepDto,
-  SubmissionId,
-  SubmissionMetadata,
-  SubmissionType,
-  SubmittedNonApprovalStep,
-  WorkflowType,
-} from '../../../../../shared/types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
 import {

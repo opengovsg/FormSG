@@ -1,9 +1,9 @@
+import { ClientEnvVars, FormStatus } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { escape } from 'html-escaper'
 import { get } from 'lodash'
 import path from 'path'
 
-import { ClientEnvVars, FormStatus } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'

@@ -1,4 +1,4 @@
-import { BasicField, LongTextFieldBase } from '../../../shared/types'
+import { BasicField, LongTextFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

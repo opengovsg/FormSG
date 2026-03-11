@@ -3,6 +3,15 @@ import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
+  FormResponseMode,
+  SubmissionMetadata,
+  SubmissionMetadataList,
+  SubmissionPaymentDto,
+  SubmissionType,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import omit from 'lodash/omit'
 import moment from 'moment'
@@ -12,15 +21,6 @@ import Mail from 'nodemailer/lib/mailer'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
-import {
-  AttachmentPresignedPostDataMapType,
-  AttachmentSizeMapType,
-  FormResponseMode,
-  SubmissionMetadata,
-  SubmissionMetadataList,
-  SubmissionPaymentDto,
-  SubmissionType,
-} from '../../../../shared/types'
 import {
   EmailDataField,
   IEncryptSubmissionModel,

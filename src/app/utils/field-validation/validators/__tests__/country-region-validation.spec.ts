@@ -4,12 +4,11 @@ import {
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { CountryRegion } from 'formsg-shared/constants/countryRegion'
+import { BasicField } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import { CountryRegion } from '../../../../../../shared/constants/countryRegion'
-import { BasicField } from '../../../../../../shared/types'
 
 // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
 // As such, in handleSubmitForm, which runs before validation, we change the title-case country/region value into upper-case.

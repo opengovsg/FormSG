@@ -1,4 +1,4 @@
-import { BasicField, NumberFieldBase } from '../../../shared/types'
+import { BasicField, NumberFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

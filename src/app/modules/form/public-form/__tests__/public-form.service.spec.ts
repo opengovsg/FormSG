@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ObjectId } from 'bson'
+import { FormAuthType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import type { PartialDeep } from 'type-fest'
 
@@ -8,7 +9,6 @@ import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { IFormSchema } from 'src/types'
 
-import { FormAuthType } from '../../../../../../shared/types'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import { JwtName } from '../../../spcp/spcp.types'

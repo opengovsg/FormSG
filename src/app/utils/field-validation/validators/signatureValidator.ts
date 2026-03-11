@@ -1,10 +1,10 @@
+import { BasicField, SignatureResponseV3 } from 'formsg-shared/types'
 import { left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedSignatureResponse } from 'src/app/modules/submission/submission.types'
 import { ISignatureFieldSchema, OmitUnusedValidatorProps } from 'src/types'
 
-import { BasicField, SignatureResponseV3 } from '../../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ResponseValidator,

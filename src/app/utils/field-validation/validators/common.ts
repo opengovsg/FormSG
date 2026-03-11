@@ -1,5 +1,8 @@
+import {
+  StringAnswerResponseV3,
+  VerifiableFieldResponseV3,
+} from 'formsg-shared/types'
 import { left, right } from 'fp-ts/lib/Either'
-import { StringAnswerResponseV3, VerifiableFieldResponseV3 } from 'shared/types'
 
 import {
   IEmailFieldSchema,

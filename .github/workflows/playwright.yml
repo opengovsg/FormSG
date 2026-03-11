@@ -45,7 +45,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           VITE_APP_FORMSG_SDK_MODE: 'test'
-        run: pnpm build
+        run: pnpm --filter formsg-shared --filter formsg-monorepo build
       - name: Cache build artifacts
         uses: actions/cache/save@v3
         with:

@@ -1,5 +1,6 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { ObjectId } from 'bson'
+import { FormAuthType } from 'formsg-shared/types'
 import fs from 'fs'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'
@@ -7,7 +8,6 @@ import session, { Session } from 'supertest-session'
 
 import { buildCelebrateError } from '../../../../../../../__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '../../../../../../../__tests__/unit/backend/helpers/jest-db'
-import { FormAuthType } from '../../../../../../../shared/types'
 import getLoginModel from '../../../../../models/login.server.model'
 import {
   MOCK_CP_OIDC_AUTHORISATION_CODE,

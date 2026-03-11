@@ -1,15 +1,15 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { pick, times } from 'lodash'
-import moment from 'moment-timezone'
-import mongoose from 'mongoose'
 import {
   BasicField,
   SubmissionMetadata,
   SubmissionType,
   WorkflowStatus,
   WorkflowType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import { pick, times } from 'lodash'
+import moment from 'moment-timezone'
+import mongoose from 'mongoose'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { createPrivateKey, createPublicKey, KeyObject } from 'crypto'
+import { FormAuthType } from 'formsg-shared/types'
 import {
   compactDecrypt,
   decodeProtectedHeader,
@@ -12,8 +13,6 @@ import jwkToPem from 'jwk-to-pem'
 import { BaseClient, TokenSet } from 'openid-client-legacy'
 import { ulid } from 'ulid'
 import { URLSearchParams } from 'url'
-
-import { FormAuthType } from '../../../../shared/types'
 
 import { SpcpOidcBaseClientCache } from './spcp.oidc.client.cache'
 import {

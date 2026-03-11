@@ -1,11 +1,11 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { FormAuthType } from 'formsg-shared/types'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
-import { FormAuthType } from '../../../../../shared/types'
 import * as BillingService from '../../billing/billing.service'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'

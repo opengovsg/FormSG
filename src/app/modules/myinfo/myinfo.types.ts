@@ -2,7 +2,8 @@ import {
   FormAuthType,
   MyInfoAttribute,
   MyInfoChildAttributes,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+
 import { Environment, IFormSchema, IMyInfo } from '../../../types'
 import { ISpcpMyInfo } from '../../config/features/spcp-myinfo.config'
 import { ProcessedFieldResponse } from '../submission/submission.types'

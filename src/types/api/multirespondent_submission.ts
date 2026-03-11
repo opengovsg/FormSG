@@ -5,7 +5,8 @@ import {
   FormResponseMode,
   ResponseMetadata,
   SubmissionAttachmentsMap,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
+
 import { IPopulatedMultirespondentForm } from '../form'
 import { IMultirespondentSubmissionSchema } from '../submission'
 

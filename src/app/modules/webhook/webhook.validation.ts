@@ -1,7 +1,7 @@
 import { promises as dns } from 'dns'
+import { isValidHttpsUrl } from 'formsg-shared/utils/url-validation'
 import ip from 'ip'
 
-import { isValidHttpsUrl } from '../../../../shared/utils/url-validation'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 

@@ -1,8 +1,8 @@
 import axios, { AxiosError } from 'axios'
+import { isPhoneNumber } from 'formsg-shared/utils/phone-num-validation'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
 import { AdminContactOtpData, FormOtpData } from '../../../types'
 import { useMockPostmanSms } from '../../config/config'
 import { postmanSmsConfig } from '../../config/features/postman-sms.config'

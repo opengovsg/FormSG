@@ -9,6 +9,12 @@ import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { format, subDays } from 'date-fns'
+import {
+  FormResponseMode,
+  FormStatus,
+  PaymentStatus,
+  SubmissionType,
+} from 'formsg-shared/types'
 import { times } from 'lodash'
 import MockDate from 'mockdate'
 import mongoose, { Types } from 'mongoose'
@@ -33,12 +39,6 @@ import {
   StorageModeSubmissionCursorData,
 } from 'src/types'
 
-import {
-  FormResponseMode,
-  FormStatus,
-  PaymentStatus,
-  SubmissionType,
-} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.

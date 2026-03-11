@@ -4,12 +4,11 @@ import {
   generateDefaultFieldV3,
   generateNewAttachmentResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { AttachmentSize, BasicField } from 'formsg-shared/types'
 import { mongo as mongodb } from 'mongoose'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation/'
-
-import { AttachmentSize, BasicField } from '../../../../../../shared/types'
 
 const { ObjectId } = mongodb
 

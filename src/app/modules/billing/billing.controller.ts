@@ -1,12 +1,8 @@
 import { AuthedSessionData } from 'express-session'
+import { BillingInfoDto, BillingQueryDto, ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import {
-  BillingInfoDto,
-  BillingQueryDto,
-  ErrorDto,
-} from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'

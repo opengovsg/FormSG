@@ -1,4 +1,4 @@
-import { BasicField, CountryRegionFieldBase } from '../../../shared/types'
+import { BasicField, CountryRegionFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

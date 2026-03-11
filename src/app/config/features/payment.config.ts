@@ -1,6 +1,5 @@
 import convict, { Schema } from 'convict'
-
-import { PUBLIC_PAYMENTS_GUIDE_LINK } from '../../../../shared/constants'
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from 'formsg-shared/constants'
 
 interface IStripe {
   defaultCurrency: string

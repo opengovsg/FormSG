@@ -1,8 +1,8 @@
+import { BasicField, EmailResponseV3 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isEmail from 'validator/lib/isEmail'
 
-import { BasicField, EmailResponseV3 } from '../../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IEmailFieldSchema,

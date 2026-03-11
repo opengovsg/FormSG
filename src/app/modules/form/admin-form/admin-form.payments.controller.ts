@@ -1,17 +1,17 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import { err, ok } from 'neverthrow'
-
-import { IEncryptedFormDocument } from 'src/types'
-
 import {
   ErrorDto,
   PaymentChannel,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   PaymentType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import { err, ok } from 'neverthrow'
+
+import { IEncryptedFormDocument } from 'src/types'
+
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'

@@ -1,6 +1,7 @@
+import { FormAuthType } from 'formsg-shared/types'
+
 import formsgSdk from 'src/app/config/formsg-sdk'
 
-import { FormAuthType } from '../../../../../shared/types'
 import {
   EncryptVerifiedContentError,
   MalformedVerifiedContentError,

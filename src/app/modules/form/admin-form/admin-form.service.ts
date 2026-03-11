@@ -1,14 +1,4 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { assignIn, last, omit, pick } from 'lodash'
-import mongoose, { ClientSession } from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import {
-  EncryptedStringsMessageContent,
-  EncryptedStringsMessageContentWithMyPrivateKey,
-} from 'shared/utils/crypto'
-import type { Except, Merge } from 'type-fest'
-import validator from 'validator'
-
 import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
@@ -19,8 +9,8 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
   WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
-} from '../../../../../shared/constants'
-import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
+} from 'formsg-shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -44,12 +34,22 @@ import {
   StartPageUpdateDto,
   StorageFormSettings,
   WorkflowType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'formsg-shared/utils/crypto'
 import {
   isMFinSeriesValid,
   isNricValid,
-} from '../../../../../shared/utils/nric-validation'
-import { isUenValid } from '../../../../../shared/utils/uen-validation'
+} from 'formsg-shared/utils/nric-validation'
+import { isUenValid } from 'formsg-shared/utils/uen-validation'
+import { assignIn, last, omit, pick } from 'lodash'
+import mongoose, { ClientSession } from 'mongoose'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import type { Except, Merge } from 'type-fest'
+import validator from 'validator'
+
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,

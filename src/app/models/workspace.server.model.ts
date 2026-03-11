@@ -1,9 +1,9 @@
-import { ClientSession, Mongoose, Schema } from 'mongoose'
-
 import {
   WORKSPACE_MAX_TITLE_LENGTH,
   WORKSPACE_MIN_TITLE_LENGTH,
-} from '../../../shared/constants'
+} from 'formsg-shared/constants'
+import { ClientSession, Mongoose, Schema } from 'mongoose'
+
 import {
   IFormSchema,
   IUserSchema,

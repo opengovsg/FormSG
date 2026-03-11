@@ -1,6 +1,6 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
+import { SgidPublicOfficerEmploymentList } from 'formsg-shared/types/auth'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
-import { SgidPublicOfficerEmploymentList } from 'shared/types/auth'
 
 import { ISgidVarsSchema } from 'src/types'
 

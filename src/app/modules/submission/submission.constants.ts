@@ -1,6 +1,5 @@
 import { Joi } from 'celebrate'
-
-import { BasicField } from '../../../../shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 export const sharedSubmissionParams = {
   responses: Joi.array()

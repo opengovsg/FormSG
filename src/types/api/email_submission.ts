@@ -1,9 +1,8 @@
-import type { Merge } from 'type-fest'
-
 import {
   EmailModeSubmissionContentDto,
   ResponseMetadata,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
+import type { Merge } from 'type-fest'
 
 import { ParsedClearFormFieldResponse } from './submission'
 

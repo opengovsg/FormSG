@@ -1,9 +1,9 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import axios from 'axios'
+import { PaymentStatus, SubmissionType } from 'formsg-shared/types'
 import mongoose, { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { PaymentStatus, SubmissionType } from 'shared/types'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'

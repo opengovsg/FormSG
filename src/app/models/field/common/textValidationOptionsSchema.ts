@@ -1,9 +1,8 @@
-import { Schema } from 'mongoose'
-
 import {
   TextSelectedValidation,
   TextValidationOptions,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { Schema } from 'mongoose'
 
 export const TextValidationOptionsSchema = new Schema<TextValidationOptions>({
   customVal: {

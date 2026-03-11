@@ -1,6 +1,14 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import {
+  BasicField,
+  FormAuthType,
+  FormDto,
+  FormFieldDto,
+  FormResponseMode,
+  SubmissionType,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -10,14 +18,6 @@ import {
   IPopulatedMultirespondentForm,
 } from 'src/types'
 
-import {
-  BasicField,
-  FormAuthType,
-  FormDto,
-  FormFieldDto,
-  FormResponseMode,
-  SubmissionType,
-} from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
 import {
   ParsedClearAttachmentResponseV3,

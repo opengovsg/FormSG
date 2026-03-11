@@ -1,13 +1,13 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
-import _ from 'lodash'
-
 import {
   BasicField,
   ChildBirthRecordsResponseV3,
   ChildrenCompoundFieldBase,
   MyInfoChildAttributes,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { chain, left, right } from 'fp-ts/lib/Either'
+import { flow } from 'fp-ts/lib/function'
+import _ from 'lodash'
+
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IChildrenCompoundFieldSchema,

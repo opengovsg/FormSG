@@ -1,3 +1,10 @@
+import {
+  FormAuthType,
+  MyInfoAttribute,
+  SubmissionMetadata,
+  SubmissionType,
+  WebhookResponse,
+} from 'formsg-shared/types'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -6,13 +13,6 @@ import mongoose, {
   Schema,
 } from 'mongoose'
 
-import {
-  FormAuthType,
-  MyInfoAttribute,
-  SubmissionMetadata,
-  SubmissionType,
-  WebhookResponse,
-} from '../../../shared/types'
 import {
   FindFormsWithSubsAboveResult,
   IEmailSubmissionModel,

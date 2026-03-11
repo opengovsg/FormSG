@@ -1,6 +1,6 @@
+import { ErrorDto, GetSgidAuthUrlResponseDto } from 'formsg-shared/types'
+import { SgidProfilesDto } from 'formsg-shared/types/auth'
 import { StatusCodes } from 'http-status-codes'
-import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
-import { SgidProfilesDto } from 'shared/types/auth'
 
 import { resolveRedirectionUrl } from '../../../../app/utils/urls'
 import { createLoggerWithLabel } from '../../../config/logger'

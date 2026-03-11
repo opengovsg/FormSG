@@ -2,6 +2,7 @@ import {
   generateDefaultFieldV3,
   generateVerifiableAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
@@ -13,8 +14,6 @@ import {
   OmitUnusedValidatorProps,
 } from 'src/types/field'
 import { SingleAnswerFieldResponse } from 'src/types/response'
-
-import { BasicField } from '../../../../../../shared/types'
 
 type VerificationMock = {
   authenticate: () => boolean

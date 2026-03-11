@@ -4,6 +4,8 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import { VALID_UPLOAD_FILE_TYPES } from 'formsg-shared/constants/file'
+import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import SparkMD5 from 'spark-md5'
 import supertest, { Session } from 'supertest-session'
@@ -13,11 +15,6 @@ import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import getUserModel from 'src/app/models/user.server.model'
 import { IUserSchema } from 'src/types'
 
-import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../../../shared/constants/file'
-import {
-  FormResponseMode,
-  FormStatus,
-} from '../../../../../../../../shared/types'
 import { AdminFormsRouter } from '../admin-forms.routes'
 
 // Prevent rate limiting.

@@ -1,15 +1,11 @@
-import { err, ok, Result } from 'neverthrow'
-
-import {
-  BasicField,
-  FieldResponsesV3,
-  FormAuthType,
-} from '../../../../shared/types'
-import { hasProp } from '../../../../shared/utils/has-prop'
+import { BasicField, FieldResponsesV3, FormAuthType } from 'formsg-shared/types'
+import { hasProp } from 'formsg-shared/utils/has-prop'
 import {
   mapVerifiedKeyToSPCPTitle,
   VerifiedKeys,
-} from '../../../../shared/utils/verified-content'
+} from 'formsg-shared/utils/verified-content'
+import { err, ok, Result } from 'neverthrow'
+
 import { IFormSchema, SPCPFieldTitle } from '../../../types'
 import {
   AuthTypeMismatchError,

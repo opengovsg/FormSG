@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { featureFlags } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags } from '../../../../shared/constants'
 import { Environment } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'

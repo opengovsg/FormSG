@@ -1,10 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { StatusCodes } from 'http-status-codes'
-import JSONStream from 'JSONStream'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -15,7 +11,11 @@ import {
   SubmissionMetadataList,
   SubmissionPaymentDto,
   SubmissionType,
-} from '../../../../shared/types'
+} from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
+import JSONStream from 'JSONStream'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { getFormAfterPermissionChecks } from '../auth/auth.service'

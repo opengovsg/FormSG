@@ -4,7 +4,8 @@ import {
   ChildBirthRecordsResponse,
   SignatureResponse,
   TableResponse,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
+
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,

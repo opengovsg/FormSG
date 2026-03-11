@@ -1,7 +1,6 @@
+import { FormFeedbackBase } from 'formsg-shared/types'
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 import type { Merge } from 'type-fest'
-
-import { FormFeedbackBase } from '../../shared/types'
 
 import { IFormSchema } from './form'
 import { ISubmissionSchema } from './submission'

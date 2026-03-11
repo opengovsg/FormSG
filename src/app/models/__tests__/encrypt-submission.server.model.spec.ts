@@ -1,8 +1,8 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { SubmissionMetadata, SubmissionType } from 'formsg-shared/types'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
-import { SubmissionMetadata, SubmissionType } from 'shared/types'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,

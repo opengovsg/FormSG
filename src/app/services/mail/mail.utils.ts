@@ -1,11 +1,11 @@
 import dedent from 'dedent-js'
 import ejs, { Data } from 'ejs'
+import { BasicField } from 'formsg-shared/types'
 import { flattenDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
-import { BasicField } from '../../../../shared/types'
 import { BounceType, EmailRespondentConfirmationField } from '../../../types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'

@@ -2,7 +2,7 @@ import {
   BasicField,
   ChildrenCompoundFieldBase,
   MyInfoChildAttributes,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

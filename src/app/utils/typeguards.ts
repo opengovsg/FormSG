@@ -1,11 +1,11 @@
-import { LOGIC_MAP } from '../../../shared/modules/logic'
+import { LOGIC_MAP } from 'formsg-shared/modules/logic'
 import {
   BasicField,
   FieldResponseAnswerMapV3,
   LogicableField,
   RadioFieldResponsesV3,
   StringAnswerResponseV3,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
 
 type SingleAnswerLogicableField = Exclude<LogicableField, BasicField.Radio>
 

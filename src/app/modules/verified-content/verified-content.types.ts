@@ -1,7 +1,6 @@
+import { FormAuthType } from 'formsg-shared/types'
+import { VerifiedKeys } from 'formsg-shared/utils/verified-content'
 import { Result } from 'neverthrow'
-
-import { FormAuthType } from '../../../../shared/types'
-import { VerifiedKeys } from '../../../../shared/utils/verified-content'
 
 import { MalformedVerifiedContentError } from './verified-content.errors'
 

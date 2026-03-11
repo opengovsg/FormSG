@@ -1,6 +1,6 @@
+import { FormResponseMode } from 'formsg-shared/types'
 import { Result } from 'neverthrow'
 
-import { FormResponseMode } from '../../../../../shared/types'
 import {
   FormFieldSchema,
   IForm,

@@ -1,8 +1,8 @@
+import { MB } from 'formsg-shared/constants/file'
+import { BasicField } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { MB } from '../../../../../shared/constants/file'
-import { BasicField } from '../../../../../shared/types'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponseV3,

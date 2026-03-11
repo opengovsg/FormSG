@@ -1,3 +1,10 @@
+import { AddressResponseV3, BasicField } from 'formsg-shared/types'
+import {
+  validateLevelUnit,
+  validateNoNonNumerical,
+  validateNoSpecialCharacters,
+  validatePostalCode,
+} from 'formsg-shared/utils/address-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
@@ -7,13 +14,6 @@ import {
   OmitUnusedValidatorProps,
 } from 'src/types'
 
-import { AddressResponseV3, BasicField } from '../../../../../shared/types'
-import {
-  validateLevelUnit,
-  validateNoNonNumerical,
-  validateNoSpecialCharacters,
-  validatePostalCode,
-} from '../../../../../shared/utils/address-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ResponseValidator,

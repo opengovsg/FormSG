@@ -1,6 +1,6 @@
+import { Payment, PaymentStatus } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
 
-import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 import { ProductSchema } from './payments/productSchema'

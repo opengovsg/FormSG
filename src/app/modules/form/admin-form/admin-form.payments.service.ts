@@ -1,11 +1,11 @@
-import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-
 import {
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   PaymentType,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+
 import {
   IEncryptedForm,
   IEncryptedFormDocument,

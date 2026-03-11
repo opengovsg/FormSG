@@ -1,4 +1,4 @@
-import { BasicField, RadioFieldBase } from '../../../shared/types'
+import { BasicField, RadioFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

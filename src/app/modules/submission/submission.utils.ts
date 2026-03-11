@@ -1,6 +1,27 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import crypto from 'crypto'
+import {
+  AdminEmailPdfFeatureValue,
+  featureFlags,
+  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+} from 'formsg-shared/constants'
+import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
+import {
+  BasicField,
+  FormAuthType,
+  FormField,
+  FormResponseMode,
+  MyInfoAttribute,
+  SubmissionAttachment,
+  SubmissionAttachmentsMap,
+  SubmissionMrfMetadata,
+  SubmittedApprovalStep,
+  SubmittedStep,
+  WorkflowStatus,
+} from 'formsg-shared/types'
+import * as FileValidation from 'formsg-shared/utils/file-validation'
 import StatusCodes from 'http-status-codes'
 import {
   chain,
@@ -15,27 +36,6 @@ import {
 import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
-import {
-  AdminEmailPdfFeatureValue,
-  featureFlags,
-  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
-} from '../../../../shared/constants'
-import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
-import {
-  BasicField,
-  FormAuthType,
-  FormField,
-  FormResponseMode,
-  MyInfoAttribute,
-  SubmissionAttachment,
-  SubmissionAttachmentsMap,
-  SubmissionMrfMetadata,
-  SubmittedApprovalStep,
-  SubmittedStep,
-  WorkflowStatus,
-} from '../../../../shared/types'
-import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
   FieldResponse,
   FormFieldSchema,

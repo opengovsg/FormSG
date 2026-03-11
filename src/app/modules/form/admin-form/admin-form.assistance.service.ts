@@ -1,7 +1,3 @@
-import { omit } from 'lodash'
-import { errAsync, ResultAsync } from 'neverthrow'
-import { z } from 'zod'
-
 import {
   AttachmentFieldBase,
   AttachmentSize,
@@ -11,7 +7,11 @@ import {
   FormField,
   RadioFieldBase,
   TableFieldBase,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+import { omit } from 'lodash'
+import { errAsync, ResultAsync } from 'neverthrow'
+import { z } from 'zod'
+
 import { FormFieldSchema, IPopulatedForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { PossibleDatabaseError } from '../../core/core.errors'

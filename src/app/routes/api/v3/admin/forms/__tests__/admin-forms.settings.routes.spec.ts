@@ -4,6 +4,7 @@ import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { ObjectId } from 'bson'
+import { FormStatus, SettingsUpdateDto } from 'formsg-shared/types'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
@@ -12,10 +13,6 @@ import supertest, { Session } from 'supertest-session'
 import getUserModel from 'src/app/models/user.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 
-import {
-  FormStatus,
-  SettingsUpdateDto,
-} from '../../../../../../../../shared/types'
 import * as UserService from '../../../../../../modules/user/user.service'
 import { AdminFormsRouter } from '../admin-forms.routes'
 

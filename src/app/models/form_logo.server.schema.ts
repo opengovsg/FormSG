@@ -1,6 +1,6 @@
+import { FormLogoState } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
-import { FormLogoState } from '../../../shared/types'
 import { ICustomFormLogoSchema, IFormLogoSchema } from '../../types'
 
 export const FormLogoSchema = new Schema<IFormLogoSchema>(

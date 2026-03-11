@@ -3,6 +3,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
+import { MyInfoAttribute } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'
@@ -19,7 +20,6 @@ import {
   PossiblyPrefilledField,
 } from 'src/types'
 
-import { MyInfoAttribute } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
 import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'

@@ -1,4 +1,4 @@
-import { BasicField, DropdownFieldBase } from '../../../shared/types'
+import { BasicField, DropdownFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

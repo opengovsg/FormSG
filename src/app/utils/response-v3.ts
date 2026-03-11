@@ -1,6 +1,6 @@
+import { BasicField, FieldResponseV3 } from 'formsg-shared/types'
 import _ from 'lodash'
 
-import { BasicField, FieldResponseV3 } from '../../../shared/types'
 import { ParsedClearAttachmentResponseV3 } from '../../types/api'
 
 export const isFieldResponseV3Equal = (

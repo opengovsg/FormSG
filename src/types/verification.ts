@@ -1,6 +1,5 @@
+import { BasicField } from 'formsg-shared/types'
 import { Document, Model } from 'mongoose'
-
-import { BasicField } from '../../shared/types'
 
 import { PublicView } from './database'
 import { IEncryptedFormSchema, IFormSchema } from './form'

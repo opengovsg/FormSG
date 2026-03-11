@@ -6,8 +6,8 @@ import {
   generateVerifiableAnswerResponseV3,
   generateYesNoAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants'
-import { BasicField } from 'shared/types'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 
 import { checkIsResponseChangedV3 } from '../field-validation.utils'
 

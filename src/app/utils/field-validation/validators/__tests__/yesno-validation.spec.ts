@@ -4,14 +4,10 @@ import {
   generateNewSingleAnswerResponse,
   generateYesNoAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
+import { BasicField, YesNoFieldResponseV3 } from 'formsg-shared/types'
 
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
-
-import {
-  BasicField,
-  YesNoFieldResponseV3,
-} from '../../../../../../shared/types'
 
 describe('Yes/No field validation', () => {
   it('should allow yes', () => {

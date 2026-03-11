@@ -1,6 +1,6 @@
+import { RatingShape } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
-import { RatingShape } from '../../../../shared/types'
 import { IRatingFieldSchema } from '../../../types'
 
 const createRatingFieldSchema = () => {

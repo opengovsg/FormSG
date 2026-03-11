@@ -1,4 +1,4 @@
-import { BasicField, RatingFieldBase } from '../../../shared/types'
+import { BasicField, RatingFieldBase } from 'formsg-shared/types'
 
 import { IFieldSchema } from './baseField'
 

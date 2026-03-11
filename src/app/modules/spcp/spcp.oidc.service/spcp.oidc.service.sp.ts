@@ -1,6 +1,6 @@
+import { FormAuthType } from 'formsg-shared/types'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { FormAuthType } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   ExchangeAuthTokenError,

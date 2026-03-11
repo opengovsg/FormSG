@@ -1,6 +1,6 @@
 import { Router } from 'express'
+import { FormAuthType } from 'formsg-shared/types'
 
-import { FormAuthType } from '../../../../../../shared/types'
 import { spcpMyInfoConfig } from '../../../../config/features/spcp-myinfo.config'
 import { authCallbackForwardingMiddleware } from '../../../../modules/auth/auth.middlewares'
 import * as SpcpController from '../../../../modules/spcp/spcp.controller'

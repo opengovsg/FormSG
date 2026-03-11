@@ -1,10 +1,10 @@
 import { ObjectId } from 'bson'
-import mongoose from 'mongoose'
 import {
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   PaymentType,
-} from 'shared/types'
+} from 'formsg-shared/types'
+import mongoose from 'mongoose'
 
 import * as PaymentConfig from 'src/app/config/features/payment.config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'

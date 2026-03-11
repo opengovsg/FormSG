@@ -1,8 +1,8 @@
+import { BasicField, UenResponseV3 } from 'formsg-shared/types'
+import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { BasicField, UenResponseV3 } from '../../../../../shared/types'
-import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'

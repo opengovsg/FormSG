@@ -2,7 +2,8 @@ import {
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
-} from '../../../../../shared/types'
+} from 'formsg-shared/types'
+
 import { IPopulatedEncryptedForm } from '../../../../types'
 import {
   EncryptFormLoadedDto,

@@ -1,6 +1,10 @@
 import { ObjectId } from 'bson'
+import {
+  FormPaymentsField,
+  PaymentType,
+  SubmissionType,
+} from 'formsg-shared/types'
 import moment from 'moment-timezone'
-import { FormPaymentsField, PaymentType, SubmissionType } from 'shared/types'
 
 import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
 

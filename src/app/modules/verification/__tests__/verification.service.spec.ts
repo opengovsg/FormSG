@@ -16,7 +16,8 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
-import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
+import { PAYMENT_CONTACT_FIELD_ID } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
@@ -35,7 +36,6 @@ import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import * as HashUtils from 'src/app/utils/hash'
 import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
 
-import { BasicField } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import {

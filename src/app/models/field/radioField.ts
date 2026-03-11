@@ -1,6 +1,6 @@
+import { Language } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
-import { Language } from '../../../../shared/types'
 import { IRadioFieldSchema } from '../../../types'
 
 const createRadioFieldSchema = () => {

@@ -1,4 +1,5 @@
-import { FormAuthType } from '../../../../../shared/types'
+import { FormAuthType } from 'formsg-shared/types'
+
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { retrieveJsonContent } from '../../../utils/iac'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'

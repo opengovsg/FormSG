@@ -1,7 +1,3 @@
-import type { Merge } from 'type-fest'
-
-import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-
 import {
   AttachmentResponse,
   FieldResponse,
@@ -9,7 +5,11 @@ import {
   PaymentFieldsDto,
   ProductItem,
   StorageModeSubmissionContentDto,
-} from '../../../shared/types'
+} from 'formsg-shared/types'
+import type { Merge } from 'type-fest'
+
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
 
 import { ParsedEmailModeSubmissionBody } from './email_submission'

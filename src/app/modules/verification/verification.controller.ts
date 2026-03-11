@@ -1,15 +1,15 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { StatusCodes } from 'http-status-codes'
-import jwt from 'jsonwebtoken'
-import { errAsync, okAsync, Result } from 'neverthrow'
-
 import {
   ErrorDto,
   FormAuthType,
   FormResponseMode,
   SendFormOtpResponseDto,
-} from '../../../../shared/types'
-import { SALT_ROUNDS } from '../../../../shared/utils/verification'
+} from 'formsg-shared/types'
+import { SALT_ROUNDS } from 'formsg-shared/utils/verification'
+import { StatusCodes } from 'http-status-codes'
+import jwt from 'jsonwebtoken'
+import { errAsync, okAsync, Result } from 'neverthrow'
+
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'

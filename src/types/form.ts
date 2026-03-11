@@ -1,13 +1,4 @@
 import {
-  ClientSession,
-  Document,
-  FlattenMaps,
-  Model,
-  ToObjectOptions,
-} from 'mongoose'
-import type { Merge, RequiredDeep, SetOptional } from 'type-fest'
-
-import {
   AdminDashboardFormMetaDto,
   FormBase,
   FormBusinessField,
@@ -26,7 +17,16 @@ import {
   PublicFormDto,
   WhitelistedSubmitterIds,
   WhitelistedSubmitterIdsWithReferenceOid,
-} from '../../shared/types'
+} from 'formsg-shared/types'
+import {
+  ClientSession,
+  Document,
+  FlattenMaps,
+  Model,
+  ToObjectOptions,
+} from 'mongoose'
+import type { Merge, RequiredDeep, SetOptional } from 'type-fest'
+
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
 import { PublicView } from './database'
