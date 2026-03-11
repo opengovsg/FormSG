@@ -65,7 +65,7 @@ COPY shared/package.json ./shared/
 COPY frontend/ ./frontend/
 COPY frontend/package.json ./frontend/
 
-RUN pnpm install --frozen-lockfile --filter "!functions/*" --filter "!serverless/*" --filter "!react-email-preview/*"
+RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
 
 COPY . ./
 
