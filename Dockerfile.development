@@ -45,6 +45,7 @@ RUN apk update && apk upgrade && \
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
 COPY frontend/ ./frontend/
 COPY frontend/package.json ./frontend/
