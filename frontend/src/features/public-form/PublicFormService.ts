@@ -1,4 +1,3 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
 import axios from 'axios'
 
 import {
@@ -51,6 +50,8 @@ import { PublicMultirespondentSubmissionDtoWithAttachments } from './types'
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
 export const X_FORMSG_SELECTED_FORM_LANGUAGE = 'X-Formsg-Selected-Form-Language'
+
+type PresignedPost = AttachmentPresignedPostDataMapType['presignedPostData']
 
 /**
  * Gets public view of form, along with any
