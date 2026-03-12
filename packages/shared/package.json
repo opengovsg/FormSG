@@ -5,7 +5,9 @@
   "description": "",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm exec jest --config jest.config.js"
+    "test": "pnpm exec jest --config jest.config.js",
+    "lint": "pnpm exec eslint . --quiet --fix",
+    "lint-ci": "pnpm exec eslint . --quiet"
   },
   "__comment": "To clean up the exports in shared after monorepo migration. Vite uses the default, whereas node (cjs) uses the require.",
   "exports": {
