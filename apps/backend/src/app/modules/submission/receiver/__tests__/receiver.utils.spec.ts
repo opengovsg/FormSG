@@ -4,8 +4,6 @@ import { readFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
 import path from 'path'
 
-const RESOURCES = path.join(__dirname, '../../../../../../../../__tests__/resources')
-
 import {
   FieldResponse,
   IAttachmentResponse,
@@ -16,6 +14,11 @@ import {
   addAttachmentToResponses,
   handleDuplicatesInAttachments,
 } from '../receiver.utils'
+
+const RESOURCES = path.join(
+  __dirname,
+  '../../../../../../../../__tests__/resources',
+)
 
 const validSingleFile = {
   filename: 'govtech.jpg',

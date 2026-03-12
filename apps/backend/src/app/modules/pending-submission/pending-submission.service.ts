@@ -3,9 +3,9 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { IPendingSubmissionSchema } from 'src/types'
 
-import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPendingSubmissionModel from '../../models/pending_submission.server.model'
+import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
 import { PendingSubmissionNotFoundError } from '../submission/submission.errors'
 

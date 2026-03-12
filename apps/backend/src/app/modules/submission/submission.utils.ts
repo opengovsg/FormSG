@@ -62,7 +62,6 @@ import {
   getEncryptSubmissionModel,
   getMultirespondentSubmissionModel,
 } from '../../models/submission.server.model'
-import { MalformedVerifiedContentError } from '../verified-content/verified-content.errors'
 import {
   CaptchaConnectionError,
   MissingCaptchaError,
@@ -123,6 +122,7 @@ import {
 } from '../spcp/spcp.errors'
 import { JwtName } from '../spcp/spcp.types'
 import { MissingUserError } from '../user/user.errors'
+import { MalformedVerifiedContentError } from '../verified-content/verified-content.errors'
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'

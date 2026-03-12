@@ -4,15 +4,9 @@ module.exports = {
   rootDir: __dirname,
   moduleDirectories: ['node_modules'],
   testEnvironment: 'node',
-  testPathIgnorePatterns: [
-    '<rootDir>/dist/',
-    '<rootDir>/node_modules/',
-  ],
+  testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
   collectCoverage: true,
-  collectCoverageFrom: [
-    '<rootDir>/**/*.{ts,js}',
-    '!<rootDir>/**/__tests__/**',
-  ],
+  collectCoverageFrom: ['<rootDir>/**/*.{ts,js}', '!<rootDir>/**/__tests__/**'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/dist/',

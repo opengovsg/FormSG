@@ -69,9 +69,7 @@ describe('File validation utils', () => {
     })
 
     it('should return only invalid extensions when zip has some valid file extensions', async () => {
-      const file = fs.readFileSync(
-        path.join(RESOURCES, 'invalidandvalid.zip'),
-      )
+      const file = fs.readFileSync(path.join(RESOURCES, 'invalidandvalid.zip'))
       const actual = await getInvalidFileExtensionsInZip('nodebuffer', file)
       expect(actual).toEqual(['.a', '.oo'])
     })

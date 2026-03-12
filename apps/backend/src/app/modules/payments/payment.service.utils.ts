@@ -2,8 +2,8 @@ import { PaymentType } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from 'formsg-shared/utils/urls'
 
-import config from '../../config/config'
 import { IPaymentSchema } from '../../../types'
+import config from '../../config/config'
 import { PaymentWebhookEventObject } from '../webhook/webhook.types'
 
 export const getPaymentWebhookEventObject = (

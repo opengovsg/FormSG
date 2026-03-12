@@ -15,11 +15,6 @@ import {
   MapRouteError,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import {
-  OtpRequestCountExceededError,
-  OtpRequestError,
-  SmsLimitExceededError,
-} from './verification.errors'
 import { MailSendError } from '../../services/mail/mail.errors'
 import {
   InvalidNumberError,
@@ -56,7 +51,10 @@ import {
   MrfJwtValidationError,
   NonVerifiedFieldTypeError,
   OtpExpiredError,
+  OtpRequestCountExceededError,
+  OtpRequestError,
   OtpRetryExceededError,
+  SmsLimitExceededError,
   TransactionExpiredError,
   TransactionNotFoundError,
   WaitForOtpError,
