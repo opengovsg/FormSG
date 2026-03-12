@@ -29,6 +29,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      shared: ${{ steps.filter.outputs.shared }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,12 +42,19 @@ jobs:
               - __tests__/**
               - packages/shared/**
               - frontend/**
+              - pnpm-lock.yaml
             backend:
-              - __tests__/**
-              - packages/shared/**
-              - src/**
-              - package.json
-              - package-lock.json
+              - apps/backend/src/**
+              - apps/backend/__tests__/**
+              - apps/backend/package.json
+              - pnpm-lock.yaml
+            shared:
+              - packages/shared/constants/**
+              - packages/shared/modules/** 
+              - packages/shared/types/**
+              - packages/shared/utils/**
+              - packages/shared/package.json
+              - pnpm-lock.yaml
 
   install:
     runs-on: ubuntu-latest
@@ -100,7 +108,7 @@ jobs:
 
   frontend_test:
     needs: [changes, install]
-    # if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -153,7 +161,7 @@ jobs:
 
   backend_test:
     needs: [changes, install, build]
-    # if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -207,4 +215,55 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
-      - run: pnpm lint-ci
+      - run: pnpm lint-ci:backend
+
+  shared_lint:
+    needs: [changes, install]
+    if: ${{ needs.changes.outputs.shared == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - run: pnpm lint-ci:shared
+  
+  shared_test:
+    needs: [changes, install]
+    if: ${{ needs.changes.outputs.shared == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
+      - run: pnpm test:shared
+        env:
+          DD_TAGS: layer:shared
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}

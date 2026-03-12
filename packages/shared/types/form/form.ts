@@ -30,7 +30,7 @@ import {
 } from './workflow'
 import { ErrorCode } from '../errorCodes'
 
-import { Schema } from 'mongoose'
+import type { Schema } from 'mongoose'
 
 export type FormId = Tagged<string, 'FormId'>
 
