@@ -10,7 +10,7 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/dist/',
-    '<rootDir>/**/__tests__/**',
+    '/__tests__/',
   ],
   coverageReporters: ['lcov', 'text'],
 }
