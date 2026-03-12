@@ -27,7 +27,6 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-RUN pnpm --filter formsg-shared build
 RUN pnpm build
 
 ARG APP_VERSION
@@ -55,6 +54,7 @@ WORKDIR /opt/formsg
 COPY --from=build /build/apps/frontend/dist /opt/formsg/apps/frontend/dist
 # Copy the built formsg-shared package and package.json for the backend to resolve
 COPY --from=build /build/packages/shared/package.json /opt/formsg/packages/shared/
+COPY --from=build /build/packages/shared/node_modules /opt/formsg/packages/shared/node_modules
 COPY --from=build /build/packages/shared/dist /opt/formsg/packages/shared/dist
 
 # Copy required node_modules, package.json scripts and built backend dist for the backend start script to run
