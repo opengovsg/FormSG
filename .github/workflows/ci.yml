@@ -40,9 +40,6 @@ jobs:
           filters: |
             frontend:
               - __tests__/**
-              - packages/shared/**
-              - frontend/**
-              - pnpm-lock.yaml
               - apps/frontend/**
               - pnpm-lock.yaml
             backend:

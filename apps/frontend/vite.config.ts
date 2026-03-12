@@ -26,7 +26,7 @@ const baseRollupOptions = {
 export default defineConfig(() => {
   return {
     build: {
-      outDir: '../apps/frontend/dist',
+      outDir: 'dist',
       emptyOutDir: true,
       rollupOptions: {
         ...baseRollupOptions,
