@@ -12,7 +12,7 @@ import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
 
 const RESOURCES = path.join(
   __dirname,
-  '../../../../../../../../__tests__/resources',
+  '../../../../../../../../../__tests__/resources',
 )
 
 export const MOCK_STORAGE_NO_RESPONSES_BODY = {
