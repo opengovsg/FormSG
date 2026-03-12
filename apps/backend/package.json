@@ -8,6 +8,8 @@
     "copyfiles:backend": "copyfiles -u 1 src/**/*.html ./dist/src",
     "dev": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "start": "node -r dotenv/config dist/src/app/server.js",
+    "test:e2e-v2:server": "env-cmd -f ./__tests__/setup/.test-env pnpm test-e2e-server",
+    "test-e2e-server": "concurrently --success last --kill-others \"pnpm exec mockpass\" \"pnpm exec maildev\" \"node dist/src/app/server.js\" \"node ./__tests__/setup/mock-webhook-server.js\"",
     "test": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:watch": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
