@@ -56,7 +56,6 @@ jobs:
             packages/shared/node_modules
             apps/frontend/dist
             apps/backend/dist
-            dist
             packages/shared/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
