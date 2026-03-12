@@ -13,8 +13,8 @@
     "test": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:watch": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "lint": "eslint src/ --quiet --fix",
-    "lint-ci": "eslint src/ --quiet"
+    "lint": "pnpm exec eslint src/ --quiet --fix",
+    "lint-ci": "pnpm exec eslint src/ --quiet"
   },
   "dependencies": {
     "formsg-shared": "workspace:*",
