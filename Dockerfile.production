@@ -18,7 +18,7 @@ WORKDIR /build
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
-COPY apps/frontend/package.json apps/frontend/pnpm-lock.yaml ./apps/frontend/
+COPY apps/frontend/package.json ./apps/frontend/
 
 RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
 
