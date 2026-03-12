@@ -8,9 +8,12 @@ import { BasicField, FieldBase } from 'formsg-shared/types'
 import fs from 'fs'
 import path from 'path'
 
-const RESOURCES = path.join(__dirname, '../../../../../../../../__tests__/resources')
-
 import { IAttachmentFieldSchema, ICheckboxFieldSchema } from 'src/types'
+
+const RESOURCES = path.join(
+  __dirname,
+  '../../../../../../../../__tests__/resources',
+)
 
 export const MOCK_NO_RESPONSES_BODY = {
   responses: [],

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 
-import { retrieveJsonContent } from '../../utils/iac'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
+import { retrieveJsonContent } from '../../utils/iac'
 
 // Handles SingPass JWKS requests
 export const SpOidcJwksRouter = Router()

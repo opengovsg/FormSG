@@ -10,8 +10,6 @@ import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 import path from 'path'
 
-const RESOURCES = path.join(__dirname, '../../../../../../../__tests__/resources')
-
 import {
   IMultirespondentSubmissionSchema,
   SingleAnswerFieldResponse,
@@ -23,6 +21,11 @@ import {
   getResponseModeFilter,
   mapAttachmentsFromResponses,
 } from '../submission.utils'
+
+const RESOURCES = path.join(
+  __dirname,
+  '../../../../../../../__tests__/resources',
+)
 
 const validSingleFile = {
   filename: 'govtech.jpg',
@@ -38,9 +41,7 @@ const invalidSingleFile = {
 
 const zipWithValidAndInvalid = {
   filename: 'invalidandvalid.zip',
-  content: readFileSync(
-    path.join(RESOURCES, 'invalidandvalid.zip'),
-  ),
+  content: readFileSync(path.join(RESOURCES, 'invalidandvalid.zip')),
   fieldId: String(new ObjectId()),
 }
 

@@ -13,7 +13,6 @@ import { calculatePrice } from 'formsg-shared/utils/paymentProductPrice'
 import moment from 'moment-timezone'
 import Stripe from 'stripe'
 
-import { isProcessedChildResponse } from '../../../utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -24,6 +23,7 @@ import {
   EncryptFormFieldResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
+import { isProcessedChildResponse } from '../../../utils/field-validation/field-validation.guards'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { ProcessedFieldResponse } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'

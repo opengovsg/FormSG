@@ -18,7 +18,6 @@ import {
   IPopulatedMultirespondentForm,
 } from 'src/types'
 
-import { isDev } from '../../../config/config'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
@@ -28,6 +27,7 @@ import {
   MultirespondentFormLoadedDto,
   SnapshottedFormDef,
 } from '../../../../types/api/multirespondent_submission'
+import { isDev } from '../../../config/config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {

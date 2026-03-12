@@ -3,15 +3,6 @@ import { BasicField, FormField, FormFieldDto } from 'formsg-shared/types'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
-import {
-  ProcessedAddressResponse,
-  ProcessedAttachmentResponse,
-  ProcessedCheckboxResponse,
-  ProcessedChildrenResponse,
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
-  ProcessedTableResponse,
-} from '../../modules/submission/submission.types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 import {
   FieldValidationSchema,
@@ -24,6 +15,15 @@ import {
   ValidateFieldError,
   ValidateFieldErrorV3,
 } from '../../modules/submission/submission.errors'
+import {
+  ProcessedAddressResponse,
+  ProcessedAttachmentResponse,
+  ProcessedCheckboxResponse,
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+  ProcessedTableResponse,
+} from '../../modules/submission/submission.types'
 
 import {
   constructAddressFieldValidator,

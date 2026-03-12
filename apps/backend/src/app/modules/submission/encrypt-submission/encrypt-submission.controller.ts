@@ -53,7 +53,6 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import * as EncryptSubmissionMiddleware from './encrypt-submission.middleware'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
@@ -71,6 +70,7 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
+import * as EncryptSubmissionMiddleware from './encrypt-submission.middleware'
 import {
   checkFormIsEncryptMode,
   getAllEncryptedSubmissionData,

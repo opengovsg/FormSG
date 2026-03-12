@@ -14,7 +14,6 @@ import mongoose, { FlattenMaps } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
-import { retrieveFileContent } from '../../utils/iac'
 import {
   Environment,
   IFieldSchema,
@@ -26,6 +25,7 @@ import {
 import config from '../../config/config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { retrieveFileContent } from '../../utils/iac'
 import { DatabaseError } from '../core/core.errors'
 import {
   AuthTypeMismatchError,

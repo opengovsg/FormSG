@@ -1,11 +1,11 @@
 import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../../config/config'
-import { limitRate } from '../../../../../utils/limit-rate'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
+import { limitRate } from '../../../../../utils/limit-rate'
 
 export const AdminFormsSubmissionsRouter = Router()
 

@@ -7,8 +7,8 @@ import {
   DatabaseError,
   PossibleDatabaseError,
 } from '../../modules/core/core.errors'
-import MailService from '../mail/mail.service'
 import { transformMongoError } from '../../utils/handle-mongo-error'
+import MailService from '../mail/mail.service'
 
 import { ISmsCountSchema, LogSmsParams } from './sms.types'
 import { hasHitSmsThreshold } from './sms.utils'

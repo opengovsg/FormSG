@@ -19,11 +19,9 @@ import {
 } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
 import { clone, omit, times } from 'lodash'
-import path from 'path'
-
-const RESOURCES = path.join(__dirname, '../../../../../../../__tests__/resources')
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
+import path from 'path'
 import { PassThrough, Readable, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
@@ -77,6 +75,11 @@ import {
   buildMrfMetadata,
   extractEmailConfirmationData,
 } from '../submission.utils'
+
+const RESOURCES = path.join(
+  __dirname,
+  '../../../../../../../__tests__/resources',
+)
 
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)

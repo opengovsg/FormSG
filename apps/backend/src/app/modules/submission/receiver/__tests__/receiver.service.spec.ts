@@ -8,8 +8,8 @@ import { MB } from 'formsg-shared/constants/file'
 import { BasicField, FormResponseMode } from 'formsg-shared/types'
 import { createReadStream, readFileSync } from 'fs'
 import { IncomingHttpHeaders } from 'http'
-import path from 'path'
 import { omit, pick } from 'lodash'
+import path from 'path'
 
 import {
   InitialiseMultipartReceiverError,
@@ -31,7 +31,10 @@ const MOCK_BUSBOY = {
   on: MOCK_BUSBOY_ON,
 } as unknown as Busboy.Busboy
 
-const VALID_FILE_PATH = path.join(__dirname, '../../../../../../../../__tests__/resources')
+const VALID_FILE_PATH = path.join(
+  __dirname,
+  '../../../../../../../../__tests__/resources',
+)
 const VALID_FILENAME_1 = 'valid.txt'
 const VALID_FILE_CONTENT_1 = readFileSync(
   path.join(VALID_FILE_PATH, VALID_FILENAME_1),
