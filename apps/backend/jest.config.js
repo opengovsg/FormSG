@@ -8,6 +8,11 @@ module.exports = {
   moduleDirectories: [
     'node_modules',
   ],
+  // Map workspace package so Jest can resolve it (Jest does not fully support package.json "exports")
+  moduleNameMapper: {
+    '^formsg-shared$': '<rootDir>/../../packages/shared',
+    '^formsg-shared/(.*)$': '<rootDir>/../../packages/shared/$1',
+  },
   testEnvironment: 'node',
   globalSetup: '<rootDir>/__tests__/setup/jest-global-setup.js',
   testPathIgnorePatterns: [
