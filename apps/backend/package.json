@@ -5,7 +5,7 @@
   "homepage": ".",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && pnpm copyfiles:backend",
-    "copyfiles:backend": "copyfiles -u 1 src/**/*.html ../../dist/backend/src",
+    "copyfiles:backend": "copyfiles -u 1 src/**/*.html ./dist/src",
     "dev": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "start": "node -r dotenv/config src/app/server.js",
     "test": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
