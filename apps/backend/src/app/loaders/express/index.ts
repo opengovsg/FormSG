@@ -129,9 +129,9 @@ const loadExpressApp = async (connection: Connection) => {
   // API routes
   app.use('/api', ApiRouter)
 
-  // serve static assets. `apps/frontend/dist` contains the root files as well as a `/static` folder
+  // serve static assets. `../frontend/dist` contains the root files as well as a `/static` folder
   // express.static calls next() if the file is not found
-  app.use(express.static(path.resolve('apps/frontend/dist'), { index: false }))
+  app.use(express.static(path.resolve('../frontend/dist'), { index: false }))
 
   // If requests for known static asset patterns were not served by
   // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
