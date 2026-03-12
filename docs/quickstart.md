@@ -11,9 +11,7 @@ description: >-
 Make sure you have:
 
 * [Docker and docker-compose](https://docs.docker.com/get-docker/)
-* Node.js (v22 LTS recommended, check `.nvmrc`)
-* pnpm
-* (Recommended) [node version manager](https://github.com/nvm-sh/nvm)
+* [pnpm](https://pnpm.io/installation) (manages Node.js version automatically via `.npmrc`)
 
 #### Get the FormSG Code
 
@@ -26,12 +24,7 @@ cd FormSG
 
 #### First Setup
 
-First, make sure to install and use the node version used by the project:
-
-```bash
-nvm install
-nvm use
-```
+pnpm will automatically use the correct Node.js version (defined in `.npmrc`).
 
 To install the relevant packages (frontend, backend and services modules), run the following in the root directory:
 
