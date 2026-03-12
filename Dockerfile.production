@@ -56,6 +56,8 @@ COPY --from=build /build/apps/frontend/dist /opt/formsg/apps/frontend/dist
 COPY --from=build /build/packages/shared/package.json /opt/formsg/packages/shared/
 COPY --from=build /build/packages/shared/node_modules /opt/formsg/packages/shared/node_modules
 COPY --from=build /build/packages/shared/dist /opt/formsg/packages/shared/dist
+# Copy frontend build
+COPY --from=build /build/apps/frontend/dist /opt/formsg/apps/frontend/dist
 
 # Copy required node_modules, package.json scripts and built backend dist for the backend start script to run
 COPY --from=build /build/pnpm-workspace.yaml /opt/formsg/pnpm-workspace.yaml
