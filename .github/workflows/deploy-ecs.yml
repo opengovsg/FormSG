@@ -217,7 +217,7 @@ jobs:
         run: |
           mkdir -p /tmp/s3static
           chmod 777 /tmp/s3static
-          docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG cp -r ./dist/frontend/. /tmp/s3static
+          docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG cp -r ./apps/frontend/dist/. /tmp/s3static
           aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Deploy Amazon ECS task definition
