@@ -44,6 +44,7 @@ jobs:
               - frontend/**
               - pnpm-lock.yaml
               - apps/frontend/**
+              - pnpm-lock.yaml
             backend:
               - apps/backend/src/**
               - apps/backend/__tests__/**
