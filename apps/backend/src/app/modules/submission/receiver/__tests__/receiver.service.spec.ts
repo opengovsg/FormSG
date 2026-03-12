@@ -45,7 +45,7 @@ const VALID_FILE_CONTENT_2 = readFileSync(
 )
 const VALID_UTF8_FILENAME = 'utf8-with-endash – test.txt'
 const VALID_UTF8_FILE_CONTENT = readFileSync(
-  `${VALID_FILE_PATH}${VALID_UTF8_FILENAME}`,
+  path.join(VALID_FILE_PATH, VALID_UTF8_FILENAME),
 )
 
 describe('receiver.service', () => {
@@ -175,7 +175,7 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockResponse] }
 
       const fileStream = createReadStream(
-        `${VALID_FILE_PATH}${VALID_UTF8_FILENAME}`,
+        path.join(VALID_FILE_PATH, VALID_UTF8_FILENAME),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
@@ -218,7 +218,7 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockResponse] }
 
       const fileStream = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
@@ -265,7 +265,7 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockAttachment, mockTextField] }
 
       const fileStream = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
@@ -322,10 +322,10 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockResponse1, mockResponse2] }
 
       const fileStream1 = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const fileStream2 = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_2}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_2),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
@@ -387,10 +387,10 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockResponse1, mockResponse2] }
 
       const fileStream1 = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const fileStream2 = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
@@ -444,7 +444,7 @@ describe('receiver.service', () => {
       const mockBody = { responses: [mockResponse] }
 
       const fileStream = createReadStream(
-        `${VALID_FILE_PATH}${VALID_FILENAME_1}`,
+        path.join(VALID_FILE_PATH, VALID_FILENAME_1),
       )
       const form = new FormData()
       form.append('body', JSON.stringify(mockBody))
