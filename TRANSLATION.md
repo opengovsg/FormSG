@@ -47,7 +47,7 @@ Our translations are organized using a hierarchy of TypeScript files. We use a t
 
 ### Directory Structure
 ```
-frontend/src/i18n/locales/
+apps/frontend/src/i18n/locales/
 
 ├── features/           # Feature-specific translations
 │   ├── app/            # Application-wide UI elements

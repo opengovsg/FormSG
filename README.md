@@ -230,7 +230,7 @@ For CI testing (optimized for continuous integration), you can run
 pnpm test:backend:ci
 ```
 
-Frontend tests are located at [`frontend/__tests__`](./frontend/__tests__). They can be run with
+Frontend tests are located at [`apps/frontend/__tests__`](./apps/frontend/__tests__). They can be run with
 
 ```bash
 pnpm test:frontend

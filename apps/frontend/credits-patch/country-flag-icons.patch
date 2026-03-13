@@ -1,7 +1,7 @@
-diff --git a/frontend/CREDITS.md b/frontend/CREDITS.md
+diff --git a/apps/frontend/CREDITS.md b/apps/frontend/CREDITS.md
 index de130da5..f69e195d 100644
---- a/frontend/CREDITS.md
-+++ b/frontend/CREDITS.md
+--- a/apps/frontend/CREDITS.md
++++ b/apps/frontend/CREDITS.md
 @@ -1228,10 +1228,31 @@ https://github.com/GoogleChromeLabs/comlink
  country-flag-icons
  

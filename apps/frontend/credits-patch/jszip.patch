@@ -1,7 +1,7 @@
-diff --git a/frontend/CREDITS.md b/frontend/CREDITS.md
+diff --git a/apps/frontend/CREDITS.md b/apps/frontend/CREDITS.md
 index 29cec4fe..642bc8d1 100644
---- a/frontend/CREDITS.md
-+++ b/frontend/CREDITS.md
+--- a/apps/frontend/CREDITS.md
++++ b/apps/frontend/CREDITS.md
 @@ -1859,9 +1859,6 @@ jszip
  https://github.com/Stuk/jszip
  

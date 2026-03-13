@@ -14,6 +14,7 @@ import { getClientEnvVars } from './frontend.service'
 const logger = createLoggerWithLabel(module)
 
 const reactFrontendPath = path.resolve('../frontend/dist')
+
 const reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
   encoding: 'utf8',
 })
