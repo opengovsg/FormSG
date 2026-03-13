@@ -38,9 +38,22 @@ temp_release_branch=temp_${short_hash}
 
 git checkout -b ${temp_release_branch}
 
-release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
-# Also update the version in frontend directory
-npm --prefix frontend --no-git-tag-version version minor
+# Support semver bump type (major, minor, patch)
+version_bump_type=minor
+for arg in "$@"; do
+  case "$arg" in
+    --major)
+      version_bump_type=major
+      ;;
+    --patch)
+      version_bump_type=patch
+      ;;
+  esac
+done
+
+release_version=$(npm --no-git-tag-version version "${version_bump_type}" | grep -E '^v\d')
+# Bump version in every workspace package except client packages (eg, @opengovsg/formsg-sdk)
+pnpm -r --filter '!@opengovsg/formsg-sdk' exec npm --no-git-tag-version version "${version_bump_type}"
 release_branch=release_${release_version}
 may_force_push=
 
