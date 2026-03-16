@@ -47,8 +47,7 @@
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky",
     "pre-commit": "lint-staged",
-    "storybook": "pnpm --filter formsg-frontend storybook",
-    "release-prep": "commit-and-tag-version"
+    "storybook": "pnpm --filter formsg-frontend storybook"
   },
   "dependencies": {
     "formsg-shared": "workspace:*"

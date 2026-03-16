@@ -37,63 +37,67 @@ short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
-pnpm release-prep
-release_version=$(jq -r .version < package.json)
+may_force_push= 
+tag_force=
+if [[ "$1" == "--recut" ]]; then
+  tag_force=--tag-force
+  may_force_push=-f
+fi
 
+# Perform the version bumps, generate changelog and create local tag. 
+pnpm exec commit-and-tag-version ${tag_force} 
+release_version=$(jq -r .version < package.json)
+release_tag="v${release_version}"
 release_branch=release_${release_version}
-may_force_push=
 
 if [[ "$1" == "--recut" ]]; then
-  git tag -d ${release_version}
-  git push --delete origin ${release_version}
+  git push --delete origin ${release_tag}
   git branch -D ${release_branch}
-  may_force_push=-f
 fi
 
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
+# Push the code and tag to origin
 git push origin ${may_force_push} HEAD:${release_branch}
+git push origin ${release_tag}
 
 # Deploy to staging for verification testing
 git push -f origin HEAD:stg
-git push origin ${release_version}
 
 # extract changelog to inject into the PR
 pr_body_file=.pr_body_${release_version}
 pr_body_file_groupped=.pr_body_${release_version}_groupped
 
-awk "/## \[${release_version}\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md | sed -nE '/^[-*] /p' > ${pr_body_file}
+# awk "/## \[${release_version}\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md | sed -nE '/^[-*] /p' > ${pr_body_file}
 
-echo ${pr_body_file}
+# echo "## New" > ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_groupped}
 
-echo "## New" > ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# echo "## Dependencies" >> ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_groupped}
 
-echo "" >> ${pr_body_file_groupped}
-echo "## Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_groupped}
 
-echo "" >> ${pr_body_file_groupped}
-echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-## Extract test procedures for feature PRs
-echo "" >> ${pr_body_file_groupped}
-echo "## Tests" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
-  pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
-  tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed -E "s/\[[Xx]\]/[ ]/" | sed -E "s/^(##+) /\1## /")
-  if [[ ${tests} =~ [^[:space:]] ]]; then
-    echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
-    echo "${tests}" >> ${pr_body_file_groupped}
-    echo "" >> ${pr_body_file_groupped}
-  fi
-done
+# ## Extract test procedures for feature PRs
+# echo "" >> ${pr_body_file_groupped}
+# echo "## Tests" >> ${pr_body_file_groupped}
+# echo "" >> ${pr_body_file_groupped}
+# grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
+#   pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
+#   tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed -E "s/\[[Xx]\]/[ ]/" | sed -E "s/^(##+) /\1## /")
+#   if [[ ${tests} =~ [^[:space:]] ]]; then
+#     echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
+#     echo "${tests}" >> ${pr_body_file_groupped}
+#     echo "" >> ${pr_body_file_groupped}
+#   fi
+# done
 
 gh pr create \
   -H ${release_branch} \
