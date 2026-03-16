@@ -45,7 +45,7 @@ if [[ "$1" == "--recut" ]]; then
 fi
 
 # Perform the version bumps, generate changelog and create local tag. 
-pnpm exec commit-and-tag-version ${tag_force} 
+pnpm exec commit-and-tag-version --config .internal.versionrc.js ${tag_force} 
 release_version=$(jq -r .version < package.json)
 release_tag="v${release_version}"
 release_branch=release_${release_version}
@@ -75,16 +75,22 @@ awk "
 " CHANGELOG.md > ${pr_body_file}
 
 # Check if a PR from this branch to release-al2 already exists; if so, use 'edit' action
-pr_action="create"
-existing_pr=$(gh pr list --state open --head "${release_branch}" --base release-al2 --json number --jq '.[0].number' 2>/dev/null)
-if [[ -n "$existing_pr" ]]; then
-  pr_action="edit"
+head_ref="${release_branch}"
+base_ref="release-al2"
+existing_pr=$(gh pr list --state open --head "${head_ref}" --base "${base_ref}" --json number --jq '.[0].number' 2>/dev/null)
+if [[ -n "${existing_pr}" ]]; then
+  # PR already exists: update its title/body
+  gh pr edit "${existing_pr}" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_file}"
+else
+  # No PR yet: create a new one
+  gh pr create \
+    -H "${release_branch}" \
+    -B "${base_ref}" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_file}"
 fi
-gh pr ${pr_action} \
-  -H ${release_branch} \
-  -B release-al2 \
-  -t "build: release ${release_version}" \
-  -F ${pr_body_file}
 
 # cleanup
 rm ${pr_body_file}
