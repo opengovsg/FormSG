@@ -172,7 +172,6 @@ gh pr create \
   -F "${pr_body_actual}" \
   --template ""
   || gh pr edit ${release_branch} \
-    -B "release-al2" \
     -t "build: release ${release_version}" \
     -F "${pr_body_actual}"
 

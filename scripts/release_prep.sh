@@ -74,10 +74,10 @@ awk "
   /^## \[/ { flag=0 }
   /^### Changelog$/ { flag=0 }
   flag
-" CHANGELOG.md > \"${pr_body_working}\"
+" CHANGELOG.md > "${pr_body_working}"
 
 # Start the actual PR body with the full changelog section
-cp \"${pr_body_working}\" \"${pr_body_actual}\"
+cp "${pr_body_working}" "${pr_body_actual}"
 
 # Build a filtered view of the changelog that EXCLUDES the Dependencies / Dev-Dependencies
 # sections. This ensures we only derive tests from feature/fix PRs, not dependency bumps.
@@ -90,41 +90,41 @@ awk '
   /^### [A-Z]/ && skip==1   { skip=0 }
   # Emit lines only when we are not skipping
   !skip
-' \"${pr_body_working}\" > \"${pr_body_for_tests}\"
+' "${pr_body_working}" > "${pr_body_for_tests}"
 
 # Append an overall "Tests" heading at the end of the PR body, under which we will
 # aggregate the per-PR test plans.
-echo \"\" >> \"${pr_body_actual}\"
-echo \"### Tests\" >> \"${pr_body_actual}\"
-echo \"\" >> \"${pr_body_actual}\"
+echo "" >> "${pr_body_actual}"
+echo "### Tests" >> "${pr_body_actual}"
+echo "" >> "${pr_body_actual}"
 
 # For each non-deps bullet line that references a PR, fetch that PR's Tests
 # section and append it under a heading derived from the changelog line.
-grep '^[*] ' \"${pr_body_for_tests}\" | \
-grep '\\[#\\([0-9]\\+\\)\\](' | \
+grep '^[*] ' "${pr_body_for_tests}" | \
+grep '\[#\([0-9]\+\)\](' | \
 while read -r line_item; do
-  # Extract first PR number on the line, e.g. \"#9183\" or \"[#9183](...)\"
-  pr_id=$(echo \"${line_item}\" | grep -o -E '#[0-9]+' | head -n1 | tr -d '#')
-  [[ -z \"${pr_id}\" ]] && continue
+  # Extract first PR number on the line, e.g. "#9183" or "[#9183](...)"
+  pr_id=$(echo "${line_item}" | grep -o -E '#[0-9]+' | head -n1 | tr -d '#')
+  [[ -z "${pr_id}" ]] && continue
 
-  # Fetch the PR body and slice out only its \"Tests\" section (from the Tests heading
+  # Fetch the PR body and slice out only its "Tests" section (from the Tests heading
   # until the next top-level heading), then normalize checkboxes and bump heading
   # levels so nested headings render nicely inside the release PR body.
-  tests=$(gh pr view \"${pr_id}\" | \
+  tests=$(gh pr view "${pr_id}" | \
     awk '
       /^##+ Tests?/      { f=1; next }
       /^##+ [A-Z]/ && f  { f=0 }
       f
     ' | \
-    sed -E \"s/\\[[Xx]\\]/[ ]/\" | \
-    sed -E \"s/^(##+) /\\1## /\")
+    sed -E "s/\[[Xx]\]/[ ]/" | \
+    sed -E "s/^(##+) /\1## /")
 
   if [[ ${tests} =~ [^[:space:]] ]]; then
     # Use the changelog bullet as a subheading for this PR's tests
-    echo \"${line_item}\" | sed \"s/^\\* /### /\" >> \"${pr_body_actual}\"
+    echo "${line_item}" | sed "s/^\* /### /" >> "${pr_body_actual}"
     # Then append the normalized Tests section from the PR body
-    echo \"${tests}\" >> \"${pr_body_actual}\"
-    echo \"\" >> \"${pr_body_actual}\"
+    echo "${tests}" >> "${pr_body_actual}"
+    echo "" >> "${pr_body_actual}"
   fi
 done
 
@@ -135,12 +135,11 @@ gh pr create \
   -t "build: release ${release_version}" \
   -F "${pr_body_actual}" \
   --template "" \
-  || gh pr edit ${release_branch} \
-    -B "release-al2" \
+  || gh pr edit "${release_branch}" \
     -t "build: release ${release_version}" \
-    -F "${pr_body_file}"
+    -F "${pr_body_actual}"
 
 # cleanup
-rm ${pr_body_file}
+rm "${pr_body_working}" "${pr_body_actual}" "${pr_body_for_tests}"
 git checkout feat/build-script
 git branch -D ${release_branch}
