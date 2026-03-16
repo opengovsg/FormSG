@@ -17,6 +17,10 @@ const getShortHash = (commit) => {
       : ''
 }
 module.exports = {
+  path: [
+    ".",
+    ":(exclude)packages/sdk"
+  ], 
   bumpFiles: packagePaths.map((filename) => ({ filename, type: 'json' })),
   writerOpts: {
     groupBy: 'section',
