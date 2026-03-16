@@ -45,7 +45,7 @@ if [[ "$1" == "--recut" ]]; then
 fi
 
 # Perform the version bumps, generate changelog and create local tag. 
-pnpm exec commit-and-tag-version --config .internal.versionrc.js ${tag_force} 
+pnpm exec commit-and-tag-version --config .internal.versionrc.js --path "." --path ":(exclude)packages/sdk" ${tag_force}
 release_version=$(jq -r .version < package.json)
 release_tag="v${release_version}"
 release_branch=release_${release_version}
