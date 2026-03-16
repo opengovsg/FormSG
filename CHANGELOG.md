@@ -1,5 +1,101 @@
 ### Changelog
 
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [6.314.0](https://github.com/opengovsg/formsg/compare/v6.313.0...v6.314.0) (2026-03-16)
+
+
+### Features
+
+* add build scripts and exports for shared ([f1b891d](https://github.com/opengovsg/formsg/commit/f1b891ddf5c10eb6188b0d74dcc3383df2976c7a))
+* add caching for pnpm store ([4dc8231](https://github.com/opengovsg/formsg/commit/4dc8231d6b08920d1b5a2fd1b2fc1313f70b7974))
+* add ci test and lint for shared ([8fcff4e](https://github.com/opengovsg/formsg/commit/8fcff4efd6fb5f182416b553f00a68b25a85501d))
+* add empty be project ([773148f](https://github.com/opengovsg/formsg/commit/773148f29407772cd9a0327c6b3ecf8134d94b65))
+* add exports for vite using .ts to build esm style ([dae9f19](https://github.com/opengovsg/formsg/commit/dae9f19b83268a1ec8f57d6c8c68b16209b0c66f))
+* add jest config to shared ([95bdd9c](https://github.com/opengovsg/formsg/commit/95bdd9c99f3c247bb66a2568ecf4d0c747c99f84))
+* add necessary dev deps for types and test script ([06557df](https://github.com/opengovsg/formsg/commit/06557dfe30aea3c803e9a34cefcf878cf5b03cc3))
+* add required dev deps for frontend to build ([19dae3a](https://github.com/opengovsg/formsg/commit/19dae3ae1279e9d1b216a053fc836fb47e636136))
+* add type narrowing for byteArray ([a212f07](https://github.com/opengovsg/formsg/commit/a212f07d08daa5d316e41a17d51df1301fb860bb))
+* add workspaces ([8b0ff91](https://github.com/opengovsg/formsg/commit/8b0ff9197f8152c8dbe97a11e76752fac95e9c24))
+* add workspaces in dockerfile ([ec417dd](https://github.com/opengovsg/formsg/commit/ec417ddba31cc1184206e5cbc2c337e43ba9e583))
+* auxiliary pnpm workspaces (#9183) ([#9183](https://github.com/opengovsg/formsg/commit/b352bb523c8e22b906c2621a808aec8205905df1))
+* build shared for playwright ([bb81fdc](https://github.com/opengovsg/formsg/commit/bb81fdc94c0ade75e7a78c94568274546b272bfc))
+* clean root deps to remove backend deps ([d96be26](https://github.com/opengovsg/formsg/commit/d96be26a893404a9950a06c05167c578663fbb2b))
+* emit es2018 which is safe with node 22.22 ([41d5b6c](https://github.com/opengovsg/formsg/commit/41d5b6cc69317f8f619dffb2fd44889403e6c022))
+* exclude pnpm-store from docker and git ([41f4ed4](https://github.com/opengovsg/formsg/commit/41f4ed4f249833ec3da30d8fd2cdbd562d8159da))
+* install commit-and-tag-version ([bb0b7fd](https://github.com/opengovsg/formsg/commit/bb0b7fd57caebd8233e216c004848a97a5611d72))
+* move backend files from root to backend package ([210aeac](https://github.com/opengovsg/formsg/commit/210aeacebc4c60ff5f8d1bd4147fc9d6d2ff8690))
+* move backend tests from root __tests__ to backend package ([17453d6](https://github.com/opengovsg/formsg/commit/17453d69e09d6853a37b9101a9e898e6559ec6e4))
+* move build deps, rename to standard formsg prefix and make private packages ([2293171](https://github.com/opengovsg/formsg/commit/2293171b9e9be62aa361e302a946997581990f98))
+* move frontend to apps folder (#9185) ([#9185](https://github.com/opengovsg/formsg/commit/f4949af4204d344cfea03ba686cc4824c845e354))
+* move payments recon to /serverless, removing /functions in pnpm-workspace.yaml ([6ab53b1](https://github.com/opengovsg/formsg/commit/6ab53b121963c9e7a17de0b459bb26adee308a40))
+* move shared test resources to root since they are used by multi packages ([3ea75a8](https://github.com/opengovsg/formsg/commit/3ea75a849fea3d9dc93502aaa505cd4d39ccf802))
+* move src to backend package ([1eb4f4a](https://github.com/opengovsg/formsg/commit/1eb4f4a6a22513888b7f76b9ef75812924e92bda))
+* remove base change in edit ([0a3e69a](https://github.com/opengovsg/formsg/commit/0a3e69ae3b21f67ce7e00680c6cee83bd56b1cd8))
+* remove deprecated functions dir readme ([b7eabae](https://github.com/opengovsg/formsg/commit/b7eabaec4443828929111f3450091e3c33a97ec1))
+* remove recursive installs ([c806be5](https://github.com/opengovsg/formsg/commit/c806be5b293d16b21484e6e6e6c955841ecd38ae))
+* remove unneeded email preview installation in chromatic ci ([d4da081](https://github.com/opengovsg/formsg/commit/d4da0818c6e15f06907d8a90222997df9456f09d))
+* remove unused ts-expect ([99b16f4](https://github.com/opengovsg/formsg/commit/99b16f471c46b6d3621e324dd1e204d43fdbe8ef))
+* replace eslintrc with .js version to allow tsconfigpath to resolve to correct nested dir ([1e2a8c0](https://github.com/opengovsg/formsg/commit/1e2a8c090c4bf9d43e44ed970fed374e5bfa118b))
+* run prettier on shared tsconfig ([363e3c9](https://github.com/opengovsg/formsg/commit/363e3c9308727539dc0e6946fc8157f3a26bbd27))
+* support deployment of lambda ([4003b36](https://github.com/opengovsg/formsg/commit/4003b36beeac0d76da16f0ac0906b5f35feef467))
+* sync lockfile with subpackages ([91f11b8](https://github.com/opengovsg/formsg/commit/91f11b8c7054a127255fdcbe90dddfc4995661d9))
+* sync package versions with root ([6f5f591](https://github.com/opengovsg/formsg/commit/6f5f591b07c8f6858bf9a2a83410463fc3208b79))
+* update build dist for fe and be ([6d43527](https://github.com/opengovsg/formsg/commit/6d43527e0d59ce7a008b4c37c261d1e52ea2606b))
+* update ci change detection ([b67882b](https://github.com/opengovsg/formsg/commit/b67882b0d3ab87478c290e15ff97b161547b21d0))
+* update dockerfiles to use new file directory ([6ca8f39](https://github.com/opengovsg/formsg/commit/6ca8f391c61b7f1dce86ea28ded2730aac559463))
+* update e2e to use the new backend directory ([147404c](https://github.com/opengovsg/formsg/commit/147404cc735fddf53bc9abc92a858aa8c005861b))
+* update hotfix script ([a742ef3](https://github.com/opengovsg/formsg/commit/a742ef3ae33f60504d135854a81ff4cefe9da093))
+* update lock ([a28f3c8](https://github.com/opengovsg/formsg/commit/a28f3c8a85f597faed440ddfceff316530d0e680))
+* update lock ([84d7bee](https://github.com/opengovsg/formsg/commit/84d7beee7c7b7fca2c51c88761a04974b20d6ecf))
+* update pnpm cache to follow pnpm docs gh actions recipe" ([a8186b2](https://github.com/opengovsg/formsg/commit/a8186b265a75f67ac1b0e2063d7347bd88a4fc3c))
+* update release script ([51ce0a8](https://github.com/opengovsg/formsg/commit/51ce0a890166ee683f5c3d54b47a4cacdd08115c))
+* update scripts to treat shared as separate from backend ([9157cee](https://github.com/opengovsg/formsg/commit/9157cee64354a9e9999ba8f2c0fc8df08c8c25d4))
+* use built formsg-shared for production backend ([2ae7714](https://github.com/opengovsg/formsg/commit/2ae771480df2f9bdf5dbc4cd7e8d60ac98a62f95))
+* use common uint8array instead of both with bufferarray ([85e1c69](https://github.com/opengovsg/formsg/commit/85e1c699f33716b183f0f6903d9b4ec4d40286b0))
+* use formsg-shared monorepo package in backend ([1db8c23](https://github.com/opengovsg/formsg/commit/1db8c23ba7c3d2d070f3a15c8efd1e1aec526e4f))
+* use presigned post from shared ([0434ca6](https://github.com/opengovsg/formsg/commit/0434ca6434f91296d49d6dfe23d04a2e6112b497))
+* use relative resource import ([f672cf0](https://github.com/opengovsg/formsg/commit/f672cf0af04268c8a1300f637c914d358dc30612))
+
+
+### Bug Fixes
+
+* add giflib package ([d7b0f5b](https://github.com/opengovsg/formsg/commit/d7b0f5b4b5196cf61ccfd1d4f4166dc234a50616))
+* be lint errors ([925bd64](https://github.com/opengovsg/formsg/commit/925bd64f43227e18d3e7c040c0bc628f5dff8683))
+* be lint errors ([bbc053e](https://github.com/opengovsg/formsg/commit/bbc053ec00253201ef5181eff297db28472605d0))
+* be tc file imports ([1f2b5e6](https://github.com/opengovsg/formsg/commit/1f2b5e6117de6a53139b9439b2b2b26126347415))
+* be test ci ([c7920a0](https://github.com/opengovsg/formsg/commit/c7920a0d91fbd78bbcdd3c5782d2dd0ab629d4fb))
+* country field array type ([1ce216e](https://github.com/opengovsg/formsg/commit/1ce216e65ce1640eece602c5b140d078ba496bf9))
+* docker compose faulty mock file paths ([1a0f4a9](https://github.com/opengovsg/formsg/commit/1a0f4a9bb7b47981116c0d40ea1f3a9c1dcd5dc0))
+* dont use prettier on tsconfig.json ([eef43fb](https://github.com/opengovsg/formsg/commit/eef43fb338cd07ee802b564f5f039b6f16ae9be1))
+* explicitly declare ts as required dev dep for shared ([a7b4ccf](https://github.com/opengovsg/formsg/commit/a7b4ccf0db1ab50c5e8689a49290ff81ac9739fa))
+* fe lint errors ([5339410](https://github.com/opengovsg/formsg/commit/5339410bcf2cce002bd22d646efab7b327f581c7))
+* jest shared resolution and path ([294b6ec](https://github.com/opengovsg/formsg/commit/294b6ecafd07d3b97a6418c22a35cd62c04399b2))
+* lint errors ([58b7a8f](https://github.com/opengovsg/formsg/commit/58b7a8f7034798fa5a6587d19faf0dc6284bd5a2))
+* lint package.json ([c880420](https://github.com/opengovsg/formsg/commit/c88042058d52627367b2771d1d9abe8038cbcceb))
+* move payment recon from /serverless to /services ([4e0cf91](https://github.com/opengovsg/formsg/commit/4e0cf914798f468ba7092883576b43ae967abddb))
+* place shared build in correct directory and remove chromium ([8045780](https://github.com/opengovsg/formsg/commit/8045780d3317096fc99d30fd30bd413ddb29ce08))
+* playwright cache artifacts include backend dist and node_modules ([2e72cef](https://github.com/opengovsg/formsg/commit/2e72cefb916889475179b0172e9d7a3d2417c4a4))
+* prevent setting mocks to undefined and restore to prevent test pollution ([6907321](https://github.com/opengovsg/formsg/commit/6907321a78a1e95bf13283e97697f299a8b8d358))
+* prod dockerfile for new built dist locations ([c64da94](https://github.com/opengovsg/formsg/commit/c64da94b783a272217339a92bc786cf2eef35296))
+* remove duplicated fe dist copy in dockerfile.prod ([59081bb](https://github.com/opengovsg/formsg/commit/59081bb4629ce65c074034e77ba4844ea9d712be))
+* rename to stg to match build scripts ([2a2dc63](https://github.com/opengovsg/formsg/commit/2a2dc637cc565bfc333661f9af2156ac93324f00))
+* replace blobpart cast to more specific buffer definition ([dd03b34](https://github.com/opengovsg/formsg/commit/dd03b346cd062b68ad8a1d271b720af420f8e543))
+* require and default ordering ([48c4558](https://github.com/opengovsg/formsg/commit/48c4558877d0a083a1ac83b0ae37f60a65da8d1a))
+* revert change from /app/frontend back to /frontend ([5ec40f4](https://github.com/opengovsg/formsg/commit/5ec40f48b5d0ffe9baaef2f5c79bd593b5fe1a23))
+* shared unit tests ([578bb7e](https://github.com/opengovsg/formsg/commit/578bb7e2768ed0dcbb3918b6f6329515720e9a37))
+* update build script to clean and include shared, add node_modules to shared ([f4b4513](https://github.com/opengovsg/formsg/commit/f4b45138be6f4a9eee3b36907af5067138a17fd3))
+* update dev dockerfile pnpm install filters ([a34b693](https://github.com/opengovsg/formsg/commit/a34b693874b42f4cd8c61699da3a91fbd69704d5))
+* update e2e to use new backend package paths ([6eb8a99](https://github.com/opengovsg/formsg/commit/6eb8a99705361dbd9d5f4a477499e044b8b1f395))
+* use pnpm filtered deploy for virus scan ([8041f3a](https://github.com/opengovsg/formsg/commit/8041f3a474fe92eaa37dcee11bc49f3e86aa5e03))
+
+
+### Miscellaneous
+
+* Merge pull request #9184 from opengovsg/feat/move-shared-to-packages ([#9184](https://github.com/opengovsg/formsg/commit/f2bf85fa73042b3ae92155b95f4e92c791e91823))
+
+### Changelog
+
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
 Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
