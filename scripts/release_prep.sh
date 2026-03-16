@@ -1,7 +1,6 @@
 #!/bin/bash
 set +x
 
-
 # pre-requisites: install github CLI
 # - github documentation: https://github.com/cli/cli#installation
 # - github is remote 'origin'
@@ -65,6 +64,8 @@ pr_body_file=.pr_body_${release_version}
 pr_body_file_groupped=.pr_body_${release_version}_groupped
 
 awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed -E '/^([^-]|[[:space:]]*$)/d' > ${pr_body_file}
+
+echo ${pr_body_file}
 
 echo "## New" > ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
