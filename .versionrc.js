@@ -13,13 +13,12 @@ module.exports = {
   writerOpts: {
     groupBy: 'section',
     transform: (commit) => {
-      const ref = commit.references && commit.references[0]
-      const shortHash = ref
-        ? `${ref.prefix}${ref.issue}`
-        : typeof commit.hash === 'string'
+      const shortHash = 
+        typeof commit.hash === 'string'
           ? commit.hash.substring(0, 7)
-          : 'Link'
+          : ''
       commit.shortHash = shortHash
+      commit.references = []
 
       const typeToSection = {
         feat: 'Features',
