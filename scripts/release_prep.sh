@@ -63,7 +63,7 @@ git push origin ${release_version}
 pr_body_file=.pr_body_${release_version}
 pr_body_file_groupped=.pr_body_${release_version}_groupped
 
-awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed -E '/^([^-]|[[:space:]]*$)/d' > ${pr_body_file}
+awk "/## \[${release_version}\]/{flag=1;next}/## \[/{flag=0}flag" CHANGELOG.md | sed -nE '/^[-*] /p' > ${pr_body_file}
 
 echo ${pr_body_file}
 
