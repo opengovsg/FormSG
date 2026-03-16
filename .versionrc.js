@@ -10,31 +10,42 @@ const packagePaths = [
 ]
 module.exports = {
   bumpFiles: packagePaths.map((filename) => ({ filename, type: 'json' })),
-  // Keep default Conventional Commits type → section mapping,
-  // plus our custom dependency sections.
-  types: [
-    { type: 'feat', section: 'Features' },
-    { type: 'fix', section: 'Bug Fixes' },
-    { type: 'chore', section: 'Chores' },
-    { type: 'docs', section: 'Documentation' },
-    { type: 'style', section: 'Styles' },
-    { type: 'refactor', section: 'Refactoring' },
-    { type: 'perf', section: 'Performance' },
-    { type: 'test', section: 'Tests' },
-    { type: 'build', section: 'Build System' },
-    { type: 'ci', section: 'CI' },
-    { type: 'revert', section: 'Reverts' },
-    { type: 'deps', section: 'Dependencies' },
-    { type: 'deps-dev', section: 'Dev-Dependencies' },
-  ],
   writerOpts: {
     groupBy: 'section',
     transform: (commit) => {
-      // Dependency-related scopes go to Dev-Dependencies section
+      const ref = commit.references && commit.references[0]
+      const shortHash = ref
+        ? `${ref.prefix}${ref.issue}`
+        : typeof commit.hash === 'string'
+          ? commit.hash.substring(0, 7)
+          : 'Link'
+      commit.shortHash = shortHash
+
+      const typeToSection = {
+        feat: 'Features',
+        fix: 'Bug Fixes',
+        perf: 'Performance',
+        refactor: 'Refactoring',
+        build: 'Build System',
+        ci: 'CI',
+        test: 'Tests',
+        docs: 'Documentation',
+        style: 'Styles',
+        chore: 'Chores',
+        revert: 'Reverts',
+      }
+
+      const matchedSection = typeToSection[commit.type]
+      commit.section = matchedSection ? matchedSection : 'Miscellaneous'
+
+      if (!commit.type) {
+        return commit
+      }
+      
       if (commit.scope === 'deps') {
         commit.section = 'Dependencies'
       }
-      if (commit.scope === 'dev-deps') {
+      if (commit.scope === 'deps-dev') {
         commit.section = 'Dev-Dependencies'
       }
       // Build the header text exactly like "fix(deps): update version rc"
@@ -42,17 +53,10 @@ module.exports = {
         ? `${commit.type}(${commit.scope}): `
         : `${commit.type}: `
 
-      const ref = commit.references && commit.references[0]
-      const shortHash = ref
-        ? `${ref.prefix}${ref.issue}`
-        : typeof hash === 'string'
-          ? hash.substring(0, 7)
-          : ''
-
       return {
         ...commit,
         section: commit.section,
-        shortHash,
+        shortHash: commit.shortHash,
         header: `${headerPrefix}${commit.subject}`,
       }
     },
@@ -72,7 +76,7 @@ module.exports = {
         'Dev-Dependencies',
         'Chores',
         'Reverts',
-        'Other',
+        'Miscellaneous',
       ]
       const aIndex = order.indexOf(a.title)
       const bIndex = order.indexOf(b.title)
