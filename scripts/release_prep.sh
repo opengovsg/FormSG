@@ -12,7 +12,6 @@ if ! command -v gh >/dev/null 2>&1; then
     echo "Install gh first"
     exit 1
 fi
-
 if ! gh auth status >/dev/null 2>&1; then
     echo "You need to login: gh auth login"
     exit 1
@@ -27,33 +26,21 @@ if [[ ${has_local_changes} ]]; then
   exit 1
 fi
 
+# Force sync with origin/develop
 git fetch --all --tags
 git reset --hard
 git pull
-git checkout develop
-git reset --hard origin/develop
+git checkout feat/build-script
+git reset --hard feat/build-script
 
+# Create temp branch for version bump
 short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
-
 git checkout -b ${temp_release_branch}
 
-# Support semver bump type (major, minor, patch)
-version_bump_type=minor
-for arg in "$@"; do
-  case "$arg" in
-    --major)
-      version_bump_type=major
-      ;;
-    --patch)
-      version_bump_type=patch
-      ;;
-  esac
-done
+pnpm release-prep
+release_version=$(jq -r .version < package.json)
 
-release_version=$(npm --no-git-tag-version version "${version_bump_type}" | grep -E '^v\d')
-# Bump version in every workspace package except client packages (eg, @opengovsg/formsg-sdk)
-pnpm -r --filter '!@opengovsg/formsg-sdk' exec npm --no-git-tag-version version "${version_bump_type}"
 release_branch=release_${release_version}
 may_force_push=
 
@@ -64,12 +51,12 @@ if [[ "$1" == "--recut" ]]; then
   may_force_push=-f
 fi
 
-git commit -a -n -m "chore: bump version to ${release_version}"
-git tag ${release_version}
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
 git push origin ${may_force_push} HEAD:${release_branch}
+
+# Deploy to staging for verification testing
 git push -f origin HEAD:stg
 git push origin ${release_version}
 
@@ -116,5 +103,5 @@ gh pr create \
 # cleanup
 rm ${pr_body_file}
 rm ${pr_body_file_groupped}
-git checkout develop
+git checkout feat/build-script
 git branch -D ${release_branch}
