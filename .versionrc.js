@@ -48,11 +48,9 @@ module.exports = {
       if (commit.scope === 'deps-dev') {
         commit.section = 'Dev-Dependencies'
       }
-      // Build the header text exactly like "fix(deps): update version rc"
       const headerPrefix = commit.scope
         ? `${commit.type}(${commit.scope}): `
         : `${commit.type}: `
-
       return {
         ...commit,
         section: commit.section,
@@ -60,6 +58,8 @@ module.exports = {
         header: `${headerPrefix}${commit.subject}`,
       }
     },
+    // Do not render "closes #123" / "fixes #123" suffixes
+    referenceActions: [],
     // Order sections: Features first, then Bug Fixes, then dependencies, etc.
     commitGroupsSort: (a, b) => {
       const order = [
@@ -87,7 +87,7 @@ module.exports = {
       const bHasScope = Boolean(b.scope);
       if (aHasScope && !bHasScope) return -1;   // scoped first
       if (!aHasScope && bHasScope) return 1;    // unscoped last
-      return (a.header || '').localeCompare(b.header || ''); // both unscoped: sort by header
+      return (a.header || '').localeCompare(b.header || ''); // both scoped or unscoped: sort by scope then header
     }, 
   },
   releaseCommitMessageFormat: 'chore: bump version to {{currentTag}}',
