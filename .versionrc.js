@@ -8,18 +8,21 @@ const packagePaths = [
   'services/virus-scanner-guardduty/package.json',
   'services/pdf-gen-sparticuz/package.json',
 ]
+const getShortHash = (commit) => {
+  const ref = commit.references && commit.references[0]
+  return ref && typeof ref.issue === 'string' && ref.issue.length > 0
+    ? `${ref.prefix || '#'}${ref.issue}` // e.g. "#9190"
+    : typeof commit.hash === 'string'
+      ? commit.hash.substring(0, 7)      // fallback to 7‑char commit hash
+      : ''
+}
 module.exports = {
   bumpFiles: packagePaths.map((filename) => ({ filename, type: 'json' })),
   writerOpts: {
     groupBy: 'section',
     transform: (commit) => {
-      const ref = commit.references && commit.references[0]
-      const shortHash = ref
-        ? `${ref.prefix}${ref.issue}`
-        : typeof commit.hash === 'string'
-          ? commit.hash.substring(0, 7)
-          : 'Link'
-      commit.shortHash = shortHash
+      commit.shortHash = getShortHash(commit)
+      commit.references = [] // To avoid "closes #123" / "fixes #123" suffixes
 
       const typeToSection = {
         feat: 'Features',
@@ -58,8 +61,6 @@ module.exports = {
         header: `${headerPrefix}${commit.subject}`,
       }
     },
-    // Do not render "closes #123" / "fixes #123" suffixes
-    referenceActions: [],
     // Order sections: Features first, then Bug Fixes, then dependencies, etc.
     commitGroupsSort: (a, b) => {
       const order = [
