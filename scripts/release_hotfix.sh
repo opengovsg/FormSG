@@ -108,10 +108,10 @@ awk "
   /^## \[/ { flag=0 }
   /^### Changelog$/ { flag=0 }
   flag
-" CHANGELOG.md > \"${pr_body_working}\"
+" CHANGELOG.md > "${pr_body_working}"
 
 # Start the actual PR body with the full changelog section
-cp \"${pr_body_working}\" \"${pr_body_actual}\"
+cp "${pr_body_working}" "${pr_body_actual}"
 
 # Build a filtered view of the changelog that EXCLUDES the Dependencies / Dev-Dependencies / Builds
 # sections. This ensures we only derive tests from feature/fix PRs, not dependency bumps.
@@ -120,61 +120,63 @@ awk '
   # When we hit the Dependencies, Dev-Dependencies, or Builds headings, start skipping lines
   /^### Dependencies$/      { skip=1; next }
   /^### Dev-Dependencies$/  { skip=1; next }
-  /^### Builds$/      { skip=1; next }
+  /^### Build System$/      { skip=1; next }
   # When we hit the next top-level "### <Section>" heading after that, stop skipping
   /^### [A-Z]/ && skip==1   { skip=0 }
   # Emit lines only when we are not skipping
   !skip
-' \"${pr_body_working}\" > \"${pr_body_for_tests}\"
+' "${pr_body_working}" > "${pr_body_for_tests}"
 
 # Append an overall "Tests" heading at the end of the PR body, under which we will
 # aggregate the per-PR test plans.
-echo \"\" >> \"${pr_body_actual}\"
-echo \"### Tests\" >> \"${pr_body_actual}\"
-echo \"\" >> \"${pr_body_actual}\"
+echo "" >> "${pr_body_actual}"
+echo "### Tests" >> "${pr_body_actual}"
+echo "" >> "${pr_body_actual}"
 
 # For each non-deps, bullet line that references a PR, fetch that PR's Tests
 # section and append it under a heading derived from the changelog line.
-grep '^[*] ' \"${pr_body_for_tests}\" | \
-# Only keep lines that contain a PR reference with a markdown link, e.g. \"[#1234](...)\".
-grep '\\[#\\([0-9]\\+\\)\\](' | \
+grep '^[*] ' "${pr_body_for_tests}" | \
+# Only keep lines that contain a PR reference with a markdown link, e.g. "[#1234](...)".
+grep '\[#\([0-9]\+\)\](' | \
 while read -r line_item; do
-  # Extract first PR number on the line, e.g. \"#9183\" or \"[#9183](...)\"
-  pr_id=$(echo \"${line_item}\" | grep -o -E '#[0-9]+' | head -n1 | tr -d '#')
-  [[ -z \"${pr_id}\" ]] && continue
+  # Extract first PR number on the line, e.g. "#9183" or "[#9183](...)"
+  pr_id=$(echo "${line_item}" | grep -o -E '#[0-9]+' | head -n1 | tr -d '#')
+  [[ -z "${pr_id}" ]] && continue
 
   # Fetch the PR body and slice out only its "Tests" section (from the Tests heading
   # until the next top-level heading), then normalize checkboxes and bump heading
   # levels so nested headings render nicely inside the release PR body.
-  tests=$(gh pr view \"${pr_id}\" | \
+  tests=$(gh pr view "${pr_id}" | \
     awk '
       /^##+ Tests?/      { f=1; next }
       /^##+ [A-Z]/ && f  { f=0 }
       f
     ' | \
-    sed -E \"s/\\[[Xx]\\]/[ ]/\" | \
-    sed -E \"s/^(##+) /\\1## /\")
+    sed -E "s/\[[Xx]\]/[ ]/" | \
+    sed -E "s/^(##+) /\1## /")
 
   if [[ ${tests} =~ [^[:space:]] ]]; then
     # Use the changelog bullet as a subheading for this PR's tests
-    echo \"${line_item}\" | sed \"s/^\\* /### /\" >> \"${pr_body_actual}\"
+    echo "${line_item}" | sed "s/^\* /### /" >> "${pr_body_actual}"
     # Then append the normalized Tests section from the PR body
-    echo \"${tests}\" >> \"${pr_body_actual}\"
-    echo \"\" >> \"${pr_body_actual}\"
+    echo "${tests}" >> "${pr_body_actual}"
+    echo "" >> "${pr_body_actual}"
   fi
 done
 
-# Creating PR to merge into release-al2
-gh pr create \
-  -H "${release_branch}" \
-  -B "release-al2" \
-  -t "build: release ${release_version}" \
-  -F "${pr_body_actual}" \
-  --template ""
-  || gh pr edit ${release_branch} \
+# Creating PR to merge into release-al2: edit if it already exists, else create
+existing_pr=$(gh pr list --state open --head "${release_branch}" --base "release-al2" --json number --jq '.[0].number' 2>/dev/null)
+if [[ -n "${existing_pr}" ]]; then
+  gh pr edit "${existing_pr}" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_actual}"
+else
+  gh pr create \
+    -H "${release_branch}" \
     -B "release-al2" \
     -t "build: release ${release_version}" \
     -F "${pr_body_actual}"
+fi
 
 # Perform cleanup of temporary files and local release branch
 echo -e "\033[34mCleaning up temporary files and local release branch\033[0m"
