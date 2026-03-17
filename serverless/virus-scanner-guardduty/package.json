@@ -1,6 +1,7 @@
 {
-  "name": "virus-scanner-guardduty",
-  "version": "1.0.0",
+  "name": "formsg-virus-scanner-guardduty",
+  "version": "6.313.0",
+  "private": true,
   "description": "",
   "scripts": {
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
