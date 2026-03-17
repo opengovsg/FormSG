@@ -1,0 +1,312 @@
+import { useCallback, useEffect, useMemo } from 'react'
+import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { BiTrash } from 'react-icons/bi'
+import { useTable } from 'react-table'
+import {
+  Box,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from '@chakra-ui/react'
+import { get } from 'lodash'
+import simplur from 'simplur'
+
+import { FormColorTheme, Language } from 'formsg-shared/types'
+
+import { useHasChanged } from '~hooks/useHasChanged'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import IconButton from '~components/IconButton'
+
+import { BaseFieldProps } from '../FieldContainer'
+import { TableFieldInputs, TableFieldSchema } from '../types'
+
+import { createTableRow } from './utils/createRow'
+import { AddRowFooter } from './AddRowFooter'
+import { ColumnCell } from './ColumnCell'
+import { ColumnHeader } from './ColumnHeader'
+import { TableFieldContainer } from './TableFieldContainer'
+
+export interface TableFieldProps extends BaseFieldProps {
+  schema: TableFieldSchema
+  disableRequiredValidation?: boolean
+}
+
+/**
+ * Field renderer for Table fields.
+ * @precondition This component uses `react-hook-form#useFieldArray`, and will require defaultValues to be populated in the parent `useForm` hook.
+ * @precondition Must have a parent `react-hook-form#FormProvider` component.
+ */
+export const TableField = ({
+  schema,
+  disableRequiredValidation,
+  colorTheme = FormColorTheme.Blue,
+  isHighContrast,
+}: TableFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
+  // RATIONALE for setting isIgnoreUndefined to true:
+  // Since schema.minimumRows is always defined, we should ignore undefined values.
+  // This prevents unwanted update of rows for public form page while
+  // still detecting minimum row schema changes for the admin form builder page.
+  const hasMinRowsChanged = useHasChanged(schema.minimumRows, true)
+  const isMobile = useIsMobile()
+
+  const selectedLanguage = i18n.language as Language
+
+  const columnsData = useMemo(() => {
+    return schema.columns.map((c) => {
+      const title = getValueInSelectedLanguage({
+        defaultValue: c.title,
+        translations: c.titleTranslations ?? [],
+        selectedLanguage,
+      })
+
+      return {
+        Header: (
+          <ColumnHeader title={title} isRequired={c.required} id={c._id} />
+        ),
+        accessor: c._id,
+        Cell: ColumnCell,
+      }
+    })
+  }, [schema.columns, selectedLanguage])
+
+  const formMethods = useFormContext<TableFieldInputs>()
+  const { errors } = useFormState({
+    control: formMethods.control,
+    name: schema._id,
+  })
+
+  const tableErrors = get(errors, schema._id)
+  // TODO: Can be improved for better type safety and readability. After upgrading react-hook-form,
+  // we have to handle single error message and array of error messages separately, since the errors
+  // can be potentially nested (2D).
+  const uniqTableError = useMemo(() => {
+    // On mobile, errors are shown directly in the individual table cells and
+    // would not need to be shown in the table field itself.
+    if (isMobile) return
+    if (!tableErrors) return null
+
+    if (typeof tableErrors === 'object' && tableErrors?.message) {
+      return tableErrors.message
+    }
+
+    // If tableErrors is an array, find the first error message
+    if (Array.isArray(tableErrors)) {
+      // Look for the first object with a message property
+      for (const err of tableErrors) {
+        if (err?.message) return err.message
+
+        // Check if any property of the error object has a message
+        for (const val of Object.values(err || {})) {
+          if (typeof val === 'object' && val !== null && 'message' in val) {
+            return val.message
+          }
+        }
+      }
+    }
+
+    return String(tableErrors)
+  }, [isMobile, tableErrors])
+
+  const { fields, append, remove } = useFieldArray<TableFieldInputs>({
+    control: formMethods.control,
+    name: schema._id,
+  })
+
+  const appendTableRow = useCallback(
+    () => append(createTableRow(schema), { shouldFocus: false }),
+    [append, schema],
+  )
+
+  useEffect(() => {
+    // Update field array when min rows changes.
+    if (hasMinRowsChanged) {
+      const minRows = schema.minimumRows || 0
+      const prevRowLength = fields.length
+      if (minRows > prevRowLength) {
+        for (let i = prevRowLength; i < minRows; i++) {
+          appendTableRow()
+        }
+      } else {
+        // Remove rows from field array
+        for (let i = prevRowLength; i > minRows; i--) {
+          remove(i - 1)
+        }
+      }
+    }
+  }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
+
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable({
+      // @ts-expect-error Loose types, cell props will be passed during render, but will be fixed if upgrade to v8.
+      columns: columnsData,
+      data: fields,
+    })
+
+  const handleAddRow = useCallback(() => {
+    if (
+      !schema.addMoreRows ||
+      (!!schema.maximumRows && fields.length >= schema.maximumRows)
+    )
+      return
+    return appendTableRow()
+  }, [appendTableRow, fields.length, schema])
+
+  const handleRemoveRow = useCallback(
+    (rowIndex: number) => {
+      const minRows = schema.minimumRows || 0
+      if (fields.length <= minRows || rowIndex >= fields.length) {
+        return
+      }
+      return remove(rowIndex)
+    },
+    [fields.length, remove, schema.minimumRows],
+  )
+
+  const ariaTableDescription = useMemo(() => {
+    let description = simplur`This is a table field. There [is|are] ${fields.length} row[|s], excluding the header row.`
+    if (schema.addMoreRows) {
+      description += ` You can add more rows if you'd like by clicking the "Add another row" button below`
+      if (schema.maximumRows) {
+        description += `, up to ${schema.maximumRows} rows`
+      } else {
+        description += '.'
+      }
+    }
+
+    return description
+  }, [fields.length, schema.addMoreRows, schema.maximumRows])
+
+  // If a table field with >1 column is present in a form, Chrome and MS Edge sometimes truncate the form in print mode.
+  // as it erroneously computes the number of pages to print.
+  // We set the height of the table explicitly (based on the number of cols and rows)
+  // for use in the media query so that the browser is able to render the full table in print mode
+  // calculation = the amount of space taken by each table cell and table cell heading + additional margins for each row
+  const printTableHeight =
+    schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
+
+  return (
+    <TableFieldContainer schema={schema} isHighContrast={isHighContrast}>
+      <Box
+        display="block"
+        w="100%"
+        overflowX="auto"
+        sx={{
+          '&::-webkit-scrollbar': {
+            height: '7px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(0,0,0,.5)',
+            borderRadius: '4px',
+          },
+          '@media print': {
+            h: `${printTableHeight}rem`,
+            display: 'block !important',
+            overflow: 'visible !important',
+          },
+        }}
+      >
+        <VisuallyHidden id={`table-desc-${schema._id}`}>
+          {ariaTableDescription}
+        </VisuallyHidden>
+        <Table
+          {...getTableProps()}
+          aria-describedby={`table-desc-${schema._id}`}
+          aria-labelledby={`${schema._id}-label`}
+          variant="column-stripe"
+          size="sm"
+          colorScheme={`theme-${colorTheme}`}
+        >
+          <Thead display={{ base: 'none', md: 'table-header-group' }}>
+            {headerGroups.map((headerGroup) => (
+              <Tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column, _idx, array) => (
+                  <Th
+                    {...column.getHeaderProps()}
+                    scope="col"
+                    w={{ base: 'initial', md: `calc(100%/${array.length})` }}
+                    minW="15rem"
+                    display={{ base: 'block', md: 'table-cell' }}
+                  >
+                    {column.render('Header')}
+                  </Th>
+                ))}
+              </Tr>
+            ))}
+          </Thead>
+          <Tbody {...getTableBodyProps()} verticalAlign="baseline">
+            {rows.map((row, rowIndex) => {
+              prepareRow(row)
+              return (
+                // The `key` prop is required for useFieldArray to remove the correct row.
+                <Tr {...row.getRowProps()} key={row.original.id}>
+                  {row.cells.map((cell, j) => (
+                    <Td
+                      {...cell.getCellProps()}
+                      display={{ base: 'block', md: 'table-cell' }}
+                      sx={{
+                        '@media print': {
+                          breakInside: 'avoid',
+                        },
+                      }}
+                    >
+                      {cell.render('Cell', {
+                        schemaId: schema._id,
+                        isDisabled: schema.disabled,
+                        disableRequiredValidation,
+                        columnSchema: schema.columns[j],
+                        colorTheme,
+                        selectedLanguage,
+                        isHighContrast,
+                      })}
+                    </Td>
+                  ))}
+
+                  {schema.addMoreRows ? (
+                    <Td
+                      verticalAlign="top"
+                      textAlign="end"
+                      display={{ base: 'block', md: 'table-cell' }}
+                    >
+                      <IconButton
+                        isDisabled={
+                          schema.disabled ||
+                          fields.length <= (schema.minimumRows || 0)
+                        }
+                        variant="clear"
+                        colorScheme="danger"
+                        aria-label="Remove row"
+                        icon={<BiTrash />}
+                        onClick={() => handleRemoveRow(rowIndex)}
+                      />
+                    </Td>
+                  ) : null}
+                </Tr>
+              )
+            })}
+          </Tbody>
+        </Table>
+      </Box>
+      {uniqTableError ? (
+        <FormErrorMessage my="0.75rem">
+          {String(uniqTableError)}
+        </FormErrorMessage>
+      ) : null}
+      {schema.addMoreRows && schema.maximumRows !== undefined ? (
+        <AddRowFooter
+          isDisabled={schema.disabled}
+          currentRows={fields.length}
+          maxRows={schema.maximumRows}
+          handleAddRow={handleAddRow}
+        />
+      ) : null}
+    </TableFieldContainer>
+  )
+}

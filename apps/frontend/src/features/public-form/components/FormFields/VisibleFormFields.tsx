@@ -1,0 +1,92 @@
+import { useEffect, useState } from 'react'
+import { Control, useWatch } from 'react-hook-form'
+
+import {
+  FormColorTheme,
+  LogicDto,
+  StrippedFormWorkflowStepDto,
+} from 'formsg-shared/types/form'
+
+import { FormFieldValues } from '~templates/Field'
+
+import { FormFieldWithQuestionNo } from '~features/form/types'
+import { augmentFieldWithQuestionNo } from '~features/form/utils'
+import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
+import { getVisibleFieldIds } from '~features/logic/utils'
+import { isMyInfo } from '~features/myinfo/utils'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
+
+import { FieldFactory } from './FieldFactory'
+import { PrefillMap } from './FormFields'
+import { useFormSections } from './FormSectionsContext'
+
+interface VisibleFormFieldsProps {
+  control: Control<FormFieldValues>
+  formFields: FormFieldWithQuestionNo[]
+  formLogics: LogicDto[]
+  workflowStep?: StrippedFormWorkflowStepDto
+  colorTheme: FormColorTheme
+  fieldPrefillMap: PrefillMap
+}
+
+/**
+ * This is its own component instead of being rendered in `FormFields` component
+ * so expensive rerenders to form fields are isolated to this component.
+ */
+export const VisibleFormFields = ({
+  control,
+  formFields,
+  formLogics,
+  workflowStep,
+  colorTheme,
+  fieldPrefillMap,
+}: VisibleFormFieldsProps) => {
+  const watchedValues = useWatch({ control })
+  const { setVisibleFieldIdsForScrollData } = useFormSections()
+  const [visibleFormFields, setVisibleFormFields] = useState(formFields)
+  const { setNumVisibleFields } = usePublicFormContext()
+
+  useEffect(() => {
+    const visibleFieldIds = getVisibleFieldIds(watchedValues, {
+      formFields,
+      formLogics,
+    })
+    setVisibleFieldIdsForScrollData(visibleFieldIds)
+    const visibleFields = formFields.filter((field) =>
+      visibleFieldIds.has(field._id),
+    )
+    const visibleFieldsWithQuestionNo =
+      augmentFieldWithQuestionNo(visibleFields)
+    setVisibleFormFields(visibleFieldsWithQuestionNo)
+
+    // set the number of visible fields in the context for public forms
+    // the setter will only exist for public forms and will be undefined for preview
+    if (setNumVisibleFields)
+      setNumVisibleFields(visibleFieldsWithQuestionNo.length)
+  }, [
+    formFields,
+    formLogics,
+    setVisibleFieldIdsForScrollData,
+    watchedValues,
+    setNumVisibleFields,
+  ])
+
+  return (
+    <>
+      {visibleFormFields.map((field) => (
+        <FieldFactory
+          colorTheme={colorTheme}
+          field={field}
+          disableRequiredValidation={
+            !isFieldEnabledByMrfWorkflow(workflowStep, field)
+          }
+          isHighContrast={
+            !isFieldEnabledByMrfWorkflow(workflowStep, field) || isMyInfo(field)
+          }
+          key={field._id}
+          prefill={fieldPrefillMap[field._id]}
+        />
+      ))}
+    </>
+  )
+}

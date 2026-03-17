@@ -1,0 +1,76 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2021"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {
+      "~assets/*": [
+        "./src/assets/*"
+      ],
+      "~contexts/*": [
+        "./src/contexts/*"
+      ],
+      "~constants/*": [
+        "./src/constants/*"
+      ],
+      "~components/*": [
+        "./src/components/*"
+      ],
+      "~templates/*": [
+        "./src/templates/*"
+      ],
+      "~features/*": [
+        "./src/features/*"
+      ],
+      "~hooks/*": [
+        "./src/hooks/*"
+      ],
+      "~utils/*": [
+        "./src/utils/*"
+      ],
+      "~pages/*": [
+        "./src/pages/*"
+      ],
+      "~services/*": [
+        "./src/services/*"
+      ],
+      "~theme/*": [
+        "./src/theme/*"
+      ],
+      "~typings/*": [
+        "./src/typings/*"
+      ],
+      "~/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    ".storybook/**/*",
+    "./vitest-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
