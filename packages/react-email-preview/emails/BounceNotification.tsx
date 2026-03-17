@@ -1,5 +1,5 @@
-import { BounceNotification } from '../../../src/app/views/templates/BounceNotification'
+import { BounceNotification } from '../../../apps/backend/src/app/views/templates/BounceNotification'
 
-export type { BounceNotificationHtmlData } from '../../../src/app/services/mail/mail.types'
+export type { BounceNotificationHtmlData } from '../../../apps/backend/src/app/services/mail/mail.types'
 
 export default BounceNotification
