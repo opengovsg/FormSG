@@ -10,6 +10,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "formsg-backend": "workspace:*",
     "@react-email/components": "^0.0.26",
     "react": "^18.2.0",
     "react-email": "^4.0.11"
