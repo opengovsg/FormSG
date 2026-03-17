@@ -12,7 +12,6 @@ on:
   push:
     branches:
       - develop
-      - fix/chromatic-failures
   pull_request:
     types: [opened, reopened, synchronize]
 
