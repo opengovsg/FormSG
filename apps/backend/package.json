@@ -1,6 +1,6 @@
 {
   "name": "formsg-backend",
-  "version": "6.311.0",
+  "version": "6.313.0",
   "private": true,
   "homepage": ".",
   "scripts": {
@@ -170,7 +170,6 @@
     "@types/validator": "^13.12.0",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.19.1",
-    "auto-changelog": "^2.5.0",
     "axios-mock-adapter": "^1.22.0",
     "concurrently": "^7.6.0",
     "copyfiles": "^2.4.1",
