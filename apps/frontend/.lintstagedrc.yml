@@ -1,3 +1,0 @@
-'*.{js,ts,tsx}':
-  - prettier --write
-  - eslint --cache --fix

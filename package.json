@@ -63,6 +63,7 @@
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.6",
+    "htmlhint": "^1.1.4",
     "lint-staged": "^15.2.10",
     "prettier": "^3.5.3",
     "rimraf": "^5.0.5"
