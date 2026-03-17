@@ -1,7 +1,6 @@
 #!/bin/bash
 set +x
 
-
 # pre-requisites: install github CLI
 # - github documentation: https://github.com/cli/cli#installation
 # - github is remote 'origin'
@@ -12,7 +11,6 @@ if ! command -v gh >/dev/null 2>&1; then
     echo "Install gh first"
     exit 1
 fi
-
 if ! gh auth status >/dev/null 2>&1; then
     echo "You need to login: gh auth login"
     exit 1
@@ -27,81 +25,64 @@ if [[ ${has_local_changes} ]]; then
   exit 1
 fi
 
+# Force sync with origin/develop
 git fetch --all --tags
 git reset --hard
 git pull
 git checkout develop
-git reset --hard origin/develop
+git reset --hard develop
 
+# Create temp branch for version bump and changelog generation
 short_hash=$(git rev-parse --short HEAD)
 temp_release_branch=temp_${short_hash}
-
 git checkout -b ${temp_release_branch}
 
-release_version=$(npm --no-git-tag-version version minor | grep -E '^v\d')
-# Also update the version in frontend directory
-npm --prefix frontend --no-git-tag-version version minor
-release_branch=release_${release_version}
-may_force_push=
-
-if [[ "$1" == "--recut" ]]; then
-  git tag -d ${release_version}
-  git push --delete origin ${release_version}
-  git branch -D ${release_branch}
+may_force_push= 
+tag_force=
+if [[ " $* " == *" --recut "* ]]; then
+  tag_force=--tag-force
   may_force_push=-f
 fi
 
-git commit -a -n -m "chore: bump version to ${release_version}"
-git tag ${release_version}
+# Perform the version bumps, generate changelog and create local tag. 
+pnpm exec commit-and-tag-version --config .internal.versionrc.js ${tag_force}
+release_version_num=$(jq -r .version < package.json)
+release_version="v${release_version_num}"
+release_branch=release_${release_version}
+
+if [[ " $* " == *" --recut "* ]]; then
+  git push --delete origin ${release_version}
+  git branch -D ${release_branch}
+fi
+
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
+# Push the code and tag to origin
 git push origin ${may_force_push} HEAD:${release_branch}
-git push -f origin HEAD:stg
 git push origin ${release_version}
 
-# extract changelog to inject into the PR
-pr_body_file=.pr_body_${release_version}
-pr_body_file_groupped=.pr_body_${release_version}_groupped
+# Deploy to staging for verification testing
+git push -f origin HEAD:stg
 
-awk "/#### \[${release_version}\]/{flag=1;next}/####/{flag=0}flag" CHANGELOG.md | sed -E '/^([^-]|[[:space:]]*$)/d' > ${pr_body_file}
+pr_body_actual=".pr_body_actual_${release_version}"
+scripts/generate_pr_body.sh "${release_version_num}" CHANGELOG.md > "${pr_body_actual}"
 
-echo "## New" > ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-echo "" >> ${pr_body_file_groupped}
-echo "## Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-echo "" >> ${pr_body_file_groupped}
-echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-## Extract test procedures for feature PRs
-echo "" >> ${pr_body_file_groupped}
-echo "## Tests" >> ${pr_body_file_groupped}
-echo "" >> ${pr_body_file_groupped}
-grep -v -E -- '- [a-z]+\(deps(-dev)?\)' ${pr_body_file} | grep -v -E -- '- build: ' | while read line_item; do
-  pr_id=$(echo ${line_item} | grep -o -E '\[`#\d+`\]' | grep -o -E '\d+')
-  tests=$(gh pr view ${pr_id} | awk 'f;/^#+ Tests?/{f=1}' | sed -E "s/\[[Xx]\]/[ ]/" | sed -E "s/^(##+) /\1## /")
-  if [[ ${tests} =~ [^[:space:]] ]]; then
-    echo ${line_item} | sed "s/^- /### /" >> ${pr_body_file_groupped}
-    echo "${tests}" >> ${pr_body_file_groupped}
-    echo "" >> ${pr_body_file_groupped}
-  fi
-done
-
-gh pr create \
-  -H ${release_branch} \
-  -B release-al2 \
-  -t "build: release ${release_version}" \
-  -F ${pr_body_file_groupped}
+# Creating PR to merge into release-al2: edit if it already exists, else create
+existing_pr=$(gh pr list --state open --head "${release_branch}" --base "release-al2" --json number --jq '.[0].number' 2>/dev/null)
+if [[ -n "${existing_pr}" ]]; then
+  gh pr edit "${existing_pr}" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_actual}"
+else
+  gh pr create \
+    -H "${release_branch}" \
+    -B "release-al2" \
+    -t "build: release ${release_version}" \
+    -F "${pr_body_actual}"
+fi
 
 # cleanup
-rm ${pr_body_file}
-rm ${pr_body_file_groupped}
+rm "${pr_body_actual}"
 git checkout develop
 git branch -D ${release_branch}
