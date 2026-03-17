@@ -39,7 +39,7 @@ git checkout -b ${temp_release_branch}
 
 may_force_push= 
 tag_force=
-if [[ "$1" == "--recut" ]]; then
+if [[ " $* " == *" --recut "* ]]; then
   tag_force=--tag-force
   may_force_push=-f
 fi
@@ -50,7 +50,7 @@ release_version_num=$(jq -r .version < package.json)
 release_version="v${release_version_num}"
 release_branch=release_${release_version}
 
-if [[ "$1" == "--recut" ]]; then
+if [[ " $* " == *" --recut "* ]]; then
   git push --delete origin ${release_version}
   git branch -D ${release_branch}
 fi

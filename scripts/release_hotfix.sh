@@ -55,7 +55,7 @@ temp_release_branch=temp_${short_hash}
 git checkout -b ${temp_release_branch}
 
 # Squash the commit history into single commit titled the branch name, unless --nosquash is provided
-if [[ "$1" != "--nosquash" && "$2" != "--nosquash" ]]; then
+if [[ " $* " != *" --nosquash "* ]]; then
   echo -e "\033[34mSquashing commit history into single commit titled the branch name\033[0m"
   git reset --soft release-al2
   git commit -a -n -m "fix: changes from ${hotfix_branch}"
@@ -64,7 +64,7 @@ fi
 may_force_push=
 tag_force=
 
-if [[ "$1" == "--recut" || "$2" == "--recut" ]]; then
+if [[ " $* " == *" --recut "* ]]; then
   tag_force=--tag-force
   may_force_push=-f
 fi
@@ -77,7 +77,7 @@ release_branch=release_${release_version}
 echo -e "\033[34mNext patch version: ${release_version}\033[0m"
 
 
-if [[ "$1" == "--recut" || "$2" == "--recut" ]]; then
+if [[ " $* " == *" --recut "* ]]; then
   echo -e "\033[34mRecutting: Deleting local and remote tag and release branch\033[0m"
   # Delete the local and remote tag for this release version if it exists.
   git push --delete origin ${release_version}
