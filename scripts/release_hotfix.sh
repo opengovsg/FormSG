@@ -105,10 +105,12 @@ scripts/generate_pr_body.sh "${release_version_num}" CHANGELOG.md > "${pr_body_a
 # Creating PR to merge into release-al2: edit if it already exists, else create
 existing_pr=$(gh pr list --state open --head "${release_branch}" --base "release-al2" --json number --jq '.[0].number' 2>/dev/null)
 if [[ -n "${existing_pr}" ]]; then
+echo -e "\033[34mEditing existing PR ${existing_pr}"
   gh pr edit "${existing_pr}" \
     -t "build: release ${release_version}" \
     -F "${pr_body_actual}"
 else
+  echo -e "\033[34mCreating new PR for release ${release_version}"
   gh pr create \
     -H "${release_branch}" \
     -B "release-al2" \
