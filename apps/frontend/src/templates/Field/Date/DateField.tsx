@@ -1,0 +1,105 @@
+import { useCallback } from 'react'
+import { Controller, useFormContext } from 'react-hook-form'
+
+import {
+  DATE_DISPLAY_FORMAT,
+  DATE_PARSE_FORMAT,
+} from 'formsg-shared/constants/dates'
+import { FormColorTheme } from 'formsg-shared/types'
+import { DateSelectedValidation } from 'formsg-shared/types/field'
+import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
+
+import {
+  isDateAfterToday,
+  isDateBeforeToday,
+  isDateOutOfRange,
+  loadDateFromNormalizedDate,
+} from '~utils/date'
+import { useDateValidationRules } from '~utils/fieldValidation'
+import { DatePicker } from '~components/DatePicker'
+
+import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
+
+export interface DateFieldProps extends BaseFieldProps {
+  schema: DateFieldSchema
+  disableRequiredValidation?: boolean
+}
+
+/**
+ * @precondition Must have a parent `react-hook-form#FormProvider` component.
+ */
+export const DateField = ({
+  schema,
+  disableRequiredValidation,
+  colorTheme = FormColorTheme.Blue,
+  isHighContrast,
+  ...fieldContainerProps
+}: DateFieldProps): JSX.Element => {
+  const validationRules = useDateValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
+  const isDateUnavailable = useCallback(
+    (date: Date) => {
+      const { selectedDateValidation } = schema.dateValidation
+      const selectedInvalidDays = schema.invalidDays ?? []
+      let isDateUnavailable = false
+
+      switch (selectedDateValidation) {
+        case DateSelectedValidation.NoPast:
+          isDateUnavailable = isDateBeforeToday(date)
+          break
+        case DateSelectedValidation.NoFuture:
+          isDateUnavailable = isDateAfterToday(date)
+          break
+        case DateSelectedValidation.Custom: {
+          const { customMinDate, customMaxDate } = schema.dateValidation
+          // customMinDate and customMaxDate are in UTC from the server,
+          // need to convert to local time but with the same date as UTC.
+          isDateUnavailable = isDateOutOfRange(
+            date,
+            loadDateFromNormalizedDate(customMinDate),
+            loadDateFromNormalizedDate(customMaxDate),
+          )
+          break
+        }
+        default:
+          break
+      }
+
+      return isDateUnavailable || isDateAnInvalidDay(date, selectedInvalidDays)
+    },
+    [schema.dateValidation, schema.invalidDays],
+  )
+
+  const { control } = useFormContext<SingleAnswerFieldInput>()
+
+  return (
+    <FieldContainer
+      schema={schema}
+      isHighContrast={isHighContrast}
+      {...fieldContainerProps}
+    >
+      <Controller
+        control={control}
+        name={schema._id}
+        rules={disableRequiredValidation ? undefined : validationRules}
+        defaultValue=""
+        render={({ field: { value, onChange, ...field } }) => (
+          <DatePicker
+            displayFormat={DATE_DISPLAY_FORMAT}
+            dateFormat={DATE_PARSE_FORMAT}
+            onInputValueChange={onChange}
+            inputValue={value}
+            colorScheme={`theme-${colorTheme}`}
+            {...field}
+            isDateUnavailable={isDateUnavailable}
+            isHighContrast={isHighContrast}
+          />
+        )}
+      />
+    </FieldContainer>
+  )
+}

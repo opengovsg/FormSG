@@ -51,17 +51,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.22
+          cache: 'pnpm'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
-        working-directory: ./serverless/pdf-gen-sparticuz
-        run: pnpm install
+        run: pnpm install --filter formsg-pdf-gen-sparticuz
       - name: Build SAM package
-        working-directory: ./serverless/pdf-gen-sparticuz
+        working-directory: ./services/pdf-gen-sparticuz
         run: pnpm sam-build
       - name: Deploy with SAM
-        working-directory: ./serverless/pdf-gen-sparticuz
+        working-directory: ./services/pdf-gen-sparticuz
         run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset

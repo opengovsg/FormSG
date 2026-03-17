@@ -1,0 +1,16 @@
+import {
+  FormLogic,
+  PreventSubmitLogic,
+  ShowFieldLogic,
+} from 'formsg-shared/types/form'
+
+export enum AdminEditLogicState {
+  CreatingLogic,
+  EditingLogic,
+}
+
+export type EditLogicInputs = FormLogic & {
+  preventSubmitMessage?: PreventSubmitLogic['preventSubmitMessage']
+  show?: ShowFieldLogic['show']
+  preventSubmitMessageTranslations?: PreventSubmitLogic['preventSubmitMessageTranslations']
+}

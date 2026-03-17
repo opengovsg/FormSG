@@ -1,0 +1,131 @@
+/**
+ * Field container layout that all rendered form fields share.
+ * @precondition There must be a parent `react-hook-form#FormProvider`
+ * component as this component relies on methods the FormProvider component
+ * provides.
+ */
+import { FieldError, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { Box, FormControl, Grid } from '@chakra-ui/react'
+import { get } from 'lodash'
+
+import { FormColorTheme, Language } from 'formsg-shared/types/form'
+
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
+import Badge from '~components/Badge'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
+
+import { FormFieldWithQuestionNo } from '~features/form/types'
+
+export type BaseFieldProps = {
+  schema: Pick<
+    FormFieldWithQuestionNo,
+    | '_id'
+    | 'required'
+    | 'description'
+    | 'title'
+    | 'disabled'
+    | 'questionNumber'
+    | 'titleTranslations'
+    | 'descriptionTranslations'
+  >
+  /**
+   * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
+   */
+  colorTheme?: FormColorTheme
+  /**
+   * Optional key of error to display in form error message.
+   * If not provided, will default to given `schema._id`.
+   */
+  errorKey?: string
+
+  /**
+   * Whether or not the field was prefilled.
+   */
+  isPrefilled?: boolean
+
+  /**
+   * Whether the MyInfo badge should be shown next to the question name.
+   */
+  showMyInfoBadge?: boolean
+
+  /**
+   * Optional specification for error message variant.
+   */
+  errorVariant?: 'white'
+  /**
+   * Better visibility of values in the disabled component when set to true.
+   */
+  isHighContrast?: boolean
+}
+
+export interface FieldContainerProps extends BaseFieldProps {
+  children: React.ReactNode
+}
+
+export const FieldContainer = ({
+  schema,
+  children,
+  errorKey,
+  showMyInfoBadge,
+  errorVariant,
+  isHighContrast,
+}: FieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
+  const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
+
+  const error: FieldError | undefined = get(errors, errorKey ?? schema._id) as
+    | FieldError
+    | undefined
+  const selectedLanguage = i18n.language as Language
+
+  const title = getValueInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage,
+  })
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage,
+  })
+
+  return (
+    <FormControl
+      isRequired={schema.required}
+      isDisabled={schema.disabled}
+      isReadOnly={isValid && isSubmitting}
+      isInvalid={!!error}
+      id={schema._id}
+    >
+      <Grid
+        gridTemplateAreas={"'formlabel myinfobadge'"}
+        gridTemplateColumns={'1fr auto'}
+      >
+        <FormLabel
+          useMarkdownForDescription
+          gridArea="formlabel"
+          questionNumber={
+            schema.questionNumber ? `${schema.questionNumber}.` : undefined
+          }
+          isHighContrast={isHighContrast}
+          description={description}
+        >
+          {title}
+        </FormLabel>
+        {showMyInfoBadge && (
+          <Box gridArea="myinfobadge">
+            <Badge variant="subtle" colorScheme="secondary">
+              Myinfo
+            </Badge>
+          </Box>
+        )}
+      </Grid>
+      {children}
+      <FormErrorMessage variant={errorVariant}>
+        {error?.message}
+      </FormErrorMessage>
+    </FormControl>
+  )
+}

@@ -8,3 +8,4 @@
 .eslintrc.json
 .prettierrc.json
 .travis.yml
+.pnpm-store

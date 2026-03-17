@@ -1,4 +1,4 @@
-import { LogicConditionState, LogicType } from 'shared/types'
+import { LogicConditionState, LogicType } from 'formsg-shared/types'
 
 // Note: Fields are identified by index into the formFields array, i.e. question number - 1
 

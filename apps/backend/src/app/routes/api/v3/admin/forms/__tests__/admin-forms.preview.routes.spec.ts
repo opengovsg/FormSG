@@ -1,0 +1,308 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import {
+  createAuthedSession,
+  logoutSession,
+} from '__tests__/integration/helpers/express-auth'
+import { setupApp } from '__tests__/integration/helpers/express-setup'
+import {
+  generateDefaultField,
+  generateUnprocessedSingleAnswerResponse,
+} from '__tests__/unit/backend/helpers/generate-form-data'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
+import { ObjectId } from 'bson'
+import { BasicField, FormResponseMode, FormStatus } from 'formsg-shared/types'
+import { omit } from 'lodash'
+import mongoose from 'mongoose'
+import supertest, { Session } from 'supertest-session'
+
+import getFormModel, {
+  getEmailFormModel,
+  getEncryptedFormModel,
+} from 'src/app/models/form.server.model'
+import getUserModel from 'src/app/models/user.server.model'
+import { IFormSchema, IUserSchema } from 'src/types'
+import { EncryptFormFieldResponse, EncryptSubmissionDto } from 'src/types/api'
+
+import { AdminFormsRouter } from '../admin-forms.routes'
+
+// Prevent rate limiting.
+jest.mock('src/app/utils/limit-rate')
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}))
+
+// Avoid async refresh calls
+jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
+
+const UserModel = getUserModel(mongoose)
+const FormModel = getFormModel(mongoose)
+const EmailFormModel = getEmailFormModel(mongoose)
+const EncryptFormModel = getEncryptedFormModel(mongoose)
+
+const app = setupApp('/admin/forms', AdminFormsRouter, {
+  setupWithAuth: true,
+})
+
+describe('admin-form.preview.routes', () => {
+  let request: Session
+  let defaultUser: IUserSchema
+
+  beforeAll(async () => await dbHandler.connect())
+  beforeEach(async () => {
+    request = supertest(app)
+    const { user } = await dbHandler.insertFormCollectionReqs()
+    // Default all requests to come from authenticated user.
+    request = await createAuthedSession(user.email, request)
+    defaultUser = user
+  })
+  afterEach(async () => {
+    await dbHandler.clearDatabase()
+    jest.restoreAllMocks()
+  })
+  afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('GET /admin/forms/:formId/preview', () => {
+    it("should return 200 with own form's public form view even when private", async () => {
+      // Arrange
+      const formToPreview = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        // Private status.
+        status: FormStatus.Private,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${formToPreview._id}/preview`,
+      )
+
+      // Assert
+      const expectedForm = (
+        await formToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+      ).getPublicView()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        form: jsonParseStringify(expectedForm),
+      })
+    })
+
+    it("should return 200 with collaborator's form's public form view", async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const collabFormToPreview = await EmailFormModel.create({
+        title: 'some form',
+        admin: anotherUser._id,
+        emails: [anotherUser.email],
+        // Only read permissions.
+        permissionList: [{ email: defaultUser.email }],
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${collabFormToPreview._id}/preview`,
+      )
+
+      // Assert
+      const expectedForm = (
+        await collabFormToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+      ).getPublicView()
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ form: jsonParseStringify(expectedForm) })
+    })
+    it('should return 403 when user does not have read permissions for form', async () => {
+      // Arrange
+      const anotherUser = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'some-user',
+          shortName: 'someUser',
+        })
+      ).user
+      const unauthedForm = await EmailFormModel.create({
+        title: 'some form',
+        admin: anotherUser._id,
+        emails: [anotherUser.email],
+        // defaultUser does not have read permissions.
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${unauthedForm._id}/preview`,
+      )
+
+      // Arrange
+      expect(response.status).toEqual(403)
+      expect(response.body).toEqual({
+        message: expect.stringContaining(
+          'not authorized to perform read operation',
+        ),
+      })
+    })
+
+    it('should return 404 when form to preview cannot be found', async () => {
+      // Act
+      const response = await request.get(
+        `/admin/forms/${new ObjectId()}/preview`,
+      )
+
+      // Arrange
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        message: 'Form not found',
+      })
+    })
+
+    it('should return 410 when form is already archived', async () => {
+      // Arrange
+      const archivedForm = await EncryptFormModel.create({
+        title: 'archived form',
+        status: FormStatus.Archived,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'does not matter',
+        admin: defaultUser._id,
+      })
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${archivedForm._id}/preview`,
+      )
+
+      // Arrange
+      expect(response.status).toEqual(410)
+      expect(response.body).toEqual({
+        message: 'Form has been archived',
+      })
+    })
+
+    it('should return 422 when user in session cannot be found in the database', async () => {
+      // Arrange
+      const formToPreview = await EmailFormModel.create({
+        title: 'some other form',
+        admin: defaultUser._id,
+        status: FormStatus.Public,
+        emails: [defaultUser.email],
+      })
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${formToPreview._id}/preview`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({
+        message: 'User not found',
+      })
+    })
+
+    it('should return 500 when database error occurs whilst retrieving form to preview', async () => {
+      // Arrange
+      const formToPreview = await EmailFormModel.create({
+        title: 'some other form',
+        admin: defaultUser._id,
+        status: FormStatus.Public,
+        emails: [defaultUser.email],
+      })
+      // Mock database error.
+      jest
+        .spyOn(FormModel, 'getFullFormById')
+        .mockRejectedValueOnce(new Error('something went wrong'))
+
+      // Act
+      const response = await request.get(
+        `/admin/forms/${formToPreview._id}/preview`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: 'Something went wrong. Please try again.',
+      })
+    })
+  })
+
+  describe('POST /admin/forms/:formId/preview/submissions/storage', () => {
+    const MOCK_FIELD_ID = new ObjectId().toHexString()
+    const MOCK_ATTACHMENT_FIELD_ID = new ObjectId().toHexString()
+    const MOCK_RESPONSE = omit(
+      generateUnprocessedSingleAnswerResponse(BasicField.Email, {
+        _id: MOCK_FIELD_ID,
+        answer: 'a@abc.com',
+      }),
+      'question',
+    ) as EncryptFormFieldResponse
+    const MOCK_ENCRYPTED_CONTENT = `${'a'.repeat(44)};${'a'.repeat(
+      32,
+    )}:${'a'.repeat(4)}`
+    const MOCK_VERSION = 1
+    const MOCK_SUBMISSION_BODY: EncryptSubmissionDto = {
+      responses: [MOCK_RESPONSE],
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: MOCK_VERSION,
+      attachments: {
+        [MOCK_ATTACHMENT_FIELD_ID]: {
+          encryptedFile: {
+            binary: '10101',
+            nonce: 'mockNonce',
+            submissionPublicKey: 'mockPublicKey',
+          },
+        },
+      },
+    }
+    let mockForm: IFormSchema
+
+    beforeEach(async () => {
+      mockForm = await EncryptFormModel.create({
+        title: 'mock form',
+        publicKey: 'some public key',
+        admin: defaultUser._id,
+        form_fields: [
+          generateDefaultField(BasicField.Email, { _id: MOCK_FIELD_ID }),
+        ],
+      })
+    })
+
+    it('should return 200 with submission ID when request is valid', async () => {
+      const response = await request
+        .post(`/admin/forms/${mockForm._id}/preview/submissions/storage`)
+        .send(MOCK_SUBMISSION_BODY)
+
+      expect(response.body.message).toBe('Form submission successful.')
+      expect(mongoose.isValidObjectId(response.body.submissionId)).toBe(true)
+      expect(response.status).toBe(200)
+    })
+
+    it('should return 401 when user is not signed in', async () => {
+      await logoutSession(request)
+
+      const response = await request
+        .post(`/admin/forms/${mockForm._id}/preview/submissions/storage`)
+        .send(MOCK_SUBMISSION_BODY)
+
+      expect(response.status).toBe(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+  })
+})

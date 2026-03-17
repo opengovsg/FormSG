@@ -5,7 +5,7 @@ import {
   FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
-} from 'shared/types'
+} from 'formsg-shared/types'
 
 import { IFormModel } from 'src/types'
 

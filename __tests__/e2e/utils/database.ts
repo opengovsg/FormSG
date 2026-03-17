@@ -39,7 +39,7 @@ export const makeModel = (
     }
   }
 
-  return spec(`dist/backend/src/app/models/${modelFilename}`).default(db)
+  return spec(`apps/backend/dist/src/app/models/${modelFilename}`).default(db)
 }
 
 /**
