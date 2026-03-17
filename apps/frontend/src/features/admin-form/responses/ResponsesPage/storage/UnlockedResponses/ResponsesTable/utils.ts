@@ -1,0 +1,20 @@
+import { SubmissionMetadata } from 'formsg-shared/types'
+import { centsToDollars } from 'formsg-shared/utils/payments'
+
+export const getNetAmount = (payments: SubmissionMetadata['payments']) => {
+  if (!payments) {
+    return ''
+  }
+  if (payments.transactionFee == null) {
+    return ''
+  }
+  if (payments.transactionFee < 0) {
+    return ''
+  }
+  const grossAmt = centsToDollars(payments.paymentAmt - payments.transactionFee)
+  const isFinalTransactionFee = payments.payoutDate
+  if (!isFinalTransactionFee) {
+    return `Est. ${grossAmt}`
+  }
+  return `${grossAmt}`
+}

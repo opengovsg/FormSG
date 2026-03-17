@@ -29,6 +29,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      shared: ${{ steps.filter.outputs.shared }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,14 +40,20 @@ jobs:
           filters: |
             frontend:
               - __tests__/**
-              - shared/**
-              - frontend/**
+              - apps/frontend/**
+              - pnpm-lock.yaml
             backend:
-              - __tests__/**
-              - shared/**
-              - src/**
-              - package.json
-              - package-lock.json
+              - apps/backend/src/**
+              - apps/backend/__tests__/**
+              - apps/backend/package.json
+              - pnpm-lock.yaml
+            shared:
+              - packages/shared/constants/**
+              - packages/shared/modules/** 
+              - packages/shared/types/**
+              - packages/shared/utils/**
+              - packages/shared/package.json
+              - pnpm-lock.yaml
 
   install:
     runs-on: ubuntu-latest
@@ -62,12 +69,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-      - run: pnpm install
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
 
   build:
     needs: install
@@ -85,13 +89,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -107,7 +107,7 @@ jobs:
 
   frontend_test:
     needs: [changes, install]
-    # if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -121,13 +121,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
@@ -157,18 +153,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
       - run: pnpm lint:frontend
 
   backend_test:
     needs: [changes, install, build]
-    # if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -186,19 +178,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - run: pnpm install --prefix serverless/pdf-gen-sparticuz
-      - run: pnpm install --prefix serverless/virus-scanner-guardduty
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - run: pnpm install --prefix services/pdf-gen-sparticuz
+      - run: pnpm install --prefix services/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
@@ -227,11 +211,58 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      # Load cached node_modules
-      - name: Cache Node modules
-        uses: actions/cache@v4
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - run: pnpm lint-ci:backend
+
+  shared_lint:
+    needs: [changes, install]
+    if: ${{ needs.changes.outputs.shared == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json', '**/pnpm-lock.yaml') }}
-          fail-on-cache-miss: true
-      - run: pnpm lint-ci
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - run: pnpm lint-ci:shared
+  
+  shared_test:
+    needs: [changes, install]
+    if: ${{ needs.changes.outputs.shared == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
+      - run: pnpm test:shared
+        env:
+          DD_TAGS: layer:shared
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}

@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test'
-import { MYINFO_ATTRIBUTE_MAP } from 'shared/constants/field/myinfo'
-import { BasicField, MyInfoAttribute } from 'shared/types'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
+import { BasicField, MyInfoAttribute } from 'formsg-shared/types'
 
 import { E2eFieldMetadata, NON_INPUT_FIELD_TYPES } from '../constants/field'
 

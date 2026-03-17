@@ -1,4 +1,4 @@
-import { FormAuthType, FormResponseMode, FormStatus } from 'shared/types'
+import { FormAuthType, FormResponseMode, FormStatus } from 'formsg-shared/types'
 
 import { E2eSettingsOptions } from '../constants/settings'
 

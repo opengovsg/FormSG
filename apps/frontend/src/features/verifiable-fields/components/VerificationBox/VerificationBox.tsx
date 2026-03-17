@@ -1,0 +1,173 @@
+import { useCallback } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import {
+  Box,
+  Flex,
+  FormControl,
+  InputGroup,
+  InputLeftAddon,
+} from '@chakra-ui/react'
+
+import { BasicField } from 'formsg-shared/types'
+
+import ResendOtpButton from '~/templates/ResendOtpButton'
+
+import { HttpError } from '~services/ApiService'
+import Button from '~components/Button'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
+
+import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
+import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
+import { useFormColorTheme } from '~features/public-form/utils/useFormColorTheme'
+
+import { VerifiableFieldType } from '../../types'
+
+import { EmailOtpSvgr } from './EmailOtpSvgr'
+import { MobileOtpSvgr } from './MobileOtpSvgr'
+
+type VfnFieldValues = {
+  otp: string
+}
+
+export interface VerificationBoxProps {
+  fieldType: VerifiableFieldType
+  otpPrefix: string
+  handleVerifyOtp: (otp: string) => Promise<string>
+  handleResendOtp: () => Promise<void>
+}
+
+type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
+
+const useVerificationBox = ({ handleVerifyOtp }: UseVerificationBoxProps) => {
+  const formMethods = useForm<VfnFieldValues>()
+  const { handleSubmit } = formMethods
+
+  const onSubmitForm = handleSubmit(async (inputs) => {
+    return handleVerifyOtp(inputs.otp).catch((err: HttpError) => {
+      formMethods.setError('otp', {
+        message: err.message,
+      })
+    })
+  })
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>): void => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        onSubmitForm()
+      }
+    },
+    [onSubmitForm],
+  )
+
+  return {
+    formMethods,
+    handleKeyDown,
+    onSubmitForm,
+  }
+}
+
+export const VerificationBox = ({
+  fieldType,
+  otpPrefix,
+  handleResendOtp,
+  handleVerifyOtp,
+}: VerificationBoxProps): JSX.Element => {
+  const { t } = useTranslation()
+  const colorScheme = useFormColorScheme()
+  const {
+    formMethods: {
+      register,
+      formState: { isValid, isSubmitting, errors },
+    },
+    handleKeyDown,
+    onSubmitForm,
+  } = useVerificationBox({
+    handleVerifyOtp,
+  })
+
+  const Logo = {
+    [BasicField.Mobile]: MobileOtpSvgr,
+    [BasicField.Email]: EmailOtpSvgr,
+  }[fieldType]
+
+  const { title, description } = t(
+    `features.publicForm.components.fields.verification.modal.${fieldType}`,
+    { allowObjects: true },
+  )
+
+  return (
+    <Flex
+      p={{ base: '1.25rem', md: '2.25rem' }}
+      bg={useBgColor({ colorTheme: useFormColorTheme() })}
+      align="flex-start"
+      mt="0.5rem"
+    >
+      <Box display={{ base: 'none', md: 'initial' }} mr="1.5rem">
+        <Logo />
+      </Box>
+      <Box>
+        <Flex>
+          <FormControl
+            isRequired
+            isReadOnly={isValid && isSubmitting}
+            isInvalid={!!errors.otp}
+            maxW="24.75rem"
+          >
+            <FormLabel description={description}>{title}</FormLabel>
+            <Flex>
+              <InputGroup>
+                {otpPrefix ? (
+                  <InputLeftAddon
+                    pointerEvents="none"
+                    bg={`${colorScheme}.200`}
+                    borderColor={`${colorScheme}.300`}
+                    children={`${otpPrefix}-`}
+                  />
+                ) : null}
+                <Input
+                  type="text"
+                  maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  {...register('otp', {
+                    required: 'OTP is required.',
+                    pattern: {
+                      value: /^\d+$/,
+                      message: 'Only numbers are allowed.',
+                    },
+                    validate: (value) =>
+                      value.length === 6 || 'Please enter a 6 digit OTP.',
+                  })}
+                  onKeyDown={handleKeyDown}
+                />
+              </InputGroup>
+
+              <Button
+                ml="0.5rem"
+                onClick={onSubmitForm}
+                aria-label="Submit OTP for verification"
+                colorScheme={colorScheme}
+              >
+                Submit
+              </Button>
+            </Flex>
+            <FormErrorMessage>
+              {errors.otp && errors.otp.message}
+            </FormErrorMessage>
+          </FormControl>
+        </Flex>
+        <ResendOtpButton
+          mt="0.5rem"
+          variant="link"
+          colorScheme={colorScheme}
+          onResendOtp={handleResendOtp}
+        />
+      </Box>
+    </Flex>
+  )
+}

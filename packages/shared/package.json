@@ -1,0 +1,231 @@
+{
+  "name": "formsg-shared",
+  "version": "7.0.0",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "pnpm exec jest --config jest.config.js",
+    "lint": "pnpm exec eslint . --quiet --fix",
+    "lint-ci": "pnpm exec eslint . --quiet"
+  },
+  "__comment": "To clean up the exports in shared after monorepo migration. Vite uses the default, whereas node (cjs) uses the require.",
+  "exports": {
+    "./types": {
+      "require": "./dist/types/index.js",
+      "default": "./types/index.ts"
+    },
+    "./types/captcha": {
+      "require": "./dist/types/captcha.js",
+      "default": "./types/captcha.ts"
+    },
+    "./types/errorCodes": {
+      "default": "./types/errorCodes.ts"
+    },
+    "./types/payment": {
+      "default": "./types/payment.ts"
+    },
+    "./types/form": {
+      "default": "./types/form/index.ts"
+    },
+    "./types/form/form": {
+      "default": "./types/form/form.ts"
+    },
+    "./types/form/form_logo": {
+      "default": "./types/form/form_logo.ts"
+    },
+    "./types/form/workflow": {
+      "default": "./types/form/workflow.ts"
+    },
+    "./types/field": {
+      "default": "./types/field/index.ts"
+    },
+    "./types/submission": {
+      "default": "./types/submission.ts"
+    },
+    "./constants": {
+      "require": "./dist/constants/index.js",
+      "default": "./constants/index.ts"
+    },
+    "./constants/countryRegion": {
+      "require": "./dist/constants/countryRegion.js",
+      "default": "./constants/countryRegion.ts"
+    },
+    "./constants/dates": {
+      "default": "./constants/dates.ts"
+    },
+    "./constants/errors": {
+      "require": "./dist/constants/errors.js",
+      "default": "./constants/errors.ts"
+    },
+    "./constants/mail": {
+      "require": "./dist/constants/mail.js",
+      "default": "./constants/mail.ts"
+    },
+    "./constants/links": {
+      "require": "./dist/constants/links.js",
+      "default": "./constants/links.ts"
+    },
+    "./constants/feature-flags": {
+      "default": "./constants/feature-flags.ts"
+    },
+    "./constants/file": {
+      "require": "./dist/constants/file.js",
+      "default": "./constants/file.ts"
+    },
+    "./constants/form": {
+      "default": "./constants/form.ts"
+    },
+    "./constants/routes": {
+      "require": "./dist/constants/routes.js",
+      "default": "./constants/routes.ts"
+    },
+    "./constants/field/basic": {
+      "require": "./dist/constants/field/basic.js",
+      "default": "./constants/field/basic.ts"
+    },
+    "./constants/field/myinfo": {
+      "require": "./dist/constants/field/myinfo/index.js",
+      "default": "./constants/field/myinfo/index.ts"
+    },
+    "./utils/address-validation": {
+      "require": "./dist/utils/address-validation.js",
+      "default": "./utils/address-validation.ts"
+    },
+    "./utils/address": {
+      "require": "./dist/utils/address.js",
+      "default": "./utils/address.ts"
+    },
+    "./utils/crypto": {
+      "require": "./dist/utils/crypto.js",
+      "default": "./utils/crypto.ts"
+    },
+    "./utils/date-validation": {
+      "require": "./dist/utils/date-validation.js",
+      "default": "./utils/date-validation.ts"
+    },
+    "./utils/dates": {
+      "require": "./dist/utils/dates.js",
+      "default": "./utils/dates.ts"
+    },
+    "./utils/email-domain-validation": {
+      "require": "./dist/utils/email-domain-validation.js",
+      "default": "./utils/email-domain-validation.ts"
+    },
+    "./utils/file-validation": {
+      "require": "./dist/utils/file-validation.js",
+      "default": "./utils/file-validation.ts"
+    },
+    "./utils/has-prop": {
+      "require": "./dist/utils/has-prop.js",
+      "default": "./utils/has-prop.ts"
+    },
+    "./utils/immutable-array-fns": {
+      "require": "./dist/utils/immutable-array-fns.js",
+      "default": "./utils/immutable-array-fns.ts"
+    },
+    "./utils/is-string-array": {
+      "require": "./dist/utils/is-string-array.js",
+      "default": "./utils/is-string-array.ts"
+    },
+    "./utils/isNonEmpty": {
+      "require": "./dist/utils/isNonEmpty.js",
+      "default": "./utils/isNonEmpty.ts"
+    },
+    "./utils/logic": {
+      "require": "./dist/utils/logic.js",
+      "default": "./utils/logic.ts"
+    },
+    "./utils/nric-validation": {
+      "require": "./dist/utils/nric-validation.js",
+      "default": "./utils/nric-validation.ts"
+    },
+    "./utils/options-recipients-map-validation": {
+      "require": "./dist/utils/options-recipients-map-validation.js",
+      "default": "./utils/options-recipients-map-validation.ts"
+    },
+    "./utils/paymentProductPrice": {
+      "require": "./dist/utils/paymentProductPrice.js",
+      "default": "./utils/paymentProductPrice.ts"
+    },
+    "./utils/payments": {
+      "require": "./dist/utils/payments.js",
+      "default": "./utils/payments.ts"
+    },
+    "./utils/phone-num-validation": {
+      "require": "./dist/utils/phone-num-validation.js",
+      "default": "./utils/phone-num-validation.ts"
+    },
+    "./utils/signature": {
+      "require": "./dist/utils/signature.js",
+      "default": "./utils/signature.ts"
+    },
+    "./utils/stringify-safe": {
+      "require": "./dist/utils/stringify-safe.js",
+      "default": "./utils/stringify-safe.ts"
+    },
+    "./utils/strip-dropdown-field-optionsToRecipientsMap": {
+      "require": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.js",
+      "default": "./utils/strip-dropdown-field-optionsToRecipientsMap.ts"
+    },
+    "./utils/strip-workflow-emails": {
+      "require": "./dist/utils/strip-workflow-emails.js",
+      "default": "./utils/strip-workflow-emails.ts"
+    },
+    "./utils/uen-validation": {
+      "require": "./dist/utils/uen-validation.js",
+      "default": "./utils/uen-validation.ts"
+    },
+    "./utils/url-validation": {
+      "require": "./dist/utils/url-validation.js",
+      "default": "./utils/url-validation.ts"
+    },
+    "./utils/urls": {
+      "require": "./dist/utils/urls.js",
+      "default": "./utils/urls.ts"
+    },
+    "./utils/verification": {
+      "require": "./dist/utils/verification.js",
+      "default": "./utils/verification.ts"
+    },
+    "./utils/verified-content": {
+      "require": "./dist/utils/verified-content.js",
+      "default": "./utils/verified-content.ts"
+    },
+    "./modules/logic": {
+      "require": "./dist/modules/logic/index.js",
+      "default": "./modules/logic/index.ts"
+    }
+  },
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "json-stringify-safe": "^5.0.1",
+    "jszip": "^3.7.1",
+    "libphonenumber-js": "1.12.37",
+    "lodash": "^4.17.21",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
+    "type-fest": "^4.17.0",
+    "validator": "^13.7.0",
+    "zod": "^3.11.6"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.775.0",
+    "typescript": "^5.4.5",
+    "@types/jest": "^29.5.1",
+    "@types/json-stringify-safe": "^5.0.3",
+    "@types/lodash": "^4.14.186",
+    "@types/validator": "^13.7.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "aws-sdk": "^2.1692.0",
+    "bson": "^5.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.1.3",
+    "jest": "^29.5.0",
+    "mongoose": "^7.8.7",
+    "prettier": "^3.2.5",
+    "stripe": "^12.5.0"
+  }
+}

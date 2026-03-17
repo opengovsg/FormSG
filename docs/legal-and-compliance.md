@@ -20,10 +20,10 @@ What you can do is **remove it completely,** or replace it with your agency bran
 
 **Frontend Components:**
 
-* [ ] **Government Masthead**: Remove every usage of `<GovtMasthead />` . [Example](https://github.com/opengovsg/FormSG/blob/develop/frontend/src/app/PublicElement.tsx#L37).
-* [ ] **VDP Report Button**: Remove `REPORT_VULNERABILITY` from `frontend/src/constants/links.ts`
-* [ ] **Government Logos**: Remove .gov.sg logos from `frontend/public/static/img/`
-* [ ] **App Metadata**: Update `frontend/src/constants/links.ts`, etc.
+* [ ] **Government Masthead**: Remove every usage of `<GovtMasthead />` . [Example](https://github.com/opengovsg/FormSG/blob/develop/apps/frontend/src/app/PublicElement.tsx#L37).
+* [ ] **VDP Report Button**: Remove `REPORT_VULNERABILITY` from `apps/frontend/src/constants/links.ts`
+* [ ] **Government Logos**: Remove .gov.sg logos from `apps/frontend/public/static/img/`
+* [ ] **App Metadata**: Update `apps/frontend/src/constants/links.ts`, etc.
 
 **Environment Variables:**
 
@@ -49,7 +49,7 @@ This doesn't guarantee it will find every SG-tied code, but it's a decent simple
 grep -r -i \
     "singapore\|gov\.sg\|VDP\|vulnerability.*report\|singpass\|corppass\
   |myinfo\|masthead" \
-    frontend/src/ \
+    apps/frontend/src/ \
     --exclude-dir={mocks,__tests__,__mocks__,assets} \
     --exclude="*.{stories,test,spec}.{ts,tsx}" \
     --exclude="*.svg" | nl
@@ -67,9 +67,9 @@ It's basically a grep script that scans the codebase for occurrences of SG keywo
 ```bash
 # Example output
 ...
-   182	frontend/src//features/admin-form/preview/PreviewFormPage.tsx:        <GovtMasthead />
-   183	frontend/.../EditMyInfoChildren.tsx:import { SINGPASS_FAQ } from '~constants/links'
-   189	frontend/.../EditEmail.stories.tsx:    allowedEmailDomains: ['@open.gov.sg'],
+   182	apps/frontend/src//features/admin-form/preview/PreviewFormPage.tsx:        <GovtMasthead />
+   183	apps/frontend/.../EditMyInfoChildren.tsx:import { SINGPASS_FAQ } from '~constants/links'
+   189	apps/frontend/.../EditEmail.stories.tsx:    allowedEmailDomains: ['@open.gov.sg'],
 ...
 ```
 {% endcode %}

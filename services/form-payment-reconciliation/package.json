@@ -1,0 +1,26 @@
+{
+  "name": "formsg-payment-reconciliation",
+  "version": "7.0.0",
+  "private": true,
+  "description": "Lambda function for payment reconciliation",
+  "main": "index.js",
+  "scripts": {
+    "lambda:prep": "pnpm install -p --frozen-lockfile && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules",
+    "lambda:push:prod": "aws lambda update-function-code --function-name prod-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:stg": "aws lambda update-function-code --function-name stg-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:stg-alt": "aws lambda update-function-code --function-name stg-alt-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:stg-alt2": "aws lambda update-function-code --function-name stg-alt2-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:stg-alt3": "aws lambda update-function-code --function-name stg-alt3-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:uat": "aws lambda update-function-code --function-name uat-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:update:prod": "pnpm lambda:prep && pnpm lambda:push:prod",
+    "lambda:update:stg": "pnpm lambda:prep && pnpm lambda:push:stg",
+    "lambda:update:stg-alt": "pnpm lambda:prep && pnpm lambda:push:stg-alt",
+    "lambda:update:stg-alt2": "pnpm lambda:prep && pnpm lambda:push:stg-alt2",
+    "lambda:update:stg-alt3": "pnpm lambda:prep && pnpm lambda:push:stg-alt3",
+    "lambda:update:uat": "pnpm lambda:prep && pnpm lambda:push:uat"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.529.1",
+    "@aws-sdk/client-ssm": "^3.525.0"
+  }
+}

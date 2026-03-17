@@ -1,0 +1,25 @@
+{
+  "name": "formsg-react-email-preview",
+  "version": "7.0.0",
+  "private": true,
+  "scripts": {
+    "build": "email build",
+    "dev": "email dev --port 4242",
+    "export": "email export",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "formsg-backend": "workspace:*",
+    "@react-email/components": "^0.0.26",
+    "react": "^18.2.0",
+    "react-email": "^4.0.11"
+  },
+  "devDependencies": {
+    "@storybook/react": "8.6.17",
+    "@storybook/react-vite": "^8.3.5",
+    "@types/react": "18.2.33",
+    "@types/react-dom": "^18.2.14",
+    "storybook": "^8.6.15"
+  }
+}
