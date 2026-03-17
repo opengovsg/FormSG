@@ -1,4 +1,4 @@
-import { FormAuthType, FormStatus } from 'shared/types'
+import { FormAuthType, FormStatus } from 'formsg-shared/types'
 
 export type Collaborator = {
   email: string

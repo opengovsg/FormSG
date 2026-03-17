@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 // import { readFileSync } from 'fs'
-import { BasicField, FormAuthType, FormResponseMode } from 'shared/types'
+import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 
 import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
 

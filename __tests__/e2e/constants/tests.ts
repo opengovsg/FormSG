@@ -1,4 +1,4 @@
-import { BasicField, LogicConditionState, LogicType } from 'shared/types'
+import { BasicField, LogicConditionState, LogicType } from 'formsg-shared/types'
 
 import { ALL_FIELDS, E2eFieldMetadata } from './field'
 import { E2eLogic } from './logic'

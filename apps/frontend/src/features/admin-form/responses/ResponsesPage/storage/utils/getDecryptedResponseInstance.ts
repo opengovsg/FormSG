@@ -1,0 +1,109 @@
+import { BasicField } from 'formsg-shared/types/field'
+import { answerKey } from 'formsg-shared/utils/address'
+import { hasProp } from 'formsg-shared/utils/has-prop'
+
+import {
+  ArrayAnswerResponse,
+  ArrayResponse,
+  DisplayedResponseWithoutAnswer,
+  NestedResponse,
+  Response,
+  SingleAnswerResponse,
+  SingleResponse,
+  TableResponse,
+} from './csv-response-classes'
+
+/**
+ * Converts a field record into a custom response instance
+ * @param fieldRecordData Field record
+ * @returns Response instance
+ * @throws Error when data does not fit any known response type
+ */
+export const getDecryptedResponseInstance = (
+  fieldRecordData: DisplayedResponseWithoutAnswer,
+): Response => {
+  if (
+    isNestedResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === BasicField.Table
+  ) {
+    return new TableResponse(fieldRecordData)
+  } else if (
+    isArrayResponse(fieldRecordData) &&
+    (fieldRecordData.fieldType === BasicField.Checkbox ||
+      fieldRecordData.fieldType === BasicField.Signature)
+  ) {
+    return new ArrayAnswerResponse(fieldRecordData)
+  } else if (isSingleResponse(fieldRecordData)) {
+    return new SingleAnswerResponse(fieldRecordData)
+  } else {
+    throw new Error('Response did not match any known type')
+  }
+}
+
+/**
+ * Converts an address field record into an array of SingleAnswerResponses for separate csv columns output
+ * @param fieldRecordData Field record (answerArray is a 6 element array of strings formatted
+ * as ['blockNumber', 'streetName', 'buildingName', 'levelNumber', 'unitNumber', 'postalCode'])
+ * @returns Response[]
+ * @throws Address parsing error
+ */
+export const getAddressDecryptedResponseInstances = (
+  fieldRecordData: DisplayedResponseWithoutAnswer,
+): Response[] => {
+  if (
+    isArrayResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === BasicField.Address
+  ) {
+    const responses: Response[] = fieldRecordData.answerArray.map(
+      (answer, index) => {
+        const r = {
+          _id: fieldRecordData._id + index,
+          fieldType: fieldRecordData.fieldType,
+          question: fieldRecordData.question + `-${answerKey[index]}`,
+          answer: answer,
+          isHeader: fieldRecordData.isHeader,
+        }
+        return new SingleAnswerResponse(r)
+      },
+    )
+    return responses
+  } else {
+    throw new Error('Error parsing address response')
+  }
+}
+
+const isNestedResponse = (
+  response: DisplayedResponseWithoutAnswer,
+): response is NestedResponse => {
+  return (
+    hasAnswerArray(response) &&
+    response.answerArray.every(
+      (arr) =>
+        Array.isArray(arr) &&
+        arr.every((value: unknown) => typeof value === 'string'),
+    )
+  )
+}
+
+const isArrayResponse = (
+  response: DisplayedResponseWithoutAnswer,
+): response is ArrayResponse => {
+  return (
+    hasAnswerArray(response) &&
+    response.answerArray.every((value) => typeof value === 'string')
+  )
+}
+
+const isSingleResponse = (
+  response: DisplayedResponseWithoutAnswer,
+): response is SingleResponse => {
+  return hasProp(response, 'answer') && typeof response.answer === 'string'
+}
+
+type AnswerArrayObject = {
+  answerArray: Array<unknown>
+}
+
+const hasAnswerArray = (response: unknown): response is AnswerArrayObject => {
+  return hasProp(response, 'answerArray') && Array.isArray(response.answerArray)
+}
