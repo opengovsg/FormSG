@@ -11,7 +11,7 @@ type BasicFieldBlock = {
   answerArray: boolean
 }
 
-export const types: BasicFieldBlock[] = [
+export const BASIC_FIELD_TYPES: BasicFieldBlock[] = [
   {
     name: BasicField.Section,
     value: 'Header',
@@ -149,6 +149,6 @@ export const types: BasicFieldBlock[] = [
 /**
  * Array of BasicFields which are not included in the form response (e.g. statement)
  */
-export const FIELDS_TO_REJECT: BasicField[] = types
-  .filter((f) => !f.submitted)
-  .map((f) => f.name)
+export const BASIC_FIELDS_TO_REJECT: BasicField[] = BASIC_FIELD_TYPES.filter(
+  (f) => !f.submitted,
+).map((f) => f.name)

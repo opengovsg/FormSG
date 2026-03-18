@@ -6,7 +6,7 @@ import {
   featureFlags,
   MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
 } from 'formsg-shared/constants'
-import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
+import { BASIC_FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
@@ -470,7 +470,7 @@ const clearResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[],
 ) => {
   return responses.filter(
-    ({ fieldType }) => !FIELDS_TO_REJECT.includes(fieldType),
+    ({ fieldType }) => !BASIC_FIELDS_TO_REJECT.includes(fieldType),
   )
 }
 

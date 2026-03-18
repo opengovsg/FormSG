@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import {
+  MYINFO_FIELD_TYPES,
   myInfoCountries,
   myInfoDialects,
   myInfoHdbTypes,
@@ -7,7 +8,6 @@ import {
   myInfoNationalities,
   myInfoOccupations,
   myInfoRaces,
-  types as myInfoTypes,
 } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
@@ -295,7 +295,9 @@ export const mapRedirectURLError: MapRouteError = (
 export const getMyInfoFieldOptions = (
   myInfoAttr: IMyInfo['attr'],
 ): string[] => {
-  const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
+  const [myInfoField] = MYINFO_FIELD_TYPES.filter(
+    (type) => type.name === myInfoAttr,
+  )
   return myInfoField?.fieldOptions || []
 }
 

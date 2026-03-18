@@ -42,7 +42,7 @@ export type MyInfoFieldBlock = {
   titleTranslations?: TranslationMapping[]
 }
 
-export const types: MyInfoFieldBlock[] = [
+export const MYINFO_FIELD_TYPES: MyInfoFieldBlock[] = [
   {
     name: MyInfoAttribute.Name,
     value: 'Name',
@@ -516,4 +516,4 @@ export const types: MyInfoFieldBlock[] = [
   },
 ]
 
-export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
+export const MYINFO_ATTRIBUTE_MAP = keyBy(MYINFO_FIELD_TYPES, 'name')

@@ -1,4 +1,4 @@
-import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
+import { BASIC_FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { BasicField, FormField, FormFieldDto } from 'formsg-shared/types'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
@@ -55,7 +55,7 @@ const logger = createLoggerWithLabel(module)
  * @param response The submitted response
  */
 const isValidResponseFieldType = (fieldType: BasicField): boolean =>
-  FIELDS_TO_REJECT.includes(fieldType) ? false : true
+  BASIC_FIELDS_TO_REJECT.includes(fieldType) ? false : true
 
 /**
  * Compares the response field type to the form field type

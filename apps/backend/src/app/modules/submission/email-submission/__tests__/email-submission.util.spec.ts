@@ -9,7 +9,7 @@ import {
   generateNewTableResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
-import { types as basicTypes } from 'formsg-shared/constants/field/basic'
+import { BASIC_FIELD_TYPES } from 'formsg-shared/constants/field/basic'
 import {
   BasicField,
   FormAuthType,
@@ -42,7 +42,7 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
     answer,
   }) as unknown as SingleAnswerFieldResponse
 
-const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
+const ALL_SINGLE_SUBMITTED_RESPONSES = BASIC_FIELD_TYPES
   // Attachments are special cases, requiring filename and content
   // Section fields are not submitted
   .filter(

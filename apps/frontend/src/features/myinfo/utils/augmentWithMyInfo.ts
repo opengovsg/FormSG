@@ -1,13 +1,9 @@
-import { keyBy } from 'lodash'
-
-import { types as myInfoTypeArray } from 'formsg-shared/constants/field/myinfo'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   FormFieldDto,
   MyInfoFormField,
 } from 'formsg-shared/types/field'
-
-const MAP_ATTR_TO_NAME = keyBy(myInfoTypeArray, 'name')
 
 // Making a copy by destructuring so original object does not get affected.
 export const augmentWithMyInfo = ({
@@ -18,13 +14,13 @@ export const augmentWithMyInfo = ({
     case BasicField.Dropdown: {
       // No need to augment if no MyInfo attribute
       if (!field.myInfo?.attr) return field
-      const myInfoBlock = MAP_ATTR_TO_NAME[field.myInfo.attr]
+      const myInfoBlock = MYINFO_ATTRIBUTE_MAP[field.myInfo.attr]
       field.fieldOptions = myInfoBlock.fieldOptions ?? []
       return field
     }
     case BasicField.Children: {
       if (!field.myInfo?.attr) return field
-      const myInfoBlock = MAP_ATTR_TO_NAME[field.myInfo.attr]
+      const myInfoBlock = MYINFO_ATTRIBUTE_MAP[field.myInfo.attr]
       field.title = myInfoBlock.value
       return field
     }

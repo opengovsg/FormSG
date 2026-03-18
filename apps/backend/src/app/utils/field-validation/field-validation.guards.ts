@@ -1,4 +1,4 @@
-import { types as basicTypes } from 'formsg-shared/constants/field/basic'
+import { BASIC_FIELD_TYPES } from 'formsg-shared/constants/field/basic'
 import {
   BasicField,
   GenericStringAnswerResponseFieldV3,
@@ -22,9 +22,9 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
-const singleAnswerFieldTypes = basicTypes
-  .filter((field) => !field.answerArray && field.name !== BasicField.Attachment)
-  .map((f) => f.name)
+const singleAnswerFieldTypes = BASIC_FIELD_TYPES.filter(
+  (field) => !field.answerArray && field.name !== BasicField.Attachment,
+).map((f) => f.name)
 
 export const isProcessedSingleAnswerResponse = (
   response: ProcessedFieldResponse,
