@@ -2,200 +2,437 @@
   "name": "formsg-shared",
   "version": "7.0.0",
   "private": true,
-  "description": "",
+  "description": "Shared utilities, types and constants for FormSG",
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "dev": "tsdown --watch",
+    "build": "tsdown",
     "test": "pnpm exec jest --config jest.config.js",
     "lint": "pnpm exec eslint . --quiet --fix",
     "lint-ci": "pnpm exec eslint . --quiet"
   },
-  "__comment": "To clean up the exports in shared after monorepo migration. Vite uses the default, whereas node (cjs) uses the require.",
   "exports": {
-    "./types": {
-      "require": "./dist/types/index.js",
-      "default": "./types/index.ts"
-    },
-    "./types/captcha": {
-      "require": "./dist/types/captcha.js",
-      "default": "./types/captcha.ts"
-    },
-    "./types/errorCodes": {
-      "default": "./types/errorCodes.ts"
-    },
-    "./types/payment": {
-      "default": "./types/payment.ts"
-    },
-    "./types/form": {
-      "default": "./types/form/index.ts"
-    },
-    "./types/form/form": {
-      "default": "./types/form/form.ts"
-    },
-    "./types/form/form_logo": {
-      "default": "./types/form/form_logo.ts"
-    },
-    "./types/form/workflow": {
-      "default": "./types/form/workflow.ts"
-    },
-    "./types/field": {
-      "default": "./types/field/index.ts"
-    },
-    "./types/submission": {
-      "default": "./types/submission.ts"
-    },
     "./constants": {
-      "require": "./dist/constants/index.js",
-      "default": "./constants/index.ts"
+      "import": "./dist/constants/index.mjs",
+      "require": "./dist/constants/index.cjs"
+    },
+    "./constants/assistance": {
+      "import": "./dist/constants/assistance.mjs",
+      "require": "./dist/constants/assistance.cjs"
     },
     "./constants/countryRegion": {
-      "require": "./dist/constants/countryRegion.js",
-      "default": "./constants/countryRegion.ts"
+      "import": "./dist/constants/countryRegion.mjs",
+      "require": "./dist/constants/countryRegion.cjs"
     },
     "./constants/dates": {
-      "default": "./constants/dates.ts"
+      "import": "./dist/constants/dates.mjs",
+      "require": "./dist/constants/dates.cjs"
     },
     "./constants/errors": {
-      "require": "./dist/constants/errors.js",
-      "default": "./constants/errors.ts"
-    },
-    "./constants/mail": {
-      "require": "./dist/constants/mail.js",
-      "default": "./constants/mail.ts"
-    },
-    "./constants/links": {
-      "require": "./dist/constants/links.js",
-      "default": "./constants/links.ts"
+      "import": "./dist/constants/errors.mjs",
+      "require": "./dist/constants/errors.cjs"
     },
     "./constants/feature-flags": {
-      "default": "./constants/feature-flags.ts"
+      "import": "./dist/constants/feature-flags.mjs",
+      "require": "./dist/constants/feature-flags.cjs"
     },
-    "./constants/file": {
-      "require": "./dist/constants/file.js",
-      "default": "./constants/file.ts"
-    },
-    "./constants/form": {
-      "default": "./constants/form.ts"
-    },
-    "./constants/routes": {
-      "require": "./dist/constants/routes.js",
-      "default": "./constants/routes.ts"
+    "./constants/field": {
+      "import": "./dist/constants/field/index.mjs",
+      "require": "./dist/constants/field/index.cjs"
     },
     "./constants/field/basic": {
-      "require": "./dist/constants/field/basic.js",
-      "default": "./constants/field/basic.ts"
+      "import": "./dist/constants/field/basic.mjs",
+      "require": "./dist/constants/field/basic.cjs"
     },
     "./constants/field/myinfo": {
-      "require": "./dist/constants/field/myinfo/index.js",
-      "default": "./constants/field/myinfo/index.ts"
+      "import": "./dist/constants/field/myinfo/index.mjs",
+      "require": "./dist/constants/field/myinfo/index.cjs"
     },
-    "./utils/address-validation": {
-      "require": "./dist/utils/address-validation.js",
-      "default": "./utils/address-validation.ts"
+    "./constants/field/myinfo/myinfo-countries": {
+      "import": "./dist/constants/field/myinfo/myinfo-countries.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-countries.cjs"
     },
-    "./utils/address": {
-      "require": "./dist/utils/address.js",
-      "default": "./utils/address.ts"
+    "./constants/field/myinfo/myinfo-dialects": {
+      "import": "./dist/constants/field/myinfo/myinfo-dialects.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-dialects.cjs"
     },
-    "./utils/crypto": {
-      "require": "./dist/utils/crypto.js",
-      "default": "./utils/crypto.ts"
+    "./constants/field/myinfo/myinfo-hdb-types": {
+      "import": "./dist/constants/field/myinfo/myinfo-hdb-types.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-hdb-types.cjs"
     },
-    "./utils/date-validation": {
-      "require": "./dist/utils/date-validation.js",
-      "default": "./utils/date-validation.ts"
+    "./constants/field/myinfo/myinfo-housing-types": {
+      "import": "./dist/constants/field/myinfo/myinfo-housing-types.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-housing-types.cjs"
     },
-    "./utils/dates": {
-      "require": "./dist/utils/dates.js",
-      "default": "./utils/dates.ts"
+    "./constants/field/myinfo/myinfo-nationalities": {
+      "import": "./dist/constants/field/myinfo/myinfo-nationalities.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-nationalities.cjs"
     },
-    "./utils/email-domain-validation": {
-      "require": "./dist/utils/email-domain-validation.js",
-      "default": "./utils/email-domain-validation.ts"
+    "./constants/field/myinfo/myinfo-occupations": {
+      "import": "./dist/constants/field/myinfo/myinfo-occupations.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-occupations.cjs"
     },
-    "./utils/file-validation": {
-      "require": "./dist/utils/file-validation.js",
-      "default": "./utils/file-validation.ts"
+    "./constants/field/myinfo/myinfo-races": {
+      "import": "./dist/constants/field/myinfo/myinfo-races.mjs",
+      "require": "./dist/constants/field/myinfo/myinfo-races.cjs"
     },
-    "./utils/has-prop": {
-      "require": "./dist/utils/has-prop.js",
-      "default": "./utils/has-prop.ts"
+    "./constants/file": {
+      "import": "./dist/constants/file.mjs",
+      "require": "./dist/constants/file.cjs"
     },
-    "./utils/immutable-array-fns": {
-      "require": "./dist/utils/immutable-array-fns.js",
-      "default": "./utils/immutable-array-fns.ts"
+    "./constants/form": {
+      "import": "./dist/constants/form.mjs",
+      "require": "./dist/constants/form.cjs"
     },
-    "./utils/is-string-array": {
-      "require": "./dist/utils/is-string-array.js",
-      "default": "./utils/is-string-array.ts"
+    "./constants/links": {
+      "import": "./dist/constants/links.mjs",
+      "require": "./dist/constants/links.cjs"
     },
-    "./utils/isNonEmpty": {
-      "require": "./dist/utils/isNonEmpty.js",
-      "default": "./utils/isNonEmpty.ts"
+    "./constants/mail": {
+      "import": "./dist/constants/mail.mjs",
+      "require": "./dist/constants/mail.cjs"
     },
-    "./utils/logic": {
-      "require": "./dist/utils/logic.js",
-      "default": "./utils/logic.ts"
+    "./constants/routes": {
+      "import": "./dist/constants/routes.mjs",
+      "require": "./dist/constants/routes.cjs"
     },
-    "./utils/nric-validation": {
-      "require": "./dist/utils/nric-validation.js",
-      "default": "./utils/nric-validation.ts"
-    },
-    "./utils/options-recipients-map-validation": {
-      "require": "./dist/utils/options-recipients-map-validation.js",
-      "default": "./utils/options-recipients-map-validation.ts"
-    },
-    "./utils/paymentProductPrice": {
-      "require": "./dist/utils/paymentProductPrice.js",
-      "default": "./utils/paymentProductPrice.ts"
-    },
-    "./utils/payments": {
-      "require": "./dist/utils/payments.js",
-      "default": "./utils/payments.ts"
-    },
-    "./utils/phone-num-validation": {
-      "require": "./dist/utils/phone-num-validation.js",
-      "default": "./utils/phone-num-validation.ts"
-    },
-    "./utils/signature": {
-      "require": "./dist/utils/signature.js",
-      "default": "./utils/signature.ts"
-    },
-    "./utils/stringify-safe": {
-      "require": "./dist/utils/stringify-safe.js",
-      "default": "./utils/stringify-safe.ts"
-    },
-    "./utils/strip-dropdown-field-optionsToRecipientsMap": {
-      "require": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.js",
-      "default": "./utils/strip-dropdown-field-optionsToRecipientsMap.ts"
-    },
-    "./utils/strip-workflow-emails": {
-      "require": "./dist/utils/strip-workflow-emails.js",
-      "default": "./utils/strip-workflow-emails.ts"
-    },
-    "./utils/uen-validation": {
-      "require": "./dist/utils/uen-validation.js",
-      "default": "./utils/uen-validation.ts"
-    },
-    "./utils/url-validation": {
-      "require": "./dist/utils/url-validation.js",
-      "default": "./utils/url-validation.ts"
-    },
-    "./utils/urls": {
-      "require": "./dist/utils/urls.js",
-      "default": "./utils/urls.ts"
-    },
-    "./utils/verification": {
-      "require": "./dist/utils/verification.js",
-      "default": "./utils/verification.ts"
-    },
-    "./utils/verified-content": {
-      "require": "./dist/utils/verified-content.js",
-      "default": "./utils/verified-content.ts"
+    "./constants/workspace": {
+      "import": "./dist/constants/workspace.mjs",
+      "require": "./dist/constants/workspace.cjs"
     },
     "./modules/logic": {
-      "require": "./dist/modules/logic/index.js",
-      "default": "./modules/logic/index.ts"
-    }
+      "import": "./dist/modules/logic/index.mjs",
+      "require": "./dist/modules/logic/index.cjs"
+    },
+    "./types": {
+      "import": "./dist/types/index.mjs",
+      "require": "./dist/types/index.cjs"
+    },
+    "./types/admin_feedback": {
+      "import": "./dist/types/admin_feedback.mjs",
+      "require": "./dist/types/admin_feedback.cjs"
+    },
+    "./types/agency": {
+      "import": "./dist/types/agency.mjs",
+      "require": "./dist/types/agency.cjs"
+    },
+    "./types/analytics": {
+      "import": "./dist/types/analytics.mjs",
+      "require": "./dist/types/analytics.cjs"
+    },
+    "./types/auth": {
+      "import": "./dist/types/auth.mjs",
+      "require": "./dist/types/auth.cjs"
+    },
+    "./types/billing": {
+      "import": "./dist/types/billing.mjs",
+      "require": "./dist/types/billing.cjs"
+    },
+    "./types/captcha": {
+      "import": "./dist/types/captcha.mjs",
+      "require": "./dist/types/captcha.cjs"
+    },
+    "./types/converter": {
+      "import": "./dist/types/converter.mjs",
+      "require": "./dist/types/converter.cjs"
+    },
+    "./types/core": {
+      "import": "./dist/types/core.mjs",
+      "require": "./dist/types/core.cjs"
+    },
+    "./types/errorCodes": {
+      "import": "./dist/types/errorCodes.mjs",
+      "require": "./dist/types/errorCodes.cjs"
+    },
+    "./types/field": {
+      "import": "./dist/types/field/index.mjs",
+      "require": "./dist/types/field/index.cjs"
+    },
+    "./types/field/addressField": {
+      "import": "./dist/types/field/addressField.mjs",
+      "require": "./dist/types/field/addressField.cjs"
+    },
+    "./types/field/attachmentField": {
+      "import": "./dist/types/field/attachmentField.mjs",
+      "require": "./dist/types/field/attachmentField.cjs"
+    },
+    "./types/field/base": {
+      "import": "./dist/types/field/base.mjs",
+      "require": "./dist/types/field/base.cjs"
+    },
+    "./types/field/checkboxField": {
+      "import": "./dist/types/field/checkboxField.mjs",
+      "require": "./dist/types/field/checkboxField.cjs"
+    },
+    "./types/field/childrenCompoundField": {
+      "import": "./dist/types/field/childrenCompoundField.mjs",
+      "require": "./dist/types/field/childrenCompoundField.cjs"
+    },
+    "./types/field/countryRegionField": {
+      "import": "./dist/types/field/countryRegionField.mjs",
+      "require": "./dist/types/field/countryRegionField.cjs"
+    },
+    "./types/field/dateField": {
+      "import": "./dist/types/field/dateField.mjs",
+      "require": "./dist/types/field/dateField.cjs"
+    },
+    "./types/field/decimalField": {
+      "import": "./dist/types/field/decimalField.mjs",
+      "require": "./dist/types/field/decimalField.cjs"
+    },
+    "./types/field/dropdownField": {
+      "import": "./dist/types/field/dropdownField.mjs",
+      "require": "./dist/types/field/dropdownField.cjs"
+    },
+    "./types/field/emailField": {
+      "import": "./dist/types/field/emailField.mjs",
+      "require": "./dist/types/field/emailField.cjs"
+    },
+    "./types/field/homeNoField": {
+      "import": "./dist/types/field/homeNoField.mjs",
+      "require": "./dist/types/field/homeNoField.cjs"
+    },
+    "./types/field/imageField": {
+      "import": "./dist/types/field/imageField.mjs",
+      "require": "./dist/types/field/imageField.cjs"
+    },
+    "./types/field/longTextField": {
+      "import": "./dist/types/field/longTextField.mjs",
+      "require": "./dist/types/field/longTextField.cjs"
+    },
+    "./types/field/mobileField": {
+      "import": "./dist/types/field/mobileField.mjs",
+      "require": "./dist/types/field/mobileField.cjs"
+    },
+    "./types/field/nricField": {
+      "import": "./dist/types/field/nricField.mjs",
+      "require": "./dist/types/field/nricField.cjs"
+    },
+    "./types/field/numberField": {
+      "import": "./dist/types/field/numberField.mjs",
+      "require": "./dist/types/field/numberField.cjs"
+    },
+    "./types/field/radioField": {
+      "import": "./dist/types/field/radioField.mjs",
+      "require": "./dist/types/field/radioField.cjs"
+    },
+    "./types/field/ratingField": {
+      "import": "./dist/types/field/ratingField.mjs",
+      "require": "./dist/types/field/ratingField.cjs"
+    },
+    "./types/field/sectionField": {
+      "import": "./dist/types/field/sectionField.mjs",
+      "require": "./dist/types/field/sectionField.cjs"
+    },
+    "./types/field/shortTextField": {
+      "import": "./dist/types/field/shortTextField.mjs",
+      "require": "./dist/types/field/shortTextField.cjs"
+    },
+    "./types/field/signatureField": {
+      "import": "./dist/types/field/signatureField.mjs",
+      "require": "./dist/types/field/signatureField.cjs"
+    },
+    "./types/field/statementField": {
+      "import": "./dist/types/field/statementField.mjs",
+      "require": "./dist/types/field/statementField.cjs"
+    },
+    "./types/field/tableField": {
+      "import": "./dist/types/field/tableField.mjs",
+      "require": "./dist/types/field/tableField.cjs"
+    },
+    "./types/field/uenField": {
+      "import": "./dist/types/field/uenField.mjs",
+      "require": "./dist/types/field/uenField.cjs"
+    },
+    "./types/field/utils": {
+      "import": "./dist/types/field/utils/index.mjs",
+      "require": "./dist/types/field/utils/index.cjs"
+    },
+    "./types/field/utils/textField": {
+      "import": "./dist/types/field/utils/textField.mjs",
+      "require": "./dist/types/field/utils/textField.cjs"
+    },
+    "./types/field/yesNoField": {
+      "import": "./dist/types/field/yesNoField.mjs",
+      "require": "./dist/types/field/yesNoField.cjs"
+    },
+    "./types/form": {
+      "import": "./dist/types/form/index.mjs",
+      "require": "./dist/types/form/index.cjs"
+    },
+    "./types/form/form": {
+      "import": "./dist/types/form/form.mjs",
+      "require": "./dist/types/form/form.cjs"
+    },
+    "./types/form/form_auth": {
+      "import": "./dist/types/form/form_auth.mjs",
+      "require": "./dist/types/form/form_auth.cjs"
+    },
+    "./types/form/form_feedback": {
+      "import": "./dist/types/form/form_feedback.mjs",
+      "require": "./dist/types/form/form_feedback.cjs"
+    },
+    "./types/form/form_issue": {
+      "import": "./dist/types/form/form_issue.mjs",
+      "require": "./dist/types/form/form_issue.cjs"
+    },
+    "./types/form/form_logic": {
+      "import": "./dist/types/form/form_logic.mjs",
+      "require": "./dist/types/form/form_logic.cjs"
+    },
+    "./types/form/form_logo": {
+      "import": "./dist/types/form/form_logo.mjs",
+      "require": "./dist/types/form/form_logo.cjs"
+    },
+    "./types/form/product": {
+      "import": "./dist/types/form/product.mjs",
+      "require": "./dist/types/form/product.cjs"
+    },
+    "./types/form/workflow": {
+      "import": "./dist/types/form/workflow.mjs",
+      "require": "./dist/types/form/workflow.cjs"
+    },
+    "./types/generic": {
+      "import": "./dist/types/generic.mjs",
+      "require": "./dist/types/generic.cjs"
+    },
+    "./types/payment": {
+      "import": "./dist/types/payment.mjs",
+      "require": "./dist/types/payment.cjs"
+    },
+    "./types/response": {
+      "import": "./dist/types/response.mjs",
+      "require": "./dist/types/response.cjs"
+    },
+    "./types/response-v3": {
+      "import": "./dist/types/response-v3.mjs",
+      "require": "./dist/types/response-v3.cjs"
+    },
+    "./types/statusTracker": {
+      "import": "./dist/types/statusTracker.mjs",
+      "require": "./dist/types/statusTracker.cjs"
+    },
+    "./types/submission": {
+      "import": "./dist/types/submission.mjs",
+      "require": "./dist/types/submission.cjs"
+    },
+    "./types/user": {
+      "import": "./dist/types/user.mjs",
+      "require": "./dist/types/user.cjs"
+    },
+    "./types/utils": {
+      "import": "./dist/types/utils.mjs",
+      "require": "./dist/types/utils.cjs"
+    },
+    "./types/workspace": {
+      "import": "./dist/types/workspace.mjs",
+      "require": "./dist/types/workspace.cjs"
+    },
+    "./utils/address": {
+      "import": "./dist/utils/address.mjs",
+      "require": "./dist/utils/address.cjs"
+    },
+    "./utils/address-validation": {
+      "import": "./dist/utils/address-validation.mjs",
+      "require": "./dist/utils/address-validation.cjs"
+    },
+    "./utils/crypto": {
+      "import": "./dist/utils/crypto.mjs",
+      "require": "./dist/utils/crypto.cjs"
+    },
+    "./utils/date-validation": {
+      "import": "./dist/utils/date-validation.mjs",
+      "require": "./dist/utils/date-validation.cjs"
+    },
+    "./utils/dates": {
+      "import": "./dist/utils/dates.mjs",
+      "require": "./dist/utils/dates.cjs"
+    },
+    "./utils/email-domain-validation": {
+      "import": "./dist/utils/email-domain-validation.mjs",
+      "require": "./dist/utils/email-domain-validation.cjs"
+    },
+    "./utils/file-validation": {
+      "import": "./dist/utils/file-validation.mjs",
+      "require": "./dist/utils/file-validation.cjs"
+    },
+    "./utils/has-prop": {
+      "import": "./dist/utils/has-prop.mjs",
+      "require": "./dist/utils/has-prop.cjs"
+    },
+    "./utils/immutable-array-fns": {
+      "import": "./dist/utils/immutable-array-fns.mjs",
+      "require": "./dist/utils/immutable-array-fns.cjs"
+    },
+    "./utils/is-string-array": {
+      "import": "./dist/utils/is-string-array.mjs",
+      "require": "./dist/utils/is-string-array.cjs"
+    },
+    "./utils/isNonEmpty": {
+      "import": "./dist/utils/isNonEmpty.mjs",
+      "require": "./dist/utils/isNonEmpty.cjs"
+    },
+    "./utils/logic": {
+      "import": "./dist/utils/logic.mjs",
+      "require": "./dist/utils/logic.cjs"
+    },
+    "./utils/nric-validation": {
+      "import": "./dist/utils/nric-validation.mjs",
+      "require": "./dist/utils/nric-validation.cjs"
+    },
+    "./utils/options-recipients-map-validation": {
+      "import": "./dist/utils/options-recipients-map-validation.mjs",
+      "require": "./dist/utils/options-recipients-map-validation.cjs"
+    },
+    "./utils/paymentProductPrice": {
+      "import": "./dist/utils/paymentProductPrice.mjs",
+      "require": "./dist/utils/paymentProductPrice.cjs"
+    },
+    "./utils/payments": {
+      "import": "./dist/utils/payments.mjs",
+      "require": "./dist/utils/payments.cjs"
+    },
+    "./utils/phone-num-validation": {
+      "import": "./dist/utils/phone-num-validation.mjs",
+      "require": "./dist/utils/phone-num-validation.cjs"
+    },
+    "./utils/signature": {
+      "import": "./dist/utils/signature.mjs",
+      "require": "./dist/utils/signature.cjs"
+    },
+    "./utils/stringify-safe": {
+      "import": "./dist/utils/stringify-safe.mjs",
+      "require": "./dist/utils/stringify-safe.cjs"
+    },
+    "./utils/strip-dropdown-field-optionsToRecipientsMap": {
+      "import": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.mjs",
+      "require": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.cjs"
+    },
+    "./utils/strip-workflow-emails": {
+      "import": "./dist/utils/strip-workflow-emails.mjs",
+      "require": "./dist/utils/strip-workflow-emails.cjs"
+    },
+    "./utils/uen-validation": {
+      "import": "./dist/utils/uen-validation.mjs",
+      "require": "./dist/utils/uen-validation.cjs"
+    },
+    "./utils/url-validation": {
+      "import": "./dist/utils/url-validation.mjs",
+      "require": "./dist/utils/url-validation.cjs"
+    },
+    "./utils/urls": {
+      "import": "./dist/utils/urls.mjs",
+      "require": "./dist/utils/urls.cjs"
+    },
+    "./utils/verification": {
+      "import": "./dist/utils/verification.mjs",
+      "require": "./dist/utils/verification.cjs"
+    },
+    "./utils/verified-content": {
+      "import": "./dist/utils/verified-content.mjs",
+      "require": "./dist/utils/verified-content.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
@@ -211,7 +448,6 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.775.0",
-    "typescript": "^5.4.5",
     "@types/jest": "^29.5.1",
     "@types/json-stringify-safe": "^5.0.3",
     "@types/lodash": "^4.14.186",
@@ -226,6 +462,8 @@
     "jest": "^29.5.0",
     "mongoose": "^7.8.7",
     "prettier": "^3.2.5",
-    "stripe": "^12.5.0"
+    "stripe": "^12.5.0",
+    "tsdown": "^0.21.4",
+    "typescript": "^5.4.5"
   }
 }
