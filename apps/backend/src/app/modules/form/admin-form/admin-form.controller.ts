@@ -920,6 +920,14 @@ export const duplicateAdminForm: ControllerHandler<
 
             const overrideWithDuplicatingAdminEmail =
               !isAdminAllowedToViewWorkflowDetails ? [user.email] : undefined
+
+            // Step 2c: If form is MRF,  add admin email to email notifications by default
+            if (
+              overrideParams.responseMode === FormResponseMode.Multirespondent
+            ) {
+              overrideParams.emails = [user.email]
+            }
+
             return {
               originalForm,
               overrideEmails: overrideWithDuplicatingAdminEmail,
