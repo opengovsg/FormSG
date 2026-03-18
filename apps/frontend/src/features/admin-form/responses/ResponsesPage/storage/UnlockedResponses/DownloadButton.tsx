@@ -138,16 +138,13 @@ export const DownloadButton = (): JSX.Element => {
     onOpen: onDownloadModalOpen,
   } = useDisclosure({
     // Reset metadata if it exists.
-    onOpen: () => setDownloadMetadata(undefined),
+    onOpen: () => resetDownloadMetadataAndProgress(),
   })
-  const {
-    isOpen: isProgressModalOpen,
-    onClose: onProgressModalClose,
-    onOpen: onProgressModalOpen,
-  } = useDisclosure({
-    // Reset metadata if it exists.
-    onOpen: () => setDownloadMetadata(undefined),
-  })
+  const { isOpen: isProgressModalOpen, onClose: onProgressModalClose } =
+    useDisclosure({
+      // Reset metadata if it exists.
+      onOpen: () => resetDownloadMetadataAndProgress(),
+    })
 
   const toast = useToast({
     isClosable: true,
@@ -181,13 +178,21 @@ export const DownloadButton = (): JSX.Element => {
     DownloadResult | CanceledResult
   >()
 
+  const resetDownloadProgress = useCallback(() => {
+    setDownloadCount(0)
+    setPdfGenerationCount(0)
+  }, [])
+  const resetDownloadMetadataAndProgress = useCallback(() => {
+    setDownloadMetadata(undefined)
+    resetDownloadProgress()
+  }, [])
+
   const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
     onDecryptionProgress: setDownloadCount,
     onPdfGenerationProgress: setPdfGenerationCount,
     mutateProps: {
       onMutate: () => {
-        // Reset metadata if it exists.
-        setDownloadMetadata(undefined)
+        resetDownloadMetadataAndProgress()
       },
       onSuccess: ({ successCount, expectedCount, errorCount }) => {
         if (downloadParams?.responsesCount === 0) {
@@ -219,6 +224,7 @@ export const DownloadButton = (): JSX.Element => {
       },
       onSettled: (decryptResult) => {
         setDownloadMetadata(decryptResult)
+        resetDownloadProgress()
         resetDownloadOptions()
       },
     },
@@ -243,7 +249,7 @@ export const DownloadButton = (): JSX.Element => {
   }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
 
   const resetDownload = useCallback(() => {
-    setDownloadCount(0)
+    resetDownloadProgress()
     abortDecryption()
     onProgressModalClose()
   }, [abortDecryption, onProgressModalClose])
@@ -252,7 +258,7 @@ export const DownloadButton = (): JSX.Element => {
     resetDownload()
     onDownloadModalClose()
     onProgressModalClose()
-    setDownloadMetadata(undefined)
+    resetDownloadMetadataAndProgress()
   }, [onDownloadModalClose, onProgressModalClose, resetDownload])
 
   const handleNoAttachmentsDownloadCancel = useCallback(() => {
