@@ -26,6 +26,7 @@ import {
   EmailAddressVerificationOtp,
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
+import { EmailTemplate } from '../../views/templates/EmailTemplate'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
 import { MrfRespondentCopyEmail } from '../../views/templates/MrfRespondentCopyEmail'
 import MrfWorkflowCompletionEmail, {
@@ -1079,7 +1080,8 @@ export class MailService {
     }
 
     const generatedHtml = fromPromise(
-      render(MrfWorkflowCompletionEmail(htmlData)),
+      // render(MrfWorkflowCompletionEmail(htmlData)),
+      render(EmailTemplate(htmlData)),
       (e) => {
         logger.error({
           message: 'Failed to render MrfWorkflowCompletionEmail',

@@ -38,6 +38,7 @@ export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
   border: '24px solid #445fcd',
   borderRadius: '4px',
   backgroundColor: '#445fcd',
+  width: '100%',
 }
 
 /** Button style to be attached to the inner <a> tag of a button. */
