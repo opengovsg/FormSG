@@ -61,8 +61,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
-        # 👇 Adds Chromatic as a step in the workflow
+        run: pnpm --filter formsg-shared --filter formsg-frontend install
+        working-directory: .
+      - name: Build shared package
+        run: pnpm build:shared
+        working-directory: .
+      # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@v1
         # Chromatic GitHub Action options

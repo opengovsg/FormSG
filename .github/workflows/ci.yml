@@ -74,6 +74,7 @@ jobs:
         run: pnpm install
 
   build:
+    # Rationale: To validate that application builds are working
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -96,14 +97,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
-      - name: Upload build files
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-output
-          path: |
-            package*.json
-            dist/
 
   frontend_test:
     needs: [changes, install]
@@ -123,7 +116,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm --filter formsg-frontend --filter formsg-shared install
+      - name: Build required shared package 
+        run: pnpm build:shared
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
         with:
@@ -159,7 +154,7 @@ jobs:
       - run: pnpm lint:frontend
 
   backend_test:
-    needs: [changes, install, build]
+    needs: [changes, install]
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -170,10 +165,6 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/download-artifact@v4
-        if: always()
-        with:
-          name: build-output
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
