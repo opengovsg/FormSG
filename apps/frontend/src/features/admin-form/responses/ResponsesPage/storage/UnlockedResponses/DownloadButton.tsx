@@ -16,7 +16,6 @@ import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -154,9 +153,6 @@ export const DownloadButton = (): JSX.Element => {
     isClosable: true,
   })
 
-  const [progressModalTimeout, setProgressModalTimeout] = useState<
-    number | null
-  >(null)
   const { downloadParams, dateRangeResponsesCount } =
     useStorageResponsesContext()
 
@@ -180,8 +176,6 @@ export const DownloadButton = (): JSX.Element => {
     dateRangeResponsesCount,
     downloadOptions.isDownloadPdf,
   ])
-
-  useTimeout(onProgressModalOpen, progressModalTimeout)
 
   const [downloadMetadata, setDownloadMetadata] = useState<
     DownloadResult | CanceledResult
@@ -224,7 +218,6 @@ export const DownloadButton = (): JSX.Element => {
         })
       },
       onSettled: (decryptResult) => {
-        setProgressModalTimeout(null)
         setDownloadMetadata(decryptResult)
         resetDownloadOptions()
       },
@@ -233,7 +226,6 @@ export const DownloadButton = (): JSX.Element => {
 
   const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
-    setProgressModalTimeout(5000)
     datadogLogs.logger.info('Bulk download used', {
       meta: {
         action: 'bulkDownload',
@@ -252,7 +244,6 @@ export const DownloadButton = (): JSX.Element => {
 
   const resetDownload = useCallback(() => {
     setDownloadCount(0)
-    setProgressModalTimeout(null)
     abortDecryption()
     onProgressModalClose()
   }, [abortDecryption, onProgressModalClose])
