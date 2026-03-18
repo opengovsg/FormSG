@@ -1,0 +1,27 @@
+{
+  "name": "@opengovsg/formsg-sdk",
+  "version": "0.16.1",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "description": "Node.js SDK for integrating with FormSG",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint src/ --quiet --fix",
+    "lint-ci": "eslint src/ --quiet"
+  },
+  "dependencies": {
+    "axios": "^1.6.4",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^18.18.9",
+    "jest": "^29.7.0",
+    "jest-mock-axios": "^4.7.3",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.4.5"
+  }
+}
