@@ -1221,15 +1221,23 @@ export const createForm: ControllerHandler<
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
-      .andThen((user) =>
-        AdminFormService.createForm(
+      .andThen((user) => {
+        // Step 2a: For multirespondent forms, add user's email to emails array if not provided
+        if (
+          formParams.responseMode === FormResponseMode.Multirespondent &&
+          !formParams.emails
+        ) {
+          formParams.emails = [user.email]
+        }
+
+        return AdminFormService.createForm(
           {
             ...formParams,
             admin: user._id,
           },
           workspaceId,
-        ),
-      )
+        )
+      })
       .map((createdForm) => {
         return res
           .status(StatusCodes.OK)

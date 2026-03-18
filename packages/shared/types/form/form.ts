@@ -442,7 +442,7 @@ export type CreateStorageFormBodyDto = Pick<
 
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
-  'publicKey' | 'responseMode' | 'title'
+  'publicKey' | 'responseMode' | 'title' | 'emails'
 > & { workspaceId?: string }
 
 export type CreateFormBodyDto =
