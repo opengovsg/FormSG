@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useFormContext, useFormState, useWatch } from 'react-hook-form'
+import {
+  Controller,
+  FieldErrors,
+  useFormContext,
+  useFormState,
+} from 'react-hook-form'
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -17,67 +22,64 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
-import { SignatureFieldInput, SignatureFieldSchema } from '../types'
+import {
+  SignatureFieldInput,
+  SignatureFieldSchema,
+  SignatureFieldValues,
+} from '../types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
   disableRequiredValidation?: boolean
 }
 
-const strokePressureDefault = 0.5
+export interface SignatureCanvasProps {
+  schema: SignatureFieldSchema
+  isHighContrast?: boolean
+  isSubmitting: boolean
+  isValid: boolean
+  errors: FieldErrors<SignatureFieldInput>
+  value: SignatureFieldValues | null
+  onChange: (value: SignatureFieldValues) => void
+}
 
-export const SignatureField = ({
+const SignatureCanvas = ({
   schema,
-  disableRequiredValidation,
   isHighContrast,
-}: SignatureFieldProps): JSX.Element => {
-  const formContext = useFormContext<SignatureFieldInput>()
-  const { register, unregister, setValue } = formContext
-  const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
+  isSubmitting,
+  isValid,
+  errors,
+  value,
+  onChange,
+}: SignatureCanvasProps) => {
+  const signatureErrors = errors?.[schema._id]
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
   const placeholderString = useMemo(() => {
     if (schema.disabled) {
       return 'Signatures are disabled for you'
     }
-
     return 'Draw your signature here'
   }, [schema.disabled])
 
-  const signatureErrors = errors?.[schema._id]
-
   // Future implementations will expand on signature types (text, cryptographic)
   const defaultType = 'draw'
-
-  const signatureValidationRules = useMemo(
-    () => createSignatureValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
-  )
-
-  useEffect(() => {
-    register(schema._id, signatureValidationRules)
-
-    // when unmounting, unregister the field so that submission will not be blocked by signature validation errors
-    return () => {
-      unregister(schema._id)
-    }
-  }, [register, schema._id, signatureValidationRules, unregister])
+  const strokePressureDefault = 0.5
 
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
-
-  const watchedSignature = useWatch({ name: schema._id }) as {
-    value: SignatureVectorArray
-  }
   const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
 
-  // Sync when form value changes
+  // Sync pfStrokes with form value when it changes externally
   useEffect(() => {
-    if (watchedSignature?.value) {
-      setPfStrokes(watchedSignature.value)
+    if (value?.value) {
+      setPfStrokes(value.value)
+      if (value.value.length > 0) {
+        setShowSignaturePlaceholder(false)
+      }
     }
-  }, [watchedSignature])
+  }, [value])
 
   const [currentStroke, setCurrentStroke] = useState<
     [number, number, number][]
@@ -182,11 +184,7 @@ export const SignatureField = ({
     const handlePointerUp = () => {
       if (!isDrawing) return
       setIsDrawing(false)
-      setValue(
-        `${schema._id}`,
-        { type: defaultType, value: pfStrokes },
-        { shouldValidate: true },
-      )
+      onChange({ type: defaultType, value: pfStrokes })
     }
 
     canvas.addEventListener('pointerdown', handlePointerDown)
@@ -200,16 +198,12 @@ export const SignatureField = ({
       canvas.removeEventListener('pointerup', handlePointerUp)
       canvas.removeEventListener('pointerleave', handlePointerUp)
     }
-  }, [drawAllStrokes, isDrawing, pfStrokes, schema._id, setValue])
+  }, [drawAllStrokes, isDrawing, pfStrokes, defaultType, onChange])
 
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
     setPfStrokes([])
-    setValue(
-      `${schema._id}`,
-      { type: defaultType, value: [] },
-      { shouldValidate: true },
-    )
+    onChange({ type: defaultType, value: [] })
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
     if (ctx && canvas) {
@@ -320,5 +314,38 @@ export const SignatureField = ({
         </Stack>
       </FormControl>
     </Box>
+  )
+}
+
+export const SignatureField = ({
+  schema,
+  disableRequiredValidation,
+  isHighContrast,
+}: SignatureFieldProps): JSX.Element => {
+  const { control } = useFormContext<SignatureFieldInput>()
+  const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
+
+  const signatureValidationRules = useMemo(
+    () => createSignatureValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
+  )
+
+  return (
+    <Controller
+      control={control}
+      name={schema._id}
+      rules={signatureValidationRules}
+      render={({ field }) => (
+        <SignatureCanvas
+          schema={schema}
+          isHighContrast={isHighContrast}
+          isSubmitting={isSubmitting}
+          isValid={isValid}
+          errors={errors}
+          value={field.value}
+          onChange={field.onChange}
+        />
+      )}
+    />
   )
 }

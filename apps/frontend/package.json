@@ -1,6 +1,6 @@
 {
   "name": "formsg-frontend",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "private": true,
   "homepage": ".",
   "type": "module",
@@ -116,8 +116,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
-    "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
-    "pre-commit": "lint-staged"
+    "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write"
   },
   "browserslist": {
     "production": [
@@ -178,7 +177,6 @@
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "eslint-plugin-storybook": "^0.8.0",
     "eslint-plugin-testing-library": "^6.2.2",
-    "lint-staged": "^12.1.2",
     "mockdate": "^3.0.5",
     "msw": "^2.10.5",
     "msw-storybook-addon": "^2.0.5",

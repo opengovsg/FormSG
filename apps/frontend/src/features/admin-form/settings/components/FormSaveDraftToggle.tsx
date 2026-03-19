@@ -30,6 +30,7 @@ const FormSaveDraftToggle = () => {
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Toggle
         label={t('features.adminForm.settings.general.saveDraft.label')}
+        betaBadge
         description={t(
           'features.adminForm.settings.general.saveDraft.description',
         )}

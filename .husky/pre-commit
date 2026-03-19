@@ -11,3 +11,6 @@ git-secrets --register-aws > /dev/null
 echo "Running git-secrets pre_commit_hook"
 # Scans all files that are about to be committed.
 git-secrets --pre_commit_hook -- "$@"
+
+echo "Running lint-staged"
+pnpm lint-staged --allow-empty

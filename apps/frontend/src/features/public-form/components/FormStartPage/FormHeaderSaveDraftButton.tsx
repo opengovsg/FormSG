@@ -24,10 +24,11 @@ export const FormHeaderSaveDraftButton = ({
     ? t('features.publicForm.components.saveDraft.tooltip.lastSaved', {
         lastSavedDateTimeString: draftLastSavedDateTimeString,
       })
-    : t('features.publicForm.components.saveDraft.tooltip.default')
+    : ''
 
   return (
     <Tooltip
+      isDisabled={!tooltipLabel}
       placement={isMobile ? 'top' : 'left'}
       label={<Text data-chromatic="ignore">{tooltipLabel}</Text>}
     >
@@ -45,7 +46,7 @@ export const FormHeaderSaveDraftButton = ({
       ) : (
         <Button
           onClick={onSaveDraft}
-          variant="inverseOutline"
+          outline="1px solid"
           colorScheme={colorScheme}
           leftIcon={<BiSave fontSize="1.25rem" />}
           aria-label={t(
