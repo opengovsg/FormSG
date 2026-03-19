@@ -88,7 +88,7 @@ export const FormResultsNavbar = (): JSX.Element => {
               color="secondary.500"
               ml="0.5rem"
             >
-              {t('features.common.beta')}
+              {t('features.common.betaBadgeLabel')}
             </Badge>
           </NavigationTab>
         ) : null}

@@ -1,10 +1,13 @@
+import { useTranslation } from 'react-i18next'
 import {
+  Badge,
   Box,
   ComponentWithAs,
   CSSObject,
   Flex,
   forwardRef,
   Icon,
+  Text,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -24,6 +27,11 @@ export interface ToggleProps extends Omit<SwitchProps, 'children'> {
    * Main label of the toggle
    */
   label: string
+  /**
+   * Whether to show the beta badge
+   * @default false
+   */
+  betaBadge?: boolean
   /**
    * Secondary description text
    */
@@ -59,10 +67,20 @@ type ToggleWithParts = ComponentWithAs<'input', ToggleProps> & {
   Switch: typeof Switch
 }
 
+const BetaBadge = () => {
+  const { t } = useTranslation()
+  return (
+    <Badge colorScheme="primary" variant="subtle" color="secondary.500">
+      {t('features.common.betaBadgeLabel')}
+    </Badge>
+  )
+}
+
 export const Toggle = forwardRef<ToggleProps, 'input'>(
   (
     {
       label,
+      betaBadge = false,
       description,
       containerStyles,
       labelStyles,
@@ -81,7 +99,15 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
           <Box __css={styles.textContainer}>
             <Flex alignItems="center">
               <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
-                {label}
+                <Text>
+                  {label}
+                  {betaBadge ? (
+                    <>
+                      {' '}
+                      <BetaBadge />
+                    </>
+                  ) : null}
+                </Text>
               </FormLabel.Label>
               {tooltipText && (
                 <Tooltip
