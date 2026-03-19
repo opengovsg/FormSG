@@ -46,7 +46,7 @@ export const FormHeaderSaveDraftButton = ({
       ) : (
         <Button
           onClick={onSaveDraft}
-          variant="inverseOutline"
+          outline="1px solid"
           colorScheme={colorScheme}
           leftIcon={<BiSave fontSize="1.25rem" />}
           aria-label={t(
