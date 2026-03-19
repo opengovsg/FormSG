@@ -8,7 +8,6 @@ import {
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
-import { SignatureVectorArray } from 'formsg-shared/types'
 import {
   SIGNATURE_STROKE_SIZE,
   SIGNATURE_STROKE_SMOOTHING,
@@ -69,15 +68,13 @@ const SignatureCanvas = ({
   // perfect freehand variables
   const pfCanvasRef = useRef<HTMLCanvasElement>(null)
   const boxRef = useRef<HTMLDivElement>(null)
-  const [pfStrokes, setPfStrokes] = useState<SignatureVectorArray>([])
+
+  const pfStrokes = value?.value ?? []
 
   // Sync pfStrokes with form value when it changes externally
   useEffect(() => {
-    if (value?.value) {
-      setPfStrokes(value.value)
-      if (value.value.length > 0) {
-        setShowSignaturePlaceholder(false)
-      }
+    if (value?.value?.length) {
+      setShowSignaturePlaceholder(false)
     }
   }, [value])
 
@@ -160,7 +157,7 @@ const SignatureCanvas = ({
         [e.offsetX, e.offsetY, e.pressure || strokePressureDefault],
       ]
       setCurrentStroke(newStroke)
-      setPfStrokes((prev) => [...prev, newStroke])
+      onChange({ type: defaultType, value: [...pfStrokes, newStroke] })
     }
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -172,10 +169,11 @@ const SignatureCanvas = ({
           e.pressure || strokePressureDefault,
         ] as [number, number, number]
         const updated = [...prev, newPoint]
-        setPfStrokes((prev) => [
-          ...prev.slice(0, -1),
+        const newPfStrokes = [
+          ...pfStrokes.slice(0, -1),
           updated as [number, number, number][],
-        ])
+        ]
+        onChange({ type: defaultType, value: newPfStrokes })
         drawAllStrokes()
         return updated
       })
@@ -202,7 +200,6 @@ const SignatureCanvas = ({
 
   const handleClearPerfectFreehandSignature = async () => {
     setShowSignaturePlaceholder(true)
-    setPfStrokes([])
     onChange({ type: defaultType, value: [] })
     const canvas = pfCanvasRef.current
     const ctx = canvas?.getContext('2d')
