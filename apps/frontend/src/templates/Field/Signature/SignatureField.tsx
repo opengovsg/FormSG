@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Controller,
-  RegisterOptions,
+  FieldErrors,
   useFormContext,
   useFormState,
 } from 'react-hook-form'
@@ -22,7 +22,11 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { BaseFieldProps } from '../FieldContainer'
-import { SignatureFieldInput, SignatureFieldSchema } from '../types'
+import {
+  SignatureFieldInput,
+  SignatureFieldSchema,
+  SignatureFieldValues,
+} from '../types'
 
 export interface SignatureFieldProps extends BaseFieldProps {
   schema: SignatureFieldSchema
@@ -34,9 +38,9 @@ export interface SignatureCanvasProps {
   isHighContrast?: boolean
   isSubmitting: boolean
   isValid: boolean
-  signatureErrors: RegisterOptions
-  value: SignatureVectorArray
-  onChange: (value: SignatureVectorArray) => void
+  errors: FieldErrors<SignatureFieldInput>
+  value: SignatureFieldValues | null
+  onChange: (value: SignatureFieldValues) => void
 }
 
 const SignatureCanvas = ({
@@ -44,10 +48,11 @@ const SignatureCanvas = ({
   isHighContrast,
   isSubmitting,
   isValid,
-  signatureErrors,
+  errors,
   value,
   onChange,
 }: SignatureCanvasProps) => {
+  const signatureErrors = errors?.[schema._id]
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
   const placeholderString = useMemo(() => {
@@ -325,8 +330,6 @@ export const SignatureField = ({
     [schema, disableRequiredValidation],
   )
 
-  const signatureErrors = errors?.[schema._id]
-
   return (
     <Controller
       control={control}
@@ -338,7 +341,7 @@ export const SignatureField = ({
           isHighContrast={isHighContrast}
           isSubmitting={isSubmitting}
           isValid={isValid}
-          signatureErrors={signatureErrors}
+          errors={errors}
           value={field.value}
           onChange={field.onChange}
         />
