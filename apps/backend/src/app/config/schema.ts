@@ -364,6 +364,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 0,
       env: 'SUBMISSIONS_TOP_UP',
     },
+    formsTopUp: {
+      doc: 'Number of forms to top up forms statistic by',
+      format: 'int',
+      default: 0,
+      env: 'FORMS_TOP_UP',
+    },
     nodeEnv: {
       doc: 'Express environment mode',
       format: [Environment.Prod, Environment.Dev, Environment.Test],
