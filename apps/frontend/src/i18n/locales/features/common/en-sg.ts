@@ -95,7 +95,7 @@ export const enSG: Common = {
   },
   moreOptions: 'More options',
   beta: 'Beta',
-  betaBadgeLabel: 'beta',
+  betaBadgeLabel: 'Beta',
   average: 'Average',
   notApplicable: 'N/A',
   file: 'File',
