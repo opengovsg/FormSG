@@ -1,12 +1,40 @@
 {
   "name": "@opengovsg/formsg-sdk",
   "version": "0.16.1",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./dist/types": {
+      "import": {
+        "types": "./dist/esm/types.d.ts",
+        "default": "./dist/esm/types.js"
+      },
+      "require": {
+        "types": "./dist/cjs/types.d.ts",
+        "default": "./dist/cjs/types.js"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "dist/types": ["./dist/cjs/types.d.ts"]
+    }
+  },
   "description": "Node.js SDK for integrating with FormSG",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",
     "lint": "eslint src/ --quiet --fix",
     "lint-ci": "eslint src/ --quiet"

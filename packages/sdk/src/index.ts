@@ -1,3 +1,21 @@
+export type {
+  DecryptedContent,
+  DecryptedContentV3,
+  DecryptParams,
+  DecryptParamsV3,
+  EncryptedAttachmentContent,
+  EncryptedAttachmentRecords,
+  EncryptedContent,
+  EncryptedContentV3,
+  EncryptedFileContent,
+  FieldType,
+  FormField,
+  FormFieldsV3,
+  Keypair,
+  PackageMode,
+  VerificationOptions,
+} from './types'
+
 import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
 import Crypto from './crypto'
 import CryptoV3 from './crypto-v3'
@@ -13,7 +31,7 @@ import Webhooks from './webhooks'
  * @param {string?} [config.webhookSecretKey] Optional. base64 secret key for signing webhooks. If provided, enables generating signature and headers to authenticate webhook data.
  * @param {VerificationOptions?} [config.verificationOptions] Optional. If provided, enables the usage of the verification module.
  */
-export = function (config: PackageInitParams = {}) {
+export default function (config: PackageInitParams = {}) {
   const { webhookSecretKey, mode, verificationOptions } = config
   /**
    * Public key is used for decrypting signed verified content in the `crypto` module, and
