@@ -78,9 +78,6 @@ const SignatureCanvas = ({
     }
   }, [value])
 
-  const [currentStroke, setCurrentStroke] = useState<
-    [number, number, number][]
-  >([])
   const [isDrawing, setIsDrawing] = useState(false)
 
   const drawAllStrokes = useCallback(() => {
@@ -156,27 +153,25 @@ const SignatureCanvas = ({
       const newStroke: [number, number, number][] = [
         [e.offsetX, e.offsetY, e.pressure || strokePressureDefault],
       ]
-      setCurrentStroke(newStroke)
       onChange({ type: defaultType, value: [...pfStrokes, newStroke] })
     }
 
     const handlePointerMove = (e: PointerEvent) => {
       if (!isDrawing) return
-      setCurrentStroke((prev) => {
-        const newPoint = [
-          e.offsetX,
-          e.offsetY,
-          e.pressure || strokePressureDefault,
-        ] as [number, number, number]
-        const updated = [...prev, newPoint]
-        const newPfStrokes = [
-          ...pfStrokes.slice(0, -1),
-          updated as [number, number, number][],
-        ]
-        onChange({ type: defaultType, value: newPfStrokes })
-        drawAllStrokes()
-        return updated
-      })
+      const newPoint = [
+        e.offsetX,
+        e.offsetY,
+        e.pressure || strokePressureDefault,
+      ] as [number, number, number]
+
+      const prevStroke = pfStrokes[pfStrokes.length - 1]
+      const updated = [...prevStroke, newPoint]
+      const newPfStrokes = [
+        ...pfStrokes.slice(0, -1),
+        updated as [number, number, number][],
+      ]
+      onChange({ type: defaultType, value: newPfStrokes })
+      drawAllStrokes()
     }
 
     const handlePointerUp = () => {
