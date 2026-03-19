@@ -622,7 +622,6 @@ describe('admin-form.controller', () => {
         responseMode: FormResponseMode.Multirespondent,
         publicKey: 'example public key',
         title: 'example MRF form title',
-        emails: [],
       }
       const MOCK_REQ_MRF = expressHandler.mockRequest({
         session: {
@@ -3393,7 +3392,6 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
-          emails: [],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3464,7 +3462,6 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
-          emails: [],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3533,7 +3530,6 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'example public key',
           title: 'example title',
-          emails: [],
         }
         const mockDupedFormView = {
           title: 'example view',
