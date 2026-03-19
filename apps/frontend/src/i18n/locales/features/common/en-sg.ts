@@ -94,7 +94,6 @@ export const enSG: Common = {
     ariaLabel: 'Click to edit the form',
   },
   moreOptions: 'More options',
-  beta: 'Beta',
   betaBadgeLabel: 'Beta',
   average: 'Average',
   notApplicable: 'N/A',

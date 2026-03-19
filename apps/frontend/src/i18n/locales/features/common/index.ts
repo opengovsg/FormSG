@@ -94,7 +94,6 @@ export interface Common {
     ariaLabel: string
   }
   moreOptions: string
-  beta: string
   betaBadgeLabel: string
   average: string
   notApplicable: string
