@@ -4,9 +4,6 @@
     "htmlhint",
     "prettier --write"
   ],
-  "apps/frontend/**/*.{ts,tsx,js}": [
-    "prettier --write",
-    "eslint --cache --fix"
-  ],
+  "apps/frontend/**/*.{ts,tsx,js}": ["prettier --write", "eslint --fix"],
   "**/*.json": ["prettier --write"]
 }
