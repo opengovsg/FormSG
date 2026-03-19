@@ -3392,6 +3392,7 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
+          emails: [MOCK_USER.email],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3462,6 +3463,7 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
+          emails: [MOCK_USER.email],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3530,6 +3532,7 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'example public key',
           title: 'example title',
+          emails: [MOCK_USER.email],
         }
         const mockDupedFormView = {
           title: 'example view',
