@@ -169,7 +169,7 @@ export const PublicFormSubmitButton = ({
         isOpen={isSingleSubmissionOnlyModalOpen}
         onClose={onSingleSubmissionModalClose}
       />
-      <Flex w="100" gap="1rem">
+      <Flex flexDir={isMobile ? 'column' : 'row'} w="100" gap="1rem">
         {isSaveDraftEnabled && (
           <PublicFormSaveDraftButton flex={1} isFullWidth={isMobile} />
         )}
