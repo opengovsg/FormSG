@@ -3552,6 +3552,12 @@ describe('admin-form.controller', () => {
         MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
           okAsync(MOCK_FORM),
         )
+        const mockCheckFormForPermissions = jest
+          .fn()
+          .mockReturnValue(ok(MOCK_FORM))
+        MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+          mockCheckFormForPermissions,
+        )
         MockAdminFormService.duplicateForm.mockReturnValueOnce(
           okAsync(mockDupedForm),
         )
