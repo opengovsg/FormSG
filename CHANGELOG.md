@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.1.0](https://github.com/opengovsg/formsg/compare/v7.0.0...v7.1.0) (2026-03-19)
+
+
+### Features
+
+* **frontend:** add savedraft beta badge (#9219) ([#9219](https://github.com/opengovsg/formsg/commit/bc5fb09db89d70815f025f775953aaae622bbcce))
+* **frontend:** vertically stack save draft and submission buttons on mobile (#9223) ([#9223](https://github.com/opengovsg/formsg/commit/85480b7393afc4b616630712b71683df7282eb12))
+
+
+### Bug Fixes
+
+* **frontend:** save draft header hover style (#9218) ([#9218](https://github.com/opengovsg/formsg/commit/e63da574ae2b1bf28d773472ce2bdadd0ccb1ca9))
+
+
+### Chores
+
+* remove eslint cache generation (#9222) ([#9222](https://github.com/opengovsg/formsg/commit/4ed1b924fded6fc72078305bd620de15e4a82768))
+
+
+### Miscellaneous
+
+* Merge pull request #9214 from opengovsg/chore/fix-lint-staged ([#9214](https://github.com/opengovsg/formsg/commit/3fa23f0ddd9f35ee90c2862c7d948641d9b630e9))
+* Merge pull request #9220 from opengovsg/fix/signatures-bug ([#9220](https://github.com/opengovsg/formsg/commit/05d7dd66d460a09c076bb8f22e21b4ff99e1e13f))
+
 ## [7.0.0](https://github.com/opengovsg/formsg/compare/v6.313.0...v7.0.0) (2026-03-17)
 
 
