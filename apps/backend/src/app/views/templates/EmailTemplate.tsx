@@ -28,8 +28,8 @@ import {
 import { buttonContainerStyle, buttonInnerStyle, linkStyle } from './styles'
 
 export type EmailData = {
-  emailTitle: string
-  emailBody: string
+  emailTitle?: string
+  emailBody?: string
   formTitle: string
   responseId: string
   outcome?: WorkflowOutcome | undefined
