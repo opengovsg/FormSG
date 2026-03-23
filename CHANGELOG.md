@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.1.1](https://github.com/opengovsg/formsg/compare/v7.1.0...v7.1.1) (2026-03-23)
+
+
+### Miscellaneous
+
+* Merge pull request #9230 from opengovsg/feat/bump-versions ([#9230](https://github.com/opengovsg/formsg/commit/2c9a1d9f0f45286fa583d1a6970ebe8a4b183cb4))
+
 ## [7.1.0](https://github.com/opengovsg/formsg/compare/v7.0.0...v7.1.0) (2026-03-19)
 
 
