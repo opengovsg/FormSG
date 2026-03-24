@@ -130,8 +130,6 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - name: Build SDK
-        run: pnpm build:sdk
       - name: Run frontend test
         env:
           DD_TAGS: layer:frontend
@@ -183,8 +181,6 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
-      - name: Build SDK
-        run: pnpm build:sdk
       - run: pnpm install --prefix services/pdf-gen-sparticuz
       - run: pnpm install --prefix services/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
