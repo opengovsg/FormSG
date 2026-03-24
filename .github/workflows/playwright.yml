@@ -64,7 +64,7 @@ jobs:
             .next
             apps/frontend/.next
             packages/shared/.next
-          key: ${{ runner.os }}-build-${{ github.sha }}
+          key: ${{ runner.os }}-build-playwright-${{ github.sha }}
   test:
     needs: setup
     timeout-minutes: 30
@@ -111,7 +111,7 @@ jobs:
             .next
             apps/frontend/.next
             packages/shared/.next
-          key: ${{ runner.os }}-build-${{ github.sha }}
+          key: ${{ runner.os }}-build-playwright-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@v1.0.5
