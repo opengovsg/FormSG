@@ -312,7 +312,7 @@ export const archiveForm = (
  *
  * @return ok(updated form) if transfer is successful
  * @return err(MissingUserError) if the current form admin cannot be found
- * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return err(TransferOwnershipError) if new owner cannot be found in the database, new owner email is same as current owner, or new owner email domain is not whitelisted
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferFormOwnership = (
@@ -341,6 +341,31 @@ export const transferFormOwnership = (
           )
         }
         return okAsync(currentOwner)
+      })
+      // Step 1b: Validate that the new owner's email domain is whitelisted.
+      .andThen((currentOwner) => {
+        const emailDomain = newOwnerEmail.split('@').pop()
+        return ResultAsync.fromPromise(
+          AgencyModel.findOne({ emailDomain }).exec(),
+          (error) => {
+            logger.error({
+              message:
+                'Error occurred whilst validating new owner email domain',
+              meta: logMeta,
+              error,
+            })
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ).andThen((agency) => {
+          if (!agency) {
+            return errAsync(
+              new TransferOwnershipError(
+                `${newOwnerEmail} is not part of a whitelisted agency`,
+              ),
+            )
+          }
+          return okAsync(currentOwner)
+        })
       })
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
