@@ -107,6 +107,7 @@ export type Config = {
   bounceLifeSpan: number
   formsgSdkMode: PackageMode
   submissionsTopUp: number
+  formsTopUp: number
   customCloudWatchGroup: string
   isGeneralMaintenance: string
   isLoginBanner: string
@@ -187,6 +188,7 @@ export interface IOptionalVarsSchema {
     port: number
     otpLifeSpan: number
     submissionsTopUp: number
+    formsTopUp: number
     nodeEnv: Environment
     useMockPostmanSms: boolean
   }
