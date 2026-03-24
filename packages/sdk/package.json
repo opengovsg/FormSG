@@ -1,7 +1,7 @@
 {
   "name": "@opengovsg/formsg-sdk",
   "version": "0.16.1",
-  "main": "./dist/cjs/index.js",
+  "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
   "exports": {
@@ -12,7 +12,7 @@
       },
       "require": {
         "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "default": "./cjs-entry.cjs"
       }
     },
     "./dist/types": {
@@ -28,7 +28,9 @@
   },
   "typesVersions": {
     "*": {
-      "dist/types": ["./dist/cjs/types.d.ts"]
+      "dist/types": [
+        "./dist/cjs/types.d.ts"
+      ]
     }
   },
   "description": "Node.js SDK for integrating with FormSG",
