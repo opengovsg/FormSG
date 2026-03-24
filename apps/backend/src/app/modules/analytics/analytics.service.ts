@@ -1,7 +1,7 @@
 import * as TE from 'fp-ts/TaskEither'
 import mongoose from 'mongoose'
 
-import { submissionsTopUp } from '../../config/config'
+import { formsTopUp, submissionsTopUp } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getAgencyModel from '../../models/agency.server.model'
 import getFormModel from '../../models/form.server.model'
@@ -66,7 +66,10 @@ export const getSubmissionCount = (): TE.TaskEither<DatabaseError, number> => {
  */
 export const getFormCount = (): TE.TaskEither<DatabaseError, number> => {
   return TE.tryCatch(
-    () => FormModel.estimatedDocumentCount().exec(),
+    () =>
+      FormModel.estimatedDocumentCount()
+        .exec()
+        .then((value) => value + formsTopUp),
     (error) => {
       logger.error({
         message: 'Database error when retrieving form collection count',

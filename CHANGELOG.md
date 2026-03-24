@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.2.0](https://github.com/opengovsg/formsg/compare/v7.1.1...v7.2.0) (2026-03-24)
+
+
+### Features
+
+* **backend:** add forms top up (#9229) ([#9229](https://github.com/opengovsg/formsg/commit/147c59200fe0efa6eab37df8956d22fc8e151380))
+
 ## [7.1.1](https://github.com/opengovsg/formsg/compare/v7.1.0...v7.1.1) (2026-03-23)
 
 

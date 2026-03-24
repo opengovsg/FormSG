@@ -79,6 +79,7 @@ These are configured by creating groups of environment variables formatted like 
 | `NODE_ENV`           | [Express environment mode](https://expressjs.com/en/advanced/best-practice-performance.html#set-node_env-to-production). Defaults to `'production'`. This should always be set to a production environment |
 | `SESSION_SECRET`     | Secret for `express-session` for session management. This should always be set to a secret and random value in a production environment.                                                                   |
 | `SUBMISSIONS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
+| `FORMS_TOP_UP` | Use this to inflate the number of submissions displayed on the landing page. Defaults to `0`.                                                                                                              |
 
 **Banners**
 

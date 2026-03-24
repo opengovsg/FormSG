@@ -270,6 +270,7 @@ const config: Config = {
   sessionSecret: basicVars.core.sessionSecret,
   otpLifeSpan: basicVars.core.otpLifeSpan,
   submissionsTopUp: basicVars.core.submissionsTopUp,
+  formsTopUp: basicVars.core.formsTopUp,
   isGeneralMaintenance: basicVars.banner.isGeneralMaintenance,
   isLoginBanner: basicVars.banner.isLoginBanner,
   siteBannerContent: basicVars.banner.siteBannerContent,
