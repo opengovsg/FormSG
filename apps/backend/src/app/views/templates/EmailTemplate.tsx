@@ -64,6 +64,7 @@ export const EmailTemplate = ({
   statusTrackerUrl,
   reviewUrl,
   paymentUrl,
+  responseJson,
 }: EmailData): JSX.Element => {
   // const headingText = `${formTitle} has been completed by all respondents.`
 
@@ -241,8 +242,23 @@ export const EmailTemplate = ({
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>
+
+            {/* JSON Data Section */}
+            {responseJson && (
+              <Section style={{ marginTop: '40px' }}>
+                {/* <Text style={{ ...secondaryTextStyle, marginBottom: '8px' }}>
+                  ===============
+                </Text> */}
+                <Text style={{ ...secondaryTextStyle, marginBottom: '8px' }}>
+                  -- Start of JSON --
+                </Text>
+                <Text>{responseJson}</Text>
+                <Text style={{ ...secondaryTextStyle, marginTop: '8px' }}>
+                  -- End of JSON --
+                </Text>
+              </Section>
+            )}
           </Section>
-          {/* TODO: JSON */}
         </Container>
       </Body>
     </Html>
