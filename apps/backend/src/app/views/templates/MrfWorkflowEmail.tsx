@@ -11,6 +11,7 @@ import {
   Row,
   Text,
 } from '@react-email/components'
+
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {

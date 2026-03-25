@@ -10,19 +10,20 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import React from 'react'
+
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
-  secondaryTextStyle,
+  answerMargin,
   containerStyle,
   headingTextStyle,
   mainStyle,
-  sectionStyle,
   primaryTextStyle,
   questionMargin,
-  answerMargin,
+  secondaryTextStyle,
+  sectionStyle,
 } from './mrfWorkflowCompletionEmailStyle'
-import React from 'react'
 
 export type QuestionAnswer = {
   question: string
@@ -30,48 +31,56 @@ export type QuestionAnswer = {
 }
 
 export type RespondentCopyEmilData = {
-    formTitle: string
-    responseId: string
-    formQuestionAnswers?: QuestionAnswer[]
-    body: string
+  formTitle: string
+  responseId: string
+  formQuestionAnswers?: QuestionAnswer[]
+  body: string
 }
 
 export const MrfRespondentCopyEmail = ({
-    formTitle,
-    responseId,
-    formQuestionAnswers,
-    body,
+  formTitle,
+  responseId,
+  formQuestionAnswers,
+  body,
 }: RespondentCopyEmilData): JSX.Element => {
-    let headingText = 'Thank you for submitting this form'
-  
-    const renderQuestionAnswer = (qa: QuestionAnswer) => (
-        <>
-          <Text style={{ ...primaryTextStyle, ...questionMargin }}>{qa.question}</Text>
-          <Text style={{ ...secondaryTextStyle, ...answerMargin }}>{qa.answer}</Text>
-        </>
-    )
+  const headingText = 'Thank you for submitting this form'
 
-    const renderResponseId = () => (
-        <>
-          <Hr style={{ margin: '40px 0' }} />
-          <Text style={{ ...primaryTextStyle, ...questionMargin }}>Response ID</Text>
-          <Text style={{ ...secondaryTextStyle,  marginBottom: '40px' }}>{responseId}</Text>
-          <Hr style={{ margin: '40px 0' }} />
-        </>
-    )
-    
-    /**
-     * Explicitly render line breaks and paragraphs in email body, as certain email clients
-     * might not be compatible with CSS white-space property. (e.g. white-space: pre-line)
-     * @param body - email body text with line breaks
-     * @param textStyle - css properties
-     * @returns an array of JSX elements representing paragraphs and line breaks
-     */
-    const renderEmailBody = (
-      body: string,
-      textStyle: React.CSSProperties,
-    ): JSX.Element[] => {
-      return body.split(/\n{2,}/).map((paragraph, i) => (
+  const renderQuestionAnswer = (qa: QuestionAnswer) => (
+    <>
+      <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+        {qa.question}
+      </Text>
+      <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+        {qa.answer}
+      </Text>
+    </>
+  )
+
+  const renderResponseId = () => (
+    <>
+      <Hr style={{ margin: '40px 0' }} />
+      <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+        Response ID
+      </Text>
+      <Text style={{ ...secondaryTextStyle, marginBottom: '40px' }}>
+        {responseId}
+      </Text>
+      <Hr style={{ margin: '40px 0' }} />
+    </>
+  )
+
+  /**
+   * Explicitly render line breaks and paragraphs in email body, as certain email clients
+   * might not be compatible with CSS white-space property. (e.g. white-space: pre-line)
+   * @param body - email body text with line breaks
+   * @param textStyle - css properties
+   * @returns an array of JSX elements representing paragraphs and line breaks
+   */
+  const renderEmailBody = (
+    body: string,
+    textStyle: React.CSSProperties,
+  ): JSX.Element[] => {
+    return body.split(/\n{2,}/).map((paragraph, i) => (
       <Text key={i} style={{ ...textStyle, marginBottom: '16px' }}>
         {paragraph.split('\n').map((line, j) => (
           <React.Fragment key={j}>
@@ -79,38 +88,42 @@ export const MrfRespondentCopyEmail = ({
             <br />
           </React.Fragment>
         ))}
-        </Text>
-      ))
-      }
+      </Text>
+    ))
+  }
 
-
-    return (
+  return (
     <Html>
-      <Head /> 
+      <Head />
       <Preview>{headingText}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
           <Section style={sectionStyle}>
-            <Img style={{ height: '24px', marginBottom: '40px' }} src={FORMSG_LOGO_URL} alt="FormSG" />
+            <Img
+              style={{ height: '24px', marginBottom: '40px' }}
+              src={FORMSG_LOGO_URL}
+              alt="FormSG"
+            />
             <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
               {headingText}
             </Heading>
             {renderEmailBody(body, secondaryTextStyle)}
             {renderResponseId()}
-              {formQuestionAnswers ? (
-                <>
-                  <Text style={{ ...primaryTextStyle, ...answerMargin }}>Responses for {formTitle}</Text>
-                  <>
-                    {formQuestionAnswers.map(renderQuestionAnswer)}
-                  </>
+            {formQuestionAnswers ? (
+              <>
+                <Text style={{ ...primaryTextStyle, ...answerMargin }}>
+                  Responses for {formTitle}
+                </Text>
+                <>{formQuestionAnswers.map(renderQuestionAnswer)}</>
               </>
             ) : null}
             <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
-              For more details, please contact the respondent(s) or form administrator.
+              For more details, please contact the respondent(s) or form
+              administrator.
             </Text>
           </Section>
         </Container>
       </Body>
-    </Html>        
-    )
+    </Html>
+  )
 }

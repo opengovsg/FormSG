@@ -1,4 +1,4 @@
-import { Body, Head, Html, Text, Link } from '@react-email/components'
+import { Body, Head, Html, Text } from '@react-email/components'
 
 import { BounceNotificationHtmlData } from '../../services/mail/mail.types'
 
