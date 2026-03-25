@@ -8,7 +8,6 @@ import {
   Img,
   Link,
   Preview,
-  Row,
   Section,
   Text,
 } from '@react-email/components'
@@ -17,7 +16,10 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
   answerMargin,
+  buttonContainerStyle,
+  cardSectionStyle,
   containerStyle,
+  halfWidthColumnStyle,
   headingTextStyle,
   mainStyle,
   primaryTextStyle,
@@ -25,10 +27,10 @@ import {
   secondaryTextStyle,
   sectionStyle,
 } from './emailStyles'
-import { buttonContainerStyle, buttonInnerStyle, linkStyle } from './styles'
+import { buttonInnerStyle, linkStyle } from './styles'
 
 export type EmailData = {
-  emailTitle?: string
+  emailTitle: string
   emailBody?: string
   formTitle: string
   responseId: string
@@ -52,13 +54,18 @@ export type QuestionAnswer = {
 }
 
 export const EmailTemplate = ({
+  emailTitle,
+  emailBody = 'To whom it may concern,\n\nThank you for submitting this form.\n\nRegards,\n The FormSG team',
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41',
-  emailBody = 'To whom it may concern,\n\nThank you for submitting this form.\n\nRegards,\n The FormSG team',
-  formQuestionAnswers = [],
-  outcome = WorkflowOutcome.APPROVED,
+  outcome,
+  formQuestionAnswers,
+  paymentAmount,
+  statusTrackerUrl,
+  reviewUrl,
+  paymentUrl,
 }: EmailData): JSX.Element => {
-  const headingText = `${formTitle} has been completed by all respondents.`
+  // const headingText = `${formTitle} has been completed by all respondents.`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
@@ -74,7 +81,7 @@ export const EmailTemplate = ({
   return (
     <Html>
       <Head />
-      <Preview>{headingText}</Preview>
+      <Preview>{emailTitle}</Preview>
       <Body style={mainStyle}>
         <Container style={containerStyle}>
           <Section style={{ ...sectionStyle, backgroundColor: '#ffffff' }}>
@@ -100,16 +107,8 @@ export const EmailTemplate = ({
             </Text>
 
             {/* Section - Form Name & ResponseID */}
-            <Row
-              style={{
-                background: '#F8F9FD',
-                borderRadius: '8px',
-                marginBottom: '16px',
-                paddingLeft: '16px',
-                paddingRight: '16px',
-              }}
-            >
-              <Column style={{ width: '50%', verticalAlign: 'top' }}>
+            <Section style={cardSectionStyle}>
+              <Column style={halfWidthColumnStyle}>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Form title
                 </Text>
@@ -117,7 +116,7 @@ export const EmailTemplate = ({
                   {formTitle}
                 </Text>
               </Column>
-              <Column style={{ width: '50%', verticalAlign: 'top' }}>
+              <Column style={halfWidthColumnStyle}>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Response ID
                 </Text>
@@ -125,18 +124,10 @@ export const EmailTemplate = ({
                   {responseId}
                 </Text>
               </Column>
-            </Row>
+            </Section>
             {/* Section - Outcome */}
             {outcome && (
-              <Section
-                style={{
-                  background: '#F8F9FD',
-                  borderRadius: '8px',
-                  marginBottom: '16px',
-                  paddingLeft: '16px',
-                  paddingRight: '16px',
-                }}
-              >
+              <Section style={cardSectionStyle}>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Outcome
                 </Text>
@@ -146,78 +137,110 @@ export const EmailTemplate = ({
               </Section>
             )}
             {/* Section - Responses */}
-            <Section
-              style={{
-                background: '#F8F9FD',
-                borderRadius: '8px',
-                marginBottom: '16px',
-                padding: '16px',
-              }}
-            >
-              <Heading style={{ ...headingTextStyle, marginBottom: '24px' }}>
+            <Section style={cardSectionStyle}>
+              <Heading
+                style={{
+                  ...headingTextStyle,
+                  marginTop: '16px',
+                  marginBottom: '24px',
+                }}
+              >
                 Responses for {formTitle}
               </Heading>
               {formQuestionAnswers.map(renderQuestionAnswer)}
             </Section>
             {/* Section - Payment response */}
-            <Section
-              style={{
-                background: '#F8F9FD',
-                borderRadius: '8px',
-                marginBottom: '24px',
-                paddingLeft: '16px',
-                paddingRight: '16px',
-              }}
-            >
-              <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                Amount paid
-              </Text>
-              <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                $0.50
-              </Text>
-            </Section>
-
+            {paymentAmount ? (
+              <Section style={cardSectionStyle}>
+                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                  Amount paid
+                </Text>
+                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                  $0.50
+                </Text>
+              </Section>
+            ) : null}
             {/* Status tracker button*/}
-            <Section style={{ ...buttonContainerStyle, marginBottom: '16px' }}>
-              <a
-                href={''}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                Track your submission
-              </a>
-            </Section>
+            {statusTrackerUrl ? (
+              <>
+                <Section
+                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                >
+                  <a
+                    href={statusTrackerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    Track your submission
+                  </a>
+                </Section>
+                <Text style={{ ...secondaryTextStyle }}>
+                  If you are having trouble with the button above, copy and
+                  paste the link below into your browser:
+                </Text>
+                <Link href={statusTrackerUrl} style={{ ...linkStyle }}>
+                  {statusTrackerUrl}
+                </Link>
+              </>
+            ) : null}
             {/* Review and complete button*/}
-            <Section style={{ ...buttonContainerStyle, marginBottom: '16px' }}>
-              <a
-                href={''}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                Click to review and complete
-              </a>
-            </Section>
+            {reviewUrl ? (
+              <>
+                <Section
+                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                >
+                  <a
+                    href={reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    Click to review and complete
+                  </a>
+                </Section>
+                <Text style={{ ...secondaryTextStyle }}>
+                  If you are having trouble with the button above, copy and
+                  paste the link below into your browser:
+                </Text>
+                <Link href={reviewUrl} style={{ ...linkStyle }}>
+                  {reviewUrl}
+                </Link>
+              </>
+            ) : null}
+
             {/* Payment button*/}
-            <Section style={{ ...buttonContainerStyle, marginBottom: '16px' }}>
-              <a
-                href={''}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                View proof of payment
-              </a>
-            </Section>
+            {paymentUrl ? (
+              <>
+                <Section
+                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                >
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    View proof of payment
+                  </a>
+                </Section>
+                <Text style={{ ...secondaryTextStyle }}>
+                  If you are having trouble with the button above, copy and
+                  paste the link below into your browser:
+                </Text>
+                <Link href={paymentUrl} style={{ ...linkStyle }}>
+                  {paymentUrl}
+                </Link>
+              </>
+            ) : null}
 
             {/* Link helper + link */}
             <Text style={{ ...secondaryTextStyle }}>
               If you are having trouble with the button above, copy and paste
               the link below into your browser:
             </Text>
-            <Link href={''} style={{ ...linkStyle }}>
-              http://example.com/track-submission
+            <Link href={reviewUrl} style={{ ...linkStyle }}>
+              {reviewUrl}
             </Link>
 
             {/* Email end */}
@@ -226,7 +249,7 @@ export const EmailTemplate = ({
               administrator.
             </Text>
           </Section>
-          {/* JSON */}
+          {/* TODO: JSON */}
         </Container>
       </Body>
     </Html>

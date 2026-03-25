@@ -1,4 +1,4 @@
-import { LinkProps } from '@react-email/components'
+import { ContainerProps, LinkProps } from '@react-email/components'
 
 import { colorBaseContentStrong, textStyles } from './commonStyles'
 
@@ -10,7 +10,7 @@ export const mainStyle = {
 export const containerStyle = {
   maxWidth: '100%',
   width: '720px',
-  margin: 'auto',
+  margin: '99px auto',
   padding: '20px',
   borderRadius: '8px',
   backgroundColor: '#ffffff',
@@ -54,4 +54,29 @@ export const questionMargin: NonNullable<LinkProps['style']> = {
 
 export const answerMargin: NonNullable<LinkProps['style']> = {
   marginTop: '4px',
+}
+
+// Column styles
+export const halfWidthColumnStyle: NonNullable<LinkProps['style']> = {
+  width: '50%',
+  verticalAlign: 'top',
+}
+
+// Section/Card style variations
+export const cardSectionStyle: NonNullable<LinkProps['style']> = {
+  background: '#F8F9FD',
+  borderRadius: '8px',
+  marginBottom: '16px',
+  paddingLeft: '16px',
+  paddingRight: '16px',
+}
+
+/** Button style to be attached to the outer <Container> of a button */
+export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
+  border: '24px solid #445fcd',
+  borderRadius: '4px',
+  backgroundColor: '#445fcd',
+  width: '100%',
+  marginTop: '24px',
+  marginBottom: '16px',
 }
