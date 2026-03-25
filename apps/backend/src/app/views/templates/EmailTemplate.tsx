@@ -35,7 +35,7 @@ export type EmailData = {
   formTitle: string
   responseId: string
   outcome?: WorkflowOutcome | undefined
-  formQuestionAnswers: QuestionAnswer[]
+  formQuestionAnswers?: QuestionAnswer[]
   paymentAmount?: number
   statusTrackerUrl?: string
   reviewUrl?: string
@@ -55,9 +55,9 @@ export type QuestionAnswer = {
 
 export const EmailTemplate = ({
   emailTitle,
-  emailBody = 'To whom it may concern,\n\nThank you for submitting this form.\n\nRegards,\n The FormSG team',
-  formTitle = 'Test form title',
-  responseId = '64303c45828035f732088a41',
+  emailBody,
+  formTitle,
+  responseId,
   outcome,
   formQuestionAnswers,
   paymentAmount,
@@ -93,7 +93,7 @@ export const EmailTemplate = ({
             />
             {/* Body Title */}
             <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
-              {headingText}
+              {emailTitle}
             </Heading>
             {/* Body Content */}
             <Text
@@ -147,7 +147,9 @@ export const EmailTemplate = ({
               >
                 Responses for {formTitle}
               </Heading>
-              {formQuestionAnswers.map(renderQuestionAnswer)}
+              {formQuestionAnswers
+                ? formQuestionAnswers.map(renderQuestionAnswer)
+                : null}
             </Section>
             {/* Section - Payment response */}
             {paymentAmount ? (
@@ -233,15 +235,6 @@ export const EmailTemplate = ({
                 </Link>
               </>
             ) : null}
-
-            {/* Link helper + link */}
-            <Text style={{ ...secondaryTextStyle }}>
-              If you are having trouble with the button above, copy and paste
-              the link below into your browser:
-            </Text>
-            <Link href={reviewUrl} style={{ ...linkStyle }}>
-              {reviewUrl}
-            </Link>
 
             {/* Email end */}
             <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>

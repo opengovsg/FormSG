@@ -29,13 +29,10 @@ import {
 import { EmailTemplate } from '../../views/templates/EmailTemplate'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
 import { MrfRespondentCopyEmail } from '../../views/templates/MrfRespondentCopyEmail'
-import MrfWorkflowCompletionEmail, {
+import {
   QuestionAnswer,
   WorkflowOutcome,
 } from '../../views/templates/MrfWorkflowCompletionEmail'
-import MrfWorkflowEmail, {
-  WorkflowEmailData,
-} from '../../views/templates/MrfWorkflowEmail'
 import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
 import { smsThreshold } from '../sms/sms.utils'
 
@@ -1011,33 +1008,34 @@ export class MailService {
     responseId,
     responseUrl,
     isReminder = false,
+    formQuestionAnswers,
   }: {
     emails: string[]
     formTitle: string
     responseId: string
     responseUrl: string
     isReminder?: boolean
+    formQuestionAnswers?: QuestionAnswer[]
   }): ResultAsync<true, MailSendError> => {
-    const htmlData: WorkflowEmailData = {
+    const htmlData = {
+      emailTitle: `Review and complete your part of ${formTitle}`,
       formTitle,
       responseId: responseId.toString(),
-      responseUrl,
+      reviewUrl: responseUrl,
+      formQuestionAnswers,
     }
 
-    const generatedHtml = fromPromise(
-      render(MrfWorkflowEmail(htmlData)),
-      (e) => {
-        logger.error({
-          message: 'Failed to render MrfWorkflowEmail',
-          meta: {
-            action: 'sendMRFWorkflowStepEmail',
-            error: e,
-          },
-        })
+    const generatedHtml = fromPromise(render(EmailTemplate(htmlData)), (e) => {
+      logger.error({
+        message: 'Failed to render MrfWorkflowEmail',
+        meta: {
+          action: 'sendMRFWorkflowStepEmail',
+          error: e,
+        },
+      })
 
-        return new MailGenerationError('Error generating mrf workflow email')
-      },
-    )
+      return new MailGenerationError('Error generating mrf workflow email')
+    })
 
     const emailSubject =
       (isReminder ? '[Reminder] ' : '') +
@@ -1074,6 +1072,7 @@ export class MailService {
     attachments?: Mail.Attachment[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const htmlData = {
+      emailTitle: `${formTitle} has been completed by all respondents`,
       formTitle,
       responseId: responseId.toString(),
       formQuestionAnswers,
@@ -1137,28 +1136,26 @@ export class MailService {
       ? WorkflowOutcome.NOT_APPROVED
       : WorkflowOutcome.APPROVED
     const htmlData = {
+      emailTitle: `${formTitle} has been completed by all respondents`,
       formTitle,
       responseId: responseId.toString(),
       outcome,
       formQuestionAnswers,
     }
 
-    const generatedHtml = fromPromise(
-      render(MrfWorkflowCompletionEmail(htmlData)),
-      (e) => {
-        logger.error({
-          message: 'Failed to render MrfWorkflowCompletionEmail',
-          meta: {
-            action: 'sendMrfApprovalEmail',
-            error: e,
-          },
-        })
+    const generatedHtml = fromPromise(render(EmailTemplate(htmlData)), (e) => {
+      logger.error({
+        message: 'Failed to render MrfWorkflowCompletionEmail',
+        meta: {
+          action: 'sendMrfApprovalEmail',
+          error: e,
+        },
+      })
 
-        return new MailGenerationError(
-          'Error generating mrf workflow completion email',
-        )
-      },
-    )
+      return new MailGenerationError(
+        'Error generating mrf workflow completion email',
+      )
+    })
 
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
