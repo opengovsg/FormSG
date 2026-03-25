@@ -89,6 +89,8 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
+import { InvalidDomainError } from '../../auth/auth.errors'
+import * as AuthService from '../../auth/auth.service'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
@@ -343,30 +345,18 @@ export const transferFormOwnership = (
         return okAsync(currentOwner)
       })
       // Step 1b: Validate that the new owner's email domain is whitelisted.
-      .andThen((currentOwner) => {
-        const emailDomain = newOwnerEmail.split('@').pop()
-        return ResultAsync.fromPromise(
-          AgencyModel.findOne({ emailDomain }).exec(),
-          (error) => {
-            logger.error({
-              message:
-                'Error occurred whilst validating new owner email domain',
-              meta: logMeta,
-              error,
-            })
-            return new DatabaseError(getMongoErrorMessage(error))
-          },
-        ).andThen((agency) => {
-          if (!agency) {
-            return errAsync(
-              new TransferOwnershipError(
+      .andThen((currentOwner) =>
+        AuthService.validateEmailDomain(newOwnerEmail)
+          .map(() => currentOwner)
+          .mapErr((error) => {
+            if (error instanceof InvalidDomainError) {
+              return new TransferOwnershipError(
                 `${newOwnerEmail} is not part of a whitelisted agency`,
-              ),
-            )
-          }
-          return okAsync(currentOwner)
-        })
-      })
+              )
+            }
+            return error
+          }),
+      )
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
         UserService.findUserByEmail(newOwnerEmail)
