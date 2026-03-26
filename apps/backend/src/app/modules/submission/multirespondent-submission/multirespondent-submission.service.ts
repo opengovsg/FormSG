@@ -562,7 +562,7 @@ const sendMrfRespondentCopyEmails = ({
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
-    '_id' | 'title' | 'admin'
+    '_id' | 'title' | 'admin' | 'hasStatusTracker'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -614,6 +614,7 @@ const sendMrfRespondentCopyEmails = ({
               : [],
             autoReplyMailData,
             agencyName: form.admin.agency.fullName,
+            hasStatusTracker: form.hasStatusTracker,
             ...(autoReplyMailData.includeFormSummary && {
               formQuestionAnswers,
             }),

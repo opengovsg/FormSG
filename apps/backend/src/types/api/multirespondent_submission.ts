@@ -27,6 +27,7 @@ export type SnapshottedFormDef = Pick<
   | 'webhook'
   | 'title'
   | 'workflow'
+  | 'hasStatusTracker'
 > & {
   _id: string
   form_fields: FormFieldDto[]

@@ -28,7 +28,6 @@ import {
 } from '../../views/templates/EmailAddressVerificationOtp'
 import { EmailTemplate } from '../../views/templates/EmailTemplate'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
-import { MrfRespondentCopyEmail } from '../../views/templates/MrfRespondentCopyEmail'
 import {
   QuestionAnswer,
   WorkflowOutcome,
@@ -1078,23 +1077,19 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    const generatedHtml = fromPromise(
-      // render(MrfWorkflowCompletionEmail(htmlData)),
-      render(EmailTemplate(htmlData)),
-      (e) => {
-        logger.error({
-          message: 'Failed to render MrfWorkflowCompletionEmail',
-          meta: {
-            action: 'sendMrfWorkflowCompletionEmail',
-            error: e,
-          },
-        })
+    const generatedHtml = fromPromise(render(EmailTemplate(htmlData)), (e) => {
+      logger.error({
+        message: 'Failed to render MrfWorkflowCompletionEmail',
+        meta: {
+          action: 'sendMrfWorkflowCompletionEmail',
+          error: e,
+        },
+      })
 
-        return new MailGenerationError(
-          'Error generating mrf workflow completion email',
-        )
-      },
-    )
+      return new MailGenerationError(
+        'Error generating mrf workflow completion email',
+      )
+    })
 
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
@@ -1145,16 +1140,14 @@ export class MailService {
 
     const generatedHtml = fromPromise(render(EmailTemplate(htmlData)), (e) => {
       logger.error({
-        message: 'Failed to render MrfWorkflowCompletionEmail',
+        message: 'Failed to render MrfApprovalEmail',
         meta: {
           action: 'sendMrfApprovalEmail',
           error: e,
         },
       })
 
-      return new MailGenerationError(
-        'Error generating mrf workflow completion email',
-      )
+      return new MailGenerationError('Error generating mrf approval email')
     })
 
     return generatedHtml.andThen((mailHtml) => {
@@ -1184,6 +1177,7 @@ export class MailService {
     attachments,
     autoReplyMailData,
     agencyName,
+    hasStatusTracker,
   }: {
     formId: string
     formTitle: string
@@ -1192,35 +1186,37 @@ export class MailService {
     attachments?: Mail.Attachment[]
     autoReplyMailData: AutoReplyMailData
     agencyName: string
+    hasStatusTracker: boolean
   }) => {
+    const defaultBody = DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
+      '{agencyName}',
+      agencyName,
+    )
+
     const htmlData = {
+      emailTitle: `Thank you for submitting ${formTitle}`,
+      emailBody: autoReplyMailData.body || defaultBody,
       formTitle,
       responseId,
-      body:
-        autoReplyMailData.body ||
-        DEFAULT_RESPONDENT_COPY_EMAIL.content.replace(
-          '{agencyName}',
-          agencyName,
-        ),
       formQuestionAnswers,
+      ...(hasStatusTracker && {
+        statusTrackerUrl: `${this.#appUrl}/${formId}/status/${responseId}`,
+      }),
     }
 
-    const generatedHtml = fromPromise(
-      render(MrfRespondentCopyEmail(htmlData)),
-      (e) => {
-        logger.error({
-          message: 'Failed to render MrfRespondentCopyEmail',
-          meta: {
-            action: 'sendMrfRespondentCopyEmail',
-            error: e,
-          },
-        })
+    const generatedHtml = fromPromise(render(EmailTemplate(htmlData)), (e) => {
+      logger.error({
+        message: 'Failed to render EmailTemplate for MRF respondent copy',
+        meta: {
+          action: 'sendMrfRespondentCopyEmail',
+          error: e,
+        },
+      })
 
-        return new MailGenerationError(
-          'Error generating mrf respondent copy email',
-        )
-      },
-    )
+      return new MailGenerationError(
+        'Error generating mrf respondent copy email',
+      )
+    })
 
     const senderName = autoReplyMailData.sender || agencyName
     const emailSender = `${senderName.replace('(', '\\(')} <${this.#senderMail}>`
