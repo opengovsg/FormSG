@@ -61,9 +61,6 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-            .next
-            apps/frontend/.next
-            packages/shared/.next
           key: ${{ runner.os }}-build-playwright-${{ github.sha }}
   test:
     needs: setup
@@ -108,9 +105,6 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-            .next
-            apps/frontend/.next
-            packages/shared/.next
           key: ${{ runner.os }}-build-playwright-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
