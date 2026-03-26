@@ -143,11 +143,15 @@ jobs:
           path: |
             node_modules
             apps/frontend/node_modules
+            apps/backend/node_modules
             packages/shared/node_modules
             packages/sdk/node_modules
             apps/frontend/dist
+            apps/backend/dist
             packages/shared/dist
             packages/sdk/dist
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Install dependencies
@@ -208,12 +212,16 @@ jobs:
         with:
           path: |
             node_modules
+            apps/frontend/node_modules
             apps/backend/node_modules
             packages/shared/node_modules
             packages/sdk/node_modules
+            apps/frontend/dist
             apps/backend/dist
             packages/shared/dist
             packages/sdk/dist
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Install dependencies
