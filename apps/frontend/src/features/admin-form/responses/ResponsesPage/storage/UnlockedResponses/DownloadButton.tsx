@@ -16,7 +16,6 @@ import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -139,24 +138,18 @@ export const DownloadButton = (): JSX.Element => {
     onOpen: onDownloadModalOpen,
   } = useDisclosure({
     // Reset metadata if it exists.
-    onOpen: () => setDownloadMetadata(undefined),
+    onOpen: () => resetDownloadMetadataAndProgress(),
   })
-  const {
-    isOpen: isProgressModalOpen,
-    onClose: onProgressModalClose,
-    onOpen: onProgressModalOpen,
-  } = useDisclosure({
-    // Reset metadata if it exists.
-    onOpen: () => setDownloadMetadata(undefined),
-  })
+  const { isOpen: isProgressModalOpen, onClose: onProgressModalClose } =
+    useDisclosure({
+      // Reset metadata if it exists.
+      onOpen: () => resetDownloadMetadataAndProgress(),
+    })
 
   const toast = useToast({
     isClosable: true,
   })
 
-  const [progressModalTimeout, setProgressModalTimeout] = useState<
-    number | null
-  >(null)
   const { downloadParams, dateRangeResponsesCount } =
     useStorageResponsesContext()
 
@@ -181,19 +174,25 @@ export const DownloadButton = (): JSX.Element => {
     downloadOptions.isDownloadPdf,
   ])
 
-  useTimeout(onProgressModalOpen, progressModalTimeout)
-
   const [downloadMetadata, setDownloadMetadata] = useState<
     DownloadResult | CanceledResult
   >()
+
+  const resetDownloadProgress = useCallback(() => {
+    setDownloadCount(0)
+    setPdfGenerationCount(0)
+  }, [])
+  const resetDownloadMetadataAndProgress = useCallback(() => {
+    setDownloadMetadata(undefined)
+    resetDownloadProgress()
+  }, [])
 
   const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
     onDecryptionProgress: setDownloadCount,
     onPdfGenerationProgress: setPdfGenerationCount,
     mutateProps: {
       onMutate: () => {
-        // Reset metadata if it exists.
-        setDownloadMetadata(undefined)
+        resetDownloadMetadataAndProgress()
       },
       onSuccess: ({ successCount, expectedCount, errorCount }) => {
         if (downloadParams?.responsesCount === 0) {
@@ -224,8 +223,8 @@ export const DownloadButton = (): JSX.Element => {
         })
       },
       onSettled: (decryptResult) => {
-        setProgressModalTimeout(null)
         setDownloadMetadata(decryptResult)
+        resetDownloadProgress()
         resetDownloadOptions()
       },
     },
@@ -233,7 +232,6 @@ export const DownloadButton = (): JSX.Element => {
 
   const handleBulkDownload = useCallback(() => {
     if (!downloadParams) return
-    setProgressModalTimeout(5000)
     datadogLogs.logger.info('Bulk download used', {
       meta: {
         action: 'bulkDownload',
@@ -251,8 +249,7 @@ export const DownloadButton = (): JSX.Element => {
   }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
 
   const resetDownload = useCallback(() => {
-    setDownloadCount(0)
-    setProgressModalTimeout(null)
+    resetDownloadProgress()
     abortDecryption()
     onProgressModalClose()
   }, [abortDecryption, onProgressModalClose])
@@ -261,7 +258,7 @@ export const DownloadButton = (): JSX.Element => {
     resetDownload()
     onDownloadModalClose()
     onProgressModalClose()
-    setDownloadMetadata(undefined)
+    resetDownloadMetadataAndProgress()
   }, [onDownloadModalClose, onProgressModalClose, resetDownload])
 
   const handleNoAttachmentsDownloadCancel = useCallback(() => {

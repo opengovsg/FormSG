@@ -423,6 +423,7 @@ export type DuplicateFormOverwriteDto = {
       responseMode: FormResponseMode.Multirespondent
       publicKey: string
       workflow?: FormWorkflowDto
+      emails?: string[]
     }
 )
 
@@ -443,7 +444,7 @@ export type CreateStorageFormBodyDto = Pick<
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
   'publicKey' | 'responseMode' | 'title'
-> & { workspaceId?: string }
+> & { workspaceId?: string; emails?: string[] }
 
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto

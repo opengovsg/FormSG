@@ -294,6 +294,9 @@ const useDecryptionWorkers = ({
             if (isDownloadPdf) {
               const pdfZip = new JSZip()
               for (const decryptResult of decryptResults) {
+                if (freshAbortController.signal.aborted) {
+                  return
+                }
                 const { parsedSubmission, decryptedResponses } = decryptResult
                 if (
                   decryptedResponses !== undefined &&
@@ -372,6 +375,9 @@ const useDecryptionWorkers = ({
           })
           // Step 2: Generate the actual CSV file from the csv object.
           .finally(() => {
+            if (freshAbortController.signal.aborted) {
+              return
+            }
             const checkComplete = () => {
               if (!isDownloadCsv || !csvGenerator) {
                 killWorkers(workerPool)

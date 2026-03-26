@@ -615,6 +615,44 @@ describe('admin-form.controller', () => {
       )
     })
 
+    it('should inject admin email when creating Multirespondent form with empty emails', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const MOCK_MRF_PARAMS: CreateFormBodyDto = {
+        responseMode: FormResponseMode.Multirespondent,
+        publicKey: 'example public key',
+        title: 'example MRF form title',
+      }
+      const MOCK_REQ_MRF = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        body: {
+          form: MOCK_MRF_PARAMS,
+        },
+      })
+      MockUserService.findUserById.mockReturnValueOnce(okAsync(MOCK_USER))
+      MockAdminFormService.createForm.mockReturnValueOnce(okAsync(MOCK_FORM))
+
+      // Act
+      await AdminFormController.createForm(MOCK_REQ_MRF, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockUserService.findUserById).toHaveBeenCalledWith(MOCK_USER_ID)
+      // Should inject admin email when creating MRF with empty emails
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_MRF_PARAMS,
+          admin: MOCK_USER._id,
+          emails: [MOCK_USER.email],
+        },
+        undefined,
+      )
+    })
+
     it(
       'should return 500 when database error occurs during user retrieval',
       async () => {
@@ -3354,6 +3392,7 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
+          emails: [MOCK_USER.email],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3424,6 +3463,7 @@ describe('admin-form.controller', () => {
           responseMode: FormResponseMode.Multirespondent,
           publicKey: 'some public key',
           title: 'mock title',
+          emails: [MOCK_USER.email],
         }
         const mockDupedFormView = {
           title: 'mock view',
@@ -3482,6 +3522,65 @@ describe('admin-form.controller', () => {
           MOCK_FORM,
           MOCK_USER_ID,
           expectedParams,
+          { workspaceId: undefined, overrideEmails: undefined },
+        )
+      })
+
+      it('should inject admin email when duplicating Multirespondent form with empty emails', async () => {
+        // Arrange
+        const expectedParams: DuplicateFormBodyDto = {
+          responseMode: FormResponseMode.Multirespondent,
+          publicKey: 'example public key',
+          title: 'example title',
+          emails: [MOCK_USER.email],
+        }
+        const mockDupedFormView = {
+          title: 'example view',
+        } as AdminDashboardFormMetaDto
+        const mockDupedForm = merge({}, MOCK_FORM, {
+          title: 'duped form with new title',
+          _id: new ObjectId(),
+          getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+        })
+        const mockRes = expressHandler.mockResponse()
+        const mockReqWithParams = merge({}, MOCK_REQ, {
+          body: expectedParams,
+        })
+        MockUserService.getPopulatedUserById.mockReturnValueOnce(
+          okAsync(MOCK_USER),
+        )
+        MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+          okAsync(MOCK_FORM),
+        )
+        const mockCheckFormForPermissions = jest
+          .fn()
+          .mockReturnValue(ok(MOCK_FORM))
+        MockAuthService.checkFormForPermissions.mockReturnValueOnce(
+          mockCheckFormForPermissions,
+        )
+        MockAdminFormService.duplicateForm.mockReturnValueOnce(
+          okAsync(mockDupedForm),
+        )
+
+        // Act
+        await AdminFormController.duplicateAdminForm(
+          mockReqWithParams,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        // Form is duplicated and admin email is injected
+        expect(mockRes.status).not.toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+        expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+          MOCK_USER_ID,
+        )
+        // The form is duplicated with admin email injected in emails array
+        expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+          MOCK_FORM,
+          MOCK_USER_ID,
+          { ...expectedParams, emails: [MOCK_USER.email] },
           { workspaceId: undefined, overrideEmails: undefined },
         )
       })
@@ -4046,6 +4145,56 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
+      )
+    })
+
+    it('should inject admin email when copying Multirespondent template with empty emails', async () => {
+      // Arrange
+      const expectedParams: DuplicateFormBodyDto = {
+        responseMode: FormResponseMode.Multirespondent,
+        publicKey: 'some public key',
+        title: 'mock new MRF template title',
+        emails: [],
+      }
+      const mockDupedFormView = {
+        title: 'mock MRF template view',
+      } as AdminDashboardFormMetaDto
+      const mockDupedForm = merge({}, MOCK_FORM, {
+        title: 'duped MRF form with new title',
+        _id: new ObjectId(),
+        getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockReqWithParams = merge({}, MOCK_REQ, {
+        body: expectedParams,
+      })
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormIfPublic.mockReturnValueOnce(okAsync(MOCK_FORM))
+      MockAdminFormService.duplicateForm.mockReturnValueOnce(
+        okAsync(mockDupedForm),
+      )
+
+      // Act
+      await AdminFormController.handleCopyTemplateForm(
+        mockReqWithParams,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      // Should inject admin email when copying MRF template with empty emails
+      expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_USER_ID,
+        { ...expectedParams, emails: [MOCK_USER.email] },
         { overrideEmails: ['andanother@example.com'], isFromTemplate: true },
       )
     })

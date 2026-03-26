@@ -920,6 +920,14 @@ export const duplicateAdminForm: ControllerHandler<
 
             const overrideWithDuplicatingAdminEmail =
               !isAdminAllowedToViewWorkflowDetails ? [user.email] : undefined
+
+            // Step 2c: If form is MRF,  add admin email to email notifications by default
+            if (
+              overrideParams.responseMode === FormResponseMode.Multirespondent
+            ) {
+              overrideParams.emails = [user.email]
+            }
+
             return {
               originalForm,
               overrideEmails: overrideWithDuplicatingAdminEmail,
@@ -1044,9 +1052,14 @@ export const handleCopyTemplateForm: ControllerHandler<
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.getPopulatedUserById(userId)
-      .andThen((user) =>
-        // Step 2: Check if form is currently public.
-        AuthService.getFormIfPublic(formId).andThen((originalForm) =>
+      .andThen((user) => {
+        // Step 2a: If form is MRF, add admin email to email notifications by default
+        if (overrideParams.responseMode === FormResponseMode.Multirespondent) {
+          overrideParams.emails = [user.email]
+        }
+
+        // Step 2b: Check if form is currently public.
+        return AuthService.getFormIfPublic(formId).andThen((originalForm) =>
           // Step 3: Duplicate form.
           AdminFormService.duplicateForm(originalForm, userId, overrideParams, {
             overrideEmails: [user.email],
@@ -1054,8 +1067,8 @@ export const handleCopyTemplateForm: ControllerHandler<
           })
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
-        ),
-      )
+        )
+      })
       // Success; return new form's dashboard view.
       .map((dupedDashView) => res.json(dupedDashView))
       // Error; some error occurred in the chain.
@@ -1221,15 +1234,23 @@ export const createForm: ControllerHandler<
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
-      .andThen((user) =>
-        AdminFormService.createForm(
+      .andThen((user) => {
+        // Step 2a: For multirespondent forms, add user's email to emails array if not provided
+        if (
+          formParams.responseMode === FormResponseMode.Multirespondent &&
+          !formParams.emails
+        ) {
+          formParams.emails = [user.email]
+        }
+
+        return AdminFormService.createForm(
           {
             ...formParams,
             admin: user._id,
           },
           workspaceId,
-        ),
-      )
+        )
+      })
       .map((createdForm) => {
         return res
           .status(StatusCodes.OK)
