@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.3.0](https://github.com/opengovsg/formsg/compare/v7.2.0...v7.3.0) (2026-03-26)
+
+
+### Features
+
+* **backend, shared:** default admin email mrf (#9228) ([#9228](https://github.com/opengovsg/formsg/commit/894a87539fc517808a3bdf5c92fd8357d5074a03))
+
+
+### Bug Fixes
+
+* **frontend:** pdf bulk download progress modal janks (#9216) ([#9216](https://github.com/opengovsg/formsg/commit/e3c3478bb282aa0567cc68847c5aeeeff5f63881))
+
 ## [7.2.0](https://github.com/opengovsg/formsg/compare/v7.1.1...v7.2.0) (2026-03-24)
 
 
