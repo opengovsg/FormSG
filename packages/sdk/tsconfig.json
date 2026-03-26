@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "rootDir": "src",
+    "lib": ["WebWorker"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*.spec.ts", "dist"]
+}

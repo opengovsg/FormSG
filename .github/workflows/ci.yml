@@ -80,7 +80,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: mkdir -p build-output/
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -104,9 +103,25 @@ jobs:
           path: |
             package*.json
             dist/
+      - name: Cache build artifacts
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            node_modules
+            apps/frontend/node_modules
+            apps/backend/node_modules
+            packages/shared/node_modules
+            packages/sdk/node_modules
+            apps/frontend/dist
+            apps/backend/dist
+            packages/shared/dist
+            packages/sdk/dist
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
+          key: ${{ runner.os }}-build-${{ github.sha }}
 
   frontend_test:
-    needs: [changes, install]
+    needs: [changes, install, build]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -122,6 +137,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            node_modules
+            apps/frontend/node_modules
+            apps/backend/node_modules
+            packages/shared/node_modules
+            packages/sdk/node_modules
+            apps/frontend/dist
+            apps/backend/dist
+            packages/shared/dist
+            packages/sdk/dist
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          fail-on-cache-miss: true
       - name: Install dependencies
         run: pnpm install
       - name: Configure Datadog Test Visibility
@@ -170,15 +202,28 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/download-artifact@v4
-        if: always()
-        with:
-          name: build-output
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            node_modules
+            apps/frontend/node_modules
+            apps/backend/node_modules
+            packages/shared/node_modules
+            packages/sdk/node_modules
+            apps/frontend/dist
+            apps/backend/dist
+            packages/shared/dist
+            packages/sdk/dist
+            services/virus-scanner/build
+            services/virus-scanner-guardduty/build
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          fail-on-cache-miss: true
       - name: Install dependencies
         run: pnpm install
       - run: pnpm install --prefix services/pdf-gen-sparticuz
