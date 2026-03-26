@@ -50,6 +50,7 @@ export const buttonInnerStyle: NonNullable<ButtonProps['style']> = {
   textAlign: 'center',
   textDecoration: 'none',
   color: '#ffffff',
+  padding: '24px',
 }
 
 export const linkStyle: NonNullable<LinkProps['style']> = {

@@ -16,7 +16,6 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
   answerMargin,
-  buttonContainerStyle,
   cardSectionStyle,
   containerStyle,
   halfWidthColumnStyle,
@@ -166,18 +165,17 @@ export const EmailTemplate = ({
             {/* Status tracker button*/}
             {statusTrackerUrl ? (
               <>
-                <Section
-                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                <a
+                  href={statusTrackerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...buttonInnerStyle,
+                    marginBottom: '16px',
+                  }}
                 >
-                  <a
-                    href={statusTrackerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    Track your submission
-                  </a>
-                </Section>
+                  Track your submission
+                </a>
                 <Text style={{ ...secondaryTextStyle }}>
                   If you are having trouble with the button above, copy and
                   paste the link below into your browser:
@@ -190,18 +188,17 @@ export const EmailTemplate = ({
             {/* Review and complete button*/}
             {reviewUrl ? (
               <>
-                <Section
-                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                <a
+                  href={reviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...buttonInnerStyle,
+                    marginBottom: '16px',
+                  }}
                 >
-                  <a
-                    href={reviewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    Click to review and complete
-                  </a>
-                </Section>
+                  Click to review and complete
+                </a>
                 <Text style={{ ...secondaryTextStyle }}>
                   If you are having trouble with the button above, copy and
                   paste the link below into your browser:
@@ -215,18 +212,17 @@ export const EmailTemplate = ({
             {/* Payment button*/}
             {paymentUrl ? (
               <>
-                <Section
-                  style={{ ...buttonContainerStyle, marginBottom: '16px' }}
+                <a
+                  href={paymentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...buttonInnerStyle,
+                    marginBottom: '16px',
+                  }}
                 >
-                  <a
-                    href={paymentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    View proof of payment
-                  </a>
-                </Section>
+                  View proof of payment
+                </a>
                 <Text style={{ ...secondaryTextStyle }}>
                   If you are having trouble with the button above, copy and
                   paste the link below into your browser:
@@ -246,9 +242,6 @@ export const EmailTemplate = ({
             {/* JSON Data Section */}
             {responseJson && (
               <Section style={{ marginTop: '40px' }}>
-                {/* <Text style={{ ...secondaryTextStyle, marginBottom: '8px' }}>
-                  ===============
-                </Text> */}
                 <Text style={{ ...secondaryTextStyle, marginBottom: '8px' }}>
                   -- Start of JSON --
                 </Text>
