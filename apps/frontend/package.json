@@ -1,6 +1,6 @@
 {
   "name": "formsg-frontend",
-  "version": "7.3.0",
+  "version": "7.4.0",
   "private": true,
   "homepage": ".",
   "type": "module",
@@ -25,7 +25,7 @@
     "@hello-pangea/dnd": "^16.6.0",
     "@loadable/component": "^5.16.4",
     "@marsidev/react-turnstile": "^1.1.0",
-    "@opengovsg/formsg-sdk": "^0.15.0",
+    "@opengovsg/formsg-sdk": "workspace:*",
     "@stablelib/base64": "^1.0.1",
     "@stripe/react-stripe-js": "^1.15.0",
     "@stripe/stripe-js": "^1.44.1",
