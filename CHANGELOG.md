@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.0](https://github.com/opengovsg/formsg/compare/v7.3.0...v7.4.0) (2026-03-26)
+
+
+### Features
+
+* **sdk:** migrate sdk monorepo (#9221) ([#9221](https://github.com/opengovsg/formsg/commit/0e7e721429f22737b980adb8ec03bd915b4562ff))
+
+
+### Bug Fixes
+
+* **ci:** include sdk build in dockerfile (#9240) ([#9240](https://github.com/opengovsg/formsg/commit/c8fd4ee01c1ccb30bdbe19fa3f5287aa581c37ee))
+
 ## [7.3.0](https://github.com/opengovsg/formsg/compare/v7.2.0...v7.3.0) (2026-03-26)
 
 
