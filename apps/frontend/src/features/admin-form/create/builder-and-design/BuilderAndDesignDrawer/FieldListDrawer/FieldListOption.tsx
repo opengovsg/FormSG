@@ -1,4 +1,5 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
@@ -153,6 +154,9 @@ export const DraggableMyInfoFieldListOption = ({
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
+    const { t } = useTranslation('translation', {
+      keyPrefix: 'features.adminForm.sidebar.fields.fieldListOption',
+    })
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -185,7 +189,7 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
         <Text textStyle="body-1">{meta.label}</Text>
         {isMrf && fieldType === BasicField.YesNo ? (
           <Badge maxW="100%" variant="subtle" colorScheme="secondary">
-            <Text noOfLines={1}>Use for approvals</Text>
+            <Text noOfLines={1}>{t('useForApprovals')}</Text>
           </Badge>
         ) : null}
       </FieldListOption>

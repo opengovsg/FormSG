@@ -5,6 +5,12 @@ export interface Fields {
     title: string
     createField: string
     addFields: string
+    searchPlaceholder: string
+    tabs: {
+      basic: string
+      myInfo: string
+      payments: string
+    }
     image: string
     statement: string
     section: string
@@ -162,6 +168,135 @@ export interface Fields {
     maximumSize: string
     error: {
       exceedSize: string
+    }
+  }
+  fieldListOption: {
+    useForApprovals: string
+  }
+  myInfoPanel: {
+    sections: {
+      personal: string
+      contact: string
+      particulars: string
+      familyMarriage: string
+      familyChildren: string
+    }
+    singpassDisabledBefore: string
+    singpassDisabledSettings: string
+    singpassDisabledAfter: string
+    myInfoFieldsLimit: string
+    learnMore: string
+  }
+  fixedPaymentAmountField: {
+    label: string
+    description: string
+    invoiceWarning: string
+  }
+  paymentsInputPanel: {
+    paymentType: {
+      label: string
+      placeholder: string
+      options: {
+        products: {
+          label: string
+          description: string
+        }
+        variable: {
+          label: string
+          description: string
+        }
+        fixed: {
+          label: string
+          description: string
+        }
+      }
+    }
+    multiProduct: {
+      label: string
+    }
+    productServiceName: {
+      label: string
+      description: string
+      required: string
+    }
+    description: {
+      label: string
+    }
+    saveField: string
+    disabled: {
+      storageModeOnly: string
+      stripeNotConnectedBefore: string
+      stripeNotConnectedSettings: string
+      stripeNotConnectedAfter: string
+    }
+  }
+  productItem: {
+    table: {
+      amount: string
+      quantityLimit: string
+      quantityRange: string
+    }
+    edit: string
+    delete: string
+  }
+  productModal: {
+    header: {
+      edit: string
+      add: string
+    }
+    name: {
+      label: string
+      description: string
+      required: string
+    }
+    description: {
+      label: string
+    }
+    amount: {
+      label: string
+      includingGst: string
+    }
+    quantityLimit: {
+      label: string
+      description: string
+    }
+    minQuantity: {
+      label: string
+      required: string
+    }
+    maxQuantity: {
+      label: string
+      required: string
+    }
+    validation: {
+      greaterThanZero: string
+      smallerThanMax: string
+      greaterThanMin: string
+      amountRange: string
+      minAmount: string
+      maxAmount: string
+      qtyLimitExceedsMax: string
+      maxQuantityForAmount: string
+    }
+    cancel: string
+    save: string
+    saving: string
+  }
+  productServiceBox: {
+    label: string
+    emptyState: string
+    add: string
+  }
+  variablePaymentAmountField: {
+    label: string
+    description: string
+    minAmount: {
+      label: string
+      error: string
+    }
+    maxAmount: {
+      label: string
+      error: string
     }
   }
 }

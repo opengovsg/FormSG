@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 import { useGrowthBook } from '@growthbook/growthbook-react'
@@ -73,6 +74,9 @@ const SGID_SUPPORTED_V2 = [
 ]
 
 export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
+  })
   const { data: form, isLoading } = useCreateTabForm()
 
   const { user } = useUser()
@@ -164,7 +168,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoPersonalFields.length > 0 && (
-              <FieldSection label="Personal">
+              <FieldSection label={t('sections.personal')}>
                 {filteredCreateMyInfoPersonalFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
@@ -185,7 +189,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoContactFields.length > 0 && (
-              <FieldSection label="Contact">
+              <FieldSection label={t('sections.contact')}>
                 {filteredCreateMyInfoContactFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
@@ -206,7 +210,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoParticularsFields.length > 0 && (
-              <FieldSection label="Particulars">
+              <FieldSection label={t('sections.particulars')}>
                 {filteredCreateMyInfoParticularsFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
@@ -227,7 +231,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoMarriageFields.length > 0 && (
-              <FieldSection label="Family (Marriage)">
+              <FieldSection label={t('sections.familyMarriage')}>
                 {filteredCreateMyInfoMarriageFields.map(
                   ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
@@ -250,7 +254,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
               {filteredCreateMyInfoChildrenFields.length > 0 && (
-                <FieldSection label="Family (Children)">
+                <FieldSection label={t('sections.familyChildren')}>
                   {filteredCreateMyInfoChildrenFields.map(
                     ({ fieldType, originalIndex }) => (
                       <DraggableMyInfoFieldListOption
@@ -278,6 +282,9 @@ const MyInfoText = ({
   authType,
   form_fields,
 }: MyInfoTextProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
+  })
   const isMyInfoDisabled =
     authType !== FormAuthType.MyInfo && authType !== FormAuthType.SGID_MyInfo
   const numMyInfoFields = useMemo(
@@ -288,20 +295,20 @@ const MyInfoText = ({
   if (isMyInfoDisabled) {
     return (
       <Text>
-        Enable Singpass in the{' '}
+        {t('singpassDisabledBefore')}{' '}
         <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
-          Settings
+          {t('singpassDisabledSettings')}
         </Link>{' '}
-        tab to access these fields.
+        {t('singpassDisabledAfter')}
       </Text>
     )
   }
 
   return (
     <Text>
-      {`Only 30 Myinfo fields are allowed (${numMyInfoFields}/30). `}
+      {t('myInfoFieldsLimit', { numMyInfoFields })}{' '}
       <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
-        Learn more
+        {t('learnMore')}
       </Link>
     </Text>
   )

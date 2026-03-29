@@ -37,6 +37,9 @@ export const ProductItem = ({
   onDeleteClick: () => void
   isDisabled: boolean
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productItem',
+  })
   const isMobile = useIsMobile()
   return (
     <>
@@ -64,13 +67,16 @@ export const ProductItem = ({
               >
                 <Tbody>
                   <ProductItemTableContent
-                    label="Amount"
+                    label={t('table.amount')}
                     value={`S$${centsToDollars(product.amount_cents)}`}
                   />
                   {product.multi_qty && (
                     <ProductItemTableContent
-                      label="Quantity limit"
-                      value={`between ${product.min_qty} to ${product.max_qty}`}
+                      label={t('table.quantityLimit')}
+                      value={t('table.quantityRange', {
+                        min: product.min_qty,
+                        max: product.max_qty,
+                      })}
                     />
                   )}
                 </Tbody>
@@ -100,20 +106,23 @@ const DesktopProductItemButtonGroup = ({
   onEditClick: () => void
   onDeleteClick: () => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productItem',
+  })
   return (
     <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
       <IconButton
         isDisabled={isDisabled}
         icon={<BiEditAlt type="solid" />}
         color="primary.500"
-        aria-label={'Edit'}
+        aria-label={t('edit')}
         onClick={onEditClick}
       />
       <IconButton
         isDisabled={isDisabled}
         icon={<BiTrash />}
         color="danger.500"
-        aria-label={'Delete'}
+        aria-label={t('delete')}
         onClick={onDeleteClick}
       />
     </ButtonGroup>
@@ -168,7 +177,7 @@ const MobileProductItemMenu = ({
                 leftIcon={<BiEditAlt fontSize="1.25rem" />}
                 {...buttonProps}
               >
-                Edit
+                {t('features.adminForm.sidebar.fields.productItem.edit')}
               </Button>
               <Divider />
               <Button
@@ -177,7 +186,7 @@ const MobileProductItemMenu = ({
                 leftIcon={<BiTrash fontSize="1.25rem" />}
                 {...buttonProps}
               >
-                Delete
+                {t('features.adminForm.sidebar.fields.productItem.delete')}
               </Button>
             </ButtonGroup>
           </DrawerBody>

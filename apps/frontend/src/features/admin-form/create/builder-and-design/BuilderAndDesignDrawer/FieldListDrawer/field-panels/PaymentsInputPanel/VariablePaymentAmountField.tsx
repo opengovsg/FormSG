@@ -1,4 +1,5 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, HStack } from '@chakra-ui/react'
 
 import {
@@ -31,6 +32,9 @@ export const VariablePaymentAmountField = ({
   control: UseFormReturn<FormPaymentsInput>['control']
   input: FormPaymentsInput
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.variablePaymentAmountField',
+  })
   const {
     data: {
       maxPaymentAmountCents: envMaxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
@@ -55,7 +59,7 @@ export const VariablePaymentAmountField = ({
     typeof MIN_FIELD_KEY
   > = usePaymentFieldValidation<FormPaymentsInput, typeof MIN_FIELD_KEY>({
     lesserThanCents: dollarsToCents(input[MAX_FIELD_KEY] || ''),
-    msgWhenEmpty: `The minimum amount is ${minAmountInDollars}`,
+    msgWhenEmpty: t('minAmount.error', { amount: minAmountInDollars }),
     overrideMinAmount: input.global_min_amount_override,
   })
   const maxAmountValidation: RegisterOptions<
@@ -63,7 +67,7 @@ export const VariablePaymentAmountField = ({
     typeof MAX_FIELD_KEY
   > = usePaymentFieldValidation<FormPaymentsInput, typeof MAX_FIELD_KEY>({
     greaterThanCents: dollarsToCents(input[MIN_FIELD_KEY] || ''),
-    msgWhenEmpty: `The maximum amount is ${maxAmountInDollars}`,
+    msgWhenEmpty: t('maxAmount.error', { amount: maxAmountInDollars }),
   })
   return (
     <FormControl
@@ -72,18 +76,15 @@ export const VariablePaymentAmountField = ({
       isInvalid={!!errors[MIN_FIELD_KEY]?.message || !!errors[MAX_FIELD_KEY]}
       isDisabled={isDisabled}
     >
-      <FormLabel
-        isRequired
-        description="Set the minimum and maximum amounts respondents can pay"
-      >
-        Payment amount limit
+      <FormLabel isRequired description={t('description')}>
+        {t('label')}
       </FormLabel>
       <HStack>
         <FormControl
           isInvalid={!!errors[MIN_FIELD_KEY]}
           isDisabled={isDisabled}
         >
-          <FormLabel isRequired>Minimum amount</FormLabel>
+          <FormLabel isRequired>{t('minAmount.label')}</FormLabel>
           <Controller
             name={MIN_FIELD_KEY}
             control={control}
@@ -103,7 +104,7 @@ export const VariablePaymentAmountField = ({
           isInvalid={!!errors[MAX_FIELD_KEY]}
           isDisabled={isDisabled}
         >
-          <FormLabel isRequired>Maximum amount</FormLabel>
+          <FormLabel isRequired>{t('maxAmount.label')}</FormLabel>
           <Controller
             name={MAX_FIELD_KEY}
             control={control}

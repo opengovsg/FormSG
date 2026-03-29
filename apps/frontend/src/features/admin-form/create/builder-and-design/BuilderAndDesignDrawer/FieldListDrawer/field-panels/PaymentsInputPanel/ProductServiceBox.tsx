@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import {
   Box,
@@ -34,6 +35,9 @@ const AddProductButton = ({
   isDisabled: boolean
   onClick: () => void
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productServiceBox',
+  })
   return (
     <Flex
       flexDirection="row"
@@ -45,10 +49,10 @@ const AddProductButton = ({
         isDisabled={isDisabled}
         leftIcon={<BiPlus />}
         color="primary.500"
-        aria-label="Add"
+        aria-label={t('add')}
         variant="clear"
       >
-        Add
+        {t('add')}
       </Button>
     </Flex>
   )
@@ -65,12 +69,16 @@ const ProductList = ({
   handleDeleteClick: (product: Product) => void
   paymentIsEnabled: boolean
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productServiceBox',
+  })
+
   if (products.length <= 0) {
     return (
       <>
         <Box px="1rem" py="1rem" backgroundColor={'#F9F9F9'} mb="1.5rem">
           <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
-            You haven't added any product/service
+            {t('emptyState')}
           </Text>
         </Box>
         <Divider />
@@ -174,6 +182,10 @@ export const ProductServiceBox = ({
     setEditProduct(null)
     onClose()
   }
+  const { t: tBox } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productServiceBox',
+  })
+
   return (
     <>
       {isOpen ? (
@@ -190,7 +202,7 @@ export const ProductServiceBox = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel>Product/service</FormLabel>
+        <FormLabel>{tBox('label')}</FormLabel>
         <ProductList
           paymentIsEnabled={paymentIsEnabled}
           products={products}

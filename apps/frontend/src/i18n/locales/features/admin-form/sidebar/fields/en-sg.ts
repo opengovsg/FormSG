@@ -5,6 +5,12 @@ export const enSG: Fields = {
     title: 'Fields',
     createField: 'Create field',
     addFields: 'Add Fields',
+    searchPlaceholder: 'Search fields',
+    tabs: {
+      basic: 'Basic',
+      myInfo: 'MyInfo',
+      payments: 'Payments',
+    },
     image: 'Image',
     statement: 'Paragraph',
     section: 'Heading',
@@ -168,6 +174,142 @@ export const enSG: Fields = {
     error: {
       exceedSize:
         "You have exceeded your form's attachment size limit of {maxTotalSizeMb} MB",
+    },
+  },
+  fieldListOption: {
+    useForApprovals: 'Use for approvals',
+  },
+  myInfoPanel: {
+    sections: {
+      personal: 'Personal',
+      contact: 'Contact',
+      particulars: 'Particulars',
+      familyMarriage: 'Family (Marriage)',
+      familyChildren: 'Family (Children)',
+    },
+    singpassDisabledBefore: 'Enable Singpass in the',
+    singpassDisabledSettings: 'Settings',
+    singpassDisabledAfter: 'tab to access these fields.',
+    myInfoFieldsLimit:
+      'Only 30 Myinfo fields are allowed ({numMyInfoFields}/30).',
+    learnMore: 'Learn more',
+  },
+  fixedPaymentAmountField: {
+    label: 'Payment amount',
+    description: 'Including GST',
+    invoiceWarning:
+      'You would need to issue your own invoice for amounts above S$1000. [Learn more about this]({url})',
+  },
+  paymentsInputPanel: {
+    paymentType: {
+      label: 'Payment type',
+      placeholder: 'Select Payment Type',
+      options: {
+        products: {
+          label: 'Product or service',
+          description:
+            'Respondents pay based on products or services they select. e.g. Courses, tickets with tiered prices',
+        },
+        variable: {
+          label: 'Respondents choose what to pay',
+          description:
+            'Respondents enter the amount to pay. e.g. Donations, fines',
+        },
+        fixed: {
+          label: 'Fixed amount',
+          description:
+            'Every respondent pays the same amount, as set by the admin. e.g. Flat-rate tickets',
+        },
+      },
+    },
+    multiProduct: {
+      label: 'Allow selection of multiple types of products/services',
+    },
+    productServiceName: {
+      label: 'Product/service name',
+      description: 'This will be reflected on the proof of payment',
+      required: 'This field is required',
+    },
+    description: {
+      label: 'Description',
+    },
+    saveField: 'Save field',
+    disabled: {
+      storageModeOnly: 'Payments are only available in storage mode.',
+      stripeNotConnectedBefore: 'Connect your Stripe account in',
+      stripeNotConnectedSettings: 'Settings',
+      stripeNotConnectedAfter: 'to add payment field.',
+    },
+  },
+  productItem: {
+    table: {
+      amount: 'Amount',
+      quantityLimit: 'Quantity limit',
+      quantityRange: 'between {min} to {max}',
+    },
+    edit: 'Edit',
+    delete: 'Delete',
+  },
+  productModal: {
+    header: {
+      edit: 'Edit product/service',
+      add: 'Add product/service',
+    },
+    name: {
+      label: 'Product/service name',
+      description: 'This will appear on proof of payment',
+      required: 'This field is required',
+    },
+    description: {
+      label: 'Description',
+    },
+    amount: {
+      label: 'Amount',
+      includingGst: 'Including GST',
+    },
+    quantityLimit: {
+      label: 'Quantity limit',
+      description:
+        'Set the minimum and maximum quantities respondents can select',
+    },
+    minQuantity: {
+      label: 'Minimum quantity',
+      required: 'The minimum quantity is 1',
+    },
+    maxQuantity: {
+      label: 'Maximum quantity',
+      required: 'Enter a maximum quantity',
+    },
+    validation: {
+      greaterThanZero: 'Enter a value greater than 0',
+      smallerThanMax: 'Enter a value smaller than the maximum quantity',
+      greaterThanMin: 'Enter a value greater than the minimum quantity',
+      amountRange: 'Enter an amount between {min} and {max}',
+      minAmount: 'The minimum amount is {min}',
+      maxAmount: 'The maximum amount is {max}',
+      qtyLimitExceedsMax:
+        'Quantity limit could not be set because amount is above {max}',
+      maxQuantityForAmount: 'The maximum quantity for this amount is {maxQty}',
+    },
+    cancel: 'Cancel',
+    save: 'Save product',
+    saving: 'Saving',
+  },
+  productServiceBox: {
+    label: 'Product/service',
+    emptyState: "You haven't added any product/service",
+    add: 'Add',
+  },
+  variablePaymentAmountField: {
+    label: 'Payment amount limit',
+    description: 'Set the minimum and maximum amounts respondents can pay',
+    minAmount: {
+      label: 'Minimum amount',
+      error: 'The minimum amount is {amount}',
+    },
+    maxAmount: {
+      label: 'Maximum amount',
+      error: 'The maximum amount is {amount}',
     },
   },
 }
