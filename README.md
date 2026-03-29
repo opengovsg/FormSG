@@ -88,16 +88,17 @@ nvm use
 To install the relevant packages (frontend, backend, services including pdf-generator and virus-scanner), run the following in the root directory:
 
 ```bash
-pnpm install && pnpm --prefix services/virus-scanner-guardduty install && pnpm --prefix services/pdf-gen-sparticuz
+pnpm install && pnpm --prefix services/virus-scanner-guardduty install && pnpm --prefix services/pdf-gen-sparticuz install
 ```
 
 If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of 4GB) by clicking on the Docker icon on the toolbar, clicking on the "Preferences" menu item, then clicking on the "Resources" link on the left.
 
 ### Running Locally
 
-First, build the frontend for local development:
+First, build the SDK and frontend for local development:
 
 ```bash
+pnpm build:sdk
 pnpm build:frontend
 ```
 
