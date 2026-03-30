@@ -63,7 +63,7 @@ export const useUseTemplateWizardContext = (
   const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode }) => {
+    ({ title, responseMode, emails }) => {
       if (!formId) return
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
@@ -73,7 +73,7 @@ export const useUseTemplateWizardContext = (
               title,
               responseMode,
               publicKey: keypair.publicKey,
-              emails: [],
+              emails: emails.filter(Boolean),
             },
             {
               onSuccess: () => {
