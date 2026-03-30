@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.1](https://github.com/opengovsg/formsg/compare/v7.4.0...v7.4.1) (2026-03-30)
+
+
+### Bug Fixes
+
+* **all:** bump node 22.22.2 (#9245) ([#9245](https://github.com/opengovsg/formsg/commit/ccfd397960546d1985112ecfbafa666ef3a18ddd))
+* **backend:** enable frontend assets caching (#9244) ([#9244](https://github.com/opengovsg/formsg/commit/9f17d221c20eae31d00b98dc656953c16e513e1e))
+
+
+### Miscellaneous
+
+* Merge pull request #9243 from opengovsg/fix/use-template-emails ([#9243](https://github.com/opengovsg/formsg/commit/9e45f297f9a13c118448a91cad2202f501ef5067))
+
 ## [7.4.0](https://github.com/opengovsg/formsg/compare/v7.3.0...v7.4.0) (2026-03-26)
 
 
