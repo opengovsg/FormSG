@@ -130,11 +130,12 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/api', ApiRouter)
 
   // serve static assets. `../frontend/dist` contains an `/assets` folder which should be cached
+  // everything in the `/assets` folder is hash-suffixed and immutable
   // express.static calls next() if the file is not found
   app.use(
     '/assets',
     express.static(path.resolve('../frontend/dist/assets'), {
-      maxAge: '5m',
+      maxAge: '30d',
       immutable: true,
     }),
   )
@@ -142,7 +143,7 @@ const loadExpressApp = async (connection: Connection) => {
   // other static assets (favicon, manifest, robots.txt, etc.)
   // Cache known cacheable root files for the cutover window.
   const cachedRootFiles = [
-    'favicon.ico',
+    'favicon.svg',
     'logo192.png',
     'logo512.png',
     'manifest.json',
