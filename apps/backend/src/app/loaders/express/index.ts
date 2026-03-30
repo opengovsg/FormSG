@@ -139,10 +139,22 @@ const loadExpressApp = async (connection: Connection) => {
     }),
   )
 
-  // other static assets (favicon, manifest, robots.txt, etc.) — no caching
+  // other static assets (favicon, manifest, robots.txt, etc.)
+  // Cache known cacheable root files for the cutover window.
+  const cachedRootFiles = [
+    'favicon.ico',
+    'logo192.png',
+    'logo512.png',
+    'manifest.json',
+  ]
   app.use(
     express.static(path.resolve('../frontend/dist'), {
       index: false,
+      setHeaders: (res, filePath) => {
+        if (cachedRootFiles.includes(path.basename(filePath))) {
+          res.setHeader('Cache-Control', 'public, max-age=300')
+        }
+      },
     }),
   )
 
