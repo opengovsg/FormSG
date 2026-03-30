@@ -261,7 +261,7 @@ const incrementLoginAttempts = (
  */
 const removeTokenOnSuccess = (email: string) => {
   return ResultAsync.fromPromise(
-    TokenModel.findOneAndRemove({ email }).exec(),
+    TokenModel.findOneAndRemove({ email: String(email) }).exec(),
     (error) => {
       logger.error({
         message: 'Database remove Token document error',
