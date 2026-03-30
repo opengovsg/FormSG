@@ -106,23 +106,21 @@ const DesktopProductItemButtonGroup = ({
   onEditClick: () => void
   onDeleteClick: () => void
 }) => {
-  const { t } = useTranslation('translation', {
-    keyPrefix: 'features.adminForm.sidebar.fields.productItem',
-  })
+  const { t } = useTranslation()
   return (
     <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
       <IconButton
         isDisabled={isDisabled}
         icon={<BiEditAlt type="solid" />}
         color="primary.500"
-        aria-label={t('edit')}
+        aria-label={t('features.common.edit')}
         onClick={onEditClick}
       />
       <IconButton
         isDisabled={isDisabled}
         icon={<BiTrash />}
         color="danger.500"
-        aria-label={t('delete')}
+        aria-label={t('features.common.delete')}
         onClick={onDeleteClick}
       />
     </ButtonGroup>
@@ -177,7 +175,7 @@ const MobileProductItemMenu = ({
                 leftIcon={<BiEditAlt fontSize="1.25rem" />}
                 {...buttonProps}
               >
-                {t('features.adminForm.sidebar.fields.productItem.edit')}
+                {t('features.common.edit')}
               </Button>
               <Divider />
               <Button
@@ -186,7 +184,7 @@ const MobileProductItemMenu = ({
                 leftIcon={<BiTrash fontSize="1.25rem" />}
                 {...buttonProps}
               >
-                {t('features.adminForm.sidebar.fields.productItem.delete')}
+                {t('features.common.delete')}
               </Button>
             </ButtonGroup>
           </DrawerBody>

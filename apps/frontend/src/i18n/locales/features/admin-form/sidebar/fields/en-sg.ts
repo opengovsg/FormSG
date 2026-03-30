@@ -247,8 +247,6 @@ export const enSG: Fields = {
       quantityLimit: 'Quantity limit',
       quantityRange: 'between {min} to {max}',
     },
-    edit: 'Edit',
-    delete: 'Delete',
   },
   productModal: {
     header: {

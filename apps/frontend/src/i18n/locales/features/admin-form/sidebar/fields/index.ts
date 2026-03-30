@@ -236,8 +236,6 @@ export interface Fields {
       quantityLimit: string
       quantityRange: string
     }
-    edit: string
-    delete: string
   }
   productModal: {
     header: {
