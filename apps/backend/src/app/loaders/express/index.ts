@@ -129,14 +129,40 @@ const loadExpressApp = async (connection: Connection) => {
   // API routes
   app.use('/api', ApiRouter)
 
-  // serve static assets. `../frontend/dist` contains the root files as well as a `/static` folder
+  // serve static assets. `../frontend/dist` contains an `/assets` folder which should be cached
+  // everything in the `/assets` folder is hash-suffixed and immutable
   // express.static calls next() if the file is not found
-  app.use(express.static(path.resolve('../frontend/dist'), { index: false }))
+  app.use(
+    '/assets',
+    express.static(path.resolve('../frontend/dist/assets'), {
+      maxAge: '30d',
+      immutable: true,
+    }),
+  )
+
+  // other static assets (favicon, manifest, robots.txt, etc.)
+  // Cache known cacheable root files for the cutover window.
+  const cachedRootFiles = [
+    'favicon.svg',
+    'logo192.png',
+    'logo512.png',
+    'manifest.json',
+  ]
+  app.use(
+    express.static(path.resolve('../frontend/dist'), {
+      index: false,
+      setHeaders: (res, filePath) => {
+        if (cachedRootFiles.includes(path.basename(filePath))) {
+          res.setHeader('Cache-Control', 'public, max-age=300')
+        }
+      },
+    }),
+  )
 
   // If requests for known static asset patterns were not served by
   // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
   app.get(
-    /^\/(public|static|\.well-known)\//,
+    /^\/(public|static|assets|\.well-known)\//,
     catchNonExistentStaticRoutesMiddleware,
   )
 
