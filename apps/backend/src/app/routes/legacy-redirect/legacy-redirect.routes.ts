@@ -4,16 +4,17 @@ import querystring from 'querystring'
 
 import { ControllerHandler } from 'src/app/modules/core/core.types'
 
-// Helper function to copy queries over to new paths.
-const buildPathWithQueryParams = (
-  path: string,
-  query: Record<string, string>,
-) => {
+/** Helper function to append queries onto paths.
+ *
+ * @param query
+ * @returns string of query params
+ */
+const appendPathWithQueryParams = (query: Record<string, string>) => {
   const queryString = querystring.stringify(query)
   if (queryString.length > 0) {
-    return path + '?' + encodeURIComponent(queryString)
+    return '?' + encodeURIComponent(queryString)
   }
-  return path
+  return ''
 }
 
 /**
@@ -55,7 +56,7 @@ const handleFormIdAndAgencyPrefixRedirect: ControllerHandler<
   return res.redirect(
     StatusCodes.MOVED_PERMANENTLY,
     // Port query params over to the new URL as well
-    buildPathWithQueryParams(redirectPath, req.query),
+    redirectPath + appendPathWithQueryParams(req.query),
   )
 }
 
@@ -88,10 +89,8 @@ LegacyRedirectRouter.get(
     res.redirect(
       StatusCodes.MOVED_PERMANENTLY,
       // Port query params over to the new URL as well
-      buildPathWithQueryParams(
-        `/${req.params.formId}`,
-        req.query as Record<string, string>,
-      ),
+      `/${req.params.formId}` +
+        appendPathWithQueryParams(req.query as Record<string, string>),
     ),
 )
 
