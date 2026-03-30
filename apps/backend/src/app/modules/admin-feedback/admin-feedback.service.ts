@@ -86,7 +86,7 @@ export const updateAdminFeedback = ({
   return ResultAsync.fromPromise(
     AdminFeedbackModel.updateOne(
       { _id: feedbackId, userId: userId },
-      updateObj,
+      { $set: updateObj },
     ),
     (error) => {
       logger.error({
