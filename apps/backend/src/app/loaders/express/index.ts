@@ -161,7 +161,7 @@ const loadExpressApp = async (connection: Connection) => {
   // If requests for known static asset patterns were not served by
   // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
   app.get(
-    /^\/(public|static|\.well-known)\//,
+    /^\/(public|static|assets|\.well-known)\//,
     catchNonExistentStaticRoutesMiddleware,
   )
 
