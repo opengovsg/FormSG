@@ -138,6 +138,10 @@ export const ProductServiceBox = ({
   }))
 
   const [editProduct, setEditProduct] = useState<Product | null>(null)
+  const { t: tBox } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productServiceBox',
+  })
+
   if (!_paymentsData) return <></>
 
   const paymentsData = _paymentsData as FormPaymentsField
@@ -182,9 +186,6 @@ export const ProductServiceBox = ({
     setEditProduct(null)
     onClose()
   }
-  const { t: tBox } = useTranslation('translation', {
-    keyPrefix: 'features.adminForm.sidebar.fields.productServiceBox',
-  })
 
   return (
     <>

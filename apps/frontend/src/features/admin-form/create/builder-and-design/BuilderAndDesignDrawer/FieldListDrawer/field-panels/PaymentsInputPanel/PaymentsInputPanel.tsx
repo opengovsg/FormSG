@@ -202,9 +202,7 @@ const PaymentTypeSelector = ({
                       {
                         value: PaymentType.Fixed,
                         label: t('paymentType.options.fixed.label'),
-                        description: t(
-                          'paymentType.options.fixed.description',
-                        ),
+                        description: t('paymentType.options.fixed.description'),
                       },
                     ]
                   : []),
