@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.2](https://github.com/opengovsg/formsg/compare/v7.4.1...v7.4.2) (2026-03-31)
+
+
+### Bug Fixes
+
+* **backend:** improve data flow (#9253) ([#9253](https://github.com/opengovsg/formsg/commit/ec2400fca9364997195d3bec3b32df98838ae9ef))
+
 ## [7.4.1](https://github.com/opengovsg/formsg/compare/v7.4.0...v7.4.1) (2026-03-30)
 
 
