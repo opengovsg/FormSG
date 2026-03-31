@@ -116,5 +116,57 @@ export const enSG: PublicForm = {
         },
       },
     },
+    formFields: {
+      prefillWarning: 'Some fields below have been pre-filled.',
+    },
+    formFieldsContainer: {
+      error: 'Something went wrong',
+    },
+    formIssueFeedbackModal: {
+      title: 'Report an issue',
+      description: {
+        beforeBold: 'Fill this in only ',
+        bold: 'if you are experiencing issues and are unable to submit this form',
+        afterBold:
+          '. If you would like to provide feedback, you can do so after submitting the form.',
+      },
+      fields: {
+        issueLabel: 'Please describe the issue you encountered',
+        contactLabel: 'Contact',
+        emailPlaceholder: 'me@example.com',
+      },
+      actions: {
+        submit: 'Send report',
+      },
+      toast: {
+        preview:
+          'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
+        success: 'Thank you for submitting your feedback!',
+      },
+    },
+    loadingTitle: {
+      title: 'Loading title',
+    },
+    miniHeader: {
+      mobileSectionSidebar: 'Mobile section sidebar',
+    },
+    formHeader: {
+      logoutWithId: '{{id}} - Log out',
+    },
+    sectionSidebar: {
+      skipToSection: 'Skip to section',
+      formSections: 'Form sections',
+      jumpToSection: 'Jump to form section',
+      listOfSections: 'List of form section links',
+      navigatedToSection: 'Navigated to section: {{title}}{{description}}',
+    },
+    sidebarLink: {
+      navigateToSection: 'Navigate to section: ',
+    },
+    singleSubmissionModal: {
+      title: 'Only one submission per NRIC/FIN/UEN allowed',
+      logoutLoading: 'Logging out',
+      backToLogin: 'Back to Singpass log in',
+    },
   },
 }

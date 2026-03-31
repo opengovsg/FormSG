@@ -102,6 +102,56 @@ export interface PublicForm {
         }
       }
     }
+    formFields: {
+      prefillWarning: string
+    }
+    formFieldsContainer: {
+      error: string
+    }
+    formIssueFeedbackModal: {
+      title: string
+      description: {
+        beforeBold: string
+        bold: string
+        afterBold: string
+      }
+      fields: {
+        issueLabel: string
+        contactLabel: string
+        emailPlaceholder: string
+      }
+      actions: {
+        submit: string
+      }
+      toast: {
+        preview: string
+        success: string
+      }
+    }
+    loadingTitle: {
+      title: string
+    }
+    miniHeader: {
+      mobileSectionSidebar: string
+    }
+    formHeader: {
+      logoutWithId: string
+    }
+    sectionSidebar: {
+      skipToSection: string
+      formSections: string
+      jumpToSection: string
+      listOfSections: string
+      navigatedToSection: string
+    }
+    sidebarLink: {
+      navigateToSection: string
+    }
+    singleSubmissionModal: {
+      title: string
+      logoutLoading: string
+      backToLogin: string
+    }
   }
 }
 

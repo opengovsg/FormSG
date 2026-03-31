@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Divider,
@@ -24,6 +26,7 @@ import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstr
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
+  const { t } = useTranslation()
   const { sectionScrollData, activeSectionId, navigatedSectionId } =
     useFormSections()
   const {
@@ -48,7 +51,10 @@ export const SectionSidebar = (): JSX.Element => {
   const navigatedSection = useMemo(() => {
     if (!navigatedSectionId || !form) return
     if (navigatedSectionId === PUBLICFORM_INSTRUCTIONS_SECTIONID) {
-      return { title: 'Instructions', description: form.startPage.paragraph }
+      return {
+        title: t('features.publicForm.components.instructions'),
+        description: form.startPage.paragraph,
+      }
     }
     return form.form_fields.find((ff) => ff._id === navigatedSectionId)
   }, [form, navigatedSectionId])
@@ -63,9 +69,17 @@ export const SectionSidebar = (): JSX.Element => {
         <DrawerOverlay />
         <DrawerContent maxW="16.5rem">
           <DrawerBody px={0} py="1.25rem">
-            <Flex as="nav" aria-label="Form sections" flexDir="column">
+            <Flex
+              as="nav"
+              aria-label={t(
+                'features.publicForm.components.sectionSidebar.formSections',
+              )}
+              flexDir="column"
+            >
               <Text px="1.5rem" textStyle="subhead-1">
-                Skip to section
+                {t(
+                  'features.publicForm.components.sectionSidebar.skipToSection',
+                )}
               </Text>
               <Divider mt="0.75rem" mb="1.75rem" />
               <UnorderedList
@@ -94,7 +108,9 @@ export const SectionSidebar = (): JSX.Element => {
   ) : (
     <Box
       as="nav"
-      aria-label="Jump to form section"
+      aria-label={t(
+        'features.publicForm.components.sectionSidebar.jumpToSection',
+      )}
       flex={1}
       display={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
@@ -107,7 +123,9 @@ export const SectionSidebar = (): JSX.Element => {
         alignItems="flex-start"
         marginInlineStart={0}
         marginEnd="1rem"
-        aria-label="List of form section links"
+        aria-label={t(
+          'features.publicForm.components.sectionSidebar.listOfSections',
+        )}
       >
         {sectionScrollData?.map((d) => (
           <ListItem key={d._id} listStyleType="none">
@@ -117,10 +135,15 @@ export const SectionSidebar = (): JSX.Element => {
       </UnorderedList>
       {navigatedSection && (
         <VisuallyHidden aria-live="assertive" aria-atomic>
-          Navigated to section: {navigatedSection.title}
-          {navigatedSection.description
-            ? `, ${navigatedSection.description}`
-            : ''}
+          {t(
+            'features.publicForm.components.sectionSidebar.navigatedToSection',
+            {
+              title: navigatedSection.title,
+              description: navigatedSection.description
+                ? `, ${navigatedSection.description}`
+                : '',
+            },
+          )}
         </VisuallyHidden>
       )}
     </Box>

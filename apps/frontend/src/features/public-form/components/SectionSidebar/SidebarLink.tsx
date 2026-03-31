@@ -29,7 +29,7 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
   const { sectionRefs, setNavigatedSectionId } = useFormSections()
   const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
@@ -98,7 +98,9 @@ export const SidebarLink = ({
           aria-hidden
         />
       )}
-      <VisuallyHidden>Navigate to section: </VisuallyHidden>
+      <VisuallyHidden>
+        {t('features.publicForm.components.sidebarLink.navigateToSection')}
+      </VisuallyHidden>
       {title}
     </chakra.button>
   )
