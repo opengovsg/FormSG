@@ -207,10 +207,7 @@ export const ProductModal = ({
           <Stack spacing={{ base: '1rem', md: '1.5rem' }} divider={<Divider />}>
             <Stack mb="0.5rem">
               <FormControl isInvalid={!!errors.name} pb="1.5rem">
-                <FormLabel
-                  isRequired
-                  description={t('name.description')}
-                >
+                <FormLabel isRequired description={t('name.description')}>
                   {t('name.label')}
                 </FormLabel>
                 <Input
