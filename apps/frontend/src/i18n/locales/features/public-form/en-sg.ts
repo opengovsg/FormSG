@@ -73,5 +73,27 @@ export const enSG: PublicForm = {
     instructions: {
       title: 'Instructions',
     },
+    duplicatePaymentModal: {
+      title: 'Proceed to pay again?',
+      description: {
+        existingPayment:
+          'We noticed a successful payment made on this form by your email address.',
+        viewPreviousPayment: 'View your previous payment ↪',
+        confirm: 'Do you wish to proceed to make another payment?',
+      },
+      actions: {
+        cancel: 'Cancel',
+        submit: 'Proceed to pay',
+        submitting: 'Submitting',
+      },
+    },
+    formAuth: {
+      loginButton: 'Log in with {{authType}}',
+      authType: {
+        singpass: 'Singpass',
+        singpassCorporate: 'Singpass (Corporate)',
+        singpassApp: 'Singpass app',
+      },
+    },
   },
 }

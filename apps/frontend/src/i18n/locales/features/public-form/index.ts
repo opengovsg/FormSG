@@ -64,6 +64,27 @@ export interface PublicForm {
     instructions: {
       title: string
     }
+    duplicatePaymentModal: {
+      title: string
+      description: {
+        existingPayment: string
+        viewPreviousPayment: string
+        confirm: string
+      }
+      actions: {
+        cancel: string
+        submit: string
+        submitting: string
+      }
+    }
+    formAuth: {
+      loginButton: string
+      authType: {
+        singpass: string
+        singpassCorporate: string
+        singpassApp: string
+      }
+    }
   }
 }
 
