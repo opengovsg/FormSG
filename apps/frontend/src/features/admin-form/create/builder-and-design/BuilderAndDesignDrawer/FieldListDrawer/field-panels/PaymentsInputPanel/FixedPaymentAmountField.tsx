@@ -1,4 +1,5 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
 import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
@@ -24,6 +25,9 @@ export const FixedPaymentAmountField = ({
   control: UseFormReturn<FormPaymentsInput>['control']
   input: FormPaymentsInput
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.fixedPaymentAmountField',
+  })
   const amountValidation: RegisterOptions<
     FormPaymentsInput,
     typeof DISPLAY_AMOUNT_FIELD_KEY
@@ -38,8 +42,8 @@ export const FixedPaymentAmountField = ({
       isInvalid={!!errors[DISPLAY_AMOUNT_FIELD_KEY]}
       isRequired
     >
-      <FormLabel isRequired description="Including GST">
-        Payment amount
+      <FormLabel isRequired description={t('description')}>
+        {t('label')}
       </FormLabel>
       <Controller
         name={DISPLAY_AMOUNT_FIELD_KEY}
@@ -60,7 +64,7 @@ export const FixedPaymentAmountField = ({
       </FormErrorMessage>
       {Number(input[DISPLAY_AMOUNT_FIELD_KEY]) > 1000 ? (
         <InlineMessage variant="warning" mt="2rem" useMarkdown>
-          {`You would need to issue your own invoice for amounts above S$1000. [Learn more about this](${GUIDE_PAYMENTS_INVOICE_DIFFERENCES})`}
+          {t('invoiceWarning', { url: GUIDE_PAYMENTS_INVOICE_DIFFERENCES })}
         </InlineMessage>
       ) : null}
     </FormControl>

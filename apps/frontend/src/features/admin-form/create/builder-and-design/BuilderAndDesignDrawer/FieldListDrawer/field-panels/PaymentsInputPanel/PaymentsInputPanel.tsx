@@ -9,6 +9,7 @@ import {
   UseFormWatch,
   useWatch,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import {
@@ -117,6 +118,9 @@ const ProductsPaymentSection = ({
   watch: UseFormWatch<FormPaymentsInput>
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
+  })
   const watchMultiQtyEnabled = watch('products_meta.multi_product')
   return (
     <>
@@ -143,7 +147,7 @@ const ProductsPaymentSection = ({
             {...register('products_meta.multi_product', {
               value: watchMultiQtyEnabled,
             })}
-            label="Allow selection of multiple types of products/services"
+            label={t('multiProduct.label')}
             isChecked={watchMultiQtyEnabled} // component is not re-mounted, need to override internal <Checkbox /> state
           />
         </FormControl>
@@ -163,6 +167,9 @@ const PaymentTypeSelector = ({
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
   showFixedPaymentSelection: boolean
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
+  })
   return (
     <PaymentInnerContainer>
       <FormControl
@@ -170,35 +177,34 @@ const PaymentTypeSelector = ({
         isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
         isReadOnly={paymentsMutation.isLoading}
       >
-        <FormLabel>Payment type</FormLabel>
+        <FormLabel>{t('paymentType.label')}</FormLabel>
         <Controller
           name={'payment_type'}
           control={control}
           render={({ field }) => (
             <SingleSelect
               isClearable={false}
-              placeholder="Select Payment Type"
+              placeholder={t('paymentType.placeholder')}
               fullWidth
               items={[
                 {
                   value: PaymentType.Products,
-                  label: 'Product or service',
-                  description:
-                    'Respondents pay based on products or services they select. e.g. Courses, tickets with tiered prices',
+                  label: t('paymentType.options.products.label'),
+                  description: t('paymentType.options.products.description'),
                 },
                 {
                   value: PaymentType.Variable,
-                  label: 'Respondents choose what to pay',
-                  description:
-                    'Respondents enter the amount to pay. e.g. Donations, fines',
+                  label: t('paymentType.options.variable.label'),
+                  description: t('paymentType.options.variable.description'),
                 },
                 ...(showFixedPaymentSelection
                   ? [
                       {
                         value: PaymentType.Fixed,
-                        label: 'Fixed amount',
-                        description:
-                          'Every respondent pays the same amount, as set by the admin. e.g. Flat-rate tickets',
+                        label: t('paymentType.options.fixed.label'),
+                        description: t(
+                          'paymentType.options.fixed.description',
+                        ),
                       },
                     ]
                   : []),
@@ -219,6 +225,9 @@ const PaymentInputFields = ({
   isDisabled: boolean
   isEncryptMode: boolean
 }) => {
+  const { t: tPayments } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
+  })
   const { paymentsMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
@@ -362,7 +371,7 @@ const PaymentInputFields = ({
           isLoading={paymentsMutation.isLoading}
           handleClick={handleUpdatePayments}
           handleCancel={handleClose}
-          buttonText="Save field"
+          buttonText={tPayments('saveField')}
           isDisabled={isSavingDisabled}
         />
       </PaymentInnerContainer>
@@ -387,6 +396,9 @@ const FixedAndVariablePaymentSection = ({
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
   register: UseFormRegister<FormPaymentsInput>
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
+  })
   return (
     <>
       <PaymentInnerContainer>
@@ -397,12 +409,12 @@ const FixedAndVariablePaymentSection = ({
             isDisabled={isDisabled}
             isRequired
           >
-            <FormLabel description="This will be reflected on the proof of payment">
-              Product/service name
+            <FormLabel description={t('productServiceName.description')}>
+              {t('productServiceName.label')}
             </FormLabel>
             <Input
               {...register('name', {
-                required: 'This field is required',
+                required: t('productServiceName.required'),
               })}
             />
             <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
@@ -413,7 +425,7 @@ const FixedAndVariablePaymentSection = ({
             isDisabled={isDisabled}
             isRequired
           >
-            <FormLabel>Description</FormLabel>
+            <FormLabel>{t('description.label')}</FormLabel>
             <Textarea {...register('description')} />
             <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
           </FormControl>
@@ -444,6 +456,9 @@ const FixedAndVariablePaymentSection = ({
 }
 
 export const PaymentsInputPanel = (): JSX.Element | null => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
+  })
   const { data: form } = useAdminForm()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
@@ -475,14 +490,14 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
   const paymentDisabledMessage = !isEncryptMode ? (
-    <Text>Payments are only available in storage mode.</Text>
+    <Text>{t('disabled.storageModeOnly')}</Text>
   ) : !isStripeConnected ? (
     <Text>
-      Connect your Stripe account in{' '}
+      {t('disabled.stripeNotConnectedBefore')}{' '}
       <Link as={ReactLink} to={ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE}>
-        Settings
+        {t('disabled.stripeNotConnectedSettings')}
       </Link>{' '}
-      to add payment field.
+      {t('disabled.stripeNotConnectedAfter')}
     </Text>
   ) : null
 

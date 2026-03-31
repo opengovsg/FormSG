@@ -1,4 +1,5 @@
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Divider,
@@ -57,6 +58,9 @@ export const ProductModal = ({
   onSaveProduct: (product: Product) => void
   product: Product | null
 }) => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.productModal',
+  })
   const {
     register,
     handleSubmit,
@@ -102,26 +106,25 @@ export const ProductModal = ({
       // Regex allows leading and trailing spaces, max 2dp
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
       if (!validateMoney)
-        return `Enter an amount between S${formatCurrency(
-          Number(centsToDollars(minPaymentAmountCents)),
-        )} and S${formatCurrency(
-          Number(centsToDollars(maxPaymentAmountCents)),
-        )}`
+        return t('validation.amountRange', {
+          min: `S${formatCurrency(Number(centsToDollars(minPaymentAmountCents)))}`,
+          max: `S${formatCurrency(Number(centsToDollars(maxPaymentAmountCents)))}`,
+        })
 
       const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
-        return `The minimum amount is S${formatCurrency(
-          Number(centsToDollars(minPaymentAmountCents)),
-        )}`
+        return t('validation.minAmount', {
+          min: `S${formatCurrency(Number(centsToDollars(minPaymentAmountCents)))}`,
+        })
       }
 
       const validateMax = !!val && dollarsToCents(val) <= maxPaymentAmountCents
       // Repeat the check on maxPaymentAmountCents for correct typing
       if (!!maxPaymentAmountCents && !validateMax) {
-        return `The maximum amount is S${formatCurrency(
-          Number(centsToDollars(maxPaymentAmountCents)),
-        )}`
+        return t('validation.maxAmount', {
+          max: `S${formatCurrency(Number(centsToDollars(maxPaymentAmountCents)))}`,
+        })
       }
       return true
     },
@@ -144,7 +147,7 @@ export const ProductModal = ({
       if (!getValues(MULTI_QTY_KEY)) return true
 
       if (!val || val <= 0) {
-        return 'Enter a value greater than 0'
+        return t('validation.greaterThanZero')
       }
 
       const maxNumber =
@@ -152,7 +155,7 @@ export const ProductModal = ({
         Number.MAX_SAFE_INTEGER
 
       if (val > maxNumber) {
-        return 'Enter a value smaller than the maximum quantity'
+        return t('validation.smallerThanMax')
       }
       return true
     },
@@ -162,7 +165,7 @@ export const ProductModal = ({
       if (!getValues(MULTI_QTY_KEY)) return true
 
       if (!val || val <= 0) {
-        return 'Enter a value greater than 0'
+        return t('validation.greaterThanZero')
       }
 
       const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
@@ -170,18 +173,18 @@ export const ProductModal = ({
       if (val * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
         if (maxQty <= 0) {
-          return `Quantity limit could not be set because amount is above S${formatCurrency(
-            Number(centsToDollars(maxPaymentAmountCents)),
-          )}`
+          return t('validation.qtyLimitExceedsMax', {
+            max: `S${formatCurrency(Number(centsToDollars(maxPaymentAmountCents)))}`,
+          })
         }
-        return `The maximum quantity for this amount is ${maxQty}`
+        return t('validation.maxQuantityForAmount', { maxQty })
       }
       const minNumber =
         parseIntElseNull(getValues(MIN_QTY_KEY) as unknown as string) ||
         Number.MIN_SAFE_INTEGER
 
       if (val < minNumber) {
-        return 'Enter a value greater than the minimum quantity'
+        return t('validation.greaterThanMin')
       }
       return true
     },
@@ -197,26 +200,28 @@ export const ProductModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>{product ? 'Edit' : 'Add'} product/service</ModalHeader>
+        <ModalHeader>
+          {product ? t('header.edit') : t('header.add')}
+        </ModalHeader>
         <ModalBody>
           <Stack spacing={{ base: '1rem', md: '1.5rem' }} divider={<Divider />}>
             <Stack mb="0.5rem">
               <FormControl isInvalid={!!errors.name} pb="1.5rem">
                 <FormLabel
                   isRequired
-                  description="This will appear on proof of payment"
+                  description={t('name.description')}
                 >
-                  Product/service name
+                  {t('name.label')}
                 </FormLabel>
                 <Input
-                  {...register('name', { required: 'This field is required' })}
+                  {...register('name', { required: t('name.required') })}
                   isInvalid={!!errors.name}
                 />
                 <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.description}>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>{t('description.label')}</FormLabel>
                 <Input
                   {...register('description')}
                   isInvalid={!!errors.description}
@@ -232,9 +237,9 @@ export const ProductModal = ({
                 <Skeleton isLoaded={!isLoadingSettings}>
                   <FormLabel
                     isRequired
-                    description={hasGST ? 'Including GST' : undefined}
+                    description={hasGST ? t('amount.includingGst') : undefined}
                   >
-                    Amount
+                    {t('amount.label')}
                   </FormLabel>
                 </Skeleton>
                 <Skeleton isLoaded={!isLoadingSettings}>
@@ -279,8 +284,8 @@ export const ProductModal = ({
                         onChange(e)
                         trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
                       }}
-                      label="Quantity limit"
-                      description="Set the minimum and maximum quantities respondents can select"
+                      label={t('quantityLimit.label')}
+                      description={t('quantityLimit.description')}
                     />
                   )}
                 />
@@ -295,7 +300,7 @@ export const ProductModal = ({
                     isDisabled={!watchMultiQtyEnabled}
                     mr="0.5rem"
                   >
-                    <FormLabel isRequired>Minimum quantity</FormLabel>
+                    <FormLabel isRequired>{t('minQuantity.label')}</FormLabel>
                     <Controller
                       name={MIN_QTY_KEY}
                       control={control}
@@ -304,8 +309,7 @@ export const ProductModal = ({
                         <Input
                           {...register(MIN_QTY_KEY, {
                             required:
-                              watchMultiQtyEnabled &&
-                              'The minimum quantity is 1',
+                              watchMultiQtyEnabled && t('minQuantity.required'),
                           })}
                           isInvalid={!!errors[MIN_QTY_KEY]}
                           placeholder={'1'}
@@ -326,7 +330,7 @@ export const ProductModal = ({
                     isInvalid={!!errors[MAX_QTY_KEY]}
                     isDisabled={!watchMultiQtyEnabled}
                   >
-                    <FormLabel isRequired>Maximum quantity</FormLabel>
+                    <FormLabel isRequired>{t('maxQuantity.label')}</FormLabel>
                     <Controller
                       name={MAX_QTY_KEY}
                       control={control}
@@ -335,8 +339,7 @@ export const ProductModal = ({
                         <Input
                           {...register(MAX_QTY_KEY, {
                             required:
-                              watchMultiQtyEnabled &&
-                              'Enter a maximum quantity',
+                              watchMultiQtyEnabled && t('maxQuantity.required'),
                           })}
                           isInvalid={!!errors[MAX_QTY_KEY]}
                           placeholder={'99'}
@@ -371,15 +374,15 @@ export const ProductModal = ({
             justifyContent={{ md: 'right' }}
           >
             <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
-              loadingText="Saving"
+              loadingText={t('saving')}
               onClick={handleSaveProduct}
               isDisabled={Object.keys(errors).length > 0}
               isFullWidth={isMobile}
             >
-              Save product
+              {t('save')}
             </Button>
           </Stack>
         </ModalFooter>
