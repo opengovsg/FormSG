@@ -72,7 +72,6 @@ export interface PublicForm {
         confirm: string
       }
       actions: {
-        cancel: string
         submit: string
         submitting: string
       }

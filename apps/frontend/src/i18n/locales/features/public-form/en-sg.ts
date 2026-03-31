@@ -82,7 +82,6 @@ export const enSG: PublicForm = {
         confirm: 'Do you wish to proceed to make another payment?',
       },
       actions: {
-        cancel: 'Cancel',
         submit: 'Proceed to pay',
         submitting: 'Submitting',
       },

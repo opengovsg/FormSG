@@ -78,9 +78,7 @@ export const DuplicatePaymentModal = ({
           <ModalFooter>
             <ButtonGroup isFullWidth={isMobile}>
               <Button variant="clear" onClick={onClose}>
-                {t(
-                  'features.publicForm.components.duplicatePaymentModal.actions.cancel',
-                )}
+                {t('features.common.cancel')}
               </Button>
               <Button
                 isLoading={isSubmitting}
