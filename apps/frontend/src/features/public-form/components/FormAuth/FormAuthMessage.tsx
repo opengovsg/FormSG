@@ -1,4 +1,5 @@
 import { Text } from '@chakra-ui/react'
+import { Trans, useTranslation } from 'react-i18next'
 
 import { FormAuthType } from 'formsg-shared/types/form'
 
@@ -11,71 +12,41 @@ const SubmitterIdCollectionInfoText = ({
   authType,
   isSubmitterIdCollectionEnabled,
 }: FormAuthMessageProps): JSX.Element => {
-  if (isSubmitterIdCollectionEnabled) {
-    switch (authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-      case FormAuthType.SGID:
-      case FormAuthType.SGID_MyInfo:
-        return (
-          <Text>
-            Your Singpass login ID <Text as="b">will be included</Text> with
-            your form submission.
-          </Text>
-        )
-      case FormAuthType.CP:
-        return (
-          <Text>
-            Your Singpass and Corppass login ID{' '}
-            <Text as="b">will be included</Text> with your form submission.
-          </Text>
-        )
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = authType
-        throw new Error('Invalid auth type')
-      }
-    }
-  } else {
-    switch (authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-      case FormAuthType.SGID:
-      case FormAuthType.SGID_MyInfo:
-        return (
-          <Text>
-            Your Singpass login ID will <Text as="b">not be included</Text> with
-            your form submission.
-          </Text>
-        )
-      case FormAuthType.CP:
-        return (
-          <Text>
-            Your Singpass and Corppass login ID will{' '}
-            <Text as="b">not be included</Text> with your form submission.
-          </Text>
-        )
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = authType
-        throw new Error('Invalid auth type')
-      }
-    }
-  }
+  const { t } = useTranslation()
+
+  const isCorporate = authType === FormAuthType.CP
+
+  const keyBase = isSubmitterIdCollectionEnabled ? 'included' : 'notIncluded'
+  const key = isCorporate ? 'corporate' : 'singpass'
+
+  return (
+    <Text>
+      <Trans
+        i18nKey={`features.publicForm.components.formAuthMessage.submitterId.${keyBase}.${key}`}
+        components={{ bold: <Text as="b" /> }}
+      />
+    </Text>
+  )
 }
 
-const getSignInText = (authType: Exclude<FormAuthType, FormAuthType.NIL>) => {
+const getSignInText = (
+  authType: Exclude<FormAuthType, FormAuthType.NIL>,
+  t: (key: string) => string,
+) => {
   switch (authType) {
     case FormAuthType.SP:
     case FormAuthType.MyInfo:
-      return 'Sign in with Singpass to access this form.\n'
+      return t('features.publicForm.components.formAuthMessage.signIn.singpass')
     case FormAuthType.CP:
-      return 'Corporate entity login is required for this form.\n'
+      return t(
+        'features.publicForm.components.formAuthMessage.signIn.corporate',
+      )
     case FormAuthType.SGID:
     case FormAuthType.SGID_MyInfo:
-      return 'Sign in with the Singpass app to access this form.\n'
+      return t(
+        'features.publicForm.components.formAuthMessage.signIn.singpassApp',
+      )
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = authType
       throw new Error('Invalid auth type')
     }
@@ -86,7 +57,8 @@ export const FormAuthMessage = ({
   authType,
   isSubmitterIdCollectionEnabled,
 }: FormAuthMessageProps) => {
-  const signInText = getSignInText(authType)
+  const { t } = useTranslation()
+  const signInText = getSignInText(authType, t)
 
   return (
     <Text

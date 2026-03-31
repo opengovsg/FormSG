@@ -85,6 +85,23 @@ export interface PublicForm {
         singpassApp: string
       }
     }
+    formAuthMessage: {
+      signIn: {
+        singpass: string
+        corporate: string
+        singpassApp: string
+      }
+      submitterId: {
+        included: {
+          singpass: string
+          corporate: string
+        }
+        notIncluded: {
+          singpass: string
+          corporate: string
+        }
+      }
+    }
   }
 }
 

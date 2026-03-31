@@ -95,5 +95,26 @@ export const enSG: PublicForm = {
         singpassApp: 'Singpass app',
       },
     },
+    formAuthMessage: {
+      signIn: {
+        singpass: 'Sign in with Singpass to access this form.\n',
+        corporate: 'Corporate entity login is required for this form.\n',
+        singpassApp: 'Sign in with the Singpass app to access this form.\n',
+      },
+      submitterId: {
+        included: {
+          singpass:
+            'Your Singpass login ID <bold>will be included</bold> with your form submission.',
+          corporate:
+            'Your Singpass and Corppass login ID <bold>will be included</bold> with your form submission.',
+        },
+        notIncluded: {
+          singpass:
+            'Your Singpass login ID will <bold>not be included</bold> with your form submission.',
+          corporate:
+            'Your Singpass and Corppass login ID will <bold>not be included</bold> with your form submission.',
+        },
+      },
+    },
   },
 }
