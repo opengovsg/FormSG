@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { Box } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next'
+import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { SubmitHandler, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
-import { useTranslation } from 'react-i18next'
 
 import { FieldResponsesV3 } from 'formsg-shared/types'
 import { FormFieldDto } from 'formsg-shared/types/field'
