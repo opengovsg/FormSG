@@ -52,9 +52,5 @@ export const downloadAndDecryptAttachmentsAsZip = async (
   }
 
   await Promise.all(downloadPromises)
-  // If the attachments zip is empty, skip the generation of an empty archive to save resources
-  if (Object.keys(zip.files).length === 0) {
-    return undefined
-  }
   return await zip.generateAsync({ type: 'blob' })
 }
