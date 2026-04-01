@@ -128,6 +128,9 @@ export interface Common {
   approved: string
   notApproved: string
   adminFormMutations: {
+    errors: {
+      missingFormId: string
+    }
     collaborators: {
       errors: {
         badRequestAddOrEdit: string

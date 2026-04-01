@@ -13,12 +13,13 @@ import { useMagicFormBuilderStore } from '../create/builder-and-design/MagicForm
 
 export const useAssistanceMutations = () => {
   const { formId } = useParams()
+  const { t } = useTranslation()
 
   if (!formId) {
-    throw new Error('Form ID is required')
+    throw new Error(
+      t('features.common.adminFormMutations.errors.missingFormId'),
+    )
   }
-
-  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
 

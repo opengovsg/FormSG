@@ -131,6 +131,9 @@ export const enSG: Common = {
   approved: 'Approved',
   notApproved: 'Not approved',
   adminFormMutations: {
+    errors: {
+      missingFormId: 'Form ID is required',
+    },
     collaborators: {
       errors: {
         badRequestAddOrEdit:

@@ -80,9 +80,12 @@ enum FormCollaboratorAction {
 
 export const useMutateCollaborators = () => {
   const { formId } = useCollaboratorWizard()
-  if (!formId) throw new Error('No formId provided to useMutateCollaborators')
-
   const { t } = useTranslation()
+  if (!formId) {
+    throw new Error(
+      t('features.common.adminFormMutations.errors.missingFormId'),
+    )
+  }
 
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -396,8 +399,12 @@ export const useMutateCollaborators = () => {
 
 export const useMutateFormPage = () => {
   const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
   const { t } = useTranslation()
+  if (!formId) {
+    throw new Error(
+      t('features.common.adminFormMutations.errors.missingFormId'),
+    )
+  }
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
