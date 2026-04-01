@@ -74,6 +74,7 @@ export const fieldContainerStyle: NonNullable<LinkProps['style']> = {
 export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   background: '#F8F9FD',
   borderRadius: '8px',
+  border: '1px solid #E9E9E9',
   marginBottom: '16px',
   padding: '0 16px', // padding on left & right only since React <Text> alr has default padding for top/down
 }
