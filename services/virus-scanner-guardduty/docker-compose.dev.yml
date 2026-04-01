@@ -8,4 +8,6 @@ services:
       - '8080'
     ports:
       - '9998:8080'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     env_file: ./.env.development
