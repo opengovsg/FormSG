@@ -12,14 +12,15 @@ import { adminFormKeys } from '../common/queries'
 import { useMagicFormBuilderStore } from '../create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
 
 export const useAssistanceMutations = () => {
-  const { t } = useTranslation()
   const { formId } = useParams()
-  const queryClient = useQueryClient()
-  const toast = useToast({ status: 'success', isClosable: true })
 
   if (!formId) {
     throw new Error('Form ID is required')
   }
+
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const onSuccess = (data: { message: string; createdFieldIds?: string[] }) => {
     const { createdFieldIds } = data
@@ -44,7 +45,7 @@ export const useAssistanceMutations = () => {
   const onError = (error: Error) => {
     toast.closeAll()
     toast({
-      description: error.message || t('features.common.errors.generic'),
+      description: error.message,
       status: 'danger',
     })
   }

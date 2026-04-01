@@ -620,11 +620,11 @@ export const useFormRemindersMutations = () => {
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message || t('features.common.errors.generic'),
+        description: error.message,
         status: 'danger',
       })
     },
-    [toast, t],
+    [toast],
   )
 
   const sendReminderForResponseMutation = useMutation(

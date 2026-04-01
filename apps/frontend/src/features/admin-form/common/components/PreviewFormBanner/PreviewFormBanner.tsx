@@ -203,7 +203,7 @@ export const PreviewFormBanner = ({
             </Text>
           ) : (
             <Text {...textProps}>
-              <Trans i18nKey="features.common.previewFormBanner.payment.nonProduction" />
+              {t('features.common.previewFormBanner.payment.nonProduction')}
             </Text>
           )}
         </Flex>
