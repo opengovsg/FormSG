@@ -10,10 +10,8 @@ export const mainStyle = {
 export const containerStyle = {
   maxWidth: '100%',
   width: '720px',
-  margin: 'auto',
+  margin: '20px auto',
   padding: '20px',
-  borderRadius: '8px',
-  backgroundColor: '#ffffff',
 }
 
 export const sectionStyle = {
@@ -21,6 +19,7 @@ export const sectionStyle = {
   marginBottom: '16px',
   background: '#F8F9FD',
   borderRadius: '8px',
+  backgroundColor: '#ffffff',
 }
 
 export const headingTextStyle: NonNullable<LinkProps['style']> = {
@@ -55,10 +54,20 @@ export const answerMargin: NonNullable<LinkProps['style']> = {
   marginTop: '4px',
 }
 
-// Column styles
+// Column styles - hybrid responsive approach
 export const halfWidthColumnStyle: NonNullable<LinkProps['style']> = {
-  width: '50%',
+  maxWidth: '50%',
   verticalAlign: 'top',
+}
+
+export const leftColumnStyle: NonNullable<LinkProps['style']> = {
+  ...halfWidthColumnStyle,
+  paddingRight: '8px',
+}
+
+export const rightColumnStyle: NonNullable<LinkProps['style']> = {
+  ...halfWidthColumnStyle,
+  paddingLeft: '8px',
 }
 
 // Responsive field container - stacks on mobile
