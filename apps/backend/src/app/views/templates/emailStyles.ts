@@ -10,7 +10,7 @@ export const mainStyle = {
 export const containerStyle = {
   maxWidth: '100%',
   width: '720px',
-  margin: '99px auto',
+  margin: 'auto',
   padding: '20px',
   borderRadius: '8px',
   backgroundColor: '#ffffff',
