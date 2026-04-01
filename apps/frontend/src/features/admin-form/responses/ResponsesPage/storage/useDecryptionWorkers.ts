@@ -137,7 +137,7 @@ const useDecryptionWorkers = ({
         formTitle: adminForm.title,
         downloadAttachments,
         num_workers: numWorkers,
-        expectedNumSubmissions: NUM_OF_METADATA_ROWS,
+        expectedNumSubmissions: responsesCount,
         adminId: user?._id,
       }
       // Trigger analytics here before starting decryption worker
@@ -175,6 +175,8 @@ const useDecryptionWorkers = ({
       const submissionDecryptPromises: Promise<DecryptedData>[] = []
 
       let timeSinceLastXAttachmentDownload = 0
+      // Promise chain as a makeshift queue which serializes `saveAs()` calls to prevent dropped downloads
+      let saveQueue: Promise<void> = Promise.resolve()
 
       await reader.read().then(
         (read = async (result) => {
@@ -241,11 +243,17 @@ const useDecryptionWorkers = ({
               // Step 3: Save the downloaded and decrypted attachment blobs for each submission (if required).
               // This step is done with delays in between groups of files to space out downloads to avoid browser blocking downloads.
               .then(async (decryptResult) => {
-                if (
-                  downloadAttachments &&
-                  decryptResult.attachmentDownloadBlob &&
-                  decryptResult.parsedSubmission?._id
-                ) {
+                if (!downloadAttachments) {
+                  return decryptResult
+                }
+                // Chain onto the queue so saves run one at a time
+                saveQueue = saveQueue.then(async () => {
+                  if (
+                    !decryptResult.attachmentDownloadBlob ||
+                    !decryptResult.parsedSubmission?._id
+                  ) {
+                    return
+                  }
                   attachmentsToSaveCount += 1
 
                   // Ensure attachments downloads are spaced out to avoid browser blocking downloads
@@ -271,8 +279,8 @@ const useDecryptionWorkers = ({
                     decryptResult.attachmentDownloadBlob,
                     decryptResult.parsedSubmission._id,
                   )
-                }
-                return decryptResult
+                })
+                return saveQueue.then(() => decryptResult)
               })
               // Step 4: Update the progress bar only once the attachments for the decrypted submission have been downloaded (if needed).
               .finally(() => {

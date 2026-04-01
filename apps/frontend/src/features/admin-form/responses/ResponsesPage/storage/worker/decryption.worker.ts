@@ -171,7 +171,7 @@ async function _downloadAndDecryptSubmissionAttachments({
   decryptedResponses,
 }: _DownloadAndDecryptSubmissionAttachmentsParams): Promise<
   | {
-      downloadedAttachmentsBlob: Blob
+      downloadedAttachmentsBlob?: Blob
       isDownloadSuccessful: boolean
     }
   | {
