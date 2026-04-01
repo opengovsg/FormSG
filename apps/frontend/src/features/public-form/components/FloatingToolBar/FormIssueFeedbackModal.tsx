@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   chakra,
   FormControl,
@@ -13,7 +14,6 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-import { Trans, useTranslation } from 'react-i18next'
 import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, SubmitFormIssueBodyDto } from 'formsg-shared/types'

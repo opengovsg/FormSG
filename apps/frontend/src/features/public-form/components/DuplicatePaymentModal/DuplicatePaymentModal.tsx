@@ -1,4 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Link,
   Modal,
@@ -10,7 +11,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { useTranslation } from 'react-i18next'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'

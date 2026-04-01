@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiLogInCircle } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
-import { useTranslation } from 'react-i18next'
 
 import {
   FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
