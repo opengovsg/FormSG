@@ -12,8 +12,6 @@ const SubmitterIdCollectionInfoText = ({
   authType,
   isSubmitterIdCollectionEnabled,
 }: FormAuthMessageProps): JSX.Element => {
-  const { t } = useTranslation()
-
   const isCorporate = authType === FormAuthType.CP
 
   const keyBase = isSubmitterIdCollectionEnabled ? 'included' : 'notIncluded'
