@@ -28,7 +28,7 @@ export const headingTextStyle: NonNullable<LinkProps['style']> = {
   color: colorBaseContentStrong,
   fontWeight: 600,
   lineHeight: '32px',
-  fontSize: '18px',
+  fontSize: '24px',
 }
 
 export const outcomeTextStyle: NonNullable<LinkProps['style']> = {
@@ -45,7 +45,6 @@ export const primaryTextStyle: NonNullable<LinkProps['style']> = {
 export const secondaryTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['body-1'],
   color: '#474747',
-  fontSize: '16px',
 }
 
 export const questionMargin: NonNullable<LinkProps['style']> = {
