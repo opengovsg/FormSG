@@ -87,7 +87,7 @@ export const enSG: PublicForm = {
       },
     },
     formAuth: {
-      loginButton: 'Log in with {{authType}}',
+      loginButton: 'Log in with {authType}',
       authType: {
         singpass: 'Singpass',
         singpassCorporate: 'Singpass (Corporate)',
@@ -150,14 +150,14 @@ export const enSG: PublicForm = {
       mobileSectionSidebar: 'Mobile section sidebar',
     },
     formHeader: {
-      logoutWithId: '{{id}} - Log out',
+      logoutWithId: '{id} - Log out',
     },
     sectionSidebar: {
       skipToSection: 'Skip to section',
       formSections: 'Form sections',
       jumpToSection: 'Jump to form section',
       listOfSections: 'List of form section links',
-      navigatedToSection: 'Navigated to section: {{title}}{{description}}',
+      navigatedToSection: 'Navigated to section: {title}{description}',
     },
     sidebarLink: {
       navigateToSection: 'Navigate to section: ',
