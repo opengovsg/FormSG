@@ -137,7 +137,7 @@ const useDecryptionWorkers = ({
         formTitle: adminForm.title,
         downloadAttachments,
         num_workers: numWorkers,
-        expectedNumSubmissions: NUM_OF_METADATA_ROWS,
+        expectedNumSubmissions: responsesCount,
         adminId: user?._id,
       }
       // Trigger analytics here before starting decryption worker
