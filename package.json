@@ -1,6 +1,6 @@
 {
   "name": "formsg-monorepo",
-  "version": "7.4.2",
+  "version": "7.4.3",
   "private": true,
   "description": "Form Manager for Government",
   "homepage": "https://form.gov.sg",
@@ -71,6 +71,12 @@
     "rimraf": "^5.0.5"
   },
   "pnpm": {
+    "overrides": {
+      "handlebars": "^4.7.9",
+      "jspdf": "^4.2.1",
+      "fast-xml-parser@<5": "^4.5.5",
+      "fast-xml-parser@>=5": "^5.5.7"
+    },
     "onlyBuiltDependencies": [
       "bcrypt",
       "@datadog/native-appsec",

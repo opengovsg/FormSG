@@ -1,5 +1,5 @@
-FROM node:jod-alpine3.22 
-LABEL maintainer=FormSG<formsg@data.gov.sg>
+FROM node:22.22.2-alpine3.22
+LABEL maintainer=FormSG<form@open.gov.sg>
 
 WORKDIR /opt/formsg
 
