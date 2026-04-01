@@ -68,7 +68,7 @@ export enum CountryRegion {
   Equatorial_Guinea = 'Equatorial Guinea',
   Eritrea = 'Eritrea',
   Estonia = 'Estonia',
-  Eswantini = 'Eswantini',
+  Eswatini = 'Eswatini',
   Ethiopia = 'Ethiopia',
   Faeroe_Islands = 'Faeroe Islands',
   Falkland_Islands = 'Falkland Islands',
