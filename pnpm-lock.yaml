@@ -5,7 +5,10 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  mdast-util-gfm-autolink-literal: 2.0.0
+  handlebars: ^4.7.9
+  jspdf: ^4.2.1
+  fast-xml-parser@<5: ^4.5.5
+  fast-xml-parser@>=5: ^5.5.7
 
 importers:
 
@@ -8287,19 +8290,15 @@ packages:
   fast-uri@3.0.6:
     resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
 
-  fast-xml-builder@1.0.0:
-    resolution: {integrity: sha512-fpZuDogrAgnyt9oDDz+5DBz0zgPdPZz6D4IR7iESxRXElrlGTRkHJ9eEt+SACRJwT0FNFrt71DFQIUFBJfX/uQ==}
+  fast-xml-builder@1.1.4:
+    resolution: {integrity: sha512-f2jhpN4Eccy0/Uz9csxh3Nu6q4ErKxf0XIsasomfOihuSUa3/xw6w8dnOtCDgEItQFJG8KyXPzQXzcODDrrbOg==}
 
-  fast-xml-parser@4.2.5:
-    resolution: {integrity: sha512-B9/wizE4WngqQftFPmdaMYlXoJlJOYxGQOanC77fq9k8+Z0v5dDSVh+3glErdIROP//s/jgb7ZuxKfB8nVyo0g==}
+  fast-xml-parser@4.5.5:
+    resolution: {integrity: sha512-cK9c5I/DwIOI7/Q7AlGN3DuTdwN61gwSfL8rvuVPK+0mcCNHHGxRrpiFtaZZRfRMJL3Gl8B2AFlBG6qXf03w9A==}
     hasBin: true
 
-  fast-xml-parser@4.4.1:
-    resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
-    hasBin: true
-
-  fast-xml-parser@5.4.1:
-    resolution: {integrity: sha512-BQ30U1mKkvXQXXkAGcuyUA/GA26oEB7NzOtsxCDtyu62sjGw5QraKFhx2Em3WQNjPw9PG6MQ9yuIIgkSDfGu5A==}
+  fast-xml-parser@5.5.9:
+    resolution: {integrity: sha512-jldvxr1MC6rtiZKgrFnDSvT8xuH+eJqxqOBThUVjYrxssYTo1avZLGql5l0a0BAERR01CadYzZ83kVEkbyDg+g==}
     hasBin: true
 
   fastest-levenshtein@1.0.16:
@@ -8808,8 +8807,8 @@ packages:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
     engines: {node: '>=10'}
 
-  handlebars@4.7.8:
-    resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
+  handlebars@4.7.9:
+    resolution: {integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ==}
     engines: {node: '>=0.4.7'}
     hasBin: true
 
@@ -10042,8 +10041,8 @@ packages:
     resolution: {integrity: sha512-PRp66vJ865SSqOlgqS8hujT5U4AOgMfhrwYIuIhfKaoSCZcirrmASQr8CX7cUg+RMih+hgznrjp99o+W4pJLHQ==}
     engines: {node: '>=12', npm: '>=6'}
 
-  jspdf@4.2.0:
-    resolution: {integrity: sha512-hR/hnRevAXXlrjeqU5oahOE+Ln9ORJUB5brLHHqH67A+RBQZuFr5GkbI9XQI8OUFSEezKegsi45QRpc4bGj75Q==}
+  jspdf@4.2.1:
+    resolution: {integrity: sha512-YyAXyvnmjTbR4bHQRLzex3CuINCDlQnBqoSYyjJwTP2x9jDLuKDzy7aKUl0hgx3uhcl7xzg32agn5vlie6HIlQ==}
 
   jszip@3.10.1:
     resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
@@ -11488,6 +11487,10 @@ packages:
   path-exists@4.0.0:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
+
+  path-expression-matcher@1.2.0:
+    resolution: {integrity: sha512-DwmPWeFn+tq7TiyJ2CxezCAirXjFxvaiD03npak3cRjlP9+OjTmSy1EpIrEbh+l6JgUundniloMLDQ/6VTdhLQ==}
+    engines: {node: '>=14.0.0'}
 
   path-is-absolute@1.0.1:
     resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
@@ -13094,8 +13097,8 @@ packages:
   strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
 
-  strnum@2.2.0:
-    resolution: {integrity: sha512-Y7Bj8XyJxnPAORMZj/xltsfo55uOiyHcU2tnAVzHUnSJR/KsEX+9RoDeXEnsXtl/CX4fAcrt64gZ13aGaWPeBg==}
+  strnum@2.2.2:
+    resolution: {integrity: sha512-DnR90I+jtXNSTXWdwrEy9FakW7UX+qUZg28gj5fk2vxxl7uS/3bpI4fjFYVmdK9etptYBPNkpahuQnEwhwECqA==}
 
   strtok3@6.3.0:
     resolution: {integrity: sha512-fZtbhtvI9I48xDSywd/somNqgUHl2L2cstmXCCif0itOf96jeW18MBSyrLuNicYQVkvpOxkZtkzujiTJ9LW5Jw==}
@@ -15276,7 +15279,7 @@ snapshots:
       '@smithy/signature-v4': 3.1.2
       '@smithy/smithy-client': 3.7.0
       '@smithy/types': 3.7.2
-      fast-xml-parser: 4.2.5
+      fast-xml-parser: 4.5.5
       tslib: 2.8.1
 
   '@aws-sdk/core@3.693.0':
@@ -15290,7 +15293,7 @@ snapshots:
       '@smithy/smithy-client': 3.7.0
       '@smithy/types': 3.7.2
       '@smithy/util-middleware': 3.0.11
-      fast-xml-parser: 4.4.1
+      fast-xml-parser: 4.5.5
       tslib: 2.8.1
 
   '@aws-sdk/core@3.758.0':
@@ -15304,7 +15307,7 @@ snapshots:
       '@smithy/smithy-client': 4.12.2
       '@smithy/types': 4.13.0
       '@smithy/util-middleware': 4.2.11
-      fast-xml-parser: 4.4.1
+      fast-xml-parser: 4.5.5
       tslib: 2.8.1
 
   '@aws-sdk/core@3.973.17':
@@ -16179,7 +16182,7 @@ snapshots:
   '@aws-sdk/xml-builder@3.972.9':
     dependencies:
       '@smithy/types': 4.13.0
-      fast-xml-parser: 5.4.1
+      fast-xml-parser: 5.5.9
       tslib: 2.8.1
 
   '@aws/lambda-invoke-store@0.2.3': {}
@@ -21447,7 +21450,7 @@ snapshots:
   auto-changelog@2.5.0(encoding@0.1.13):
     dependencies:
       commander: 7.2.0
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       import-cwd: 3.0.0
       node-fetch: 2.7.0(encoding@0.1.13)
       parse-github-url: 1.0.3
@@ -22386,7 +22389,7 @@ snapshots:
       detect-indent: 6.1.0
       detect-newline: 3.1.0
       dotgitignore: 2.1.0
-      fast-xml-parser: 5.4.1
+      fast-xml-parser: 5.5.9
       figures: 3.2.0
       find-up: 5.0.0
       git-semver-tags: 5.0.1
@@ -22544,7 +22547,7 @@ snapshots:
     dependencies:
       conventional-commits-filter: 3.0.0
       dateformat: 3.0.3
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       json-stringify-safe: 5.0.1
       meow: 8.1.2
       semver: 7.7.4
@@ -24165,20 +24168,19 @@ snapshots:
 
   fast-uri@3.0.6: {}
 
-  fast-xml-builder@1.0.0: {}
+  fast-xml-builder@1.1.4:
+    dependencies:
+      path-expression-matcher: 1.2.0
 
-  fast-xml-parser@4.2.5:
+  fast-xml-parser@4.5.5:
     dependencies:
       strnum: 1.0.5
 
-  fast-xml-parser@4.4.1:
+  fast-xml-parser@5.5.9:
     dependencies:
-      strnum: 1.0.5
-
-  fast-xml-parser@5.4.1:
-    dependencies:
-      fast-xml-builder: 1.0.0
-      strnum: 2.2.0
+      fast-xml-builder: 1.1.4
+      path-expression-matcher: 1.2.0
+      strnum: 2.2.2
 
   fastest-levenshtein@1.0.16: {}
 
@@ -24742,7 +24744,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  handlebars@4.7.8:
+  handlebars@4.7.9:
     dependencies:
       minimist: 1.2.6
       neo-async: 2.6.2
@@ -24928,7 +24930,7 @@ snapshots:
     dependencies:
       dompurify: 3.3.1
       html2canvas: 1.4.1
-      jspdf: 4.2.0
+      jspdf: 4.2.1
 
   htmlhint@1.1.4(encoding@0.1.13):
     dependencies:
@@ -26602,7 +26604,7 @@ snapshots:
       ms: 2.1.3
       semver: 7.7.4
 
-  jspdf@4.2.0:
+  jspdf@4.2.1:
     dependencies:
       '@babel/runtime': 7.28.6
       fast-png: 6.4.0
@@ -28471,6 +28473,8 @@ snapshots:
   path-exists@3.0.0: {}
 
   path-exists@4.0.0: {}
+
+  path-expression-matcher@1.2.0: {}
 
   path-is-absolute@1.0.1: {}
 
@@ -30449,7 +30453,7 @@ snapshots:
 
   strnum@1.0.5: {}
 
-  strnum@2.2.0: {}
+  strnum@2.2.2: {}
 
   strtok3@6.3.0:
     dependencies:
@@ -30832,7 +30836,7 @@ snapshots:
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       jest: 30.1.3(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(esbuild-register@3.6.0(esbuild@0.25.9))(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
       json5: 2.2.3
       lodash.memoize: 4.1.2
@@ -30853,7 +30857,7 @@ snapshots:
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       jest: 29.7.0(@types/node@18.19.130)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@18.19.130)(typescript@5.9.3))
       json5: 2.2.3
       lodash.memoize: 4.1.2
@@ -30873,7 +30877,7 @@ snapshots:
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      handlebars: 4.7.8
+      handlebars: 4.7.9
       jest: 29.7.0(@types/node@24.0.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@types/node@24.0.10)(typescript@5.9.3))
       json5: 2.2.3
       lodash.memoize: 4.1.2
