@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.4](https://github.com/opengovsg/formsg/compare/v7.4.3...v7.4.4) (2026-04-01)
+
+
+### Bug Fixes
+
+* **frontend:** bulk download attachment behaviour (#9267) ([#9267](https://github.com/opengovsg/formsg/commit/45e97565ad9838693bc321edc67d6de24e43b044))
+
+
+### Chores
+
+* fix incorrect eswantini country name to eswatini (#9268) ([#9268](https://github.com/opengovsg/formsg/commit/0c762d5e57dcc3ce975ddbacc18912d9c02bd55f))
+
 ## [7.4.3](https://github.com/opengovsg/formsg/compare/v7.4.2...v7.4.3) (2026-04-01)
 
 
