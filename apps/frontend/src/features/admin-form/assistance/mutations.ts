@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -11,14 +12,14 @@ import { adminFormKeys } from '../common/queries'
 import { useMagicFormBuilderStore } from '../create/builder-and-design/MagicFormBuilder/useMagicFormBuilderStore'
 
 export const useAssistanceMutations = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
 
   if (!formId) {
     throw new Error('Form ID is required')
   }
-
-  const queryClient = useQueryClient()
-  const toast = useToast({ status: 'success', isClosable: true })
 
   const onSuccess = (data: { message: string; createdFieldIds?: string[] }) => {
     const { createdFieldIds } = data
@@ -33,7 +34,9 @@ export const useAssistanceMutations = () => {
     queryClient.invalidateQueries(adminFormKeys.id(formId))
     toast.closeAll()
     toast({
-      description: 'Fields created successfully',
+      description: t(
+        'features.adminForm.assistance.toasts.fieldsCreatedSuccess',
+      ),
       status: 'success',
     })
   }
@@ -41,7 +44,7 @@ export const useAssistanceMutations = () => {
   const onError = (error: Error) => {
     toast.closeAll()
     toast({
-      description: error.message,
+      description: error.message || t('features.common.errors.generic'),
       status: 'danger',
     })
   }

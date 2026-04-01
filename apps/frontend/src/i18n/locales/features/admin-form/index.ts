@@ -1,3 +1,4 @@
+export { type Assistance } from './assistance'
 export { type Collaborator } from './collaborator'
 export * from './en-sg'
 export { type FeatureTour } from './feature-tour'

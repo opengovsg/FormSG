@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -81,6 +82,8 @@ export const useMutateCollaborators = () => {
   const { formId } = useCollaboratorWizard()
   if (!formId) throw new Error('No formId provided to useMutateCollaborators')
 
+  const { t } = useTranslation()
+
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -103,51 +106,59 @@ export const useMutateCollaborators = () => {
     [formId, queryClient],
   )
 
-  const getMappedBadRequestErrorMessage = (
-    formCollaboratorAction: FormCollaboratorAction,
-    originalErrorMessage: string,
-  ): string => {
-    let badRequestErrorMessage
-    switch (formCollaboratorAction) {
-      case FormCollaboratorAction.ADD:
-        badRequestErrorMessage = `The collaborator was unable to be added or edited. Please try again or refresh the page.`
-        break
-      case FormCollaboratorAction.TRANSFER_OWNERSHIP:
-        badRequestErrorMessage = originalErrorMessage
-        break
-      default:
-        badRequestErrorMessage = `Sorry, an error occurred. Please refresh the page and try again later.`
-    }
+  const getMappedBadRequestErrorMessage = useCallback(
+    (
+      formCollaboratorAction: FormCollaboratorAction,
+      originalErrorMessage: string,
+    ): string => {
+      switch (formCollaboratorAction) {
+        case FormCollaboratorAction.ADD:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.badRequestAddOrEdit',
+          )
+        case FormCollaboratorAction.TRANSFER_OWNERSHIP:
+          return originalErrorMessage
+        default:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.badRequestGeneric',
+          )
+      }
+    },
+    [t],
+  )
 
-    return badRequestErrorMessage
-  }
-
-  const getMappedDefaultErrorMessage = (
-    formCollaboratorAction: FormCollaboratorAction,
-  ): string => {
-    let defaultErrorMessage
-    switch (formCollaboratorAction) {
-      case FormCollaboratorAction.ADD:
-        defaultErrorMessage = 'Error adding collaborator.'
-        break
-      case FormCollaboratorAction.UPDATE:
-        defaultErrorMessage = 'Error updating collaborator.'
-        break
-      case FormCollaboratorAction.REMOVE:
-        defaultErrorMessage = 'Error removing collaborator.'
-        break
-      case FormCollaboratorAction.REMOVE_SELF:
-        defaultErrorMessage = 'Error removing self.'
-        break
-      case FormCollaboratorAction.TRANSFER_OWNERSHIP:
-        defaultErrorMessage = 'Error transfering form ownership.'
-        break
-      //should not reach
-      default:
-        defaultErrorMessage = 'Error.'
-    }
-    return defaultErrorMessage
-  }
+  const getMappedDefaultErrorMessage = useCallback(
+    (formCollaboratorAction: FormCollaboratorAction): string => {
+      switch (formCollaboratorAction) {
+        case FormCollaboratorAction.ADD:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.add',
+          )
+        case FormCollaboratorAction.UPDATE:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.update',
+          )
+        case FormCollaboratorAction.REMOVE:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.remove',
+          )
+        case FormCollaboratorAction.REMOVE_SELF:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.removeSelf',
+          )
+        case FormCollaboratorAction.TRANSFER_OWNERSHIP:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.transferOwnership',
+          )
+        //should not reach
+        default:
+          return t(
+            'features.common.adminFormMutations.collaborators.errors.generic',
+          )
+      }
+    },
+    [t],
+  )
 
   const getMappedErrorMessage = useCallback(
     (
@@ -161,8 +172,15 @@ export const useMutateCollaborators = () => {
         switch (error.code) {
           case 422:
             errorMessage = requestEmail
-              ? `${requestEmail} is not part of a whitelisted agency`
-              : `An unexpected error 422 happened`
+              ? t(
+                  'features.common.adminFormMutations.collaborators.errors.notWhitelistedAgency',
+                  {
+                    email: requestEmail,
+                  },
+                )
+              : t(
+                  'features.common.adminFormMutations.collaborators.errors.unexpected422',
+                )
             break
           case 400:
             errorMessage = getMappedBadRequestErrorMessage(
@@ -178,7 +196,7 @@ export const useMutateCollaborators = () => {
       // if error is not of type HttpError return the error message encapsulated in Error object
       return error.message
     },
-    [],
+    [getMappedBadRequestErrorMessage, getMappedDefaultErrorMessage, t],
   )
 
   const handleSuccess = useCallback(
@@ -232,7 +250,9 @@ export const useMutateCollaborators = () => {
       )
       if (index === -1)
         throw new Error(
-          'Collaborator to update does not seem to exist. Refresh and try again.',
+          t(
+            'features.common.adminFormMutations.collaborators.collaboratorNotFound',
+          ),
         )
       const permissionListToUpdate = currentPermissions.slice()
       // Replace old permissions with new permission.
@@ -242,9 +262,13 @@ export const useMutateCollaborators = () => {
     },
     {
       onSuccess: (newData, { permissionToUpdate }) => {
-        const toastDescription = `${
-          permissionToUpdate.email
-        } has been updated to the ${permissionsToRole(permissionToUpdate)} role`
+        const toastDescription = t(
+          'features.common.adminFormMutations.collaborators.success.updatedToRole',
+          {
+            email: permissionToUpdate.email,
+            role: permissionsToRole(permissionToUpdate),
+          },
+        )
         handleSuccess({ newData, toastDescription })
       },
       onError: (error: Error, { permissionToUpdate }) => {
@@ -264,9 +288,13 @@ export const useMutateCollaborators = () => {
     },
     {
       onSuccess: (newData, { newPermission }) => {
-        const toastDescription = `${
-          newPermission.email
-        } has been added as a ${permissionsToRole(newPermission)}`
+        const toastDescription = t(
+          'features.common.adminFormMutations.collaborators.success.addedAs',
+          {
+            email: newPermission.email,
+            role: permissionsToRole(newPermission),
+          },
+        )
         handleSuccess({ newData, toastDescription })
       },
       onError: (error: Error, { newPermission }) => {
@@ -288,7 +316,13 @@ export const useMutateCollaborators = () => {
     {
       onSuccess: (newData, { permissionToRemove }) => {
         // TODO: Decide if we want to allow redo (via readding permission)
-        const toastDescription = `${permissionToRemove.email} has been removed as a collaborator`
+
+        const toastDescription = t(
+          'features.common.adminFormMutations.collaborators.success.removed',
+          {
+            email: permissionToRemove.email,
+          },
+        )
         handleSuccess({ newData, toastDescription })
       },
       onError: (error: Error) => {
@@ -304,7 +338,12 @@ export const useMutateCollaborators = () => {
         toast.closeAll()
         // Show toast on success.
         toast({
-          description: `${newData.form.admin.email} is now the owner of this form`,
+          description: t(
+            'features.common.adminFormMutations.collaborators.success.newOwner',
+            {
+              email: newData.form.admin.email,
+            },
+          ),
         })
 
         // Update cached data.
@@ -328,8 +367,9 @@ export const useMutateCollaborators = () => {
     {
       onSuccess: () => {
         toast({
-          description:
-            'You have removed yourself as a collaborator from the form.',
+          description: t(
+            'features.common.adminFormMutations.collaborators.success.removeSelf',
+          ),
         })
 
         // Remove all related queries from cache.
@@ -357,6 +397,7 @@ export const useMutateCollaborators = () => {
 export const useMutateFormPage = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+  const { t } = useTranslation()
 
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -383,7 +424,9 @@ export const useMutateFormPage = () => {
             oldData ? { ...oldData, startPage: newData } : undefined,
         )
         toast({
-          description: 'The form header and instructions were updated.',
+          description: t(
+            'features.common.adminFormMutations.formPage.headerAndInstructionsUpdated',
+          ),
         })
       },
       onError: handleError,
@@ -400,7 +443,9 @@ export const useMutateFormPage = () => {
           (oldData) => (oldData ? { ...oldData, endPage: newData } : undefined),
         )
         toast({
-          description: 'The Thank you page was updated.',
+          description: t(
+            'features.common.adminFormMutations.formPage.thankYouPageUpdated',
+          ),
         })
       },
       onError: handleError,
@@ -419,7 +464,9 @@ export const useMutateFormPage = () => {
             oldData ? { ...oldData, payments_field: newData } : undefined,
         )
         toast({
-          description: 'The payment was updated.',
+          description: t(
+            'features.common.adminFormMutations.formPage.paymentUpdated',
+          ),
         })
       },
       onError: handleError,
@@ -446,7 +493,9 @@ export const useMutateFormPage = () => {
               : undefined,
         )
         toast({
-          description: 'Payments product was updated.',
+          description: t(
+            'features.common.adminFormMutations.formPage.paymentsProductUpdated',
+          ),
         })
       },
       onError: handleError,
@@ -496,6 +545,8 @@ export const usePreviewFormMutations = (formId: string) => {
 }
 
 export const useFormFeedbackMutations = (headers: string[]) => {
+  const { t } = useTranslation()
+
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -515,7 +566,9 @@ export const useFormFeedbackMutations = (headers: string[]) => {
     {
       onSuccess: () => {
         toast({
-          description: 'Form feedback download started',
+          description: t(
+            'features.common.adminFormMutations.downloads.feedbackStarted',
+          ),
         })
       },
       onError: handleError,
@@ -526,6 +579,8 @@ export const useFormFeedbackMutations = (headers: string[]) => {
 }
 
 export const useFormIssueMutations = (headers: string[]) => {
+  const { t } = useTranslation()
+
   const toast = useToast({ status: 'success', isClosable: true })
 
   const handleError = useCallback(
@@ -545,7 +600,9 @@ export const useFormIssueMutations = (headers: string[]) => {
     {
       onSuccess: () => {
         toast({
-          description: 'Form issues download started',
+          description: t(
+            'features.common.adminFormMutations.downloads.issuesStarted',
+          ),
         })
       },
       onError: handleError,
@@ -556,16 +613,18 @@ export const useFormIssueMutations = (headers: string[]) => {
 }
 
 export const useFormRemindersMutations = () => {
+  const { t } = useTranslation()
+
   const toast = useToast({ status: 'success', isClosable: true })
   const handleError = useCallback(
     (error: Error) => {
       toast.closeAll()
       toast({
-        description: error.message,
+        description: error.message || t('features.common.errors.generic'),
         status: 'danger',
       })
     },
-    [toast],
+    [toast, t],
   )
 
   const sendReminderForResponseMutation = useMutation(
@@ -587,7 +646,7 @@ export const useFormRemindersMutations = () => {
     {
       onSuccess: () => {
         toast({
-          description: 'Your reminder has been sent',
+          description: t('features.common.adminFormMutations.reminders.sent'),
         })
       },
       onError: handleError,

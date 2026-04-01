@@ -2,6 +2,7 @@ import { enSG as responsesCharts } from './responses/charts'
 import { enSG as responsesComponents } from './responses/components'
 import { enSG as responsesIndividualResponse } from './responses/individual-response'
 import { enSG as responsesResponsesPage } from './responses/responses-page'
+import { enSG as assistance } from './assistance'
 import { enSG as collaborator } from './collaborator'
 import { enSG as featureTour } from './feature-tour'
 import { enSG as feedback } from './feedback'
@@ -14,6 +15,7 @@ import { enSG as sidebar } from './sidebar'
 import { enSG as toasts } from './toasts'
 
 export const enSG = {
+  assistance,
   responses: {
     charts: responsesCharts,
     components: responsesComponents,

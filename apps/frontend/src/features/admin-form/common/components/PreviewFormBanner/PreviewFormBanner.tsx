@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Waypoint } from 'react-waypoint'
@@ -99,7 +99,9 @@ export const PreviewFormBanner = ({
               mr={{ base: '0.5rem', md: '1rem' }}
             />
             <Text textStyle="subhead-3">
-              {isTemplate ? 'Template Preview' : 'Form Preview'}
+              {isTemplate
+                ? t('features.common.previewFormBanner.title.template')
+                : t('features.common.previewFormBanner.title.form')}
             </Text>
           </Flex>
           {isTemplate ? (
@@ -111,24 +113,30 @@ export const PreviewFormBanner = ({
               >
                 <Link
                   variant="standalone"
-                  aria-label="Click to return to the admin dashboard"
+                  aria-label={t(
+                    'features.common.previewFormBanner.actions.returnToDashboard',
+                  )}
                   as={ReactLink}
                   to={DASHBOARD_ROUTE}
                 >
-                  Back to FormSG
+                  {t('features.common.previewFormBanner.actions.backToFormSG')}
                 </Link>
                 <Button
-                  aria-label="Click to use this template"
+                  aria-label={t(
+                    'features.common.previewFormBanner.actions.useTemplateAria',
+                  )}
                   onClick={onModalOpen}
                 >
-                  Use this template
+                  {t('features.common.previewFormBanner.actions.useTemplate')}
                 </Button>
               </Stack>
               <IconButton
                 color="primary.500"
                 variant="clear"
                 display={{ base: 'flex', md: 'none' }}
-                aria-label="Template preview actions"
+                aria-label={t(
+                  'features.common.previewFormBanner.actions.templatePreviewActions',
+                )}
                 onClick={onDrawerOpen}
                 icon={<BiDotsHorizontalRounded />}
               />
@@ -165,7 +173,7 @@ export const PreviewFormBanner = ({
                 isFullWidth={true}
                 {...mobileDrawerButtonProps}
               >
-                Use this template
+                {t('features.common.previewFormBanner.actions.useTemplate')}
               </Button>
               <Divider />
               <Button
@@ -174,7 +182,7 @@ export const PreviewFormBanner = ({
                 leftIcon={<BiArrowBack fontSize="1.25rem" />}
                 {...mobileDrawerButtonProps}
               >
-                Back to FormSG
+                {t('features.common.previewFormBanner.actions.backToFormSG')}
               </Button>
             </DrawerBody>
           </DrawerContent>
@@ -184,16 +192,18 @@ export const PreviewFormBanner = ({
         <Flex backgroundColor="neutral.900">
           {secretEnv === 'production' ? (
             <Text {...textProps}>
-              To test your payment form, replicate this form on our{' '}
-              <Link isExternal color="white" href={FORMSG_UAT}>
-                testing platform.
-              </Link>
+              <Trans
+                i18nKey="features.common.previewFormBanner.payment.production"
+                components={{
+                  testingPlatformLink: (
+                    <Link isExternal color="white" href={FORMSG_UAT} />
+                  ),
+                }}
+              />
             </Text>
           ) : (
             <Text {...textProps}>
-              You will not be able to make a test payment, or view submitted
-              answers or attachments in Form Preview mode. Open your form to
-              make a test payment or form submission.
+              <Trans i18nKey="features.common.previewFormBanner.payment.nonProduction" />
             </Text>
           )}
         </Flex>
@@ -202,8 +212,7 @@ export const PreviewFormBanner = ({
         <Flex backgroundColor="neutral.900">
           {!(secretEnv === 'production') && (
             <Text {...textProps}>
-              You will not be able to view submitted answers or attachments in
-              Form Preview mode. Open your form to test a form submission.
+              {t('features.common.previewFormBanner.nonPayment.nonProduction')}
             </Text>
           )}
         </Flex>
