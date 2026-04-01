@@ -1,6 +1,5 @@
 import {
   Body,
-  Column,
   Container,
   Head,
   Heading,
@@ -18,7 +17,7 @@ import {
   answerMargin,
   cardSectionStyle,
   containerStyle,
-  halfWidthColumnStyle,
+  fieldContainerStyle,
   headingTextStyle,
   mainStyle,
   primaryTextStyle,
@@ -108,22 +107,22 @@ export const EmailTemplate = ({
 
             {/* Section - Form Name & ResponseID */}
             <Section style={cardSectionStyle}>
-              <Column style={halfWidthColumnStyle}>
+              <div style={fieldContainerStyle}>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Form title
                 </Text>
                 <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
                   {formTitle}
                 </Text>
-              </Column>
-              <Column style={halfWidthColumnStyle}>
+              </div>
+              <div style={fieldContainerStyle}>
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Response ID
                 </Text>
                 <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
                   {responseId}
                 </Text>
-              </Column>
+              </div>
             </Section>
             {/* Section - Outcome */}
             {outcome && (

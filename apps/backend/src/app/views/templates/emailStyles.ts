@@ -61,13 +61,21 @@ export const halfWidthColumnStyle: NonNullable<LinkProps['style']> = {
   verticalAlign: 'top',
 }
 
+// Responsive field container - stacks on mobile
+export const fieldContainerStyle: NonNullable<LinkProps['style']> = {
+  display: 'inline-block',
+  width: '50%',
+  verticalAlign: 'top',
+  minWidth: '250px',
+  boxSizing: 'border-box',
+}
+
 // Section/Card style variations
 export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   background: '#F8F9FD',
   borderRadius: '8px',
   marginBottom: '16px',
-  paddingLeft: '16px',
-  paddingRight: '16px',
+  padding: '0 16px', // padding on left & right only since React <Text> alr has default padding for top/down
 }
 
 /** Button style to be attached to the outer <Container> of a button */
