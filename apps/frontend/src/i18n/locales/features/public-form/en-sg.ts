@@ -73,5 +73,99 @@ export const enSG: PublicForm = {
     instructions: {
       title: 'Instructions',
     },
+    duplicatePaymentModal: {
+      title: 'Proceed to pay again?',
+      description: {
+        existingPayment:
+          'We noticed a successful payment made on this form by your email address.',
+        viewPreviousPayment: 'View your previous payment ↪',
+        confirm: 'Do you wish to proceed to make another payment?',
+      },
+      actions: {
+        submit: 'Proceed to pay',
+        submitting: 'Submitting',
+      },
+    },
+    formAuth: {
+      loginButton: 'Log in with {{authType}}',
+      authType: {
+        singpass: 'Singpass',
+        singpassCorporate: 'Singpass (Corporate)',
+        singpassApp: 'Singpass app',
+      },
+    },
+    formAuthMessage: {
+      signIn: {
+        singpass: 'Sign in with Singpass to access this form.\n',
+        corporate: 'Corporate entity login is required for this form.\n',
+        singpassApp: 'Sign in with the Singpass app to access this form.\n',
+      },
+      submitterId: {
+        included: {
+          singpass:
+            'Your Singpass login ID <bold>will be included</bold> with your form submission.',
+          corporate:
+            'Your Singpass and Corppass login ID <bold>will be included</bold> with your form submission.',
+        },
+        notIncluded: {
+          singpass:
+            'Your Singpass login ID will <bold>not be included</bold> with your form submission.',
+          corporate:
+            'Your Singpass and Corppass login ID will <bold>not be included</bold> with your form submission.',
+        },
+      },
+    },
+    formFields: {
+      prefillWarning: 'Some fields below have been pre-filled.',
+    },
+    formFieldsContainer: {
+      error: 'Something went wrong',
+    },
+    formIssueFeedbackModal: {
+      title: 'Report an issue',
+      description: {
+        beforeBold: 'Fill this in only ',
+        bold: 'if you are experiencing issues and are unable to submit this form',
+        afterBold:
+          '. If you would like to provide feedback, you can do so after submitting the form.',
+      },
+      fields: {
+        issueLabel: 'Please describe the issue you encountered',
+        contactLabel: 'Contact',
+        emailPlaceholder: 'me@example.com',
+      },
+      actions: {
+        submit: 'Send report',
+      },
+      toast: {
+        preview:
+          'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
+        success: 'Thank you for submitting your feedback!',
+      },
+    },
+    loadingTitle: {
+      title: 'Loading title',
+    },
+    miniHeader: {
+      mobileSectionSidebar: 'Mobile section sidebar',
+    },
+    formHeader: {
+      logoutWithId: '{{id}} - Log out',
+    },
+    sectionSidebar: {
+      skipToSection: 'Skip to section',
+      formSections: 'Form sections',
+      jumpToSection: 'Jump to form section',
+      listOfSections: 'List of form section links',
+      navigatedToSection: 'Navigated to section: {{title}}{{description}}',
+    },
+    sidebarLink: {
+      navigateToSection: 'Navigate to section: ',
+    },
+    singleSubmissionModal: {
+      title: 'Only one submission per NRIC/FIN/UEN allowed',
+      logoutLoading: 'Logging out',
+      backToLogin: 'Back to Singpass log in',
+    },
   },
 }

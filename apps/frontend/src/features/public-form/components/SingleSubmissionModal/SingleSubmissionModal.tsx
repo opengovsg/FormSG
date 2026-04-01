@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+
 import {
   Button,
   Modal,
@@ -31,6 +33,7 @@ export const SingleSubmissionModal = ({
   isOpen,
   onClose,
 }: SingleSubmissionModalProps) => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const navigate = useNavigate()
 
@@ -52,7 +55,7 @@ export const SingleSubmissionModal = ({
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader pb={'2rem'} w="90%">
-          Only one submission per NRIC/FIN/UEN allowed
+          {t('features.publicForm.components.singleSubmissionModal.title')}
         </ModalHeader>
         <ModalBody flexGrow={0}>
           <Stack>
@@ -62,11 +65,15 @@ export const SingleSubmissionModal = ({
         <ModalFooter>
           <ButtonGroup isFullWidth={isMobile}>
             <Button
-              loadingText="Logging out"
+              loadingText={t(
+                'features.publicForm.components.singleSubmissionModal.logoutLoading',
+              )}
               isDisabled={!handleLogout}
               onClick={singpassLogoutAndRedirectToFormLogin}
             >
-              Back to Singpass log in
+              {t(
+                'features.publicForm.components.singleSubmissionModal.backToLogin',
+              )}
             </Button>
           </ButtonGroup>
         </ModalFooter>

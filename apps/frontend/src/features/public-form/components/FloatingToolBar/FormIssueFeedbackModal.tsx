@@ -13,6 +13,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { Trans, useTranslation } from 'react-i18next'
 import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, SubmitFormIssueBodyDto } from 'formsg-shared/types'
@@ -42,6 +43,8 @@ export const FormIssueFeedbackModal = ({
   isPreview,
   formId,
 }: FormIssueFeedbackProps): JSX.Element | null => {
+  const { t } = useTranslation()
+
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -64,15 +67,18 @@ export const FormIssueFeedbackModal = ({
     if (isPreview) {
       reset()
       toast({
-        description:
-          'Thank you for submitting your feedback! Since you are in preview mode, the feedback is not stored.',
+        description: t(
+          'features.publicForm.components.formIssueFeedbackModal.toast.preview',
+        ),
       })
     } else {
       submitFormIssueMutation.mutate(inputs, {
         onSuccess: () => {
           reset()
           toast({
-            description: 'Thank you for submitting your feedback!',
+            description: t(
+              'features.publicForm.components.formIssueFeedbackModal.toast.success',
+            ),
             status: 'success',
             isClosable: true,
           })
@@ -98,23 +104,24 @@ export const FormIssueFeedbackModal = ({
             pr="4rem"
           >
             <Text textStyle={{ base: '1.25rem', md: '1.5rem' }}>
-              Report an issue
+              {t('features.publicForm.components.formIssueFeedbackModal.title')}
             </Text>
           </ModalHeader>
           <ModalBody>
             <Text pb="1.5rem" textStyle="body-2" mt="0">
-              Fill this in only{' '}
-              <span style={{ fontWeight: 'bold' }}>
-                if you are experiencing issues and are unable to submit this
-                form
-              </span>
-              . If you would like to provide feedback, you can do so after
-              submitting the form.
+              <Trans
+                i18nKey="features.publicForm.components.formIssueFeedbackModal.description"
+                components={{
+                  bold: <span style={{ fontWeight: 'bold' }} />,
+                }}
+              />
             </Text>
             <Stack>
               <FormControl isInvalid={!!errors.issue}>
                 <FormLabel isRequired={true}>
-                  Please describe the issue you encountered
+                  {t(
+                    'features.publicForm.components.formIssueFeedbackModal.fields.issueLabel',
+                  )}
                 </FormLabel>
                 <Textarea
                   {...register('issue', {
@@ -127,10 +134,12 @@ export const FormIssueFeedbackModal = ({
               </FormControl>
 
               <FormControl isInvalid={!!errors.email}>
-                <FormLabel pt="1rem">Contact</FormLabel>
+                <FormLabel pt="1rem">{t('features.common.cancel')}</FormLabel>
                 <Input
                   type={BasicField.Email}
-                  placeholder="me@example.com"
+                  placeholder={t(
+                    'features.publicForm.components.formIssueFeedbackModal.fields.emailPlaceholder',
+                  )}
                   {...register('email', {
                     validate: {
                       validEmail: (value) =>
@@ -152,10 +161,12 @@ export const FormIssueFeedbackModal = ({
               direction={{ base: 'column-reverse', md: 'row' }}
             >
               <Button isFullWidth={isMobile} variant="clear" onClick={onClose}>
-                Cancel
+                {t('features.common.cancel')}
               </Button>
               <Button isFullWidth={isMobile} type="submit">
-                Send report
+                {t(
+                  'features.publicForm.components.formIssueFeedbackModal.actions.submit',
+                )}
               </Button>
             </Stack>
           </ModalFooter>

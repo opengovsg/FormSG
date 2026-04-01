@@ -21,7 +21,6 @@ export interface App {
       billing: string
       emergencyContact: string
       transferAllForms: string
-      logout: string
     }
   }
 }
