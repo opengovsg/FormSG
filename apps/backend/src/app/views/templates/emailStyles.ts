@@ -86,6 +86,9 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   border: '1px solid #E9E9E9',
   marginBottom: '16px',
   padding: '0 16px', // padding on left & right only since React <Text> alr has default padding for top/down
+  width: '100%',
+  display: 'block',
+  boxSizing: 'border-box',
 }
 
 /** Button style to be attached to the outer <Container> of a button */
