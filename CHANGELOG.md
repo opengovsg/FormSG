@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.3](https://github.com/opengovsg/formsg/compare/v7.4.2...v7.4.3) (2026-04-01)
+
+
+### Bug Fixes
+
+* **all:** bump dependencies (#9256) ([#9256](https://github.com/opengovsg/formsg/commit/41eae6db642a7b7a17dd216832008a499fce6781))
+* **backend:** pin node version 22.22.2 (#9263) ([#9263](https://github.com/opengovsg/formsg/commit/b7836306222a1940cc650549af5318fd83402920))
+
+
+### Miscellaneous
+
+* Merge pull request #9250 from opengovsg/docs/readme/deepwiki-official ([#9250](https://github.com/opengovsg/formsg/commit/b7ffae51a96c5ef477691cafa0fca01fd7950bd4))
+* Merge pull request #9257 from opengovsg/release-al2 ([#9257](https://github.com/opengovsg/formsg/commit/4584acc047a4649c22ccb6b1da9b5474adab3b16))
+
 ## [7.4.2](https://github.com/opengovsg/formsg/compare/v7.4.1...v7.4.2) (2026-03-31)
 
 
