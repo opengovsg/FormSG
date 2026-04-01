@@ -138,15 +138,6 @@ export const EmailTemplate = ({
             )}
             {/* Section - Responses */}
             <Section style={cardSectionStyle}>
-              <Heading
-                style={{
-                  ...headingTextStyle,
-                  marginTop: '16px',
-                  marginBottom: '24px',
-                }}
-              >
-                Responses for {formTitle}
-              </Heading>
               {formQuestionAnswers
                 ? formQuestionAnswers.map(renderQuestionAnswer)
                 : null}
