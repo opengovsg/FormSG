@@ -137,9 +137,11 @@ export const EmailTemplate = ({
             )}
             {/* Section - Responses */}
             <Section style={cardSectionStyle}>
-              {formQuestionAnswers
-                ? formQuestionAnswers.map(renderQuestionAnswer)
-                : null}
+              <>
+                {formQuestionAnswers
+                  ? formQuestionAnswers.map(renderQuestionAnswer)
+                  : null}
+              </>
             </Section>
             {/* Section - Payment response */}
             {paymentAmount ? (
