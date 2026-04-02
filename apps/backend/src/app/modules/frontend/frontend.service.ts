@@ -1,4 +1,4 @@
-import { ClientEnvVars } from 'formsg-shared/types/core'
+import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
@@ -7,6 +7,15 @@ import { growthbookConfig } from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
+
+export const getFrontendRuntimeEnv = (): FrontendRuntimeEnv => ({
+  appUrl: config.app.appUrl,
+  apiBaseUrl: '/api/v3',
+  gaTrackingId: process.env.GA_TRACKING_ID ?? '',
+  formsgSdkMode: config.formsgSdkMode,
+  ddRumEnv: process.env.DD_ENV ?? '',
+  ddSampleRate: 5,
+})
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {

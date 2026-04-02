@@ -4,6 +4,8 @@ import { StatusCodes } from 'http-status-codes'
 
 import { ErrorCode } from 'formsg-shared/types/errorCodes'
 
+import { env } from '~/env'
+
 import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
@@ -13,7 +15,7 @@ import {
   handleCloudflareChallengeError,
 } from '~features/turnstile/handleCloudflareChallenge'
 
-export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
+export const API_BASE_URL = env.apiBaseUrl
 export class HttpError extends Error {
   code: number
   constructor(message: string, code: number) {

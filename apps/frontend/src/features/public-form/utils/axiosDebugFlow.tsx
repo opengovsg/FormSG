@@ -2,19 +2,19 @@ import { datadogLogs } from '@datadog/browser-logs'
 
 import { ClientEnvVars } from 'formsg-shared/types'
 
+import { env } from '~/env'
+
 import { ApiService } from '~services/ApiService'
 
 const getClientEnvWithFetch = async () => {
-  const response = await fetch(
-    `${import.meta.env.VITE_APP_URL}/api/v3/client/env`,
-  )
+  const response = await fetch(`${env.appUrl}/api/v3/client/env`)
   if (response.ok) {
-    const env = await response.json()
+    const clientEnv = await response.json()
     datadogLogs.logger.info(`handleSubmitForm: fetch env vars successful`, {
       meta: {
         action: 'handleSubmitForm',
         method: 'fetch',
-        env,
+        env: clientEnv,
       },
     })
   } else {
@@ -29,15 +29,15 @@ const getClientEnvWithFetch = async () => {
 
 const getClientEnvWithAxios = async () => {
   try {
-    const env = await ApiService.get<ClientEnvVars>(
-      `${import.meta.env.VITE_APP_URL}/api/v3/client/env`,
+    const clientEnv = await ApiService.get<ClientEnvVars>(
+      `${env.appUrl}/api/v3/client/env`,
     ).then(({ data }) => data)
 
     datadogLogs.logger.info(`handleSubmitForm: axios env vars successful`, {
       meta: {
         action: 'handleSubmitForm',
         method: 'axios',
-        env,
+        env: clientEnv,
       },
     })
   } catch (error) {
