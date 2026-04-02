@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
 
 import config from '../../config/config'
@@ -16,6 +17,11 @@ export const getFrontendRuntimeEnv = (): FrontendRuntimeEnv => ({
   ddRumEnv: process.env.DD_ENV ?? '',
   ddSampleRate: 5,
 })
+
+// Computed once at startup — values are static for the container lifetime
+const envScriptContent = `window.__ENV__=${JSON.stringify(getFrontendRuntimeEnv())}`
+export const envScript = `<script>${envScriptContent}</script>`
+export const envScriptCspHash = `'sha256-${crypto.createHash('sha256').update(envScriptContent).digest('base64')}'`
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {

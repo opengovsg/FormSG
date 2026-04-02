@@ -9,7 +9,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
 
-import { getClientEnvVars, getFrontendRuntimeEnv } from './frontend.service'
+import { envScript, getClientEnvVars } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -17,9 +17,6 @@ const reactFrontendPath = path.resolve('../frontend/dist')
 const reactHtml = readFileSync(path.join(reactFrontendPath, 'index.html'), {
   encoding: 'utf8',
 })
-
-// Computed once at startup — values are static for the container lifetime
-const envScript = `<script>window.__ENV__=${JSON.stringify(getFrontendRuntimeEnv())}</script>`
 
 type MetaTags = {
   title: string
