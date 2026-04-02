@@ -11,6 +11,9 @@ RUN apk --no-cache add --virtual native-deps \
     pnpm add -g node-gyp@12.2.0
 # Build stage: node_modules already present in base image — just copy source and build
 FROM ${BUILD_BASE_IMAGE} AS build
+ARG APP_VERSION=""
+ARG DD_RUM_APP_ID=""
+ARG DD_RUM_CLIENT_TOKEN=""
 WORKDIR /build
 
 COPY . ./
@@ -18,22 +21,11 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+ENV VITE_APP_VERSION=$APP_VERSION
+ENV VITE_APP_DD_RUM_APP_ID=$DD_RUM_APP_ID
+ENV VITE_APP_DD_RUM_CLIENT_TOKEN=$DD_RUM_CLIENT_TOKEN
 RUN pnpm build
 
-ARG APP_VERSION
-ARG APP_URL
-ARG REPO_URL
-
-# Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
-# Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
-# For the content of the mounted file is only accessible in the RUN command where it's referred in, use && command.
-RUN --mount=type=secret,id=dd_api_key \
-    export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
-    pnpm exec datadog-ci sourcemaps upload ./apps/frontend/dist \
-    --service=formsg-react \
-    --release-version=$APP_VERSION \
-    --minified-path-prefix=$APP_URL \
-    --repository-url=$REPO_URL
 
 # Final stage: runtime deps and user already in base image
 FROM ${RUNTIME_BASE_IMAGE}
