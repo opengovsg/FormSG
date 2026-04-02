@@ -1,9 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM node:22.22.2-alpine3.22 AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+ARG BUILD_BASE_IMAGE=ghcr.io/opengovsg/formsg:build-latest
+ARG RUNTIME_BASE_IMAGE=ghcr.io/opengovsg/formsg:runtime-latest
 
 FROM base AS build 
 # node-modules-builder stage installs/compiles the node_modules folder
@@ -12,15 +9,9 @@ RUN apk --no-cache add --virtual native-deps \
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl \
     build-base cairo-dev pango-dev giflib-dev libjpeg-turbo-dev librsvg-dev && \
     pnpm add -g node-gyp@12.2.0
+# Build stage: node_modules already present in base image — just copy source and build
+FROM ${BUILD_BASE_IMAGE} AS build
 WORKDIR /build
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/sdk/package.json ./packages/sdk/
-COPY apps/frontend/package.json ./apps/frontend/
-
-RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
 
 COPY . ./
 
@@ -35,7 +26,7 @@ ARG REPO_URL
 
 # Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
 # Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
-# For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
+# For the content of the mounted file is only accessible in the RUN command where it's referred in, use && command.
 RUN --mount=type=secret,id=dd_api_key \
     export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
     pnpm exec datadog-ci sourcemaps upload ./apps/frontend/dist \
@@ -44,11 +35,10 @@ RUN --mount=type=secret,id=dd_api_key \
     --minified-path-prefix=$APP_URL \
     --repository-url=$REPO_URL
 
-# This stage builds the final container
-FROM base
+# Final stage: runtime deps and user already in base image
+FROM ${RUNTIME_BASE_IMAGE}
 LABEL maintainer=FormSG<form@open.gov.sg>
 WORKDIR /opt/formsg
-
 
 # Copy the built frontend dist for the backend to serve
 COPY --from=build /build/apps/frontend/dist /opt/formsg/apps/frontend/dist
@@ -71,21 +61,7 @@ COPY --from=build /build/apps/backend/node_modules /opt/formsg/apps/backend/node
 COPY --from=build /build/apps/backend/package.json /opt/formsg/apps/backend/package.json
 COPY --from=build /build/apps/backend/dist /opt/formsg/apps/backend/dist
 
-RUN apk add --no-cache \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    tini \
-    cairo \
-    pango \
-    librsvg \ 
-    giflib
-
-# Run as non-privileged user
-RUN addgroup -S formsguser && adduser -S -g formsguser formsguser
+# Run as non-privileged user (pre-created in runtime-base)
 USER formsguser
 
 ENV NODE_ENV=production
