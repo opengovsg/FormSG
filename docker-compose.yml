@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile.development
     depends_on:
       - database
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
       - ./:/opt/formsg
       - /opt/formsg/node_modules

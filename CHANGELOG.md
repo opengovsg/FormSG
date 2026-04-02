@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.5](https://github.com/opengovsg/formsg/compare/v7.4.4...v7.4.5) (2026-04-02)
+
+
+### Bug Fixes
+
+* **frontend:** keep empty attachment zip archives (#9271) ([#9271](https://github.com/opengovsg/formsg/commit/795f48856f97e1db3f8a46155d2af5065667900d))
+
+
+### Miscellaneous
+
+* Merge pull request #9265 from opengovsg/fix/all/enable-development-host-gateway ([#9265](https://github.com/opengovsg/formsg/commit/f68661092ab545e8c205fab3c6281dae66249b02))
+
+
+### Builds
+
+* merge 7.4.4 back to develop (#9270) ([#9270](https://github.com/opengovsg/formsg/commit/32f271c183b0acfcea7fba11d021b398ec0f2e35))
+
 ## [7.4.4](https://github.com/opengovsg/formsg/compare/v7.4.3...v7.4.4) (2026-04-01)
 
 
