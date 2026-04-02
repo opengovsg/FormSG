@@ -23,6 +23,7 @@ export interface General extends HasTitle {
     toast: {
       successStorageMode: string
       successMrf: string
+      successRemoved: string
     }
     limitLessThanCurrent: string
   }
