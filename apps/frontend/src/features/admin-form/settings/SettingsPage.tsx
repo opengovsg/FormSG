@@ -75,7 +75,7 @@ export const SettingsPage = (): JSX.Element => {
     !isFormSettingLoading &&
     user?.betaFlags?.multiLangTranslation
       ? {
-          label: 'Multi-language',
+          label: t('features.adminForm.settings.tabs.multiLanguage'),
           icon: LanguageTranslation,
           component: SettingsMultiLangPage,
           path: 'language',

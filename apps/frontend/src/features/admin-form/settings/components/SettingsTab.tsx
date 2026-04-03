@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { As, Box, Icon, Tab } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
@@ -13,6 +14,8 @@ export const SettingsTab = ({
   icon,
   showNewBadge = false,
 }: SettingsTabProps): JSX.Element => {
+  const { t } = useTranslation()
+
   return (
     <Tab justifyContent="flex-start" p="1rem">
       <Icon as={icon} color="currentcolor" fontSize="1.5rem" />
@@ -25,7 +28,7 @@ export const SettingsTab = ({
           colorScheme="success"
           display={{ base: 'none', lg: 'initial' }}
         >
-          New
+          {t('features.adminForm.settings.tabs.newBadge')}
         </Badge>
       ) : null}
     </Tab>
