@@ -79,21 +79,15 @@
     },
     "onlyBuiltDependencies": [
       "bcrypt",
-      "@datadog/native-appsec",
-      "@datadog/native-iast-taint-tracking",
-      "@datadog/native-metrics",
-      "@datadog/pprof",
-      "aws-sdk",
-      "aws-lambda-ric",
       "canvas",
-      "dd-trace",
-      "esbuild",
-      "fsevents",
-      "protobufjs",
-      "sharp",
-      "unix-dgram",
-      "msw",
+      "aws-lambda-ric",
       "microtime"
+    ],
+    "__onlyBuiltDependenciesComments": [
+      "bcrypt is required for the backend",
+      "canvas is required for signatures field",
+      "aws-lambda-ric is required for the virus scanner guardduty",
+      "microtime is required for frontend tests to run"
     ]
   },
   "config": {
