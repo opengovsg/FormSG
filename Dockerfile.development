@@ -38,9 +38,9 @@ RUN apk update && apk upgrade && \
     librsvg-dev && \
     apk add --no-cache \
     cairo pango librsvg && \
-    pnpm add -g node-gyp && \
+    pnpm add -g node-gyp@12.2.0 && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
-    pip install awscli-local[ver1] --break-system-packages
+    pip install awscli-local[ver1]==0.22.2 --break-system-packages
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858
