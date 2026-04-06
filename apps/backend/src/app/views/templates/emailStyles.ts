@@ -62,6 +62,7 @@ export const cardSectionColumnStyle: NonNullable<LinkProps['style']> = {
   padding: '0 16px',
   verticalAlign: 'top',
   width: 'calc(50% - 8px)',
+  wordBreak: 'break-word',
 }
 
 // Section/Card style variations
@@ -74,6 +75,7 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   width: '100%',
   display: 'block',
   boxSizing: 'border-box',
+  wordBreak: 'break-word',
 }
 
 /** Button style to be attached to the outer <Container> of a button */

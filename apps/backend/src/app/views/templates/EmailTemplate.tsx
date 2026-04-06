@@ -102,6 +102,9 @@ export const EmailTemplate = ({
               width: 100% !important;
               padding: 16px !important;
               margin-bottom: 16px !important;
+              box-sizing: border-box !important;
+              max-width: 100% !important;
+              word-break: break-word !important;
             }
             .spacer-column {
               display: none !important;
@@ -137,7 +140,7 @@ export const EmailTemplate = ({
             <Text
               style={{
                 ...secondaryTextStyle,
-                marginTop: '40px',
+                marginBottom: '40px',
                 whiteSpace: 'pre-line',
               }}
             >
