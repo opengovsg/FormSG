@@ -14,6 +14,7 @@ import {
   trackDownloadResponseSuccess,
   trackPartialDecryptionFailure,
 } from '~features/analytics/AnalyticsService'
+import { getVisibleResponses } from '~features/logic/utils'
 import { useUser } from '~features/user/queries'
 
 import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
@@ -317,7 +318,10 @@ const useDecryptionWorkers = ({
                     submission: {
                       refNo,
                       submissionTime,
-                      responses: decryptedResponses,
+                      responses: getVisibleResponses(decryptedResponses, {
+                        formFields: adminForm.form_fields,
+                        formLogics: adminForm.form_logics,
+                      }),
                     },
                   })
                   pdfZip.file(pdfTitle, pdfBlob)

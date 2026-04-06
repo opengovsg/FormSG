@@ -28,6 +28,7 @@ import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { getVisibleResponses } from '~features/logic/utils'
 import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
@@ -182,7 +183,16 @@ export const IndividualResponseNavbar = (): JSX.Element => {
                       },
                     )
                     if (submission && form) {
-                      await downloadResponsePdf({ form, submission })
+                      await downloadResponsePdf({
+                        form,
+                        submission: {
+                          ...submission,
+                          responses: getVisibleResponses(submission.responses, {
+                            formFields: form.form_fields,
+                            formLogics: form.form_logics,
+                          }),
+                        },
+                      })
                     }
                   }}
                   variant="clear"
