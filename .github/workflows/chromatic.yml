@@ -25,10 +25,10 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       emailpreview: ${{ steps.filter.outputs.emailpreview }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # @v3.0.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
           filters: |
@@ -48,15 +48,15 @@ jobs:
         working-directory: apps/frontend
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -67,7 +67,7 @@ jobs:
         run: pnpm build:sdk
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@v1
+        uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -93,15 +93,15 @@ jobs:
         working-directory: packages/react-email-preview
     # Job steps
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -113,7 +113,7 @@ jobs:
         run: pnpm build:sdk
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@v1
+        uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
