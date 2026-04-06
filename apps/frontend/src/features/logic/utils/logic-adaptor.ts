@@ -1,17 +1,28 @@
 import { DeepPartialSkipArrayKey, UnpackNestedValue } from 'react-hook-form'
+import { FieldType, FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { CamelCasedProperties } from 'type-fest'
 
-import { FormDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormDto,
+  FormFieldDto,
+  LogicableField,
+} from 'formsg-shared/types'
 import { isNonEmpty } from 'formsg-shared/utils/isNonEmpty'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as sharedGetLogicUnitPreventingSubmit,
   getVisibleFieldIds as sharedGetVisibleFieldIds,
+  LOGIC_MAP,
+  LogicFieldResponse,
+  LogicFieldServerResponse,
 } from 'formsg-shared/utils/logic'
 
 import { FormFieldValues } from '~templates/Field'
 
 import { filterHiddenInputs } from '~features/public-form/utils'
+
+import { ALLOWED_LOGIC_FIELDS } from '../constants'
 
 import { isLogicableField, isNotLogicableField } from './typeguards'
 
@@ -113,4 +124,60 @@ export const getVisibleFieldIds = (
     form_fields: formFields,
     form_logics: formLogics,
   })
+}
+
+const isBasicFieldType = (fieldType: FieldType): fieldType is BasicField => {
+  return (Object.values(BasicField) as string[]).includes(fieldType)
+}
+
+const responsesToLogicFieldResponses = (
+  responses: FormField[],
+): LogicFieldResponse[] => {
+  return responses
+    .map((response) => {
+      if (!isBasicFieldType(response.fieldType)) {
+        return null
+      }
+      if (ALLOWED_LOGIC_FIELDS.has(response.fieldType)) {
+        return {
+          _id: response._id,
+          fieldType: response.fieldType as LogicableField,
+          answer: response.answer ?? '',
+        }
+      } else {
+        return {
+          _id: response._id,
+          fieldType: response.fieldType as Exclude<BasicField, LogicableField>,
+        }
+      }
+    })
+    .filter(isNonEmpty)
+}
+
+const getVisibleFieldIdsFromResponses = (
+  responses: FormField[],
+  {
+    formFields,
+    formLogics,
+  }: CamelCasedProperties<Pick<FormDto, 'form_fields' | 'form_logics'>>,
+): FieldIdSet => {
+  const logicFieldResponses = responsesToLogicFieldResponses(responses)
+  return sharedGetVisibleFieldIds(logicFieldResponses, {
+    form_fields: formFields,
+    form_logics: formLogics,
+  })
+}
+
+export const getVisibleResponses = (
+  responses: FormField[],
+  {
+    formFields,
+    formLogics,
+  }: CamelCasedProperties<Pick<FormDto, 'form_fields' | 'form_logics'>>,
+): FormField[] => {
+  const visibleFieldIds = getVisibleFieldIdsFromResponses(responses, {
+    formFields,
+    formLogics,
+  })
+  return responses.filter((response) => visibleFieldIds.has(response._id))
 }
