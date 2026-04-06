@@ -247,7 +247,7 @@ jobs:
         env:
           DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
-          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
+          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v5.11.0/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
           chmod +x /usr/local/bin/datadog-ci
           datadog-ci sourcemaps upload /tmp/s3static \
             --service=formsg-react \
