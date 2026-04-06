@@ -244,14 +244,16 @@ jobs:
           aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Upload Datadog sourcemaps
+        env:
+          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
-          npx @datadog/datadog-ci sourcemaps upload /tmp/s3static \
+          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
+          chmod +x /usr/local/bin/datadog-ci
+          datadog-ci sourcemaps upload /tmp/s3static \
             --service=formsg-react \
             --release-version=${{ env.APP_VERSION }} \
             --minified-path-prefix=${{ inputs.app-url }} \
             --repository-url=${{ github.server_url }}/${{ github.repository }}
-        env:
-          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a # v1.4.11
