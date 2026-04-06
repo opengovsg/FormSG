@@ -8,8 +8,8 @@ export const mainStyle = {
 }
 
 export const containerStyle = {
-  maxWidth: '100%',
-  width: '720px',
+  maxWidth: '720px',
+  width: '100%',
   margin: '20px auto',
   padding: '20px',
 }
@@ -54,29 +54,14 @@ export const answerMargin: NonNullable<LinkProps['style']> = {
   marginTop: '4px',
 }
 
-// Column styles - hybrid responsive approach
-export const halfWidthColumnStyle: NonNullable<LinkProps['style']> = {
-  maxWidth: '50%',
+// Card sections used in column layout
+export const cardSectionColumnStyle: NonNullable<LinkProps['style']> = {
+  background: '#F8F9FD',
+  borderRadius: '8px',
+  border: '1px solid #E9E9E9',
+  padding: '0 16px',
   verticalAlign: 'top',
-}
-
-export const leftColumnStyle: NonNullable<LinkProps['style']> = {
-  ...halfWidthColumnStyle,
-  paddingRight: '8px',
-}
-
-export const rightColumnStyle: NonNullable<LinkProps['style']> = {
-  ...halfWidthColumnStyle,
-  paddingLeft: '8px',
-}
-
-// Responsive field container - stacks on mobile
-export const fieldContainerStyle: NonNullable<LinkProps['style']> = {
-  display: 'inline-block',
-  width: '50%',
-  verticalAlign: 'top',
-  minWidth: '250px',
-  boxSizing: 'border-box',
+  width: 'calc(50% - 8px)',
 }
 
 // Section/Card style variations
@@ -85,7 +70,7 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   borderRadius: '8px',
   border: '1px solid #E9E9E9',
   marginBottom: '16px',
-  padding: '0 16px', // padding on left & right only since React <Text> alr has default padding for top/down
+  padding: '0 16px',
   width: '100%',
   display: 'block',
   boxSizing: 'border-box',

@@ -1,5 +1,6 @@
 import {
   Body,
+  Column,
   Container,
   Head,
   Heading,
@@ -7,6 +8,7 @@ import {
   Img,
   Link,
   Preview,
+  Row,
   Section,
   Text,
 } from '@react-email/components'
@@ -15,9 +17,9 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
   answerMargin,
+  cardSectionColumnStyle,
   cardSectionStyle,
   containerStyle,
-  fieldContainerStyle,
   headingTextStyle,
   mainStyle,
   primaryTextStyle,
@@ -79,11 +81,35 @@ export const EmailTemplate = ({
 
   return (
     <Html>
-      <Head />
+      <Head>
+        <style>{`
+          @media only screen and (max-width: 600px) {
+            .field-container {
+              display: block !important;
+              width: 100% !important;
+              padding: 16px !important;
+              margin-bottom: 16px !important;
+            }
+            .spacer-column {
+              display: none !important;
+              width: 0 !important;
+            }
+            .email-container {
+              padding: 12px !important;
+            }
+            .email-section {
+              padding: 20px !important;
+            }
+          }
+        `}</style>
+      </Head>
       <Preview>{emailTitle}</Preview>
       <Body style={mainStyle}>
-        <Container style={containerStyle}>
-          <Section style={{ ...sectionStyle, backgroundColor: '#ffffff' }}>
+        <Container className="email-container" style={containerStyle}>
+          <Section
+            className="email-section"
+            style={{ ...sectionStyle, backgroundColor: '#ffffff' }}
+          >
             {/* Logo */}
             <Img
               style={{ height: '24px', marginBottom: '40px' }}
@@ -106,24 +132,40 @@ export const EmailTemplate = ({
             </Text>
 
             {/* Section - Form Name & ResponseID */}
-            <Section style={cardSectionStyle}>
-              <div style={fieldContainerStyle}>
+            <Row
+              style={{
+                marginBottom: '16px',
+                width: '100%',
+                tableLayout: 'fixed',
+              }}
+            >
+              <Column
+                className="field-container"
+                style={cardSectionColumnStyle}
+              >
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Form title
                 </Text>
                 <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
                   {formTitle}
                 </Text>
-              </div>
-              <div style={fieldContainerStyle}>
+              </Column>
+              <Column
+                style={{ width: '16px' }}
+                className="spacer-column"
+              ></Column>
+              <Column
+                className="field-container"
+                style={cardSectionColumnStyle}
+              >
                 <Text style={{ ...primaryTextStyle, ...questionMargin }}>
                   Response ID
                 </Text>
                 <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
                   {responseId}
                 </Text>
-              </div>
-            </Section>
+              </Column>
+            </Row>
             {/* Section - Outcome */}
             {outcome && (
               <Section style={cardSectionStyle}>
