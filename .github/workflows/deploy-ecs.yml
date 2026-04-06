@@ -125,7 +125,7 @@ jobs:
     steps:
       - name: Checkout branch source code into runner environment
         # Required for the frontend build env vars
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
 
@@ -152,20 +152,20 @@ jobs:
           echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> apps/frontend/.env
 
       - name: Grant runner AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@f2e9fc6c2b355c1890b65e6f6f0e2ac3e6e22f78 # v2.1.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         env:
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ inputs.dd-env }}
@@ -199,7 +199,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           CONTAINER_NAME: ${{ inputs.ecs-container-name }}
-        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc # v1.1.3
         with:
           task-definition: ${{ inputs.ecs-task-definition-path }}
           container-name: ${{ env.CONTAINER_NAME }}
@@ -221,7 +221,7 @@ jobs:
           aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
 
       - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a # v1.4.11
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ inputs.ecs-service-name }}
