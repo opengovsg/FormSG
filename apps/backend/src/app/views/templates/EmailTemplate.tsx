@@ -17,6 +17,7 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
   answerMargin,
+  buttonContainerStyle,
   cardSectionColumnStyle,
   cardSectionStyle,
   containerStyle,
@@ -76,6 +77,18 @@ export const EmailTemplate = ({
       <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
         {qa.answer}
       </Text>
+    </>
+  )
+
+  const renderFallbackLink = (url: string) => (
+    <>
+      <Text style={{ ...secondaryTextStyle }}>
+        If you are having trouble with the button above, copy and paste the link
+        below into your browser:
+      </Text>
+      <Link href={url} style={{ ...linkStyle }}>
+        {url}
+      </Link>
     </>
   )
 
@@ -199,71 +212,50 @@ export const EmailTemplate = ({
             {/* Status tracker button*/}
             {statusTrackerUrl ? (
               <>
-                <a
-                  href={statusTrackerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    ...buttonInnerStyle,
-                    marginBottom: '16px',
-                  }}
-                >
-                  Track your submission
-                </a>
-                <Text style={{ ...secondaryTextStyle }}>
-                  If you are having trouble with the button above, copy and
-                  paste the link below into your browser:
-                </Text>
-                <Link href={statusTrackerUrl} style={{ ...linkStyle }}>
-                  {statusTrackerUrl}
-                </Link>
+                <Container style={buttonContainerStyle}>
+                  <a
+                    href={statusTrackerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    Track your submission
+                  </a>
+                </Container>
+                {renderFallbackLink(statusTrackerUrl)}
               </>
             ) : null}
             {/* Review and complete button*/}
             {reviewUrl ? (
               <>
-                <a
-                  href={reviewUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    ...buttonInnerStyle,
-                    marginBottom: '16px',
-                  }}
-                >
-                  Click to review and complete
-                </a>
-                <Text style={{ ...secondaryTextStyle }}>
-                  If you are having trouble with the button above, copy and
-                  paste the link below into your browser:
-                </Text>
-                <Link href={reviewUrl} style={{ ...linkStyle }}>
-                  {reviewUrl}
-                </Link>
+                <Container style={buttonContainerStyle}>
+                  <a
+                    href={reviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    Click to review and complete
+                  </a>
+                </Container>
+                {renderFallbackLink(reviewUrl)}
               </>
             ) : null}
 
             {/* Payment button*/}
             {paymentUrl ? (
               <>
-                <a
-                  href={paymentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    ...buttonInnerStyle,
-                    marginBottom: '16px',
-                  }}
-                >
-                  View proof of payment
-                </a>
-                <Text style={{ ...secondaryTextStyle }}>
-                  If you are having trouble with the button above, copy and
-                  paste the link below into your browser:
-                </Text>
-                <Link href={paymentUrl} style={{ ...linkStyle }}>
-                  {paymentUrl}
-                </Link>
+                <Container style={buttonContainerStyle}>
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={buttonInnerStyle}
+                  >
+                    View proof of payment
+                  </a>
+                </Container>
+                {renderFallbackLink(paymentUrl)}
               </>
             ) : null}
 

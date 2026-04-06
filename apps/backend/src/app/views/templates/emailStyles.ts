@@ -78,7 +78,7 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
 
 /** Button style to be attached to the outer <Container> of a button */
 export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
-  border: '24px solid #445fcd',
+  border: '1px solid #445fcd',
   borderRadius: '4px',
   backgroundColor: '#445fcd',
   width: '100%',
