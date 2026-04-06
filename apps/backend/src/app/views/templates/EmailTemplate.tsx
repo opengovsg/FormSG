@@ -1,3 +1,13 @@
+/**
+ * Email template used to generate the HTML content of emails sent by FormSG using the react-email library.
+ * The styles are defined in a separate file (emailStyles.ts) and imported here for use.
+ * For mobile responsiveness, it utilizes a media-query styling approach.
+ * Outlook rendering engine is notoriously difficult at handling modern CSS, so template utilises:
+ * 1. Table-based layout for consistent structure across email clients
+ * 2. Margins implemented using spacer rows for table-based components
+ * 3. Fallback links provided for buttons to ensure accessibility in case buttons do not render correctly
+ */
+
 import {
   Body,
   Column,
@@ -18,17 +28,18 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 import {
   answerMargin,
   buttonContainerStyle,
+  buttonInnerStyle,
   cardSectionColumnStyle,
   cardSectionStyle,
   containerStyle,
   headingTextStyle,
+  linkStyle,
   mainStyle,
   primaryTextStyle,
   questionMargin,
   secondaryTextStyle,
   sectionStyle,
 } from './emailStyles'
-import { buttonInnerStyle, linkStyle } from './styles'
 
 export type EmailData = {
   emailTitle: string
@@ -92,6 +103,20 @@ export const EmailTemplate = ({
     </>
   )
 
+  const renderMargin = (height: number) => (
+    <Row>
+      <Column
+        style={{
+          height: `${height}px`,
+          lineHeight: `${height}px`,
+          fontSize: '1px',
+        }}
+      >
+        &nbsp;
+      </Column>
+    </Row>
+  )
+
   return (
     <Html>
       <Head>
@@ -101,7 +126,6 @@ export const EmailTemplate = ({
               display: block !important;
               width: 100% !important;
               padding: 16px !important;
-              margin-bottom: 16px !important;
               box-sizing: border-box !important;
               max-width: 100% !important;
               word-break: break-word !important;
@@ -150,7 +174,6 @@ export const EmailTemplate = ({
             {/* Section - Form Name & ResponseID */}
             <Row
               style={{
-                marginBottom: '16px',
                 width: '100%',
                 tableLayout: 'fixed',
               }}
@@ -167,9 +190,15 @@ export const EmailTemplate = ({
                 </Text>
               </Column>
               <Column
-                style={{ width: '16px' }}
+                style={{
+                  width: '16px',
+                  fontSize: '1px',
+                  lineHeight: '1px',
+                }}
                 className="spacer-column"
-              ></Column>
+              >
+                &nbsp;
+              </Column>
               <Column
                 className="field-container"
                 style={cardSectionColumnStyle}
@@ -182,88 +211,109 @@ export const EmailTemplate = ({
                 </Text>
               </Column>
             </Row>
+            {renderMargin(16)}
             {/* Section - Outcome */}
             {outcome && (
-              <Section style={cardSectionStyle}>
-                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                  Outcome
-                </Text>
-                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                  {outcome}
-                </Text>
-              </Section>
+              <>
+                <Section style={cardSectionStyle}>
+                  <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                    Outcome
+                  </Text>
+                  <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                    {outcome}
+                  </Text>
+                </Section>
+                {renderMargin(16)}
+              </>
             )}
             {/* Section - Responses */}
-            <Section style={cardSectionStyle}>
+            {formQuestionAnswers && (
               <>
-                {formQuestionAnswers
-                  ? formQuestionAnswers.map(renderQuestionAnswer)
-                  : null}
+                <Section style={cardSectionStyle}>
+                  <>
+                    {formQuestionAnswers
+                      ? formQuestionAnswers.map(renderQuestionAnswer)
+                      : null}
+                  </>
+                </Section>
+                {renderMargin(40)}
               </>
-            </Section>
+            )}
             {/* Section - Payment response */}
-            {paymentAmount ? (
-              <Section style={cardSectionStyle}>
-                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                  Amount paid
-                </Text>
-                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                  $0.50
-                </Text>
-              </Section>
-            ) : null}
+            {paymentAmount && (
+              <>
+                <Section style={cardSectionStyle}>
+                  <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                    Amount paid
+                  </Text>
+                  <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                    {`$${paymentAmount.toFixed(2)}`}
+                  </Text>
+                </Section>
+                {renderMargin(40)}
+              </>
+            )}
             {/* Status tracker button*/}
-            {statusTrackerUrl ? (
-              <>
-                <Container style={buttonContainerStyle}>
-                  <a
-                    href={statusTrackerUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    Track your submission
-                  </a>
-                </Container>
-                {renderFallbackLink(statusTrackerUrl)}
-              </>
-            ) : null}
+            {statusTrackerUrl && (
+              <Row>
+                <Column>
+                  <Container style={buttonContainerStyle}>
+                    <a
+                      href={statusTrackerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={buttonInnerStyle}
+                    >
+                      Track your submission
+                    </a>
+                  </Container>
+                  {renderFallbackLink(statusTrackerUrl)}
+                  {renderMargin(40)}
+                </Column>
+              </Row>
+            )}
             {/* Review and complete button*/}
-            {reviewUrl ? (
-              <>
-                <Container style={buttonContainerStyle}>
-                  <a
-                    href={reviewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    Click to review and complete
-                  </a>
-                </Container>
-                {renderFallbackLink(reviewUrl)}
-              </>
-            ) : null}
+            {reviewUrl && (
+              <Row>
+                <Column>
+                  <Container style={buttonContainerStyle}>
+                    <a
+                      href={reviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={buttonInnerStyle}
+                    >
+                      Click to review and complete
+                    </a>
+                  </Container>
+                  {renderFallbackLink(reviewUrl)}
+                  {renderMargin(40)}
+                </Column>
+              </Row>
+            )}
 
             {/* Payment button*/}
-            {paymentUrl ? (
-              <>
-                <Container style={buttonContainerStyle}>
-                  <a
-                    href={paymentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={buttonInnerStyle}
-                  >
-                    View proof of payment
-                  </a>
-                </Container>
-                {renderFallbackLink(paymentUrl)}
-              </>
-            ) : null}
+            {paymentUrl && (
+              <Row>
+                <Column>
+                  <Container style={buttonContainerStyle}>
+                    <a
+                      href={paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={buttonInnerStyle}
+                    >
+                      View proof of payment
+                    </a>
+                  </Container>
+                  {renderFallbackLink(paymentUrl)}
+                  {renderMargin(40)}
+                </Column>
+              </Row>
+            )}
 
             {/* Email end */}
-            <Text style={{ ...secondaryTextStyle, marginTop: '24px' }}>
+            <Text style={secondaryTextStyle}>
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>

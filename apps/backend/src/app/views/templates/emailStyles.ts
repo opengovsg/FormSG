@@ -1,4 +1,9 @@
-import { ContainerProps, LinkProps } from '@react-email/components'
+import {
+  ButtonProps,
+  ContainerProps,
+  LinkProps,
+  TextProps,
+} from '@react-email/components'
 
 import { colorBaseContentStrong, textStyles } from './commonStyles'
 
@@ -16,7 +21,6 @@ export const containerStyle = {
 
 export const sectionStyle = {
   padding: '32px',
-  marginBottom: '16px',
   background: '#F8F9FD',
   borderRadius: '8px',
   backgroundColor: '#ffffff',
@@ -70,7 +74,6 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   background: '#F8F9FD',
   borderRadius: '8px',
   border: '1px solid #E9E9E9',
-  marginBottom: '16px',
   padding: '0 16px',
   width: '100%',
   display: 'block',
@@ -78,13 +81,36 @@ export const cardSectionStyle: NonNullable<LinkProps['style']> = {
   wordBreak: 'break-word',
 }
 
+export const textStyle: NonNullable<TextProps['style']> = {
+  color: '#474747',
+  fontFamily:
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  fontSize: '16px',
+}
+
 /** Button style to be attached to the outer <Container> of a button */
 export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
-  border: '1px solid #445fcd',
   borderRadius: '4px',
   backgroundColor: '#445fcd',
   width: '100%',
   maxWidth: '100%',
-  marginTop: '24px',
-  marginBottom: '16px',
+  textAlign: 'center',
+}
+
+/** Button style to be attached to the inner <a> tag of a button. */
+export const buttonInnerStyle: NonNullable<ButtonProps['style']> = {
+  ...textStyle,
+  display: 'block',
+  backgroundColor: '#445fcd',
+  borderRadius: '4px',
+  textAlign: 'center',
+  textDecoration: 'none',
+  color: '#ffffff',
+  border: '24px solid #445fcd',
+}
+
+export const linkStyle: NonNullable<LinkProps['style']> = {
+  ...textStyle,
+  wordBreak: 'break-all',
+  color: '#445fcd',
 }
