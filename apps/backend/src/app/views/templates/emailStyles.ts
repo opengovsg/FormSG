@@ -82,6 +82,7 @@ export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
   borderRadius: '4px',
   backgroundColor: '#445fcd',
   width: '100%',
+  maxWidth: '100%',
   marginTop: '24px',
   marginBottom: '16px',
 }
