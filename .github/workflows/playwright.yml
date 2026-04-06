@@ -29,14 +29,14 @@ jobs:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
@@ -47,7 +47,7 @@ jobs:
           VITE_APP_FORMSG_SDK_MODE: 'test'
         run: pnpm build:sdk && pnpm --filter formsg-shared --filter formsg-monorepo build
       - name: Cache build artifacts
-        uses: actions/cache/save@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
+        uses: actions/cache/save@v3.5.0
         with:
           path: |
             node_modules
@@ -80,18 +80,18 @@ jobs:
       DD_TAGS: layer:e2e
       SHARD_COUNT: 4
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Restore build artifacts
-        uses: actions/cache/restore@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
+        uses: actions/cache/restore@v3.5.0
         with:
           path: |
             node_modules
@@ -119,7 +119,7 @@ jobs:
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test --project=${{ matrix.project }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: playwright-report-${{ matrix.project }}
