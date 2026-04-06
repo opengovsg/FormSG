@@ -65,7 +65,7 @@ export const cardSectionColumnStyle: NonNullable<LinkProps['style']> = {
   border: '1px solid #E9E9E9',
   padding: '0 16px',
   verticalAlign: 'top',
-  width: 'calc(50% - 8px)',
+  width: 'calc(50% - 8px)', // 8px accounts for the 16px gap between columns
   wordBreak: 'break-word',
 }
 

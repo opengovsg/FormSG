@@ -146,10 +146,7 @@ export const EmailTemplate = ({
       <Preview>{emailTitle}</Preview>
       <Body style={mainStyle}>
         <Container className="email-container" style={containerStyle}>
-          <Section
-            className="email-section"
-            style={{ ...sectionStyle, backgroundColor: '#ffffff' }}
-          >
+          <Section className="email-section" style={sectionStyle}>
             {/* Logo */}
             <Img
               style={{ height: '24px', marginBottom: '40px' }}

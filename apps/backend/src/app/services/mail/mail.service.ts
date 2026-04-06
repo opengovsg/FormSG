@@ -26,17 +26,13 @@ import {
   EmailAddressVerificationOtp,
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
-import { EmailData, EmailTemplate } from '../../views/templates/EmailTemplate'
 import {
-  EmailData2,
-  EmailTemplate2,
-} from '../../views/templates/EmailTemplate2'
-import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
-import MrfWorkflowCompletionEmail, {
+  EmailData,
+  EmailTemplate,
   QuestionAnswer,
-  WorkflowEmailData,
   WorkflowOutcome,
-} from '../../views/templates/MrfWorkflowCompletionEmail'
+} from '../../views/templates/EmailTemplate'
+import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
 import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
 import { smsThreshold } from '../sms/sms.utils'
 
@@ -360,54 +356,6 @@ export class MailService {
     return fromPromise(render(EmailTemplate(htmlData)), (e) => {
       logger.error({
         message: 'Failed to render EmailTemplate',
-        meta: {
-          action: actionName,
-          error: e,
-        },
-      })
-      return new MailGenerationError(errorMessage)
-    })
-  }
-
-  /**
-   * Private helper to render EmailTemplate2 with consistent error handling
-   * @param htmlData the data to pass to EmailTemplate2
-   * @param actionName the action name for logging purposes
-   * @param errorMessage the error message if rendering fails
-   * @returns ResultAsync with rendered HTML or MailGenerationError
-   */
-  #renderEmailTemplate2 = (
-    htmlData: EmailData2,
-    actionName: string,
-    errorMessage: string,
-  ): ResultAsync<string, MailGenerationError> => {
-    return fromPromise(render(EmailTemplate2(htmlData)), (e) => {
-      logger.error({
-        message: 'Failed to render EmailTemplate2',
-        meta: {
-          action: actionName,
-          error: e,
-        },
-      })
-      return new MailGenerationError(errorMessage)
-    })
-  }
-
-  /**
-   * Private helper to render MrfWorkflowCompletionEmail with consistent error handling
-   * @param htmlData the data to pass to MrfWorkflowCompletionEmail
-   * @param actionName the action name for logging purposes
-   * @param errorMessage the error message if rendering fails
-   * @returns ResultAsync with rendered HTML or MailGenerationError
-   */
-  #renderMrfWorkflowCompletionEmail = (
-    htmlData: WorkflowEmailData,
-    actionName: string,
-    errorMessage: string,
-  ): ResultAsync<string, MailGenerationError> => {
-    return fromPromise(render(MrfWorkflowCompletionEmail(htmlData)), (e) => {
-      logger.error({
-        message: 'Failed to render MrfWorkflowCompletionEmail',
         meta: {
           action: actionName,
           error: e,
@@ -1191,84 +1139,18 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    // Prepare data for EmailTemplate2 (single column)
-    const emailTemplate2Data: EmailData2 = {
-      emailTitle: `${formTitle} has been completed by all respondents`,
-      formTitle,
-      responseId: responseId.toString(),
-      formQuestionAnswers,
-    }
-
-    // Prepare data for MrfWorkflowCompletionEmail (legacy format)
-    const mrfWorkflowData: WorkflowEmailData = {
-      formTitle,
-      responseId: responseId.toString(),
-      formQuestionAnswers,
-    }
-
-    const subject = `Completed - ${formTitle} (${responseId})`
+    const subject = `${formTitle} has been completed by all respondents (${responseId})`
 
     // Send EmailTemplate (2-column responsive)
-    const sendStandardEmail = this.#sendMrfEmailWithTemplate({
+    return this.#sendMrfEmailWithTemplate({
       emails,
       formId,
-      subject: `[2-Column] ${subject}`,
+      subject,
       htmlData: emailTemplateData,
       attachments,
       emailType: EmailType.WorkflowCompletion,
-      actionName: 'sendMrfWorkflowCompletionEmail-2column',
+      actionName: 'sendMrfWorkflowCompletionEmail',
     })
-
-    // Send EmailTemplate2 (single column)
-    const sendTemplate2Email = this.#renderEmailTemplate2(
-      emailTemplate2Data,
-      'sendMrfWorkflowCompletionEmail-template2',
-      'Error generating EmailTemplate2',
-    ).andThen((mailHtml) => {
-      const mail: MailOptions = {
-        to: emails,
-        from: this.#senderFromString,
-        subject: `[Single Column] ${subject}`,
-        html: mailHtml,
-        attachments,
-        headers: {
-          [EMAIL_HEADERS.emailType]: EmailType.WorkflowCompletion,
-        },
-      }
-      return this.#sendNodeMail(mail, {
-        formId,
-        mailId: 'workflowCompletionTemplate2',
-      })
-    })
-
-    // Send MrfWorkflowCompletionEmail (legacy)
-    const sendLegacyEmail = this.#renderMrfWorkflowCompletionEmail(
-      mrfWorkflowData,
-      'sendMrfWorkflowCompletionEmail-legacy',
-      'Error generating MrfWorkflowCompletionEmail',
-    ).andThen((mailHtml) => {
-      const mail: MailOptions = {
-        to: emails,
-        from: this.#senderFromString,
-        subject: `[Legacy] ${subject}`,
-        html: mailHtml,
-        attachments,
-        headers: {
-          [EMAIL_HEADERS.emailType]: EmailType.WorkflowCompletion,
-        },
-      }
-      return this.#sendNodeMail(mail, {
-        formId,
-        mailId: 'workflowCompletionLegacy',
-      })
-    })
-
-    // Send all three emails and combine results
-    return ResultAsync.combine([
-      sendStandardEmail,
-      sendTemplate2Email,
-      sendLegacyEmail,
-    ]).map(() => true as const)
   }
 
   sendMrfApprovalEmail = ({
