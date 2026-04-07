@@ -15,7 +15,6 @@ export const enSG = {
   },
   limit: {
     label: 'Set a response limit',
-    notForMRF: 'Response limits cannot be applied for multi-respondent forms.',
     input: {
       label: 'Maximum number of responses allowed',
       description:

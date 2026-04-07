@@ -12,7 +12,6 @@ import { FormResponseMode } from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import NumberInput from '~components/NumberInput'
 import Toggle from '~components/Toggle'
 
@@ -166,11 +165,6 @@ export const FormLimitToggle = (): JSX.Element => {
         label={t('features.adminForm.settings.general.limit.label')}
         onChange={() => handleToggleLimit()}
       />
-      {isMrf ? (
-        <InlineMessage variant="warning" mt="0.5rem">
-          {t('features.adminForm.settings.general.limit.notForMRF')}
-        </InlineMessage>
-      ) : null}
       {settings && settings?.submissionLimit !== null && (
         <Skeleton isLoaded={!isLoadingCount}>
           <FormLimitBlock
