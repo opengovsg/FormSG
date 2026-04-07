@@ -126,6 +126,7 @@ export const EmailTemplate = ({
               display: block !important;
               width: 100% !important;
               padding: 16px !important;
+              margin-bottom: 16px !important;
               box-sizing: border-box !important;
               max-width: 100% !important;
               word-break: break-word !important;

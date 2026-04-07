@@ -1139,13 +1139,10 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    const subject = `${formTitle} has been completed by all respondents (${responseId})`
-
-    // Send EmailTemplate (2-column responsive)
     return this.#sendMrfEmailWithTemplate({
       emails,
       formId,
-      subject,
+      subject: `Completed - ${formTitle} (${responseId})`,
       htmlData: emailTemplateData,
       attachments,
       emailType: EmailType.WorkflowCompletion,
