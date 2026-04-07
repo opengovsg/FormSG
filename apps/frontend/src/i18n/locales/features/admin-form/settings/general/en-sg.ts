@@ -20,6 +20,12 @@ export const enSG = {
       description:
         'Your form will automatically close once it reaches the set limit.',
     },
+    toast: {
+      successStorageMode:
+        'Your form will now automatically close on the {submissionLimit} submission.',
+      successMrf:
+        'Your form will now automatically close on the {submissionLimit} started workflow.',
+    },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
   },

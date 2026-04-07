@@ -20,6 +20,10 @@ export interface General extends HasTitle {
       label: string
       description: string
     }
+    toast: {
+      successStorageMode: string
+      successMrf: string
+    }
     limitLessThanCurrent: string
   }
   customisation: {

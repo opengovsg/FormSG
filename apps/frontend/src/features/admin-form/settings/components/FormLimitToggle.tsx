@@ -8,8 +8,6 @@ import {
 import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
-
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import NumberInput from '~components/NumberInput'
@@ -114,8 +112,6 @@ export const FormLimitToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const isMrf = settings?.responseMode === FormResponseMode.Multirespondent
-
   const { data: responseCount, isLoading: isLoadingCount } =
     useFormResponsesCount()
 
@@ -159,7 +155,6 @@ export const FormLimitToggle = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
-        isDisabled={isMrf}
         isLoading={mutateFormLimit.isLoading}
         isChecked={isLimit}
         label={t('features.adminForm.settings.general.limit.label')}
