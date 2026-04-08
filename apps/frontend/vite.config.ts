@@ -5,31 +5,6 @@ import nodePolyfills from 'vite-plugin-node-stdlib-browser'
 import svgr from 'vite-plugin-svgr'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
-/**
- * Replaces @VITE_APP_* placeholders in source with their corresponding
- * environment variable values at build time. This is used for values that
- * must be baked into the JS bundle (e.g. Datadog applicationId, clientToken).
- */
-function replaceEnvPlaceholders(): PluginOption {
-  const replacements: Record<string, string> = {
-    '@VITE_APP_DD_RUM_APP_ID': process.env.VITE_APP_DD_RUM_APP_ID ?? '',
-    '@VITE_APP_DD_RUM_CLIENT_TOKEN':
-      process.env.VITE_APP_DD_RUM_CLIENT_TOKEN ?? '',
-    '@VITE_APP_VERSION': process.env.VITE_APP_VERSION ?? '',
-  }
-
-  return {
-    name: 'replace-env-placeholders',
-    transform(code) {
-      let result = code
-      for (const [key, value] of Object.entries(replacements)) {
-        result = result.replaceAll(key, value)
-      }
-      return result !== code ? result : null
-    },
-  }
-}
-
 const baseRollupOptions = {
   // Silence Rollup "use client" warnings
   // Adapted from https://github.com/vitejs/vite-plugin-react/pull/144
@@ -71,7 +46,6 @@ export default defineConfig(() => {
       },
     },
     plugins: [
-      replaceEnvPlaceholders(),
       tsconfigPaths(),
       nodePolyfills(),
       react(),

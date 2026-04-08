@@ -5,6 +5,8 @@ import { ReactQueryDevtools } from 'react-query/devtools'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { env } from '~/env'
+
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
@@ -34,7 +36,7 @@ const queryClient = new QueryClient({
 // Init Datadog browser logs
 datadogLogs.init({
   clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
-  env: window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV,
+  env: env.ddRumEnv,
   site: 'datadoghq.com',
   service: 'formsg',
   // Specify a version number to identify the deployed version of your application in Datadog

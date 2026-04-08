@@ -1,30 +1,16 @@
+import type { PackageMode } from '@opengovsg/formsg-sdk'
+
 import type { FrontendRuntimeEnv } from 'formsg-shared/types'
 
-declare global {
-  interface Window {
-    __ENV__?: FrontendRuntimeEnv
-  }
-}
+const formsgSdkMode =
+  (import.meta.env.VITE_APP_FORMSG_SDK_MODE as PackageMode | undefined) ??
+  'production'
 
 export const env: FrontendRuntimeEnv = {
-  appUrl: window.__ENV__?.appUrl ?? import.meta.env.VITE_APP_URL ?? '',
-  apiBaseUrl:
-    window.__ENV__?.apiBaseUrl ??
-    import.meta.env.VITE_APP_BASE_URL ??
-    '/api/v3',
-  gaTrackingId:
-    window.__ENV__?.gaTrackingId ??
-    import.meta.env.VITE_APP_GA_TRACKING_ID ??
-    '',
-  formsgSdkMode:
-    window.__ENV__?.formsgSdkMode ??
-    (import.meta.env.VITE_APP_FORMSG_SDK_MODE as
-      | FrontendRuntimeEnv['formsgSdkMode']
-      | undefined) ??
-    'production',
-  ddRumEnv:
-    window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV ?? '',
-  ddSampleRate:
-    window.__ENV__?.ddSampleRate ??
-    (Number(import.meta.env.VITE_APP_DD_SAMPLE_RATE) || 5),
+  appUrl: import.meta.env.VITE_APP_URL ?? 'https://form.gov.sg',
+  apiBaseUrl: import.meta.env.VITE_APP_BASE_URL ?? '/api/v3',
+  gaTrackingId: import.meta.env.VITE_APP_GA_TRACKING_ID ?? '',
+  formsgSdkMode,
+  ddRumEnv: import.meta.env.VITE_APP_DD_RUM_ENV ?? '',
+  ddSampleRate: Number(import.meta.env.VITE_APP_DD_SAMPLE_RATE) || 5,
 }

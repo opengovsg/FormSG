@@ -1,5 +1,4 @@
-import crypto from 'crypto'
-import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
+import { ClientEnvVars } from 'formsg-shared/types/core'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
@@ -8,20 +7,6 @@ import { growthbookConfig } from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
-
-export const getFrontendRuntimeEnv = (): FrontendRuntimeEnv => ({
-  appUrl: config.app.appUrl,
-  apiBaseUrl: '/api/v3',
-  gaTrackingId: process.env.GA_TRACKING_ID ?? '',
-  formsgSdkMode: config.formsgSdkMode,
-  ddRumEnv: process.env.DD_ENV ?? '',
-  ddSampleRate: 5,
-})
-
-// Computed once at startup — values are static for the container lifetime
-const envScriptContent = `window.__ENV__=${JSON.stringify(getFrontendRuntimeEnv())}`
-export const envScript = `<script>${envScriptContent}</script>`
-export const envScriptCspHash = `'sha256-${crypto.createHash('sha256').update(envScriptContent).digest('base64')}'`
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {
