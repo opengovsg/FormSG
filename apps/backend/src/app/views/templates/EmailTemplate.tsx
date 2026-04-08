@@ -228,11 +228,7 @@ export const EmailTemplate = ({
             {formQuestionAnswers && (
               <>
                 <Section style={cardSectionStyle}>
-                  <>
-                    {formQuestionAnswers
-                      ? formQuestionAnswers.map(renderQuestionAnswer)
-                      : null}
-                  </>
+                  <>{formQuestionAnswers.map(renderQuestionAnswer)}</>
                 </Section>
                 {renderMargin(40)}
               </>
