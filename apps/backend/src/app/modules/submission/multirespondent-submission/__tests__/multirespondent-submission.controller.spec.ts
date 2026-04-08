@@ -12,6 +12,7 @@ import {
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
 import { merge, omit } from 'lodash'
 import { Document, Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
@@ -23,6 +24,7 @@ import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.se
 import {
   ForbiddenFormError,
   FormNotFoundError,
+  PrivateFormError,
 } from 'src/app/modules/form/form.errors'
 import * as FormService from 'src/app/modules/form/form.service'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
@@ -345,6 +347,60 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
+    it('returns 404 not found when form has reached submission limit', async () => {
+      // Arrange
+      const inactiveMessage =
+        'Submission made after form submission limit was reached'
+      MockFormService.checkFormSubmissionLimitAndDeactivateForm = jest
+        .fn()
+        .mockReturnValueOnce(
+          errAsync(new PrivateFormError(inactiveMessage, 'Mock Form Title')),
+        )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+            inactiveMessage,
+          },
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm,
+      ).toHaveBeenCalledWith(mockSubmitMrfReq.formsg.formDef)
+      expect(
+        MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: inactiveMessage,
+      })
+      expect(mockRes.json).toHaveBeenCalledTimes(1)
+    })
+
     it('returns 500 internal server error when submission fails to save', async () => {
       // Arrange
       const submissionSaveError = new SubmissionSaveError()
@@ -647,6 +703,75 @@ describe('multirespondent-submision.controller', () => {
         message:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
       })
+    })
+
+    it('returns 404 not found when form has reached submission limit', async () => {
+      // Arrange
+      const inactiveMessage =
+        'Submission made after form submission limit was reached'
+      MockFormService.checkFormSubmissionLimitAndDeactivateForm = jest
+        .fn()
+        .mockReturnValueOnce(
+          errAsync(new PrivateFormError(inactiveMessage, 'Mock Form Title')),
+        )
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+            inactiveMessage,
+          },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+            webhook: {
+              url: '',
+              isRetryEnabled: false,
+            },
+          } as SnapshottedFormDef,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await updateMultirespondentSubmissionForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm,
+      ).toHaveBeenCalledWith(mockSubmitMrfReq.formsg.formDef)
+      expect(
+        MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: inactiveMessage,
+      })
+      expect(mockRes.json).toHaveBeenCalledTimes(1)
     })
 
     it('returns 500 internal server error when submission fails to save', async () => {
