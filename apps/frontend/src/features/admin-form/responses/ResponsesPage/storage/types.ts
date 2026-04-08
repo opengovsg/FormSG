@@ -1,4 +1,4 @@
-import formsgPackage from '@opengovsg/formsg-sdk'
+import type formsgPackage from '@opengovsg/formsg-sdk'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
