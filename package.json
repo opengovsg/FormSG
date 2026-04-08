@@ -55,6 +55,7 @@
     "formsg-shared": "workspace:*"
   },
   "devDependencies": {
+    "@datadog/datadog-ci": "5.12.1",
     "@playwright/test": "^1.58.2",
     "auto-changelog": "^2.5.0",
     "commit-and-tag-version": "^12.6.1",
