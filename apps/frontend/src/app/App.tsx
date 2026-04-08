@@ -34,7 +34,7 @@ const queryClient = new QueryClient({
 // Init Datadog browser logs
 datadogLogs.init({
   clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
-  env: window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV,
+  env: import.meta.env.VITE_APP_DD_RUM_ENV,
   site: 'datadoghq.com',
   service: 'formsg',
   // Specify a version number to identify the deployed version of your application in Datadog
