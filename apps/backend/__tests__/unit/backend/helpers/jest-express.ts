@@ -35,19 +35,25 @@ const mockRequest = <P extends Record<string, string>, B, Q = any>({
 const mockResponse = (
   extraArgs: Partial<Record<keyof Response, unknown>> = {},
 ): Response => {
+  const markHeadersSent = function (this: { headersSent: boolean }) {
+    this.headersSent = true
+    return this
+  }
+
   const mockRes = {
     locals: {},
+    headersSent: false,
     status: jest.fn().mockReturnThis(),
-    send: jest.fn().mockReturnThis(),
-    sendStatus: jest.fn().mockReturnThis(),
+    send: jest.fn().mockImplementation(markHeadersSent),
+    sendStatus: jest.fn().mockImplementation(markHeadersSent),
     type: jest.fn().mockReturnThis(),
     pipe: jest.fn().mockReturnThis(),
     emit: jest.fn().mockReturnThis(),
     on: jest.fn().mockReturnThis(),
-    end: jest.fn(),
-    json: jest.fn(),
+    end: jest.fn().mockImplementation(markHeadersSent),
+    json: jest.fn().mockImplementation(markHeadersSent),
     render: jest.fn(),
-    redirect: jest.fn(),
+    redirect: jest.fn().mockImplementation(markHeadersSent),
     cookie: jest.fn(),
     set: jest.fn(),
     clearCookie: jest.fn(),
