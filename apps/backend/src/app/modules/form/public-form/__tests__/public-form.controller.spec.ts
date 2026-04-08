@@ -3,6 +3,7 @@ import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
@@ -127,6 +128,81 @@ describe('public-form.controller', () => {
             [MYINFO_AUTH_CODE_COOKIE_NAME]: MOCK_MYINFO_AUTH_CODE_COOKIE,
           },
         },
+      })
+    })
+
+    describe('submission limit checks', () => {
+      const MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM = {
+        ...BASE_FORM,
+        submissionLimit: 1,
+        authType: FormAuthType.NIL,
+        inactiveMessage:
+          'Submission made after form submission limit was reached',
+      } as unknown as IPopulatedForm
+
+      beforeAll(() => {
+        MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
+        MockAuthService.getFormIfPublic.mockReturnValue(
+          okAsync(MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM),
+        )
+        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValue(
+          okAsync(MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM),
+        )
+      })
+
+      it('should check for submission limit and return 200 when form not reached submission limit', async () => {
+        // Arrange
+        const mockRes = expressHandler.mockResponse()
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM),
+        )
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          MOCK_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(
+          MockFormService.checkFormSubmissionLimitAndDeactivateForm,
+        ).toHaveBeenCalledWith(MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM.getPublicView(),
+          isIntranetUser: false,
+        })
+      })
+
+      it('should check for submission limit and return 404 not found when form has reached submission limit', async () => {
+        // Arrange
+        const mockRes = expressHandler.mockResponse()
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          errAsync(
+            new PrivateFormError(
+              MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM.inactiveMessage,
+              MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM.title,
+            ),
+          ),
+        )
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          MOCK_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(
+          MockFormService.checkFormSubmissionLimitAndDeactivateForm,
+        ).toHaveBeenCalledWith(MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM)
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          isPageFound: true,
+          message: MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM.inactiveMessage,
+          formTitle: MOCK_SUBMISSION_LIMIT_NIL_AUTH_FORM.title,
+        })
       })
     })
 
