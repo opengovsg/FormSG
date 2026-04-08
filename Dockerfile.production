@@ -37,12 +37,12 @@ ARG REPO_URL
 # Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
 # For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
 RUN curl -L --fail -o /usr/local/bin/datadog-ci \
-    https://github.com/DataDog/datadog-ci/releases/download/v5.11.0/datadog-ci_linux-x64 && \
+    https://github.com/DataDog/datadog-ci/releases/download/v5.12.1/datadog-ci_linux-x64 && \
     chmod +x /usr/local/bin/datadog-ci
 
 RUN --mount=type=secret,id=dd_api_key \
     export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
-    datadog-ci sourcemaps upload ./apps/frontend/dist \
+    /usr/local/bin/datadog-ci sourcemaps upload ./apps/frontend/dist \
     --service=formsg-react \
     --release-version=$APP_VERSION \
     --minified-path-prefix=$APP_URL \
