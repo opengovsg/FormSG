@@ -1,9 +1,20 @@
 /**
  * This file compiles to datadog-chunk.js which is then loaded in the <head> of the react app
  * This ensures that datadog is initialised before the react app
+ *
+ * Build-time vars (import.meta.env): VITE_APP_DD_RUM_APP_ID, VITE_APP_DD_RUM_CLIENT_TOKEN, VITE_APP_VERSION
+ * Runtime vars (window.__ENV__): ddRumEnv, appUrl, ddSampleRate
  */
 
 import { datadogRum, RumInitConfiguration } from '@datadog/browser-rum'
+
+import type { FrontendRuntimeEnv } from 'formsg-shared/types'
+
+declare global {
+  interface Window {
+    __ENV__?: FrontendRuntimeEnv
+  }
+}
 
 // Discard benign RUM errors.
 // Ensure that beforeSend returns true to keep the event and false to discard it.
@@ -27,18 +38,15 @@ const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
 }
 
 // Init Datadog RUM
-// Values for VITE_APP_DD_RUM_APP_ID, VITE_APP_DD_RUM_CLIENT_TOKEN, VITE_APP_DD_RUM_ENV, VITE_APP_VERSION, VITE_APP_DD_SAMPLE_RATE will be injected at build time
 datadogRum.init({
   applicationId: '@VITE_APP_DD_RUM_APP_ID',
   clientToken: '@VITE_APP_DD_RUM_CLIENT_TOKEN',
-  env: '@VITE_APP_DD_RUM_ENV',
+  env: window.__ENV__?.ddRumEnv ?? '',
   site: 'datadoghq.com',
   service: 'formsg-react',
-  allowedTracingUrls: ['@VITE_APP_URL'],
-
-  // Specify a version number to identify the deployed version of your application in Datadog
+  allowedTracingUrls: [window.__ENV__?.appUrl ?? ''],
   version: '@VITE_APP_VERSION',
-  sessionSampleRate: Number('@VITE_APP_DD_SAMPLE_RATE') || 5,
+  sessionSampleRate: window.__ENV__?.ddSampleRate ?? 5,
   sessionReplaySampleRate: 100,
   trackUserInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',

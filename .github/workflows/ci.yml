@@ -31,10 +31,10 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       shared: ${{ steps.filter.outputs.shared }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # @v3.0.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
           filters: |
@@ -58,15 +58,15 @@ jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -77,15 +77,15 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -125,15 +125,15 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -157,7 +157,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@v1.0.5
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
@@ -174,15 +174,15 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -195,15 +195,15 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -229,7 +229,7 @@ jobs:
       - run: pnpm install --prefix services/pdf-gen-sparticuz
       - run: pnpm install --prefix services/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@v1.0.5
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
@@ -245,15 +245,15 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -266,15 +266,15 @@ jobs:
     if: ${{ needs.changes.outputs.shared == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
@@ -287,22 +287,22 @@ jobs:
     if: ${{ needs.changes.outputs.shared == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: ${{ env.PNPM_VERSION }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
       - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@v1.0.5
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}

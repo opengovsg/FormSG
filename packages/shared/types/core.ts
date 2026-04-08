@@ -1,3 +1,12 @@
+export type FrontendRuntimeEnv = {
+  appUrl: string
+  apiBaseUrl: string
+  gaTrackingId: string
+  formsgSdkMode: 'staging' | 'production' | 'development' | 'test'
+  ddRumEnv: string
+  ddSampleRate: number
+}
+
 export interface ErrorDto {
   message: string
 }
