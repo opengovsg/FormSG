@@ -9,7 +9,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
 
-import { getClientEnvVars } from './frontend.service'
+import { envScript, getClientEnvVars } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -29,6 +29,7 @@ const replaceWithMetaTags = ({
   image,
 }: MetaTags): string => {
   return reactHtml
+    .replace('<!-- __ENV_INJECTION__ -->', envScript)
     .replace(/(__OG_TITLE__)/g, escape(title))
     .replace(/(__OG_DESCRIPTION__)/g, escape(description))
     .replace(/(__OG_IMAGE__)/g, escape(image))
