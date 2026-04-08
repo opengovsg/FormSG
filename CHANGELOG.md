@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.0](https://github.com/opengovsg/formsg/compare/v7.4.5...v7.5.0) (2026-04-08)
+
+
+### Features
+
+* prune allow list (#9281) ([#9281](https://github.com/opengovsg/formsg/commit/ef838a8710dcb30f7073a2e74981f22ca2f34d21))
+
+
+### Miscellaneous
+
+* Merge pull request #9276 from opengovsg/feat/ci/improve-container-build-process ([#9276](https://github.com/opengovsg/formsg/commit/9101de2a0851b961c936573caebe908960a45941))
+* Merge pull request #9280 from opengovsg/feat/pin-deps ([#9280](https://github.com/opengovsg/formsg/commit/7e0e9adeb1e46a98242048a9735d40d764b425ce))
+
 ## [7.4.5](https://github.com/opengovsg/formsg/compare/v7.4.4...v7.4.5) (2026-04-02)
 
 
