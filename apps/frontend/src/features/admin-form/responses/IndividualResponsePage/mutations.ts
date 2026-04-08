@@ -3,6 +3,7 @@ import { useMutation } from 'react-query'
 import FileSaver from 'file-saver'
 
 import { useToast } from '~hooks/useToast'
+import formsgSdk from '~utils/formSdk'
 
 import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
 import {
@@ -34,7 +35,11 @@ export const useMutateDownloadAttachments = () => {
       secretKey: string
       fileName: string
     }) => {
-      const byteArray = await downloadAndDecryptAttachment(url, secretKey)
+      const byteArray = await downloadAndDecryptAttachment(
+        { formsgSdk },
+        url,
+        secretKey,
+      )
       if (!byteArray) throw new Error('Invalid file')
       FileSaver.saveAs(new Blob([byteArray]), fileName)
       return fileName
@@ -59,6 +64,7 @@ export const useMutateDownloadAttachments = () => {
       fileName: string
     }) => {
       const byteArray = await downloadAndDecryptAttachmentsAsZip(
+        { formsgSdk },
         attachmentDownloadUrls,
         secretKey,
       )

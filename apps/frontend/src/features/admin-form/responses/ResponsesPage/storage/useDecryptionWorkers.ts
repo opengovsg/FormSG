@@ -4,6 +4,8 @@ import { datadogLogs } from '@datadog/browser-logs'
 import saveAs from 'file-saver'
 import JSZip from 'jszip'
 
+import { env } from '~/env'
+
 import { waitForMs } from '~utils/waitForMs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -192,6 +194,7 @@ const useDecryptionWorkers = ({
                 secretKey,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
+                formsgSdkMode: env.formsgSdkMode,
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {

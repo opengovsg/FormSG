@@ -1,3 +1,4 @@
+import formsgPackage from '@opengovsg/formsg-sdk'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { Remote } from 'comlink'
 import { SetRequired } from 'type-fest'
@@ -20,6 +21,10 @@ export type AttachmentsDownloadMap = Map<
   { url: string; filename?: string }
 >
 
+export type DecryptionCtx = {
+  formsgSdk: ReturnType<typeof formsgPackage>
+}
+
 export type CsvRecordData = FormField
 
 export type MaterializedCsvRecord = SetRequired<CsvRecord, 'submissionData'>
@@ -36,6 +41,7 @@ export interface SubmissionDataForDecryption {
   secretKey: string
   formId: string
   hostOrigin: string
+  formsgSdkMode: string
 }
 
 export type CleanableDecryptionWorkerApi = {
