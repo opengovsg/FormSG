@@ -7,7 +7,6 @@ import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
 import * as dayjs from './utils/dayjs'
-import { env } from './env'
 
 if (import.meta.env.MODE === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
@@ -25,7 +24,7 @@ function gtag(...args: unknown[]) {
   dataLayer.push(arguments)
 }
 gtag('js', new Date())
-gtag('config', env.gaTrackingId || '')
+gtag('config', import.meta.env.VITE_APP_GA_TRACKING_ID || '')
 window.gtag = gtag
 
 // Init dayjs

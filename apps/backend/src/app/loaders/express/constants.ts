@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express'
 
 import config from '../../config/config'
-import { envScriptCspHash } from '../../modules/frontend/frontend.service'
 
 export const CSP_CORE_DIRECTIVES = {
   imgSrc: [
@@ -36,7 +35,6 @@ export const CSP_CORE_DIRECTIVES = {
     'https://www.gstatic.cn/recaptcha/releases/',
     (_req: Parameters<RequestHandler>[0], res: Parameters<RequestHandler>[1]) =>
       `'nonce-${res.locals.nonce}'`,
-    envScriptCspHash,
   ],
   connectSrc: [
     "'self'",
