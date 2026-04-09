@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "bson": "^5.5.1",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "mongodb": "^5.8.0"
   }
 }
