@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.1](https://github.com/opengovsg/formsg/compare/v7.5.0...v7.5.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* replace npx usage (#9287) ([#9287](https://github.com/opengovsg/formsg/commit/f72c8414684c983dbcbb96c00b6652e1b285c1a7))
+
+
+### Miscellaneous
+
+* Merge pull request #9286 from opengovsg/chore/revert-9276-container-build-process ([#9286](https://github.com/opengovsg/formsg/commit/1c8c6f493c38e88b6c1676cce8c11354c710412b))
+* Merge pull request #9289 from opengovsg/release-al2 ([#9289](https://github.com/opengovsg/formsg/commit/ee2aa0fbd5e49d877cef90211083710c3bd237df))
+
 ## [7.5.0](https://github.com/opengovsg/formsg/compare/v7.4.5...v7.5.0) (2026-04-08)
 
 
