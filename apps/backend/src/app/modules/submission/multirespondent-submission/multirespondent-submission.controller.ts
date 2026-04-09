@@ -1,4 +1,5 @@
 import { AuthedSessionData } from 'express-session'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormResponseMode,
@@ -10,7 +11,7 @@ import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
 import { Environment } from '../../../../types'
-import config from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -88,11 +89,16 @@ const submitMultirespondentForm = async (
 
   setFormTags(form)
 
-  const ensurePipeline = new Pipeline(
-    ensurePublicForm,
-    ensureValidCaptcha,
-    ensureFormWithinSubmissionLimits,
-  )
+  // TODO(MRF-SUBMISSION-LIMIT): Remove this isMrfResponseLimitEnabled check once mrf submission limit is stable.
+  const gb = req.growthbook
+  const isMrfResponseLimitEnabled =
+    isTest || (gb?.isOn(featureFlags.mrfResponseLimit) ?? true)
+
+  const middlewarePipelines = [ensurePublicForm, ensureValidCaptcha]
+  if (isMrfResponseLimitEnabled) {
+    middlewarePipelines.push(ensureFormWithinSubmissionLimits)
+  }
+  const ensurePipeline = new Pipeline(...middlewarePipelines)
 
   const hasEnsuredAll = await ensurePipeline.execute({
     form,
@@ -173,11 +179,16 @@ const updateMultirespondentSubmission = async (
 
   setFormTags(currentForm)
 
-  const ensurePipeline = new Pipeline(
-    ensurePublicForm,
-    ensureValidCaptcha,
-    ensureFormWithinSubmissionLimits,
-  )
+  // TODO(MRF-SUBMISSION-LIMIT): Remove this isMrfResponseLimitEnabled check once mrf submission limit is stable.
+  const gb = req.growthbook
+  const isMrfResponseLimitEnabled =
+    gb?.isOn(featureFlags.mrfResponseLimit) ?? true
+
+  const middlewarePipelines = [ensurePublicForm, ensureValidCaptcha]
+  if (isMrfResponseLimitEnabled) {
+    middlewarePipelines.push(ensureFormWithinSubmissionLimits)
+  }
+  const ensurePipeline = new Pipeline(...middlewarePipelines)
 
   const hasEnsuredAll = await ensurePipeline.execute({
     form: currentForm,
