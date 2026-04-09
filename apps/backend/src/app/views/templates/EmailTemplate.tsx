@@ -125,7 +125,7 @@ export const EmailTemplate = ({
             .field-container {
               display: block !important;
               width: 100% !important;
-              padding: 16px !important;
+              padding: 0 16px !important;
               margin-bottom: 16px !important;
               box-sizing: border-box !important;
               max-width: 100% !important;
@@ -244,7 +244,6 @@ export const EmailTemplate = ({
                     {`$${paymentAmount.toFixed(2)}`}
                   </Text>
                 </Section>
-                {renderMargin(40)}
               </>
             )}
             {/* Status tracker button*/}
@@ -262,7 +261,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(statusTrackerUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
@@ -281,7 +279,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(reviewUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
@@ -301,7 +298,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(paymentUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
