@@ -311,21 +311,19 @@ export const EmailTemplate = ({
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>
-
-            {/* JSON Data Section */}
-            {responseJson && (
-              <Section style={{ marginTop: '40px' }}>
-                <Text style={{ ...secondaryTextStyle, marginBottom: '8px' }}>
-                  -- Start of JSON --
-                </Text>
-                <Text>{responseJson}</Text>
-                <Text style={{ ...secondaryTextStyle, marginTop: '8px' }}>
-                  -- End of JSON --
-                </Text>
-              </Section>
-            )}
           </Section>
         </Container>
+
+        {renderMargin(40)}
+
+        {/* JSON Data Section */}
+        {responseJson && (
+          <>
+            <p>-- Start of JSON --</p>
+            <p>{responseJson}</p>
+            <p>-- End of JSON --</p>
+          </>
+        )}
       </Body>
     </Html>
   )
