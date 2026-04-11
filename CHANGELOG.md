@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.2](https://github.com/opengovsg/formsg/compare/v7.5.1...v7.5.2) (2026-04-11)
+
+
+### Bug Fixes
+
+* **readme:** missing or incorrect set up commands in README.md (#9247) ([#9247](https://github.com/opengovsg/formsg/commit/8b5aa06aea0c009ce89707ea279e697222c572be))
+* **security:** bump axios 1.15.0 (#9292) ([#9292](https://github.com/opengovsg/formsg/commit/05c981dd2c85ace6ec3d1d1ec3c29d2969c0ba4c))
+
+
+### Dependencies
+
+* **deps:** bump lodash from 4.17.21 to 4.18.1 in /scripts/20230317_whitespace_issue (#9275) ([#9275](https://github.com/opengovsg/formsg/commit/2b4646f8dfc97b739e0635393e97d66f767c3d30))
+
 ## [7.5.1](https://github.com/opengovsg/formsg/compare/v7.5.0...v7.5.1) (2026-04-08)
 
 
