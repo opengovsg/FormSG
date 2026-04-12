@@ -27,6 +27,23 @@ export const enSG: Fields = {
     yesNo: 'Yes/No',
     children: 'Children',
   },
+  builderAndDesignContent: {
+    webhookEnabledWarning:
+      'Webhooks are enabled on this form. Please ensure the webhook server is able to handle any field changes.',
+  },
+  builderAndDesignPlaceholder: {
+    dropFieldHere: 'Drop your field here',
+  },
+  emptyFormPlaceholder: {
+    or: 'OR',
+    dropFieldHere: 'Drop your field here',
+    tapToAddField: 'Tap here to add a field',
+    dragFromBuilderToStart:
+      'Drag a field from the Builder on the left to start',
+  },
+  fieldRowContainer: {
+    hiddenByLogicTooltip: 'This field may be hidden by your form logic',
+  },
   commonFieldComponents: {
     title: 'Field Name',
     description: 'Description',

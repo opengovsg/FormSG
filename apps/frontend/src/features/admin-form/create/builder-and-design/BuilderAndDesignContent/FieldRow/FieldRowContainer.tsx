@@ -145,6 +145,9 @@ const FieldRowContainer = ({
   handleBuilderClick,
   isHighlighted,
 }: FieldRowContainerProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.fieldRowContainer',
+  })
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
@@ -263,7 +266,7 @@ const FieldRowContainer = ({
           <Tooltip
             hidden={!isHiddenByLogic}
             placement="top"
-            label="This field may be hidden by your form logic"
+            label={t('hiddenByLogicTooltip')}
           >
             <HighlightableFlex
               isHighlighted={isHighlighted} // Offset for focus boxShadow
@@ -382,6 +385,9 @@ const FieldButtonGroup = ({
   handleBuilderClick,
 }: FieldButtonGroupProps) => {
   const { t } = useTranslation()
+  const { t: tToast } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.toasts.field.duplicate',
+  })
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   const { data: form } = useCreateTabForm()
@@ -425,13 +431,17 @@ const FieldButtonGroup = ({
       if (thisAttachmentSize > availableAttachmentSize) {
         toast({
           useMarkdown: true,
-          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${availableAttachmentSize} MB**.`,
+          description: tToast('attachmentLimitExceeded', {
+            fieldTitle: field.title,
+            attachmentSizeMb: thisAttachmentSize,
+            availableAttachmentSizeMb: availableAttachmentSize,
+          }),
         })
         return
       }
     }
     duplicateFieldMutation.mutate(field._id)
-  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast])
+  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast, tToast])
 
   const handleDeleteClick = useCallback(() => {
     if (fieldBuilderState === FieldBuilderState.CreatingField) {
