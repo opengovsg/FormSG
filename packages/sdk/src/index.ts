@@ -1,3 +1,11 @@
+import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
+import Crypto from './crypto'
+import CryptoV3 from './crypto-v3'
+import { PackageInitParams } from './types'
+import Verification from './verification'
+import Webhooks from './webhooks'
+
+export { adaptV3ToV4 } from './adapt-v3-to-v4'
 export type {
   DecryptedContent,
   DecryptedContentV3,
@@ -15,13 +23,13 @@ export type {
   PackageMode,
   VerificationOptions,
 } from './types'
-
-import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
-import Crypto from './crypto'
-import CryptoV3 from './crypto-v3'
-import { PackageInitParams } from './types'
-import Verification from './verification'
-import Webhooks from './webhooks'
+export type {
+  AdaptV3ToV4Options,
+  AnswerV4,
+  FieldResponsesV4,
+  FieldResponseV4,
+  ResponseProvenance,
+} from './types-v4'
 
 /**
  * Entrypoint into the FormSG SDK
