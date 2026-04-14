@@ -7,6 +7,18 @@ import Webhooks from './webhooks'
 
 export { adaptV3ToV4 } from './adapt-v3-to-v4'
 export { adaptV4ToV3 } from './adapt-v4-to-v3'
+export { adaptV1ToV3 } from './adapt-v1-to-v3'
+export { adaptV3ToV1 } from './adapt-v3-to-v1'
+export type {
+  AdaptV1ToV3Options,
+  TableColumnMap,
+  ChildrenFieldMap,
+} from './adapt-v1-to-v3'
+export type {
+  AdaptV3ToV1Options,
+  FieldMetadataMap,
+  TableColumnMap as TableColumnMapV3ToV1,
+} from './adapt-v3-to-v1'
 export type {
   DecryptedContent,
   DecryptedContentV3,
