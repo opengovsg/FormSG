@@ -23,7 +23,10 @@ export type AttachmentAnswerV4 = {
   hasBeenScanned: boolean
   md5Hash?: string
 }
-export type TableRowV4 = { rowNum: number; [columnId: string]: string | number }
+export type TableRowV4 = {
+  rowNum: number
+  value: { [columnId: string]: string | number }
+}
 export type TableAnswerV4 = { [rowId: string]: TableRowV4 }
 export type ChildSubFieldAnswerV4 = {
   value: string
