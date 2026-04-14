@@ -4,7 +4,6 @@ import {
   AddressAnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
-  ChildEntryV4,
   ChildrenAnswerV4,
   FieldResponsesV4,
   RadioAnswerV4,
@@ -103,7 +102,7 @@ function convertTableAnswer(answer: Record<string, string>[]): TableAnswerV4 {
   const result: TableAnswerV4 = {}
   for (let i = 0; i < answer.length; i++) {
     const rowId = `row${i}`
-    result[rowId] = { rowNum: i, ...answer[i] }
+    result[rowId] = { rowNum: i, value: answer[i] }
   }
   return result
 }
@@ -115,15 +114,16 @@ function convertChildrenAnswer(answer: {
   const result: ChildrenAnswerV4 = {}
   for (let i = 0; i < answer.child.length; i++) {
     const childKey = `child${i}`
-    const entry: ChildEntryV4 = {}
+    const value: Record<string, { value: string; myInfo?: { attr: string } }> =
+      {}
     for (let j = 0; j < answer.childFields.length; j++) {
       const attr = answer.childFields[j]
-      entry[attr] = {
+      value[attr] = {
         value: answer.child[i][j] ?? '',
         myInfo: { attr },
       }
     }
-    result[childKey] = entry
+    result[childKey] = { value }
   }
   return result
 }
