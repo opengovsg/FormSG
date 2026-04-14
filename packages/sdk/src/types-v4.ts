@@ -33,7 +33,7 @@ export type ChildSubFieldAnswerV4 = {
   myInfo?: { attr: string }
 }
 export type ChildEntryV4 = {
-  [attr: string]: ChildSubFieldAnswerV4 | string | undefined
+  value: { [attr: string]: ChildSubFieldAnswerV4 }
   type?: string
 }
 export type ChildrenAnswerV4 = { [childKey: string]: ChildEntryV4 }
