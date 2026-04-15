@@ -29,7 +29,6 @@ import {
   answerMargin,
   buttonContainerStyle,
   buttonInnerStyle,
-  cardSectionColumnStyle,
   cardSectionStyle,
   containerStyle,
   headingTextStyle,
@@ -122,19 +121,6 @@ export const EmailTemplate = ({
       <Head>
         <style>{`
           @media only screen and (max-width: 600px) {
-            .field-container {
-              display: block !important;
-              width: 100% !important;
-              padding: 16px !important;
-              margin-bottom: 16px !important;
-              box-sizing: border-box !important;
-              max-width: 100% !important;
-              word-break: break-word !important;
-            }
-            .spacer-column {
-              display: none !important;
-              width: 0 !important;
-            }
             .email-container {
               padding: 12px !important;
             }
@@ -169,46 +155,25 @@ export const EmailTemplate = ({
               {emailBody}
             </Text>
 
-            {/* Section - Form Name & ResponseID */}
-            <Row
-              style={{
-                width: '100%',
-                tableLayout: 'fixed',
-              }}
-            >
-              <Column
-                className="field-container"
-                style={cardSectionColumnStyle}
-              >
-                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                  Form title
-                </Text>
-                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                  {formTitle}
-                </Text>
-              </Column>
-              <Column
-                style={{
-                  width: '16px',
-                  fontSize: '1px',
-                  lineHeight: '1px',
-                }}
-                className="spacer-column"
-              >
-                &nbsp;
-              </Column>
-              <Column
-                className="field-container"
-                style={cardSectionColumnStyle}
-              >
-                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                  Response ID
-                </Text>
-                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                  {responseId}
-                </Text>
-              </Column>
-            </Row>
+            {/* Section - Form Title */}
+            <Section style={cardSectionStyle}>
+              <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                Form title
+              </Text>
+              <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                {formTitle}
+              </Text>
+            </Section>
+            {renderMargin(16)}
+            {/* Section - Response ID */}
+            <Section style={cardSectionStyle}>
+              <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                Response ID
+              </Text>
+              <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                {responseId}
+              </Text>
+            </Section>
             {renderMargin(16)}
             {/* Section - Outcome */}
             {outcome && (
@@ -244,7 +209,6 @@ export const EmailTemplate = ({
                     {`$${paymentAmount.toFixed(2)}`}
                   </Text>
                 </Section>
-                {renderMargin(40)}
               </>
             )}
             {/* Status tracker button*/}
@@ -262,7 +226,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(statusTrackerUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
@@ -281,7 +244,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(reviewUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
@@ -301,7 +263,6 @@ export const EmailTemplate = ({
                     </a>
                   </Container>
                   {renderFallbackLink(paymentUrl)}
-                  {renderMargin(40)}
                 </Column>
               </Row>
             )}
