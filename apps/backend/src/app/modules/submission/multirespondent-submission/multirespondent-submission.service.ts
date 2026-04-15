@@ -170,6 +170,11 @@ const sendNextStepEmail = ({
     return okAsync(true)
   }
 
+  const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
+    formFields: form.form_fields,
+    responses,
+  })
+
   return (
     // Step 1: Retrieve email addresses for current workflow step
     retrieveWorkflowStepEmailAddresses(form, nextStep, responses)
@@ -195,6 +200,7 @@ const sendNextStepEmail = ({
           formTitle,
           responseId: submissionId,
           responseUrl,
+          formQuestionAnswers,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow email',
@@ -556,7 +562,7 @@ const sendMrfRespondentCopyEmails = ({
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
-    '_id' | 'title' | 'admin'
+    '_id' | 'title' | 'admin' | 'hasStatusTracker'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -608,6 +614,7 @@ const sendMrfRespondentCopyEmails = ({
               : [],
             autoReplyMailData,
             agencyName: form.admin.agency.fullName,
+            hasStatusTracker: form.hasStatusTracker,
             ...(autoReplyMailData.includeFormSummary && {
               formQuestionAnswers,
             }),

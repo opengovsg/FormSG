@@ -16,17 +16,23 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.ts'],
+      files: ['*.ts', '*.tsx'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
         sourceType: 'module',
         ecmaFeatures: {
           modules: true,
+          jsx: true,
         },
         tsconfigRootDir: __dirname,
         project: ['tsconfig.json'],
       },
-      plugins: ['@typescript-eslint', 'import', 'simple-import-sort', 'typesafe'],
+      plugins: [
+        '@typescript-eslint',
+        'import',
+        'simple-import-sort',
+        'typesafe',
+      ],
       extends: ['plugin:@typescript-eslint/recommended'],
       rules: {
         'simple-import-sort/imports': [
@@ -43,9 +49,9 @@ module.exports = {
               ['^(src)(/.*|$)'],
               ['^(tests)(/.*|$)'],
               // Parent imports. Put `..` last.
-              ['^\\.\\.(?!/?$)', '^\\.\\.\/?$'],
+              ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
               // Other relative imports. Put same-folder imports and `.` last.
-              ['^\\.\/(?=.*\/)(?!\\/?$)', '^\\.(?!\\/?$)', '^\\.\\/?$'],
+              ['^\\./(?=.*/)(?!\\/?$)', '^\\.(?!\\/?$)', '^\\.\\/?$'],
             ],
           },
         ],
