@@ -44,23 +44,45 @@ if [[ " $* " == *" --recut "* ]]; then
   may_force_push=-f
 fi
 
-# Perform the version bumps, generate changelog and create local tag. 
+# Perform the version bumps, generate changelog and create local tags.
+# 1. Monorepo release (.internal.versionrc.js) — bumps apps/*/package.json,
+#    packages/shared/package.json, etc. and creates a `v<version>` tag.
 pnpm exec commit-and-tag-version --config .internal.versionrc.js ${tag_force}
 release_version_num=$(jq -r .version < package.json)
 release_version="v${release_version_num}"
 release_branch=release_${release_version}
 
+# 2. SDK release (.external.versionrc.js) — bumps packages/sdk/package.json,
+#    updates packages/sdk/CHANGELOG.md and creates a `sdk-v<version>` tag.
+#    Only runs if there are new conventional commits touching packages/sdk
+#    since the last sdk-v* tag. If there are none, commit-and-tag-version
+#    exits non-zero and we leave sdk_release_version empty so the downstream
+#    push/recut steps skip it.
+sdk_release_version=
+if pnpm exec commit-and-tag-version --config .external.versionrc.js ${tag_force}; then
+  sdk_release_version_num=$(jq -r .version < packages/sdk/package.json)
+  sdk_release_version="sdk-v${sdk_release_version_num}"
+else
+  echo "No new SDK commits since last sdk-v* tag; skipping external (SDK) version bump."
+fi
+
 if [[ " $* " == *" --recut "* ]]; then
-  git push --delete origin ${release_version}
+  git push --delete origin ${release_version} || true
+  if [[ -n "${sdk_release_version}" ]]; then
+    git push --delete origin ${sdk_release_version} || true
+  fi
   git branch -D ${release_branch}
 fi
 
 git checkout -b ${release_branch}
 git branch -D ${temp_release_branch}
 
-# Push the code and tag to origin
+# Push the code and tags to origin
 git push origin ${may_force_push} HEAD:${release_branch}
 git push origin ${release_version}
+if [[ -n "${sdk_release_version}" ]]; then
+  git push origin ${sdk_release_version}
+fi
 
 # Deploy to staging for verification testing
 git push -f origin HEAD:stg
