@@ -1,8 +1,10 @@
 import {
+  adaptV1ToV3,
+  adaptV3ToV1,
   DecryptedContent,
   DecryptedContentV3,
   FormField as VerifiedFormField,
-} from '@opengovsg/formsg-sdk/dist/types'
+} from '@opengovsg/formsg-sdk'
 
 import {
   AttachmentFieldResponseV3,
@@ -109,6 +111,18 @@ export const processDecryptedContent = (
   const { responses: displayedContent, verified } = decrypted
   // Convert decrypted content into displayable object.
 
+  // TEST: Convert v1 responses to v3 format
+  try {
+    const v3Responses = adaptV1ToV3(displayedContent)
+    console.log('V1 to V3 Conversion Test')
+    console.log('V1 Responses:', JSON.stringify(displayedContent, null, 2))
+    console.log('V3 Responses:', JSON.stringify(v3Responses, null, 2))
+    console.log('V1 Count:', displayedContent.length)
+    console.log('V3 Count:', Object.keys(v3Responses).length)
+  } catch (error) {
+    console.error('Error converting v1 to v3:', error)
+  }
+
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
@@ -126,6 +140,25 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
+
+  // LOG: Actual V3 response schema
+  console.log('V3 Response Schema:', JSON.stringify(responses, null, 2))
+  console.log('V3 Response Count:', Object.keys(responses).length)
+
+  // TEST: Convert v3 responses back to v1 format
+  try {
+    const v1Responses = adaptV3ToV1(responses, {
+      formFields: form_fields,
+    })
+    console.log('V3 to V1 Conversion Test')
+    console.log('V3 Responses:', JSON.stringify(responses, null, 2))
+    console.log('V1 Responses:', JSON.stringify(v1Responses, null, 2))
+    console.log('V3 Count:', Object.keys(responses).length)
+    console.log('V1 Count:', v1Responses.length)
+  } catch (error) {
+    console.error('Error converting v3 to v1:', error)
+  }
+
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {

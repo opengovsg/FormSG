@@ -16,7 +16,7 @@ export type {
 } from './adapt-v1-to-v3'
 export type {
   AdaptV3ToV1Options,
-  FieldMetadataMap,
+  FormFieldForMetadata,
   TableColumnMap as TableColumnMapV3ToV1,
 } from './adapt-v3-to-v1'
 export type {
