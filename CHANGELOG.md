@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.6.0](https://github.com/opengovsg/formsg/compare/v7.5.2...v7.6.0) (2026-04-15)
+
+
+### Features
+
+* email standardisation phase 1 (#9283) ([#9283](https://github.com/opengovsg/formsg/commit/179a82653c5c592a15dfcde8fa3dfdf9f2625343))
+* mrf response limit v1.0 (#9282) ([#9282](https://github.com/opengovsg/formsg/commit/b37781e648d9fd771cb580b2c2546ad8a8c9aa54))
+
+
+### Bug Fixes
+
+* remove preview for removed MrfWorkflowEmail template (#9299) ([#9299](https://github.com/opengovsg/formsg/commit/bcc56edfddb5befb04c0b03e2eabc0f13da44353))
+
+
+### Chores
+
+* use published mockpass image instead of building from source (#9296) ([#9296](https://github.com/opengovsg/formsg/commit/8821d00aa99d97f2f32f6a89370a3588d0c23c13))
+
+
+### Miscellaneous
+
+* Merge pull request #9298 from opengovsg/release-al2 ([#9298](https://github.com/opengovsg/formsg/commit/e31db15d48e229b787d889c33242552fa360f754))
+
 ## [7.5.2](https://github.com/opengovsg/formsg/compare/v7.5.1...v7.5.2) (2026-04-11)
 
 

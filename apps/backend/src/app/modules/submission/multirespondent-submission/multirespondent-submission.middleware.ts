@@ -137,6 +137,7 @@ const getSnapshottedFormDef = (
   stepOneEmailNotificationFieldId:
     currentFormDef.stepOneEmailNotificationFieldId,
   stepsToNotify: currentFormDef.stepsToNotify,
+  hasStatusTracker: currentFormDef.hasStatusTracker,
 })
 
 /**

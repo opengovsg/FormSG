@@ -15,11 +15,16 @@ export const enSG = {
   },
   limit: {
     label: 'Set a response limit',
-    notForMRF: 'Response limits cannot be applied for multi-respondent forms.',
     input: {
       label: 'Maximum number of responses allowed',
       description:
         'Your form will automatically close once it reaches the set limit.',
+    },
+    toast: {
+      successStorageMode:
+        'Your form will now automatically close on the {submissionLimit} submission.',
+      successMrf:
+        'Your form will now automatically close on the {submissionLimit} started workflow.',
     },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
