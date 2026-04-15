@@ -16,9 +16,10 @@ import {
 } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result } from 'neverthrow'
+import { err, ok, okAsync, Result } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
+import { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -90,9 +91,17 @@ export const handleGetPublicForm: ControllerHandler<
     formId,
   }
 
+  const gb = req.growthbook
+  const isMrfResponseLimitEnabled =
+    isTest || (gb?.isOn(featureFlags.mrfResponseLimit) ?? true)
+
   const formResult = await getFormIfPublic(formId)
     .andThen((form) =>
-      FormService.checkFormSubmissionLimitAndDeactivateForm(form),
+      // TODO(MRF-SUBMISSION-LIMIT): Remove check once mrf submission limit is stable.
+      form.responseMode === FormResponseMode.Encrypt ||
+      isMrfResponseLimitEnabled
+        ? FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+        : okAsync(form),
     )
     .andThen((form) => FormService.checkFormSmsLimitAndDeactivateForm(form))
 

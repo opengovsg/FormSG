@@ -148,11 +148,14 @@ export const useMutateFormSettings = () => {
     {
       onSuccess: (newData) => {
         // Show toast on success.
+        const successToastI18nKey =
+          newData.responseMode === FormResponseMode.Multirespondent
+            ? 'features.adminForm.settings.general.limit.toast.successMrf'
+            : 'features.adminForm.settings.general.limit.toast.successStorageMode'
         const toastStatusMessage = newData.submissionLimit
-          ? simplur`Your form will now automatically close on the ${[
-              newData.submissionLimit,
-              formatOrdinal,
-            ]} submission.`
+          ? t(successToastI18nKey, {
+              submissionLimit: formatOrdinal(newData.submissionLimit),
+            })
           : 'The submission limit on your form is removed.'
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },

@@ -16,10 +16,13 @@ export interface General extends HasTitle {
   }
   limit: {
     label: string
-    notForMRF: string
     input: {
       label: string
       description: string
+    }
+    toast: {
+      successStorageMode: string
+      successMrf: string
     }
     limitLessThanCurrent: string
   }

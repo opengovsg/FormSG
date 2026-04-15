@@ -5,6 +5,7 @@ import {
   FormResponseMode,
   FormStatus,
   SubmissionType,
+  WorkflowType,
 } from 'formsg-shared/types'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
@@ -26,6 +27,29 @@ import * as FormService from '../form.service'
 const MOCK_FORM_ID = new ObjectId()
 const Form = getFormModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
+
+const mockMultirespondentSubmissionForForm = (
+  formId: mongoose.Types.ObjectId,
+) => {
+  const workflowId = new ObjectId()
+  const fieldId = new ObjectId()
+  return {
+    form: formId,
+    submissionType: SubmissionType.Multirespondent,
+    form_fields: [{ _id: fieldId, fieldType: BasicField.ShortText }],
+    form_logics: [],
+    workflow: [
+      { _id: workflowId, workflow_type: WorkflowType.Static, emails: [] },
+    ],
+    submissionPublicKey: 'mockPublicKey',
+    encryptedSubmissionSecretKey: 'mockEncryptedSubmissionSecretKey',
+    encryptedContent: 'mockEncryptedContent',
+    version: 1,
+    created: new Date('2020-01-01'),
+    workflowStep: 0,
+    submittedSteps: [],
+  }
+}
 
 const MOCK_ADMIN_OBJ_ID = new ObjectId()
 const MOCK_FORM_PARAMS = {
@@ -374,86 +398,162 @@ describe('FormService', () => {
   })
 
   describe('checkFormSubmissionLimitAndDeactivateForm', () => {
-    it('should let requests through when form has no submission limit', async () => {
-      // Arrange
-      const form = {
-        _id: new ObjectId(),
-        submissionLimit: null,
-      } as IPopulatedForm
+    describe('for storage mode forms', () => {
+      it('should let requests through when form has no submission limit', async () => {
+        // Arrange
+        const form = {
+          responseMode: FormResponseMode.Encrypt,
+          _id: new ObjectId(),
+          submissionLimit: null,
+        } as IPopulatedForm
 
-      // Act
-      const actual =
-        await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
 
-      // Assert
-      expect(actual._unsafeUnwrap()).toEqual(form)
-    })
-
-    it('should return the form when the submission limit is not reached', async () => {
-      // Arrange
-      const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: FormStatus.Public,
-        submissionLimit: 10,
+        // Assert
+        expect(actual._unsafeUnwrap()).toEqual(form)
       })
-      const validForm = new Form(formParams)
-      const form = await validForm.save()
 
-      const submissionPromises = times(5, () =>
-        Submission.create({
-          form: form._id,
-          myInfoFields: [],
-          submissionType: SubmissionType.Encrypt,
-          encryptedContent: 'mockEncryptedContent',
-          version: 1,
-          created: new Date('2020-01-01'),
-        }),
-      )
-      await Promise.all(submissionPromises)
+      it('should return the form when the submission limit is not reached', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          status: FormStatus.Public,
+          submissionLimit: 10,
+        })
+        const validForm = new Form(formParams)
+        const form = await validForm.save()
 
-      // Act
-      const actual =
-        await FormService.checkFormSubmissionLimitAndDeactivateForm(
-          form as IPopulatedForm,
+        const submissionPromises = times(5, () =>
+          Submission.create({
+            form: form._id,
+            myInfoFields: [],
+            submissionType: SubmissionType.Encrypt,
+            encryptedContent: 'mockEncryptedContent',
+            version: 1,
+            created: new Date('2020-01-01'),
+          }),
         )
+        await Promise.all(submissionPromises)
 
-      // Assert
-      expect(actual._unsafeUnwrap()).toEqual(validForm)
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(
+            form as IPopulatedForm,
+          )
+
+        // Assert
+        expect(actual._unsafeUnwrap()).toBe(form)
+      })
+
+      it('should not let requests through and deactivate form when form has reached submission limit', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          status: FormStatus.Public,
+          submissionLimit: 5,
+        })
+        const validForm = new Form(formParams)
+        const form = (await validForm.save()) as IPopulatedForm
+
+        const submissionPromises = times(5, () =>
+          Submission.create({
+            form: form._id,
+            myInfoFields: [],
+            submissionType: SubmissionType.Encrypt,
+            encryptedContent: 'mockEncryptedContent',
+            version: 1,
+            created: new Date('2020-01-01'),
+          }),
+        )
+        await Promise.all(submissionPromises)
+
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toEqual(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
+        )
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('PRIVATE')
+      })
     })
 
-    it('should not let requests through and deactivate form when form has reached submission limit', async () => {
-      // Arrange
-      const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-        status: FormStatus.Public,
-        submissionLimit: 5,
+    describe('for mrf forms', () => {
+      it('should let requests through when form has no submission limit', async () => {
+        // Arrange
+        const form = {
+          _id: new ObjectId(),
+          responseMode: FormResponseMode.Multirespondent,
+          submissionLimit: null,
+        } as IPopulatedForm
+
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+
+        // Assert
+        expect(actual._unsafeUnwrap()).toEqual(form)
       })
-      const validForm = new Form(formParams)
-      const form = (await validForm.save()) as IPopulatedForm
 
-      const submissionPromises = times(5, () =>
-        Submission.create({
-          form: form._id,
-          myInfoFields: [],
-          submissionType: SubmissionType.Encrypt,
-          encryptedContent: 'mockEncryptedContent',
-          version: 1,
-          created: new Date('2020-01-01'),
-        }),
-      )
-      await Promise.all(submissionPromises)
+      it('should return the form when the submission limit is not reached', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          responseMode: FormResponseMode.Multirespondent,
+          status: FormStatus.Public,
+          submissionLimit: 10,
+        })
+        const validForm = new Form(formParams)
+        const form = await validForm.save()
 
-      // Act
-      const actual =
-        await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+        const submissionPromises = times(5, () =>
+          Submission.create(mockMultirespondentSubmissionForForm(form._id)),
+        )
+        await Promise.all(submissionPromises)
 
-      // Assert
-      expect(actual._unsafeUnwrapErr()).toEqual(
-        new PrivateFormError(
-          'Submission made after form submission limit was reached',
-          form.title,
-        ),
-      )
-      const updated = await Form.findById(form._id)
-      expect(updated!.status).toBe('PRIVATE')
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(
+            form as IPopulatedForm,
+          )
+
+        // Assert
+        expect(actual._unsafeUnwrap()).toBe(form)
+      })
+
+      it('should not let requests through and deactivate form when form has reached submission limit', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          responseMode: FormResponseMode.Multirespondent,
+          status: FormStatus.Public,
+          submissionLimit: 5,
+        })
+        const validForm = new Form(formParams)
+        const form = (await validForm.save()) as IPopulatedForm
+
+        const submissionPromises = times(5, () =>
+          Submission.create(mockMultirespondentSubmissionForForm(form._id)),
+        )
+        await Promise.all(submissionPromises)
+
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toEqual(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
+        )
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('PRIVATE')
+      })
     })
   })
 
