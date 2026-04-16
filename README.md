@@ -67,7 +67,7 @@ Notable features include:
 - (Singapore government agencies only) Citizen authentication with [sgID](https://www.id.gov.sg/)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
-- Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
+- Webhooks functionality via the official [FormSG JavaScript SDK](./packages/sdk/README.md) (published as [`@opengovsg/formsg-sdk`](https://www.npmjs.com/package/@opengovsg/formsg-sdk) from [`packages/sdk`](./packages/sdk)) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
 - Variable amount and Itemised payments on forms with [stripe](https://stripe.com) integration
 
 ## Local Development (Docker)
