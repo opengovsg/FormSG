@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.9.2](https://github.com/opengovsg/formsg/compare/v7.9.1...v7.9.2) (2026-04-16)
+
+
+### Miscellaneous
+
+* Merge pull request #9313 from opengovsg/release-al2 ([#9313](https://github.com/opengovsg/formsg/commit/41732190ff796e8d0bb10fbfea09cf6459547971))
+* Merge pull request #9314 from opengovsg/fix/sdk/update-repository-provenance ([#9314](https://github.com/opengovsg/formsg/commit/13b992929b59b2bcbfae00e8a371fcfb4ac0087a))
+
 ## [7.9.1](https://github.com/opengovsg/formsg/compare/v7.9.0...v7.9.1) (2026-04-16)
 
 
