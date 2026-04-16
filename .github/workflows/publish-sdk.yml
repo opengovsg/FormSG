@@ -43,6 +43,7 @@ jobs:
     defaults:
       run:
         shell: bash
+    environment: 'publish-sdk'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.3.1
