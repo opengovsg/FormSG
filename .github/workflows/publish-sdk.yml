@@ -78,7 +78,7 @@ jobs:
       - name: Update npm
         if: ${{ steps.version.outputs.should-publish == 'true' }}
         # npm 11.5.1+ required for OIDC trusted publishing.
-        run: npm install -g npm@latest
+        run: npm install -g npm@~11.10.0
 
       - name: Install dependencies
         if: ${{ steps.version.outputs.should-publish == 'true' }}
