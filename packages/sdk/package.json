@@ -1,6 +1,6 @@
 {
   "name": "@opengovsg/formsg-sdk",
-  "version": "0.16.1",
+  "version": "7.0.0",
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -35,6 +35,10 @@
   },
   "description": "Node.js SDK for integrating with FormSG",
   "license": "MIT",
+  "files": [
+    "dist/",
+    "cjs-entry.cjs"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",

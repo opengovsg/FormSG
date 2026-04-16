@@ -30,6 +30,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       shared: ${{ steps.filter.outputs.shared }}
+      sdk: ${{ steps.filter.outputs.sdk }}
     steps:
       - uses: actions/checkout@v4.3.1
         with:
@@ -49,10 +50,17 @@ jobs:
               - pnpm-lock.yaml
             shared:
               - packages/shared/constants/**
-              - packages/shared/modules/** 
+              - packages/shared/modules/**
               - packages/shared/types/**
               - packages/shared/utils/**
               - packages/shared/package.json
+              - pnpm-lock.yaml
+            sdk:
+              - packages/sdk/src/**
+              - packages/sdk/spec/**
+              - packages/sdk/package.json
+              - packages/sdk/tsconfig*.json
+              - packages/sdk/jest.config.js
               - pnpm-lock.yaml
 
   install:
@@ -310,4 +318,37 @@ jobs:
       - run: pnpm test:shared
         env:
           DD_TAGS: layer:shared
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
+
+  sdk_test:
+    # Mirrors the old formsg-javascript-sdk ci.yml `test` job — jest against
+    # packages/sdk/spec/**, no build step required (ts-jest compiles at test
+    # time). Gated on changes in packages/sdk so unrelated PRs are unaffected.
+    needs: [changes, install]
+    if: ${{ needs.changes.outputs.sdk == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Use Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
+      - run: pnpm test:sdk
+        env:
+          DD_TAGS: layer:sdk
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}

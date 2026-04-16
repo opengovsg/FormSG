@@ -8,9 +8,13 @@ const getShortHash = (commit) => {
 }
 module.exports = {
   path: ["packages/sdk"],
+  // Both packageFiles (read current version) and bumpFiles (write new version)
+  // must point at packages/sdk/package.json. If packageFiles is omitted,
+  // commit-and-tag-version falls back to reading the root package.json and
+  // derives the next SDK version from the monorepo version instead.
+  packageFiles: [{ filename: 'packages/sdk/package.json', type: 'json' }],
   bumpFiles: [{ filename: 'packages/sdk/package.json', type: 'json' }],
   infile: 'packages/sdk/CHANGELOG.md',
-  preMajor: true,
   tagPrefix: 'sdk-v',
   writerOpts: {
     groupBy: 'section',
