@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.9.1](https://github.com/opengovsg/formsg/compare/v7.9.0...v7.9.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **ci, sdk:** npm upgrade and publishing (#9311) ([#9311](https://github.com/opengovsg/formsg/commit/7b77273d4a195a67d422460a140244429f1ab80c))
+
 ## [7.9.0](https://github.com/opengovsg/formsg/compare/v7.8.0...v7.9.0) (2026-04-16)
 
 
