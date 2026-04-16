@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.9.0](https://github.com/opengovsg/formsg/compare/v7.8.0...v7.9.0) (2026-04-16)
+
+
+### Features
+
+* **sdk:** enable publishing (#9305) ([#9305](https://github.com/opengovsg/formsg/commit/7b48aa5e1dd65b8e38d6090e7a135fdeb5267e89))
+
 ## [7.8.0](https://github.com/opengovsg/formsg/compare/v7.7.0...v7.8.0) (2026-04-16)
 
 
