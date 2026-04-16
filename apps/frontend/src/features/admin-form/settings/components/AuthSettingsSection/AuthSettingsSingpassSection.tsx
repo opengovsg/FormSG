@@ -22,6 +22,7 @@ export const AuthSettingsSingpassSection = ({
   const isSinglepassAuthOptionsDisabled =
     isSingpassSettingsDisabled || containsMyInfoFields
   const isEncryptMode = settings.responseMode === FormResponseMode.Encrypt
+  const isMrf = settings.responseMode === FormResponseMode.Multirespondent
 
   return (
     <>
@@ -36,7 +37,7 @@ export const AuthSettingsSingpassSection = ({
           isDisabled={isFormPublic}
         />
       </>
-      {isEncryptMode || settings.isSingleSubmission ? (
+      {isEncryptMode || isMrf || settings.isSingleSubmission ? (
         <>
           <Divider my="2.5rem" />
           <FormSingleSubmissionToggle
