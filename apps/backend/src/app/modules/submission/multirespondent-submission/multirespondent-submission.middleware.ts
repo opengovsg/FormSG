@@ -50,6 +50,7 @@ import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submissi
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
   InvalidSubmissionTypeError,
+  MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
   SubmissionNotFoundError,
@@ -828,7 +829,6 @@ export const handleNdiResponses = async (
   let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
 
   let verifiedContent: VerifiedContentV3 | undefined
-  let submitterId: string | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let ndiResponses: Record<string, any> = {}
 
@@ -838,18 +838,12 @@ export const handleNdiResponses = async (
     formId,
   }
 
-  const isSingpassEnabled =
-    authType === FormAuthType.CP ||
-    authType === FormAuthType.MyInfo ||
-    authType === FormAuthType.SGID ||
-    authType === FormAuthType.SGID_MyInfo
-  const isSingpassUserInfoRequired =
-    formDef.isSingleSubmission || formDef.isSubmitterIdCollectionEnabled
+  const isSingpassAuthType =
+    authType === FormAuthType.CP || authType === FormAuthType.MyInfo
 
   // 1. Handle Ndi data for current step
   if (
-    isSingpassEnabled &&
-    isSingpassUserInfoRequired &&
+    isSingpassAuthType &&
     stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
   ) {
     let userName
@@ -921,7 +915,16 @@ export const handleNdiResponses = async (
           .json({ message: 'Invalid data was found. Please submit again.' })
       }
 
-      submitterId = userName?.toUpperCase()
+      const submitterId = userName?.toUpperCase()
+      if (!submitterId) {
+        const missingSubmitterIdError = new MissingSubmitterIdError()
+        const { statusCode, errorMessage } = mapRouteError(
+          missingSubmitterIdError,
+        )
+        return res.status(statusCode).json({ message: errorMessage })
+      }
+      const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
+      req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
       verifiedContent = verifiedContentResult.value
     }
   }
@@ -930,11 +933,6 @@ export const handleNdiResponses = async (
     ndiResponses = {
       ...verifiedContent,
     }
-  }
-
-  if (formDef.isSingleSubmission && submitterId) {
-    const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
-    req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
   }
 
   // 2. Handle Ndi data for previous steps
