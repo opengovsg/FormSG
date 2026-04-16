@@ -192,6 +192,12 @@ const useDecryptionWorkers = ({
                 secretKey,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
+                // Resolved here (on the main thread) so the worker doesn't need
+                // to read import.meta.env itself. Mirrors the fallback in
+                // ~utils/formSdk: VITE_APP_FORMSG_SDK_MODE, or NODE_ENV (MODE).
+                formsgSdkMode:
+                  import.meta.env.VITE_APP_FORMSG_SDK_MODE ??
+                  import.meta.env.MODE,
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {

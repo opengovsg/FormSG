@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.8.0](https://github.com/opengovsg/formsg/compare/v7.7.0...v7.8.0) (2026-04-16)
+
+
+### Features
+
+* **frontend:** env-independent containers via runtime env loading (#9285) ([#9285](https://github.com/opengovsg/formsg/commit/1e52d267bca8ac3898f729fd03b68b760bc10822))
+* **sdk:** bump axios 1.15.0 ([fb4d837](https://github.com/opengovsg/formsg/commit/fb4d8372a31ef0f38ebaf9e286efa17ddd9a8b72))
+
+
+### Miscellaneous
+
+* Merge pull request #9295 from opengovsg/fix/ci/update-stg-alt2-parameters ([#9295](https://github.com/opengovsg/formsg/commit/0260daac3558dc4f559acc60dbc4d5c2cfe132f7))
+* Merge pull request #9300 from opengovsg/release-al2 ([#9300](https://github.com/opengovsg/formsg/commit/c03f3a4d15dc5a76d84bcbfb0bb47767314b8e36))
+* Merge pull request #9302 from opengovsg/feat/sdk/bump-axios-1.15.0 ([#9302](https://github.com/opengovsg/formsg/commit/8c953573622292fe1e0fc35be712a403cd1aaf9d))
+* Merge pull request #9304 from opengovsg/release-al2 ([#9304](https://github.com/opengovsg/formsg/commit/194a81603da220cd46d8f2e2aef25149c4e07380))
+
 ## [7.7.0](https://github.com/opengovsg/formsg/compare/v7.5.2...v7.7.0) (2026-04-15)
 
 
