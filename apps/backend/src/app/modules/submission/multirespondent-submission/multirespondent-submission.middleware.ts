@@ -56,6 +56,7 @@ import {
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
 import {
+  generateHashedSubmitterId,
   getEncryptedAttachmentsMapFromAttachmentsMap,
   isAttachmentResponseV3,
   mapRouteError,
@@ -827,6 +828,7 @@ export const handleNdiResponses = async (
   let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
 
   let verifiedContent: VerifiedContentV3 | undefined
+  let submitterId: string | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let ndiResponses: Record<string, any> = {}
 
@@ -919,6 +921,7 @@ export const handleNdiResponses = async (
           .json({ message: 'Invalid data was found. Please submit again.' })
       }
 
+      submitterId = userName?.toUpperCase()
       verifiedContent = verifiedContentResult.value
     }
   }
@@ -927,6 +930,11 @@ export const handleNdiResponses = async (
     ndiResponses = {
       ...verifiedContent,
     }
+  }
+
+  if (formDef.isSingleSubmission && submitterId) {
+    const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
+    req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
   }
 
   // 2. Handle Ndi data for previous steps
