@@ -45,6 +45,7 @@ import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV3FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -825,6 +826,7 @@ export const handleNdiResponses = async (
     : 1
   let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
 
+  let verifiedContent: VerifiedContentV3 | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let ndiResponses: Record<string, any> = {}
 
@@ -834,10 +836,18 @@ export const handleNdiResponses = async (
     formId,
   }
 
+  const isSingpassEnabled =
+    authType === FormAuthType.CP ||
+    authType === FormAuthType.MyInfo ||
+    authType === FormAuthType.SGID ||
+    authType === FormAuthType.SGID_MyInfo
+  const isSingpassUserInfoRequired =
+    formDef.isSingleSubmission || formDef.isSubmitterIdCollectionEnabled
+
   // 1. Handle Ndi data for current step
   if (
-    formDef.isSubmitterIdCollectionEnabled &&
-    (authType === FormAuthType.CP || authType === FormAuthType.MyInfo) &&
+    isSingpassEnabled &&
+    isSingpassUserInfoRequired &&
     stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
   ) {
     let userName
@@ -887,7 +897,7 @@ export const handleNdiResponses = async (
         spcpSubmissionFailure: true,
       })
     } else {
-      const verifiedContent = VerifiedContentService.getVerifiedContent({
+      const verifiedContentResult = VerifiedContentService.getVerifiedContent({
         type: authType,
         data: {
           uinFin: userName,
@@ -896,8 +906,8 @@ export const handleNdiResponses = async (
         },
       })
 
-      if (verifiedContent.isErr()) {
-        const { error } = verifiedContent
+      if (verifiedContentResult.isErr()) {
+        const { error } = verifiedContentResult
         logger.error({
           message: 'Unable to get verified content',
           meta: logMeta,
@@ -907,12 +917,15 @@ export const handleNdiResponses = async (
         return res
           .status(StatusCodes.BAD_REQUEST)
           .json({ message: 'Invalid data was found. Please submit again.' })
-      } else {
-        ndiResponses = {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...(verifiedContent.value as Record<string, any>),
-        }
       }
+
+      verifiedContent = verifiedContentResult.value
+    }
+  }
+
+  if (formDef.isSubmitterIdCollectionEnabled) {
+    ndiResponses = {
+      ...verifiedContent,
     }
   }
 
