@@ -136,6 +136,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
   submittedSteps: z.array(SubmittedStep).optional(),
+  submitterIds: z.array(z.string()).optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<

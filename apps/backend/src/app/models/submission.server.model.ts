@@ -562,6 +562,11 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Array,
     default: [],
   },
+  submitterIds: {
+    type: Array,
+    of: String,
+    default: [],
+  },
 })
 
 type MultiRespondentAggregates = Pick<
