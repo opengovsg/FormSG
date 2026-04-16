@@ -122,6 +122,11 @@ export interface IMultirespondentSubmissionSchema
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
+  saveIfSubmitterIdIsUnique: (
+    formId: string,
+    submitterId: string,
+    zeroIndexedStepNumber: number,
+  ) => Promise<IMultirespondentSubmissionSchema | null>
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object

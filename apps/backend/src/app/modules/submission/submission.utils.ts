@@ -88,6 +88,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  FormRespondentSingleSubmissionValidationError,
   PrivateFormError,
 } from '../form/form.errors'
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
@@ -196,6 +197,11 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
+      }
+    case FormRespondentSingleSubmissionValidationError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
       }
     case SgidMissingJwtError:
     case SgidVerifyJwtError:

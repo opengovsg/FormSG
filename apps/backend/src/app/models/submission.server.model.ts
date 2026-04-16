@@ -619,6 +619,55 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
   }
 }
 
+MultirespondentSubmissionSchema.methods.saveIfSubmitterIdIsUnique =
+  async function (
+    formId: string,
+    submitterId: string,
+    zeroIndexedStepNumber: number,
+  ) {
+    const submitterIdStepNumberKey = `submitterIds.${zeroIndexedStepNumber}`
+    const session = await this.startSession()
+    session.startTransaction()
+    const beforeCreateRes = await this.exists({
+      form: formId,
+      [submitterIdStepNumberKey]: submitterId,
+    })
+      .setOptions({ readPreference: 'primary' })
+      .session(session)
+      .exec()
+
+    if (beforeCreateRes) {
+      await session.abortTransaction()
+      await session.endSession()
+      return null
+    }
+
+    await this.save({ session })
+
+    const afterCreateRes = await this.find(
+      {
+        form: formId,
+        [submitterIdStepNumberKey]: submitterId,
+      },
+      null,
+      {
+        limit: 2,
+        readPreference: 'primary',
+      },
+    )
+      .session(session)
+      .exec()
+    if (afterCreateRes.length > 1) {
+      await session.abortTransaction()
+      await session.endSession()
+      return null
+    }
+
+    await session.commitTransaction()
+    await session.endSession()
+    return afterCreateRes[0]
+  }
+
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
