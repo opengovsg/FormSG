@@ -1,17 +1,18 @@
-import { FormField } from '@opengovsg/formsg-sdk/dist/types'
+import formsgPackage from '@opengovsg/formsg-sdk'
+import { FormField, PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
 import { SubmissionStreamDto, SubmissionType } from 'formsg-shared/types'
-
-import formsgSdk from '~utils/formSdk'
+import { TRANSACTION_EXPIRE_AFTER_SECONDS } from 'formsg-shared/utils/verification'
 
 import {
   AttachmentsDownloadMap,
   CsvRecordData,
   CsvRecordStatus,
   DecryptedData,
+  DecryptionCtx,
   DownloadOptions,
   MaterializedCsvRecord,
   SubmissionDataForDecryption,
@@ -22,6 +23,29 @@ import {
   processDecryptedContent,
   processDecryptedContentV3,
 } from '../utils/processDecryptedContent'
+
+// WorkerCtx extends the shared DecryptionCtx; add worker-specific deps here if needed.
+type WorkerCtx = DecryptionCtx
+
+let cachedFormsgSdk: DecryptionCtx['formsgSdk'] | null = null
+let cachedMode: string | null = null
+
+interface WorkerCtxOptions {
+  formsgSdkMode: string
+}
+
+function createWorkerCtx({ formsgSdkMode }: WorkerCtxOptions): WorkerCtx {
+  if (!cachedFormsgSdk || cachedMode !== formsgSdkMode) {
+    cachedFormsgSdk = formsgPackage({
+      mode: formsgSdkMode as PackageMode,
+      verificationOptions: {
+        transactionExpiry: TRANSACTION_EXPIRE_AFTER_SECONDS,
+      },
+    })
+    cachedMode = formsgSdkMode
+  }
+  return { formsgSdk: cachedFormsgSdk }
+}
 
 const queue = new PQueue({ concurrency: 1 })
 
@@ -35,6 +59,7 @@ const queue = new PQueue({ concurrency: 1 })
  * @param created Database timestamp of submission
  */
 function verifySignature(
+  ctx: WorkerCtx,
   decryptedSubmission: CsvRecordData[],
   created: string,
 ) {
@@ -46,7 +71,7 @@ function verifySignature(
       return false
     }
     try {
-      return formsgSdk.verification.authenticate({
+      return ctx.formsgSdk.verification.authenticate({
         signatureString,
         submissionCreatedAt: Date.parse(created),
         fieldId,
@@ -60,13 +85,16 @@ function verifySignature(
   return verified.every((v) => v)
 }
 
-async function decryptSubmissionData({
-  submissionData,
-  secretKey,
-}: {
-  submissionData: SubmissionStreamDto
-  secretKey: string
-}): Promise<
+async function decryptSubmissionData(
+  ctx: WorkerCtx,
+  {
+    submissionData,
+    secretKey,
+  }: {
+    submissionData: SubmissionStreamDto
+    secretKey: string
+  },
+): Promise<
   | {
       decryptedResponses: FormField[]
       mrfSubmissionSecretKey?: string
@@ -82,7 +110,7 @@ async function decryptSubmissionData({
   let decryptedResponses, mrfSubmissionSecretKey
   switch (submissionType) {
     case SubmissionType.Encrypt: {
-      const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
+      const decryptedObject = ctx.formsgSdk.crypto.decrypt(secretKey, {
         encryptedContent,
         verifiedContent,
         version,
@@ -97,7 +125,7 @@ async function decryptSubmissionData({
       break
     }
     case SubmissionType.Multirespondent: {
-      const decryptedObject = formsgSdk.cryptoV3.decrypt(secretKey, {
+      const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
         encryptedSubmissionSecretKey:
           submissionData.encryptedSubmissionSecretKey,
         encryptedContent,
@@ -165,11 +193,14 @@ type _DownloadAndDecryptSubmissionAttachmentsParams = {
   attachmentMetadata: Record<string, string>
   decryptedResponses: FormField[]
 }
-async function _downloadAndDecryptSubmissionAttachments({
-  attachmentDecryptionKey,
-  attachmentMetadata,
-  decryptedResponses,
-}: _DownloadAndDecryptSubmissionAttachmentsParams): Promise<
+async function _downloadAndDecryptSubmissionAttachments(
+  ctx: WorkerCtx,
+  {
+    attachmentDecryptionKey,
+    attachmentMetadata,
+    decryptedResponses,
+  }: _DownloadAndDecryptSubmissionAttachmentsParams,
+): Promise<
   | {
       downloadedAttachmentsBlob: Blob
       isDownloadSuccessful: boolean
@@ -201,6 +232,7 @@ async function _downloadAndDecryptSubmissionAttachments({
   try {
     const downloadedAttachmentsBlob = await queue.add(() =>
       downloadAndDecryptAttachmentsAsZip(
+        ctx,
         attachmentDownloadUrls,
         attachmentDecryptionKey,
         extraAttachments,
@@ -216,6 +248,7 @@ async function _downloadAndDecryptSubmissionAttachments({
 }
 
 async function downloadAndDecryptSubmissionAttachments(
+  ctx: WorkerCtx,
   downloadAndDecryptSubmissionAttachmentsParams: Pick<
     _DownloadAndDecryptSubmissionAttachmentsParams,
     'attachmentMetadata' | 'decryptedResponses'
@@ -226,7 +259,7 @@ async function downloadAndDecryptSubmissionAttachments(
     downloadAndDecryptSubmissionAttachmentsParams,
   )
 
-  return await _downloadAndDecryptSubmissionAttachments({
+  return await _downloadAndDecryptSubmissionAttachments(ctx, {
     attachmentDecryptionKey,
     attachmentMetadata:
       downloadAndDecryptSubmissionAttachmentsParams.attachmentMetadata,
@@ -248,6 +281,7 @@ type LineData = {
  * @param data The data to decrypt into a csvRecord.
  */
 async function getMaterializedCsvRecord(
+  ctx: WorkerCtx,
   lineData: LineData,
 ): Promise<MaterializedCsvRecord> {
   const {
@@ -310,7 +344,7 @@ async function getMaterializedCsvRecord(
   // Short-circuit signature verification for multirespondent submission
   if (
     parsedSubmission.submissionType === SubmissionType.Multirespondent ||
-    verifySignature(decryptedResponses, parsedSubmission.created)
+    verifySignature(ctx, decryptedResponses, parsedSubmission.created)
   ) {
     csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
     csvRecord.setRecord(decryptedResponses)
@@ -354,10 +388,10 @@ type DecryptionResult =
       mrfSubmissionSecretKey?: string
     }
 
-async function parseAndDecryptSubmissionData({
-  submissionStreamDtoString,
-  secretKey,
-}: SubmissionDataForDecryption): Promise<DecryptionResult> {
+async function parseAndDecryptSubmissionData(
+  ctx: WorkerCtx,
+  { submissionStreamDtoString, secretKey }: SubmissionDataForDecryption,
+): Promise<DecryptionResult> {
   let submission: SubmissionStreamDto
 
   try {
@@ -372,7 +406,7 @@ async function parseAndDecryptSubmissionData({
     }
   }
 
-  const decryptSubmissionDataResult = await decryptSubmissionData({
+  const decryptSubmissionDataResult = await decryptSubmissionData(ctx, {
     submissionData: submission,
     secretKey,
   })
@@ -403,6 +437,8 @@ type GetDecryptedDataParams = Pick<
 async function getDecryptedData(
   getDecryptedDataParams: GetDecryptedDataParams,
 ): Promise<DecryptedData> {
+  const ctx = createWorkerCtx(getDecryptedDataParams)
+
   let materializedCsvRecord: MaterializedCsvRecord | undefined
   let attachmentDownloadBlob: Blob | undefined
   let isDownloadAndDecryptSubmissionAttachmentsSuccessful = false
@@ -410,6 +446,7 @@ async function getDecryptedData(
   const { secretKey } = getDecryptedDataParams
 
   const decryptedSubmissionResult = await parseAndDecryptSubmissionData(
+    ctx,
     getDecryptedDataParams,
   )
 
@@ -423,7 +460,7 @@ async function getDecryptedData(
         decryptedSubmissionResult
       const { attachmentMetadata } = parsedSubmission
       const downloadAndDecryptSubmissionAttachmentsResult =
-        await downloadAndDecryptSubmissionAttachments({
+        await downloadAndDecryptSubmissionAttachments(ctx, {
           attachmentMetadata,
           decryptedResponses,
           submission: parsedSubmission,
@@ -443,7 +480,7 @@ async function getDecryptedData(
 
   if (isDownloadCsv) {
     const { formId, hostOrigin } = getDecryptedDataParams
-    materializedCsvRecord = await getMaterializedCsvRecord({
+    materializedCsvRecord = await getMaterializedCsvRecord(ctx, {
       isDownloadAttachments,
       formId,
       hostOrigin,

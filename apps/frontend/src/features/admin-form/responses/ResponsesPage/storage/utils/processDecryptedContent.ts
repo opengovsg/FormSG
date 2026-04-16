@@ -19,7 +19,7 @@ import {
 import {
   pickBaseOutputFromSchema,
   transformInputsToOutputs,
-} from '~features/public-form/utils'
+} from '~features/public-form/utils/inputTransformation'
 
 /**
  * Returns a verifiedFormField matching the given verifiedKey containing the given value.

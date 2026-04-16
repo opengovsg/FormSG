@@ -1,11 +1,10 @@
 import { decode as decodeBase64 } from '@stablelib/base64'
 import JSZip from 'jszip'
 
-import formsgSdk from '~utils/formSdk'
-
-import { AttachmentsDownloadMap } from '../types'
+import { AttachmentsDownloadMap, DecryptionCtx } from '../types'
 
 export const downloadAndDecryptAttachment = async (
+  ctx: DecryptionCtx,
   url: string,
   secretKey: string,
 ) => {
@@ -14,13 +13,14 @@ export const downloadAndDecryptAttachment = async (
   data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
   // RATIONALE: For casting to Uint8Array<ArrayBuffer>, after TS update, Uint8Array can be SharedArrayBuffer, which is not compatible with Blob.
   // Hence, until we update the SDK return type, we cast to Uint8Array<ArrayBuffer> to ensure compatibility.
-  return (await formsgSdk.crypto.decryptFile(
+  return (await ctx.formsgSdk.crypto.decryptFile(
     secretKey,
     data.encryptedFile,
   )) as Uint8Array<ArrayBuffer>
 }
 
 export const downloadAndDecryptAttachmentsAsZip = async (
+  ctx: DecryptionCtx,
   attachmentDownloadUrls: AttachmentsDownloadMap,
   secretKey: string,
   extraAttachments?: {
@@ -32,7 +32,7 @@ export const downloadAndDecryptAttachmentsAsZip = async (
   const downloadPromises = []
   for (const [questionNum, metadata] of attachmentDownloadUrls) {
     downloadPromises.push(
-      downloadAndDecryptAttachment(metadata.url, secretKey).then(
+      downloadAndDecryptAttachment(ctx, metadata.url, secretKey).then(
         (bytesArray) => {
           if (bytesArray) {
             zip.file(
