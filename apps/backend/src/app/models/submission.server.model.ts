@@ -564,7 +564,7 @@ export const MultirespondentSubmissionSchema = new Schema<
   },
   submitterIds: {
     type: Array,
-    of: String,
+    of: [String, null],
     default: [],
   },
 })
