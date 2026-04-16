@@ -758,10 +758,11 @@ export const createMultiRespondentFormSubmission = ({
             return Promise.reject(applicationError)
           }
           const uniqueSavedSubmission =
-            await submission.saveIfSubmitterIdIsUnique(
+            await MultirespondentSubmission.saveIfSubmitterIdIsUnique(
               form._id,
               hashedSubmitterId,
               0,
+              submissionContent,
             )
           if (!uniqueSavedSubmission) {
             const formSingleSubmissionError =

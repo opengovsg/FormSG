@@ -35,6 +35,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
@@ -618,17 +619,19 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
   }
 }
 
-MultirespondentSubmissionSchema.methods.saveIfSubmitterIdIsUnique =
+MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
   async function (
     formId: string,
     submitterId: string,
     zeroIndexedStepNumber: number,
+    submissionContent: MultirespondentSubmissionContent,
   ) {
     const submitterIdStepNumberKey = `submitterIds.${zeroIndexedStepNumber}`
     const session = await this.startSession()
     session.startTransaction()
     const beforeCreateRes = await this.exists({
       form: formId,
+      submissionType: SubmissionType.Multirespondent,
       [submitterIdStepNumberKey]: submitterId,
     })
       .setOptions({ readPreference: 'primary' })
@@ -641,11 +644,12 @@ MultirespondentSubmissionSchema.methods.saveIfSubmitterIdIsUnique =
       return null
     }
 
-    await this.save({ session })
+    await this.create([submissionContent], { session })
 
     const afterCreateRes = await this.find(
       {
         form: formId,
+        submissionType: SubmissionType.Multirespondent,
         [submitterIdStepNumberKey]: submitterId,
       },
       null,
@@ -656,7 +660,7 @@ MultirespondentSubmissionSchema.methods.saveIfSubmitterIdIsUnique =
     )
       .session(session)
       .exec()
-    if (afterCreateRes.length > 1) {
+    if (afterCreateRes.length != 1) {
       await session.abortTransaction()
       await session.endSession()
       return null
