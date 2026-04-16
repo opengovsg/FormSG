@@ -143,6 +143,7 @@ import {
   InvalidFileExtensionError,
   InvalidFileKeyError,
   MaliciousFileDetectedError,
+  MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowOverflowError,
@@ -202,6 +203,11 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MissingSubmitterIdError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
       }
     case SgidMissingJwtError:
     case SgidVerifyJwtError:

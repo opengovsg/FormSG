@@ -40,7 +40,7 @@ import {
 import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
-import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { DatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -49,6 +49,7 @@ import {
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
+  MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   ResponseModeError,
@@ -745,17 +746,15 @@ export const createMultiRespondentFormSubmission = ({
         submission: IMultirespondentSubmissionSchema,
       ) => {
         if (form.isSingleSubmission) {
-          const applicationError = new ApplicationError(
-            'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
-          )
           if (!hashedSubmitterId) {
+            const missingSubmitterIdError = new MissingSubmitterIdError()
             logger.error({
               message:
                 'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
               meta: logMeta,
-              error: applicationError,
+              error: missingSubmitterIdError,
             })
-            return Promise.reject(applicationError)
+            return Promise.reject(missingSubmitterIdError)
           }
           const uniqueSavedSubmission =
             await MultirespondentSubmission.saveIfSubmitterIdIsUnique(
