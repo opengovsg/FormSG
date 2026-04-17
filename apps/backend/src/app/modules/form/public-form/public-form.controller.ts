@@ -393,7 +393,7 @@ export const handleGetPublicForm: ControllerHandler<
   const hasSingleSubmissionValidationFailureResult =
     await FormService.checkHasSingleSubmissionValidationFailure(
       publicForm,
-      generateHashedSubmitterId(submitterId, form.id),
+      generateHashedSubmitterId(submitterId, formId),
     )
 
   if (hasSingleSubmissionValidationFailureResult.isErr()) {

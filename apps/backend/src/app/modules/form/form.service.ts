@@ -8,6 +8,7 @@ import {
   FormStatus,
   Language,
   PublicFormDto,
+  SubmissionType,
 } from 'formsg-shared/types'
 import { encryptString } from 'formsg-shared/utils/crypto'
 import mongoose from 'mongoose'
@@ -43,6 +44,7 @@ import {
 } from '../core/core.errors'
 import { IntranetService } from '../intranet/intranet.service'
 import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
+import { MissingSubmitterIdError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 
 import {
@@ -387,25 +389,38 @@ export const checkHasSingleSubmissionValidationFailure = (
 
   if (!submitterId) {
     return errAsync(
-      new ApplicationError(
+      new MissingSubmitterIdError(
         'Cannot find submitterId which is required for single submission per submitterId form',
       ),
     )
   }
-  return ResultAsync.fromPromise(
-    SubmissionModel.exists({
-      form: form._id,
-      submitterId,
-    }),
-    (error) => {
-      logger.error({
-        message: 'Error while counting submissions for form',
-        meta: logMeta,
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((result) => okAsync(result !== null))
+
+  const mrfStepOneIndex = 0
+  // NOTE: Hardcoded to step one since single submission is only supported for step one for now.
+  const mrfSubmitterIdIndexKey = `submitterIds.${mrfStepOneIndex}`
+  const baseQuery = {
+    form: form._id,
+  }
+  const query =
+    form.responseMode === FormResponseMode.Multirespondent
+      ? {
+          ...baseQuery,
+          submissionType: SubmissionType.Multirespondent,
+          [mrfSubmitterIdIndexKey]: submitterId,
+        }
+      : {
+          ...baseQuery,
+          submitterId,
+        }
+
+  return ResultAsync.fromPromise(SubmissionModel.exists(query), (error) => {
+    logger.error({
+      message: 'Error while counting submissions for form',
+      meta: logMeta,
+      error,
+    })
+    return transformMongoError(error)
+  }).andThen((result) => okAsync(result !== null))
 }
 
 export const getFormModelByResponseMode = (
