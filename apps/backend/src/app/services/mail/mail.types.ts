@@ -111,14 +111,6 @@ export type SmsThresholdWarningNotificationHtmlData =
     smsThreshold: smsThreshold
   }
 
-export type PaymentConfirmationData = {
-  appName: string
-  formTitle: string
-  submissionId: string
-  invoiceUrl: string
-  amountPaid: string
-}
-
 export type IssueReportedNotificationData = {
   appName: string
   formTitle: string

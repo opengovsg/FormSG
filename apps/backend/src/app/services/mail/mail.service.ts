@@ -50,7 +50,6 @@ import {
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
-  PaymentConfirmationData,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
@@ -61,7 +60,6 @@ import {
   generateAutoreplyHtml,
   generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
-  generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
   generateSubmissionToAdminHtml,
   isToFieldValid,
@@ -1037,28 +1035,27 @@ export class MailService {
     formId: string
     paymentId: string
     paymentAmount: number
-  }): ResultAsync<true, MailSendError> => {
-    const htmlData: PaymentConfirmationData = {
-      formTitle: formTitle,
-      submissionId: submissionId,
-      appName: this.#appName,
-      invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+  }): ResultAsync<true, MailSendError | MailGenerationError> => {
+    const formattedPaymentAmount = `S$${centsToDollars(paymentAmount)}`
+
+    const emailData: EmailData = {
+      emailTitle: `Your payment on ${formTitle} has been received`,
+      formTitle,
+      responseId: String(submissionId),
+      paymentAmount: formattedPaymentAmount,
+      paymentUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
         formId,
         paymentId,
       )}`,
-      amountPaid: centsToDollars(paymentAmount),
     }
-    return generatePaymentConfirmationHtml({ htmlData }).andThen((html) => {
-      const mail: MailOptions = {
-        to: email,
-        from: this.#senderFromString,
-        subject: `Your payment on ${this.#appName} was successful`,
-        html: html,
-        headers: {
-          [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
-        },
-      }
-      return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+
+    return this.#sendEmailWithTemplate({
+      emails: email,
+      formId,
+      subject: `Your payment on ${this.#appName} was successful`,
+      htmlData: emailData,
+      emailType: EmailType.PaymentConfirmation,
+      actionName: 'sendPaymentConfirmationEmail',
     })
   }
 

@@ -21,7 +21,6 @@ import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   IssueReportedNotificationData,
-  PaymentConfirmationData,
   SubmissionToAdminHtmlData,
 } from './mail.types'
 
@@ -220,22 +219,6 @@ export const isToFieldValid = (addresses: string | string[]): boolean => {
 
   // Every address must be an email to be valid.
   return mails.every((addr) => validator.isEmail(addr))
-}
-
-export const generatePaymentConfirmationHtml = ({
-  htmlData,
-}: {
-  htmlData: PaymentConfirmationData
-}): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${__dirname}/../../views/templates/payment-confirmation.view.html`
-  logger.info({
-    message: 'generatePaymentConfirmationHtml',
-    meta: {
-      action: 'generatePaymentConfirmationHtml',
-      pathToTemplate,
-    },
-  })
-  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const generatePaymentOnboardingHtml = ({
