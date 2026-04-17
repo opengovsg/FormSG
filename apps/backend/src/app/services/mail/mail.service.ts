@@ -1027,6 +1027,7 @@ export class MailService {
     formId,
     paymentId,
     paymentAmount,
+    useStandardisedEmailTemplate,
   }: {
     email: string
     formTitle: string
