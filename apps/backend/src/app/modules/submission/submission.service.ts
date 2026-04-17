@@ -455,6 +455,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   recipientData,
   pdfAttachment,
   isPaymentEnabled,
+  useStandardisedEmailTemplate,
 }: {
   form: IPopulatedForm
   submission: S
@@ -463,6 +464,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   recipientData: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
   isPaymentEnabled: boolean
+  useStandardisedEmailTemplate: boolean
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',
@@ -480,6 +482,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
     autoReplyMailDatas: recipientData,
     pdfAttachment,
     isPaymentEnabled,
+    useStandardisedEmailTemplate,
   })
   return ResultAsync.fromPromise(sentEmailsPromise, (error) => {
     logger.error({

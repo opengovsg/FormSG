@@ -774,6 +774,7 @@ export class MailService {
       answer: string | number
     }[]
     pdfAttachment?: Mail.Attachment
+    useStandardisedEmailTemplate?: boolean
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const logMeta = {
       action: 'sendSubmissionToAdmin',
