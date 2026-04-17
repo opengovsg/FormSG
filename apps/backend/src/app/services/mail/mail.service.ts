@@ -887,6 +887,7 @@ export class MailService {
     submissionAttachments = [],
     pdfAttachment,
     isPaymentEnabled,
+    useStandardisedEmailTemplate,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<
       Result<
@@ -935,6 +936,26 @@ export class MailService {
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
       autoReplyMailDatas.map((mailData, index) => {
+        //TODO (email-standardisation): remove when email standardisation is GA
+        if (useStandardisedEmailTemplate) {
+          const formQuestionAnswers: QuestionAnswer[] = responsesData.map(
+            ({ question, answerTemplate }) => ({
+              question,
+              answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+            }),
+          )
+
+          return this.sendRespondentCopyEmail({
+            formId: form._id,
+            formTitle: form.title,
+            responseId: submission.id,
+            attachments: getAttachmentsToInclude(mailData),
+            autoReplyMailData: mailData,
+            agencyName: form.admin.agency.fullName,
+            hasStatusTracker: false, // encrypt mode emails has no status tracker
+            ...(mailData.includeFormSummary && { formQuestionAnswers }),
+          })
+        }
         return this.#sendSingleAutoreplyMail({
           form,
           submission,
