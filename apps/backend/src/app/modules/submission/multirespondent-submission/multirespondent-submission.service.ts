@@ -684,7 +684,7 @@ export const createMultiRespondentFormSubmission = ({
         responseMetadata,
         version,
         mrfVersion,
-        hashedSubmitterId = null,
+        hashedSubmitterId,
       } = encryptedPayload
 
       const nextStepNumber = 1 // since current step is 0
@@ -719,6 +719,7 @@ export const createMultiRespondentFormSubmission = ({
         isApproval: false, // first step cannot be approval step
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
+        submitterId: hashedSubmitterId,
       }
 
       const submissionContent: MultirespondentSubmissionContent = {
@@ -736,7 +737,6 @@ export const createMultiRespondentFormSubmission = ({
         version,
         workflowStep: 0,
         mrfVersion,
-        submitterIds: [hashedSubmitterId],
         submittedSteps: [submittedStepMeta],
       }
 

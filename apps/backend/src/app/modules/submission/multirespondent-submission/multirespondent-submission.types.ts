@@ -92,7 +92,6 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
-  submitterIds: (string | null)[]
 }
 
 export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {

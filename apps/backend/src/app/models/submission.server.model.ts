@@ -563,10 +563,6 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Array,
     default: [],
   },
-  submitterIds: {
-    type: [String],
-    default: [],
-  },
 })
 
 type MultiRespondentAggregates = Pick<
@@ -626,13 +622,13 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
     zeroIndexedStepNumber: number,
     submissionContent: MultirespondentSubmissionContent,
   ) {
-    const submitterIdStepNumberKey = `submitterIds.${zeroIndexedStepNumber}`
+    const submitterIdKey = `submittedSteps.${zeroIndexedStepNumber}.submitterId`
     const session = await this.startSession()
     session.startTransaction()
     const beforeCreateRes = await this.exists({
       form: formId,
       submissionType: SubmissionType.Multirespondent,
-      [submitterIdStepNumberKey]: submitterId,
+      [submitterIdKey]: submitterId,
     })
       .setOptions({ readPreference: 'primary' })
       .session(session)
@@ -650,7 +646,7 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
       {
         form: formId,
         submissionType: SubmissionType.Multirespondent,
-        [submitterIdStepNumberKey]: submitterId,
+        [submitterIdKey]: submitterId,
       },
       null,
       {

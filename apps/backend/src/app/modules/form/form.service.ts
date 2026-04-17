@@ -397,7 +397,7 @@ export const checkHasSingleSubmissionValidationFailure = (
 
   const mrfStepOneIndex = 0
   // NOTE: Hardcoded to step one since single submission is only supported for step one for now.
-  const mrfSubmitterIdIndexKey = `submitterIds.${mrfStepOneIndex}`
+  const submitterIdKey = `submittedSteps.${mrfStepOneIndex}.submitterId`
   const baseQuery = {
     form: form._id,
   }
@@ -406,7 +406,7 @@ export const checkHasSingleSubmissionValidationFailure = (
       ? {
           ...baseQuery,
           submissionType: SubmissionType.Multirespondent,
-          [mrfSubmitterIdIndexKey]: submitterId,
+          [submitterIdKey]: submitterId,
         }
       : {
           ...baseQuery,

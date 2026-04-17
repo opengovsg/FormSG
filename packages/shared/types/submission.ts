@@ -101,6 +101,7 @@ const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
+  submitterId: z.string().optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
@@ -136,7 +137,6 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
   submittedSteps: z.array(SubmittedStep).optional(),
-  submitterIds: z.array(z.string()).optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
