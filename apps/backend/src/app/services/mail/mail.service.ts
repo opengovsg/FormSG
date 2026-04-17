@@ -763,6 +763,7 @@ export class MailService {
     dataCollationData,
     formData,
     pdfAttachment,
+    useStandardisedEmailTemplate,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
@@ -813,8 +814,9 @@ export class MailService {
       formData,
     }
 
+    let fullDataCollationData
     if (dataCollationData) {
-      const fullDataCollationData = [
+      fullDataCollationData = [
         {
           question: 'Response ID',
           answer: refNo,
@@ -829,6 +831,33 @@ export class MailService {
     }
 
     const adminEmails: string[] = getAdminEmails(form)
+
+    //TODO (email-standardisation): remove when email standardisation is GA
+    if (useStandardisedEmailTemplate) {
+      const formQuestionAnswers: QuestionAnswer[] = formData.map(
+        ({ question, answerTemplate }) => ({
+          question,
+          answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+        }),
+      )
+      const emailData: EmailData = {
+        emailTitle: `${formTitle} has been completed by all respondents`,
+        formTitle,
+        responseId: refNo,
+        formQuestionAnswers,
+        responseJson: JSON.stringify(fullDataCollationData),
+      }
+
+      return this.#sendEmailWithTemplate({
+        emails: adminEmails,
+        formId: String(form._id),
+        subject: `Completed - ${formTitle} (${refNo})`,
+        htmlData: emailData,
+        attachments: attachmentsToInclude,
+        emailType: EmailType.AdminResponse,
+        actionName: 'sendSubmissionToAdmin',
+      })
+    }
 
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
       const mail: MailOptions = {

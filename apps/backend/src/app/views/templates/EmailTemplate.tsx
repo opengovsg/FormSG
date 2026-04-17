@@ -78,8 +78,6 @@ export const EmailTemplate = ({
   paymentUrl,
   responseJson,
 }: EmailData): JSX.Element => {
-  // const headingText = `${formTitle} has been completed by all respondents.`
-
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
       <Text style={{ ...primaryTextStyle, ...questionMargin }}>
@@ -277,19 +275,19 @@ export const EmailTemplate = ({
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>
+
+            {renderMargin(40)}
+
+            {/* JSON Data Section */}
+            {responseJson && (
+              <>
+                <p>-- Start of JSON --</p>
+                <p>{responseJson}</p>
+                <p>-- End of JSON --</p>
+              </>
+            )}
           </Section>
         </Container>
-
-        {renderMargin(40)}
-
-        {/* JSON Data Section */}
-        {responseJson && (
-          <>
-            <p>-- Start of JSON --</p>
-            <p>{responseJson}</p>
-            <p>-- End of JSON --</p>
-          </>
-        )}
       </Body>
     </Html>
   )
