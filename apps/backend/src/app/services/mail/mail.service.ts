@@ -377,7 +377,7 @@ export class MailService {
    * @param actionName the action name for logging and error messages
    * @returns ResultAsync with true on success or MailGenerationError/MailSendError on failure
    */
-  #sendMrfEmailWithTemplate = ({
+  #sendEmailWithTemplate = ({
     emails,
     formId,
     subject,
@@ -1107,7 +1107,7 @@ export class MailService {
       (isReminder ? '[Reminder] ' : '') +
       `Action required - ${formTitle} (${responseId})`
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
       formId: responseId,
       subject: emailSubject,
@@ -1140,7 +1140,7 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
       formId,
       subject: `Completed - ${formTitle} (${responseId})`,
@@ -1179,7 +1179,7 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
       formId,
       subject: `${outcome} - ${formTitle} (${responseId})`,
@@ -1190,7 +1190,7 @@ export class MailService {
     })
   }
 
-  sendMrfRespondentCopyEmail = ({
+  sendRespondentCopyEmail = ({
     formId,
     formTitle,
     responseId,
@@ -1232,7 +1232,7 @@ export class MailService {
       autoReplyMailData.subject ||
       `Thank you for submitting ${formTitle} (${responseId})`
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails: autoReplyMailData.email,
       formId,
       subject: emailSubject,

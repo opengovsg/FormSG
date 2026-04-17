@@ -608,7 +608,7 @@ const sendMrfRespondentCopyEmails = ({
       ]
       return ResultAsync.combine(
         respondentCopyEmailDatas.map((autoReplyMailData) => {
-          return MailService.sendMrfRespondentCopyEmail({
+          return MailService.sendRespondentCopyEmail({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
