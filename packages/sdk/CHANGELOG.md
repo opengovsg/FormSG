@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.1.3](https://github.com/opengovsg/formsg/compare/sdk-v7.1.2...sdk-v7.1.3) (2026-04-20)
+
 ## [7.1.2](https://github.com/opengovsg/formsg/compare/sdk-v7.1.1...sdk-v7.1.2) (2026-04-16)
 
 

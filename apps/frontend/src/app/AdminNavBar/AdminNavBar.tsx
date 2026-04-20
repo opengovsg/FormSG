@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCommentDetail } from 'react-icons/bi'
 import { GoDotFill } from 'react-icons/go'
-import { MdForum } from 'react-icons/md'
 import { useMutation } from 'react-query'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -15,16 +14,15 @@ import {
   Icon,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 import { delay } from 'lodash'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { SeenFlags } from 'formsg-shared/types'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
-import { FEATURE_REQUEST, FORM_GUIDE, FORUMSG_URL } from '~constants/links'
+import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
@@ -279,9 +277,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   const { t } = useTranslation()
 
-  //TODO: Remove forum link after H4PG2026
-  const isForumSGEnabled = useFeatureIsOn(featureFlags.forumsg)
-
   const navLinks: AdminNavBarLinkProps[] = [
     {
       label: t('features.app.adminNavBar.linkLabel.featureRequest'),
@@ -293,16 +288,6 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       href: FORM_GUIDE,
       MobileIcon: BxsHelpCircle,
     },
-    // TODO: Remove forum link after H4PG2026
-    ...(isForumSGEnabled
-      ? [
-          {
-            label: 'Forum',
-            href: FORUMSG_URL,
-            MobileIcon: MdForum,
-          },
-        ]
-      : []),
   ]
 
   return (
