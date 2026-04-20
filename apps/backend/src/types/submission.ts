@@ -7,10 +7,16 @@ import {
   SubmissionType,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
-import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
+import mongoose, {
+  Cursor as QueryCursor,
+  Document,
+  Model,
+  QueryOptions,
+} from 'mongoose'
 
 import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
+import { MultirespondentSubmissionContent } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.types'
 import {
   PaymentWebhookEventObject,
   WorkflowWebhookEventObject,
@@ -68,7 +74,8 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
 export type IPendingSubmissionSchema = ISubmissionSchema
 
 export type SaveIfSubmitterIdIsUniqueType = EmailSaveIfSubmitterIdIsUniqueType &
-  EncryptSaveIfSubmitterIdIsUniqueType
+  EncryptSaveIfSubmitterIdIsUniqueType &
+  MultirespondentSaveIfSubmitterIdIsUniqueType
 
 type EmailSaveIfSubmitterIdIsUniqueType = (
   formId: string,
@@ -81,6 +88,15 @@ type EncryptSaveIfSubmitterIdIsUniqueType = (
   submitterId: string,
   submissionContent: EncryptSubmissionContent,
 ) => Promise<IEncryptedSubmissionSchema | null>
+
+type MultirespondentSaveIfSubmitterIdIsUniqueType = (
+  formId: string,
+  submitterId: string,
+  zeroIndexedStepNumber: number,
+  submissionContent: MultirespondentSubmissionContent,
+) => Promise<
+  (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
+>
 
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(

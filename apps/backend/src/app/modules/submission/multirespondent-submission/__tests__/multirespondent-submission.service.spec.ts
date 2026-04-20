@@ -3,13 +3,17 @@ import { ObjectId } from 'bson'
 import {
   BasicField,
   FieldResponsesV3,
+  FormAuthType,
   FormFieldDto,
+  FormResponseMode,
   FormWorkflowStepDto,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
+import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
+import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
@@ -19,12 +23,15 @@ import {
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
+import { FormRespondentSingleSubmissionValidationError } from '../../../form/form.errors'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  SubmissionSaveError,
 } from '../../submission.errors'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
+  createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
@@ -69,6 +76,230 @@ describe('multirespondent-submission.service', () => {
 
   afterAll(async () => {
     await dbHandler.closeDatabase()
+  })
+
+  describe('single submission per submitterId', () => {
+    const singleSubmissionFieldId = new ObjectId().toHexString()
+    const singleSubmissionFormId = new ObjectId().toHexString()
+    const mockHashedSubmitterId = 'mock-hashed-submitter-id'
+
+    const buildMinimalMrfForm = (
+      overrides: Partial<IPopulatedMultirespondentForm> = {},
+    ): IPopulatedMultirespondentForm =>
+      ({
+        _id: singleSubmissionFormId,
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Multirespondent,
+        title: 'Test form',
+        form_fields: [
+          {
+            _id: singleSubmissionFieldId,
+            fieldType: BasicField.ShortText,
+            title: 'Q1',
+          },
+        ],
+        form_logics: [],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [singleSubmissionFieldId],
+          },
+        ],
+        isSingleSubmission: false,
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+        ...overrides,
+      }) as unknown as IPopulatedMultirespondentForm
+
+    const buildMinimalEncryptedPayload = (
+      overrides: Partial<MultirespondentSubmissionDto> = {},
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 0,
+      responses: {
+        [singleSubmissionFieldId]: {
+          fieldType: BasicField.ShortText,
+          answer: 'answer',
+        },
+      },
+      mrfVersion: 1,
+      ...overrides,
+    })
+
+    it('should check for submissions with duplicate hashedSubmitterId if isSingleSubmission is enabled and save successfully if no duplicates are found', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const mockSavedDoc = {
+        _id: new ObjectId(),
+      } as IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }
+
+      const saveIfSpy = jest
+        .spyOn(MultirespondentSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValue(mockSavedDoc)
+      const saveProtoSpy = jest
+        .spyOn(MultirespondentSubmission.prototype, 'save')
+        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
+          return Promise.resolve(this)
+        })
+
+      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const encryptedPayload = buildMinimalEncryptedPayload({
+        hashedSubmitterId: mockHashedSubmitterId,
+      })
+
+      const result = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(saveIfSpy).toHaveBeenCalledWith(
+        singleSubmissionFormId,
+        mockHashedSubmitterId,
+        0,
+        expect.objectContaining({
+          form: singleSubmissionFormId,
+          workflowStep: 0,
+          mrfVersion: 1,
+          submittedSteps: expect.arrayContaining([
+            expect.objectContaining({
+              submitterId: mockHashedSubmitterId,
+            }),
+          ]),
+        }),
+      )
+      expect(saveProtoSpy).not.toHaveBeenCalled()
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toEqual(mockSavedDoc)
+
+      saveIfSpy.mockRestore()
+      saveProtoSpy.mockRestore()
+    })
+
+    it('should save successfully without checking for duplicate hashedSubmitterId if isSingleSubmission is disabled', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const saveIfSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'saveIfSubmitterIdIsUnique',
+      )
+      const expectedSavedSubmissionId = new ObjectId().toHexString()
+      const mockSavedSubmission = {
+        _id: expectedSavedSubmissionId,
+        form: singleSubmissionFormId,
+        workflowStep: 0,
+        mrfVersion: 1,
+      } as IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }
+      const saveProtoSpy = jest
+        .spyOn(MultirespondentSubmission.prototype, 'save')
+        .mockResolvedValue(mockSavedSubmission)
+
+      const form = buildMinimalMrfForm({ isSingleSubmission: false })
+      const encryptedPayload = buildMinimalEncryptedPayload({
+        hashedSubmitterId: mockHashedSubmitterId,
+      })
+
+      const result = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(saveIfSpy).not.toHaveBeenCalled()
+      expect(saveProtoSpy).toHaveBeenCalled()
+      expect(result.isOk()).toBe(true)
+      const savedSubmission = result._unsafeUnwrap()
+      expect(savedSubmission).toEqual(mockSavedSubmission)
+
+      saveIfSpy.mockRestore()
+      saveProtoSpy.mockRestore()
+    })
+
+    it('should throw error if submission with duplicate hashedSubmitterId is found and isSingleSubmission is enabled', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const saveIfSpy = jest
+        .spyOn(MultirespondentSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValue(null)
+
+      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const encryptedPayload = buildMinimalEncryptedPayload({
+        hashedSubmitterId: mockHashedSubmitterId,
+      })
+
+      const result = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(saveIfSpy).toHaveBeenCalled()
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        FormRespondentSingleSubmissionValidationError,
+      )
+
+      saveIfSpy.mockRestore()
+    })
+
+    it('should throw error if hashedSubmitterId is not set and isSingleSubmission is enabled', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const saveIfSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'saveIfSubmitterIdIsUnique',
+      )
+
+      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const encryptedPayload = buildMinimalEncryptedPayload()
+
+      const result = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(saveIfSpy).not.toHaveBeenCalled()
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SubmissionSaveError)
+
+      saveIfSpy.mockRestore()
+    })
+
+    it('should not throw error if hashedSubmitterId is not set and isSingleSubmission is disabled', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const saveIfSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'saveIfSubmitterIdIsUnique',
+      )
+      const saveProtoSpy = jest
+        .spyOn(MultirespondentSubmission.prototype, 'save')
+        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
+          return Promise.resolve(this)
+        })
+
+      const form = buildMinimalMrfForm({ isSingleSubmission: false })
+      const encryptedPayload = buildMinimalEncryptedPayload()
+
+      const result = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(saveIfSpy).not.toHaveBeenCalled()
+      expect(saveProtoSpy).toHaveBeenCalled()
+      expect(result.isOk()).toBe(true)
+
+      saveIfSpy.mockRestore()
+      saveProtoSpy.mockRestore()
+    })
   })
 
   describe('pdf attachment', () => {

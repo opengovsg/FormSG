@@ -4,6 +4,7 @@ import {
   BasicField,
   FormResponseMode,
   FormStatus,
+  PublicFormDto,
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -17,6 +18,7 @@ import { IFormSchema, IPopulatedForm } from 'src/types'
 
 import * as SmsService from '../../../services/sms/sms.service'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { MissingSubmitterIdError } from '../../submission/submission.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
@@ -78,6 +80,110 @@ describe('FormService', () => {
   afterAll(async () => {
     await dbHandler.clearDatabase()
     await dbHandler.closeDatabase()
+  })
+
+  describe('checkHasSingleSubmissionValidationFailure', () => {
+    const singleCheckFormId = new ObjectId().toHexString()
+    const singleCheckSubmitterId = 'mock-hashed-submitter-id'
+
+    it('should return false if isSingleSubmission setting is disabled', async () => {
+      const existsSpy = jest.spyOn(Submission, 'exists')
+
+      const form = {
+        _id: singleCheckFormId,
+        responseMode: FormResponseMode.Encrypt,
+        isSingleSubmission: false,
+      } as unknown as PublicFormDto
+
+      const result =
+        await FormService.checkHasSingleSubmissionValidationFailure(
+          form,
+          singleCheckSubmitterId,
+        )
+
+      expect(existsSpy).not.toHaveBeenCalled()
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      existsSpy.mockRestore()
+    })
+
+    it('should return MissingSubmitterIdError if submitterId is not set and isSingleSubmission setting is enabled', async () => {
+      const existsSpy = jest.spyOn(Submission, 'exists')
+
+      const form = {
+        _id: singleCheckFormId,
+        responseMode: FormResponseMode.Multirespondent,
+        isSingleSubmission: true,
+      } as unknown as PublicFormDto
+
+      const result =
+        await FormService.checkHasSingleSubmissionValidationFailure(form, '')
+
+      expect(existsSpy).not.toHaveBeenCalled()
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MissingSubmitterIdError)
+      expect(result._unsafeUnwrapErr().message).toEqual(
+        'Cannot find submitterId which is required for single submission per submitterId form',
+      )
+
+      existsSpy.mockRestore()
+    })
+
+    it('should send the mrf query based if form is mrf and isSingleSubmission setting is enabled', async () => {
+      const existsSpy = jest.spyOn(Submission, 'exists').mockResolvedValue(null)
+
+      const form = {
+        _id: singleCheckFormId,
+        responseMode: FormResponseMode.Multirespondent,
+        isSingleSubmission: true,
+      } as unknown as PublicFormDto
+
+      const result =
+        await FormService.checkHasSingleSubmissionValidationFailure(
+          form,
+          singleCheckSubmitterId,
+        )
+
+      expect(existsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          form: singleCheckFormId,
+          submissionType: SubmissionType.Multirespondent,
+          'submittedSteps.0.submitterId': singleCheckSubmitterId,
+        }),
+      )
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      existsSpy.mockRestore()
+    })
+
+    it('should send encrypt mode query if form is encrypt mode and isSingleSubmission setting is enabled', async () => {
+      const existsSpy = jest.spyOn(Submission, 'exists').mockResolvedValue(null)
+
+      const form = {
+        _id: singleCheckFormId,
+        responseMode: FormResponseMode.Encrypt,
+        isSingleSubmission: true,
+      } as unknown as PublicFormDto
+
+      const result =
+        await FormService.checkHasSingleSubmissionValidationFailure(
+          form,
+          singleCheckSubmitterId,
+        )
+
+      expect(existsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          form: singleCheckFormId,
+          submitterId: singleCheckSubmitterId,
+        }),
+      )
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      existsSpy.mockRestore()
+    })
   })
 
   describe('deactivateForm', () => {
