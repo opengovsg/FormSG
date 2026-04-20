@@ -38,7 +38,7 @@ export type SendAutoReplyEmailsArgs = {
   autoReplyMailDatas: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
   isPaymentEnabled: boolean
-  useStandardisedEmailTemplate: boolean
+  useStandardisedEmailTemplate?: boolean
 }
 
 export type MailServiceParams = {
