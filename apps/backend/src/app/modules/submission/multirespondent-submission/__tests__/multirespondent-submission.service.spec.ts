@@ -136,14 +136,11 @@ describe('multirespondent-submission.service', () => {
         getMultirespondentSubmissionModel(mongoose)
       const mockSavedDoc = {
         _id: new ObjectId(),
-        id: new ObjectId().toHexString(),
-      }
+      } as IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }
 
       const saveIfSpy = jest
         .spyOn(MultirespondentSubmission, 'saveIfSubmitterIdIsUnique')
-        .mockResolvedValue(
-          mockSavedDoc as unknown as IMultirespondentSubmissionSchema,
-        )
+        .mockResolvedValue(mockSavedDoc)
       const saveProtoSpy = jest
         .spyOn(MultirespondentSubmission.prototype, 'save')
         .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
@@ -178,6 +175,7 @@ describe('multirespondent-submission.service', () => {
       )
       expect(saveProtoSpy).not.toHaveBeenCalled()
       expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toEqual(mockSavedDoc)
 
       saveIfSpy.mockRestore()
       saveProtoSpy.mockRestore()
@@ -190,11 +188,16 @@ describe('multirespondent-submission.service', () => {
         MultirespondentSubmission,
         'saveIfSubmitterIdIsUnique',
       )
+      const expectedSavedSubmissionId = new ObjectId().toHexString()
+      const mockSavedSubmission = {
+        _id: expectedSavedSubmissionId,
+        form: singleSubmissionFormId,
+        workflowStep: 0,
+        mrfVersion: 1,
+      } as IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }
       const saveProtoSpy = jest
         .spyOn(MultirespondentSubmission.prototype, 'save')
-        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
-          return Promise.resolve(this)
-        })
+        .mockResolvedValue(mockSavedSubmission)
 
       const form = buildMinimalMrfForm({ isSingleSubmission: false })
       const encryptedPayload = buildMinimalEncryptedPayload({
@@ -210,6 +213,8 @@ describe('multirespondent-submission.service', () => {
       expect(saveIfSpy).not.toHaveBeenCalled()
       expect(saveProtoSpy).toHaveBeenCalled()
       expect(result.isOk()).toBe(true)
+      const savedSubmission = result._unsafeUnwrap()
+      expect(savedSubmission).toEqual(mockSavedSubmission)
 
       saveIfSpy.mockRestore()
       saveProtoSpy.mockRestore()
