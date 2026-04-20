@@ -50,6 +50,8 @@ export type SignatureAnswerV4 = {
   type: 'draw'
 }
 
+export type MyInfoMetaV4 = { attr: string }
+
 export type AnswerV4 =
   | StringAnswerV4
   | YesNoAnswerV4
@@ -67,6 +69,7 @@ export type FieldResponseV4 = {
   answer: AnswerV4
   provenance: ResponseProvenance
   previousAnswers?: PreviousAnswer[]
+  myInfo?: MyInfoMetaV4
 }
 
 export type FieldResponsesV4 = Record<string, FieldResponseV4>

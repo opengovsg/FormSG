@@ -199,6 +199,7 @@ export function adaptV4ToV3(v4Responses: FieldResponsesV4): FormFieldsV3 {
     v3Responses[fieldId] = {
       fieldType: field.fieldType,
       answer: convertAnswerToV3(field.fieldType, field.answer),
+      ...(field.myInfo && { myInfo: field.myInfo }),
     }
   }
 
