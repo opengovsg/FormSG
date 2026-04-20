@@ -53,6 +53,10 @@ export type SignatureAnswerV4 = {
   type: 'draw'
 }
 
+// --------------- MyInfo metadata ---------------
+
+export type MyInfoMetaV4 = { attr: string }
+
 // --------------- Per-field response ---------------
 
 export type FieldResponseV4 = {
@@ -60,6 +64,7 @@ export type FieldResponseV4 = {
   answer: unknown
   provenance: ResponseProvenance
   previousAnswers?: PreviousAnswer[]
+  myInfo?: MyInfoMetaV4
 }
 
 export type FieldResponsesV4 = Record<string, FieldResponseV4>
