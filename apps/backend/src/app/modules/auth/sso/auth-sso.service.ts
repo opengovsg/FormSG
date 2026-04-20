@@ -15,55 +15,73 @@ const logger = createLoggerWithLabel(module)
 export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
 
 export class AuthSsoServiceClass {
-  private clientConfigPromise: Promise<oidcClient.Configuration>
+  private clientConfigPromise: Promise<oidcClient.Configuration> | null = null
+
+  private readonly oidcServer: URL
+  private readonly clientId: string
+  private readonly clientAuth: oidcClient.ClientAuth | undefined
+  private readonly discoveryOptions: oidcClient.DiscoveryRequestOptions
 
   constructor({
     discoveryUrl: _discoveryUrl,
     clientId,
     clientSecret,
   }: ISsoVarsSchema) {
-    const clientAuth: oidcClient.ClientAuth | undefined = clientSecret
+    this.clientAuth = clientSecret
       ? oidcClient.ClientSecretPost(clientSecret)
       : undefined
 
-    const clientDiscoveryRequestOptions: oidcClient.DiscoveryRequestOptions = {
+    this.discoveryOptions = {
       algorithm: 'oidc',
     }
 
     if (isDev) {
-      clientDiscoveryRequestOptions.execute = [oidcClient.allowInsecureRequests]
+      this.discoveryOptions.execute = [oidcClient.allowInsecureRequests]
     }
 
-    const oidcServer = new URL(_discoveryUrl)
+    this.oidcServer = new URL(_discoveryUrl)
+    this.clientId = clientId
+
+    // Start discovery eagerly but don't crash if it fails
+    void this.attemptDiscovery()
+  }
+
+  private attemptDiscovery(): Promise<oidcClient.Configuration> {
     this.clientConfigPromise = oidcClient
       .discovery(
-        oidcServer,
-        clientId,
+        this.oidcServer,
+        this.clientId,
         undefined, // clientMetadata,
-        clientAuth,
-        clientDiscoveryRequestOptions,
+        this.clientAuth,
+        this.discoveryOptions,
       )
       .catch((error) => {
         logger.error({
           meta: {
-            action: 'AuthSsoServiceClass.constructor',
+            action: 'AuthSsoServiceClass.attemptDiscovery',
             error,
           },
           message: 'Error while discovering SSO client configuration',
           error,
         })
-        throw new SsoCreateRedirectUrlError()
+        // Reset so the next request retries discovery
+        this.clientConfigPromise = null
+        return Promise.reject(new SsoCreateRedirectUrlError())
       })
+    // Suppress unhandled promise rejection — errors are surfaced via getClientConfigResult()
+    this.clientConfigPromise.catch(() => {})
+    return this.clientConfigPromise
   }
 
   getClientConfigResult(): ResultAsync<
     oidcClient.Configuration,
     SsoCreateRedirectUrlError
   > {
+    const configPromise = this.clientConfigPromise ?? this.attemptDiscovery()
     const logMeta = {
       action: 'getClientConfigResult',
     }
-    return ResultAsync.fromPromise(this.clientConfigPromise, (error) => {
+    return ResultAsync.fromPromise(configPromise, (error) => {
       logger.error({
         message: 'Error while retrieving SSO client configuration',
         meta: logMeta,
