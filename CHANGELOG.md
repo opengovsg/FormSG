@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.10.0](https://github.com/opengovsg/formsg/compare/v7.9.2...v7.10.0) (2026-04-20)
+
+
+### Features
+
+* remove forumsg link from FormSG (#9319) ([#9319](https://github.com/opengovsg/formsg/commit/545a5965061791690f315bc117fa48481581fbb3))
+
 ## [7.9.2](https://github.com/opengovsg/formsg/compare/v7.9.1...v7.9.2) (2026-04-16)
 
 
