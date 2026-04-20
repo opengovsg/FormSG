@@ -44,7 +44,7 @@ datadogRum.init({
   env: window.__ENV__?.ddRumEnv ?? '',
   site: 'datadoghq.com',
   service: 'formsg-react',
-  allowedTracingUrls: [window.__ENV__?.appUrl ?? ''],
+  allowedTracingUrls: [window.__ENV__?.appUrl ?? window.location.origin],
   version: '@VITE_APP_VERSION',
   sessionSampleRate: window.__ENV__?.ddSampleRate ?? 5,
   sessionReplaySampleRate: 100,

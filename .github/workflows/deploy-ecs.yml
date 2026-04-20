@@ -205,6 +205,8 @@ jobs:
             APP_VERSION=${{ env.APP_VERSION }}
             DD_RUM_APP_ID=${{ secrets.dd-rum-app-id }}
             DD_RUM_CLIENT_TOKEN=${{ secrets.dd-rum-client-token }}
+            DD_SAMPLE_RATE=${{ secrets.dd-sample-rate }}
+            GA_TRACKING_ID=${{ secrets.ga-tracking-id }}
 
       - name: Replace variables in task definition file
         id: replace-variables
