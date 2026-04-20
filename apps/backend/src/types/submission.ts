@@ -7,7 +7,12 @@ import {
   SubmissionType,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
-import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
+import mongoose, {
+  Cursor as QueryCursor,
+  Document,
+  Model,
+  QueryOptions,
+} from 'mongoose'
 
 import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
@@ -89,7 +94,9 @@ type MultirespondentSaveIfSubmitterIdIsUniqueType = (
   submitterId: string,
   zeroIndexedStepNumber: number,
   submissionContent: MultirespondentSubmissionContent,
-) => Promise<IMultirespondentSubmissionSchema | null>
+) => Promise<
+  (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
+>
 
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(

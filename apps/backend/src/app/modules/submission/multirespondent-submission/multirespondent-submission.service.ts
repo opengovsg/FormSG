@@ -740,11 +740,7 @@ export const createMultiRespondentFormSubmission = ({
         submittedSteps: [submittedStepMeta],
       }
 
-      const submission = new MultirespondentSubmission(submissionContent)
-
-      const saveSubmission = async (
-        submission: IMultirespondentSubmissionSchema,
-      ) => {
+      const saveSubmission = async () => {
         if (form.isSingleSubmission) {
           if (!hashedSubmitterId) {
             const missingSubmitterIdError = new MissingSubmitterIdError()
@@ -775,11 +771,12 @@ export const createMultiRespondentFormSubmission = ({
           }
           return uniqueSavedSubmission
         }
+        const submission = new MultirespondentSubmission(submissionContent)
         return submission.save()
       }
 
       return ResultAsync.fromPromise(
-        saveSubmission(submission).then(() => ({
+        saveSubmission().then((submission) => ({
           submission,
           responseMetadata,
         })),

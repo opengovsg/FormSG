@@ -621,7 +621,9 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
     submitterId: string,
     zeroIndexedStepNumber: number,
     submissionContent: MultirespondentSubmissionContent,
-  ) {
+  ): Promise<
+    (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
+  > {
     const submitterIdKey = `submittedSteps.${zeroIndexedStepNumber}.submitterId`
     const session = await this.startSession()
     session.startTransaction()
