@@ -1,9 +1,11 @@
 import {
   adaptV1ToV3,
-  adaptV3ToV1,
+  adaptV3ToV4,
   DecryptedContent,
   DecryptedContentV3,
+  FieldResponsesV4,
   FormField as VerifiedFormField,
+  FormFieldMeta,
 } from '@opengovsg/formsg-sdk'
 
 import {
@@ -110,19 +112,6 @@ export const processDecryptedContent = (
 ): VerifiedFormField[] => {
   const { responses: displayedContent, verified } = decrypted
   // Convert decrypted content into displayable object.
-
-  // TEST: Convert v1 responses to v3 format
-  try {
-    const v3Responses = adaptV1ToV3(displayedContent)
-    console.log('V1 to V3 Conversion Test')
-    console.log('V1 Responses:', JSON.stringify(displayedContent, null, 2))
-    console.log('V3 Responses:', JSON.stringify(v3Responses, null, 2))
-    console.log('V1 Count:', displayedContent.length)
-    console.log('V3 Count:', Object.keys(v3Responses).length)
-  } catch (error) {
-    console.error('Error converting v1 to v3:', error)
-  }
-
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
@@ -140,24 +129,6 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
-
-  // LOG: Actual V3 response schema
-  console.log('V3 Response Schema:', JSON.stringify(responses, null, 2))
-  console.log('V3 Response Count:', Object.keys(responses).length)
-
-  // TEST: Convert v3 responses back to v1 format
-  try {
-    const v1Responses = adaptV3ToV1(responses, {
-      formFields: form_fields,
-    })
-    console.log('V3 to V1 Conversion Test')
-    console.log('V3 Responses:', JSON.stringify(responses, null, 2))
-    console.log('V1 Responses:', JSON.stringify(v1Responses, null, 2))
-    console.log('V3 Count:', Object.keys(responses).length)
-    console.log('V1 Count:', v1Responses.length)
-  } catch (error) {
-    console.error('Error converting v3 to v1:', error)
-  }
 
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
@@ -186,4 +157,94 @@ export const processDecryptedContentV3 = async (
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
+}
+
+// ============================================================
+// V4 processing functions
+// ============================================================
+
+/**
+ * Builds a FormFieldMeta map from form field definitions, keyed by field ID.
+ */
+export const buildFormFieldMetaMap = (
+  formFields: FormFieldDto[],
+): Record<string, FormFieldMeta> => {
+  const map: Record<string, FormFieldMeta> = {}
+  for (const ff of formFields) {
+    map[ff._id] = {
+      question: ff.title,
+      ...('myInfo' in ff && ff.myInfo
+        ? { myInfo: { attr: ff.myInfo.attr } }
+        : {}),
+    }
+  }
+  return map
+}
+
+/**
+ * Converts verified content (SPCP/sgID fields) into V4 response entries.
+ */
+export const convertVerifiedToV4 = (
+  verifiedObj: Record<string, string>,
+): FieldResponsesV4 => {
+  const v4Verified: FieldResponsesV4 = {}
+  const verifiedFields = convertToResponseArray(verifiedObj)
+  for (const field of verifiedFields) {
+    v4Verified[field._id] = {
+      fieldType: field.fieldType,
+      question: field.question,
+      answer: { value: field.answer },
+      provenance: { submittedAt: new Date().toISOString() },
+    }
+  }
+  return v4Verified
+}
+
+/**
+ * Processes V3 (MRF) decrypted content into V4 format.
+ */
+export const processDecryptedContentV3ToV4 = (
+  form_fields: FormFieldDto[],
+  decrypted: DecryptedContentV3,
+): FieldResponsesV4 => {
+  const { responses, verified } = decrypted
+  const formFields = buildFormFieldMetaMap(form_fields)
+
+  const v4Responses = adaptV3ToV4(responses, { formFields })
+
+  if (verified) {
+    const v4Verified = convertVerifiedToV4(verified)
+    return { ...v4Responses, ...v4Verified }
+  }
+
+  return v4Responses
+}
+
+/**
+ * Processes V1 (storage mode) decrypted content into V4 format.
+ * Builds the formFields meta map from the V1 responses themselves,
+ * since StorageModeSubmissionDto does not include form_fields.
+ */
+export const processDecryptedContentToV4 = (
+  decrypted: DecryptedContent,
+): FieldResponsesV4 => {
+  const { responses, verified } = decrypted
+
+  // Build formFields meta from V1 responses (each has _id, question, fieldType)
+  const formFields: Record<string, FormFieldMeta> = {}
+  for (const field of responses) {
+    formFields[field._id] = {
+      question: field.question,
+    }
+  }
+
+  const v3Responses = adaptV1ToV3(responses)
+  const v4Responses = adaptV3ToV4(v3Responses, { formFields })
+
+  if (verified) {
+    const v4Verified = convertVerifiedToV4(verified)
+    return { ...v4Responses, ...v4Verified }
+  }
+
+  return v4Responses
 }

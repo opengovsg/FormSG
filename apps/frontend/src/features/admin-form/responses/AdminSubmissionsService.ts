@@ -13,8 +13,13 @@ import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
-import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
+  augmentDecryptedResponses,
+  augmentDecryptedResponsesV4,
+} from './ResponsesPage/storage/utils/augmentDecryptedResponses'
+import {
+  buildFormFieldMetaMap,
+  convertVerifiedToV4,
   processDecryptedContent,
   processDecryptedContentV3,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
@@ -79,10 +84,12 @@ export const getDecryptedSubmissionById = async ({
   formId,
   submissionId,
   secretKey,
+  useV4,
 }: {
   formId: string
   submissionId: string
   secretKey?: string
+  useV4?: boolean
 }) => {
   if (!secretKey) return
 
@@ -91,7 +98,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey, mrfVersion
+  let processedContent, processedContentV4, submissionSecretKey, mrfVersion
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -119,6 +126,32 @@ export const getDecryptedSubmissionById = async ({
         encryptedSubmission.form_fields,
         decryptedContent,
       )
+      if (useV4) {
+        const formFieldsMeta = buildFormFieldMetaMap(
+          encryptedSubmission.form_fields,
+        )
+        const decryptedV4 = formsgSdk.cryptoV3.decryptToV4(
+          secretKey,
+          {
+            encryptedContent: encryptedSubmission.encryptedContent,
+            encryptedSubmissionSecretKey:
+              encryptedSubmission.encryptedSubmissionSecretKey,
+            verifiedContent: encryptedSubmission.verifiedContent,
+            version: encryptedSubmission.version,
+          },
+          formFieldsMeta,
+        )
+
+        if (decryptedV4) {
+          const v4Responses = decryptedV4.verified
+            ? {
+                ...decryptedV4.responses,
+                ...convertVerifiedToV4(decryptedV4.verified),
+              }
+            : decryptedV4.responses
+          processedContentV4 = v4Responses
+        }
+      }
       submissionSecretKey = decryptedContent.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
       break
@@ -129,6 +162,13 @@ export const getDecryptedSubmissionById = async ({
     processedContent,
     encryptedSubmission.attachmentMetadata,
   )
+
+  const responsesV4 = processedContentV4
+    ? augmentDecryptedResponsesV4(
+        processedContentV4,
+        encryptedSubmission.attachmentMetadata,
+      )
+    : undefined
 
   // Add metadata for display.
   return {
@@ -144,6 +184,7 @@ export const getDecryptedSubmissionById = async ({
         ? encryptedSubmission.mrfMeta
         : undefined,
     responses,
+    responsesV4,
     mrfVersion,
   }
 }

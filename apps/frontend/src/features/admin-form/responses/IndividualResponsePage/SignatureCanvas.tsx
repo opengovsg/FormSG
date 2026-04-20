@@ -41,7 +41,7 @@ export const SignatureCanvas = ({
   )
 }
 
-const RenderedSignatureCanvas = ({
+export const RenderedSignatureCanvas = ({
   signatureAnswer,
   widthPx,
 }: {

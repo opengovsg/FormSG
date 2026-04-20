@@ -38,9 +38,22 @@ export type {
 } from './types'
 export type {
   AdaptV3ToV4Options,
+  AddressAnswerV4,
+  AttachmentAnswerV4,
+  CheckboxAnswerV4,
+  ChildrenAnswerV4,
+  DecryptedContentV4,
   FieldResponsesV4,
   FieldResponseV4,
+  FormFieldMeta,
+  FormFieldV4,
+  FormFieldsV4,
+  RadioAnswerV4,
   ResponseProvenance,
+  SignatureAnswerV4,
+  StringAnswerV4,
+  TableAnswerV4,
+  VerifiableAnswerV4,
 } from './types-v4'
 
 /**

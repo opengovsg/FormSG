@@ -1,3 +1,4 @@
+import { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
 import type {
   EncryptedAttachmentRecords,
   FormField,
@@ -48,4 +49,39 @@ export const augmentDecryptedResponses = (
   )
 
   return fields
+}
+
+// ============================================================
+// V4 augmentation
+// ============================================================
+
+export type AugmentedDecryptedResponseV4 = {
+  fieldId: string
+  field: FieldResponseV4
+  questionNumber?: number
+  downloadUrl?: string
+}
+
+export const augmentDecryptedResponsesV4 = (
+  responsesV4: FieldResponsesV4,
+  attachmentMetadata: EncryptedAttachmentRecords,
+): AugmentedDecryptedResponseV4[] => {
+  let nonResponseFieldsCount = 0
+  return Object.entries(responsesV4).map(([fieldId, field], index) => {
+    const isNonResponse = NON_RESPONSE_FIELD_SET.has(
+      field.fieldType as BasicField,
+    )
+    if (isNonResponse) {
+      nonResponseFieldsCount++
+    }
+
+    return {
+      fieldId,
+      field,
+      questionNumber: isNonResponse
+        ? undefined
+        : index + 1 - nonResponseFieldsCount,
+      downloadUrl: attachmentMetadata[fieldId],
+    }
+  })
 }

@@ -33,6 +33,7 @@ export const featureFlags = {
   ogpSpinner: 'ogp-spinner' as const,
   forumsg: 'forumsg' as const,
   wogadLogin: 'wogad-login' as const,
+  answerObject: 'answerObject' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

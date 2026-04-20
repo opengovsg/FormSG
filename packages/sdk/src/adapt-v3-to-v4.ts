@@ -6,6 +6,7 @@ import {
   CheckboxAnswerV4,
   ChildrenAnswerV4,
   FieldResponsesV4,
+  FormFieldMeta,
   RadioAnswerV4,
   ResponseProvenance,
   SignatureAnswerV4,
@@ -199,15 +200,23 @@ export function adaptV3ToV4(
   const provenance: ResponseProvenance = options.provenance ?? {
     submittedAt: new Date().toISOString(),
   }
+  const formFields: Record<string, FormFieldMeta> = options.formFields ?? {}
 
   const v4Responses: FieldResponsesV4 = {}
 
   for (const [fieldId, field] of Object.entries(v3Responses)) {
+    const meta = formFields[fieldId]
+    const myInfo = field.myInfo ?? meta?.myInfo
+    const question = myInfo
+      ? `[Myinfo] ${meta?.question ?? ''}`
+      : (meta?.question ?? '')
+
     v4Responses[fieldId] = {
       fieldType: field.fieldType,
+      question,
       answer: convertAnswer(field.fieldType, field.answer),
       provenance,
-      ...(field.myInfo && { myInfo: field.myInfo }),
+      ...(myInfo && { myInfo }),
     }
   }
 

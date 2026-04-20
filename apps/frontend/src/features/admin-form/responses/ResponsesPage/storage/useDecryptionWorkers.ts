@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import saveAs from 'file-saver'
 import JSZip from 'jszip'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { waitForMs } from '~utils/waitForMs'
 
@@ -75,6 +78,8 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
+  // const useV4 = useFeatureIsOn(featureFlags.answerObject)
+  const useV4 = true
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -192,6 +197,7 @@ const useDecryptionWorkers = ({
                 secretKey,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
+                useV4,
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {

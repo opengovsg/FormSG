@@ -36,6 +36,7 @@ export interface SubmissionDataForDecryption {
   secretKey: string
   formId: string
   hostOrigin: string
+  useV4?: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {

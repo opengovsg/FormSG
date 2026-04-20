@@ -61,6 +61,7 @@ export type MyInfoMetaV4 = { attr: string }
 
 export type FieldResponseV4 = {
   fieldType: FieldType
+  question: string
   answer: unknown
   provenance: ResponseProvenance
   previousAnswers?: PreviousAnswer[]
@@ -69,9 +70,110 @@ export type FieldResponseV4 = {
 
 export type FieldResponsesV4 = Record<string, FieldResponseV4>
 
+// --------------- Typed per-field responses ---------------
+
+type BaseFieldResponseV4 = {
+  provenance: ResponseProvenance
+  previousAnswers?: PreviousAnswer[]
+  myInfo?: MyInfoMetaV4
+  question: string
+}
+
+export type StringFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType:
+    | 'section'
+    | 'number'
+    | 'decimal'
+    | 'textfield'
+    | 'textarea'
+    | 'homeno'
+    | 'dropdown'
+    | 'rating'
+    | 'nric'
+    | 'uen'
+    | 'date'
+    | 'country_region'
+  answer: StringAnswerV4
+}
+
+export type YesNoFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'yes_no'
+  answer: YesNoAnswerV4
+}
+
+export type VerifiableFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'email' | 'mobile'
+  answer: VerifiableAnswerV4
+}
+
+export type RadioFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'radiobutton'
+  answer: RadioAnswerV4
+}
+
+export type CheckboxFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'checkbox'
+  answer: CheckboxAnswerV4
+}
+
+export type AttachmentFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'attachment'
+  answer: AttachmentAnswerV4
+}
+
+export type TableFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'table'
+  answer: TableAnswerV4
+}
+
+export type ChildrenFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'children'
+  answer: ChildrenAnswerV4
+}
+
+export type AddressFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'address'
+  answer: AddressAnswerV4
+}
+
+export type SignatureFieldResponseV4 = BaseFieldResponseV4 & {
+  fieldType: 'signature'
+  answer: SignatureAnswerV4
+}
+
+export type FormFieldV4 =
+  | StringFieldResponseV4
+  | YesNoFieldResponseV4
+  | VerifiableFieldResponseV4
+  | RadioFieldResponseV4
+  | CheckboxFieldResponseV4
+  | AttachmentFieldResponseV4
+  | TableFieldResponseV4
+  | ChildrenFieldResponseV4
+  | AddressFieldResponseV4
+  | SignatureFieldResponseV4
+
+export type FormFieldsV4 = Record<string, FormFieldV4>
+
 // --------------- Adapter options ---------------
+
+export type FormFieldMeta = {
+  question: string
+  myInfo?: { attr: string }
+}
 
 export type AdaptV3ToV4Options = {
   /** Provenance to stamp on every converted response. */
   provenance?: ResponseProvenance
+  /** Form field definitions keyed by field ID, used to populate question text and myInfo. */
+  formFields?: Record<string, FormFieldMeta>
+}
+
+// --------------- Decrypted content V4 ---------------
+
+export type DecryptedContentV4 = {
+  submissionSecretKey: string
+  responses: FieldResponsesV4
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  verified?: Record<string, any>
 }
