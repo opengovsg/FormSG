@@ -12,6 +12,7 @@ import * as VerifiedContentService from 'src/app/modules/verified-content/verifi
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
+import { generateHashedSubmitterId } from '../../submission.utils'
 import {
   createFormsgAndRetrieveForm,
   handleNdiResponses,
@@ -392,6 +393,234 @@ describe('Multirespondent Submission Middleware', () => {
       jest.resetAllMocks()
     })
 
+    describe('hashedSubmitterId is set', () => {
+      it('should set hashedSubmitterId in encryptedPayload if is step 1 submission with singpass auth type', async () => {
+        jest
+          .mocked(MyInfoUtil.extractMyInfoLoginJwt)
+          .mockReturnValue(ok('mock-jwt-string'))
+
+        jest.mocked(MyInfoService.verifyLoginJwt).mockReturnValue(
+          ok({
+            uinFin: 'S1234567A',
+          }),
+        )
+
+        jest
+          .mocked(VerifiedContentService.getVerifiedContent)
+          .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+
+        jest
+          .mocked(VerifiedContentService.encryptVerifiedContent)
+          .mockReturnValue(ok('encrypted-verified-content'))
+
+        const mockDecryptFromSubmissionKey = formsgSdk.cryptoV3
+          .decryptFromSubmissionKey as jest.Mock
+
+        mockDecryptFromSubmissionKey.mockReturnValue({
+          verified: {},
+          submissionSecretKey: '',
+          responses: {},
+        })
+
+        jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+          'SingPass Validated NRIC': {
+            fieldType: BasicField.Nric,
+            answer: 'S9812379B',
+          },
+        })
+
+        const mockNext = jest.fn()
+
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.formsg = {
+          formDef: MOCK_FORM,
+          mrfSubmission: MOCK_MRF_SUBMISSION,
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockReq.formsg.encryptedPayload.hashedSubmitterId).toEqual(
+          generateHashedSubmitterId('S1234567A', MOCK_FORM_ID),
+        )
+      })
+
+      it('should set hashedSubmitterId in encryptedPayload if is step 1 submission with corppass auth type', async () => {
+        jest.mocked(OidcService.getOidcService).mockReturnValue({
+          extractJwt: jest.fn().mockReturnValue({
+            asyncAndThen: jest.fn().mockReturnValue(
+              okAsync({
+                userName: 'S1234567A',
+                userInfo: { email: 'test@example.com', name: 'Test' },
+              }),
+            ),
+          }),
+          extractJwtPayload: jest.fn().mockReturnValue(
+            okAsync({
+              userName: 'S1234567A',
+              userInfo: { email: 'test@example.com', name: 'Test' },
+            }),
+          ),
+        } as unknown as ReturnType<typeof OidcService.getOidcService>)
+
+        jest
+          .mocked(VerifiedContentService.getVerifiedContent)
+          .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+
+        jest
+          .mocked(VerifiedContentService.encryptVerifiedContent)
+          .mockReturnValue(ok('encrypted-verified-content'))
+
+        const mockDecryptFromSubmissionKey = formsgSdk.cryptoV3
+          .decryptFromSubmissionKey as jest.Mock
+
+        mockDecryptFromSubmissionKey.mockReturnValue({
+          verified: {},
+          submissionSecretKey: '',
+          responses: {},
+        })
+
+        jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+          'SingPass Validated NRIC': {
+            fieldType: BasicField.Nric,
+            answer: 'S9812379B',
+          },
+        })
+
+        const mockNext = jest.fn()
+
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.formsg = {
+          formDef: {
+            ...MOCK_FORM,
+            authType: FormAuthType.CP,
+          },
+          mrfSubmission: MOCK_MRF_SUBMISSION,
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockReq.formsg.encryptedPayload.hashedSubmitterId).toEqual(
+          generateHashedSubmitterId('S1234567A', MOCK_FORM_ID),
+        )
+      })
+
+      it('should not set hashedSubmitterId in encryptedPayload if is step 1 submission with non-singpass auth type', async () => {
+        const mockNext = jest.fn()
+
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.formsg = {
+          formDef: {
+            ...MOCK_FORM,
+            authType: FormAuthType.NIL,
+          },
+          mrfSubmission: MOCK_MRF_SUBMISSION,
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'hashedSubmitterId',
+        )
+      })
+
+      it('should not set hashedSubmitterId in encryptedPayload if is step >=2 submission', async () => {
+        const mockNext = jest.fn()
+
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.workflowStep = 1
+
+        mockReq.formsg = {
+          formDef: MOCK_FORM,
+          mrfSubmission: {
+            ...MOCK_MRF_SUBMISSION,
+            workflowStep: 1,
+          },
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'hashedSubmitterId',
+        )
+      })
+
+      it('should return 500 internal server error if submitterId is not found for singpass auth type and is step 1 submission', async () => {
+        jest
+          .mocked(MyInfoUtil.extractMyInfoLoginJwt)
+          .mockReturnValue(ok('mock-jwt-string'))
+
+        jest.mocked(MyInfoService.verifyLoginJwt).mockReturnValue(
+          ok({
+            uinFin: '',
+          }),
+        )
+
+        jest
+          .mocked(VerifiedContentService.getVerifiedContent)
+          .mockReturnValue(ok({}))
+
+        const mockNext = jest.fn()
+
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.formsg = {
+          formDef: MOCK_FORM,
+          mrfSubmission: MOCK_MRF_SUBMISSION,
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(500)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          message: 'Sorry, something went wrong. Please try again.',
+        })
+      })
+    })
+
     it('should handle NDI responses for the first step correctly', async () => {
       // Arrange
       jest.mocked(OidcService.getOidcService).mockReturnValue({
@@ -427,7 +656,7 @@ describe('Multirespondent Submission Middleware', () => {
 
       jest
         .mocked(VerifiedContentService.encryptVerifiedContent)
-        .mockReturnValue(ok('verified-content'))
+        .mockReturnValue(ok('encrypted-verified-content'))
 
       const mockDecryptFromSubmissionKey = formsgSdk.cryptoV3
         .decryptFromSubmissionKey as jest.Mock
@@ -478,6 +707,16 @@ describe('Multirespondent Submission Middleware', () => {
         jest.mocked(formsgSdk.cryptoV3.decryptFromSubmissionKey),
       ).not.toHaveBeenCalled()
       expect(mockNext).toHaveBeenCalled()
+
+      expect(
+        jest.mocked(VerifiedContentService.encryptVerifiedContent),
+      ).toHaveBeenCalledWith({
+        verifiedContent: { uinFin: 'S1234567A' },
+        formPublicKey: 'mockSubmissionPublicKey',
+      })
+      expect(mockReq.formsg.encryptedPayload.verifiedContent).toEqual(
+        'encrypted-verified-content',
+      )
     })
 
     it('should handle NDI responses for a step 2 submission by using previous submission verifiedContent', async () => {
