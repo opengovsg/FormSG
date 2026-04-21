@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.10.1](https://github.com/opengovsg/formsg/compare/v7.10.0...v7.10.1) (2026-04-21)
+
+
+### Bug Fixes
+
+* **ci:** ignore sdk bump commit ([b622dee](https://github.com/opengovsg/formsg/commit/b622deeb09b43278df31571ceddfee8e72b10238))
+
+
+### Miscellaneous
+
+* Merge pull request #9318 from opengovsg/feat/single-sub-mrf ([#9318](https://github.com/opengovsg/formsg/commit/b1c598270f21d43398988f947ba19911c02b667a))
+* Merge pull request #9322 from opengovsg/fix/ci/ignore-sdk-bump-commit ([#9322](https://github.com/opengovsg/formsg/commit/aeb4b78e6b3c3c2e3325223b99851d51dbe0f9bf))
+
 ## [7.10.0](https://github.com/opengovsg/formsg/compare/v7.9.2...v7.10.0) (2026-04-20)
 
 
