@@ -54,16 +54,16 @@ release_branch=release_${release_version}
 
 # 2. SDK release (.external.versionrc.js) — bumps packages/sdk/package.json,
 #    updates packages/sdk/CHANGELOG.md and creates a `sdk-v<version>` tag.
-#    Only runs if there are new conventional commits touching packages/sdk
-#    since the last sdk-v* tag. If there are none, commit-and-tag-version
-#    exits non-zero and we leave sdk_release_version empty so the downstream
-#    push/recut steps skip it.
+#    Only runs if there are new commits touching packages/sdk since the last
+#    sdk-v* tag. commit-and-tag-version does not exit non-zero when zero
+#    commits match the path filter, so we guard explicitly.
 sdk_release_version=
-if pnpm exec commit-and-tag-version --config .external.versionrc.js ${tag_force}; then
+last_sdk_tag=$(git tag --sort=-version:refname -l 'sdk-v*' | head -1)
+if [[ -n "${last_sdk_tag}" ]] && [[ -z "$(git log "${last_sdk_tag}..HEAD" --oneline -- packages/sdk)" ]]; then
+  echo "No new SDK commits since ${last_sdk_tag}; skipping external (SDK) version bump."
+elif pnpm exec commit-and-tag-version --config .external.versionrc.js ${tag_force}; then
   sdk_release_version_num=$(jq -r .version < packages/sdk/package.json)
   sdk_release_version="sdk-v${sdk_release_version_num}"
-else
-  echo "No new SDK commits since last sdk-v* tag; skipping external (SDK) version bump."
 fi
 
 if [[ " $* " == *" --recut "* ]]; then
