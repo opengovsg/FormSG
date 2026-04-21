@@ -18,8 +18,14 @@ export const getFrontendRuntimeEnv = (): FrontendRuntimeEnv => ({
   ddSampleRate: 5,
 })
 
+const serializeForInlineScript = (value: FrontendRuntimeEnv): string =>
+  JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+
 // Computed once at startup — values are static for the container lifetime
-const envScriptContent = `window.__ENV__=${JSON.stringify(getFrontendRuntimeEnv())}`
+const envScriptContent = `window.__ENV__=${serializeForInlineScript(getFrontendRuntimeEnv())}`
 export const envScript = `<script>${envScriptContent}</script>`
 export const envScriptCspHash = `'sha256-${crypto.createHash('sha256').update(envScriptContent).digest('base64')}'`
 

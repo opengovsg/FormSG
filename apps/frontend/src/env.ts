@@ -26,5 +26,8 @@ export const env: FrontendRuntimeEnv = {
     window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV ?? '',
   ddSampleRate:
     window.__ENV__?.ddSampleRate ??
-    (Number(import.meta.env.VITE_APP_DD_SAMPLE_RATE) || 5),
+    (() => {
+      const rate = Number(import.meta.env.VITE_APP_DD_SAMPLE_RATE)
+      return Number.isNaN(rate) ? 5 : rate
+    })(),
 }

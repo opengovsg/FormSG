@@ -1,6 +1,5 @@
 /**
- * This file compiles to datadog-chunk.js which is then loaded in the <head> of the react app
- * This ensures that datadog is initialised before the react app
+ * This file compiles to datadog-chunk.js and initializes Datadog RUM when it is loaded.
  *
  * Build-time vars (import.meta.env): VITE_APP_DD_RUM_APP_ID, VITE_APP_DD_RUM_CLIENT_TOKEN, VITE_APP_VERSION
  * Runtime vars (window.__ENV__): ddRumEnv, appUrl, ddSampleRate
