@@ -1,6 +1,5 @@
 import { SubmissionPaymentDto } from 'formsg-shared/types'
-
-import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
+import { getPaymentInvoiceDownloadUrlPath } from 'formsg-shared/utils/urls'
 
 type PaymentDataViewItem = {
   key: keyof SubmissionPaymentDto
@@ -28,7 +27,7 @@ const getFullInvoiceDownloadUrl = (
   formId: string,
   paymentId: string,
 ): string => {
-  const pathName = getPaymentInvoiceDownloadUrl(formId, paymentId)
+  const pathName = `/api/v3/${getPaymentInvoiceDownloadUrlPath(formId, paymentId)}`
   const url = new URL(pathName, hostOrigin)
   return url.toString()
 }

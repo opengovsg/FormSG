@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.12.0](https://github.com/opengovsg/formsg/compare/v7.11.0...v7.12.0) (2026-04-22)
+
+
+### Features
+
+* **ci:** improve container build process v2 (#9317) ([#9317](https://github.com/opengovsg/formsg/commit/65fd6b72b4c78656f7c6908f1bd057bdb2de1a4f))
+
+
+### Bug Fixes
+
+* **frontend:** use formsgSdkMode in decryption worker (#9329) ([#9329](https://github.com/opengovsg/formsg/commit/f664335e37277fe5c4d28441684ce109a5ae013a))
+
 ## [7.11.0](https://github.com/opengovsg/formsg/compare/v7.10.0...v7.11.0) (2026-04-22)
 
 
