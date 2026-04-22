@@ -383,7 +383,7 @@ export const checkHasSingleSubmissionValidationFailure = (
     action: 'checkHasSingleSubmissionValidationFailure',
     formId: form._id,
   }
-  if (!form.isSingleSubmission) {
+  if (!form.isSingleSubmission || form.authType === FormAuthType.NIL) {
     return okAsync(false)
   }
 
