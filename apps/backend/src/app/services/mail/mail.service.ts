@@ -1213,6 +1213,7 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    timestamp,
     isRejected,
     formQuestionAnswers,
     attachments,
@@ -1221,6 +1222,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
@@ -1232,6 +1234,7 @@ export class MailService {
       emailTitle: `${formTitle} has been ${outcome.toLowerCase()}`,
       formTitle,
       responseId: responseId.toString(),
+      timestamp,
       outcome,
       formQuestionAnswers,
     }

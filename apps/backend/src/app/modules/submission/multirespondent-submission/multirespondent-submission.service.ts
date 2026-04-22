@@ -518,6 +518,7 @@ const sendMrfOutcomeEmails = ({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
+            timestamp: latestSubmissionTimestamp,
             isRejected,
             formQuestionAnswers,
             attachments: emailAttachments,
