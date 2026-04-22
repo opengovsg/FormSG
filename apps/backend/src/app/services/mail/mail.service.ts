@@ -979,6 +979,9 @@ export class MailService {
             formId: form._id,
             formTitle: form.title,
             responseId: submission.id,
+            timestamp: moment(submission.created)
+              .tz('Asia/Singapore')
+              .format('ddd, DD MMM YYYY hh:mm:ss A'),
             attachments: getAttachmentsToInclude(mailData),
             autoReplyMailData: mailData,
             agencyName: form.admin.agency.fullName,
@@ -1245,6 +1248,7 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    timestamp,
     formQuestionAnswers,
     attachments,
     autoReplyMailData,
@@ -1254,6 +1258,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     formQuestionAnswers?: QuestionAnswer[]
     attachments?: Mail.Attachment[]
     autoReplyMailData: AutoReplyMailData
@@ -1270,6 +1275,7 @@ export class MailService {
       emailBody: autoReplyMailData.body || defaultBody,
       formTitle,
       responseId,
+      timestamp,
       formQuestionAnswers,
       ...(hasStatusTracker && {
         statusTrackerUrl: `${this.#appUrl}/${formId}/status/${responseId}`,
