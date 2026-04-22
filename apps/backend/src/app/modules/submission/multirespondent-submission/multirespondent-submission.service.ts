@@ -2,6 +2,7 @@ import { GrowthBook } from '@growthbook/growthbook'
 import {
   BasicField,
   FieldResponsesV3,
+  FormAuthType,
   FormFieldDto,
   FormResponseMode,
   FormWorkflowStepDto,
@@ -741,7 +742,7 @@ export const createMultiRespondentFormSubmission = ({
       }
 
       const saveSubmission = async () => {
-        if (form.isSingleSubmission) {
+        if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
           if (!hashedSubmitterId) {
             const missingSubmitterIdError = new MissingSubmitterIdError()
             logger.error({
