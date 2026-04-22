@@ -1277,7 +1277,6 @@ export class MailService {
     )
 
     const htmlData: EmailData = {
-      emailTitle: `Thank you for submitting ${formTitle}`,
       emailBody: autoReplyMailData.body || defaultBody,
       formTitle,
       responseId,

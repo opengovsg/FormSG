@@ -42,7 +42,7 @@ import {
 } from './emailStyles'
 
 export type EmailData = {
-  emailTitle: string
+  emailTitle?: string
   emailBody?: string
   formTitle: string
   responseId: string
@@ -131,7 +131,7 @@ export const EmailTemplate = ({
           }
         `}</style>
       </Head>
-      <Preview>{emailTitle}</Preview>
+      {emailTitle && <Preview>{emailTitle}</Preview>}
       <Body style={mainStyle}>
         <Container className="email-container" style={containerStyle}>
           <Section className="email-section" style={sectionStyle}>
