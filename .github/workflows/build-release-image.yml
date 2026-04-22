@@ -77,6 +77,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:release-${{ steps.version.outputs.tag }}
           build-args: |
             BUILD_BASE_IMAGE=${{ needs.ensure-base-images.outputs.build-base-image }}
+            RUNTIME_BASE_IMAGE=${{ needs.ensure-base-images.outputs.runtime-base-image }}
             APP_VERSION=${{ steps.version.outputs.tag }}
             DD_RUM_APP_ID=${{ secrets.DD_RUM_APP_ID }}
             DD_RUM_CLIENT_TOKEN=${{ secrets.DD_RUM_CLIENT_TOKEN }}

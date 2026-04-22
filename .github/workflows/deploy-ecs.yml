@@ -159,46 +159,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check for pre-built release image
+      - name: Resolve source GHCR image
         id: check-release-image
         run: |
           VERSION="v$(jq -r .version package.json)"
-          IMAGE="ghcr.io/opengovsg/formsg:release-${VERSION}"
-          echo "Looking for pre-built release image: $IMAGE"
-          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
-            echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          RELEASE_IMAGE="ghcr.io/opengovsg/formsg:release-${VERSION}"
+          echo "Looking for pre-built release image: $RELEASE_IMAGE"
+          if docker manifest inspect "$RELEASE_IMAGE" > /dev/null 2>&1; then
+            echo "image=$RELEASE_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "build=false" >> "$GITHUB_OUTPUT"
             echo "Found pre-built release image, will skip Docker build"
           else
-            echo "image=" >> "$GITHUB_OUTPUT"
+            echo "image=ghcr.io/opengovsg/formsg:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
             echo "No pre-built release image found, will build from scratch"
           fi
 
-      - name: Pull and push pre-built image to ECR
-        if: steps.check-release-image.outputs.image != ''
-        env:
-          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker pull ${{ steps.check-release-image.outputs.image }}
-          docker tag ${{ steps.check-release-image.outputs.image }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
       - name: Set up Docker Buildx
-        if: steps.check-release-image.outputs.image == ''
+        if: steps.check-release-image.outputs.build == 'true'
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
-      - name: Build and push Docker image
-        if: steps.check-release-image.outputs.image == ''
+      - name: Build and push Docker image to GHCR
+        if: steps.check-release-image.outputs.build == 'true'
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
-        env:
-          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
           context: .
           file: Dockerfile.production
           push: true
-          load: true
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          tags: ${{ steps.check-release-image.outputs.image }}
           build-args: |
             BUILD_BASE_IMAGE=${{ needs.ensure-base-images.outputs.build-base-image }}
             RUNTIME_BASE_IMAGE=${{ needs.ensure-base-images.outputs.runtime-base-image }}
@@ -207,6 +195,16 @@ jobs:
             DD_RUM_CLIENT_TOKEN=${{ secrets.dd-rum-client-token }}
             DD_SAMPLE_RATE=${{ secrets.dd-sample-rate }}
             GA_TRACKING_ID=${{ secrets.ga-tracking-id }}
+
+      - name: Pull image from GHCR and push to ECR
+        env:
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          SOURCE_IMAGE: ${{ steps.check-release-image.outputs.image }}
+        run: |
+          docker pull "$SOURCE_IMAGE"
+          docker tag "$SOURCE_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Replace variables in task definition file
         id: replace-variables
