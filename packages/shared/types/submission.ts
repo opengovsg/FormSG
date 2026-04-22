@@ -101,6 +101,7 @@ const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
+  submitterId: z.string().optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>

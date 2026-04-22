@@ -885,7 +885,7 @@ describe('public-form.controller', () => {
         ).toEqual(
           generateHashedSubmitterId(
             MOCK_SPCP_SESSION.userName.toUpperCase(),
-            MOCK_SP_FORM.id,
+            MOCK_SP_FORM._id,
           ),
         )
 

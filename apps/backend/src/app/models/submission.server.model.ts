@@ -35,6 +35,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
@@ -613,6 +614,60 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     data: webhookData,
   }
 }
+
+MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
+  async function (
+    formId: string,
+    submitterId: string,
+    zeroIndexedStepNumber: number,
+    submissionContent: MultirespondentSubmissionContent,
+  ): Promise<
+    (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
+  > {
+    const submitterIdKey = `submittedSteps.${zeroIndexedStepNumber}.submitterId`
+    const session = await this.startSession()
+    session.startTransaction()
+    const beforeCreateRes = await this.exists({
+      form: formId,
+      submissionType: SubmissionType.Multirespondent,
+      [submitterIdKey]: submitterId,
+    })
+      .setOptions({ readPreference: 'primary' })
+      .session(session)
+      .exec()
+
+    if (beforeCreateRes) {
+      await session.abortTransaction()
+      await session.endSession()
+      return null
+    }
+
+    await this.create([submissionContent], { session })
+
+    const afterCreateRes = await this.find(
+      {
+        form: formId,
+        submissionType: SubmissionType.Multirespondent,
+        [submitterIdKey]: submitterId,
+      },
+      null,
+      {
+        limit: 2,
+        readPreference: 'primary',
+      },
+    )
+      .session(session)
+      .exec()
+    if (afterCreateRes.length != 1) {
+      await session.abortTransaction()
+      await session.endSession()
+      return null
+    }
+
+    await session.commitTransaction()
+    await session.endSession()
+    return afterCreateRes[0]
+  }
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,

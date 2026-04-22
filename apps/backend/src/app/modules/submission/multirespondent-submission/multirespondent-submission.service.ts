@@ -41,6 +41,7 @@ import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
+import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
@@ -48,6 +49,7 @@ import {
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
+  MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   ResponseModeError,
@@ -682,6 +684,7 @@ export const createMultiRespondentFormSubmission = ({
         responseMetadata,
         version,
         mrfVersion,
+        hashedSubmitterId,
       } = encryptedPayload
 
       const nextStepNumber = 1 // since current step is 0
@@ -716,6 +719,7 @@ export const createMultiRespondentFormSubmission = ({
         isApproval: false, // first step cannot be approval step
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
+        submitterId: hashedSubmitterId,
       }
 
       const submissionContent: MultirespondentSubmissionContent = {
@@ -736,14 +740,50 @@ export const createMultiRespondentFormSubmission = ({
         submittedSteps: [submittedStepMeta],
       }
 
-      const submission = new MultirespondentSubmission(submissionContent)
+      const saveSubmission = async () => {
+        if (form.isSingleSubmission) {
+          if (!hashedSubmitterId) {
+            const missingSubmitterIdError = new MissingSubmitterIdError()
+            logger.error({
+              message:
+                'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
+              meta: logMeta,
+              error: missingSubmitterIdError,
+            })
+            return Promise.reject(missingSubmitterIdError)
+          }
+          const uniqueSavedSubmission =
+            await MultirespondentSubmission.saveIfSubmitterIdIsUnique(
+              form._id,
+              hashedSubmitterId,
+              0,
+              submissionContent,
+            )
+          if (!uniqueSavedSubmission) {
+            const formSingleSubmissionError =
+              new FormRespondentSingleSubmissionValidationError()
+            logger.error({
+              message: formSingleSubmissionError.message,
+              meta: logMeta,
+              error: formSingleSubmissionError,
+            })
+            return Promise.reject(formSingleSubmissionError)
+          }
+          return uniqueSavedSubmission
+        }
+        const submission = new MultirespondentSubmission(submissionContent)
+        return submission.save()
+      }
 
       return ResultAsync.fromPromise(
-        submission.save().then(() => ({
+        saveSubmission().then((submission) => ({
           submission,
           responseMetadata,
         })),
         (error) => {
+          if (error instanceof FormRespondentSingleSubmissionValidationError) {
+            return error
+          }
           logger.error({
             message: 'Multirespondent submission save error',
             meta: logMeta,

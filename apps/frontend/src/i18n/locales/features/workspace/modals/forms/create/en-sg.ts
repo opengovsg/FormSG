@@ -30,7 +30,6 @@ export const enSG: CreateFormModal = {
         subtitle:
           'Forms with just one respondent per submission support the following:',
         optionDescriptionItems: {
-          supportSingpassMyinfo: 'Singpass & Myinfo',
           supportWebhooks: 'Webhooks for integrations',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
@@ -42,7 +41,6 @@ export const enSG: CreateFormModal = {
           'Forms with two or more respondents per submission support the following:',
         optionDescriptionItems: {
           supportApprovalWorkflow: 'Approval workflows',
-          supportEmailRouting: 'Email routing',
           sensitivity:
             'Up to Confidential (Cloud-Eligible) and Sensitive (High) data',
         },
