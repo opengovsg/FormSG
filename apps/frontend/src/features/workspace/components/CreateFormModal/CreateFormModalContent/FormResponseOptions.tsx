@@ -72,7 +72,6 @@ export const FormResponseOptions = forwardRef<
           <Tile.Subtitle>{storage.subtitle}</Tile.Subtitle>
           <OptionDescription
             listItems={[
-              { text: storage.optionDescriptionItems.supportSingpassMyinfo },
               { text: storage.optionDescriptionItems.supportWebhooks },
             ]}
           />
@@ -101,9 +100,6 @@ export const FormResponseOptions = forwardRef<
             listItems={[
               {
                 text: mrf.optionDescriptionItems.supportApprovalWorkflow,
-              },
-              {
-                text: mrf.optionDescriptionItems.supportEmailRouting,
               },
             ]}
           />

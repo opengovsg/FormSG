@@ -26,7 +26,6 @@ export interface CreateFormModal {
         title: string
         subtitle: string
         optionDescriptionItems: {
-          supportSingpassMyinfo: string
           supportWebhooks: string
           sensitivity: string
         }
@@ -36,7 +35,6 @@ export interface CreateFormModal {
         subtitle: string
         optionDescriptionItems: {
           supportApprovalWorkflow: string
-          supportEmailRouting: string
           sensitivity: string
         }
       }
