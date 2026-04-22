@@ -34,6 +34,7 @@ export const featureFlags = {
   forumsg: 'forumsg' as const,
   wogadLogin: 'wogad-login' as const,
   answerObject: 'answerObject' as const,
+  encryptV4: 'encrypt-v4' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
