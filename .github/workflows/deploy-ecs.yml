@@ -114,10 +114,19 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: write
 
 jobs:
+  ensure-base-images:
+    name: Ensure base images
+    uses: ./.github/workflows/build-base-images.yml
+    permissions:
+      contents: read
+      packages: write
+
   deploy:
     name: Deploy to ECS
+    needs: ensure-base-images
     runs-on: ubuntu-latest
     environment: ${{ inputs.gha-environment }}
     env:
@@ -133,24 +142,6 @@ jobs:
         run: |
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
 
-      - name: Inject frontend build env vars
-        env:
-          VITE_APP_DD_RUM_APP_ID: ${{ secrets.dd-rum-app-id }}
-          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.dd-rum-client-token }}
-          VITE_APP_DD_RUM_ENV: ${{ inputs.dd-env }}
-          VITE_APP_DD_SAMPLE_RATE: ${{ secrets.dd-sample-rate }}
-          VITE_APP_GA_TRACKING_ID: ${{ secrets.ga-tracking-id }}
-          VITE_APP_FORMSG_SDK_MODE: ${{ inputs.react-app-form-sg-sdk-mode }}
-          VITE_APP_URL: ${{ inputs.app-url }}
-        run: |
-          sed -i -e "s|@VITE_APP_URL|${{  env.VITE_APP_URL  }}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" apps/frontend/datadog-chunk.ts
-          echo VITE_APP_VERSION=${{  inputs.app-version  }} > apps/frontend/.env
-          echo VITE_APP_URL=$VITE_APP_URL > apps/frontend/.env
-          echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> apps/frontend/.env
-          echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> apps/frontend/.env
-          echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> apps/frontend/.env
-          echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> apps/frontend/.env
-
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
         with:
@@ -161,27 +152,61 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@f2e9fc6c2b355c1890b65e6f6f0e2ac3e6e22f78 # v2.1.2
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for pre-built release image
+        id: check-release-image
+        run: |
+          VERSION="v$(jq -r .version package.json)"
+          IMAGE="ghcr.io/opengovsg/formsg:release-${VERSION}"
+          echo "Looking for pre-built release image: $IMAGE"
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+            echo "Found pre-built release image, will skip Docker build"
+          else
+            echo "image=" >> "$GITHUB_OUTPUT"
+            echo "No pre-built release image found, will build from scratch"
+          fi
+
+      - name: Pull and push pre-built image to ECR
+        if: steps.check-release-image.outputs.image != ''
+        env:
+          ECR_REPOSITORY: ${{ inputs.ecr-repository }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker pull ${{ steps.check-release-image.outputs.image }}
+          docker tag ${{ steps.check-release-image.outputs.image }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
       - name: Set up Docker Buildx
+        if: steps.check-release-image.outputs.image == ''
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Build and push Docker image
+        if: steps.check-release-image.outputs.image == ''
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         env:
-          DD_API_KEY: ${{ secrets.DD_API_KEY }}
-          DD_ENV: ${{ inputs.dd-env }}
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         with:
           context: .
           file: Dockerfile.production
           push: true
+          load: true
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           build-args: |
-            APP_VERSION=${{  inputs.app-version  }}
-            APP_URL=${{  inputs.app-url  }}
-            REPO_URL=${{  github.server_url  }}/${{  github.repository  }}
-          secrets: |
-            "dd_api_key=${{ secrets.DD_API_KEY }}"
+            BUILD_BASE_IMAGE=${{ needs.ensure-base-images.outputs.build-base-image }}
+            RUNTIME_BASE_IMAGE=${{ needs.ensure-base-images.outputs.runtime-base-image }}
+            APP_VERSION=${{ env.APP_VERSION }}
+            DD_RUM_APP_ID=${{ secrets.dd-rum-app-id }}
+            DD_RUM_CLIENT_TOKEN=${{ secrets.dd-rum-client-token }}
+            DD_SAMPLE_RATE=${{ secrets.dd-sample-rate }}
+            GA_TRACKING_ID=${{ secrets.ga-tracking-id }}
 
       - name: Replace variables in task definition file
         id: replace-variables
@@ -219,6 +244,18 @@ jobs:
           chmod 777 /tmp/s3static
           docker run --rm -v /tmp/s3static:/tmp/s3static $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG cp -r ./apps/frontend/dist/. /tmp/s3static
           aws s3 sync /tmp/s3static s3://$S3_STATIC_ASSETS_BUCKET_NAME
+
+      - name: Upload Datadog sourcemaps
+        env:
+          DATADOG_API_KEY: ${{ secrets.DD_API_KEY }}
+        run: |
+          curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v5.11.0/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
+          chmod +x /usr/local/bin/datadog-ci
+          datadog-ci sourcemaps upload /tmp/s3static \
+            --service=formsg-react \
+            --release-version=${{ env.APP_VERSION }} \
+            --minified-path-prefix=${{ inputs.app-url }} \
+            --repository-url=${{ github.server_url }}/${{ github.repository }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a # v1.4.11
