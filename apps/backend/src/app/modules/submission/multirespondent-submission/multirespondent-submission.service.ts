@@ -12,6 +12,7 @@ import {
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -594,6 +595,15 @@ const sendMrfRespondentCopyEmails = ({
 
   const submissionId: string = submission.id
 
+  const latestSubmissionTimestamp = submission.submittedSteps
+    ? moment(
+        submission.submittedSteps[submission.submittedSteps.length - 1]
+          .submittedAt,
+      )
+        .tz('Asia/Singapore')
+        .format('ddd, DD MMM YYYY hh:mm:ss A')
+    : ''
+
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
@@ -612,6 +622,7 @@ const sendMrfRespondentCopyEmails = ({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
+            timestamp: latestSubmissionTimestamp,
             attachments: autoReplyMailData.includeFormSummary
               ? recipientAttachments
               : [],
