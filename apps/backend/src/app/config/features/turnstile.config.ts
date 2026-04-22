@@ -24,6 +24,22 @@ const turnstileSchema: Schema<ITurnstile> = {
   },
 }
 
-export const turnstileConfig = convict(turnstileSchema)
+const turnstileConfig = convict(turnstileSchema)
   .validate({ allowed: 'strict' })
   .getProperties()
+
+const isAllowedTestEnvironment = ['test', 'development'].includes(
+  process.env.NODE_ENV ?? '',
+)
+
+if (
+  !isAllowedTestEnvironment &&
+  (turnstileConfig.turnstileSiteKey === '3x00000000000000000000FF' ||
+    turnstileConfig.turnstilePrivateKey === '1x0000000000000000000000000000000AA')
+) {
+  throw new Error(
+    'Turnstile test keys are not allowed outside test/development environments',
+  )
+}
+
+export { turnstileConfig }
