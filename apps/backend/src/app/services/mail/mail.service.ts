@@ -844,6 +844,7 @@ export class MailService {
         emailTitle: `${formTitle} has been completed by all respondents`,
         formTitle,
         responseId: refNo,
+        timestamp: submissionTime,
         formQuestionAnswers,
         responseJson: JSON.stringify(fullDataCollationData),
       }
