@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.12.1](https://github.com/opengovsg/formsg/compare/v7.12.0...v7.12.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* check for single submitter only if singpass is enabled (WIP)  (#9332) ([#9332](https://github.com/opengovsg/formsg/commit/5ec7b548580cad5f39b3ced30d69cde86dcd297d))
+
 ## [7.12.0](https://github.com/opengovsg/formsg/compare/v7.11.0...v7.12.0) (2026-04-22)
 
 
