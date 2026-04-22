@@ -69,6 +69,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   extractRespondentCopyEmailDatas,
+  formatSubmittedStepTimestamp,
   getEmailFromResponses,
   getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
@@ -423,6 +424,7 @@ const sendMrfOutcomeEmails = ({
   currentStepNumber,
   form,
   responses,
+  latestSubmissionTimestamp,
   submissionId,
   isApproval = false,
   isRejected = false,
@@ -442,6 +444,7 @@ const sendMrfOutcomeEmails = ({
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
   responses: FieldResponsesV3
+  latestSubmissionTimestamp: string
   submissionId: string
   isApproval?: boolean
   isRejected?: boolean
@@ -537,6 +540,7 @@ const sendMrfOutcomeEmails = ({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
+          timestamp: latestSubmissionTimestamp,
           formQuestionAnswers,
           attachments: emailAttachments,
         }).orElse((error) => {
@@ -1033,6 +1037,11 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     growthbook,
   })
 
+  const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
+    submittedSteps: submission.submittedSteps,
+    stepIndex: currentStepNumber,
+  })
+
   const sendMrfRespondentCopyEmailsPdfResult =
     checkIfRespondentFormSummaryIsRequired({
       responses,
@@ -1118,6 +1127,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         currentStepNumber,
         form,
         responses,
+        latestSubmissionTimestamp,
         submissionId,
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
@@ -1373,6 +1383,11 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     growthbook,
   })
 
+  const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
+    submittedSteps: submission.submittedSteps,
+    stepIndex: currentStepNumber,
+  })
+
   const sendMrfRespondentCopyEmailsPdfResult =
     checkIfRespondentFormSummaryIsRequired({
       responses,
@@ -1417,6 +1432,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       currentStepNumber,
       form: snapshottedFormDef,
       responses,
+      latestSubmissionTimestamp,
       submissionId,
       isApproval: true,
       isRejected: true,
@@ -1435,6 +1451,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepNumber,
     form: snapshottedFormDef,
     responses,
+    latestSubmissionTimestamp,
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,

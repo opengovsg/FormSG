@@ -1176,6 +1176,7 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    timestamp,
     formQuestionAnswers,
     attachments,
   }: {
@@ -1183,6 +1184,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1191,6 +1193,7 @@ export class MailService {
       emailTitle: `${formTitle} has been completed by all respondents`,
       formTitle,
       responseId: responseId.toString(),
+      timestamp,
       formQuestionAnswers,
     }
 
