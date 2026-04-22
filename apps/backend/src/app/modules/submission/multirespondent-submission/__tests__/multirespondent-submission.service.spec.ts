@@ -147,7 +147,10 @@ describe('multirespondent-submission.service', () => {
           return Promise.resolve(this)
         })
 
-      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const form = buildMinimalMrfForm({
+        isSingleSubmission: true,
+        authType: FormAuthType.MyInfo,
+      })
       const encryptedPayload = buildMinimalEncryptedPayload({
         hashedSubmitterId: mockHashedSubmitterId,
       })
@@ -227,7 +230,10 @@ describe('multirespondent-submission.service', () => {
         .spyOn(MultirespondentSubmission, 'saveIfSubmitterIdIsUnique')
         .mockResolvedValue(null)
 
-      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const form = buildMinimalMrfForm({
+        isSingleSubmission: true,
+        authType: FormAuthType.MyInfo,
+      })
       const encryptedPayload = buildMinimalEncryptedPayload({
         hashedSubmitterId: mockHashedSubmitterId,
       })
@@ -255,7 +261,10 @@ describe('multirespondent-submission.service', () => {
         'saveIfSubmitterIdIsUnique',
       )
 
-      const form = buildMinimalMrfForm({ isSingleSubmission: true })
+      const form = buildMinimalMrfForm({
+        isSingleSubmission: true,
+        authType: FormAuthType.MyInfo,
+      })
       const encryptedPayload = buildMinimalEncryptedPayload()
 
       const result = await createMultiRespondentFormSubmission({
