@@ -11,6 +11,7 @@ import { enSG as navbar } from './navbar'
 import { enSG as settings } from './settings'
 import { enSG as share } from './share'
 import { enSG as sidebar } from './sidebar'
+import { enSG as template } from './template'
 import { enSG as toasts } from './toasts'
 
 export const enSG = {
@@ -30,4 +31,5 @@ export const enSG = {
   share,
   featureTour,
   collaborator,
+  template,
 }

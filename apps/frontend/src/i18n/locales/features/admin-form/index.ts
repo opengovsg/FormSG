@@ -18,4 +18,5 @@ export {
   type ThankYou,
   type Workflow,
 } from './sidebar'
+export { type Template } from './template'
 export { type Toasts } from './toasts'
