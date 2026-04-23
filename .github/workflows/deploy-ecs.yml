@@ -164,13 +164,26 @@ jobs:
         run: |
           VERSION="v$(jq -r .version package.json)"
           IMAGE="ghcr.io/opengovsg/formsg:release-${VERSION}"
+          CURRENT_SHA="$(git rev-parse HEAD)"
+          TAG_SHA="$(git rev-list -n 1 "$VERSION" 2>/dev/null || true)"
+
+          if [ -z "$TAG_SHA" ]; then
+            echo "image=" >> "$GITHUB_OUTPUT"
+            echo "Release tag ${VERSION} not found locally; will build from scratch"
+            exit 0
+          fi
+          if [ "$CURRENT_SHA" != "$TAG_SHA" ]; then
+            echo "image=" >> "$GITHUB_OUTPUT"
+            echo "Current commit ${CURRENT_SHA} does not match release tag ${VERSION} commit (${TAG_SHA}); will build from scratch"
+            exit 0
+          fi
           echo "Looking for pre-built release image: $IMAGE"
           if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
             echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
-            echo "Found pre-built release image, will skip Docker build"
+            echo "Found pre-built release image for tagged commit, will skip Docker build"
           else
             echo "image=" >> "$GITHUB_OUTPUT"
-            echo "No pre-built release image found, will build from scratch"
+            echo "No pre-built release image found for tagged commit, will build from scratch"
           fi
 
       - name: Pull and push pre-built image to ECR
