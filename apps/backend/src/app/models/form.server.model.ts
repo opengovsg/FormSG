@@ -439,6 +439,16 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     ],
     required: true,
   },
+  whitelistedSubmitterIds: {
+    type: whitelistedSubmitterIdNestedPath,
+    get: (v: { isWhitelistEnabled: boolean }) => ({
+      // remove the ObjectId link to whitelist collection's document by default unless asked for.
+      isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
+    default: () => ({
+      isWhitelistEnabled: false,
+    }),
+  },
   stepsToNotify: {
     type: [{ type: String }],
     validate: [
@@ -462,6 +472,12 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     default: false,
   },
 })
+
+MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
+  return this.get('whitelistedSubmitterIds', null, {
+    getters: false,
+  })
+}
 
 MultirespondentFormSchema.methods.getDuplicateParams = function (
   overrideProps: OverrideProps,
