@@ -27,11 +27,13 @@ import NotFoundErrorPage from '~pages/NotFoundError'
 interface PreviewFormProviderProps {
   formId: string
   children: React.ReactNode
+  onTemplatePreviewSubmitClick?: () => void
 }
 
 export const TemplateFormProvider = ({
   formId,
   children,
+  onTemplatePreviewSubmitClick,
 }: PreviewFormProviderProps): JSX.Element => {
   const { t } = useTranslation()
   const { data, isLoading, error, ...rest } = useFormTemplate(formId)
@@ -162,6 +164,7 @@ export const TemplateFormProvider = ({
         isLoading,
         handleLogout: undefined,
         isPreview: true,
+        onTemplatePreviewSubmitClick,
         isPaymentEnabled: false,
         onSaveDraft,
         isSaveDraftEnabled,

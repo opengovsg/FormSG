@@ -33,7 +33,6 @@ export const featureFlags = {
   ogpSpinner: 'ogp-spinner' as const,
   wogadLogin: 'wogad-login' as const,
   mrfResponseLimit: 'mrf-response-limit' as const,
-  useTemplateFrame: 'use-template-frame' as const,
   useTemplateTour: 'use-template-tour' as const,
   useTemplateWall: 'use-template-wall' as const,
 }

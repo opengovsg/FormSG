@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { Flex } from '@chakra-ui/react'
+import { Flex, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants/feature-flags'
@@ -20,24 +20,27 @@ import { PublicFormWrapper } from '~features/public-form/components/PublicFormWr
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
 
 import { TemplateFormProvider } from './TemplateFormProvider'
-import {
-  UseTemplateFrame,
-  UseTemplateTour,
-  UseTemplateWall,
-} from './UseTemplateNudges'
+import { UseTemplateTour, UseTemplateWall } from './UseTemplateNudges'
 
 export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const isFrameOn = useFeatureIsOn(featureFlags.useTemplateFrame)
   const isTourOn = useFeatureIsOn(featureFlags.useTemplateTour)
   const isWallOn = useFeatureIsOn(featureFlags.useTemplateWall)
 
+  const {
+    isOpen: isWallOpen,
+    onOpen: onWallOpen,
+    onClose: onWallClose,
+  } = useDisclosure()
+
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
-      {isFrameOn && <UseTemplateFrame />}
-      <TemplateFormProvider formId={formId}>
+      <TemplateFormProvider
+        formId={formId}
+        onTemplatePreviewSubmitClick={isWallOn ? onWallOpen : undefined}
+      >
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
         <FormSectionsProvider>
@@ -50,7 +53,13 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
-          {isWallOn && <UseTemplateWall formId={formId} />}
+          {isWallOn && (
+            <UseTemplateWall
+              formId={formId}
+              isOpen={isWallOpen}
+              onClose={onWallClose}
+            />
+          )}
         </FormSectionsProvider>
         {isTourOn && <UseTemplateTour />}
       </TemplateFormProvider>
