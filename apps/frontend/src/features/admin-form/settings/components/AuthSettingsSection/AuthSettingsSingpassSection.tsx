@@ -30,26 +30,24 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      <>
-        <Divider my="2.5rem" />
-        <FormSubmitterIdCollectionToggle
-          settings={settings}
-          isDisabled={isFormPublic}
-        />
-      </>
-      <>
-        <Divider my="2.5rem" />
-        <FormSingleSubmissionToggle
-          settings={settings}
-          isDisabled={isSingpassSettingsDisabled}
-        />
-      </>
       <Divider my="2.5rem" />
-      {isEncryptMode ? (
-        <FormWhitelistAttachmentField
-          settings={settings}
-          isDisabled={isSingpassSettingsDisabled}
-        />
+      <FormSubmitterIdCollectionToggle
+        settings={settings}
+        isDisabled={isFormPublic}
+      />
+      <Divider my="2.5rem" />
+      <FormSingleSubmissionToggle
+        settings={settings}
+        isDisabled={isSingpassSettingsDisabled}
+      />
+      {isEncryptMode || isMrf ? (
+        <>
+          <Divider my="2.5rem" />
+          <FormWhitelistAttachmentField
+            settings={settings}
+            isDisabled={isSingpassSettingsDisabled}
+          />{' '}
+        </>
       ) : null}
     </>
   )
