@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.12.2](https://github.com/opengovsg/formsg/compare/v7.12.1...v7.12.2) (2026-04-23)
+
+
+### Bug Fixes
+
+* **ci:** rebuild non-release images (#9337) ([#9337](https://github.com/opengovsg/formsg/commit/565ca2452d3fbeaf954bc9c24b1c43d1c9ee7518))
+
+
+### Chores
+
+* remove redundant isSingleSub check to show toggle (#9336) ([#9336](https://github.com/opengovsg/formsg/commit/681ca477497848f2d32700ca087b9214de763ec0))
+
 ## [7.12.1](https://github.com/opengovsg/formsg/compare/v7.12.0...v7.12.1) (2026-04-22)
 
 
