@@ -1,5 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
+
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
@@ -17,13 +20,23 @@ import { PublicFormWrapper } from '~features/public-form/components/PublicFormWr
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
 
 import { TemplateFormProvider } from './TemplateFormProvider'
+import {
+  UseTemplateFrame,
+  UseTemplateTour,
+  UseTemplateWall,
+} from './UseTemplateNudges'
 
 export const TemplateFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  const isFrameOn = useFeatureIsOn(featureFlags.useTemplateFrame)
+  const isTourOn = useFeatureIsOn(featureFlags.useTemplateTour)
+  const isWallOn = useFeatureIsOn(featureFlags.useTemplateWall)
+
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
+      {isFrameOn && <UseTemplateFrame />}
       <TemplateFormProvider formId={formId}>
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
@@ -37,7 +50,9 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
+          {isWallOn && <UseTemplateWall formId={formId} />}
         </FormSectionsProvider>
+        {isTourOn && <UseTemplateTour />}
       </TemplateFormProvider>
     </Flex>
   )

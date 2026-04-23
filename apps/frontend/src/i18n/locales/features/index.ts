@@ -14,6 +14,7 @@ export {
   type ResponsesResponsesPage,
   type Settings,
   type Share,
+  type Template,
   type ThankYou,
   type Toasts,
   type Workflow,
