@@ -249,7 +249,6 @@ const FieldRowContainer = ({
     <Draggable
       index={index}
       isDragDisabled={isDragDisabled}
-      disableInteractiveElementBlocking
       draggableId={field._id}
     >
       {(provided, snapshot) => (
