@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.1.4](https://github.com/opengovsg/formsg/compare/sdk-v7.1.3...sdk-v7.1.4) (2026-04-27)
+
+
+### Bug Fixes
+
+* **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
+
 ## [7.1.3](https://github.com/opengovsg/formsg/compare/sdk-v7.1.2...sdk-v7.1.3) (2026-04-20)
 
 ## [7.1.2](https://github.com/opengovsg/formsg/compare/sdk-v7.1.1...sdk-v7.1.2) (2026-04-16)
