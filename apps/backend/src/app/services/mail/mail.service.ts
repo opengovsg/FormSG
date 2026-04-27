@@ -835,9 +835,10 @@ export class MailService {
     //TODO (email-standardisation): remove when email standardisation is GA
     if (useStandardisedEmailTemplate) {
       const formQuestionAnswers: QuestionAnswer[] = formData.map(
-        ({ question, answerTemplate }) => ({
+        ({ question, answerTemplate, fieldType }) => ({
           question,
-          answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+          answer: String(answerTemplate),
+          fieldType,
         }),
       )
       const emailData: EmailData = {

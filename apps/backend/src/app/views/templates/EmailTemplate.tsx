@@ -23,6 +23,7 @@ import {
   Text,
 } from '@react-email/components'
 import React from 'react'
+import { BasicField } from 'formsg-shared/types'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
@@ -35,6 +36,7 @@ import {
   headingTextStyle,
   linkStyle,
   mainStyle,
+  outcomeTextStyle,
   primaryTextStyle,
   questionMargin,
   secondaryTextStyle,
@@ -64,6 +66,7 @@ export enum WorkflowOutcome {
 export type QuestionAnswer = {
   question: string
   answer: string
+  fieldType?: string
 }
 
 export const EmailTemplate = ({
@@ -82,9 +85,15 @@ export const EmailTemplate = ({
 }: EmailData): JSX.Element => {
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
-      <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-        {qa.question}
-      </Text>
+      {qa.fieldType === BasicField.Section ? (
+        <Text style={{ ...outcomeTextStyle, ...questionMargin }}>
+          {qa.question}
+        </Text>
+      ) : (
+        <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+          {qa.question}
+        </Text>
+      )}
       <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
         {qa.answer}
       </Text>
