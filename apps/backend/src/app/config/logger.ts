@@ -2,7 +2,7 @@
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'
-import tripleBeam from 'triple-beam'
+import { SPLAT } from 'triple-beam'
 import { inspect } from 'util'
 import { v4 as uuidv4 } from 'uuid'
 import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
@@ -37,8 +37,10 @@ export type CustomLoggerParams = {
 const errorHunter = logform.format((info) => {
   if (info.error) return info
 
-  const splat = info[tripleBeam.SPLAT as any] || []
-  info.error = splat.find((obj: any) => obj instanceof Error)
+  const splat = info[SPLAT]
+  if (Array.isArray(splat)) {
+    info.error = splat.find((obj: any) => obj instanceof Error)
+  }
 
   return info
 })
@@ -47,9 +49,8 @@ const errorHunter = logform.format((info) => {
  * Formats the error in the transformable info to a console.error-like format.
  */
 const errorPrinter = logform.format((info) => {
-  if (!info.error) return info
+  if (!info.error || !(info.error instanceof Error)) return info
 
-  // Handle case where Error has no stack.
   const errorMsg = info.error.stack || info.error.toString()
   info.message += `\n${errorMsg}`
 
@@ -106,9 +107,10 @@ export const customFormat = format.printf((info) => {
   // e.g. logger.info('param1', 'param2')
   // The second parameter onwards will be passed into the `splat` key and
   // require formatting (because that is just how the library is written).
-  const splatSymbol = Symbol.for('splat') as unknown as string
-  const splatArgs = info[splatSymbol] || []
-  const rest = splatArgs.map((data: any) => formatWithInspect(data)).join(' ')
+  const splatArgs = info[SPLAT]
+  const rest = Array.isArray(splatArgs)
+    ? splatArgs.map((data: any) => formatWithInspect(data)).join(' ')
+    : ''
   const msg = formatWithInspect(info.message)
 
   return `${info.timestamp} ${info.level} [${info.label}]: ${msg}\t${duration}\t${rest}`
