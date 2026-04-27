@@ -1,5 +1,4 @@
-import aws from 'aws-sdk'
-import https from 'https'
+import { Message } from '@aws-sdk/client-sqs'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
@@ -37,20 +36,6 @@ export const startWebhookConsumer = (
     queueUrl,
     region: config.aws.region,
     handleMessage: createWebhookQueueHandler(producer),
-    // By default, the default Node.js HTTP/HTTPS SQS agent
-    // creates a new TCP connection for every new request.
-    // In production, pass an SQS instance to avoid the cost
-    // of establishing new connections.
-    sqs: config.isDevOrTest
-      ? undefined
-      : new aws.SQS({
-          region: config.aws.region,
-          httpOptions: {
-            agent: new https.Agent({
-              keepAlive: true,
-            }),
-          },
-        }),
   })
 
   app.on('error', (error, message) => {
@@ -90,7 +75,7 @@ export const startWebhookConsumer = (
  */
 export const createWebhookQueueHandler =
   (producer: WebhookProducer) =>
-  async (sqsMessage: aws.SQS.Message): Promise<void> => {
+  async (sqsMessage: Message): Promise<Message | undefined> => {
     const { Body, MessageId } = sqsMessage
     let logMeta: CustomLoggerParams['meta'] = {
       action: 'createWebhookQueueHandler',
@@ -143,7 +128,7 @@ export const createWebhookQueueHandler =
         return Promise.reject()
       }
       // Delete existing message from queue
-      return Promise.resolve()
+      return sqsMessage
     }
 
     // If due, send webhook
@@ -183,7 +168,7 @@ export const createWebhookQueueHandler =
       })
     })
 
-    if (retryResult.isOk()) return Promise.resolve()
+    if (retryResult.isOk()) return sqsMessage
     // Error cases
     // Special handling for max retries exceeded - log a separate message
     // and resolve Promise so that message is removed from queue
@@ -195,7 +180,7 @@ export const createWebhookQueueHandler =
           webhookMessage: webhookMessage.getRetriesFailedState(),
         },
       })
-      return Promise.resolve()
+      return sqsMessage
     }
     // Special handling for retries not enabled - this should not be moved
     // to DLQ as admin has disabled webhooks and/or webhook retries on purpose
@@ -204,7 +189,7 @@ export const createWebhookQueueHandler =
         message: 'Webhook retries no longer enabled on form',
         meta: logMeta,
       })
-      return Promise.resolve()
+      return sqsMessage
     }
     // Remaining cases are unexpected errors, move to DLQ
     logger.error({

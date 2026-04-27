@@ -1,5 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import aws from 'aws-sdk'
+import { Message } from '@aws-sdk/client-sqs'
 import { ObjectId } from 'bson'
 import { addHours } from 'date-fns'
 import { WebhookResponse } from 'formsg-shared/types'
@@ -49,7 +49,7 @@ const VALID_MESSAGE_BODY: WebhookQueueMessageObject = {
   _v: 0,
 }
 
-const VALID_SQS_MESSAGE: aws.SQS.Message = {
+const VALID_SQS_MESSAGE: Message = {
   Body: JSON.stringify(VALID_MESSAGE_BODY),
 }
 
