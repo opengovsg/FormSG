@@ -1,6 +1,6 @@
 {
   "name": "@opengovsg/formsg-sdk",
-  "version": "7.1.3",
+  "version": "7.1.4",
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -51,7 +51,7 @@
     "directory": "packages/sdk"
   },
   "dependencies": {
-    "axios": "^1.15.0",
+    "axios": "^1.15.2",
     "tweetnacl": "^1.0.3",
     "tweetnacl-util": "^0.15.1"
   },

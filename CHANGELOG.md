@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.12.3](https://github.com/opengovsg/formsg/compare/v7.12.2...v7.12.3) (2026-04-27)
+
+
+### Bug Fixes
+
+* **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
+
+
+### Chores
+
+* update logform typing and bump winston (#9151) ([#9151](https://github.com/opengovsg/formsg/commit/c79d422b5f0a9a94b33a81d3f149069ac633739d))
+
+
+### Miscellaneous
+
+* Merge pull request #9152 from opengovsg/feat/bump-sqs-consumer-producer ([#9152](https://github.com/opengovsg/formsg/commit/a1ca41a90a08b24d781733282a06178cff045fec))
+
 ## [7.12.2](https://github.com/opengovsg/formsg/compare/v7.12.1...v7.12.2) (2026-04-23)
 
 
