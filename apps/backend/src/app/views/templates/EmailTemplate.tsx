@@ -24,6 +24,7 @@ import {
 } from '@react-email/components'
 import { BasicField } from 'formsg-shared/types'
 import React from 'react'
+import { BasicField } from 'formsg-shared/types'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
