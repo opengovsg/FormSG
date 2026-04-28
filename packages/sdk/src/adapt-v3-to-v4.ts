@@ -197,7 +197,7 @@ export function adaptV3ToV4(
 
   for (const [fieldId, field] of Object.entries(v3Responses)) {
     const meta = formFields[fieldId]
-    const myInfo = field.myInfo ?? meta?.myInfo
+    const myInfo = meta?.myInfo
     const question = myInfo
       ? `[Myinfo] ${meta?.question ?? ''}`
       : (meta?.question ?? '')

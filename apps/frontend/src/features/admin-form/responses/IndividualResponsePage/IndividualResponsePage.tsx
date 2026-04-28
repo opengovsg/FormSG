@@ -124,8 +124,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { data: form } = useAdminForm()
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
-  // const useV4Display = useFeatureIsOn(featureFlags.answerObject)
-  const useV4Display = true // TODO: remove once answerObject flag is removed and V4 display is default
+  const useV4Display = useFeatureIsOn(featureFlags.answerObject)
 
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
