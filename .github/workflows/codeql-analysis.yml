@@ -47,7 +47,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-          config-file: opengovsg/codeql-config/codeql-config.yml@develop
+          config-file: opengovsg/codeql-config/codeql-config.yml@prod
 
       # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
       # If this step fails, then you should remove it and run the build manually (see below)
