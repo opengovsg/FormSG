@@ -7,6 +7,10 @@ import Webhooks from './webhooks'
 
 export { adaptV3ToV4 } from './adapt-v3-to-v4'
 export { adaptV4ToV3 } from './adapt-v4-to-v3'
+export {
+  ADDRESS_SUBFIELD_KEYS,
+  GENERIC_STRING_FIELD_TYPES,
+} from './constants-v4'
 
 export type {
   DecryptedContent,

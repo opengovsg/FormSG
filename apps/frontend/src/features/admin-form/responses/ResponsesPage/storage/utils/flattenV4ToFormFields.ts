@@ -3,6 +3,7 @@ import {
   AttachmentAnswerV4,
   CheckboxAnswerV4,
   FieldResponsesV4,
+  GENERIC_STRING_FIELD_TYPES as SDK_GENERIC_STRING_FIELD_TYPES,
   RadioAnswerV4,
   SignatureAnswerV4,
   StringAnswerV4,
@@ -16,19 +17,9 @@ import { BasicField, FormFieldDto } from 'formsg-shared/types'
 const OTHERS_PREFIX = 'Others: '
 const CHECKBOX_OTHERS_VALUE = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
+// Extend SDK set with yes_no (treated as generic string in flatten context)
 const GENERIC_STRING_FIELD_TYPES = new Set([
-  'section',
-  'number',
-  'decimal',
-  'textfield',
-  'textarea',
-  'homeno',
-  'dropdown',
-  'rating',
-  'nric',
-  'uen',
-  'date',
-  'country_region',
+  ...SDK_GENERIC_STRING_FIELD_TYPES,
   'yes_no',
 ])
 

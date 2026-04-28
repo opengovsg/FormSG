@@ -1,3 +1,4 @@
+import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
 import { FieldType, FormFieldsV3 } from './types'
 import {
   AddressAnswerV4,
@@ -13,32 +14,6 @@ import {
   VerifiableAnswerV4,
   YesNoAnswerV4,
 } from './types-v4'
-
-const GENERIC_STRING_FIELD_TYPES = new Set<FieldType>([
-  'section',
-  'statement',
-  'image',
-  'number',
-  'decimal',
-  'textfield',
-  'textarea',
-  'homeno',
-  'dropdown',
-  'rating',
-  'nric',
-  'uen',
-  'date',
-  'country_region',
-])
-
-const ADDRESS_SUBFIELD_KEYS = [
-  'postalCode',
-  'blockNumber',
-  'streetName',
-  'buildingName',
-  'levelNumber',
-  'unitNumber',
-] as const
 
 function convertStringAnswerToV3(answer: StringAnswerV4): string {
   return answer.value
