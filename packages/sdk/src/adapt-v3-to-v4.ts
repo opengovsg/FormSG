@@ -130,7 +130,7 @@ const convertAddressAnswer = (answer: {
   const subFields = answer.addressSubFields
   const result: Record<string, StringAnswerV4> = {}
   for (const key of ADDRESS_SUBFIELD_KEYS) {
-    result[key] = { value: subFields[key] }
+    result[key] = { value: subFields[key] ?? ''}
   }
   return result as AddressAnswerV4
 }

@@ -6,9 +6,9 @@
     "strict": true,
     "types": ["jest", "node"],
     "esModuleInterop": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "lib": ["WebWorker"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/*.spec.ts", "dist"]
+  "include": ["src", "spec"],
+  "exclude": ["node_modules", "dist"]
 }
