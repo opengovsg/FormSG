@@ -251,50 +251,97 @@ export class S3Service {
     bucketName,
     objectKey,
   }: GetS3FileStreamParams): Promise<string> {
-    this.logger.info(
-      {
-        bucketName,
-        objectKey,
+    const logMeta = {
+      action: 'getS3ObjectVersionId',
+      bucketName,
+      objectKey,
+    }
+
+    this.logger.info({
+      message: 'Getting object version ID from s3',
+      meta: {
+        ...logMeta,
+        status: 'started',
       },
-      'Getting object version ID from s3',
-    )
+    })
+
+    let attempt = 0
+    const logMissedAttempt = (err: unknown) => {
+      this.logger.warn({
+        message: 'getS3ObjectVersionId attempt failed',
+        meta: {
+          ...logMeta,
+          status: 'missed',
+          attempt,
+        },
+        err,
+      })
+    }
 
     try {
-      const { VersionId: versionId, ContentLength } = await this.s3Client.send(
-        new HeadObjectCommand({
-          Key: objectKey,
-          Bucket: bucketName,
-        }),
-      )
+      // S3 may briefly return NotFound when strong consistency lags, so retry
+      // with 2s/4s/8s exponential backoff plus jitter before giving up.
+      return await retry(
+        async () => {
+          attempt++
 
-      if (!versionId) {
-        throw new Error('VersionId is empty')
-      }
+          let response
+          try {
+            response = await this.s3Client.send(
+              new HeadObjectCommand({
+                Key: objectKey,
+                Bucket: bucketName,
+              }),
+            )
+          } catch (err) {
+            logMissedAttempt(err)
+            throw err
+          }
 
-      if (!ContentLength || ContentLength === 0) {
-        throw new Error('Body is empty')
-      }
+          const { VersionId: versionId, ContentLength } = response
 
-      this.logger.info(
-        {
-          bucketName,
-          objectKey,
-          versionId,
-          contentLength: ContentLength,
+          if (!versionId) {
+            const err = new Error('VersionId is empty')
+            logMissedAttempt(err)
+            throw err
+          }
+
+          if (!ContentLength || ContentLength === 0) {
+            const err = new Error('Body is empty')
+            logMissedAttempt(err)
+            throw err
+          }
+
+          this.logger.info({
+            message: 'Retrieved object version ID from s3',
+            meta: {
+              ...logMeta,
+              status: 'success',
+              attempt,
+              versionId,
+              contentLength: ContentLength,
+            },
+          })
+
+          return versionId
         },
-        'Retrieved object version ID from s3',
+        {
+          retries: 3,
+          delay: 2000,
+          backoff: (attempt) =>
+            1000 * Math.pow(2, attempt) + Math.floor(Math.random() * 1000),
+        },
       )
-
-      return versionId
     } catch (err) {
-      this.logger.error(
-        {
-          bucketName,
-          objectKey,
-          err,
+      this.logger.error({
+        message: 'Failed to get object version ID from s3 after retries',
+        meta: {
+          ...logMeta,
+          status: 'failed',
+          attempts: attempt,
         },
-        'Failed to get object version ID from s3',
-      )
+        err,
+      })
 
       throw err
     }
