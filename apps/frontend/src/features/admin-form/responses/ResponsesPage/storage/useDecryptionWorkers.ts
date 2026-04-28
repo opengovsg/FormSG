@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import saveAs from 'file-saver'
 import JSZip from 'jszip'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { env } from '~/env'
 
@@ -76,6 +79,7 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
+  const useV4 = useFeatureIsOn(featureFlags.answerObject)
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -196,6 +200,7 @@ const useDecryptionWorkers = ({
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
+                useV4,
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {
@@ -490,6 +495,7 @@ const useDecryptionWorkers = ({
       onDecryptionProgress,
       onPdfGenerationProgress,
       user?._id,
+      useV4,
       workers,
     ],
   )

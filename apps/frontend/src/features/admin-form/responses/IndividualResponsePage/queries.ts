@@ -14,22 +14,26 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useIndividualSubmission = () => {
+export const useIndividualSubmission = ({
+  useV4,
+}: { useV4?: boolean } = {}) => {
   const { formId, submissionId } = useParams()
 
   if (!formId || !submissionId) {
     throw new Error('No formId or submissionId provided')
   }
 
-  return useGetIndividualDecryptedSubmission({ formId, submissionId })
+  return useGetIndividualDecryptedSubmission({ formId, submissionId, useV4 })
 }
 
 export const useGetIndividualDecryptedSubmission = ({
   formId,
   submissionId,
+  useV4,
 }: {
   formId: string
   submissionId: string
+  useV4?: boolean
 }) => {
   const toast = useToast({
     status: 'danger',
@@ -38,8 +42,9 @@ export const useGetIndividualDecryptedSubmission = ({
   const { data: { responseMode } = {} } = useAdminForm()
 
   return useQuery(
-    adminFormResponsesKeys.individual(formId, submissionId),
-    () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
+    adminFormResponsesKeys.individual(formId, submissionId, useV4),
+    () =>
+      getDecryptedSubmissionById({ formId, submissionId, secretKey, useV4 }),
     {
       staleTime:
         responseMode === FormResponseMode.Multirespondent
