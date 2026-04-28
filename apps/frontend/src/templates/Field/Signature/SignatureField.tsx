@@ -275,10 +275,15 @@ const SignatureCanvas = ({
                   pointerEvents={schema.disabled ? 'none' : 'auto'} // disable canvas interaction
                   width="100%"
                   height="100%"
-                  // contentEditable marks this as an interactive element for
-                  // @hello-pangea/dnd, preventing drag initiation from the canvas
-                  contentEditable={!schema.disabled}
-                  suppressContentEditableWarning
+                  onPointerDown={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
+                  onMouseDown={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
+                  onTouchStart={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
                   sx={{ cursor: 'default' }}
                 >
                   <canvas
