@@ -293,10 +293,13 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 
 export const checkHasRespondentNotWhitelistedFailure = (
   form: IPopulatedForm,
-  submitterId: string,
+  submitterId?: string,
 ): ResultAsync<boolean, ApplicationError> => {
-  // check since whitelist is only for encrypt mode forms
-  if (form.responseMode !== FormResponseMode.Encrypt) {
+  // check since whitelist is only for encrypt mode and multirespondent mode forms
+  if (
+    form.responseMode !== FormResponseMode.Encrypt &&
+    form.responseMode !== FormResponseMode.Multirespondent
+  ) {
     return okAsync(false)
   }
   if (form.authType === FormAuthType.NIL) {
@@ -311,6 +314,9 @@ export const checkHasRespondentNotWhitelistedFailure = (
   }
   if (isWhitelistEnabled && !whitelistId) {
     return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+  if (!submitterId) {
+    return errAsync(new MissingSubmitterIdError())
   }
 
   const formPublicKey = form.publicKey

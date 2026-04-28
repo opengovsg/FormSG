@@ -62,6 +62,7 @@ export type MultirespondentSubmissionDto = {
   responseMetadata?: ResponseMetadata
   workflowStep: number
   hashedSubmitterId?: string
+  submitterId?: string
   responses: FieldResponsesV3
   mrfVersion: number
 }

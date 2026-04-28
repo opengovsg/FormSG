@@ -925,6 +925,7 @@ export const handleNdiResponses = async (
       }
       const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
       req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
+      req.formsg.encryptedPayload.submitterId = submitterId
       verifiedContent = verifiedContentResult.value
     }
   }
