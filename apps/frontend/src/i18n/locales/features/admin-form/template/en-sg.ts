@@ -12,16 +12,16 @@ export const enSG: Template = {
     },
     steps: [
       {
-        title: 'Duplicate this form',
+        title: 'This is a template preview',
         content:
-          'You’re viewing a template. Click "Use this template" to make your own copy — you won’t be submitting responses here.',
+          "You can't submit responses here. Click 'Use this template' to make your own copy.",
       },
     ],
   },
   useTemplateWall: {
-    title: 'You’re previewing a template',
-    body: 'This page is a read-only template, not a live form. To create your own version, use the template — or continue scrolling if you just want to preview it.',
-    continuePreview: 'Continue to Preview',
+    title: 'This is a template preview',
+    body: "You can't submit responses here. Click 'Use this template' to make your own copy.",
+    continuePreview: 'Continue to preview',
     useTemplate: 'Use this template',
   },
 }
