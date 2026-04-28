@@ -936,6 +936,9 @@ describe('Form Model', () => {
           emails: [],
           stepOneEmailNotificationFieldId: '',
           hasStatusTracker: false,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: false,
+          },
         },
         FORM_DEFAULTS,
       )

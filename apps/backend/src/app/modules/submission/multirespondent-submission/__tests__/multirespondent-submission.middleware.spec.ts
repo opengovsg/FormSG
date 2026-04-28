@@ -616,7 +616,7 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(500)
         expect(mockRes.json).toHaveBeenCalledWith({
-          message: 'Sorry, something went wrong. Please try again.',
+          message: 'Failed to retrieve submitter ID. Please try again.',
         })
       })
     })

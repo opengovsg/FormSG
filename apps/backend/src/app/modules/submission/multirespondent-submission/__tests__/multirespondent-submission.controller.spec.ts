@@ -235,6 +235,11 @@ describe('multirespondent-submision.controller', () => {
   })
 
   describe('submitMultirespondentForm', () => {
+    beforeEach(() => {
+      MockFormService.checkHasRespondentNotWhitelistedFailure.mockReturnValue(
+        okAsync(false),
+      )
+    })
     it('returns 200 ok when form validation passes and invokes createMultiRespondentFormSubmission and performMultiRespondentPostSubmissionCreateActions', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
