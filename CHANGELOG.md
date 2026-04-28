@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.13.0](https://github.com/opengovsg/formsg/compare/v7.12.3...v7.13.0) (2026-04-28)
+
+
+### Features
+
+* **i18n:** extract text from BuilderAndDesignDrawer, FieldListDrawer  (#9255) ([#9255](https://github.com/opengovsg/formsg/commit/4aa850cd40fdf67c2ef69a6a21c2c6235670d9e6))
+
+
+### Miscellaneous
+
+* Merge pull request #9361 from opengovsg/fix/ci/update-codeql-config-prod ([#9361](https://github.com/opengovsg/formsg/commit/fd618b53fbf4530e883bb61e1adf02271133e671))
+
 ## [7.12.3](https://github.com/opengovsg/formsg/compare/v7.12.2...v7.12.3) (2026-04-27)
 
 
