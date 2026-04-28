@@ -24,6 +24,7 @@ import {
   UseTemplateFrame,
   UseTemplateTour,
   UseTemplateWall,
+  UseTemplateWallScrollTrigger,
 } from './UseTemplateNudges'
 
 export const TemplateFormPage = (): JSX.Element => {
@@ -32,7 +33,9 @@ export const TemplateFormPage = (): JSX.Element => {
 
   const isFrameOn = useFeatureIsOn(featureFlags.useTemplateFrame)
   const isTourOn = useFeatureIsOn(featureFlags.useTemplateTour)
-  const isWallOn = useFeatureIsOn(featureFlags.useTemplateWall)
+  const isWallScrollOn = useFeatureIsOn(featureFlags.useTemplateWallScroll)
+  const isWallSubmitOn = useFeatureIsOn(featureFlags.useTemplateWallSubmit)
+  const isWallOn = isWallScrollOn || isWallSubmitOn
 
   const {
     isOpen: isWallOpen,
@@ -45,7 +48,7 @@ export const TemplateFormPage = (): JSX.Element => {
       {isFrameOn && <UseTemplateFrame />}
       <TemplateFormProvider
         formId={formId}
-        onTemplatePreviewSubmitClick={isWallOn ? onWallOpen : undefined}
+        onTemplatePreviewSubmitClick={isWallSubmitOn ? onWallOpen : undefined}
       >
         <GovtMasthead />
         <PreviewFormBannerContainer isTemplate />
@@ -59,6 +62,12 @@ export const TemplateFormPage = (): JSX.Element => {
             <FormEndPage />
             <FormFooter />
           </PublicFormWrapper>
+          {isWallScrollOn && (
+            <UseTemplateWallScrollTrigger
+              formId={formId}
+              onTrigger={onWallOpen}
+            />
+          )}
           {isWallOn && (
             <UseTemplateWall
               formId={formId}
