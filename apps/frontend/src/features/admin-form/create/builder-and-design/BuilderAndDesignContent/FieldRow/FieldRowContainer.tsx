@@ -301,7 +301,6 @@ const FieldRowContainer = ({
                   disabled={isDragDisabled}
                   display="flex"
                   tabIndex={isActive ? 0 : -1}
-                  {...provided.dragHandleProps}
                   borderRadius="4px"
                   _disabled={{
                     cursor: 'not-allowed',
@@ -315,6 +314,7 @@ const FieldRowContainer = ({
                   transition="color 0.2s ease"
                   _hover={{
                     color: 'secondary.300',
+                    cursor: 'grab',
                     _disabled: {
                       color: 'secondary.200',
                     },
