@@ -38,9 +38,11 @@ import {
 const FieldSearchBar = ({
   searchValue,
   onChange,
+  placeholder,
 }: {
   searchValue: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder: string
 }) => {
   const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
 
@@ -57,7 +59,7 @@ const FieldSearchBar = ({
           mr="0.5rem"
           value={searchValue}
           onChange={onChange}
-          placeholder="Search fields"
+          placeholder={placeholder}
         />
         {(isMfbTextEnabled || isMfbVisionEnabled) && (
           <MagicFormBuilderSmallButton
@@ -71,28 +73,30 @@ const FieldSearchBar = ({
 }
 
 export const FieldListDrawer = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields',
+  })
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
   const [searchValue, setSearchValue] = useState('')
 
   const tabsDataList = [
     {
-      header: 'Basic',
+      header: t('builder.tabs.basic'),
       component: BasicFieldPanel,
       isHidden: false,
       isDisabled: isLoading,
       key: FieldListTabIndex.Basic,
     },
     {
-      header: 'MyInfo',
+      header: t('builder.tabs.myInfo'),
       component: MyInfoFieldPanel,
       isHidden: false,
       isDisabled: isLoading,
       key: FieldListTabIndex.MyInfo,
     },
     {
-      header: 'Payments',
+      header: t('builder.tabs.payments'),
       component: PaymentsInputPanel,
       isHidden: false,
       isDisabled: isLoading,
@@ -118,13 +122,14 @@ export const FieldListDrawer = (): JSX.Element => {
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            {t('features.adminForm.sidebar.fields.builder.title')}
+            {t('builder.title')}
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
         <FieldSearchBar
           searchValue={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
+          placeholder={t('builder.searchPlaceholder')}
         />
         <TabList mt="0.5rem" mx="-0.25rem" w="100%">
           {tabsDataList.map((tab) => (
