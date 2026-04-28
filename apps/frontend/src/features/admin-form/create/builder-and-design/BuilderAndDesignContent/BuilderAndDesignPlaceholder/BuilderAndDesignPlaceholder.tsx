@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
@@ -14,6 +15,10 @@ export const BuilderAndDesignPlaceholder = ({
   placeholderProps,
   isDraggingOver,
 }: BuilderDesignPlaceholderProps): JSX.Element | null => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.builderAndDesignPlaceholder',
+  })
+
   const renderedContents = useMemo(() => {
     switch (placeholderProps.droppableId) {
       case FIELD_LIST_DROP_ID:
@@ -36,11 +41,11 @@ export const BuilderAndDesignPlaceholder = ({
             justify="center"
             align="center"
           >
-            <Text textStyle="subhead-2">Drop your field here</Text>
+            <Text textStyle="subhead-2">{t('dropFieldHere')}</Text>
           </Flex>
         )
     }
-  }, [placeholderProps.droppableId])
+  }, [placeholderProps.droppableId, t])
 
   if (isEmpty(placeholderProps) || !isDraggingOver) return null
 
