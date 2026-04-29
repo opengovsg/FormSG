@@ -393,8 +393,8 @@ describe('Multirespondent Submission Middleware', () => {
       jest.resetAllMocks()
     })
 
-    describe('hashedSubmitterId is set', () => {
-      it('should set hashedSubmitterId in encryptedPayload if is step 1 submission with singpass auth type', async () => {
+    describe('submitterId is set', () => {
+      it('should set submitterId and hashedSubmitterId in encryptedPayload if is step 1 submission with singpass auth type', async () => {
         jest
           .mocked(MyInfoUtil.extractMyInfoLoginJwt)
           .mockReturnValue(ok('mock-jwt-string'))
@@ -451,9 +451,10 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockReq.formsg.encryptedPayload.hashedSubmitterId).toEqual(
           generateHashedSubmitterId('S1234567A', MOCK_FORM_ID),
         )
+        expect(mockReq.formsg.encryptedPayload.submitterId).toEqual('S1234567A')
       })
 
-      it('should set hashedSubmitterId in encryptedPayload if is step 1 submission with corppass auth type', async () => {
+      it('should set submitterId and hashedSubmitterId in encryptedPayload if is step 1 submission with corppass auth type', async () => {
         jest.mocked(OidcService.getOidcService).mockReturnValue({
           extractJwt: jest.fn().mockReturnValue({
             asyncAndThen: jest.fn().mockReturnValue(
@@ -520,9 +521,10 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockReq.formsg.encryptedPayload.hashedSubmitterId).toEqual(
           generateHashedSubmitterId('S1234567A', MOCK_FORM_ID),
         )
+        expect(mockReq.formsg.encryptedPayload.submitterId).toEqual('S1234567A')
       })
 
-      it('should not set hashedSubmitterId in encryptedPayload if is step 1 submission with non-singpass auth type', async () => {
+      it('should not set submitterId or hashedSubmitterId in encryptedPayload if is step 1 submission with non-singpass auth type', async () => {
         const mockNext = jest.fn()
 
         const mockReq = createMockReq({
@@ -548,9 +550,12 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
           'hashedSubmitterId',
         )
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'submitterId',
+        )
       })
 
-      it('should not set hashedSubmitterId in encryptedPayload if is step >=2 submission', async () => {
+      it('should not set submitterId or hashedSubmitterId in encryptedPayload if is step >=2 submission', async () => {
         const mockNext = jest.fn()
 
         const mockReq = createMockReq({
@@ -577,6 +582,9 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).toHaveBeenCalled()
         expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
           'hashedSubmitterId',
+        )
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'submitterId',
         )
       })
 
