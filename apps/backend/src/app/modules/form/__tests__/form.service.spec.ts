@@ -2,17 +2,20 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   PublicFormDto,
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
+import * as CryptoUtils from 'formsg-shared/utils/crypto'
 import { merge, times } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 
 import getFormModel from 'src/app/models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from 'src/app/models/form_whitelist.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
 import { IFormSchema, IPopulatedForm } from 'src/types'
 
@@ -22,6 +25,7 @@ import { MissingSubmitterIdError } from '../../submission/submission.errors'
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from '../form.errors'
 import * as FormService from '../form.service'
@@ -29,6 +33,7 @@ import * as FormService from '../form.service'
 const MOCK_FORM_ID = new ObjectId()
 const Form = getFormModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
+const FormWhitelistSubmitterIds = getFormWhitelistSubmitterIdsModel(mongoose)
 
 const mockMultirespondentSubmissionForForm = (
   formId: mongoose.Types.ObjectId,
@@ -64,6 +69,9 @@ const MOCK_ENCRYPTED_FORM_PARAMS = {
   responseMode: FormResponseMode.Encrypt,
 }
 
+jest.mock('formsg-shared/utils/crypto')
+const MockCryptoUtils = jest.mocked(CryptoUtils)
+
 jest.mock('src/app/services/sms/sms.service')
 const MockSmsService = jest.mocked(SmsService)
 
@@ -80,6 +88,319 @@ describe('FormService', () => {
   afterAll(async () => {
     await dbHandler.clearDatabase()
     await dbHandler.closeDatabase()
+  })
+
+  describe('checkHasRespondentNotWhitelistedFailure', () => {
+    it('should check for submitterd whitelisting for multirespondent mode forms', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const mockCipherText = 'mockCipherText'
+      const findEncryptionPropertiesByIdSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'findEncryptionPropertiesById')
+        .mockResolvedValueOnce({
+          myPublicKey: 'mockMyPublicKey',
+          myPrivateKey: 'mockMyPrivateKey',
+          nonce: Buffer.from('mock-nonce-value').toString('base64'),
+        })
+      const checkIfSubmitterIdIsWhitelistedSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'checkIfSubmitterIdIsWhitelisted')
+        .mockResolvedValueOnce({ _id: mockWhitelistId } as any)
+      MockCryptoUtils.encryptString.mockReturnValueOnce({
+        cipherText: mockCipherText,
+      } as any)
+
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Multirespondent,
+        authType: FormAuthType.SP,
+        publicKey: 'mockPublicKey',
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(findEncryptionPropertiesByIdSpy).toHaveBeenCalledWith(
+        mockWhitelistId,
+      )
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      findEncryptionPropertiesByIdSpy.mockRestore()
+      checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
+    })
+
+    it('should check for submitterd whitelisting for encrypt mode forms', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const mockCipherText = 'mockCipherText'
+      const findEncryptionPropertiesByIdSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'findEncryptionPropertiesById')
+        .mockResolvedValueOnce({
+          myPublicKey: 'mockMyPublicKey',
+          myPrivateKey: 'mockMyPrivateKey',
+          nonce: Buffer.from('mock-nonce-value').toString('base64'),
+        })
+      const checkIfSubmitterIdIsWhitelistedSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'checkIfSubmitterIdIsWhitelisted')
+        .mockResolvedValueOnce({ _id: mockWhitelistId } as any)
+      MockCryptoUtils.encryptString.mockReturnValueOnce({
+        cipherText: mockCipherText,
+      } as any)
+
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        publicKey: 'mockPublicKey',
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(findEncryptionPropertiesByIdSpy).toHaveBeenCalledWith(
+        mockWhitelistId,
+      )
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      findEncryptionPropertiesByIdSpy.mockRestore()
+      checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
+    })
+    it('should return false if form is not encrypt or multirespondent mode', async () => {
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Email,
+        authType: FormAuthType.SP,
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+    })
+
+    it('should return false if form auth type is nil', async () => {
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.NIL,
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+    })
+
+    it('should return false if form whitelist setting is disabled', async () => {
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: false,
+          encryptedWhitelistedSubmitterIds: undefined,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+    })
+
+    it('should return MissingSubmitterIdError if submitterId is not set but form whitelist setting is enabled', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        undefined,
+      )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MissingSubmitterIdError)
+    })
+
+    it('should return FormWhitelistSettingNotFoundError if form whitelist setting is enabled but whitelist id is not set', async () => {
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: undefined,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        FormWhitelistSettingNotFoundError,
+      )
+    })
+
+    it('should return ApplicationError if form does not have a public key', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        publicKey: undefined,
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
+    })
+
+    it('should return false if submitterId is whitelisted', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const findEncryptionPropertiesByIdSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'findEncryptionPropertiesById')
+        .mockResolvedValueOnce({
+          myPublicKey: 'mockMyPublicKey',
+          myPrivateKey: 'mockMyPrivateKey',
+          nonce: Buffer.from('mock-nonce-value').toString('base64'),
+        })
+      const checkIfSubmitterIdIsWhitelistedSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'checkIfSubmitterIdIsWhitelisted')
+        .mockResolvedValueOnce({ _id: mockWhitelistId } as any)
+      MockCryptoUtils.encryptString.mockReturnValueOnce({
+        cipherText: 'mockCipherText',
+      } as any)
+
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        publicKey: 'mockPublicKey',
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(false)
+
+      findEncryptionPropertiesByIdSpy.mockRestore()
+      checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
+    })
+
+    it('should return true if submitterId is not whitelisted', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const findEncryptionPropertiesByIdSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'findEncryptionPropertiesById')
+        .mockResolvedValueOnce({
+          myPublicKey: 'mockMyPublicKey',
+          myPrivateKey: 'mockMyPrivateKey',
+          nonce: Buffer.from('mock-nonce-value').toString('base64'),
+        })
+      const checkIfSubmitterIdIsWhitelistedSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'checkIfSubmitterIdIsWhitelisted')
+        .mockResolvedValueOnce(false)
+      MockCryptoUtils.encryptString.mockReturnValueOnce({
+        cipherText: 'mockCipherText',
+      } as any)
+
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        publicKey: 'mockPublicKey',
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(true)
+
+      findEncryptionPropertiesByIdSpy.mockRestore()
+      checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
+    })
+
+    it('should return ApplicationError if error occurs while checking if submitterId is whitelisted', async () => {
+      const mockWhitelistId = new ObjectId().toHexString()
+      const findEncryptionPropertiesByIdSpy = jest
+        .spyOn(FormWhitelistSubmitterIds, 'findEncryptionPropertiesById')
+        .mockRejectedValueOnce(new Error('db error'))
+
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Encrypt,
+        authType: FormAuthType.SP,
+        publicKey: 'mockPublicKey',
+        getWhitelistedSubmitterIds: () => ({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: mockWhitelistId,
+        }),
+      } as unknown as IPopulatedForm
+
+      const result = await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        'mockSubmitterId',
+      )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
+      expect(result._unsafeUnwrapErr().message).toBe(
+        'Error while checking if submitterId is whitelisted',
+      )
+
+      findEncryptionPropertiesByIdSpy.mockRestore()
+    })
   })
 
   describe('checkHasSingleSubmissionValidationFailure', () => {
