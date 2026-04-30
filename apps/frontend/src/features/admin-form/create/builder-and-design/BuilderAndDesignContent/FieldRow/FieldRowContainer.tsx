@@ -252,7 +252,6 @@ const FieldRowContainer = ({
     <Draggable
       index={index}
       isDragDisabled={isDragDisabled}
-      disableInteractiveElementBlocking
       draggableId={field._id}
     >
       {(provided, snapshot) => (
@@ -297,13 +296,14 @@ const FieldRowContainer = ({
               onClick={handleFieldClick}
               onKeyDown={handleKeydown}
               ref={ref}
+              {...provided.dragHandleProps}
+              sx={{ '& label': { cursor: 'inherit' } }}
             >
               <Fade in={isActive}>
                 <chakra.button
                   disabled={isDragDisabled}
                   display="flex"
                   tabIndex={isActive ? 0 : -1}
-                  {...provided.dragHandleProps}
                   borderRadius="4px"
                   _disabled={{
                     cursor: 'not-allowed',
@@ -317,6 +317,7 @@ const FieldRowContainer = ({
                   transition="color 0.2s ease"
                   _hover={{
                     color: 'secondary.300',
+                    cursor: 'grab',
                     _disabled: {
                       color: 'secondary.200',
                     },
