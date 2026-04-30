@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
@@ -11,6 +12,8 @@ import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
+  const { t } = useTranslation()
+
   const {
     form,
     isAuthRequired,
@@ -27,14 +30,17 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   const { workflowStep } = encryptedPreviousSubmission ?? {}
 
   const renderFields = useMemo(() => {
-    // Render skeleton when no data
     if (isLoading) {
       return <FormFieldsSkeleton />
     }
 
     if (!form) {
       // TODO: Add/redirect to error page
-      return <div>Something went wrong</div>
+      return (
+        <div>
+          {t('features.publicForm.components.formFieldsContainer.error')}
+        </div>
+      )
     }
 
     if (
@@ -84,6 +90,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,
+    t,
   ])
 
   if (submissionData) return null

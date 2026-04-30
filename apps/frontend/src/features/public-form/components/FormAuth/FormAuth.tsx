@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiLogInCircle } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
@@ -21,16 +22,19 @@ import { FormAuthMessage } from './FormAuthMessage'
 
 const getDispayedAuthTypeText = (
   authType: Exclude<FormAuthType, FormAuthType.NIL>,
+  t: (key: string) => string,
 ) => {
   switch (authType) {
     case FormAuthType.SP:
     case FormAuthType.MyInfo:
-      return 'Singpass'
+      return t('features.publicForm.components.formAuth.authType.singpass')
     case FormAuthType.CP:
-      return 'Singpass (Corporate)'
+      return t(
+        'features.publicForm.components.formAuth.authType.singpassCorporate',
+      )
     case FormAuthType.SGID:
     case FormAuthType.SGID_MyInfo:
-      return 'Singpass app'
+      return t('features.publicForm.components.formAuth.authType.singpassApp')
   }
 }
 
@@ -47,6 +51,7 @@ export const FormAuth = ({
   hasSingleSubmissionValidationError,
   hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId, form } = usePublicFormContext()
 
   const buttonColorScheme = useMemo(() => {
@@ -56,7 +61,7 @@ export const FormAuth = ({
 
   const isMobile = useIsMobile()
   const { handleLoginMutation } = usePublicAuthMutations(formId)
-  const displayedAuthTypeText = getDispayedAuthTypeText(authType)
+  const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (
     <Box
@@ -75,7 +80,9 @@ export const FormAuth = ({
           onClick={() => handleLoginMutation.mutate()}
           isLoading={handleLoginMutation.isLoading}
         >
-          Log in with {displayedAuthTypeText}
+          {t('features.publicForm.components.formAuth.loginButton', {
+            authType: displayedAuthTypeText,
+          })}
         </Button>
         <FormAuthMessage
           isSubmitterIdCollectionEnabled={isSubmitterIdCollectionEnabled}

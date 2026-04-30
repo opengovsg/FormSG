@@ -21,7 +21,6 @@ export const enSG: App = {
       billing: 'Billing',
       emergencyContact: 'Emergency contact',
       transferAllForms: 'Transfer all forms',
-      logout: 'Log out',
     },
   },
 }

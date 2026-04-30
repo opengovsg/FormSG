@@ -64,6 +64,93 @@ export interface PublicForm {
     instructions: {
       title: string
     }
+    duplicatePaymentModal: {
+      title: string
+      description: {
+        existingPayment: string
+        viewPreviousPayment: string
+        confirm: string
+      }
+      actions: {
+        submit: string
+        submitting: string
+      }
+    }
+    formAuth: {
+      loginButton: string
+      authType: {
+        singpass: string
+        singpassCorporate: string
+        singpassApp: string
+      }
+    }
+    formAuthMessage: {
+      signIn: {
+        singpass: string
+        corporate: string
+        singpassApp: string
+      }
+      submitterId: {
+        included: {
+          singpass: string
+          corporate: string
+        }
+        notIncluded: {
+          singpass: string
+          corporate: string
+        }
+      }
+    }
+    formFields: {
+      prefillWarning: string
+    }
+    formFieldsContainer: {
+      error: string
+    }
+    formIssueFeedbackModal: {
+      title: string
+      description: {
+        beforeBold: string
+        bold: string
+        afterBold: string
+      }
+      fields: {
+        issueLabel: string
+        contactLabel: string
+        emailPlaceholder: string
+      }
+      actions: {
+        submit: string
+      }
+      toast: {
+        preview: string
+        success: string
+      }
+    }
+    loadingTitle: {
+      title: string
+    }
+    miniHeader: {
+      mobileSectionSidebar: string
+    }
+    formHeader: {
+      logoutWithId: string
+    }
+    sectionSidebar: {
+      skipToSection: string
+      formSections: string
+      jumpToSection: string
+      listOfSections: string
+      navigatedToSection: string
+    }
+    sidebarLink: {
+      navigateToSection: string
+    }
+    singleSubmissionModal: {
+      title: string
+      logoutLoading: string
+      backToLogin: string
+    }
   }
 }
 

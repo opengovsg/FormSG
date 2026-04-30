@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { SubmitHandler, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
@@ -48,6 +49,8 @@ export const FormFields = ({
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
+  const { t } = useTranslation()
+
   useFetchPrefillQuery()
 
   const { defaultFormValues, fieldPrefillMap, form, augmentedFormFields } =
@@ -85,7 +88,7 @@ export const FormFields = ({
             {isEmpty(fieldPrefillMap) ? null : hasLockedNormalPrefills ? (
               // If there are both locked and non-locked prefills, show this message.
               <InlineMessage variant="warning">
-                Some fields below have been pre-filled.
+                {t('features.publicForm.components.formFields.prefillWarning')}
               </InlineMessage>
             ) : null}
             <VisibleFormFields
