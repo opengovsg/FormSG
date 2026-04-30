@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Stack } from '@chakra-ui/react'
 
 import { FormColorTheme, FormFieldWithId } from 'formsg-shared/types'
@@ -18,13 +19,17 @@ export const VerifiableFieldBuilderContainer = ({
   colorTheme = FormColorTheme.Blue,
   children,
 }: VerifiableFieldBuilderContainerProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
+
   return (
     <FieldContainer schema={schema}>
       <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
         {children}
         <Box>
           <Button isDisabled colorScheme={`theme-${colorTheme}`}>
-            Verify
+            {t('verify')}
           </Button>
         </Box>
       </Stack>
