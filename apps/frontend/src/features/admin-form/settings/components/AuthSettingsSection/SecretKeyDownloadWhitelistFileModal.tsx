@@ -32,6 +32,10 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   formId,
 }: SecretKeyDownloadWhitelistFileModalProps) => {
   const { t } = useTranslation()
+  const { modalTitle, submitButton } = t(
+    'features.adminForm.settings.secretKeyModal.whitelistCsv',
+    { returnObjects: true },
+  )
   const toast = useToast({ status: 'success', isClosable: true })
   const errorToast = useToast({ status: 'danger', isClosable: true })
   const [isDecrypting, setIsDecrypting] = useState(false)
@@ -139,12 +143,8 @@ export const SecretKeyDownloadWhitelistFileModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText={t(
-        'features.adminForm.settings.secretKeyModal.whitelistCsv.modalTitle',
-      )}
-      submitButtonText={t(
-        'features.adminForm.settings.secretKeyModal.whitelistCsv.submitButton',
-      )}
+      modalActionText={modalTitle}
+      submitButtonText={submitButton}
       hasAck={false}
     />
   )

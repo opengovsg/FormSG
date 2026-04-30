@@ -20,6 +20,10 @@ export const SecretKeyActivationModal = ({
   publicKey,
 }: SecretKeyActivationModalProps): JSX.Element => {
   const { t } = useTranslation()
+  const { modalTitle, submitButton } = t(
+    'features.adminForm.settings.secretKeyModal.activation',
+    { returnObjects: true },
+  )
   const { mutateFormStatus } = useMutateFormSettings()
 
   const onSubmit = () => {
@@ -33,12 +37,8 @@ export const SecretKeyActivationModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText={t(
-        'features.adminForm.settings.secretKeyModal.activation.modalTitle',
-      )}
-      submitButtonText={t(
-        'features.adminForm.settings.secretKeyModal.activation.submitButton',
-      )}
+      modalActionText={modalTitle}
+      submitButtonText={submitButton}
       onSubmit={onSubmit}
       hasAck
     />

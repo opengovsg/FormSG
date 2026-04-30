@@ -53,6 +53,16 @@ export const SecretKeyFormModal = ({
   hasAck = false,
 }: SecretKeyFormModalProps): JSX.Element => {
   const { t } = useTranslation()
+  const {
+    fieldLabel,
+    uploadFromFileAriaLabel,
+    validation: {
+      required: requiredSecretKeyMessage,
+      invalidSecretKey: invalidSecretKeyMessage,
+    },
+    placeholder: { dragging: draggingPlaceholder, default: defaultPlaceholder },
+    ackLabel,
+  } = t('features.adminForm.settings.secretKeyModal', { returnObjects: true })
 
   const {
     dragging,
@@ -107,32 +117,20 @@ export const SecretKeyFormModal = ({
                 mb="1rem"
                 isDisabled={isLoading}
               >
-                <FormLabel>
-                  {t('features.adminForm.settings.secretKeyModal.fieldLabel')}
-                </FormLabel>
+                <FormLabel>{fieldLabel}</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
                     type="password"
                     {...register(SECRET_KEY_NAME, {
-                      required: t(
-                        'features.adminForm.settings.secretKeyModal.validation.required',
-                      ),
+                      required: requiredSecretKeyMessage,
                       pattern: {
                         value: SECRET_KEY_REGEX,
-                        message: t(
-                          'features.adminForm.settings.secretKeyModal.validation.invalidSecretKey',
-                        ),
+                        message: invalidSecretKeyMessage,
                       },
                       setValueAs: (v) => v.trim(),
                     })}
                     placeholder={
-                      dragging
-                        ? t(
-                            'features.adminForm.settings.secretKeyModal.placeholder.dragging',
-                          )
-                        : t(
-                            'features.adminForm.settings.secretKeyModal.placeholder.default',
-                          )
+                      dragging ? draggingPlaceholder : defaultPlaceholder
                     }
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
@@ -142,9 +140,7 @@ export const SecretKeyFormModal = ({
                   <IconButton
                     isDisabled={isLoading}
                     variant="outline"
-                    aria-label={t(
-                      'features.adminForm.settings.secretKeyModal.uploadFromFileAriaLabel',
-                    )}
+                    aria-label={uploadFromFileAriaLabel}
                     icon={<BiUpload />}
                     onClick={() => secretKeyFileUploadRef.current?.click()}
                   />
@@ -160,7 +156,7 @@ export const SecretKeyFormModal = ({
                       required: true,
                     })}
                   >
-                    {t('features.adminForm.settings.secretKeyModal.ackLabel')}
+                    {ackLabel}
                   </Checkbox>
                 </FormControl>
               ) : null}

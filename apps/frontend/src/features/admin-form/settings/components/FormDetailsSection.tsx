@@ -32,6 +32,7 @@ export const FormTitleInput = ({
   initialTitle,
 }: FormTitleInputProps): JSX.Element => {
   const { t } = useTranslation()
+  const { formName } = t('features.common', { returnObjects: true })
   const {
     control,
     handleSubmit,
@@ -73,7 +74,7 @@ export const FormTitleInput = ({
 
   return (
     <FormControl isInvalid={!isEmpty(errors)}>
-      <FormLabel isRequired>{t('features.common.formName')}</FormLabel>
+      <FormLabel isRequired>{formName}</FormLabel>
 
       <Controller<{ title: string }>
         control={control}

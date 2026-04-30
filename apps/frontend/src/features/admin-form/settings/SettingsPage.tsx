@@ -44,6 +44,14 @@ export const SettingsPage = (): JSX.Element => {
   const { isLoading: isFormSettingLoading } = useAdminFormSettings()
   const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
+  const {
+    general: { title: generalTitle },
+    singpass: { title: singpassTitle },
+    emailNotifications: { title: emailNotificationsTitle },
+    webhooks: { title: webhooksTitle },
+    payments: { title: paymentsTitle },
+    tabs: { multiLanguage },
+  } = t('features.adminForm.settings', { returnObjects: true })
 
   if (!formId) throw new Error('No formId provided')
 
@@ -75,7 +83,7 @@ export const SettingsPage = (): JSX.Element => {
     !isFormSettingLoading &&
     user?.betaFlags?.multiLangTranslation
       ? {
-          label: t('features.adminForm.settings.tabs.multiLanguage'),
+          label: multiLanguage,
           icon: LanguageTranslation,
           component: SettingsMultiLangPage,
           path: 'language',
@@ -84,31 +92,31 @@ export const SettingsPage = (): JSX.Element => {
 
   const tabConfig: TabEntry[] = [
     {
-      label: t('features.adminForm.settings.general.title'),
+      label: generalTitle,
       icon: BiCog,
       component: SettingsGeneralPage,
       path: 'general',
     },
     {
-      label: t('features.adminForm.settings.singpass.title'),
+      label: singpassTitle,
       icon: BiKey,
       component: SettingsAuthPage,
       path: 'singpass',
     },
     {
-      label: t('features.adminForm.settings.emailNotifications.title'),
+      label: emailNotificationsTitle,
       icon: BiMailSend,
       component: SettingsEmailsPage,
       path: 'email-notifications',
     },
     {
-      label: t('features.adminForm.settings.webhooks.title'),
+      label: webhooksTitle,
       icon: BiCodeBlock,
       component: SettingsWebhooksPage,
       path: 'webhooks',
     },
     {
-      label: t('features.adminForm.settings.payments.title'),
+      label: paymentsTitle,
       icon: BiDollar,
       component: SettingsPaymentsPage,
       path: 'payments',

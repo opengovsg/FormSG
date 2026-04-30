@@ -15,6 +15,9 @@ export const SettingsTab = ({
   showNewBadge = false,
 }: SettingsTabProps): JSX.Element => {
   const { t } = useTranslation()
+  const { newBadge } = t('features.adminForm.settings.tabs', {
+    returnObjects: true,
+  })
 
   return (
     <Tab justifyContent="flex-start" p="1rem">
@@ -28,7 +31,7 @@ export const SettingsTab = ({
           colorScheme="success"
           display={{ base: 'none', lg: 'initial' }}
         >
-          {t('features.adminForm.settings.tabs.newBadge')}
+          {newBadge}
         </Badge>
       ) : null}
     </Tab>
