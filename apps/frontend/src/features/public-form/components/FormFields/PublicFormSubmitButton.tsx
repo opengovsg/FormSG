@@ -91,9 +91,16 @@ export const PublicFormSubmitButton = ({
     formId,
     isPaymentEnabled,
     isPreview,
+    onTemplatePreviewSubmitClick,
     hasSingleSubmissionValidationError,
     setHasSingleSubmissionValidationError,
   } = usePublicFormContext()
+
+  // True when we're in template preview mode and a handler was passed in.
+  // In that case the submit button should look fully active and its click
+  // should open the "this is a template preview" modal instead of submitting.
+  const isTemplatePreview =
+    isPreview && !onSubmit && !!onTemplatePreviewSubmitClick
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -179,11 +186,19 @@ export const PublicFormSubmitButton = ({
           colorScheme={colorScheme}
           type="button"
           isLoading={isSubmitting}
-          isDisabled={!!preventSubmissionLogic || !onSubmit}
+          isDisabled={
+            !!preventSubmissionLogic || (!onSubmit && !isTemplatePreview)
+          }
           loadingText={t(
             'features.publicForm.components.submitButton.loadingText',
           )}
-          onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
+          onClick={
+            isPaymentEnabled && !isPreview
+              ? checkBeforeOpen
+              : isTemplatePreview
+                ? onTemplatePreviewSubmitClick
+                : onSubmit
+          }
         >
           <VisuallyHidden>
             {t('features.publicForm.components.submitButton.visuallyHidden')}

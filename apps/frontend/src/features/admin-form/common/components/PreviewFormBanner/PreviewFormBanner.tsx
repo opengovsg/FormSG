@@ -26,6 +26,11 @@ import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
 
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
+// Explicit deep import to avoid circular dependency warnings by rollup.
+import {
+  USE_TEMPLATE_TOUR_STICKY_TARGET_ID,
+  USE_TEMPLATE_TOUR_TARGET_ID,
+} from '~features/admin-form/template/UseTemplateNudges/UseTemplateTour.constants'
 import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 // Explicit import to avoid circular dependency warnings by rollup
@@ -37,13 +42,14 @@ export const StickyPreviewHeader = ({
   isOpen: boolean
 }): JSX.Element => (
   <Portal>
-    <Slide aria-hidden direction="top" in={isOpen}>
-      <PreviewFormBanner isTemplate />
+    <Slide direction="top" in={isOpen}>
+      <PreviewFormBanner isTemplate isSticky />
     </Slide>
   </Portal>
 )
 interface PreviewFormBannerProps {
   isTemplate?: boolean
+  isSticky?: boolean
 }
 
 const textProps: TextProps = {
@@ -56,6 +62,7 @@ const textProps: TextProps = {
 
 export const PreviewFormBanner = ({
   isTemplate,
+  isSticky,
 }: PreviewFormBannerProps): JSX.Element => {
   const { t } = useTranslation()
   const { formId, isPaymentEnabled } = usePublicFormContext()
@@ -99,7 +106,9 @@ export const PreviewFormBanner = ({
               mr={{ base: '0.5rem', md: '1rem' }}
             />
             <Text textStyle="subhead-3">
-              {isTemplate ? 'Template Preview' : 'Form Preview'}
+              {isTemplate
+                ? t('features.adminForm.template.previewLabel')
+                : 'Form Preview'}
             </Text>
           </Flex>
           {isTemplate ? (
@@ -115,13 +124,20 @@ export const PreviewFormBanner = ({
                   as={ReactLink}
                   to={DASHBOARD_ROUTE}
                 >
-                  Back to FormSG
+                  {t('features.adminForm.template.backToFormsg')}
                 </Link>
                 <Button
-                  aria-label="Click to use this template"
+                  id={
+                    isSticky
+                      ? USE_TEMPLATE_TOUR_STICKY_TARGET_ID
+                      : USE_TEMPLATE_TOUR_TARGET_ID
+                  }
+                  aria-label={t(
+                    'features.adminForm.template.useTemplateAriaLabel',
+                  )}
                   onClick={onModalOpen}
                 >
-                  Use this template
+                  {t('features.adminForm.template.useTemplate')}
                 </Button>
               </Stack>
               <IconButton
@@ -165,7 +181,7 @@ export const PreviewFormBanner = ({
                 isFullWidth={true}
                 {...mobileDrawerButtonProps}
               >
-                Use this template
+                {t('features.adminForm.template.useTemplate')}
               </Button>
               <Divider />
               <Button
@@ -174,7 +190,7 @@ export const PreviewFormBanner = ({
                 leftIcon={<BiArrowBack fontSize="1.25rem" />}
                 {...mobileDrawerButtonProps}
               >
-                Back to FormSG
+                {t('features.adminForm.template.backToFormsg')}
               </Button>
             </DrawerBody>
           </DrawerContent>
@@ -194,16 +210,6 @@ export const PreviewFormBanner = ({
               You will not be able to make a test payment, or view submitted
               answers or attachments in Form Preview mode. Open your form to
               make a test payment or form submission.
-            </Text>
-          )}
-        </Flex>
-      )}
-      {!isPaymentEnabled && (
-        <Flex backgroundColor="neutral.900">
-          {!(secretEnv === 'production') && (
-            <Text {...textProps}>
-              You will not be able to view submitted answers or attachments in
-              Form Preview mode. Open your form to test a form submission.
             </Text>
           )}
         </Flex>

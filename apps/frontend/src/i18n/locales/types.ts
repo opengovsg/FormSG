@@ -24,6 +24,7 @@ import {
   ResponsesResponsesPage,
   Settings,
   Share,
+  Template,
   ThankYou,
   Toasts,
   TransferOwnership,
@@ -53,6 +54,7 @@ interface Translation {
         share?: Share
         featureTour?: FeatureTour
         collaborator?: Collaborator
+        template?: Template
         responses?: {
           charts?: ResponsesCharts
           components?: ResponsesComponents
