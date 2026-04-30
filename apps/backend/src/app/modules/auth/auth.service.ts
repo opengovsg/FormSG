@@ -1,5 +1,3 @@
-import bcrypt from 'bcrypt'
-import crypto from 'crypto'
 import { SUPPORT_FORM_LINK } from 'formsg-shared/constants/links'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -38,7 +36,6 @@ import {
   InvalidTokenError,
   MissingTokenError,
 } from './auth.errors'
-import { DEFAULT_SALT_ROUNDS } from './constants'
 
 const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
@@ -369,29 +366,4 @@ export const getUserByApiKey = (
       return errAsync(new InvalidTokenError())
     })
   })
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
-  return ResultAsync.fromPromise(
-    bcrypt.hash(apiKey, DEFAULT_SALT_ROUNDS),
-    (error) => {
-      logger.error({
-        message: 'bcrypt hash error',
-        meta: {
-          action: 'getApiKeyHash',
-        },
-        error,
-      })
-      return new HashingError()
-    },
-  ).map((hash) => `${hash}`)
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const generateApiKey = (user: IUserSchema): string => {
-  const key = crypto.randomBytes(32).toString('base64')
-  const apiEnv = config.publicApiConfig.apiEnv
-  const apiKeyVersion = config.publicApiConfig.apiKeyVersion
-  return `${apiEnv}_${apiKeyVersion}_${user._id}_${key}`
 }
