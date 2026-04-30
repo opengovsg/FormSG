@@ -98,7 +98,7 @@ pnpm lint:shared
 pnpm lint-ci:backend
 pnpm lint-ci:shared
 ```
-
+### Workarounds
 ---
 
 ## 🔧 MCP Servers Available
@@ -333,21 +333,6 @@ Position matters - validation → processing → persistence.
 
 ### Import Path Aliases
 
-```typescript
-// Configured in tsconfig.json and vite.config.ts
-~/             // Maps to src/ directory
-~components/*  // Shared components
-~features/*    // Feature modules
-~constants/*   // Constants (routes, links, etc.)
-~utils/*       // Utility functions
-~hooks/*       // Custom hooks
-~contexts/*    // React contexts
-~theme/*       // Chakra UI theme customization
-
-// Shared package
-import { FormDto } from 'formsg-shared/types'
-import { FormResponseMode } from 'formsg-shared/types/form'
-```
 
 ### Feature-Based Structure
 
