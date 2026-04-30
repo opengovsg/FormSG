@@ -1,4 +1,5 @@
-import crypto from 'crypto'
+import { GrowthBook } from '@growthbook/growthbook'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
 
 import config from '../../config/config'
@@ -9,13 +10,20 @@ import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
 
-export const getFrontendRuntimeEnv = (): FrontendRuntimeEnv => ({
+export const getFrontendRuntimeEnv = (
+  growthbook?: GrowthBook,
+): FrontendRuntimeEnv => ({
   appUrl: config.app.appUrl,
   apiBaseUrl: '/api/v3',
   gaTrackingId: process.env.GA_TRACKING_ID ?? '',
   formsgSdkMode: config.formsgSdkMode,
   ddRumEnv: process.env.DD_ENV ?? '',
   ddSampleRate: 5,
+  ddSampleRateAdmin:
+    growthbook?.getFeatureValue<number>(featureFlags.ddSampleRateAdmin, 0) ?? 0,
+  ddSampleRatePublic:
+    growthbook?.getFeatureValue<number>(featureFlags.ddSampleRatePublic, 0) ??
+    0,
 })
 
 const serializeForInlineScript = (value: FrontendRuntimeEnv): string =>
@@ -24,10 +32,18 @@ const serializeForInlineScript = (value: FrontendRuntimeEnv): string =>
     .replace(/>/g, '\\u003e')
     .replace(/&/g, '\\u0026')
 
-// Computed once at startup — values are static for the container lifetime
-const envScriptContent = `window.__ENV__=${serializeForInlineScript(getFrontendRuntimeEnv())}`
-export const envScript = `<script>${envScriptContent}</script>`
-export const envScriptCspHash = `'sha256-${crypto.createHash('sha256').update(envScriptContent).digest('base64')}'`
+// Built per-request because growthbook flag values can vary; the inline script
+// is allowed by CSP via the request-scoped nonce (see CSP_CORE_DIRECTIVES).
+export const getEnvScriptHtml = ({
+  growthbook,
+  nonce,
+}: {
+  growthbook?: GrowthBook
+  nonce: string
+}): string =>
+  `<script nonce="${nonce}">window.__ENV__=${serializeForInlineScript(
+    getFrontendRuntimeEnv(growthbook),
+  )}</script>`
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {

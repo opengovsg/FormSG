@@ -2,7 +2,8 @@
  * This file compiles to datadog-chunk.js and initializes Datadog RUM when it is loaded.
  *
  * Build-time vars (import.meta.env): VITE_APP_DD_RUM_APP_ID, VITE_APP_DD_RUM_CLIENT_TOKEN, VITE_APP_VERSION
- * Runtime vars (window.__ENV__): ddRumEnv, appUrl, ddSampleRate
+ * Runtime vars (window.__ENV__): ddRumEnv, appUrl, ddSampleRate,
+ *   ddSampleRateAdmin, ddSampleRatePublic
  */
 
 import { datadogRum, RumInitConfiguration } from '@datadog/browser-rum'
@@ -36,6 +37,28 @@ const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
   return true
 }
 
+// Session sample rate is decided once at session start, so we pick it based on
+// the entry route. The admin / public rates come from growthbook flags
+// (ddSampleRateAdmin / ddSampleRatePublic), defaulting to 0 when absent.
+//
+// `/` is treated as an admin path because most landing-page traffic is admins
+// on their way to log in. `/:formId/use-template` redirects logged-in admins
+// to `/admin/*`, so it counts as admin too.
+const ADMIN_PATH_REGEX = /^\/$|^\/admin(\/|$)/
+const PUBLIC_FORM_PATH_REGEX = /^\/[a-fA-F0-9]{24}(\/|$)/
+const USE_TEMPLATE_PATH_REGEX = /^\/[a-fA-F0-9]{24}\/use-template(\/|$)/
+
+const path = window.location.pathname
+const isAdmin =
+  ADMIN_PATH_REGEX.test(path) || USE_TEMPLATE_PATH_REGEX.test(path)
+const isPublicForm = !isAdmin && PUBLIC_FORM_PATH_REGEX.test(path)
+
+const sessionSampleRate = isAdmin
+  ? (window.__ENV__?.ddSampleRateAdmin ?? 0)
+  : isPublicForm
+    ? (window.__ENV__?.ddSampleRatePublic ?? 0)
+    : (window.__ENV__?.ddSampleRate ?? 5)
+
 // Init Datadog RUM
 datadogRum.init({
   applicationId: '@VITE_APP_DD_RUM_APP_ID',
@@ -45,7 +68,7 @@ datadogRum.init({
   service: 'formsg-react',
   allowedTracingUrls: [window.__ENV__?.appUrl ?? window.location.origin],
   version: '@VITE_APP_VERSION',
-  sessionSampleRate: window.__ENV__?.ddSampleRate ?? 5,
+  sessionSampleRate,
   sessionReplaySampleRate: 100,
   trackUserInteractions: true,
   defaultPrivacyLevel: 'mask-user-input',
