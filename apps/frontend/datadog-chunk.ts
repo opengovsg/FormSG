@@ -67,6 +67,14 @@ const sessionSampleRate = isAdmin
     ? (window.__ENV__?.ddSampleRatePublic ?? 0)
     : (window.__ENV__?.ddSampleRate ?? 5)
 
+// In production, route RUM events through our own backend so the browser
+// doesn't talk to Datadog directly. Other envs go direct to Datadog so we
+// don't have to stand up the proxy route in every deployment.
+const ddProxyUrl =
+  window.__ENV__?.ddRumEnv === 'production'
+    ? `${window.__ENV__?.appUrl ?? window.location.origin}/api/v1/proxy/datadog/rum`
+    : undefined
+
 // Init Datadog RUM
 datadogRum.init({
   applicationId: '@VITE_APP_DD_RUM_APP_ID',
@@ -74,6 +82,7 @@ datadogRum.init({
   env: window.__ENV__?.ddRumEnv ?? '',
   site: 'datadoghq.com',
   service: 'formsg-react',
+  proxy: ddProxyUrl,
   allowedTracingUrls: [window.__ENV__?.appUrl ?? window.location.origin],
   version: '@VITE_APP_VERSION',
   sessionSampleRate,
