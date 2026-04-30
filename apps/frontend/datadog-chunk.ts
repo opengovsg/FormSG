@@ -41,16 +41,24 @@ const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
 // the entry route. The admin / public rates come from growthbook flags
 // (ddSampleRateAdmin / ddSampleRatePublic), defaulting to 0 when absent.
 //
-// `/` is treated as an admin path because most landing-page traffic is admins
-// on their way to log in. `/:formId/use-template` redirects logged-in admins
-// to `/admin/*`, so it counts as admin too.
+// Admin entry points:
+//   - `/` and `/admin(/...)` — the admin portal proper (landing also counts
+//     because it's where admins arrive on their way to log in).
+//   - `/login(/...)` — login flow.
+//   - `/dashboard(/...)` — admin dashboard.
+//   - `/:formId/use-template` — redirects logged-in admins into `/admin/*`.
 const ADMIN_PATH_REGEX = /^\/$|^\/admin(\/|$)/
-const PUBLIC_FORM_PATH_REGEX = /^\/[a-fA-F0-9]{24}(\/|$)/
+const LOGIN_PATH_REGEX = /^\/login(\/|$)/
+const DASHBOARD_PATH_REGEX = /^\/dashboard(\/|$)/
 const USE_TEMPLATE_PATH_REGEX = /^\/[a-fA-F0-9]{24}\/use-template(\/|$)/
+const PUBLIC_FORM_PATH_REGEX = /^\/[a-fA-F0-9]{24}(\/|$)/
 
 const path = window.location.pathname
 const isAdmin =
-  ADMIN_PATH_REGEX.test(path) || USE_TEMPLATE_PATH_REGEX.test(path)
+  ADMIN_PATH_REGEX.test(path) ||
+  LOGIN_PATH_REGEX.test(path) ||
+  DASHBOARD_PATH_REGEX.test(path) ||
+  USE_TEMPLATE_PATH_REGEX.test(path)
 const isPublicForm = !isAdmin && PUBLIC_FORM_PATH_REGEX.test(path)
 
 const sessionSampleRate = isAdmin
