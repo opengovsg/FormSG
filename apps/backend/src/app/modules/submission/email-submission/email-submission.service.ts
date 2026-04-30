@@ -168,7 +168,7 @@ export const checkFormIsEmailMode = (
 }
 
 /**
- * Since email mode is deprecated, this check is used to ensure that the the form is not
+ * Since email mode is deprecated, this check is used to ensure that the form is not
  * email mode for features that do not support email mode.
  * @param form form to check mode for
  * @returns ok(form) if form is not email mode, err(ResponseModeError) if form is email mode
@@ -177,7 +177,12 @@ export const checkFormIsNotEmailMode = (form: IPopulatedForm) => {
   if (!isEmailModeForm(form)) {
     return ok(form)
   }
-  return err(new ResponseModeError(FormResponseMode.Email, form.responseMode))
+  return err(
+    new ResponseModeError(
+      [FormResponseMode.Multirespondent, FormResponseMode.Encrypt],
+      form.responseMode,
+    ),
+  )
 }
 
 /**

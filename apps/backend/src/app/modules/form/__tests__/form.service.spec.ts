@@ -91,7 +91,7 @@ describe('FormService', () => {
   })
 
   describe('checkHasRespondentNotWhitelistedFailure', () => {
-    it('should check for submitterd whitelisting for multirespondent mode forms', async () => {
+    it('should check for submitterId whitelisting for multirespondent mode forms', async () => {
       const mockWhitelistId = new ObjectId().toHexString()
       const mockCipherText = 'mockCipherText'
       const findEncryptionPropertiesByIdSpy = jest
@@ -134,7 +134,7 @@ describe('FormService', () => {
       checkIfSubmitterIdIsWhitelistedSpy.mockRestore()
     })
 
-    it('should check for submitterd whitelisting for encrypt mode forms', async () => {
+    it('should check for submitterId whitelisting for encrypt mode forms', async () => {
       const mockWhitelistId = new ObjectId().toHexString()
       const mockCipherText = 'mockCipherText'
       const findEncryptionPropertiesByIdSpy = jest
