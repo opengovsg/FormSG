@@ -9,7 +9,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
 
-import { envScript, getClientEnvVars } from './frontend.service'
+import { getClientEnvVars, getEnvScriptHtml } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -24,12 +24,14 @@ type MetaTags = {
   image: string
 }
 const replaceWithMetaTags = ({
-  title,
-  description,
-  image,
-}: MetaTags): string => {
+  envScriptHtml,
+  tags: { title, description, image },
+}: {
+  envScriptHtml: string
+  tags: MetaTags
+}): string => {
   return reactHtml
-    .replace('<!-- __ENV_INJECTION__ -->', envScript)
+    .replace('<!-- __ENV_INJECTION__ -->', envScriptHtml)
     .replace(/(__OG_TITLE__)/g, escape(title))
     .replace(/(__OG_DESCRIPTION__)/g, escape(description))
     .replace(/(__OG_IMAGE__)/g, escape(image))
@@ -48,7 +50,11 @@ const serveFormReact =
       tags = await getPublicFormMetaTags(get(req.params, 'formId') ?? '')
     }
 
-    const reactHtmlWithMetaTags = replaceWithMetaTags(tags)
+    const envScriptHtml = getEnvScriptHtml({
+      growthbook: req.growthbook,
+      nonce: String(res.locals.nonce ?? ''),
+    })
+    const reactHtmlWithMetaTags = replaceWithMetaTags({ envScriptHtml, tags })
 
     return (
       res
