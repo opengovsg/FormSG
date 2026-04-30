@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Flex } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
@@ -20,6 +21,9 @@ interface BuilderAndDesignContentProps {
 export const BuilderAndDesignContent = ({
   placeholderProps,
 }: BuilderAndDesignContentProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.builderAndDesignContent',
+  })
   const { data: settings } = useAdminFormSettings()
 
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
@@ -38,8 +42,7 @@ export const BuilderAndDesignContent = ({
             mt={{ base: 0, md: '2rem' }}
             mb={{ base: 0, md: '-1rem' }}
           >
-            Webhooks are enabled on this form. Please ensure the webhook server
-            is able to handle any field changes.
+            {t('webhookEnabledWarning')}
           </InlineMessage>
         ) : null}
         <FormBuilder placeholderProps={placeholderProps} display="flex" />

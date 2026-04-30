@@ -107,4 +107,5 @@ export const enSG: Common = {
   completed: 'Completed',
   approved: 'Approved',
   notApproved: 'Not approved',
+  logout: 'Log out',
 }

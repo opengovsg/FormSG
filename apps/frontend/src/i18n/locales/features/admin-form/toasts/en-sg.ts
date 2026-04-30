@@ -21,6 +21,8 @@ export const enSG: Toasts = {
       success: 'The {field} was duplicated.',
       successButNoLogic:
         'The {field} was duplicated. Associated logic was not duplicated.',
+      attachmentLimitExceeded:
+        'The field "{fieldTitle}" could not be duplicated. The attachment size of **{attachmentSizeMb} MB** exceeds the form\'s remaining available attachment size of **{availableAttachmentSizeMb} MB**.',
       error:
         'Something went wrong when creating your field. Please refresh and try again.',
     },

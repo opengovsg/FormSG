@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   ButtonProps,
@@ -19,7 +20,13 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import MagicFormBuilderButton from '../../MagicFormBuilder/components/MagicFormBuilderButton'
 import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
 
-const OrDivider = ({ isMobile }: { isMobile: boolean }) => (
+const OrDivider = ({
+  isMobile,
+  orText,
+}: {
+  isMobile: boolean
+  orText: string
+}) => (
   <Flex
     width="100%"
     maxW={isMobile ? '12rem' : '18rem'}
@@ -35,7 +42,7 @@ const OrDivider = ({ isMobile }: { isMobile: boolean }) => (
       px="1.5rem"
       textAlign={'center'}
     >
-      OR
+      {orText}
     </Text>
     <Box flexGrow={1} height="1px" bgColor="black" />
   </Flex>
@@ -50,18 +57,19 @@ export const EmptyFormPlaceholder = forwardRef<
   EmptyFormPlaceholderProps,
   'button'
 >(({ isDraggingOver, onClick, ...props }, ref): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.emptyFormPlaceholder',
+  })
   const isMobile = useIsMobile()
 
   const { toggleIsModalOpen } = useMagicFormBuilder()
 
   const placeholderText = useMemo(() => {
     if (isDraggingOver) {
-      return 'Drop your field here'
+      return t('dropFieldHere')
     }
-    return isMobile
-      ? 'Tap here to add a field'
-      : 'Drag a field from the Builder on the left to start'
-  }, [isDraggingOver, isMobile])
+    return isMobile ? t('tapToAddField') : t('dragFromBuilderToStart')
+  }, [isDraggingOver, isMobile, t])
 
   const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
   const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
@@ -102,7 +110,7 @@ export const EmptyFormPlaceholder = forwardRef<
           </Text>
           {isMfbTextEnabled || isMfbVisionEnabled ? (
             <>
-              <OrDivider isMobile={isMobile} />
+              <OrDivider isMobile={isMobile} orText={t('or')} />
               <Box h="2.75rem"></Box>
             </>
           ) : null}

@@ -1,4 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Link,
   Modal,
@@ -33,6 +34,7 @@ export const DuplicatePaymentModal = ({
   formId,
   paymentId,
 }: DuplicatePaymentModalProps): JSX.Element => {
+  const { t } = useTranslation()
   const paymentUrl = getPaymentPageUrl(formId, paymentId)
 
   // We need to dismiss the Modal to release the scroll lock that affects the captcha
@@ -51,30 +53,44 @@ export const DuplicatePaymentModal = ({
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader pb={'2rem'} w="90%">
-            Proceed to pay again?
+            {t('features.publicForm.components.duplicatePaymentModal.title')}
           </ModalHeader>
           <ModalBody flexGrow={0}>
             <Stack>
               <Text>
-                We noticed a successful payment made on this form by your email
-                address.&nbsp;
-                <Link href={paymentUrl}>View your previous payment ↪</Link>
+                {t(
+                  'features.publicForm.components.duplicatePaymentModal.description.existingPayment',
+                )}
+                &nbsp;
+                <Link href={paymentUrl}>
+                  {t(
+                    'features.publicForm.components.duplicatePaymentModal.description.viewPreviousPayment',
+                  )}
+                </Link>
               </Text>
               <br />
-              <Text>Do you wish to proceed to make another payment?</Text>
+              <Text>
+                {t(
+                  'features.publicForm.components.duplicatePaymentModal.description.confirm',
+                )}
+              </Text>
             </Stack>
           </ModalBody>
           <ModalFooter>
             <ButtonGroup isFullWidth={isMobile}>
               <Button variant="clear" onClick={onClose}>
-                Cancel
+                {t('features.common.cancel')}
               </Button>
               <Button
                 isLoading={isSubmitting}
-                loadingText="Submitting"
+                loadingText={t(
+                  'features.publicForm.components.duplicatePaymentModal.actions.submitting',
+                )}
                 onClick={closeAndSubmit}
               >
-                Proceed to pay
+                {t(
+                  'features.publicForm.components.duplicatePaymentModal.actions.submit',
+                )}
               </Button>
             </ButtonGroup>
           </ModalFooter>

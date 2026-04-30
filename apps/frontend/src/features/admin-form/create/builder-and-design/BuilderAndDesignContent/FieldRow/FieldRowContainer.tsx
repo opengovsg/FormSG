@@ -145,6 +145,9 @@ const FieldRowContainer = ({
   handleBuilderClick,
   isHighlighted,
 }: FieldRowContainerProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.fieldRowContainer',
+  })
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
@@ -249,7 +252,6 @@ const FieldRowContainer = ({
     <Draggable
       index={index}
       isDragDisabled={isDragDisabled}
-      disableInteractiveElementBlocking
       draggableId={field._id}
     >
       {(provided, snapshot) => (
@@ -263,7 +265,7 @@ const FieldRowContainer = ({
           <Tooltip
             hidden={!isHiddenByLogic}
             placement="top"
-            label="This field may be hidden by your form logic"
+            label={t('hiddenByLogicTooltip')}
           >
             <HighlightableFlex
               isHighlighted={isHighlighted} // Offset for focus boxShadow
@@ -294,13 +296,14 @@ const FieldRowContainer = ({
               onClick={handleFieldClick}
               onKeyDown={handleKeydown}
               ref={ref}
+              {...provided.dragHandleProps}
+              sx={{ '& label': { cursor: 'inherit' } }}
             >
               <Fade in={isActive}>
                 <chakra.button
                   disabled={isDragDisabled}
                   display="flex"
                   tabIndex={isActive ? 0 : -1}
-                  {...provided.dragHandleProps}
                   borderRadius="4px"
                   _disabled={{
                     cursor: 'not-allowed',
@@ -314,6 +317,7 @@ const FieldRowContainer = ({
                   transition="color 0.2s ease"
                   _hover={{
                     color: 'secondary.300',
+                    cursor: 'grab',
                     _disabled: {
                       color: 'secondary.200',
                     },
@@ -382,6 +386,9 @@ const FieldButtonGroup = ({
   handleBuilderClick,
 }: FieldButtonGroupProps) => {
   const { t } = useTranslation()
+  const { t: tToast } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.toasts.field.duplicate',
+  })
   const setToInactive = useFieldBuilderStore(setToInactiveSelector)
 
   const { data: form } = useCreateTabForm()
@@ -425,13 +432,17 @@ const FieldButtonGroup = ({
       if (thisAttachmentSize > availableAttachmentSize) {
         toast({
           useMarkdown: true,
-          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${availableAttachmentSize} MB**.`,
+          description: tToast('attachmentLimitExceeded', {
+            fieldTitle: field.title,
+            attachmentSizeMb: thisAttachmentSize,
+            availableAttachmentSizeMb: availableAttachmentSize,
+          }),
         })
         return
       }
     }
     duplicateFieldMutation.mutate(field._id)
-  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast])
+  }, [form, fieldBuilderState, field, duplicateFieldMutation, toast, tToast])
 
   const handleDeleteClick = useCallback(() => {
     if (fieldBuilderState === FieldBuilderState.CreatingField) {

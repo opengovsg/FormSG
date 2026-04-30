@@ -1,4 +1,5 @@
 import { RefObject, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -53,6 +54,7 @@ export const MiniHeader = ({
     draftLastSavedDateTimeString,
     formId,
   } = usePublicFormContext()
+  const { t } = useTranslation()
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const gb = useGrowthBook()
@@ -96,7 +98,8 @@ export const MiniHeader = ({
                 color={titleColor}
                 noOfLines={2}
               >
-                {title ?? 'Loading title'}
+                {title ??
+                  t('features.publicForm.components.loadingTitle.title')}
               </Text>
             </Flex>
             {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
@@ -121,7 +124,9 @@ export const MiniHeader = ({
               // Section sidebar icon should only show up if sections exist
               <IconButton
                 colorScheme={colorScheme}
-                aria-label="Mobile section sidebar"
+                aria-label={t(
+                  'features.publicForm.components.miniHeader.mobileSectionSidebar',
+                )}
                 fontSize="1.5rem"
                 icon={<BxMenuAltLeft />}
                 display={{ base: 'flex', md: 'none' }}
@@ -166,6 +171,7 @@ export const FormHeader = ({
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
+  const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const handlePositionChange = useCallback(
@@ -224,7 +230,7 @@ export const FormHeader = ({
               textStyle="h1"
               textAlign={{ base: 'start', md: 'center' }}
             >
-              {title ?? 'Loading title'}
+              {title ?? t('features.publicForm.components.loadingTitle.title')}
             </Text>
           </Skeleton>
           {estTimeString && (
@@ -245,12 +251,14 @@ export const FormHeader = ({
               mt="2.25rem"
               colorScheme={colorScheme}
               variant="reverse"
-              aria-label="Log out"
+              aria-label={t('features.common.logout')}
               rightIcon={<BiLogOutCircle fontSize="1.5rem" />}
               onClick={handleLogout}
               isDisabled={!handleLogout}
             >
-              {loggedInId} - Log out
+              {t('features.publicForm.components.formHeader.logoutWithId', {
+                id: loggedInId,
+              })}
             </Button>
           ) : null}
         </Flex>

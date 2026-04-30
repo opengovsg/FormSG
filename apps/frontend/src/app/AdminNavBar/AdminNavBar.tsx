@@ -327,7 +327,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
             </Menu.Item>
             <AvatarMenuDivider />
             <Menu.Item onClick={handleLogout}>
-              {t('features.app.adminNavBar.avatarMenuItem.logout')}
+              {t('features.common.logout')}
             </Menu.Item>
           </AvatarMenu>
         </HStack>

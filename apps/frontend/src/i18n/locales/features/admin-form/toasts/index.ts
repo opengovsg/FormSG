@@ -10,7 +10,10 @@ export interface Toasts {
     delete: Toast
     create: Toast
     update: Toast
-    duplicate: Toast & { successButNoLogic: string }
+    duplicate: Toast & {
+      successButNoLogic: string
+      attachmentLimitExceeded: string
+    }
   }
   emailModeMigration: Toast
   respondentCopy: {

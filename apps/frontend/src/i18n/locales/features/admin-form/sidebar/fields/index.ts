@@ -33,6 +33,21 @@ export interface Fields {
     yesNo: string
     children: string
   }
+  builderAndDesignContent: {
+    webhookEnabledWarning: string
+  }
+  builderAndDesignPlaceholder: {
+    dropFieldHere: string
+  }
+  emptyFormPlaceholder: {
+    or: string
+    dropFieldHere: string
+    tapToAddField: string
+    dragFromBuilderToStart: string
+  }
+  fieldRowContainer: {
+    hiddenByLogicTooltip: string
+  }
   commonFieldComponents: {
     title: string
     description: string

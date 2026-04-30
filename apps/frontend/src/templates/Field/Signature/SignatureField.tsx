@@ -275,6 +275,16 @@ const SignatureCanvas = ({
                   pointerEvents={schema.disabled ? 'none' : 'auto'} // disable canvas interaction
                   width="100%"
                   height="100%"
+                  onPointerDown={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
+                  onMouseDown={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
+                  onTouchStart={(event) => {
+                    if (!schema.disabled) event.stopPropagation()
+                  }}
+                  sx={{ cursor: 'default' }}
                 >
                   <canvas
                     ref={pfCanvasRef}

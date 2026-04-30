@@ -1,6 +1,6 @@
 {
   "name": "formsg-payment-reconciliation",
-  "version": "7.13.0",
+  "version": "7.14.0",
   "private": true,
   "description": "Lambda function for payment reconciliation",
   "main": "index.js",
