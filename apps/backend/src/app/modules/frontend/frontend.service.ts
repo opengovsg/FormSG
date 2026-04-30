@@ -1,11 +1,13 @@
 import { GrowthBook } from '@growthbook/growthbook'
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { goGovConfig } from '../../config/features/gogov.config'
-import { growthbookConfig } from '../../config/features/growthbook.config'
+import {
+  growthbookConfig,
+  GrowthbookFeature,
+} from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
@@ -20,10 +22,15 @@ export const getFrontendRuntimeEnv = (
   ddRumEnv: process.env.DD_ENV ?? '',
   ddSampleRate: 5,
   ddSampleRateAdmin:
-    growthbook?.getFeatureValue<number>(featureFlags.ddSampleRateAdmin, 0) ?? 0,
+    growthbook?.getFeatureValue<number>(
+      GrowthbookFeature.DD_SAMPLE_RATE_ADMIN,
+      0,
+    ) ?? 0,
   ddSampleRatePublic:
-    growthbook?.getFeatureValue<number>(featureFlags.ddSampleRatePublic, 0) ??
-    0,
+    growthbook?.getFeatureValue<number>(
+      GrowthbookFeature.DD_SAMPLE_RATE_PUBLIC,
+      0,
+    ) ?? 0,
 })
 
 const serializeForInlineScript = (value: FrontendRuntimeEnv): string =>

@@ -4,6 +4,8 @@ import { isTest } from '../config'
 
 export enum GrowthbookFeature {
   ENABLE_AUTH_CALLBACK_FORWARDING = 'enable-auth-callback-forwarding',
+  DD_SAMPLE_RATE_ADMIN = 'dd-sample-rate-admin',
+  DD_SAMPLE_RATE_PUBLIC = 'dd-sample-rate-public',
 }
 
 export interface IGrowthbook {

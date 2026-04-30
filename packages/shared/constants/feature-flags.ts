@@ -33,8 +33,6 @@ export const featureFlags = {
   ogpSpinner: 'ogp-spinner' as const,
   wogadLogin: 'wogad-login' as const,
   mrfResponseLimit: 'mrf-response-limit' as const,
-  ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
-  ddSampleRatePublic: 'dd-sample-rate-public' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
