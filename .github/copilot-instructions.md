@@ -608,7 +608,7 @@ grep_search("functionName", includePattern: "**/*.ts")
 
 - Dev mode: Synchronous (one at a time)
 - Production: Asynchronous (parallel)
-- Position: Always 6th in middleware chain
+- Ordering: Runs after files are uploaded to the quarantine bucket and before downstream processing that assumes the files are safe
 - Files uploaded to quarantine bucket first, then scanned
 
 ### 3. Migration Scripts
@@ -726,11 +726,9 @@ test: add submission validation tests
 
 ## 🔄 Version Info
 
-- **Node.js**: 22.22+
-- **pnpm**: 10.30.3+
-- **MongoDB**: 4+
-- **FormSG Version**: 7.12.3 (as of April 2026)
+- **Node.js**: See `.nvmrc` and `package.json#engines` for the supported version.
+- **pnpm**: See `package.json#packageManager` and CI config for the required version.
+- **MongoDB**: See local Docker/deployment configuration for the supported version.
+- **Application version**: Refer to the repository/package metadata instead of hard-coded values in this file.
 
 ---
-
-_Last updated: 2026-04-28_
