@@ -82,6 +82,14 @@ export interface PublicFormContextProps
   /** Whether it is a preview form */
   isPreview: boolean
 
+  /**
+   * Only set in template preview mode. When present, the submit button should
+   * look fully active and call this handler on click instead of submitting the
+   * form (which isn't possible for templates). Used to open the
+   * "this is a template preview" modal.
+   */
+  onTemplatePreviewSubmitClick?: () => void
+
   /** Sets the current number of visible fields in the form in public forms only*/
   setNumVisibleFields?: Dispatch<SetStateAction<number>>
 

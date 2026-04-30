@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.15.0](https://github.com/opengovsg/formsg/compare/v7.14.0...v7.15.0) (2026-04-30)
+
+
+### Features
+
+* **frontend:** use template nudges (#9335) ([#9335](https://github.com/opengovsg/formsg/commit/76f88df17e9b5fcbe7b7d4c8507922d4f0c3d239))
+
 ## [7.14.0](https://github.com/opengovsg/formsg/compare/v7.13.0...v7.14.0) (2026-04-30)
 
 
