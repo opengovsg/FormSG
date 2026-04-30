@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.14.0](https://github.com/opengovsg/formsg/compare/v7.13.0...v7.14.0) (2026-04-30)
+
+
+### Features
+
+* **i18n:** extract builder and field row text in create flow (#9367) ([#9367](https://github.com/opengovsg/formsg/commit/ad300ba7ada9828f189120cc3ad63f78bd324318))
+* **i18n:** extract text public form comps (#9261) ([#9261](https://github.com/opengovsg/formsg/commit/1a7f31cde3943305b3a81670e001aab37b7d22a9))
+* draggable form field (#9357) ([#9357](https://github.com/opengovsg/formsg/commit/e32f816c606f1192eb442b89afd72ef98a12c87a))
+
+
+### Documentation
+
+* **readme:** correct deepwiki repo link casing (#9369) ([#9369](https://github.com/opengovsg/formsg/commit/332104003f8ff52998de5d2f8428425645bc1e2a))
+
 ## [7.13.0](https://github.com/opengovsg/formsg/compare/v7.12.3...v7.13.0) (2026-04-28)
 
 
