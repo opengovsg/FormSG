@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQueryClient } from 'react-query'
 import { UseDisclosureReturn } from '@chakra-ui/react'
 import Papa from 'papaparse'
@@ -30,6 +31,11 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   downloadFileName,
   formId,
 }: SecretKeyDownloadWhitelistFileModalProps) => {
+  const { t } = useTranslation()
+  const { modalTitle, submitButton } = t(
+    'features.adminForm.settings.secretKeyModal.whitelistCsv',
+    { returnObjects: true },
+  )
   const toast = useToast({ status: 'success', isClosable: true })
   const errorToast = useToast({ status: 'danger', isClosable: true })
   const [isDecrypting, setIsDecrypting] = useState(false)
@@ -137,8 +143,8 @@ export const SecretKeyDownloadWhitelistFileModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText="Download CSV file of whitelisted NRIC/FIN/UEN(s)"
-      submitButtonText="Download file"
+      modalActionText={modalTitle}
+      submitButtonText={submitButton}
       hasAck={false}
     />
   )
