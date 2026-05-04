@@ -99,6 +99,12 @@ pnpm lint-ci:backend
 pnpm lint-ci:shared
 ```
 ### Workarounds
+
+```bash
+# Using an alternative container runtime (e.g. Colima)
+export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+```
+
 ---
 
 ## 🔧 MCP Servers Available
