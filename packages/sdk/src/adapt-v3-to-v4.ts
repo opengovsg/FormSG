@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto'
+
 import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
 import { FieldType, FormFieldsV3 } from './types'
 import {
@@ -75,7 +77,7 @@ const convertAttachmentAnswer = (answer: {
 const convertTableAnswer = (answer: Record<string, string>[]): TableAnswerV4 => {
   const result: TableAnswerV4 = {}
   for (let i = 0; i < answer.length; i++) {
-    const rowId = `row${i}`
+    const rowId = randomUUID()
     result[rowId] = { rowNum: i, value: answer[i] }
   }
   return result

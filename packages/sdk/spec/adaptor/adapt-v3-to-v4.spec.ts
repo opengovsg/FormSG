@@ -237,7 +237,7 @@ describe('adaptV3ToV4', () => {
   })
 
   describe('table field', () => {
-    it('should convert table rows to keyed object', () => {
+    it('should convert table rows to keyed object with UUID keys', () => {
       const v3: FormFieldsV3 = {
         field1: {
           fieldType: 'table',
@@ -250,10 +250,19 @@ describe('adaptV3ToV4', () => {
 
       const result = adaptV3ToV4(v3)
 
-      expect(result.field1.answer).toEqual({
-        row0: { rowNum: 0, value: { col1: 'a', col2: 'b' } },
-        row1: { rowNum: 1, value: { col1: 'c', col2: 'd' } },
-      })
+      const tableAnswer = result.field1.answer as Record<string, { rowNum: number; value: Record<string, string> }>
+      const rows = Object.entries(tableAnswer)
+      expect(rows).toHaveLength(2)
+
+      // Keys should be UUIDs
+      for (const [key] of rows) {
+        expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+      }
+
+      // Sort by rowNum to verify values
+      rows.sort((a, b) => a[1].rowNum - b[1].rowNum)
+      expect(rows[0][1]).toEqual({ rowNum: 0, value: { col1: 'a', col2: 'b' } })
+      expect(rows[1][1]).toEqual({ rowNum: 1, value: { col1: 'c', col2: 'd' } })
     })
   })
 
