@@ -320,7 +320,7 @@ export class MrfReminderRecipientEmailsEmptyError extends ApplicationError {
 }
 
 export class MissingSubmitterIdError extends ApplicationError {
-  constructor(message = 'Failed to retrieve submitter ID from Singpass.') {
+  constructor(message = 'Failed to retrieve submitter ID. Please try again.') {
     super(message, undefined, ErrorCodes.SUBMISSION_MISSING_SUBMITTER_ID)
   }
 }

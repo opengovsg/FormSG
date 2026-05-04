@@ -44,6 +44,7 @@ import {
 } from '../submission.service'
 import { mapRouteError } from '../submission.utils'
 
+import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
@@ -94,7 +95,11 @@ const submitMultirespondentForm = async (
   const isMrfResponseLimitEnabled =
     isTest || (gb?.isOn(featureFlags.mrfResponseLimit) ?? true)
 
-  const middlewarePipelines = [ensurePublicForm, ensureValidCaptcha]
+  const middlewarePipelines = [
+    ensurePublicForm,
+    ensureValidCaptcha,
+    ensureSubmitterIdIsWhitelisted,
+  ]
   if (isMrfResponseLimitEnabled) {
     middlewarePipelines.push(ensureFormWithinSubmissionLimits)
   }

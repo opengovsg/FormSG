@@ -9,7 +9,10 @@ import { useParams } from 'react-router'
 import { Box, Skeleton } from '@chakra-ui/react'
 
 import { KB } from 'formsg-shared/constants'
-import { StorageFormSettings } from 'formsg-shared/types'
+import {
+  MultirespondentFormSettings,
+  StorageFormSettings,
+} from 'formsg-shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { parseCsvFile } from '~utils/parseCsvFile'
@@ -21,7 +24,7 @@ import { useMutateFormSettings } from '../../mutations'
 import { SecretKeyDownloadWhitelistFileModal } from './SecretKeyDownloadWhitelistFileModal'
 
 interface FormWhitelistAttachmentFieldProps {
-  settings: StorageFormSettings
+  settings: StorageFormSettings | MultirespondentFormSettings
   isDisabled: boolean
 }
 

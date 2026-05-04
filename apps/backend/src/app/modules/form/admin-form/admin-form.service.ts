@@ -1465,10 +1465,13 @@ export const updateFormWhitelistSetting = (
   originalForm: IPopulatedForm,
   encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
 ) => {
-  if (originalForm.responseMode !== FormResponseMode.Encrypt) {
+  if (
+    originalForm.responseMode !== FormResponseMode.Encrypt &&
+    originalForm.responseMode !== FormResponseMode.Multirespondent
+  ) {
     return errAsync(
       new MalformedParametersError(
-        'Whitelist setting does not exist for non-encrypt mode forms',
+        'Whitelist setting is not supported for non-encrypt and non-multirespondent mode forms',
       ),
     )
   }

@@ -379,6 +379,7 @@ export interface IMultirespondentForm extends IForm {
   stepsToNotify: string[]
   stepOneEmailNotificationFieldId: string
   hasStatusTracker: boolean
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema
