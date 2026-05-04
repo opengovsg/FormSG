@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
   Container,
@@ -51,6 +52,18 @@ export const SecretKeyFormModal = ({
   onSubmit,
   hasAck = false,
 }: SecretKeyFormModalProps): JSX.Element => {
+  const { t } = useTranslation()
+  const {
+    fieldLabel,
+    uploadFromFileAriaLabel,
+    validation: {
+      required: requiredSecretKeyMessage,
+      invalidSecretKey: invalidSecretKeyMessage,
+    },
+    placeholder: { dragging: draggingPlaceholder, default: defaultPlaceholder },
+    ackLabel,
+  } = t('features.adminForm.settings.secretKeyModal', { returnObjects: true })
+
   const {
     dragging,
     errors,
@@ -104,22 +117,20 @@ export const SecretKeyFormModal = ({
                 mb="1rem"
                 isDisabled={isLoading}
               >
-                <FormLabel>Enter or upload Secret Key</FormLabel>
+                <FormLabel>{fieldLabel}</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
                     type="password"
                     {...register(SECRET_KEY_NAME, {
-                      required: "Please enter the form's secret key",
+                      required: requiredSecretKeyMessage,
                       pattern: {
                         value: SECRET_KEY_REGEX,
-                        message: 'The secret key provided is invalid',
+                        message: invalidSecretKeyMessage,
                       },
                       setValueAs: (v) => v.trim(),
                     })}
                     placeholder={
-                      dragging
-                        ? 'Drop your Secret Key here'
-                        : 'Enter or drop your Secret Key to continue'
+                      dragging ? draggingPlaceholder : defaultPlaceholder
                     }
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
@@ -129,7 +140,7 @@ export const SecretKeyFormModal = ({
                   <IconButton
                     isDisabled={isLoading}
                     variant="outline"
-                    aria-label="Pass secret key from file"
+                    aria-label={uploadFromFileAriaLabel}
                     icon={<BiUpload />}
                     onClick={() => secretKeyFileUploadRef.current?.click()}
                   />
@@ -145,8 +156,7 @@ export const SecretKeyFormModal = ({
                       required: true,
                     })}
                   >
-                    If I lose my key, I will not be able to activate my form and
-                    all my responses will be lost permanently
+                    {ackLabel}
                   </Checkbox>
                 </FormControl>
               ) : null}
