@@ -1940,7 +1940,7 @@ export const handleGetWhitelistSetting: ControllerHandler<
       })),
     )
     .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
-    .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
+    .andThen((form) => EmailSubmissionService.checkFormIsNotEmailMode(form))
     .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
     .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
     .map((formWhitelistedSubmitterIds) => {

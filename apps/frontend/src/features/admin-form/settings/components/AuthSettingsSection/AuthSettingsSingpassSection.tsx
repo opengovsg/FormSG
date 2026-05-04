@@ -21,8 +21,9 @@ export const AuthSettingsSingpassSection = ({
   const isSingpassSettingsDisabled = isFormPublic
   const isSinglepassAuthOptionsDisabled =
     isSingpassSettingsDisabled || containsMyInfoFields
-  const isEncryptMode = settings.responseMode === FormResponseMode.Encrypt
-  const isMrf = settings.responseMode === FormResponseMode.Multirespondent
+  const isEncryptOrMultirespondentMode =
+    settings.responseMode === FormResponseMode.Encrypt ||
+    settings.responseMode === FormResponseMode.Multirespondent
 
   return (
     <>
@@ -30,26 +31,24 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      <>
-        <Divider my="2.5rem" />
-        <FormSubmitterIdCollectionToggle
-          settings={settings}
-          isDisabled={isFormPublic}
-        />
-      </>
-      <>
-        <Divider my="2.5rem" />
-        <FormSingleSubmissionToggle
-          settings={settings}
-          isDisabled={isSingpassSettingsDisabled}
-        />
-      </>
       <Divider my="2.5rem" />
-      {isEncryptMode ? (
-        <FormWhitelistAttachmentField
-          settings={settings}
-          isDisabled={isSingpassSettingsDisabled}
-        />
+      <FormSubmitterIdCollectionToggle
+        settings={settings}
+        isDisabled={isFormPublic}
+      />
+      <Divider my="2.5rem" />
+      <FormSingleSubmissionToggle
+        settings={settings}
+        isDisabled={isSingpassSettingsDisabled}
+      />
+      {isEncryptOrMultirespondentMode ? (
+        <>
+          <Divider my="2.5rem" />
+          <FormWhitelistAttachmentField
+            settings={settings}
+            isDisabled={isSingpassSettingsDisabled}
+          />
+        </>
       ) : null}
     </>
   )

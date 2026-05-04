@@ -88,7 +88,9 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  FormRespondentNotWhitelistedError,
   FormRespondentSingleSubmissionValidationError,
+  FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from '../form/form.errors'
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
@@ -199,15 +201,15 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
       }
+    case FormRespondentNotWhitelistedError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
     case FormRespondentSingleSubmissionValidationError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
-      }
-    case MissingSubmitterIdError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
       }
     case SgidMissingJwtError:
     case SgidVerifyJwtError:
@@ -353,6 +355,8 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
       }
+    case FormWhitelistSettingNotFoundError:
+    case MissingSubmitterIdError:
     case PaymentNotFoundError:
     case CreatePresignedPostError:
     case DatabaseError:

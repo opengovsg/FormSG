@@ -5466,7 +5466,7 @@ describe('admin-form.controller', () => {
       )
       MockAuthService.checkFormForPermissions.mockReturnValueOnce(adminCheck)
 
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
+      MockEmailSubmissionService.checkFormIsNotEmailMode.mockReturnValueOnce(
         ok(MOCK_FORM as IPopulatedEncryptedForm),
       )
 
