@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.16.1](https://github.com/opengovsg/formsg/compare/v7.16.0...v7.16.1) (2026-05-04)
+
+
+### Miscellaneous
+
+* Merge pull request #9368 from opengovsg/feat/nric-whitelist-mrf ([#9368](https://github.com/opengovsg/formsg/commit/9ac05e2c5a69c62e0eb7292b038ca27931bc40ea))
+
 ## [7.16.0](https://github.com/opengovsg/formsg/compare/v7.15.0...v7.16.0) (2026-05-04)
 
 
