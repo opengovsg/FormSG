@@ -14,6 +14,7 @@ import {
   VerifiableAnswerV4,
 } from '@opengovsg/formsg-sdk'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 
@@ -25,7 +26,6 @@ import { AugmentedDecryptedResponseV4 } from '../ResponsesPage/storage/utils/aug
 
 import { useMutateDownloadAttachments } from './mutations'
 import { RenderedSignatureCanvas } from './SignatureCanvas'
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 
 export interface DecryptedRowV4Props extends AugmentedDecryptedResponseV4 {
   attachmentDecryptionKey: string

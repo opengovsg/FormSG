@@ -113,7 +113,8 @@ export const flattenV4ToFormFields = ({
       case BasicField.Checkbox: {
         const answer = field.answer as CheckboxAnswerV4
         const answerArray = answer.value.map((v) =>
-          v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE && answer.othersInput !== undefined
+          v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE &&
+          answer.othersInput !== undefined
             ? `${OTHERS_PREFIX}${answer.othersInput}`
             : v,
         )

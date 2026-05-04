@@ -79,7 +79,7 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
-  const useV4 = useFeatureIsOn(featureFlags.answerObject)
+  const useV4 = useFeatureIsOn(featureFlags.answerObjectDecryption)
 
   useEffect(() => {
     return () => killWorkers(workers)

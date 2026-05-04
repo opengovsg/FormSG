@@ -39,6 +39,7 @@ export const featureFlags = {
   useTemplateWallSubmit: 'use-template-wall-submit' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
+  answerObjectDecryption: 'answer-object-decryption' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
