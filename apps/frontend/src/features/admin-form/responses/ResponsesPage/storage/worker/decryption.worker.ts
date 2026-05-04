@@ -85,6 +85,22 @@ function verifySignature(
   return verified.every((v) => v)
 }
 
+async function parseAndDecryptSubmissionData({
+  submissionStreamDtoString,
+  secretKey,
+  workerCtxOptions,
+}: {
+  submissionStreamDtoString: string
+  secretKey: string
+  workerCtxOptions: WorkerCtxOptions
+}) {
+  const ctx = createWorkerCtx(workerCtxOptions)
+  return await _parseAndDecryptSubmissionData(ctx, {
+    submissionStreamDtoString,
+    secretKey,
+  })
+}
+
 async function decryptSubmissionData(
   ctx: WorkerCtx,
   {
@@ -370,7 +386,7 @@ async function getMaterializedCsvRecord(
   return csvRecord as MaterializedCsvRecord
 }
 
-type DecryptionResult =
+export type DecryptionResult =
   | {
       isParseSuccessful: false
       isDecryptionSuccessful: false
@@ -388,9 +404,15 @@ type DecryptionResult =
       mrfSubmissionSecretKey?: string
     }
 
-async function parseAndDecryptSubmissionData(
+async function _parseAndDecryptSubmissionData(
   ctx: WorkerCtx,
-  { submissionStreamDtoString, secretKey }: SubmissionDataForDecryption,
+  {
+    submissionStreamDtoString,
+    secretKey,
+  }: Pick<
+    SubmissionDataForDecryption,
+    'submissionStreamDtoString' | 'secretKey'
+  >,
 ): Promise<DecryptionResult> {
   let submission: SubmissionStreamDto
 
@@ -445,7 +467,7 @@ async function getDecryptedData(
 
   const { secretKey } = getDecryptedDataParams
 
-  const decryptedSubmissionResult = await parseAndDecryptSubmissionData(
+  const decryptedSubmissionResult = await _parseAndDecryptSubmissionData(
     ctx,
     getDecryptedDataParams,
   )
@@ -508,6 +530,7 @@ async function getDecryptedData(
 
 const exports = {
   getDecryptedData,
+  parseAndDecryptSubmissionData,
 }
 
 expose(exports)
