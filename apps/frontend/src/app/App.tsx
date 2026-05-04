@@ -31,12 +31,27 @@ const queryClient = new QueryClient({
   },
 })
 
+// In production, route logs through our own backend so the browser doesn't
+// talk to Datadog directly. Other envs go direct to Datadog so we don't have
+// to stand up the proxy route in every deployment.
+//
+// This mirrors the equivalent ddProxyUrl logic in datadog-chunk.ts. It is
+// intentionally duplicated rather than hoisted into a shared util:
+// datadog-chunk.ts is built as a separate non-Vite-bundled chunk loaded by a
+// <script> tag in index.html, and importing from a shared module here could
+// pull it into Vite's main bundle and break that isolation.
+const ddLogsProxyUrl =
+  window.__ENV__?.ddRumEnv === 'production'
+    ? `${window.__ENV__?.appUrl ?? window.location.origin}/api/v1/proxy/datadog/logs`
+    : undefined
+
 // Init Datadog browser logs
 datadogLogs.init({
   clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
   env: window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV,
   site: 'datadoghq.com',
   service: 'formsg-react',
+  proxy: ddLogsProxyUrl,
   // Specify a version number to identify the deployed version of your application in Datadog
   version: import.meta.env.VITE_APP_VERSION,
   forwardErrorsToLogs: true,
