@@ -23,6 +23,9 @@ const convertStringAnswer = (answer: string): StringAnswerV4 => {
 }
 
 const convertYesNoAnswer = (answer: string): YesNoAnswerV4 => {
+  if (answer !== 'Yes' && answer !== 'No') {
+    throw new Error(`Invalid yes_no answer: ${answer}`)
+  }
   return { value: answer as 'Yes' | 'No' }
 }
 

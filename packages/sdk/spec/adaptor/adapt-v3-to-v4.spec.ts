@@ -175,6 +175,25 @@ describe('adaptV3ToV4', () => {
         othersInput: 'Custom',
       })
     })
+
+    it('should preserve internal checkbox others sentinel in value array', () => {
+      const v3: FormFieldsV3 = {
+        field1: {
+          fieldType: 'checkbox',
+          answer: {
+            value: ['A', '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+            othersInput: 'Custom',
+          },
+        },
+      }
+
+      const result = adaptV3ToV4(v3)
+
+      expect(result.field1.answer).toEqual({
+        value: ['A', '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+        othersInput: 'Custom',
+      })
+    })
   })
 
   describe('attachment field', () => {

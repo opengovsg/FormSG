@@ -12,10 +12,10 @@ import {
 } from '@opengovsg/formsg-sdk'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
 const OTHERS_PREFIX = 'Others: '
-const CHECKBOX_OTHERS_VALUE = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
 // Extend SDK set with yes_no (treated as generic string in flatten context)
 const GENERIC_STRING_FIELD_TYPES = new Set([
@@ -113,7 +113,7 @@ export const flattenV4ToFormFields = ({
       case BasicField.Checkbox: {
         const answer = field.answer as CheckboxAnswerV4
         const answerArray = answer.value.map((v) =>
-          v === CHECKBOX_OTHERS_VALUE && answer.othersInput !== undefined
+          v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE && answer.othersInput !== undefined
             ? `${OTHERS_PREFIX}${answer.othersInput}`
             : v,
         )

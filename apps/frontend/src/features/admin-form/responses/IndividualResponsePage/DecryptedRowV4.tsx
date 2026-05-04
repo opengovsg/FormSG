@@ -25,6 +25,7 @@ import { AugmentedDecryptedResponseV4 } from '../ResponsesPage/storage/utils/aug
 
 import { useMutateDownloadAttachments } from './mutations'
 import { RenderedSignatureCanvas } from './SignatureCanvas'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 
 export interface DecryptedRowV4Props extends AugmentedDecryptedResponseV4 {
   attachmentDecryptionKey: string
@@ -242,7 +243,7 @@ export const DecryptedRowV4 = memo(
       case BasicField.Checkbox: {
         const checkboxAnswer = field.answer as CheckboxAnswerV4
         const selectedValues = checkboxAnswer.value.filter(
-          (v) => v !== '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!',
+          (v: string) => v !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
         )
         const displayValue = checkboxAnswer.othersInput
           ? [...selectedValues, `Others: ${checkboxAnswer.othersInput}`].join(
