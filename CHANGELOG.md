@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.16.0](https://github.com/opengovsg/formsg/compare/v7.15.0...v7.16.0) (2026-05-04)
+
+
+### Features
+
+* extract tract for admin form settings (#9378) ([#9378](https://github.com/opengovsg/formsg/commit/73e11734f300b0cb8301423f780dd567f39c3601))
+
+
+### Chores
+
+* **auth:** remove unused auth functions (#9375) ([#9375](https://github.com/opengovsg/formsg/commit/113347faa900e6d0f3cb2f96e54337f56a32f95b))
+* **vscode:** add copilot instructions, deepwiki mcp (#9366) ([#9366](https://github.com/opengovsg/formsg/commit/e6dc6eb2d4342b3dd33f7ddf3a3ae741246cbafd))
+
 ## [7.15.0](https://github.com/opengovsg/formsg/compare/v7.14.0...v7.15.0) (2026-04-30)
 
 
