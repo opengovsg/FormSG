@@ -10,6 +10,8 @@ export type EncryptedResponsesStreamParams = {
   startDate?: string
   endDate?: string
   downloadAttachments: boolean
+  isSortByLatest?: boolean
+  limit?: number
 }
 
 const generateDownloadUrl = (

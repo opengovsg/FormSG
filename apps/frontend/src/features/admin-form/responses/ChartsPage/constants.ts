@@ -1,0 +1,1 @@
+export const CHART_MAX_SUBMISSION_RESULTS = 1000
