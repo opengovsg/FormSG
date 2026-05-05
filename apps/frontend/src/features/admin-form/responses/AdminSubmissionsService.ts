@@ -179,9 +179,7 @@ const getAllEncryptedSubmission = async ({
 }
 
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
-export type DecryptedSubmission = DecryptedContent & {
-  submissionTime: string
-}
+export type DecryptedSubmission = Pick<DecryptedContent, 'responses'>
 
 export const getAllDecryptedSubmission = async ({
   formId,

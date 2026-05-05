@@ -1,5 +1,6 @@
-import { useQuery } from 'react-query'
+import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { DecryptedContent } from '@opengovsg/formsg-sdk'
 
 import { DateString } from 'formsg-shared/types'
 
@@ -14,7 +15,9 @@ import { CHART_MAX_SUBMISSION_RESULTS } from './constants'
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useAllSubmissionData = (dateRange?: DateString[]) => {
+export const useAllSubmissionData = (
+  dateRange?: DateString[],
+): UseQueryResult<DecryptedContent[]> => {
   const [startDate, endDate] = dateRange ?? []
   const toast = useToast({
     status: 'danger',
