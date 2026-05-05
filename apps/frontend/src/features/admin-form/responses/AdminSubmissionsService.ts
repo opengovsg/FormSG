@@ -198,7 +198,7 @@ export const getAllDecryptedSubmission = async ({
   isSortByLatest: boolean
   limit: number
 }): Promise<DecryptedSubmission[]> => {
-  const numWorkers = 1
+  const numWorkers = window.navigator.hardwareConcurrency ?? 1
   const workerPool: CleanableDecryptionWorkerApi[] = []
   let currentSubmissionIndex = 0
 
