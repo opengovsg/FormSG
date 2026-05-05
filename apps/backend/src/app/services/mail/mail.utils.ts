@@ -227,7 +227,7 @@ export const generatePaymentConfirmationHtml = ({
 }: {
   htmlData: PaymentConfirmationData
 }): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/payment-confirmation.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/payment-confirmation.view.html`
   logger.info({
     message: 'generatePaymentConfirmationHtml',
     meta: {
@@ -258,7 +258,7 @@ export const generateIssueReportedNotificationHtml = ({
 }: {
   htmlData: IssueReportedNotificationData
 }): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/issue-reported-notification.view.html`
+  const pathToTemplate = `${__dirname}/../../views/templates/issue-reported-notification.view.html`
   logger.info({
     message: 'generateIssueReportedNotificationHtml',
     meta: {
