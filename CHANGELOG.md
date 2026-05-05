@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.17.0](https://github.com/opengovsg/formsg/compare/v7.16.2...v7.17.0) (2026-05-05)
+
+
+### Features
+
+* **frontend:** enable admin rum (#9374) ([#9374](https://github.com/opengovsg/formsg/commit/6b01afe862fe9674322a45f0f66c6940d418184e))
+
 ## [7.16.2](https://github.com/opengovsg/formsg/compare/v7.16.1...v7.16.2) (2026-05-05)
 
 
