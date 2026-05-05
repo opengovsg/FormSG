@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.16.2](https://github.com/opengovsg/formsg/compare/v7.16.1...v7.16.2) (2026-05-05)
+
+
+### Miscellaneous
+
+* Merge pull request #9385 from opengovsg/fix/issue-email-sending ([#9385](https://github.com/opengovsg/formsg/commit/3562285605f193f1102669786500c2e095d01f51))
+
 ## [7.16.1](https://github.com/opengovsg/formsg/compare/v7.16.0...v7.16.1) (2026-05-04)
 
 
