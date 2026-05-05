@@ -37,6 +37,8 @@ export const featureFlags = {
   useTemplateTour: 'use-template-tour' as const,
   useTemplateWallScroll: 'use-template-wall-scroll' as const,
   useTemplateWallSubmit: 'use-template-wall-submit' as const,
+  ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
+  ddSampleRatePublic: 'dd-sample-rate-public' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

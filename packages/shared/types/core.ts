@@ -5,6 +5,11 @@ export type FrontendRuntimeEnv = {
   formsgSdkMode: 'staging' | 'production' | 'development' | 'test'
   ddRumEnv: string
   ddSampleRate: number
+  // Per-route Datadog session sampling, resolved server-side from growthbook.
+  // Optional so older clients / dev fallbacks (apps/frontend/src/env.ts) keep
+  // typechecking; consumers should default to 0 when absent.
+  ddSampleRateAdmin?: number
+  ddSampleRatePublic?: number
 }
 
 export interface ErrorDto {
