@@ -18,6 +18,10 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
 
+import {
+  killWorkers,
+  makeWorkerApiAndCleanup,
+} from '../../common/utils/decryptionWorker'
 import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
@@ -25,7 +29,6 @@ import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGener
 import {
   EncryptedResponsesStreamParams,
   getEncryptedResponsesStream,
-  makeWorkerApiAndCleanup,
 } from './StorageResponsesService'
 import {
   CleanableDecryptionWorkerApi,
@@ -41,10 +44,6 @@ const NUM_OF_METADATA_ROWS = 5
 // which could cause it to block downloads.
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
-
-const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
-  return workers.forEach((worker) => worker.cleanup())
-}
 
 export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   // The key to decrypt the submission responses.
