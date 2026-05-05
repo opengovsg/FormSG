@@ -109,11 +109,7 @@ export interface PublicForm {
     }
     formIssueFeedbackModal: {
       title: string
-      description: {
-        beforeBold: string
-        bold: string
-        afterBold: string
-      }
+      description: string
       fields: {
         issueLabel: string
         contactLabel: string
