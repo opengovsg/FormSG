@@ -1,5 +1,6 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
+import { errors as celebrateErrors } from 'celebrate'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -11,6 +12,7 @@ import {
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { PassThrough } from 'stream'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -36,6 +38,7 @@ import {
   getMetadata,
   getS3PresignedPostData,
   handleGetEncryptedResponse,
+  handleStreamEncryptedResponses,
   streamEncryptedResponses,
 } from '../submission.controller'
 import {
@@ -454,6 +457,216 @@ describe('submission.controller', () => {
         MOCK_FORM_ID,
         mockReq.query.page,
       )
+    })
+  })
+
+  describe('handleStreamEncryptedResponses', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const setupValidStreamMocks = (responseMode: FormResponseMode) => {
+      const mockForm = {
+        admin: MOCK_USER,
+        _id: MOCK_FORM_ID,
+        title: 'mock title',
+        responseMode,
+      } as IPopulatedForm
+      const stream = new PassThrough({ objectMode: true })
+      MockUserService.getPopulatedUserById.mockReturnValue(okAsync(MOCK_USER))
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
+        okAsync(mockForm),
+      )
+      jest
+        .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
+        .mockReturnValue(ok(mockForm as IPopulatedEncryptedForm))
+      MockSubService.getSubmissionCursor.mockReturnValue(ok(stream as any))
+      MockSubService.transformAttachmentMetaStream.mockReturnValue(
+        new PassThrough({ objectMode: true }),
+      )
+      MockSubService.addMrfMetadata.mockReturnValue(
+        new PassThrough({ objectMode: true }),
+      )
+      MockSubService.addPaymentDataStream.mockReturnValue(
+        new PassThrough({ objectMode: true }),
+      )
+    }
+
+    it('should getSubmissionCursor for storage mode form', async () => {
+      // Arrange
+      setupValidStreamMocks(FormResponseMode.Encrypt)
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          downloadAttachments: false,
+        },
+        session: { user: { _id: MOCK_USER_ID }, cookie: { maxAge: 20000 } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+      await handleStreamEncryptedResponses[1](mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      expect(MockSubService.getSubmissionCursor).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
+        MOCK_FORM_ID,
+        { startDate: '2020-01-01', endDate: '2020-10-10' },
+        false,
+        undefined,
+      )
+    })
+
+    it('should getSubmissionCursor for multirespondent mode form', async () => {
+      // Arrange
+      setupValidStreamMocks(FormResponseMode.Multirespondent)
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          downloadAttachments: false,
+        },
+        session: { user: { _id: MOCK_USER_ID }, cookie: { maxAge: 20000 } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+      await handleStreamEncryptedResponses[1](mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      expect(MockSubService.getSubmissionCursor).toHaveBeenCalledWith(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        { startDate: '2020-01-01', endDate: '2020-10-10' },
+        false,
+        undefined,
+      )
+    })
+
+    it('should getSubmissionCursor with isSortByLatest equals true if passed as true in request parameter', async () => {
+      // Arrange
+      setupValidStreamMocks(FormResponseMode.Encrypt)
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          downloadAttachments: false,
+          isSortByLatest: true,
+          limit: 2,
+        },
+        session: { user: { _id: MOCK_USER_ID }, cookie: { maxAge: 20000 } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+      await handleStreamEncryptedResponses[1](mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      expect(MockSubService.getSubmissionCursor).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
+        MOCK_FORM_ID,
+        { startDate: '2020-01-01', endDate: '2020-10-10' },
+        true,
+        2,
+      )
+    })
+
+    it('should getSubmissionCursor with isSortByLatest equals false and limit equals undefined if isSortByLatest and limit are undefined in request parameters', async () => {
+      // Arrange
+      setupValidStreamMocks(FormResponseMode.Encrypt)
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          downloadAttachments: false,
+        },
+        session: { user: { _id: MOCK_USER_ID }, cookie: { maxAge: 20000 } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+      await handleStreamEncryptedResponses[1](mockReq, mockRes, jest.fn())
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      expect(MockSubService.getSubmissionCursor).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
+        MOCK_FORM_ID,
+        { startDate: '2020-01-01', endDate: '2020-10-10' },
+        false,
+        undefined,
+      )
+    })
+
+    it('should reuturn 400 if limit is invalid eg, not an integer', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          limit: 1.5,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      const validationError = next.mock.calls[0][0]
+      expect(validationError).toBeDefined()
+      const celebrateErrorHandler = celebrateErrors()
+      await celebrateErrorHandler(validationError, mockReq, mockRes, jest.fn())
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(MockSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 if limit is invalid eg, negative', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        query: {
+          startDate: '2020-01-01',
+          endDate: '2020-10-10',
+          limit: -1,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const next = jest.fn()
+
+      // Act
+      await handleStreamEncryptedResponses[0](mockReq, mockRes, next)
+
+      // Assert
+      expect(next).toHaveBeenCalled()
+      const validationError = next.mock.calls[0][0]
+      expect(validationError).toBeDefined()
+      const celebrateErrorHandler = celebrateErrors()
+      await celebrateErrorHandler(validationError, mockReq, mockRes, jest.fn())
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(MockSubService.getSubmissionCursor).not.toHaveBeenCalled()
     })
   })
 

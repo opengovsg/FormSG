@@ -272,7 +272,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
 }
 
 // Validates that the ending date >= starting date
-const validateDateRange = celebrate({
+const validateStreamEncryptedResponsesParams = celebrate({
   [Segments.QUERY]: Joi.object()
     .keys({
       startDate: Joi.date().format('YYYY-MM-DD').raw(),
@@ -435,7 +435,7 @@ export const streamEncryptedResponses: ControllerHandler<
 
 // Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
 export const handleStreamEncryptedResponses = [
-  validateDateRange,
+  validateStreamEncryptedResponsesParams,
   streamEncryptedResponses,
 ] as ControllerHandler[]
 
