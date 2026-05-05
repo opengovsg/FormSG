@@ -152,7 +152,7 @@ export const EmailTemplate = ({
                 marginBottom: '40px',
               }}
             >
-              {emailBody?.split('\n').map((line, i, arr) => (
+              {emailBody?.split(/\r?\n/).map((line, i, arr) => (
                 <React.Fragment key={i}>
                   {line}
                   {i < arr.length - 1 && <br />}
