@@ -477,6 +477,200 @@ describe('Multirespondent Submission Model', () => {
         // Cursor stream should return nothing.
         expect(retrievedSubmissions).toEqual([])
       })
+
+      it('should return sorted submissions when isSortByLatest is true', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const oldest = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'oldest',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        const newest = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'newest',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        const middle = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'middle',
+          version: 1,
+          created: new Date('2020-01-02T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+
+        // Act
+        const actualCursor =
+          MultirespondentSubmission.getSubmissionCursorByFormId(
+            validFormId,
+            {},
+            true,
+          )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual([
+          String(newest._id),
+          String(middle._id),
+          String(oldest._id),
+        ])
+      })
+
+      it('should return limited submissions when limit is provided', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const newest = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'third',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'first',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        const middle = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'second',
+          version: 1,
+          created: new Date('2020-01-02T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+
+        // Act
+        const actualCursor =
+          MultirespondentSubmission.getSubmissionCursorByFormId(
+            validFormId,
+            {},
+            true,
+            2,
+          )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions).toHaveLength(2)
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual([
+          String(newest._id),
+          String(middle._id),
+        ])
+      })
+
+      it('should not limit submissions when limit is invalid eg, decimal', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const first = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'first',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        const second = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'second',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+        const third = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [YES_NO_FIELD, WORKFLOW_APPROVAL_STEP],
+          form_logics: [],
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_APPROVAL_STEP],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: 'third',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+          workflowStep: 0,
+        })
+
+        // Act
+        const actualCursor =
+          MultirespondentSubmission.getSubmissionCursorByFormId(
+            validFormId,
+            {},
+            undefined,
+            0.5,
+          )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions).toHaveLength(3)
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual(
+          expect.arrayContaining([
+            String(first._id),
+            String(second._id),
+            String(third._id),
+          ]),
+        )
+      })
     })
 
     describe('findEncryptedSubmissionById', () => {
