@@ -21,6 +21,7 @@ export interface Common {
   removeReenter: string
   share: string
   cancel: string
+  contact: string
   title: string
   question: string
   option: string

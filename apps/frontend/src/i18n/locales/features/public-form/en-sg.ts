@@ -123,12 +123,8 @@ export const enSG: PublicForm = {
     },
     formIssueFeedbackModal: {
       title: 'Report an issue',
-      description: {
-        beforeBold: 'Fill this in only ',
-        bold: 'if you are experiencing issues and are unable to submit this form',
-        afterBold:
-          '. If you would like to provide feedback, you can do so after submitting the form.',
-      },
+      description:
+        'Fill this in only <bold>if you are experiencing issues and are unable to submit this form</bold>. If you would like to provide feedback, you can do so after submitting the form.',
       fields: {
         issueLabel: 'Please describe the issue you encountered',
         contactLabel: 'Contact',

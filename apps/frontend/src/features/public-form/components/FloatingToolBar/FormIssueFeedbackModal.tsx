@@ -134,7 +134,7 @@ export const FormIssueFeedbackModal = ({
               </FormControl>
 
               <FormControl isInvalid={!!errors.email}>
-                <FormLabel pt="1rem">{t('features.common.cancel')}</FormLabel>
+                <FormLabel pt="1rem">{t('features.common.contact')}</FormLabel>
                 <Input
                   type={BasicField.Email}
                   placeholder={t(

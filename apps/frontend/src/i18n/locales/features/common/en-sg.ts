@@ -21,6 +21,7 @@ export const enSG: Common = {
   removeReenter: 'Remove and re-enter',
   share: 'Share',
   cancel: 'Cancel',
+  contact: 'Contact',
   title: 'Title',
   question: 'Question',
   option: 'Option',
