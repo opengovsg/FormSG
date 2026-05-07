@@ -50,7 +50,8 @@ export const useDupeFormWizardContext = (
       isPreviewFormLoading ||
       isWorkspaceLoading ||
       !previewFormData ||
-      !dashboardForms
+      !dashboardForms ||
+      currentStep !== CreateFormFlowStates.Details
     ) {
       return
     }
@@ -66,6 +67,7 @@ export const useDupeFormWizardContext = (
     isPreviewFormLoading,
     isWorkspaceLoading,
     dashboardForms,
+    currentStep,
   ])
 
   const { handleSubmit, setValue } = formMethods
