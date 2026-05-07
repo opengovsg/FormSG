@@ -307,6 +307,7 @@ export const EmailTemplate = ({
             <p style={jsonTextStyle}>-- Start of JSON --</p>
             <p style={jsonTextStyle}>{responseJson}</p>
             <p style={jsonTextStyle}>-- End of JSON --</p>
+            {renderMargin(20)}
           </>
         )}
       </Body>
