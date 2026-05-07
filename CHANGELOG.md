@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.17.1](https://github.com/opengovsg/formsg/compare/v7.17.0...v7.17.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* **duplications:** secret key file has old form name (#9391) ([#9391](https://github.com/opengovsg/formsg/commit/34bf85c878110f39b9b7d6bc7a91e505b96fc3a8))
+* respondent copy custom body line breaks (#9384) ([#9384](https://github.com/opengovsg/formsg/commit/2b82052c337c91517ee05ac8eb7fee559c38a67d))
+
 ## [7.17.0](https://github.com/opengovsg/formsg/compare/v7.16.2...v7.17.0) (2026-05-05)
 
 
