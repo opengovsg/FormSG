@@ -464,7 +464,7 @@ export const sendEmailConfirmations = <S extends ISubmissionSchema>({
   recipientData: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
   isPaymentEnabled: boolean
-  useStandardisedEmailTemplate: boolean
+  useStandardisedEmailTemplate?: boolean
 }): ResultAsync<true, SendEmailConfirmationError> => {
   const logMeta = {
     action: 'sendEmailConfirmations',

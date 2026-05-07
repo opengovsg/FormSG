@@ -384,8 +384,10 @@ export class MailService {
     htmlData,
     attachments,
     from,
+    replyTo,
     emailType,
     actionName,
+    submissionId,
   }: {
     emails: string | string[]
     formId: string
@@ -393,8 +395,10 @@ export class MailService {
     htmlData: EmailData
     attachments?: Mail.Attachment[]
     from?: string
+    replyTo?: string
     emailType: EmailType
     actionName: string
+    submissionId?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     return this.#renderEmailTemplate(
       htmlData,
@@ -408,8 +412,13 @@ export class MailService {
         html: mailHtml,
         attachments,
         headers: {
+          [EMAIL_HEADERS.formId]: formId,
           [EMAIL_HEADERS.emailType]: emailType,
+          ...(submissionId && {
+            [EMAIL_HEADERS.submissionId]: submissionId,
+          }),
         },
+        ...(replyTo && { replyTo }),
       }
       return this.#sendNodeMail(mail, {
         formId,
@@ -856,8 +865,10 @@ export class MailService {
         subject: `Completed - ${formTitle} (${refNo})`,
         htmlData: emailData,
         attachments: attachmentsToInclude,
+        replyTo: replyToEmails?.join(', '),
         emailType: EmailType.AdminResponse,
         actionName: 'sendSubmissionToAdmin',
+        submissionId: refNo,
       })
     }
 
