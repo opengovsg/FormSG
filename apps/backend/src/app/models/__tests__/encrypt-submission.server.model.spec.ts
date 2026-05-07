@@ -332,6 +332,148 @@ describe('Encrypt Submission Model', () => {
         // Cursor stream should return nothing.
         expect(retrievedSubmissions).toEqual([])
       })
+
+      it('should return sorted submissions when isSortByLatest is true', async () => {
+        // Arrange
+        const validFormId = new Types.ObjectId().toHexString()
+        const oldest = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'oldest',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+        })
+        const newest = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'newest',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+        })
+        const middle = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'middle',
+          version: 1,
+          created: new Date('2020-01-02T00:00:00.000Z'),
+        })
+
+        // Act
+        const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
+          validFormId,
+          {},
+          true,
+        )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual([
+          String(newest._id),
+          String(middle._id),
+          String(oldest._id),
+        ])
+      })
+
+      it('should return limited submissions when limit is provided', async () => {
+        // Arrange
+        const validFormId = new Types.ObjectId().toHexString()
+        const newest = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'third',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+        })
+        const oldest = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'first',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+        })
+        const middle = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'second',
+          version: 1,
+          created: new Date('2020-01-02T00:00:00.000Z'),
+        })
+
+        // Act
+        const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
+          validFormId,
+          {},
+          true,
+          2,
+        )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions).toHaveLength(2)
+        // if sort by latest and limit of n applied, it will return the n latest submissions
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual([
+          String(newest._id),
+          String(middle._id),
+        ])
+        // oldest will not be returned since it will only return latest 2 submissions
+        expect(retrievedSubmissions.map((s) => String(s._id))).not.toContain(
+          oldest._id,
+        )
+      })
+
+      it('should not limit submissions when limit is invalid eg, decimal', async () => {
+        // Arrange
+        const validFormId = new Types.ObjectId().toHexString()
+        const first = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'first',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+        })
+        const second = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'second',
+          version: 1,
+          created: new Date('2020-01-03T00:00:00.000Z'),
+        })
+        const third = await EncryptSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: validFormId,
+          encryptedContent: 'third',
+          version: 1,
+          created: new Date('2020-01-01T00:00:00.000Z'),
+        })
+
+        // Act
+        const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
+          validFormId,
+          {},
+          undefined,
+          0.5,
+        )
+        const retrievedSubmissions: any[] = []
+        for await (const submission of actualCursor) {
+          retrievedSubmissions.push(submission)
+        }
+
+        // Assert
+        expect(retrievedSubmissions).toHaveLength(3)
+        expect(retrievedSubmissions.map((s) => String(s._id))).toEqual(
+          expect.arrayContaining([
+            String(third._id),
+            String(second._id),
+            String(first._id),
+          ]),
+        )
+      })
     })
 
     describe('findEncryptedSubmissionById', () => {

@@ -1,6 +1,13 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
+import {
+  Container,
+  Divider,
+  Flex,
+  Skeleton,
+  Stack,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
 import { removeStopwords } from 'stopword'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
@@ -84,54 +91,57 @@ const aggregateWordCloud = (
 
 export const UnlockedChartsContainer = () => {
   const { t } = useTranslation()
-  const { data: form } = useAdminForm()
+  const { data: form, isLoading: isFormLoading } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
-  const { data: decryptedContent } = useAllSubmissionData(dateRange)
+  const { data: decryptedContent = [], isLoading: isDecryptionLoading } =
+    useAllSubmissionData(dateRange)
 
-  const filteredDecryptedData = useMemo(() => {
-    if (!decryptedContent) return []
-    return decryptedContent
-  }, [decryptedContent])
+  const isLoading = isFormLoading || isDecryptionLoading
+  if (!isFormLoading && !form) return null
 
-  if (!form) return null
+  const renderedCharts = !isLoading
+    ? form.form_fields
+        .map((formField, idx) => {
+          const questionTitle = `${idx + 1}. ${formField.title}`
 
-  const renderedCharts = form.form_fields
-    .map((formField, idx) => {
-      const questionTitle = `${idx + 1}. ${formField.title}`
+          // if field type is text, create word cloud
+          if (
+            formField.fieldType === BasicField.ShortText ||
+            formField.fieldType === BasicField.LongText
+          ) {
+            const words = aggregateWordCloud(formField._id, decryptedContent)
+            if (!words.length) return null
+            return (
+              <WordCloud
+                words={words}
+                questionTitle={questionTitle}
+                key={idx}
+              />
+            )
+          }
 
-      // if field type is text, create word cloud
-      if (
-        formField.fieldType === BasicField.ShortText ||
-        formField.fieldType === BasicField.LongText
-      ) {
-        const words = aggregateWordCloud(formField._id, filteredDecryptedData)
-        if (!words.length) return null
-        return (
-          <WordCloud words={words} questionTitle={questionTitle} key={idx} />
-        )
-      }
+          // if field type is not within the chart types, do not render chart
+          if (!FIELD_TO_CHART.get(formField.fieldType)) return null
 
-      // if field type is not within the chart types, do not render chart
-      if (!FIELD_TO_CHART.get(formField.fieldType)) return null
+          const dataValues = aggregateSubmissionData(
+            formField._id,
+            formField,
+            decryptedContent,
+          )
 
-      const dataValues = aggregateSubmissionData(
-        formField._id,
-        formField,
-        filteredDecryptedData,
-      )
-
-      if (dataValues.length === 0) return null
-      return (
-        <FormChart
-          title={questionTitle}
-          rawTitle={formField.title}
-          formField={formField}
-          data={dataValues}
-          key={idx}
-        />
-      )
-    })
-    .filter(isNonEmpty)
+          if (dataValues.length === 0) return null
+          return (
+            <FormChart
+              title={questionTitle}
+              rawTitle={formField.title}
+              formField={formField}
+              data={dataValues}
+              key={idx}
+            />
+          )
+        })
+        .filter(isNonEmpty)
+    : []
 
   return (
     <>
@@ -149,12 +159,12 @@ export const UnlockedChartsContainer = () => {
         <Flex direction="column">
           <Text textStyle="h4" mb="0.125rem">
             <Text as="span" color="primary.500">
-              {filteredDecryptedData.length}
+              {decryptedContent.length}
             </Text>
             {' ' +
               t(
                 'features.adminForm.responses.charts.unlockedChartsContainer.responsesRetrieved',
-                { responsesRetrieved: filteredDecryptedData.length },
+                { responsesRetrieved: decryptedContent.length },
               )}
           </Text>
         </Flex>
@@ -167,45 +177,47 @@ export const UnlockedChartsContainer = () => {
           }}
         />
       </Flex>
-      {renderedCharts.length > 0 ? (
-        <VStack divider={<Divider />} gap="1.5rem">
-          {renderedCharts}
-        </VStack>
-      ) : filteredDecryptedData.length === 0 ? (
-        <Container p={0} maxW="42.5rem">
-          <Stack spacing="1rem" align="center">
-            <Text
-              as="h2"
-              color="primary.500"
-              textStyle="h2"
-              whiteSpace="pre-wrap"
-            >
-              {t(
-                'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.title',
-              )}
-            </Text>
-            <Text
-              textStyle="body-1"
-              color="secondary.500"
-              mb="0.5rem"
-              align="center"
-            >
-              {t(
-                'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.subtitle',
-              )}
-            </Text>
-          </Stack>
-        </Container>
-      ) : (
-        <EmptyChartsContainer
-          title={t(
-            'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.title',
-          )}
-          subtitle={t(
-            'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.subtitle',
-          )}
-        />
-      )}
+      <Skeleton isLoaded={!isLoading}>
+        {renderedCharts.length > 0 ? (
+          <VStack divider={<Divider />} gap="1.5rem">
+            {renderedCharts}
+          </VStack>
+        ) : decryptedContent.length === 0 ? (
+          <Container p={0} maxW="42.5rem">
+            <Stack spacing="1rem" align="center">
+              <Text
+                as="h2"
+                color="primary.500"
+                textStyle="h2"
+                whiteSpace="pre-wrap"
+              >
+                {t(
+                  'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.title',
+                )}
+              </Text>
+              <Text
+                textStyle="body-1"
+                color="secondary.500"
+                mb="0.5rem"
+                align="center"
+              >
+                {t(
+                  'features.adminForm.responses.charts.unlockedChartsContainer.noChartsForDateRange.subtitle',
+                )}
+              </Text>
+            </Stack>
+          </Container>
+        ) : (
+          <EmptyChartsContainer
+            title={t(
+              'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.title',
+            )}
+            subtitle={t(
+              'features.adminForm.responses.charts.emptyChartContainer.noSupportedFields.subtitle',
+            )}
+          />
+        )}
+      </Skeleton>
     </>
   )
 }

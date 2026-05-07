@@ -8,11 +8,19 @@ import {
   SubmissionType,
 } from 'formsg-shared/types/submission'
 
+import { env } from '~/env'
+
 import formsgSdk from '~utils/formSdk'
 import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
+import {
+  killWorkers,
+  makeWorkerApiAndCleanup,
+} from './common/utils/decryptionWorker'
+import { getEncryptedResponsesStream } from './ResponsesPage/storage/StorageResponsesService'
+import { CleanableDecryptionWorkerApi } from './ResponsesPage/storage/types'
 import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   processDecryptedContent,
@@ -170,38 +178,75 @@ const getAllEncryptedSubmission = async ({
 }
 
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
-export type DecryptedSubmission = DecryptedContent & {
-  submissionTime: string
-}
+export type DecryptedSubmission = Pick<DecryptedContent, 'responses'>
 
 export const getAllDecryptedSubmission = async ({
   formId,
   secretKey,
   startDate,
   endDate,
+  downloadAttachments,
+  isSortByLatest,
+  limit,
 }: {
   formId: string
-  secretKey?: string
-  startDate?: DateString
-  endDate?: DateString
+  secretKey: string
+  startDate: string
+  endDate: string
+  downloadAttachments: boolean
+  isSortByLatest: boolean
+  limit: number
 }): Promise<DecryptedSubmission[]> => {
-  if (!secretKey) return []
+  const numWorkers = window.navigator.hardwareConcurrency ?? 1
+  const workerPool: CleanableDecryptionWorkerApi[] = []
+  let currentSubmissionIndex = 0
 
-  const allEncryptedData = await getAllEncryptedSubmission({
-    formId,
+  for (let i = workerPool.length; i < numWorkers; i++) {
+    workerPool.push(makeWorkerApiAndCleanup())
+  }
+
+  const submissionsStream = await getEncryptedResponsesStream(formId, {
     startDate,
     endDate,
+    downloadAttachments,
+    isSortByLatest,
+    limit,
   })
 
-  return allEncryptedData.map((encryptedData) => {
-    const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
-      encryptedContent: encryptedData.encryptedContent,
-      verifiedContent: encryptedData.verifiedContent,
-      version: encryptedData.version,
-    })
+  const decryptSubmissionPromises: Promise<DecryptedSubmission>[] = []
 
-    if (!decryptedContent) throw new Error('Could not decrypt the response')
+  const reader = submissionsStream.getReader()
+  let read: (result: ReadableStreamReadResult<string>) => void
 
-    return { ...decryptedContent, submissionTime: encryptedData.created }
+  await reader.read().then(
+    (read = async (result) => {
+      if (result.done) return
+      const { workerApi } = workerPool[currentSubmissionIndex % numWorkers]
+      decryptSubmissionPromises.push(
+        workerApi
+          .parseAndDecryptSubmissionData({
+            submissionStreamDtoString: result.value,
+            secretKey,
+            workerCtxOptions: {
+              formsgSdkMode: env.formsgSdkMode,
+            },
+          })
+          .then((result) => {
+            if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
+              throw new Error('One or more responses failed to decrypt.')
+            }
+            return { responses: result.decryptedResponses }
+          }),
+      )
+      currentSubmissionIndex++
+      return reader.read().then(read)
+    }),
+  )
+
+  const decryptionResults = await Promise.all(
+    decryptSubmissionPromises,
+  ).finally(() => {
+    killWorkers(workerPool)
   })
+  return decryptionResults
 }
