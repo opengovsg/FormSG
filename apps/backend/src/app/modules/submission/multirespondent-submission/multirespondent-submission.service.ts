@@ -203,6 +203,7 @@ const sendNextStepEmail = ({
         return MailService.sendMRFWorkflowStepEmail({
           emails,
           formTitle,
+          formId,
           responseId: submissionId,
           responseUrl,
           formQuestionAnswers,
@@ -311,6 +312,7 @@ export const sendNextStepReminderEmail = ({
 
   return MailService.sendMRFWorkflowStepEmail({
     emails,
+    formId,
     formTitle,
     responseId: submissionId,
     responseUrl,

@@ -22,8 +22,8 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-import React from 'react'
 import { BasicField } from 'formsg-shared/types'
+import React from 'react'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
@@ -34,6 +34,7 @@ import {
   cardSectionStyle,
   containerStyle,
   headingTextStyle,
+  jsonTextStyle,
   linkStyle,
   mainStyle,
   outcomeTextStyle,
@@ -298,19 +299,16 @@ export const EmailTemplate = ({
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>
-
             {renderMargin(40)}
-
-            {/* JSON Data Section */}
-            {responseJson && (
-              <>
-                <p>-- Start of JSON --</p>
-                <p>{responseJson}</p>
-                <p>-- End of JSON --</p>
-              </>
-            )}
           </Section>
         </Container>
+        {responseJson && (
+          <>
+            <p style={jsonTextStyle}>-- Start of JSON --</p>
+            <p style={jsonTextStyle}>{responseJson}</p>
+            <p style={jsonTextStyle}>-- End of JSON --</p>
+          </>
+        )}
       </Body>
     </Html>
   )

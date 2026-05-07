@@ -1148,6 +1148,7 @@ export class MailService {
    */
   sendMRFWorkflowStepEmail = ({
     emails,
+    formId,
     formTitle,
     responseId,
     responseUrl,
@@ -1155,6 +1156,7 @@ export class MailService {
     formQuestionAnswers,
   }: {
     emails: string[]
+    formId: string
     formTitle: string
     responseId: string
     responseUrl: string
@@ -1175,7 +1177,7 @@ export class MailService {
 
     return this.#sendEmailWithTemplate({
       emails,
-      formId: responseId,
+      formId,
       subject: emailSubject,
       htmlData,
       emailType: EmailType.WorkflowNotification,
@@ -1313,8 +1315,9 @@ export class MailService {
       htmlData,
       attachments,
       from: emailSender,
-      emailType: EmailType.WorkflowNotification,
-      actionName: 'sendMrfRespondentCopyEmail',
+      emailType: EmailType.EmailConfirmation,
+      actionName: 'sendRespondentCopyEmail',
+      submissionId: responseId,
     })
   }
 }
