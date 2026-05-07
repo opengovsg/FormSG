@@ -22,6 +22,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import React from 'react'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
@@ -149,10 +150,14 @@ export const EmailTemplate = ({
               style={{
                 ...secondaryTextStyle,
                 marginBottom: '40px',
-                whiteSpace: 'pre-line',
               }}
             >
-              {emailBody}
+              {emailBody?.split(/\r?\n/).map((line, i, arr) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i < arr.length - 1 && <br />}
+                </React.Fragment>
+              ))}
             </Text>
 
             {/* Section - Form Title */}
