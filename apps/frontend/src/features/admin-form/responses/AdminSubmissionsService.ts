@@ -26,7 +26,6 @@ import {
   processDecryptedContent,
   processDecryptedContentV3,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
-import { DecryptionResult } from './ResponsesPage/storage/worker/decryption.worker'
 
 /**
  * Counts the number of submissions for a given form
