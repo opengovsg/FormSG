@@ -28,6 +28,7 @@ import { aws } from 'src/app/config/config'
 import getPendingSubmissionModel from 'src/app/models/pending_submission.server.model'
 import getSubmissionModel, {
   getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import {
   DatabaseError,
@@ -87,6 +88,7 @@ const MockMailService = jest.mocked(MailService)
 const PendingSubmission = getPendingSubmissionModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
 const MOCK_FORM_ID = new ObjectId().toHexString()
 const MOCK_SUBMISSION = {
@@ -1330,7 +1332,9 @@ describe('submission.service', () => {
   describe('getSubmissionCursor', () => {
     it('should return cursor successfully when date range is not provided', async () => {
       // Arrange
-      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as ReturnType<
+        typeof EncryptSubmission.getSubmissionCursorByFormId
+      >
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)
@@ -1344,14 +1348,21 @@ describe('submission.service', () => {
 
       // Assert
       expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
-      expect(getSubmissionSpy).toHaveBeenCalledWith(mockFormId, {})
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        {},
+        undefined,
+        undefined,
+      )
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
     })
 
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
-      const mockCursor = jest.fn() as unknown as mongoose.QueryCursor<any>
+      const mockCursor = jest.fn() as unknown as ReturnType<
+        typeof EncryptSubmission.getSubmissionCursorByFormId
+      >
       const getSubmissionSpy = jest
         .spyOn(EncryptSubmission, 'getSubmissionCursorByFormId')
         .mockReturnValueOnce(mockCursor)
@@ -1370,7 +1381,12 @@ describe('submission.service', () => {
 
       // Assert
       expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
-      expect(getSubmissionSpy).toHaveBeenCalledWith(mockFormId, mockDateRange)
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockDateRange,
+        undefined,
+        undefined,
+      )
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
     })
@@ -1428,6 +1444,101 @@ describe('submission.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new MalformedParametersError('Malformed date parameter'),
+      )
+    })
+
+    it('should return cursor successfully when isSortByLatest and limit are provided', () => {
+      // Arrange
+      const mockCursor = jest.fn() as unknown as ReturnType<
+        typeof MultirespondentSubmission.getSubmissionCursorByFormId
+      >
+      const getSubmissionSpy = jest
+        .spyOn(MultirespondentSubmission, 'getSubmissionCursorByFormId')
+        .mockReturnValueOnce(mockCursor)
+      const mockFormId = new ObjectId().toHexString()
+      const mockDateRange = {
+        startDate: '2020-01-01',
+        endDate: '2020-10-10',
+      }
+      const isSortByLatest = true
+      const limit = 100
+
+      // Act
+      const actualResult = SubmissionService.getSubmissionCursor(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockDateRange,
+        isSortByLatest,
+        limit,
+      )
+
+      // Assert
+      expect(getSubmissionSpy).toHaveBeenCalledTimes(1)
+      expect(getSubmissionSpy).toHaveBeenCalledWith(
+        mockFormId,
+        mockDateRange,
+        isSortByLatest,
+        limit,
+      )
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
+    })
+
+    it('should return MalformedParametersError when limit is invalid ie, negative', () => {
+      // Arrange
+      const getSubmissionSpy = jest.spyOn(
+        EncryptSubmission,
+        'getSubmissionCursorByFormId',
+      )
+      const mockFormId = new ObjectId().toHexString()
+      const mockDateRange = {
+        startDate: '2020-01-01',
+        endDate: '2020-10-10',
+      }
+
+      // Act
+      const actualResult = SubmissionService.getSubmissionCursor(
+        FormResponseMode.Encrypt,
+        mockFormId,
+        mockDateRange,
+        true,
+        -1,
+      )
+
+      // Assert
+      expect(getSubmissionSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError('Invalid limit parameter'),
+      )
+    })
+
+    it('should return MalformedParametersError when limit is not an integer eg, decimal', () => {
+      // Arrange
+      const getSubmissionSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'getSubmissionCursorByFormId',
+      )
+      const mockFormId = new ObjectId().toHexString()
+      const mockDateRange = {
+        startDate: '2020-01-01',
+        endDate: '2020-10-10',
+      }
+
+      // Act
+      const actualResult = SubmissionService.getSubmissionCursor(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockDateRange,
+        true,
+        1.5,
+      )
+
+      // Assert
+      expect(getSubmissionSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new MalformedParametersError('Invalid limit parameter'),
       )
     })
   })

@@ -35,8 +35,10 @@ export const FormResultsNavbar = (): JSX.Element => {
   )
 
   const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
-  const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
-  const shouldShowCharts = isFormEncryptMode && isChartsEnabled
+  const isFormEncryptModeOrMultirespondent =
+    form?.responseMode === FormResponseMode.Encrypt ||
+    form?.responseMode === FormResponseMode.Multirespondent
+  const shouldShowCharts = isFormEncryptModeOrMultirespondent && isChartsEnabled
 
   const { t } = useTranslation()
 

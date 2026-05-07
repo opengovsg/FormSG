@@ -272,12 +272,14 @@ export const handleGetEncryptedResponse: ControllerHandler<
 }
 
 // Validates that the ending date >= starting date
-const validateDateRange = celebrate({
+const validateStreamEncryptedResponsesParams = celebrate({
   [Segments.QUERY]: Joi.object()
     .keys({
       startDate: Joi.date().format('YYYY-MM-DD').raw(),
       endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
       downloadAttachments: Joi.boolean().default(false),
+      isSortByLatest: Joi.boolean().default(false),
+      limit: Joi.number().integer().min(1).optional(),
     })
     .and('startDate', 'endDate'),
 })
@@ -301,11 +303,17 @@ export const streamEncryptedResponses: ControllerHandler<
   { formId: string },
   unknown,
   unknown,
-  { startDate?: string; endDate?: string; downloadAttachments: boolean }
+  {
+    startDate?: string
+    endDate?: string
+    downloadAttachments: boolean
+    isSortByLatest?: boolean
+    limit?: number
+  }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
-  const { startDate, endDate } = req.query
+  const { startDate, endDate, isSortByLatest, limit } = req.query
 
   const logMeta = {
     action: 'handleStreamEncryptedResponses',
@@ -333,10 +341,16 @@ export const streamEncryptedResponses: ControllerHandler<
     .andThen(checkFormIsEncryptModeOrMultirespondent)
     // Step 4: Retrieve submissions cursor.
     .andThen((form) =>
-      getSubmissionCursor(form.responseMode, formId, {
-        startDate,
-        endDate,
-      }),
+      getSubmissionCursor(
+        form.responseMode,
+        formId,
+        {
+          startDate,
+          endDate,
+        },
+        isSortByLatest,
+        limit,
+      ),
     )
 
   if (cursorResult.isErr()) {
@@ -421,7 +435,7 @@ export const streamEncryptedResponses: ControllerHandler<
 
 // Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
 export const handleStreamEncryptedResponses = [
-  validateDateRange,
+  validateStreamEncryptedResponsesParams,
   streamEncryptedResponses,
 ] as ControllerHandler[]
 

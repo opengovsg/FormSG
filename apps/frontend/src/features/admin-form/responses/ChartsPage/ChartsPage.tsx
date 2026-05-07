@@ -18,6 +18,7 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 import { ChartsSvgr } from './UnlockedCharts/assets/svgr/ChartsSvgr'
 import { ChartsSupportedFieldsInfoBox } from './UnlockedCharts/components/ChartsSupportedFieldsInfoBox'
 import { EmptyChartsContainer } from './UnlockedCharts/components/EmptyChartsContainer'
+import { CHARTS_FALLBACK_MAX_RESPONSE_COUNT } from './constants'
 import UnlockedCharts from './UnlockedCharts'
 
 export const ChartsPage = (): JSX.Element => {
@@ -27,8 +28,8 @@ export const ChartsPage = (): JSX.Element => {
   const { pathname } = useLocation()
   const chartsMaxResponseCount = useFeatureValue(
     featureFlags.chartsMaxResponseCount,
-    100,
-  ) // limit number of responses to 100 as fallback
+    CHARTS_FALLBACK_MAX_RESPONSE_COUNT,
+  )
   const toast = useToast({ status: 'danger' })
 
   if (isLoading) return <ResponsesPageSkeleton />

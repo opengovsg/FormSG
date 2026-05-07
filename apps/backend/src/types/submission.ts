@@ -259,6 +259,8 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
         startDate?: string
         endDate?: string
       },
+      isSortByLatest?: boolean,
+      limit?: number,
     ): QueryCursor<
       StorageModeSubmissionCursorData,
       QueryOptions<ISubmissionModel>
@@ -335,6 +337,8 @@ export type IMultirespondentSubmissionModel =
           startDate?: string
           endDate?: string
         },
+        isSortByLatest?: boolean,
+        limit?: number,
       ): QueryCursor<MultirespondentSubmissionCursorData>
 
       findEncryptedSubmissionById(

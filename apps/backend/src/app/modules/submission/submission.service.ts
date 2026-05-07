@@ -672,6 +672,8 @@ export const getSubmissionCursor = (
     startDate?: string
     endDate?: string
   } = {},
+  isSortByLatest?: boolean,
+  limit?: number,
 ): Result<
   ReturnType<
     | IEncryptSubmissionModel['getSubmissionCursorByFormId']
@@ -686,9 +688,20 @@ export const getSubmissionCursor = (
     return err(new MalformedParametersError('Malformed date parameter'))
   }
 
+  if (limit && (limit <= 0 || !Number.isSafeInteger(limit))) {
+    return err(new MalformedParametersError('Invalid limit parameter'))
+  }
+
   return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(
     (modelToUse) =>
-      ok(modelToUse.getSubmissionCursorByFormId(formId, dateRange)),
+      ok(
+        modelToUse.getSubmissionCursorByFormId(
+          formId,
+          dateRange,
+          isSortByLatest,
+          limit,
+        ),
+      ),
   )
 }
 

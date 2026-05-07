@@ -464,6 +464,8 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     startDate?: string
     endDate?: string
   } = {},
+  isSortByLatest = false,
+  limit?: number,
 ): QueryCursor<
   StorageModeSubmissionCursorData,
   QueryOptions<IEncryptedSubmissionSchema>
@@ -472,18 +474,24 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
   }
+  let query = this.find(streamQuery).select({
+    submissionType: 1,
+    encryptedContent: 1,
+    verifiedContent: 1,
+    attachmentMetadata: 1,
+    paymentId: 1,
+    created: 1,
+    version: 1,
+    id: 1,
+  })
+  if (isSortByLatest) {
+    query = query.sort({ created: -1 })
+  }
+  if (limit && limit > 0 && Number.isSafeInteger(limit)) {
+    query = query.limit(limit)
+  }
   return (
-    this.find(streamQuery)
-      .select({
-        submissionType: 1,
-        encryptedContent: 1,
-        verifiedContent: 1,
-        attachmentMetadata: 1,
-        paymentId: 1,
-        created: 1,
-        version: 1,
-        id: 1,
-      })
+    query
       .batchSize(2000)
       .read('secondary')
       .lean()
@@ -781,6 +789,8 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     startDate?: string
     endDate?: string
   } = {},
+  isSortByLatest = false,
+  limit?: number,
 ): QueryCursor<
   MultirespondentSubmissionCursorData,
   QueryOptions<IEncryptedSubmissionSchema>
@@ -789,24 +799,30 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
   }
+  let query = this.find(streamQuery).select({
+    submissionType: 1,
+    form_fields: 1,
+    form_logics: 1,
+    workflow: 1,
+    workflowStep: 1,
+    submittedSteps: 1,
+    encryptedSubmissionSecretKey: 1,
+    encryptedContent: 1,
+    verifiedContent: 1,
+    attachmentMetadata: 1,
+    created: 1,
+    version: 1,
+    mrfVersion: 1,
+    id: 1,
+  })
+  if (isSortByLatest) {
+    query = query.sort({ created: -1 })
+  }
+  if (limit && limit > 0 && Number.isSafeInteger(limit)) {
+    query = query.limit(limit)
+  }
   return (
-    this.find(streamQuery)
-      .select({
-        submissionType: 1,
-        form_fields: 1,
-        form_logics: 1,
-        workflow: 1,
-        workflowStep: 1,
-        submittedSteps: 1,
-        encryptedSubmissionSecretKey: 1,
-        encryptedContent: 1,
-        verifiedContent: 1,
-        attachmentMetadata: 1,
-        created: 1,
-        version: 1,
-        mrfVersion: 1,
-        id: 1,
-      })
+    query
       .batchSize(2000)
       .read('secondary')
       .lean()
