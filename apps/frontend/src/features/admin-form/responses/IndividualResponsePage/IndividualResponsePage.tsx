@@ -131,7 +131,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { data, isLoading, isError } = useIndividualSubmission({
     useV4: useV4Display,
   })
-  console.log(`data:`, data)
+
   // Logic to determine which key to use to decrypt attachments.
   const attachmentDecryptionKey =
     // If no submission secret key present, it is a storage mode form. So, use form secret key.
