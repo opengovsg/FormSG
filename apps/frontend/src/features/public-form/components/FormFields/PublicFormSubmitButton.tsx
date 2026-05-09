@@ -211,7 +211,7 @@ export const PublicFormSubmitButton = ({
         </Button>
       </Flex>
       {preventSubmissionLogic ? (
-        <InlineMessage variant="warning">
+        <InlineMessage variant="warning" useMarkdown>
           {preventSubmissionMessage}
         </InlineMessage>
       ) : null}
