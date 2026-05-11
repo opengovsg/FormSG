@@ -370,6 +370,9 @@ const getQuestionAnswerPairsForOneField = ({
     }
     case BasicField.Email:
     case BasicField.Mobile:
+      if (response.answer.signature)
+        questionTitle = `[Verified] ${questionTitle}`
+
       answer = response.answer.value
       break
     case BasicField.Table:
