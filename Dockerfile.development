@@ -12,7 +12,7 @@ ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+RUN npm install -g pnpm@10.30.3
 # Build dependencies for node_modules
 RUN apk add --virtual native-deps \
     # Python version must be specified starting in alpine3.12

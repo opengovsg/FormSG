@@ -14,7 +14,7 @@ RUN apt-get update && \
   python3
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+RUN npm install -g pnpm@10.30.3
 
 WORKDIR /workspace
 
