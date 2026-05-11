@@ -1,6 +1,6 @@
 {
   "name": "formsg-monorepo",
-  "version": "7.18.0",
+  "version": "7.18.1",
   "private": true,
   "description": "Form Manager for Government",
   "homepage": "https://form.gov.sg",
@@ -15,6 +15,7 @@
     "node": ">=22.22",
     "pnpm": ">=10.30.3"
   },
+  "packageManager": "pnpm@10.30.3",
   "scriptComments": {
     "clean": "remove all current build artifacts"
   },
