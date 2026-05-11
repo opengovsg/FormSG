@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.18.1](https://github.com/opengovsg/formsg/compare/v7.18.0...v7.18.1) (2026-05-11)
+
+
+### Chores
+
+* pin pnpm@10.30.3 as packagemanager in package.json (#9399) ([#9399](https://github.com/opengovsg/formsg/commit/3153211505e0c53eb34892f935467f74163fc793))
+
 ## [7.18.0](https://github.com/opengovsg/formsg/compare/v7.17.1...v7.18.0) (2026-05-07)
 
 
