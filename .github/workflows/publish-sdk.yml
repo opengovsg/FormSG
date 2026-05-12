@@ -60,11 +60,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
 
       - name: Resolve SDK version
         id: version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           version=$(jq -r .version < packages/sdk/package.json)
           echo "version=${version}" >> "$GITHUB_OUTPUT"
@@ -79,12 +80,16 @@ jobs:
 
       - name: Update npm
         if: ${{ steps.version.outputs.should-publish == 'true' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         # npm 11.5.1+ required for OIDC trusted publishing.
         run: npm install -g npm@~11.10.0
 
       - name: Install dependencies
         if: ${{ steps.version.outputs.should-publish == 'true' }}
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build SDK
         if: ${{ steps.version.outputs.should-publish == 'true' }}
@@ -96,19 +101,13 @@ jobs:
         if: ${{ steps.version.outputs.should-publish == 'true' }}
         run: pnpm test:sdk
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
-
       - name: Publish to npm
         if: ${{ steps.version.outputs.should-publish == 'true' }}
         working-directory: packages/sdk
         # Uses OIDC trusted publisher — no NPM_TOKEN required.
-        # `--access public` is a no-op after the first publish, but is kept
-        # for clarity since @opengovsg/formsg-sdk is a scoped package.
+        # Publish target is forced to npmjs.org by publishConfig in
+        # packages/sdk/package.json, overriding the Verdaccio registry
+        # used for installs.
         run: npm publish --access public
 
       - name: Extract release notes from changelog

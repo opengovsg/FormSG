@@ -60,10 +60,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk
@@ -107,11 +108,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         working-directory: .
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk

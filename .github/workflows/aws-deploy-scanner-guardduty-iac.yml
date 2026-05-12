@@ -53,7 +53,6 @@ jobs:
         with:
           node-version: 22.22
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
@@ -62,6 +61,8 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
       - name: Install node dependencies
         run: pnpm --filter formsg-virus-scanner-guardduty install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Deploy with Serverless Framework
         env:
           ENV: ${{ inputs.environment }}

@@ -78,10 +78,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   build:
     needs: install
@@ -99,10 +100,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -149,7 +151,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
@@ -170,6 +171,8 @@ jobs:
           fail-on-cache-miss: true
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
@@ -200,10 +203,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm lint:frontend
 
   backend_test:
@@ -223,7 +227,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
@@ -244,8 +247,14 @@ jobs:
           fail-on-cache-miss: true
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm install --prefix services/pdf-gen-sparticuz
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm install --prefix services/virus-scanner-guardduty
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
@@ -275,10 +284,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm lint-ci:backend
 
   shared_lint:
@@ -298,10 +308,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm lint-ci:shared
   
   shared_test:
@@ -321,10 +332,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
@@ -356,10 +368,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:

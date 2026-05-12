@@ -35,6 +35,10 @@
   },
   "description": "Node.js SDK for integrating with FormSG",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "files": [
     "dist/",
     "cjs-entry.cjs"

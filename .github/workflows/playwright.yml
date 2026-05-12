@@ -40,9 +40,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
       - name: Install dependencies
         run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
@@ -93,7 +94,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          token: ${{ secrets.NPM_TOKEN }}
       - name: Restore build artifacts
         uses: actions/cache/restore@v3.5.0
         with:
