@@ -272,18 +272,12 @@ const SignatureCanvas = ({
                   </Flex>
                 )}
                 <Box
-                  pointerEvents={schema.disabled ? 'none' : 'auto'} // disable canvas interaction
+                  // Set canvas as an interactive element so drag-and-drop libraries
+                  // treat it as interactive and skip drag initiation from the signature canvas to keep draw-ability.
+                  contentEditable={schema.disabled ? undefined : true}
+                  pointerEvents={schema.disabled ? 'none' : 'auto'}
                   width="100%"
                   height="100%"
-                  onPointerDown={(event) => {
-                    if (!schema.disabled) event.stopPropagation()
-                  }}
-                  onMouseDown={(event) => {
-                    if (!schema.disabled) event.stopPropagation()
-                  }}
-                  onTouchStart={(event) => {
-                    if (!schema.disabled) event.stopPropagation()
-                  }}
                   sx={{ cursor: 'default' }}
                 >
                   <canvas
