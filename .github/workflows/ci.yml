@@ -77,6 +77,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -96,6 +98,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -144,6 +148,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
@@ -193,6 +199,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -214,6 +222,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Restore build artifacts
         uses: actions/cache/restore@v3
@@ -264,6 +274,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -285,6 +297,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -306,6 +320,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
@@ -339,6 +355,8 @@ jobs:
         uses: actions/setup-node@v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.open.gov.sg'
+          npm-token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
