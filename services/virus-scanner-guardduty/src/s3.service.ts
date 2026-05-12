@@ -257,25 +257,29 @@ export class S3Service {
       objectKey,
     }
 
-    this.logger.info({
-      message: 'Getting object version ID from s3',
-      meta: {
-        ...logMeta,
-        status: 'started',
+    this.logger.info(
+      {
+        meta: {
+          ...logMeta,
+          status: 'started',
+        },
       },
-    })
+      'Getting object version ID from s3',
+    )
 
     let attempt = 0
     const logMissedAttempt = (err: unknown) => {
-      this.logger.warn({
-        message: 'getS3ObjectVersionId attempt failed',
-        meta: {
-          ...logMeta,
-          status: 'missed',
-          attempt,
+      this.logger.warn(
+        {
+          meta: {
+            ...logMeta,
+            status: 'missed',
+            attempt,
+          },
+          err,
         },
-        err,
-      })
+        'getS3ObjectVersionId attempt failed',
+      )
     }
 
     try {
@@ -312,16 +316,18 @@ export class S3Service {
             throw err
           }
 
-          this.logger.info({
-            message: 'Retrieved object version ID from s3',
-            meta: {
-              ...logMeta,
-              status: 'success',
-              attempt,
-              versionId,
-              contentLength: ContentLength,
+          this.logger.info(
+            {
+              meta: {
+                ...logMeta,
+                status: 'success',
+                attempt,
+                versionId,
+                contentLength: ContentLength,
+              },
             },
-          })
+            'Retrieved object version ID from s3',
+          )
 
           return versionId
         },
@@ -333,15 +339,17 @@ export class S3Service {
         },
       )
     } catch (err) {
-      this.logger.error({
-        message: 'Failed to get object version ID from s3 after retries',
-        meta: {
-          ...logMeta,
-          status: 'failed',
-          attempts: attempt,
+      this.logger.error(
+        {
+          meta: {
+            ...logMeta,
+            status: 'failed',
+            attempts: attempt,
+          },
+          err,
         },
-        err,
-      })
+        'Failed to get object version ID from s3 after retries',
+      )
 
       throw err
     }
