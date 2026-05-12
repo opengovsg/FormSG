@@ -43,7 +43,7 @@ export const BillingForm = ({
         <BillingSvg />
         <Skeleton isLoaded={true} w="fit-content">
           <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
-            Bill charges
+            Singpass transactions
           </Text>
         </Skeleton>
         <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -52,7 +52,7 @@ export const BillingForm = ({
             isReadOnly={formState.isSubmitting}
             mb="2.5rem"
           >
-            <FormLabel isRequired>e-service ID</FormLabel>
+            <FormLabel isRequired>Enter e-service or form ID</FormLabel>
             <Input
               autoComplete="email"
               autoFocus

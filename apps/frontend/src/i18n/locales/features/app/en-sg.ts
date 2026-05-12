@@ -18,7 +18,7 @@ export const enSG: App = {
       formGuide: 'Help',
     },
     avatarMenuItem: {
-      billing: 'Billing',
+      billing: 'Singpass transactions',
       emergencyContact: 'Emergency contact',
       transferAllForms: 'Transfer all forms',
     },
