@@ -113,6 +113,8 @@ jobs:
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
