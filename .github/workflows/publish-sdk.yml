@@ -64,13 +64,11 @@ jobs:
 
       - name: Resolve SDK version
         id: version
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           version=$(jq -r .version < packages/sdk/package.json)
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=sdk-v${version}" >> "$GITHUB_OUTPUT"
-          if npm view "${{ env.SDK_PACKAGE }}@${version}" version >/dev/null 2>&1; then
+          if npm view "${{ env.SDK_PACKAGE }}@${version}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
             echo "Version ${version} already published on npm; skipping release."
             echo "should-publish=false" >> "$GITHUB_OUTPUT"
           else
