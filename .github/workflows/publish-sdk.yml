@@ -60,7 +60,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.open.gov.sg'
-          npm-token: ${{ secrets.NPM_TOKEN }}
+          token: ${{ secrets.NPM_TOKEN }}
           cache: 'pnpm'
 
       - name: Resolve SDK version
