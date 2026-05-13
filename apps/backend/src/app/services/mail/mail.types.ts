@@ -38,6 +38,7 @@ export type SendAutoReplyEmailsArgs = {
   autoReplyMailDatas: AutoReplyMailData[]
   pdfAttachment?: Mail.Attachment
   isPaymentEnabled: boolean
+  useStandardisedEmailTemplate?: boolean
 }
 
 export type MailServiceParams = {
@@ -109,14 +110,6 @@ export type SmsThresholdWarningNotificationHtmlData =
   FormDeactivatedNotificationHtmlData & {
     smsThreshold: smsThreshold
   }
-
-export type PaymentConfirmationData = {
-  appName: string
-  formTitle: string
-  submissionId: string
-  invoiceUrl: string
-  amountPaid: string
-}
 
 export type IssueReportedNotificationData = {
   appName: string

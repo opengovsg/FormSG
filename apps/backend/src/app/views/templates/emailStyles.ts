@@ -4,6 +4,7 @@ import {
   LinkProps,
   TextProps,
 } from '@react-email/components'
+import React from 'react'
 
 import { colorBaseContentStrong, textStyles } from './commonStyles'
 
@@ -13,7 +14,7 @@ export const mainStyle = {
 }
 
 export const containerStyle = {
-  maxWidth: '720px',
+  maxWidth: '700px',
   width: '100%',
   margin: '20px auto',
   padding: '20px',
@@ -113,4 +114,12 @@ export const linkStyle: NonNullable<LinkProps['style']> = {
   ...textStyle,
   wordBreak: 'break-all',
   color: '#445fcd',
+}
+
+export const jsonTextStyle: React.CSSProperties = {
+  ...secondaryTextStyle,
+  maxWidth: '660px',
+  margin: '0 auto',
+  // padding: '0 28px',
+  wordBreak: 'break-all',
 }

@@ -1,6 +1,6 @@
 {
   "name": "formsg-shared",
-  "version": "7.18.2",
+  "version": "7.19.0",
   "private": true,
   "description": "",
   "scripts": {
@@ -67,6 +67,7 @@
       "default": "./constants/links.ts"
     },
     "./constants/feature-flags": {
+      "require": "./dist/constants/feature-flags.js",
       "default": "./constants/feature-flags.ts"
     },
     "./constants/file": {

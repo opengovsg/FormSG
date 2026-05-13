@@ -12,6 +12,7 @@ import {
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
+import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -68,6 +69,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   extractRespondentCopyEmailDatas,
+  formatSubmittedStepTimestamp,
   getEmailFromResponses,
   getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
@@ -201,6 +203,7 @@ const sendNextStepEmail = ({
         return MailService.sendMRFWorkflowStepEmail({
           emails,
           formTitle,
+          formId,
           responseId: submissionId,
           responseUrl,
           formQuestionAnswers,
@@ -309,6 +312,7 @@ export const sendNextStepReminderEmail = ({
 
   return MailService.sendMRFWorkflowStepEmail({
     emails,
+    formId,
     formTitle,
     responseId: submissionId,
     responseUrl,
@@ -422,6 +426,7 @@ const sendMrfOutcomeEmails = ({
   currentStepNumber,
   form,
   responses,
+  latestSubmissionTimestamp,
   submissionId,
   isApproval = false,
   isRejected = false,
@@ -441,6 +446,7 @@ const sendMrfOutcomeEmails = ({
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
   responses: FieldResponsesV3
+  latestSubmissionTimestamp: string
   submissionId: string
   isApproval?: boolean
   isRejected?: boolean
@@ -514,6 +520,7 @@ const sendMrfOutcomeEmails = ({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
+            timestamp: latestSubmissionTimestamp,
             isRejected,
             formQuestionAnswers,
             attachments: emailAttachments,
@@ -536,6 +543,7 @@ const sendMrfOutcomeEmails = ({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
+          timestamp: latestSubmissionTimestamp,
           formQuestionAnswers,
           attachments: emailAttachments,
         }).orElse((error) => {
@@ -594,6 +602,15 @@ const sendMrfRespondentCopyEmails = ({
 
   const submissionId: string = submission.id
 
+  const latestSubmissionTimestamp = submission.submittedSteps
+    ? moment(
+        submission.submittedSteps[submission.submittedSteps.length - 1]
+          .submittedAt,
+      )
+        .tz('Asia/Singapore')
+        .format('ddd, DD MMM YYYY hh:mm:ss A')
+    : ''
+
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
@@ -608,10 +625,11 @@ const sendMrfRespondentCopyEmails = ({
       ]
       return ResultAsync.combine(
         respondentCopyEmailDatas.map((autoReplyMailData) => {
-          return MailService.sendMrfRespondentCopyEmail({
+          return MailService.sendRespondentCopyEmail({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
+            timestamp: latestSubmissionTimestamp,
             attachments: autoReplyMailData.includeFormSummary
               ? recipientAttachments
               : [],
@@ -1022,6 +1040,11 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     growthbook,
   })
 
+  const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
+    submittedSteps: submission.submittedSteps,
+    stepIndex: currentStepNumber,
+  })
+
   const sendMrfRespondentCopyEmailsPdfResult =
     checkIfRespondentFormSummaryIsRequired({
       responses,
@@ -1107,6 +1130,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         currentStepNumber,
         form,
         responses,
+        latestSubmissionTimestamp,
         submissionId,
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
@@ -1362,6 +1386,11 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     growthbook,
   })
 
+  const latestSubmissionTimestamp = formatSubmittedStepTimestamp({
+    submittedSteps: submission.submittedSteps,
+    stepIndex: currentStepNumber,
+  })
+
   const sendMrfRespondentCopyEmailsPdfResult =
     checkIfRespondentFormSummaryIsRequired({
       responses,
@@ -1406,6 +1435,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       currentStepNumber,
       form: snapshottedFormDef,
       responses,
+      latestSubmissionTimestamp,
       submissionId,
       isApproval: true,
       isRejected: true,
@@ -1424,6 +1454,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     currentStepNumber,
     form: snapshottedFormDef,
     responses,
+    latestSubmissionTimestamp,
     submissionId,
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,

@@ -22,6 +22,7 @@ import { err, ok, Result } from 'neverthrow'
 import {
   EmailRespondentConfirmationField,
   FormFieldSchema,
+  IMultirespondentSubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
@@ -544,4 +545,17 @@ export const getMrfCookieName = ({
   previousSubmissionId: string
 }): string => {
   return `Mrf_${formId}_${previousSubmissionId}`
+}
+
+export const formatSubmittedStepTimestamp = ({
+  submittedSteps,
+  stepIndex,
+}: {
+  submittedSteps: IMultirespondentSubmissionSchema['submittedSteps']
+  stepIndex: number
+}): string => {
+  if (!submittedSteps?.[stepIndex]?.submittedAt) return ''
+  return moment(submittedSteps[stepIndex].submittedAt)
+    .tz('Asia/Singapore')
+    .format('ddd, DD MMM YYYY hh:mm:ss A')
 }
