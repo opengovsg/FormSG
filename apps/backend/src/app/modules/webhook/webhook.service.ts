@@ -50,7 +50,7 @@ export const saveWebhookRecord = (
   submissionId: ISubmissionSchema['_id'],
   record: WebhookResponse,
 ): ResultAsync<
-  IEncryptedSubmissionSchema,
+  ISubmissionSchema,
   PossibleDatabaseError | SubmissionNotFoundError
 > => {
   return ResultAsync.fromPromise(

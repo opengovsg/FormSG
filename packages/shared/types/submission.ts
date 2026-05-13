@@ -30,6 +30,18 @@ export const ResponseMetadata = z.object({
 
 export type ResponseMetadata = z.infer<typeof ResponseMetadata>
 
+export const WebhookResponse = z.object({
+  webhookUrl: z.string(),
+  signature: z.string(),
+  response: z.object({
+    status: z.number(),
+    headers: z.string(),
+    data: z.string(),
+  }),
+})
+
+export type WebhookResponse = z.infer<typeof WebhookResponse>
+
 export const SubmissionBase = z.object({
   form: z.string(),
   authType: z.nativeEnum(FormAuthType),
@@ -37,6 +49,7 @@ export const SubmissionBase = z.object({
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),
+  webhookResponses: z.array(WebhookResponse).optional(),
 })
 export type SubmissionBase = z.infer<typeof SubmissionBase>
 
@@ -51,18 +64,6 @@ export interface EmailModeSubmissionBase extends SubmissionBase {
   hasBounced: boolean
 }
 
-export const WebhookResponse = z.object({
-  webhookUrl: z.string(),
-  signature: z.string(),
-  response: z.object({
-    status: z.number(),
-    headers: z.string(),
-    data: z.string(),
-  }),
-})
-
-export type WebhookResponse = z.infer<typeof WebhookResponse>
-
 /**
  * Storage mode submission typings as stored in the database.
  */
@@ -73,7 +74,6 @@ export const StorageModeSubmissionBase = SubmissionBase.extend({
   verifiedContent: z.string().optional(),
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
-  webhookResponses: z.array(WebhookResponse).optional(),
   paymentId: z.string().optional(),
 })
 

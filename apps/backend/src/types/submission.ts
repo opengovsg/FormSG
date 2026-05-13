@@ -123,6 +123,18 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
   retrieveWebhookInfoById(
     submissionId: string,
   ): Promise<SubmissionWebhookInfo | null>
+
+  /**
+   * Adds a record of a webhook response to a submission. Resolves via
+   * the discriminator, so Encrypt and Multirespondent submissions are
+   * both supported.
+   * @param submissionId ID of submission to update
+   * @param webhookResponse Response data to push
+   */
+  addWebhookResponse(
+    submissionId: string,
+    webhookResponse: WebhookResponse,
+  ): Promise<ISubmissionSchema | null>
 }
 
 export interface IEmailSubmissionSchema
@@ -284,16 +296,6 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       submissionId: string,
     ): Promise<StorageModeSubmissionData | null>
-
-    /**
-     * Adds a record of a webhook response to a submission
-     * @param submissionId ID of submission to update
-     * @param webhookResponse Response data to push
-     */
-    addWebhookResponse(
-      submissionId: string,
-      webhookResponse: WebhookResponse,
-    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export type IMultirespondentSubmissionModel =

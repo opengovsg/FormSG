@@ -44,6 +44,33 @@ import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
+const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
+  {
+    webhookUrl: {
+      type: String,
+      required: true,
+    },
+    signature: {
+      type: String,
+      required: true,
+    },
+    response: {
+      status: {
+        type: Number,
+        required: true,
+      },
+      headers: String,
+      data: String,
+    },
+  },
+  {
+    timestamps: {
+      createdAt: 'created',
+      updatedAt: false,
+    },
+  },
+)
+
 // Exported for use in pending submissions model
 export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
@@ -82,6 +109,7 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
         type: Number,
       },
     },
+    webhookResponses: [webhookResponseSchema],
   },
   {
     timestamps: {
@@ -118,6 +146,18 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
       },
     },
   ]).exec()
+}
+
+SubmissionSchema.statics.addWebhookResponse = function (
+  this: ISubmissionModel,
+  submissionId: string,
+  webhookResponse: WebhookResponse,
+): Promise<ISubmissionSchema | null> {
+  return this.findByIdAndUpdate(
+    submissionId,
+    { $push: { webhookResponses: webhookResponse } },
+    { new: true, setDefaultsOnInsert: true, runValidators: true },
+  ).exec()
 }
 
 SubmissionSchema.statics.retrieveWebhookInfoById = async function (
@@ -216,33 +256,6 @@ EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
   return Promise.resolve(null)
 }
 
-const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
-  {
-    webhookUrl: {
-      type: String,
-      required: true,
-    },
-    signature: {
-      type: String,
-      required: true,
-    },
-    response: {
-      status: {
-        type: Number,
-        required: true,
-      },
-      headers: String,
-      data: String,
-    },
-  },
-  {
-    timestamps: {
-      createdAt: 'created',
-      updatedAt: false,
-    },
-  },
-)
-
 // Exported for use in pending submissions model
 export const EncryptSubmissionSchema = new Schema<
   IEncryptedSubmissionSchema,
@@ -270,7 +283,6 @@ export const EncryptSubmissionSchema = new Schema<
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
   },
-  webhookResponses: [webhookResponseSchema],
 })
 
 /**
@@ -308,17 +320,6 @@ EncryptSubmissionSchema.methods.getWebhookView = async function (
   return {
     data: webhookData,
   }
-}
-
-EncryptSubmissionSchema.statics.addWebhookResponse = function (
-  submissionId: string,
-  webhookResponse: WebhookResponse,
-): Promise<IEncryptedSubmissionSchema | null> {
-  return this.findByIdAndUpdate(
-    submissionId,
-    { $push: { webhookResponses: webhookResponse } },
-    { new: true, setDefaultsOnInsert: true, runValidators: true },
-  ).exec()
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (

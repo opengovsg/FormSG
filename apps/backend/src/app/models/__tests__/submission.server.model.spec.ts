@@ -66,6 +66,7 @@ describe('Submission Model', () => {
       responseHash: 'This is a hash',
       responseSalt: 'This is a salt',
       hasBounced: false,
+      webhookResponses: [],
     },
     MOCK_SUBMISSION_PARAMS,
   )
@@ -102,6 +103,7 @@ describe('Submission Model', () => {
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: 3,
       workflowStep: 0,
+      webhookResponses: [],
     },
     MOCK_SUBMISSION_PARAMS,
   )
@@ -1045,6 +1047,50 @@ describe('Submission Model', () => {
 
         // Assert
         expect(actualSubmission).toBeNull()
+      })
+
+      it('should push a webhook response onto a multirespondent submission', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const submission = await MultirespondentSubmission.create({
+          form: formId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 0,
+          submittedSteps: [],
+        })
+
+        const webhookResponse: WebhookResponse = {
+          signature: 'mrf signature',
+          webhookUrl: 'https://form.gov.sg/mrf-endpoint',
+          response: {
+            data: '{"result":"mrf-ok"}',
+            status: 200,
+            headers: '{}',
+          },
+        }
+
+        // Act — call via the base Submission model to confirm the static
+        // resolves through the discriminator for MRF submissions.
+        const actualSubmission = await Submission.addWebhookResponse(
+          String(submission._id),
+          webhookResponse,
+        )
+        const webhookResponses = actualSubmission!.toObject().webhookResponses!
+
+        // Assert
+        expect(webhookResponses).toHaveLength(1)
+        expect(webhookResponses[0].signature).toEqual(webhookResponse.signature)
+        expect(webhookResponses[0].webhookUrl).toEqual(
+          webhookResponse.webhookUrl,
+        )
+        expect(webhookResponses[0].response).toEqual(webhookResponse.response)
       })
     })
   })
