@@ -67,6 +67,7 @@
       "default": "./constants/links.ts"
     },
     "./constants/feature-flags": {
+      "require": "./dist/constants/feature-flags.js",
       "default": "./constants/feature-flags.ts"
     },
     "./constants/file": {

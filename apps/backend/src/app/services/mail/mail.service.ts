@@ -50,7 +50,6 @@ import {
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
-  PaymentConfirmationData,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
@@ -61,7 +60,6 @@ import {
   generateAutoreplyHtml,
   generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
-  generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
   generateSubmissionToAdminHtml,
   isToFieldValid,
@@ -377,15 +375,17 @@ export class MailService {
    * @param actionName the action name for logging and error messages
    * @returns ResultAsync with true on success or MailGenerationError/MailSendError on failure
    */
-  #sendMrfEmailWithTemplate = ({
+  #sendEmailWithTemplate = ({
     emails,
     formId,
     subject,
     htmlData,
     attachments,
     from,
+    replyTo,
     emailType,
     actionName,
+    submissionId,
   }: {
     emails: string | string[]
     formId: string
@@ -393,8 +393,10 @@ export class MailService {
     htmlData: EmailData
     attachments?: Mail.Attachment[]
     from?: string
+    replyTo?: string
     emailType: EmailType
     actionName: string
+    submissionId?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     return this.#renderEmailTemplate(
       htmlData,
@@ -408,8 +410,13 @@ export class MailService {
         html: mailHtml,
         attachments,
         headers: {
+          [EMAIL_HEADERS.formId]: formId,
           [EMAIL_HEADERS.emailType]: emailType,
+          ...(submissionId && {
+            [EMAIL_HEADERS.submissionId]: submissionId,
+          }),
         },
+        ...(replyTo && { replyTo }),
       }
       return this.#sendNodeMail(mail, {
         formId,
@@ -763,6 +770,7 @@ export class MailService {
     dataCollationData,
     formData,
     pdfAttachment,
+    useStandardisedEmailTemplate,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
@@ -774,6 +782,7 @@ export class MailService {
       answer: string | number
     }[]
     pdfAttachment?: Mail.Attachment
+    useStandardisedEmailTemplate?: boolean
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const logMeta = {
       action: 'sendSubmissionToAdmin',
@@ -812,8 +821,9 @@ export class MailService {
       formData,
     }
 
+    let fullDataCollationData
     if (dataCollationData) {
-      const fullDataCollationData = [
+      fullDataCollationData = [
         {
           question: 'Response ID',
           answer: refNo,
@@ -828,6 +838,37 @@ export class MailService {
     }
 
     const adminEmails: string[] = getAdminEmails(form)
+
+    //TODO (email-standardisation): remove when email standardisation is GA
+    if (useStandardisedEmailTemplate) {
+      const formQuestionAnswers: QuestionAnswer[] = formData.map(
+        ({ question, answerTemplate, fieldType }) => ({
+          question,
+          answer: String(answerTemplate),
+          fieldType,
+        }),
+      )
+      const emailData: EmailData = {
+        emailTitle: `${formTitle} has been completed by all respondents`,
+        formTitle,
+        responseId: refNo,
+        timestamp: submissionTime,
+        formQuestionAnswers,
+        responseJson: JSON.stringify(fullDataCollationData),
+      }
+
+      return this.#sendEmailWithTemplate({
+        emails: adminEmails,
+        formId: String(form._id),
+        subject: `Completed - ${formTitle} (${refNo})`,
+        htmlData: emailData,
+        attachments: attachmentsToInclude,
+        replyTo: replyToEmails?.join(', '),
+        emailType: EmailType.AdminResponse,
+        actionName: 'sendSubmissionToAdmin',
+        submissionId: refNo,
+      })
+    }
 
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
       const mail: MailOptions = {
@@ -886,6 +927,7 @@ export class MailService {
     submissionAttachments = [],
     pdfAttachment,
     isPaymentEnabled,
+    useStandardisedEmailTemplate,
   }: SendAutoReplyEmailsArgs): Promise<
     PromiseSettledResult<
       Result<
@@ -934,6 +976,29 @@ export class MailService {
     // Prepare mail sending for each autoreply mail.
     return Promise.allSettled(
       autoReplyMailDatas.map((mailData, index) => {
+        //TODO (email-standardisation): remove when email standardisation is GA
+        if (useStandardisedEmailTemplate) {
+          const formQuestionAnswers: QuestionAnswer[] = responsesData.map(
+            ({ question, answerTemplate }) => ({
+              question,
+              answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+            }),
+          )
+
+          return this.sendRespondentCopyEmail({
+            formId: form._id,
+            formTitle: form.title,
+            responseId: submission.id,
+            timestamp: moment(submission.created)
+              .tz('Asia/Singapore')
+              .format('ddd, DD MMM YYYY hh:mm:ss A'),
+            attachments: getAttachmentsToInclude(mailData),
+            autoReplyMailData: mailData,
+            agencyName: form.admin.agency.fullName,
+            hasStatusTracker: false, // encrypt mode emails has no status tracker
+            ...(mailData.includeFormSummary && { formQuestionAnswers }),
+          })
+        }
         return this.#sendSingleAutoreplyMail({
           form,
           submission,
@@ -970,28 +1035,27 @@ export class MailService {
     formId: string
     paymentId: string
     paymentAmount: number
-  }): ResultAsync<true, MailSendError> => {
-    const htmlData: PaymentConfirmationData = {
-      formTitle: formTitle,
-      submissionId: submissionId,
-      appName: this.#appName,
-      invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+  }): ResultAsync<true, MailSendError | MailGenerationError> => {
+    const formattedPaymentAmount = `S$${centsToDollars(paymentAmount)}`
+
+    const emailData: EmailData = {
+      emailTitle: `Your payment on ${formTitle} has been received`,
+      formTitle,
+      responseId: String(submissionId),
+      paymentAmount: formattedPaymentAmount,
+      paymentUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
         formId,
         paymentId,
       )}`,
-      amountPaid: centsToDollars(paymentAmount),
     }
-    return generatePaymentConfirmationHtml({ htmlData }).andThen((html) => {
-      const mail: MailOptions = {
-        to: email,
-        from: this.#senderFromString,
-        subject: `Your payment on ${this.#appName} was successful`,
-        html: html,
-        headers: {
-          [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
-        },
-      }
-      return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+
+    return this.#sendEmailWithTemplate({
+      emails: email,
+      formId,
+      subject: `Your payment on ${this.#appName} was successful`,
+      htmlData: emailData,
+      emailType: EmailType.PaymentConfirmation,
+      actionName: 'sendPaymentConfirmationEmail',
     })
   }
 
@@ -1081,6 +1145,7 @@ export class MailService {
    */
   sendMRFWorkflowStepEmail = ({
     emails,
+    formId,
     formTitle,
     responseId,
     responseUrl,
@@ -1088,6 +1153,7 @@ export class MailService {
     formQuestionAnswers,
   }: {
     emails: string[]
+    formId: string
     formTitle: string
     responseId: string
     responseUrl: string
@@ -1106,9 +1172,9 @@ export class MailService {
       (isReminder ? '[Reminder] ' : '') +
       `Action required - ${formTitle} (${responseId})`
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
-      formId: responseId,
+      formId,
       subject: emailSubject,
       htmlData,
       emailType: EmailType.WorkflowNotification,
@@ -1121,6 +1187,7 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    timestamp,
     formQuestionAnswers,
     attachments,
   }: {
@@ -1128,6 +1195,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1136,10 +1204,11 @@ export class MailService {
       emailTitle: `${formTitle} has been completed by all respondents`,
       formTitle,
       responseId: responseId.toString(),
+      timestamp,
       formQuestionAnswers,
     }
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
       formId,
       subject: `Completed - ${formTitle} (${responseId})`,
@@ -1155,6 +1224,7 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    timestamp,
     isRejected,
     formQuestionAnswers,
     attachments,
@@ -1163,6 +1233,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
@@ -1174,11 +1245,12 @@ export class MailService {
       emailTitle: `${formTitle} has been ${outcome.toLowerCase()}`,
       formTitle,
       responseId: responseId.toString(),
+      timestamp,
       outcome,
       formQuestionAnswers,
     }
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails,
       formId,
       subject: `${outcome} - ${formTitle} (${responseId})`,
@@ -1189,10 +1261,11 @@ export class MailService {
     })
   }
 
-  sendMrfRespondentCopyEmail = ({
+  sendRespondentCopyEmail = ({
     formId,
     formTitle,
     responseId,
+    timestamp,
     formQuestionAnswers,
     attachments,
     autoReplyMailData,
@@ -1202,6 +1275,7 @@ export class MailService {
     formId: string
     formTitle: string
     responseId: string
+    timestamp: string
     formQuestionAnswers?: QuestionAnswer[]
     attachments?: Mail.Attachment[]
     autoReplyMailData: AutoReplyMailData
@@ -1214,10 +1288,10 @@ export class MailService {
     )
 
     const htmlData: EmailData = {
-      emailTitle: `Thank you for submitting ${formTitle}`,
       emailBody: autoReplyMailData.body || defaultBody,
       formTitle,
       responseId,
+      timestamp,
       formQuestionAnswers,
       ...(hasStatusTracker && {
         statusTrackerUrl: `${this.#appUrl}/${formId}/status/${responseId}`,
@@ -1231,15 +1305,16 @@ export class MailService {
       autoReplyMailData.subject ||
       `Thank you for submitting ${formTitle} (${responseId})`
 
-    return this.#sendMrfEmailWithTemplate({
+    return this.#sendEmailWithTemplate({
       emails: autoReplyMailData.email,
       formId,
       subject: emailSubject,
       htmlData,
       attachments,
       from: emailSender,
-      emailType: EmailType.WorkflowNotification,
-      actionName: 'sendMrfRespondentCopyEmail',
+      emailType: EmailType.EmailConfirmation,
+      actionName: 'sendRespondentCopyEmail',
+      submissionId: responseId,
     })
   }
 }

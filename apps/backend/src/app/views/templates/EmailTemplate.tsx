@@ -22,6 +22,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import { BasicField } from 'formsg-shared/types'
 import React from 'react'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
@@ -33,8 +34,10 @@ import {
   cardSectionStyle,
   containerStyle,
   headingTextStyle,
+  jsonTextStyle,
   linkStyle,
   mainStyle,
+  outcomeTextStyle,
   primaryTextStyle,
   questionMargin,
   secondaryTextStyle,
@@ -42,13 +45,14 @@ import {
 } from './emailStyles'
 
 export type EmailData = {
-  emailTitle: string
+  emailTitle?: string
   emailBody?: string
   formTitle: string
   responseId: string
+  timestamp?: string
   outcome?: WorkflowOutcome | undefined
   formQuestionAnswers?: QuestionAnswer[]
-  paymentAmount?: number
+  paymentAmount?: string
   statusTrackerUrl?: string
   reviewUrl?: string
   paymentUrl?: string
@@ -63,6 +67,7 @@ export enum WorkflowOutcome {
 export type QuestionAnswer = {
   question: string
   answer: string
+  fieldType?: string
 }
 
 export const EmailTemplate = ({
@@ -70,6 +75,7 @@ export const EmailTemplate = ({
   emailBody,
   formTitle,
   responseId,
+  timestamp,
   outcome,
   formQuestionAnswers,
   paymentAmount,
@@ -78,13 +84,17 @@ export const EmailTemplate = ({
   paymentUrl,
   responseJson,
 }: EmailData): JSX.Element => {
-  // const headingText = `${formTitle} has been completed by all respondents.`
-
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
-      <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-        {qa.question}
-      </Text>
+      {qa.fieldType === BasicField.Section ? (
+        <Text style={{ ...outcomeTextStyle, ...questionMargin }}>
+          {qa.question}
+        </Text>
+      ) : (
+        <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+          {qa.question}
+        </Text>
+      )}
       <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
         {qa.answer}
       </Text>
@@ -131,7 +141,7 @@ export const EmailTemplate = ({
           }
         `}</style>
       </Head>
-      <Preview>{emailTitle}</Preview>
+      {emailTitle && <Preview>{emailTitle}</Preview>}
       <Body style={mainStyle}>
         <Container className="email-container" style={containerStyle}>
           <Section className="email-section" style={sectionStyle}>
@@ -172,12 +182,24 @@ export const EmailTemplate = ({
             {renderMargin(16)}
             {/* Section - Response ID */}
             <Section style={cardSectionStyle}>
-              <Text style={{ ...primaryTextStyle, ...questionMargin }}>
-                Response ID
-              </Text>
-              <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                {responseId}
-              </Text>
+              <>
+                <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                  Response ID
+                </Text>
+                <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                  {responseId}
+                </Text>
+                {timestamp && (
+                  <>
+                    <Text style={{ ...primaryTextStyle, ...questionMargin }}>
+                      Timestamp
+                    </Text>
+                    <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
+                      {timestamp}
+                    </Text>
+                  </>
+                )}
+              </>
             </Section>
             {renderMargin(16)}
             {/* Section - Outcome */}
@@ -211,9 +233,10 @@ export const EmailTemplate = ({
                     Amount paid
                   </Text>
                   <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
-                    {`$${paymentAmount.toFixed(2)}`}
+                    {paymentAmount}
                   </Text>
                 </Section>
+                {renderMargin(16)}
               </>
             )}
             {/* Status tracker button*/}
@@ -277,17 +300,15 @@ export const EmailTemplate = ({
               For more details, please contact the respondent(s) or form
               administrator.
             </Text>
+            {renderMargin(40)}
           </Section>
         </Container>
-
-        {renderMargin(40)}
-
-        {/* JSON Data Section */}
         {responseJson && (
           <>
-            <p>-- Start of JSON --</p>
-            <p>{responseJson}</p>
-            <p>-- End of JSON --</p>
+            <p style={jsonTextStyle}>-- Start of JSON --</p>
+            <p style={jsonTextStyle}>{responseJson}</p>
+            <p style={jsonTextStyle}>-- End of JSON --</p>
+            {renderMargin(20)}
           </>
         )}
       </Body>
