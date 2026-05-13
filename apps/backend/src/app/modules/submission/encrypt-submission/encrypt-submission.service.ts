@@ -1,4 +1,5 @@
 import { GrowthBook } from '@growthbook/growthbook'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   DateString,
   FormResponseMode,
@@ -329,6 +330,13 @@ export const performEncryptPostSubmissionActions = ({
         growthbook,
       }).orElse(() => okAsync(undefined))
 
+      //TODO (email-standardisation): remove when email standardisation is GA
+      const useStandardisedEmailTemplate: boolean =
+        growthbook?.getFeatureValue(
+          featureFlags.standardisedEmailTemplate,
+          false,
+        ) ?? false
+
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
@@ -349,6 +357,7 @@ export const performEncryptPostSubmissionActions = ({
             )
               ? pdfAttachment
               : undefined,
+            useStandardisedEmailTemplate,
           }).mapErr((error) => {
             logger.error({
               message:
@@ -371,6 +380,7 @@ export const performEncryptPostSubmissionActions = ({
               ? pdfAttachment
               : undefined,
             isPaymentEnabled,
+            useStandardisedEmailTemplate,
           }).mapErr((error) => {
             logger.error({
               message: 'Error while sending email confirmations to respondents',

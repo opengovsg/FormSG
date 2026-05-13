@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.19.0](https://github.com/opengovsg/formsg/compare/v7.18.2...v7.19.0) (2026-05-13)
+
+
+### Features
+
+* email standardisation phase 2 (#9390) ([#9390](https://github.com/opengovsg/formsg/commit/4f36cb5eb9fc0eda804c27ba116acd97a507ae2f))
+
+## [7.18.2](https://github.com/opengovsg/formsg/compare/v7.18.1...v7.18.2) (2026-05-12)
+
+
+### Bug Fixes
+
+* **backend:** enable s3 virus scanner retry (#9370) ([#9370](https://github.com/opengovsg/formsg/commit/d933ee245a02ce924a9abb384df88dea11ea4eac))
+* signature field draggability interaction (#9398) ([#9398](https://github.com/opengovsg/formsg/commit/9c9cb1017ad37c9dadab02d4b71c2491d08ba7ce))
+
+## [7.18.1](https://github.com/opengovsg/formsg/compare/v7.18.0...v7.18.1) (2026-05-11)
+
+
+### Chores
+
+* pin pnpm@10.30.3 as packagemanager in package.json (#9399) ([#9399](https://github.com/opengovsg/formsg/commit/3153211505e0c53eb34892f935467f74163fc793))
+
 ## [7.18.0](https://github.com/opengovsg/formsg/compare/v7.17.1...v7.18.0) (2026-05-07)
 
 

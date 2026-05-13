@@ -40,6 +40,7 @@ export const featureFlags = {
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   answerObjectDecryption: 'answer-object-decryption' as const,
+  standardisedEmailTemplate: 'standardised-email-template' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
