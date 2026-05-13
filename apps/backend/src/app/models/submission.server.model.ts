@@ -4,6 +4,7 @@ import {
   SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import moment from 'moment-timezone'
 import mongoose, {
@@ -520,6 +521,30 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
     .exec()
 }
 
+const submittedStepSchema = new Schema(
+  {
+    isApproval: {
+      type: Boolean,
+      required: true,
+    },
+    submittedAt: {
+      type: String,
+      required: true,
+    },
+    nextStepRecipientEmails: {
+      type: [String],
+    },
+    submitterId: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
+    },
+  },
+  { _id: false },
+)
+
 export const MultirespondentSubmissionSchema = new Schema<
   IMultirespondentSubmissionSchema,
   IMultirespondentSubmissionModel
@@ -564,7 +589,7 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
   },
   submittedSteps: {
-    type: Array,
+    type: [submittedStepSchema],
     default: [],
   },
 })
