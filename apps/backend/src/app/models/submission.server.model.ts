@@ -271,7 +271,7 @@ EncryptSubmissionSchema.methods.getWebhookView = async function (
   )
 
   if (this.paymentId) {
-    await (this as IPopulatedWebhookSubmission).populate('paymentId')
+    await (this as IEncryptedSubmissionSchema).populate('paymentId')
   }
   const paymentContent = this.populated('paymentId')
     ? getPaymentWebhookEventObject(this.paymentId)

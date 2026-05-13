@@ -53,7 +53,10 @@ export type FindFormsWithSubsAboveResult = {
   count: number
 }
 
-export interface IPopulatedWebhookSubmission extends IEncryptedSubmissionSchema {
+export type IPopulatedWebhookSubmission = (
+  | IEncryptedSubmissionSchema
+  | IMultirespondentSubmissionSchema
+) & {
   form: {
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
