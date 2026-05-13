@@ -4,6 +4,7 @@ import { promises as dns } from 'dns'
 import {
   BasicField,
   FormAuthType,
+  FormResponseMode,
   PaymentType,
   SubmissionType,
   WebhookResponse,
@@ -12,6 +13,7 @@ import {
 import { merge, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 
+import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import getSubmissionModel, {
   getEmailSubmissionModel,
   getEncryptSubmissionModel,
@@ -498,6 +500,61 @@ describe('Submission Model', () => {
               version: 0,
               created: submission.created,
               paymentContent: {},
+            },
+          },
+        })
+      })
+
+      it('should return the populated submission for a multirespondent submission', async () => {
+        const MultirespondentForm = getMultirespondentFormModel(mongoose)
+        const { user } = await dbHandler.insertFormCollectionReqs()
+        const form = await MultirespondentForm.create({
+          title: 'mrf webhook form',
+          admin: user._id,
+          responseMode: FormResponseMode.Multirespondent,
+          publicKey: 'mockPublicKey',
+          webhook: {
+            url: MOCK_WEBHOOK_URL,
+            isRetryEnabled: true,
+          },
+        })
+        const submission = await MultirespondentSubmission.create({
+          form: form._id,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 0,
+          submittedSteps: [],
+        })
+
+        const result = await Submission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: true,
+          webhookView: {
+            data: {
+              attachmentDownloadUrls: {},
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              encryptedSubmissionSecretKey: 'test secret key',
+              verifiedContent: undefined,
+              version: 1,
+              created: submission.created,
+              paymentContent: {},
+              workflowContent: {
+                workflow: submission.workflow,
+                workflowStep: 0,
+                submittedSteps: [],
+              },
             },
           },
         })

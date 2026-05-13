@@ -112,6 +112,17 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
    * @returns created submission if successful, null otherwise
    */
   saveIfSubmitterIdIsUnique: SaveIfSubmitterIdIsUniqueType
+
+  /**
+   * Retrieves webhook-related info for a given submission. Resolves via
+   * the discriminator, so Encrypt and Multirespondent submissions are
+   * both supported.
+   * @param submissionId
+   * @returns Object containing webhook destination and data
+   */
+  retrieveWebhookInfoById(
+    submissionId: string,
+  ): Promise<SubmissionWebhookInfo | null>
 }
 
 export interface IEmailSubmissionSchema
@@ -283,15 +294,6 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       submissionId: string,
       webhookResponse: WebhookResponse,
     ): Promise<IEncryptedSubmissionSchema | null>
-
-    /**
-     * Retrieves webhook-related info for a given submission.
-     * @param submissionId
-     * @returns Object containing webhook destination and data
-     */
-    retrieveWebhookInfoById(
-      submissionId: string,
-    ): Promise<SubmissionWebhookInfo | null>
   }
 
 export type IMultirespondentSubmissionModel =

@@ -120,6 +120,23 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
   ]).exec()
 }
 
+SubmissionSchema.statics.retrieveWebhookInfoById = async function (
+  this: ISubmissionModel,
+  submissionId: string,
+): Promise<SubmissionWebhookInfo | null> {
+  const populatedSubmission = (await this.findById(submissionId).populate([
+    { path: 'form', select: 'webhook' },
+    { path: 'paymentId' },
+  ])) as IPopulatedWebhookSubmission | null
+  if (!populatedSubmission) return null
+  const webhookView = await populatedSubmission.getWebhookView()
+  return {
+    webhookUrl: populatedSubmission.form.webhook?.url ?? '',
+    isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
+    webhookView,
+  }
+}
+
 /**
  * Creates a new email submission only if provided submitterId is unique.
  * This method ensures that isSingleSubmission is enforced.
@@ -302,28 +319,6 @@ EncryptSubmissionSchema.statics.addWebhookResponse = function (
     { $push: { webhookResponses: webhookResponse } },
     { new: true, setDefaultsOnInsert: true, runValidators: true },
   ).exec()
-}
-
-EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
-  this: IEncryptSubmissionModel,
-  submissionId: string,
-): Promise<SubmissionWebhookInfo | null> {
-  return this.findById(submissionId)
-    .populate([{ path: 'form', select: 'webhook' }, { path: 'paymentId' }])
-    .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
-      if (!populatedSubmission) return null
-      const webhookView = populatedSubmission.getWebhookView()
-      return Promise.all([populatedSubmission, webhookView])
-    })
-    .then((arr) => {
-      if (!arr) return null
-      const [populatedSubmission, webhookView] = arr
-      return {
-        webhookUrl: populatedSubmission.form.webhook?.url ?? '',
-        isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
-        webhookView,
-      }
-    })
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
