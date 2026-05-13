@@ -19,7 +19,10 @@ import {
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptAttachment'
+import { flattenV4ToFormFields } from '../utils/flattenV4ToFormFields'
 import {
+  buildFormFieldMetaMap,
+  convertVerifiedToV4,
   processDecryptedContent,
   processDecryptedContentV3,
 } from '../utils/processDecryptedContent'
@@ -106,9 +109,11 @@ async function decryptSubmissionData(
   {
     submissionData,
     secretKey,
+    useV4,
   }: {
     submissionData: SubmissionStreamDto
     secretKey: string
+    useV4?: boolean
   },
 ): Promise<
   | {
@@ -141,24 +146,56 @@ async function decryptSubmissionData(
       break
     }
     case SubmissionType.Multirespondent: {
-      const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
-        encryptedSubmissionSecretKey:
-          submissionData.encryptedSubmissionSecretKey,
-        encryptedContent,
-        verifiedContent,
-        version,
-      })
-      if (!decryptedObject) {
-        console.error('Invalid decryption for multirespondent response')
-        return {
-          isSubmissionDecryptionSuccessful: false,
+      if (useV4) {
+        const formFieldsMeta = buildFormFieldMetaMap(submissionData.form_fields)
+        const decryptedV4 = ctx.formsgSdk.cryptoV3.decryptToV4(
+          secretKey,
+          {
+            encryptedSubmissionSecretKey:
+              submissionData.encryptedSubmissionSecretKey,
+            encryptedContent,
+            verifiedContent,
+            version,
+          },
+          formFieldsMeta,
+        )
+        if (!decryptedV4) {
+          console.error('Invalid decryption for multirespondent response')
+          return {
+            isSubmissionDecryptionSuccessful: false,
+          }
         }
+        mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
+        const v4Responses = decryptedV4.verified
+          ? {
+              ...decryptedV4.responses,
+              ...convertVerifiedToV4(decryptedV4.verified),
+            }
+          : decryptedV4.responses
+        decryptedResponses = flattenV4ToFormFields({
+          v4Responses,
+          formFields: submissionData.form_fields,
+        })
+      } else {
+        const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
+          encryptedSubmissionSecretKey:
+            submissionData.encryptedSubmissionSecretKey,
+          encryptedContent,
+          verifiedContent,
+          version,
+        })
+        if (!decryptedObject) {
+          console.error('Invalid decryption for multirespondent response')
+          return {
+            isSubmissionDecryptionSuccessful: false,
+          }
+        }
+        mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
+        decryptedResponses = await processDecryptedContentV3(
+          submissionData.form_fields,
+          decryptedObject,
+        )
       }
-      mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
-      decryptedResponses = await processDecryptedContentV3(
-        submissionData.form_fields,
-        decryptedObject,
-      )
       break
     }
     default: {
@@ -409,9 +446,10 @@ async function _parseAndDecryptSubmissionData(
   {
     submissionStreamDtoString,
     secretKey,
+    useV4,
   }: Pick<
     SubmissionDataForDecryption,
-    'submissionStreamDtoString' | 'secretKey'
+    'submissionStreamDtoString' | 'secretKey' | 'useV4'
   >,
 ): Promise<DecryptionResult> {
   let submission: SubmissionStreamDto
@@ -431,6 +469,7 @@ async function _parseAndDecryptSubmissionData(
   const decryptSubmissionDataResult = await decryptSubmissionData(ctx, {
     submissionData: submission,
     secretKey,
+    useV4,
   })
 
   if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
