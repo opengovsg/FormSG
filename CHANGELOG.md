@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.19.0](https://github.com/opengovsg/formsg/compare/v7.18.2...v7.19.0) (2026-05-13)
+
+
+### Features
+
+* email standardisation phase 2 (#9390) ([#9390](https://github.com/opengovsg/formsg/commit/4f36cb5eb9fc0eda804c27ba116acd97a507ae2f))
+
 ## [7.18.2](https://github.com/opengovsg/formsg/compare/v7.18.1...v7.18.2) (2026-05-12)
 
 
