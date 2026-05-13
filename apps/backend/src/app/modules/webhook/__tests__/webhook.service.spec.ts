@@ -6,7 +6,9 @@ import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
+import getSubmissionModel, {
+  getEncryptSubmissionModel,
+} from 'src/app/models/submission.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
@@ -32,6 +34,7 @@ jest.mock('../webhook.message.ts')
 const MockWebhookQueueMessage = jest.mocked(WebhookQueueMessage)
 
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 // define test constants
 
@@ -142,7 +145,7 @@ describe('webhook.service', () => {
       const mockDBError = new Error(DEFAULT_ERROR_MSG)
 
       const addWebhookResponseSpy = jest
-        .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
+        .spyOn(SubmissionModel, 'addWebhookResponse')
         .mockRejectedValueOnce(mockDBError)
 
       // Act
@@ -199,7 +202,7 @@ describe('webhook.service', () => {
       expectedSubmission.webhookResponses = [mockWebhookResponse]
 
       const addWebhookResponseSpy = jest
-        .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
+        .spyOn(SubmissionModel, 'addWebhookResponse')
         .mockResolvedValue(expectedSubmission)
 
       // Act
@@ -415,7 +418,7 @@ describe('webhook.service', () => {
         _id: MOCK_SUBMISSION_ID,
       })
       jest
-        .spyOn(EncryptSubmissionModel, 'addWebhookResponse')
+        .spyOn(SubmissionModel, 'addWebhookResponse')
         .mockResolvedValue(testSubmission)
       MockWebhookValidationModule.validateWebhookUrl.mockResolvedValue()
     })

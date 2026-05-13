@@ -14,7 +14,7 @@ import {
 import { aws as AwsConfig } from '../../config/config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
-import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+import getSubmissionModel from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
@@ -34,7 +34,7 @@ import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
 
 const logger = createLoggerWithLabel(module)
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const Submission = getSubmissionModel(mongoose)
 
 /**
  * Updates the submission in the database with the webhook response
@@ -54,7 +54,7 @@ export const saveWebhookRecord = (
   PossibleDatabaseError | SubmissionNotFoundError
 > => {
   return ResultAsync.fromPromise(
-    EncryptSubmission.addWebhookResponse(submissionId, record),
+    Submission.addWebhookResponse(submissionId, record),
     (error) => {
       logger.error({
         message: 'Database update for webhook status failed',
