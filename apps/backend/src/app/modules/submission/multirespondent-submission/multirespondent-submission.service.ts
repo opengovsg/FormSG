@@ -96,6 +96,13 @@ export const checkFormIsMultirespondent = (
       )
 }
 
+const checkIsStepApproval = (
+  form: Pick<IPopulatedMultirespondentForm, 'workflow'>,
+  zeroIndexedStepNumber: number,
+): boolean => {
+  return form.workflow && !!form.workflow[zeroIndexedStepNumber]?.approval_field
+}
+
 const checkIsFormApproval = (
   form: Pick<IPopulatedMultirespondentForm, 'workflow'>,
 ): boolean => {
@@ -1222,7 +1229,6 @@ export const updateMultiRespondentFormSubmission = ({
         ? nextStepRecipientEmailsResult.unwrapOr(undefined)
         : undefined
 
-      const isApprovalForm = checkIsFormApproval(snapshottedFormDef)
       const isStepRejectedResult = checkIsStepRejected({
         zeroIndexedStepNumber: workflowStep,
         form: snapshottedFormDef,
@@ -1244,7 +1250,10 @@ export const updateMultiRespondentFormSubmission = ({
         submittedAt: new Date().toISOString(),
         nextStepRecipientEmails,
       }
-      const submittedStepMeta = isApprovalForm
+      const submittedStepMeta = checkIsStepApproval(
+        snapshottedFormDef,
+        workflowStep,
+      )
         ? ({
             ...submittedStepMetaCommons,
             status: isStepRejected
