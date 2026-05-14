@@ -1,3 +1,5 @@
+import { datadogLogs } from '@datadog/browser-logs'
+
 import { DateString } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
@@ -154,10 +156,21 @@ export const getDecryptedSubmissionById = async ({
           formFieldsMeta,
         )
 
-        if (!decryptedV4)
+        if (!decryptedV4) {
+          datadogLogs.logger.error(
+            'Could not decrypt the multirespondent form response in v4',
+            {
+              meta: {
+                action: 'getDecryptedSubmissionById',
+                formId,
+                submissionId,
+              },
+            },
+          )
           throw new Error(
             'Could not decrypt the multirespondent form response in v4',
           )
+        }
 
         const processedContentV4 = decryptedV4.verified
           ? {
