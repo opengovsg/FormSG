@@ -1,3 +1,5 @@
+import { datadogLogs } from '@datadog/browser-logs'
+
 import { DateString } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
@@ -21,8 +23,13 @@ import {
 } from './common/utils/decryptionWorker'
 import { getEncryptedResponsesStream } from './ResponsesPage/storage/StorageResponsesService'
 import { CleanableDecryptionWorkerApi } from './ResponsesPage/storage/types'
-import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
+  augmentDecryptedResponses,
+  augmentDecryptedResponsesV4,
+} from './ResponsesPage/storage/utils/augmentDecryptedResponses'
+import {
+  buildFormFieldMetaMap,
+  convertVerifiedToV4,
   processDecryptedContent,
   processDecryptedContentV3,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
@@ -87,10 +94,12 @@ export const getDecryptedSubmissionById = async ({
   formId,
   submissionId,
   secretKey,
+  useV4,
 }: {
   formId: string
   submissionId: string
   secretKey?: string
+  useV4?: boolean
 }) => {
   if (!secretKey) return
 
@@ -99,7 +108,11 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey, mrfVersion
+  let processedContent,
+    processedContentV4,
+    submissionSecretKey,
+    mrfVersion,
+    responsesV4
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -127,6 +140,50 @@ export const getDecryptedSubmissionById = async ({
         encryptedSubmission.form_fields,
         decryptedContent,
       )
+      if (useV4) {
+        const formFieldsMeta = buildFormFieldMetaMap(
+          encryptedSubmission.form_fields,
+        )
+        const decryptedV4 = formsgSdk.cryptoV3.decryptToV4(
+          secretKey,
+          {
+            encryptedContent: encryptedSubmission.encryptedContent,
+            encryptedSubmissionSecretKey:
+              encryptedSubmission.encryptedSubmissionSecretKey,
+            verifiedContent: encryptedSubmission.verifiedContent,
+            version: encryptedSubmission.version,
+          },
+          formFieldsMeta,
+        )
+
+        if (!decryptedV4) {
+          datadogLogs.logger.error(
+            'Could not decrypt the multirespondent form response in v4',
+            {
+              meta: {
+                action: 'getDecryptedSubmissionById',
+                formId,
+                submissionId,
+              },
+            },
+          )
+          throw new Error(
+            'Could not decrypt the multirespondent form response in v4',
+          )
+        }
+
+        const processedContentV4 = decryptedV4.verified
+          ? {
+              ...decryptedV4.responses,
+              ...convertVerifiedToV4(decryptedV4.verified),
+            }
+          : decryptedV4.responses
+        responsesV4 = augmentDecryptedResponsesV4(
+          encryptedSubmission.form_fields,
+          processedContentV4,
+          encryptedSubmission.attachmentMetadata,
+        )
+      }
       submissionSecretKey = decryptedContent.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
       break
@@ -152,6 +209,7 @@ export const getDecryptedSubmissionById = async ({
         ? encryptedSubmission.mrfMeta
         : undefined,
     responses,
+    responsesV4,
     mrfVersion,
   }
 }

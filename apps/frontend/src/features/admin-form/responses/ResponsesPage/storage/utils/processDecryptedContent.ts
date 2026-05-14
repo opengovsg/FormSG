@@ -1,8 +1,11 @@
 import {
+  adaptV3ToV4,
   DecryptedContent,
   DecryptedContentV3,
+  FieldResponsesV4,
   FormField as VerifiedFormField,
-} from '@opengovsg/formsg-sdk/dist/types'
+  FormFieldMeta,
+} from '@opengovsg/formsg-sdk'
 
 import {
   AttachmentFieldResponseV3,
@@ -108,7 +111,6 @@ export const processDecryptedContent = (
 ): VerifiedFormField[] => {
   const { responses: displayedContent, verified } = decrypted
   // Convert decrypted content into displayable object.
-
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
@@ -126,6 +128,7 @@ export const processDecryptedContentV3 = async (
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
   const { responses, verified } = decrypted
+
   // Convert decrypted content into displayable object.
   const displayedContent = form_fields
     .map((ff) => {
@@ -153,4 +156,45 @@ export const processDecryptedContentV3 = async (
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
+}
+
+/** V4 processing functions */
+
+/**
+ * Builds a FormFieldMeta map from form field definitions, keyed by field ID.
+ */
+export const buildFormFieldMetaMap = (
+  formFields: FormFieldDto[],
+): Record<string, FormFieldMeta> => {
+  const map: Record<string, FormFieldMeta> = {}
+  for (const ff of formFields) {
+    map[ff._id] = {
+      question: ff.title,
+      ...('myInfo' in ff && ff.myInfo
+        ? { myInfo: { attr: ff.myInfo.attr } }
+        : {}),
+    }
+  }
+  return map
+}
+
+/**
+ * Converts verified content (SPCP/sgID fields) into V4 response entries.
+ */
+export const convertVerifiedToV4 = (
+  verifiedObj: Record<string, string>,
+): FieldResponsesV4 => {
+  const v4Verified: FieldResponsesV4 = {}
+  const verifiedFields = convertToResponseArray(verifiedObj)
+  for (const field of verifiedFields) {
+    // Verified fields always have a string answer (from getVerifiedFieldFromResponse)
+    if (!('answer' in field) || field.answer === undefined) continue
+    v4Verified[field._id] = {
+      fieldType: field.fieldType,
+      question: field.question,
+      answer: { value: field.answer },
+      provenance: {},
+    }
+  }
+  return v4Verified
 }

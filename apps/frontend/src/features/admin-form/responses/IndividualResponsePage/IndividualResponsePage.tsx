@@ -11,7 +11,9 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 import {
   getMultirespondentSubmissionEditPath,
@@ -39,6 +41,7 @@ import {
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
+import { DecryptedRowV4 } from './DecryptedRowV4'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
 import { PaymentSection } from './PaymentSection'
@@ -121,10 +124,13 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { data: form } = useAdminForm()
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+  const useV4Display = useFeatureIsOn(featureFlags.answerObjectDecryption)
 
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
-  const { data, isLoading, isError } = useIndividualSubmission()
+  const { data, isLoading, isError } = useIndividualSubmission({
+    useV4: useV4Display,
+  })
 
   // Logic to determine which key to use to decrypt attachments.
   const attachmentDecryptionKey =
@@ -306,13 +312,24 @@ export const IndividualResponsePage = (): JSX.Element => {
         ) : (
           <>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
-              {data?.responses.map((r, idx) => (
-                <DecryptedRow
-                  row={r}
-                  attachmentDecryptionKey={attachmentDecryptionKey}
-                  key={idx}
-                />
-              ))}
+              {useV4Display && data?.responsesV4
+                ? data.responsesV4.map((row) => (
+                    <DecryptedRowV4
+                      key={row.fieldId}
+                      fieldId={row.fieldId}
+                      field={row.field}
+                      questionNumber={row.questionNumber}
+                      downloadUrl={row.downloadUrl}
+                      attachmentDecryptionKey={attachmentDecryptionKey}
+                    />
+                  ))
+                : data?.responses.map((r, idx) => (
+                    <DecryptedRow
+                      row={r}
+                      attachmentDecryptionKey={attachmentDecryptionKey}
+                      key={idx}
+                    />
+                  ))}
               <Box />
             </Stack>
             {data?.payment && (

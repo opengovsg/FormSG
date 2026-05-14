@@ -12,6 +12,7 @@ import {
   verifySignedMessage,
 } from './util/crypto'
 import { determineIsFormFieldsV3 } from './util/validate'
+import { adaptV3ToV4 } from './adapt-v3-to-v4'
 import CryptoBase from './crypto-base'
 import { MissingPublicKeyError } from './errors'
 import {
@@ -21,6 +22,20 @@ import {
   EncryptedContentV3,
   FormFieldsV3,
 } from './types'
+import { DecryptedContentV4, FieldResponsesV4, FormFieldMeta } from './types-v4'
+
+/**
+ * Checks whether decrypted responses are already in V4 format.
+ * V4 entries have a `provenance` object, which V3 entries lack.
+ */
+function isFieldResponsesV4(
+  responses: Record<string, unknown>
+): responses is FieldResponsesV4 {
+  const entries = Object.values(responses)
+  if (entries.length === 0) return false
+  const first = entries[0] as Record<string, unknown>
+  return typeof first.provenance === 'object' && first.provenance !== null
+}
 
 export default class CryptoV3 extends CryptoBase {
   signingPublicKey?: string
@@ -36,6 +51,7 @@ export default class CryptoV3 extends CryptoBase {
    * @param form The base-64 encoded form public key for encrypting.
    * @returns The encrypted basestring.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   encrypt = (msg: any, formPublicKey: string): EncryptedContentV3 => {
     const submissionKeypair = generateKeypair()
 
@@ -94,12 +110,12 @@ export default class CryptoV3 extends CryptoBase {
         responses: decryptedObject as FormFieldsV3,
       }
 
-      /** 
+      /**
        * Note on verifiedContent decryption for cryptoV3:
        * Although decryption is supported, verifiedContent encryption is not supported
        * in cryptoV3 encrypt.
        * This is to keep the encryption of verifiedContent and encryptedContent similar to storage mode - where
-       * verifiedContent and encryptedContent are defined and encrypted separately. 
+       * verifiedContent and encryptedContent are defined and encrypted separately.
        */
       // decrypt verifiedContent if it exists
       if (verifiedContent) {
@@ -167,13 +183,42 @@ export default class CryptoV3 extends CryptoBase {
         encodeBase64(submissionSecretKey),
         rest
       )
-
     } catch (err) {
       if (err instanceof MissingPublicKeyError) {
         // rethrow to let the caller decide how to handle missing signing key
         throw err
       }
       return null
+    }
+  }
+
+  /**
+   * Decrypts an encrypted submission and returns it in V4 format.
+   * If the decrypted data is already in V4 format, it is returned directly.
+   * If the decrypted data is in V3 format, it is adapted to V4 using the provided formFields metadata.
+   * @param formSecretKey The base-64 encoded form secret key for decrypting the submission.
+   * @param decryptParams The params containing encrypted content, encrypted submission key and information.
+   * @param formFields A record mapping field IDs to their metadata (question text, myInfo attrs, etc).
+   * @returns The decrypted content in V4 format if successful. Else, null will be returned.
+   * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
+   */
+  decryptToV4 = (
+    formSecretKey: string,
+    decryptParams: DecryptParamsV3,
+    formFields: Record<string, FormFieldMeta>
+  ): DecryptedContentV4 | null => {
+    const decrypted = this.decrypt(formSecretKey, decryptParams)
+    if (!decrypted) return null
+
+    // If the decrypted responses are already in V4 format, return directly
+    const responses = isFieldResponsesV4(decrypted.responses)
+      ? decrypted.responses
+      : adaptV3ToV4(decrypted.responses, { formFields })
+
+    return {
+      submissionSecretKey: decrypted.submissionSecretKey,
+      responses,
+      verified: decrypted.verified,
     }
   }
 
