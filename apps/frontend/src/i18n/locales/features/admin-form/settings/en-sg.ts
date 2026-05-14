@@ -55,9 +55,9 @@ export const enSG = {
     },
     supportedLanguages: {
       selectable:
-        'Respondents will now be able to select and view your form in {{language}}.',
+        'Respondents will now be able to select and view your form in {language}.',
       hidden:
-        '{{language}} is now hidden. Respondents will not be able to see it.',
+        '{language} is now hidden. Respondents will not be able to see it.',
     },
     saveDraft: {
       enabled: 'Saving of draft responses is now enabled on your form.',
