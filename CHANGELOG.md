@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.0](https://github.com/opengovsg/formsg/compare/v7.19.0...v7.20.0) (2026-05-14)
+
+
+### Features
+
+* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
+
+
+### Bug Fixes
+
+* verified content in response page (#9420) ([#9420](https://github.com/opengovsg/formsg/commit/43d66015902da581a362aa4b835d43a6ca23840a))
+
 ## [7.19.0](https://github.com/opengovsg/formsg/compare/v7.18.2...v7.19.0) (2026-05-13)
 
 
