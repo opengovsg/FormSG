@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
@@ -13,6 +14,7 @@ import { WebhooksUnsupportedMsg } from './components/WebhooksSection/WebhooksUns
 import { useAdminFormSettings } from './queries'
 
 export const SettingsWebhooksPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const gb = useGrowthBook()
   const { data: settings, isLoading } = useAdminFormSettings()
   const userRes = useUser()
@@ -42,7 +44,9 @@ export const SettingsWebhooksPage = (): JSX.Element => {
 
   return (
     <Skeleton isLoaded={!isLoading}>
-      <CategoryHeader>Webhooks</CategoryHeader>
+      <CategoryHeader>
+        {t('features.adminForm.settings.webhooks.title')}
+      </CategoryHeader>
       <WebhooksSection />
     </Skeleton>
   )

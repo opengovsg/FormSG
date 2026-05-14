@@ -25,6 +25,7 @@ export const enSG = {
         'Your form will now automatically close on the {submissionLimit} submission.',
       successMrf:
         'Your form will now automatically close on the {submissionLimit} started workflow.',
+      successRemoved: 'The submission limit on your form is removed.',
     },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
