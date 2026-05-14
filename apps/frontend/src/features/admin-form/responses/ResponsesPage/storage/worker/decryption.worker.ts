@@ -160,7 +160,10 @@ async function decryptSubmissionData(
           formFieldsMeta,
         )
         if (!decryptedV4) {
-          console.error('Invalid decryption for multirespondent response')
+          console.error(
+            'Invalid decryption for multirespondent response in v4',
+            { submissionId: submissionData._id },
+          )
           return {
             isSubmissionDecryptionSuccessful: false,
           }

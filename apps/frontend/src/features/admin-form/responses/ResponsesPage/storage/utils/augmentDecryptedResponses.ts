@@ -65,11 +65,20 @@ export const augmentDecryptedResponsesV4 = (
   responsesV4: FieldResponsesV4,
   attachmentMetadata: EncryptedAttachmentRecords,
 ): AugmentedDecryptedResponseV4[] => {
+  // Build ordered field IDs: form fields first, then any remaining (e.g. verified content)
+  const formFieldIds = new Set(formFields.map((f) => f._id))
+  const remainingFieldIds = Object.keys(responsesV4).filter(
+    (id) => !formFieldIds.has(id),
+  )
+  const orderedFieldIds = [
+    ...formFields.map((f) => f._id),
+    ...remainingFieldIds,
+  ]
+
   let nonResponseFieldsCount = 0
   const results: AugmentedDecryptedResponseV4[] = []
 
-  formFields.forEach((formField, index) => {
-    const fieldId = formField._id
+  orderedFieldIds.forEach((fieldId, index) => {
     const field = responsesV4[fieldId]
     if (!field) return
 

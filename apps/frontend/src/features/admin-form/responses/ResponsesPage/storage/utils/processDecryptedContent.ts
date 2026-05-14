@@ -198,23 +198,3 @@ export const convertVerifiedToV4 = (
   }
   return v4Verified
 }
-
-/**
- * Processes V3 (MRF) decrypted content into V4 format.
- */
-export const processDecryptedContentV3ToV4 = (
-  form_fields: FormFieldDto[],
-  decrypted: DecryptedContentV3,
-): FieldResponsesV4 => {
-  const { responses, verified } = decrypted
-  const formFields = buildFormFieldMetaMap(form_fields)
-
-  const v4Responses = adaptV3ToV4(responses, { formFields })
-
-  if (verified) {
-    const v4Verified = convertVerifiedToV4(verified)
-    return { ...v4Responses, ...v4Verified }
-  }
-
-  return v4Responses
-}
