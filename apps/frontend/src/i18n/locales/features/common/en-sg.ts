@@ -94,6 +94,29 @@ export const enSG: Common = {
     text: 'Edit form',
     ariaLabel: 'Click to edit the form',
   },
+  previewFormBanner: {
+    title: {
+      template: 'Template Preview',
+      form: 'Form Preview',
+    },
+    actions: {
+      backToFormSG: 'Back to FormSG',
+      useTemplate: 'Use this template',
+      templatePreviewActions: 'Template preview actions',
+      returnToDashboard: 'Click to return to the admin dashboard',
+      useTemplateAria: 'Click to use this template',
+    },
+    payment: {
+      production:
+        'To test your payment form, replicate this form on our <testingPlatformLink>testing platform.</testingPlatformLink>',
+      nonProduction:
+        'You will not be able to make a test payment, or view submitted answers or attachments in Form Preview mode. Open your form to make a test payment or form submission.',
+    },
+    nonPayment: {
+      nonProduction:
+        'You will not be able to view submitted answers or attachments in Form Preview mode. Open your form to test a form submission.',
+    },
+  },
   moreOptions: 'More options',
   betaBadgeLabel: 'Beta',
   average: 'Average',
@@ -109,4 +132,49 @@ export const enSG: Common = {
   approved: 'Approved',
   notApproved: 'Not approved',
   logout: 'Log out',
+  adminFormMutations: {
+    errors: {
+      missingFormId: 'Form ID is required',
+    },
+    collaborators: {
+      errors: {
+        badRequestAddOrEdit:
+          'The collaborator was unable to be added or edited. Please try again or refresh the page.',
+        badRequestGeneric:
+          'Sorry, an error occurred. Please refresh the page and try again later.',
+        add: 'Error adding collaborator.',
+        update: 'Error updating collaborator.',
+        remove: 'Error removing collaborator.',
+        removeSelf: 'Error removing self.',
+        transferOwnership: 'Error transferring form ownership.',
+        generic: 'Error.',
+        notWhitelistedAgency: '{email} is not part of a whitelisted agency',
+        unexpected422: 'An unexpected error 422 happened',
+      },
+      collaboratorNotFound:
+        'Collaborator to update does not seem to exist. Refresh and try again.',
+      success: {
+        updatedToRole: '{email} has been updated to the {role} role',
+        addedAs: '{email} has been added as a {role}',
+        removed: '{email} has been removed as a collaborator',
+        newOwner: '{email} is now the owner of this form',
+        removeSelf:
+          'You have removed yourself as a collaborator from the form.',
+      },
+    },
+    formPage: {
+      headerAndInstructionsUpdated:
+        'The form header and instructions were updated.',
+      thankYouPageUpdated: 'The Thank you page was updated.',
+      paymentUpdated: 'The payment was updated.',
+      paymentsProductUpdated: 'Payments product was updated.',
+    },
+    downloads: {
+      feedbackStarted: 'Form feedback download started',
+      issuesStarted: 'Form issues download started',
+    },
+    reminders: {
+      sent: 'Your reminder has been sent',
+    },
+  },
 }

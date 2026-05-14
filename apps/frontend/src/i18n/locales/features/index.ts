@@ -1,4 +1,5 @@
 export {
+  type Assistance,
   type Collaborator,
   type FeatureTour,
   type Feedback,

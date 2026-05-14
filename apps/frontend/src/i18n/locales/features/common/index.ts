@@ -94,6 +94,26 @@ export interface Common {
     text: string
     ariaLabel: string
   }
+  previewFormBanner: {
+    title: {
+      template: string
+      form: string
+    }
+    actions: {
+      backToFormSG: string
+      useTemplate: string
+      templatePreviewActions: string
+      returnToDashboard: string
+      useTemplateAria: string
+    }
+    payment: {
+      production: string
+      nonProduction: string
+    }
+    nonPayment: {
+      nonProduction: string
+    }
+  }
   moreOptions: string
   betaBadgeLabel: string
   average: string
@@ -109,4 +129,44 @@ export interface Common {
   approved: string
   notApproved: string
   logout: string
+  adminFormMutations: {
+    errors: {
+      missingFormId: string
+    }
+    collaborators: {
+      errors: {
+        badRequestAddOrEdit: string
+        badRequestGeneric: string
+        add: string
+        update: string
+        remove: string
+        removeSelf: string
+        transferOwnership: string
+        generic: string
+        notWhitelistedAgency: string
+        unexpected422: string
+      }
+      collaboratorNotFound: string
+      success: {
+        updatedToRole: string
+        addedAs: string
+        removed: string
+        newOwner: string
+        removeSelf: string
+      }
+    }
+    formPage: {
+      headerAndInstructionsUpdated: string
+      thankYouPageUpdated: string
+      paymentUpdated: string
+      paymentsProductUpdated: string
+    }
+    downloads: {
+      feedbackStarted: string
+      issuesStarted: string
+    }
+    reminders: {
+      sent: string
+    }
+  }
 }

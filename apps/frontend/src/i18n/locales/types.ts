@@ -4,6 +4,7 @@ import { Pagination } from './components'
 import { ValidationConstants } from './constants'
 import {
   App,
+  Assistance,
   Collaborator,
   Common,
   EmergencyContact,
@@ -38,6 +39,7 @@ interface Translation {
   translation: {
     features: {
       adminForm?: {
+        assistance?: Assistance
         sidebar?: {
           fields?: Fields
           headerAndInstructions?: HeaderAndInstructions
