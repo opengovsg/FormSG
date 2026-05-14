@@ -85,7 +85,7 @@ export const BillCharges = ({
   )
 
   const prettifiedLoginCount = useMemo(
-    () => simplur` ${[loginCount]}login[|s] for FormSG-MOE`,
+    () => simplur` ${[loginCount]}login[|s] for `,
     [loginCount],
   )
 
