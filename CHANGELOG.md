@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.2](https://github.com/opengovsg/formsg/compare/v7.20.1...v7.20.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* add shouldWrapChildren to button component to fix translation engine issues (#9427) ([#9427](https://github.com/opengovsg/formsg/commit/fd3c6ab93cd894fdb3fbe10296e7ecee45eb1f67))
+
+
+### Builds
+
+* merge v7.20.1 back to develop (#9429) ([#9429](https://github.com/opengovsg/formsg/commit/8189ee1060da4cd75d364dfd51f6e4001f2338de))
+
 ## [7.20.1](https://github.com/opengovsg/formsg/compare/v7.20.0...v7.20.1) (2026-05-14)
 
 

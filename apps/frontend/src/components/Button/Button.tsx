@@ -62,7 +62,10 @@ export const Button = forwardRef<ButtonProps, 'button'>(
         {...(isFullWidth ? { minH: '3.5rem' } : {})}
         {...(isHighContrast ? { variant: 'highContrast' } : {})}
       >
-        {children}
+        {/* Span wrapper prevents Chrome's translation engine from directly
+            modifying button text nodes, which breaks React reconciliation
+            when the button switches to its loading state. */}
+        <span>{children}</span>
       </ChakraButton>
     )
   },
