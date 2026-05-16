@@ -1,12 +1,8 @@
-import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
-import { AzureOpenAI } from 'openai'
-import { OpenAIError } from 'openai/error'
-import type {
-  ChatCompletionCreateParamsNonStreaming,
-  ChatCompletionMessageParam,
-} from 'openai/resources/index'
+import { createOpenAI } from '@ai-sdk/openai'
+import { generateText, ModelMessage } from 'ai'
+import { errAsync, ResultAsync } from 'neverthrow'
 
-import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
+import { aisdkConfig } from '../../../config/features/aisdk.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
@@ -14,100 +10,63 @@ import {
   ModelResponseFailureError,
 } from './admin-form.errors'
 
-const { endpoint, apiKey, apiVersion, deploymentName, model } =
-  azureOpenAIConfig
-
 const logger = createLoggerWithLabel(module)
 
-const getLlmClient = (): Result<AzureOpenAI, OpenAIError> => {
-  try {
-    const client = new AzureOpenAI({
-      endpoint,
-      apiKey,
-      apiVersion,
-      deployment: deploymentName,
-    })
-    return ok(client)
-  } catch (error) {
-    logger.error({
-      message: 'Error occurred when getting Llm client',
-      meta: {
-        action: 'getLlmClient',
-      },
-      error,
-    })
-    return err(new ModelGetClientFailureError())
-  }
-}
+export type Message = ModelMessage
 
-export enum Role {
-  User = 'user',
-  System = 'system',
-}
+type GenerateTextArgs = Parameters<typeof generateText>[0]
+export type SendPromptOptions = Omit<
+  GenerateTextArgs,
+  'model' | 'messages' | 'prompt'
+>
 
-export type Message = ChatCompletionMessageParam
-
-/**
- * Sends prompt to the AI LLM and returns the response.
- * @param {Message[]} params.messages - An array of message objects to send to the AI.
- * @param {Object} [params.options] - Optional parameters for the chat completion.
- * @param {string} params.formId - The ID of the form associated with this request. Used for logging.
- * @returns {ResultAsync<string | null, ModelGetClientFailureError>} A Result containing the AI's response or null if no response, or an error if the request fails.
- */
 export const sendPromptToModel = ({
   messages,
   options,
   formId,
 }: {
   messages: Message[]
-  options?: Omit<ChatCompletionCreateParamsNonStreaming, 'model' | 'messages'>
+  options?: SendPromptOptions
   formId: string
 }): ResultAsync<
   string | null,
   ModelGetClientFailureError | ModelResponseFailureError
 > => {
-  const logMeta = {
-    action: 'sendUserTextPrompt',
-    formId,
-  }
-  const getLlmClientResult = getLlmClient()
+  const { providerName, apiKey, baseUrl, modelName } = aisdkConfig
 
-  if (getLlmClientResult.isErr()) {
-    logger.error({
-      message: 'Failed to get Llm client',
-      meta: logMeta,
-      error: getLlmClientResult.error,
+  let model
+  try {
+    const provider = createOpenAI({
+      name: providerName,
+      apiKey,
+      baseURL: baseUrl,
     })
-    return errAsync(getLlmClientResult.error)
-  }
-
-  const llmClient = getLlmClientResult.value
-
-  const chatCompletionPrompt: ChatCompletionCreateParamsNonStreaming = {
-    messages,
-    model,
-    ...options,
+    model = provider.chat(modelName)
+  } catch (error) {
+    logger.error({
+      message: 'Failed to construct ai-sdk provider client',
+      meta: { action: 'sendPromptToModel', formId },
+      error,
+    })
+    return errAsync(new ModelGetClientFailureError())
   }
 
   return ResultAsync.fromPromise(
-    llmClient.chat.completions.create(chatCompletionPrompt),
+    generateText({
+      ...options,
+      model,
+      messages,
+    }),
     (err) => {
       logger.error({
         message: 'Failed to generate model response',
-        meta: logMeta,
+        meta: { action: 'sendPromptToModel', formId },
         error: err,
       })
       return new ModelResponseFailureError()
     },
   ).map((response) => {
-    const isLlmResponseMissing =
-      !response.choices ||
-      response.choices.length <= 0 ||
-      !response.choices[0].message?.content
-
-    if (isLlmResponseMissing) {
-      return null
-    }
-    return response.choices[0].message?.content
+    if (!response.text) return null
+    return response.text
   })
 }
