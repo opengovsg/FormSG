@@ -65,10 +65,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PAYMENT_STRIPE_WEBHOOK_SECRET"
         },
         {
-          "name": "AZURE_OPENAI_API_KEY",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_API_KEY"
-        },
-        {
           "name": "SINGPASS_ESRVC_ID",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SINGPASS_ESRVC_ID"
         },
@@ -202,16 +198,20 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PAYMENT_LANDING_GUIDE_LINK"
         },
         {
-          "name": "AZURE_OPENAI_ENDPOINT",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_ENDPOINT"
+          "name": "AI_SDK_PROVIDER_NAME",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AI_SDK_PROVIDER_NAME"
         },
         {
-          "name": "AZURE_OPENAI_DEPLOYMENT_NAME",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_DEPLOYMENT_NAME"
+          "name": "AI_SDK_BASE_URL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AI_SDK_BASE_URL"
         },
         {
-          "name": "AZURE_OPENAI_API_VERSION",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_API_VERSION"
+          "name": "AI_SDK_API_KEY",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AI_SDK_API_KEY"
+        },
+        {
+          "name": "AI_SDK_MODEL_NAME",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AI_SDK_MODEL_NAME"
         },
         {
           "name": "SPCP_COOKIE_MAX_AGE_PRESERVED",
