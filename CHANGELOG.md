@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.1](https://github.com/opengovsg/formsg/compare/v7.20.0...v7.20.1) (2026-05-14)
+
+
+### Bug Fixes
+
+* **security:** 2026-05-07 bump dependencies (#9394) ([#9394](https://github.com/opengovsg/formsg/commit/f8b6edf7ec14ffe3f6bd9eb4231b7844ff4d403f))
+
 ## [7.20.0](https://github.com/opengovsg/formsg/compare/v7.19.0...v7.20.0) (2026-05-14)
 
 
