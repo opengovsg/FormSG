@@ -5,10 +5,10 @@ import {
   useFormContext,
   useFormState,
 } from 'react-hook-form'
-import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, FormControl, Stack, Text, useToken } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
-import { SignatureVectorArray } from 'formsg-shared/types'
+import { FormColorTheme, SignatureVectorArray } from 'formsg-shared/types' //
 import {
   SIGNATURE_STROKE_SIZE,
   SIGNATURE_STROKE_SMOOTHING,
@@ -35,6 +35,7 @@ export interface SignatureFieldProps extends BaseFieldProps {
 
 export interface SignatureCanvasProps {
   schema: SignatureFieldSchema
+  colorTheme?: FormColorTheme
   isHighContrast?: boolean
   isSubmitting: boolean
   isValid: boolean
@@ -45,6 +46,7 @@ export interface SignatureCanvasProps {
 
 const SignatureCanvas = ({
   schema,
+  colorTheme = FormColorTheme.Blue, // defaults to blue
   isHighContrast,
   isSubmitting,
   isValid,
@@ -52,6 +54,13 @@ const SignatureCanvas = ({
   value,
   onChange,
 }: SignatureCanvasProps) => {
+  const fieldColorScheme = useMemo(
+    () => `theme-${colorTheme}` as const,
+    [colorTheme],
+  )
+
+  const [primaryColor] = useToken('colors', [`${fieldColorScheme}.500`])
+
   const signatureErrors = errors?.[schema._id]
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
 
@@ -246,14 +255,16 @@ const SignatureCanvas = ({
                   signatureErrors
                     ? 'red.600'
                     : isDrawing
-                      ? '#445fcd'
+                      ? primaryColor
                       : 'neutral.400'
                 }
                 position="relative"
                 overflow="hidden"
                 _hover={{
-                  background: schema.disabled ? 'neutral.200' : 'primary.100',
-                  outline: isDrawing ? '2px solid #445fcd' : 'none',
+                  background: schema.disabled
+                    ? 'neutral.200'
+                    : `${fieldColorScheme}.100`,
+                  outline: isDrawing ? `2px solid ${primaryColor}` : 'none',
                 }}
               >
                 {showSignaturePlaceholder && (
@@ -325,6 +336,7 @@ export const SignatureField = ({
   schema,
   disableRequiredValidation,
   isHighContrast,
+  colorTheme,
 }: SignatureFieldProps): JSX.Element => {
   const { control } = useFormContext<SignatureFieldInput>()
   const { isSubmitting, isValid, errors } = useFormState<SignatureFieldInput>()
@@ -342,6 +354,7 @@ export const SignatureField = ({
       render={({ field }) => (
         <SignatureCanvas
           schema={schema}
+          colorTheme={colorTheme}
           isHighContrast={isHighContrast}
           isSubmitting={isSubmitting}
           isValid={isValid}
