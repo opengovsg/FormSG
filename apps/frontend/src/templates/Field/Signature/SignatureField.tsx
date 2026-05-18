@@ -5,10 +5,10 @@ import {
   useFormContext,
   useFormState,
 } from 'react-hook-form'
-import { Box, Flex, FormControl, Stack, Text, useToken } from '@chakra-ui/react'
+import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
-import { FormColorTheme, SignatureVectorArray } from 'formsg-shared/types' //
+import { FormColorTheme, SignatureVectorArray } from 'formsg-shared/types'
 import {
   SIGNATURE_STROKE_SIZE,
   SIGNATURE_STROKE_SMOOTHING,
@@ -46,7 +46,7 @@ export interface SignatureCanvasProps {
 
 const SignatureCanvas = ({
   schema,
-  colorTheme = FormColorTheme.Blue, // defaults to blue
+  colorTheme = FormColorTheme.Blue,
   isHighContrast,
   isSubmitting,
   isValid,
@@ -58,8 +58,6 @@ const SignatureCanvas = ({
     () => `theme-${colorTheme}` as const,
     [colorTheme],
   )
-
-  const [primaryColor] = useToken('colors', [`${fieldColorScheme}.500`])
 
   const signatureErrors = errors?.[schema._id]
   const [showSignaturePlaceholder, setShowSignaturePlaceholder] = useState(true)
@@ -255,7 +253,7 @@ const SignatureCanvas = ({
                   signatureErrors
                     ? 'red.600'
                     : isDrawing
-                      ? primaryColor
+                      ? `${fieldColorScheme}.500`
                       : 'neutral.400'
                 }
                 position="relative"
@@ -264,7 +262,10 @@ const SignatureCanvas = ({
                   background: schema.disabled
                     ? 'neutral.200'
                     : `${fieldColorScheme}.100`,
-                  outline: isDrawing ? `2px solid ${primaryColor}` : 'none',
+                  outline: isDrawing ? `2px solid` : 'none',
+                  outlineColor: isDrawing
+                    ? `${fieldColorScheme}.500`
+                    : undefined,
                 }}
               >
                 {showSignaturePlaceholder && (
