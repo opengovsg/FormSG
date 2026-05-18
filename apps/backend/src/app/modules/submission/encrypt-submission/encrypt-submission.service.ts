@@ -289,6 +289,11 @@ export const performEncryptPostSubmissionActions = ({
       ).andThen(() => okAsync(form))
     })
     .andThen((form) => {
+      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags
+      void growthbook?.setAttributes({
+        ...growthbook?.getAttributes(),
+        formId: form._id.toString(),
+      })
       const respondentCopyEmailData: AutoReplyMailData[] = respondentEmails
         ? respondentEmails?.map((val) => {
             return {
@@ -330,7 +335,7 @@ export const performEncryptPostSubmissionActions = ({
         growthbook,
       }).orElse(() => okAsync(undefined))
 
-      //TODO (email-standardisation): remove when email standardisation is GA
+      /* TODO: (email-standardisation): remove when email standardisation is GA */
       const useStandardisedEmailTemplate: boolean =
         growthbook?.getFeatureValue(
           featureFlags.standardisedEmailTemplate,
