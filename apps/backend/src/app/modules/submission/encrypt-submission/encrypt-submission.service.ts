@@ -335,7 +335,7 @@ export const performEncryptPostSubmissionActions = ({
         growthbook,
       }).orElse(() => okAsync(undefined))
 
-      /* TODO: (email-standardisation): remove when email standardisation is GA */
+      // TODO (email-standardisation): remove when email standardisation is GA
       const useStandardisedEmailTemplate: boolean =
         growthbook?.getFeatureValue(
           featureFlags.standardisedEmailTemplate,
