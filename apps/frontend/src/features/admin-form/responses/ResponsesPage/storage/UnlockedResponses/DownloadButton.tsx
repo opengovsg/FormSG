@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useThrottle } from 'react-use'
 import {
   Box,
   CheckboxGroup,
@@ -12,6 +11,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { throttle } from 'lodash'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -153,10 +153,68 @@ export const DownloadButton = (): JSX.Element => {
   const { downloadParams, dateRangeResponsesCount } =
     useStorageResponsesContext()
 
-  const [_downloadCount, setDownloadCount] = useState(0)
-  const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
-  const downloadCount = useThrottle(_downloadCount, 1000)
-  const pdfGenerationCount = useThrottle(_pdfGenerationCount, 1000)
+  // Progress counters are stored in refs and only flushed to React state on
+  // a throttled cadence. Decryption / PDF generation completes once per
+  // response, so for large downloads the progress callbacks fire thousands
+  // of times in rapid succession. Putting that count directly into state
+  // (and throttling only the read side) re-renders DownloadButton, both
+  // modals, the Chakra Modal portal/focus trap and the animated progress
+  // bar on every tick — visually presenting as the page "flashing" or
+  // appearing to reload top-down. Refs + a throttled setState keep the
+  // component at a few renders per second regardless of download size.
+  const downloadCountRef = useRef(0)
+  const pdfGenerationCountRef = useRef(0)
+  const [downloadCount, setDownloadCountState] = useState(0)
+  const [pdfGenerationCount, setPdfGenerationCountState] = useState(0)
+
+  const flushDownloadCount = useMemo(
+    () =>
+      throttle(() => setDownloadCountState(downloadCountRef.current), 250, {
+        leading: true,
+        trailing: true,
+      }),
+    [],
+  )
+  const flushPdfGenerationCount = useMemo(
+    () =>
+      throttle(
+        () => setPdfGenerationCountState(pdfGenerationCountRef.current),
+        250,
+        { leading: true, trailing: true },
+      ),
+    [],
+  )
+  useEffect(() => {
+    return () => {
+      flushDownloadCount.cancel()
+      flushPdfGenerationCount.cancel()
+    }
+  }, [flushDownloadCount, flushPdfGenerationCount])
+
+  const setDownloadCount = useCallback<
+    React.Dispatch<React.SetStateAction<number>>
+  >(
+    (updater) => {
+      downloadCountRef.current =
+        typeof updater === 'function'
+          ? (updater as (prev: number) => number)(downloadCountRef.current)
+          : updater
+      flushDownloadCount()
+    },
+    [flushDownloadCount],
+  )
+  const setPdfGenerationCount = useCallback<
+    React.Dispatch<React.SetStateAction<number>>
+  >(
+    (updater) => {
+      pdfGenerationCountRef.current =
+        typeof updater === 'function'
+          ? (updater as (prev: number) => number)(pdfGenerationCountRef.current)
+          : updater
+      flushPdfGenerationCount()
+    },
+    [flushPdfGenerationCount],
+  )
 
   const downloadPercentage = useMemo(() => {
     if (!dateRangeResponsesCount) return 0
@@ -179,9 +237,13 @@ export const DownloadButton = (): JSX.Element => {
   >()
 
   const resetDownloadProgress = useCallback(() => {
-    setDownloadCount(0)
-    setPdfGenerationCount(0)
-  }, [])
+    flushDownloadCount.cancel()
+    flushPdfGenerationCount.cancel()
+    downloadCountRef.current = 0
+    pdfGenerationCountRef.current = 0
+    setDownloadCountState(0)
+    setPdfGenerationCountState(0)
+  }, [flushDownloadCount, flushPdfGenerationCount])
   const resetDownloadMetadataAndProgress = useCallback(() => {
     setDownloadMetadata(undefined)
     resetDownloadProgress()
