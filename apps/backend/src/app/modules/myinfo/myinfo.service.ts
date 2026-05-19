@@ -76,7 +76,7 @@ const MyInfoHash = getMyInfoHashModel(mongoose)
 const MYINFO_DEV_BASE_URL = 'http://localhost:5156/myinfo/v3'
 const BREAKER_PARAMS = {
   errorThresholdPercentage: 80, // % of errors before breaker trips
-  timeout: 5000, // max time before individual request fails, ms
+  timeout: 30000, // max time before individual request fails, ms
   rollingCountTimeout: 30000, // width of statistical window, ms
   volumeThreshold: 5, // min number of requests within statistical window before breaker trips
 }
