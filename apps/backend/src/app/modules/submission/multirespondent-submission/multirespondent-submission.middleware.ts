@@ -1,6 +1,9 @@
+import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
+import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -781,12 +784,38 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  const useV4Encryption =
+    req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false
+
+  let responsesToEncrypt:
+    | Record<
+        string,
+        ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+      >
+    | FieldResponsesV4 = strippedAttachmentResponses
+
+  if (useV4Encryption) {
+    // Build FormFieldMeta map from form definition for question text
+    const formFieldMeta: Record<string, FormFieldMeta> = {}
+    for (const field of formDef.form_fields) {
+      formFieldMeta[field._id] = {
+        question: field.title,
+        ...(field.myInfo?.attr && { myInfo: { attr: field.myInfo.attr } }),
+      }
+    }
+
+    responsesToEncrypt = adaptV3ToV4(strippedAttachmentResponses, {
+      formFields: formFieldMeta,
+      provenance: {},
+    })
+  }
+
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(
@@ -806,12 +835,10 @@ export const encryptSubmission = async (
     workflowStep: req.body.workflowStep,
     responses,
     /**
-     * MRF Version: 1
-     * ====================
-     * - Encrypted payload does not contain attachment contents
-     * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
+     * MRF Version: 1 — V3 encrypted responses
+     * MRF Version: 2 — V4 encrypted responses (with provenance)
      */
-    mrfVersion: 1,
+    mrfVersion: useV4Encryption ? 2 : 1,
   }
 
   return next()
