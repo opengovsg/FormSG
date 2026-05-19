@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.3](https://github.com/opengovsg/formsg/compare/v7.20.2...v7.20.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* increase myinfo circuit breaker timeout to 30000ms (#9445) ([#9445](https://github.com/opengovsg/formsg/commit/2ae61017a284307fadad4286b889597a205ca0f5))
+* use POSIX compliant syntax in husky hook scripts for shell interoperability (#9432) ([#9432](https://github.com/opengovsg/formsg/commit/903e9811b235435d5dbd472b5249b6eaa5fedab3))
+
+
+### Chores
+
+* add v1 Claude Code agent skills configuration (#9436) ([#9436](https://github.com/opengovsg/formsg/commit/efdb82c7df76873e1ff51a310d8cd9f4b741fb4f))
+
+
+### Miscellaneous
+
+* Merge pull request #9435 from opengovsg/chore/add-formid-feature-flag ([#9435](https://github.com/opengovsg/formsg/commit/e3db44535728ab973182a3211b9efaa101081324))
+
 ## [7.20.2](https://github.com/opengovsg/formsg/compare/v7.20.1...v7.20.2) (2026-05-16)
 
 
