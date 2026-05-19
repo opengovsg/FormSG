@@ -735,6 +735,12 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
+  // Set growthbook formId attribute for targetted feature flagging
+  void req.growthbook?.setAttributes({
+    ...req.growthbook.getAttributes(),
+    formId: req.params.formId,
+  })
+
   const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
