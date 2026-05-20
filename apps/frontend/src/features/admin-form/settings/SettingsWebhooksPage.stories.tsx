@@ -70,6 +70,19 @@ StorageModeRetryEnabled.parameters = {
 
 export const UnsupportedEmailMode = Template.bind({})
 
+export const UnsupportedMultirespondentMode = Template.bind({})
+UnsupportedMultirespondentMode.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Multirespondent,
+        },
+      }),
+    },
+  },
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
