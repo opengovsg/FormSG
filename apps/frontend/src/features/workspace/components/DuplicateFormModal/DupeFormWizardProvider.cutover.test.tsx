@@ -107,4 +107,32 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
     )
     expect(dupeStorageModeFormMutation.mutate).not.toHaveBeenCalled()
   })
+
+  it('fires the storage dupe mutation with [user.email] fallback after escape hatch + submit', async () => {
+    const { result } = renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
+
+    act(() => {
+      result.current.goToStorageModeDetails()
+      result.current.formMethods.setValue('title', 'New title')
+    })
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(dupeStorageModeFormMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(dupeStorageModeFormMutation.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        formIdToDuplicate: MOCK_FORM_ID,
+        title: 'New title',
+        responseMode: FormResponseMode.Encrypt,
+        emails: [MOCK_USER_EMAIL],
+      }),
+      expect.anything(),
+    )
+    expect(dupeMultirespondentModeFormMutation.mutate).not.toHaveBeenCalled()
+  })
 })
