@@ -29,6 +29,7 @@ import {
 } from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
+import { EscapeHatchLink } from './EscapeHatchLink'
 import { FormResponseOptions } from './FormResponseOptions'
 
 /** The length of form title to start showing warning text */
@@ -63,6 +64,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     modalHeader,
     isSingpass,
     hasMyInfoChildren,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
   } = useCreateFormWizard()
   const {
     register,
@@ -113,63 +116,74 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               </FormFieldMessage>
             ) : null}
           </FormControl>
-          <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel
-              description={t(
-                'features.workspace.modals.forms.create.details.type.description',
-              )}
-            >
-              {t('features.workspace.modals.forms.create.details.type.label')}
-            </FormLabel>
-            <Skeleton isLoaded={!isFetching}>
-              <Controller
-                name="responseMode"
-                control={control}
-                render={({ field }) => (
-                  <FormResponseOptions
-                    {...field}
-                    hasMyInfoChildren={hasMyInfoChildren}
-                    handleEmailButtonPress={handleEmailButtonPress}
-                  />
-                )}
-                rules={{
-                  required: t(
-                    'features.workspace.modals.forms.create.errors.responseMode.required',
-                  ),
-                }}
-              />
-            </Skeleton>
-            <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-            {hasMyInfoChildren && (
-              <InlineMessage mt="2rem">
-                {t(
-                  'features.workspace.modals.forms.create.errors.noMyInfoChildrenInMrf',
-                )}
-              </InlineMessage>
-            )}
-          </FormControl>
-          {(responseModeValue === FormResponseMode.Encrypt ||
-            responseModeValue === FormResponseMode.Email) && (
+          {isMrfCutoverEnabled ? (
+            <EscapeHatchLink onClick={goToStorageModeDetails} />
+          ) : (
             <FormControl
-              isRequired={responseModeValue === FormResponseMode.Email}
-              isInvalid={!!errors.emails}
-              mb="2.25rem"
+              isRequired
+              isInvalid={!!errors.responseMode}
+              mb="2.5rem"
             >
               <FormLabel
-                isRequired={responseModeValue === FormResponseMode.Email}
-                useMarkdownForDescription
                 description={t(
-                  'features.workspace.modals.forms.create.details.notifications.description',
-                  { GUIDE_PREVENT_EMAIL_BOUNCE },
+                  'features.workspace.modals.forms.create.details.type.description',
                 )}
               >
-                {t(
-                  'features.workspace.modals.forms.create.details.notifications.label',
-                )}
+                {t('features.workspace.modals.forms.create.details.type.label')}
               </FormLabel>
-              <EmailFormRecipientsInput />
+              <Skeleton isLoaded={!isFetching}>
+                <Controller
+                  name="responseMode"
+                  control={control}
+                  render={({ field }) => (
+                    <FormResponseOptions
+                      {...field}
+                      hasMyInfoChildren={hasMyInfoChildren}
+                      handleEmailButtonPress={handleEmailButtonPress}
+                    />
+                  )}
+                  rules={{
+                    required: t(
+                      'features.workspace.modals.forms.create.errors.responseMode.required',
+                    ),
+                  }}
+                />
+              </Skeleton>
+              <FormErrorMessage>
+                {errors.responseMode?.message}
+              </FormErrorMessage>
+              {hasMyInfoChildren && (
+                <InlineMessage mt="2rem">
+                  {t(
+                    'features.workspace.modals.forms.create.errors.noMyInfoChildrenInMrf',
+                  )}
+                </InlineMessage>
+              )}
             </FormControl>
           )}
+          {!isMrfCutoverEnabled &&
+            (responseModeValue === FormResponseMode.Encrypt ||
+              responseModeValue === FormResponseMode.Email) && (
+              <FormControl
+                isRequired={responseModeValue === FormResponseMode.Email}
+                isInvalid={!!errors.emails}
+                mb="2.25rem"
+              >
+                <FormLabel
+                  isRequired={responseModeValue === FormResponseMode.Email}
+                  useMarkdownForDescription
+                  description={t(
+                    'features.workspace.modals.forms.create.details.notifications.description',
+                    { GUIDE_PREVENT_EMAIL_BOUNCE },
+                  )}
+                >
+                  {t(
+                    'features.workspace.modals.forms.create.details.notifications.label',
+                  )}
+                </FormLabel>
+                <EmailFormRecipientsInput />
+              </FormControl>
+            )}
           <DataClassificationInfoBox />
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
