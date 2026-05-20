@@ -1,6 +1,7 @@
 import { Text } from '@chakra-ui/react'
 
 import { composeEscapeHatchCopy } from '~utils/escapeHatchCopy'
+import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import { useUser } from '~features/user/queries'
@@ -15,12 +16,14 @@ export const EscapeHatchLink = ({
   const { user } = useUser()
   const { prefix, linkText, suffix } = composeEscapeHatchCopy(user?.betaFlags)
   return (
-    <Text textStyle="body-2" color="secondary.500">
-      {prefix}
-      <Link cursor="pointer" onClick={onClick}>
-        {linkText}
-      </Link>
-      {suffix}
-    </Text>
+    <InlineMessage variant="info">
+      <Text>
+        {prefix}
+        <Link cursor="pointer" onClick={onClick}>
+          {linkText}
+        </Link>
+        {suffix}
+      </Text>
+    </InlineMessage>
   )
 }

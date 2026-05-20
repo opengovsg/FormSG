@@ -56,12 +56,17 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
               onClick={goToMrfDetails}
               mr="0.5rem"
             />
-            {t('features.workspace.modals.forms.create.title.setup')}
+            Set up a Storage mode form
           </Flex>
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="45rem" p={0}>
+          <Text textStyle="body-2" color="secondary.500" mb="2rem">
+            Storage mode is outdated and no longer receives new features. Only
+            use this if you need a feature not yet available in the current
+            version.
+          </Text>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>
               {t('features.workspace.modals.forms.create.details.name.label')}
