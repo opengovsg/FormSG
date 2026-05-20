@@ -9,13 +9,15 @@ import {
   useClipboard,
   useDisclosure,
 } from '@chakra-ui/react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { UserId } from 'formsg-shared/types'
 import { PublicFormViewDto } from 'formsg-shared/types/form'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
-import { userHandlers } from '~/mocks/msw/handlers/user'
+import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
 import { ApiError } from '~typings/core'
 
@@ -80,6 +82,56 @@ const Template: StoryFn<CreateFormModalProps> = (args) => {
   )
 }
 export const Default = Template.bind({})
+
+const mrfCutoverOn = new GrowthBook({
+  features: { [featureFlags.mrfCutover]: { defaultValue: true } },
+})
+
+export const MrfCutoverOn = Template.bind({})
+MrfCutoverOn.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+
+export const MrfCutoverOnChildrenBeta = Template.bind({})
+MrfCutoverOnChildrenBeta.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfCutoverOnChildrenBeta.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: { ...MOCK_USER, betaFlags: { children: true } },
+    }),
+  ],
+}
+
+export const MrfCutoverOnWebhookV1Beta = Template.bind({})
+MrfCutoverOnWebhookV1Beta.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfCutoverOnWebhookV1Beta.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        betaFlags: { createStorageModeForV1Webhook: true },
+      },
+    }),
+  ],
+}
 
 export const StorageModeAckScreen = () => {
   const secretKey = 'mock-secret-key'

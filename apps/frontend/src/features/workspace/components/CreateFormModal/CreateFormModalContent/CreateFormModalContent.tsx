@@ -8,6 +8,7 @@ import {
 } from '../CreateFormWizardContext'
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
+import { CreateFormStorageModeScreen } from './CreateFormStorageModeScreen'
 import {
   EmailModeCreationScreen,
   EmailModeFeedbackScreen,
@@ -27,6 +28,9 @@ export const CreateFormModalContent = () => {
       <XMotionBox keyProp={currentStep} custom={direction}>
         {currentStep === CreateFormFlowStates.Details && (
           <CreateFormDetailsScreen />
+        )}
+        {currentStep === CreateFormFlowStates.StorageModeDetails && (
+          <CreateFormStorageModeScreen />
         )}
         {currentStep === CreateFormFlowStates.Landing && (
           <SaveSecretKeyScreen />
