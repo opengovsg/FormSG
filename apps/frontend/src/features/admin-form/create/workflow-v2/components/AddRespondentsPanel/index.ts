@@ -1,4 +1,6 @@
 export { AddRespondentsPanel } from './AddRespondentsPanel'
+export { CreateDropdownFieldForm } from './CreateDropdownFieldForm'
+export { CreateEmailFieldForm } from './CreateEmailFieldForm'
 export { EditRespondentForm } from './EditRespondentForm'
 export { NewRespondentForm } from './NewRespondentForm'
 export { NotificationFocusPanel } from './NotificationFocusPanel'

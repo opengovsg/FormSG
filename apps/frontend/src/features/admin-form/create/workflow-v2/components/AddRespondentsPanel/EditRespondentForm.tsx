@@ -1,14 +1,21 @@
 import { useCallback, useMemo, useState } from 'react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
+import { BiLeftArrowAlt, BiTrash } from 'react-icons/bi'
 import {
   Box,
-  Button,
+  ButtonGroup,
   Divider,
   Flex,
   FormControl,
   FormLabel,
+  Icon,
   IconButton,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Radio,
   RadioGroup,
   Stack,
@@ -16,22 +23,31 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 
+import Button from '~components/Button'
+import { SingleSelect } from '~components/Dropdown'
+import { ModalCloseButton } from '~components/Modal'
+
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
 import type { RespondentType } from '../../types'
 import {
+  fieldsSelector,
   focusStateSelector,
   respondentsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
+
+import { OptionEmailMappingModal } from './OptionEmailMappingModal'
 
 const MAX_NAME_LENGTH = 50
 
 export const EditRespondentForm = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const respondents = useWorkflowBuilderStore(respondentsSelector)
+  const fields = useWorkflowBuilderStore(fieldsSelector)
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
   const updateRespondent = useWorkflowBuilderStore((s) => s.updateRespondent)
+  const removeRespondent = useWorkflowBuilderStore((s) => s.removeRespondent)
 
   const respondentId =
     focusState.type === 'edit_respondent' ? focusState.respondentId : ''
@@ -41,11 +57,36 @@ export const EditRespondentForm = (): JSX.Element => {
     [respondents, respondentId],
   )
 
+  const emailFields = useMemo(
+    () => fields.filter((f) => f.fieldType === 'email'),
+    [fields],
+  )
+  const dropdownFields = useMemo(
+    () => fields.filter((f) => f.fieldType === 'dropdown'),
+    [fields],
+  )
+
   const [name, setName] = useState(respondent?.name ?? '')
-  const [respondentType] = useState<RespondentType>(
+  const [respondentType, setRespondentType] = useState<RespondentType>(
     respondent?.type ?? 'specific_email',
   )
   const [emails, setEmails] = useState(respondent?.email ?? '')
+  const [selectedFieldId, setSelectedFieldId] = useState<string | null>(
+    respondent?.linkedFieldId ?? null,
+  )
+  const [editedMapping, setEditedMapping] = useState<
+    Record<string, string[]> | undefined
+  >(respondent?.optionsToRecipientsMap)
+  const [isMappingModalOpen, setIsMappingModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+
+  const selectedDropdownField = useMemo(
+    () =>
+      respondentType === 'dropdown_field'
+        ? fields.find((f) => f.id === selectedFieldId)
+        : undefined,
+    [respondentType, selectedFieldId, fields],
+  )
 
   const navigateBack = useCallback(() => {
     setFocus({ type: 'phase', phase: 'add_respondents' })
@@ -54,14 +95,33 @@ export const EditRespondentForm = (): JSX.Element => {
   const handleSave = useCallback(() => {
     if (!name.trim() || !respondentId) return
 
+    // Build description based on type
+    let description: string | undefined
+    if (respondentType === 'specific_email' && emails.trim()) {
+      description = emails.trim()
+    } else if (respondentType === 'email_field' && selectedFieldId) {
+      const field = fields.find((f) => f.id === selectedFieldId)
+      description = field
+        ? `Emails filled into the ${field.number}. ${field.name} field`
+        : undefined
+    } else if (respondentType === 'dropdown_field' && selectedFieldId) {
+      const field = fields.find((f) => f.id === selectedFieldId)
+      description = field
+        ? `Emails assigned to options in the ${field.number}. ${field.name} field`
+        : undefined
+    }
+
     updateRespondent(respondentId, {
       name: name.trim(),
-      description:
-        respondentType === 'specific_email' && emails.trim()
-          ? emails.trim()
-          : respondent?.description,
-      email:
-        respondentType === 'specific_email' ? emails.trim() : respondent?.email,
+      type: respondentType,
+      description,
+      email: respondentType === 'specific_email' ? emails.trim() : undefined,
+      linkedFieldId:
+        respondentType === 'email_field' || respondentType === 'dropdown_field'
+          ? (selectedFieldId ?? undefined)
+          : undefined,
+      optionsToRecipientsMap:
+        respondentType === 'dropdown_field' ? editedMapping : undefined,
     })
 
     navigateBack()
@@ -69,15 +129,22 @@ export const EditRespondentForm = (): JSX.Element => {
     name,
     respondentType,
     emails,
+    selectedFieldId,
+    editedMapping,
+    fields,
     respondentId,
-    respondent,
     updateRespondent,
     navigateBack,
   ])
 
   if (!respondent) return <Box />
 
-  const canSave = name.trim().length > 0
+  const canSave =
+    name.trim().length > 0 &&
+    (respondentType === 'specific_email' ||
+      ((respondentType === 'email_field' ||
+        respondentType === 'dropdown_field') &&
+        selectedFieldId !== null))
 
   return (
     <Flex
@@ -144,45 +211,64 @@ export const EditRespondentForm = (): JSX.Element => {
 
         <Divider />
 
-        {/* Respondent type (read-only display) */}
+        {/* Respondent type (editable) */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
               Respondent type
             </FormLabel>
-            <RadioGroup value={respondentType}>
+            <RadioGroup
+              value={respondentType}
+              onChange={(val) => {
+                setRespondentType(val as RespondentType)
+                setSelectedFieldId(null)
+                setEditedMapping(undefined)
+              }}
+            >
               <Stack spacing="1rem">
-                <Radio
-                  value="email_field"
-                  isDisabled={respondentType !== 'email_field'}
-                  colorScheme="primary"
-                >
-                  <Text
-                    textStyle="body-1"
-                    color={
-                      respondentType === 'email_field'
-                        ? 'secondary.500'
-                        : 'secondary.400'
-                    }
-                  >
-                    An email field from the form
-                  </Text>
-                </Radio>
-
+                {/* Email field */}
                 <Box>
-                  <Radio
-                    value="specific_email"
-                    isDisabled={respondentType !== 'specific_email'}
-                    colorScheme="primary"
-                  >
-                    <Text
-                      textStyle="body-1"
-                      color={
-                        respondentType === 'specific_email'
-                          ? 'secondary.500'
-                          : 'secondary.400'
-                      }
-                    >
+                  <Radio value="email_field" colorScheme="primary">
+                    <Text textStyle="body-1" color="secondary.500">
+                      An email field from the form
+                    </Text>
+                  </Radio>
+                  {respondentType === 'email_field' && (
+                    <Box pl="1.75rem" pt="0.75rem">
+                      <SingleSelect
+                        name="editEmailFieldSelect"
+                        isClearable={false}
+                        placeholder="Select an email field"
+                        items={[
+                          ...emailFields.map((f) => ({
+                            value: f.id,
+                            label: f.name,
+                          })),
+                          {
+                            value: '__create_email__',
+                            label: '+ Create email field',
+                          },
+                        ]}
+                        value={selectedFieldId ?? ''}
+                        onChange={(value) => {
+                          if (value === '__create_email__') {
+                            setFocus({
+                              type: 'create_field',
+                              fieldType: 'email',
+                            })
+                          } else {
+                            setSelectedFieldId(value || null)
+                          }
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Specific emails */}
+                <Box>
+                  <Radio value="specific_email" colorScheme="primary">
+                    <Text textStyle="body-1" color="secondary.500">
                       Specific email(s)
                     </Text>
                   </Radio>
@@ -193,28 +279,73 @@ export const EditRespondentForm = (): JSX.Element => {
                         onChange={(e) => setEmails(e.target.value)}
                         placeholder="e.g. bigboss@open.gov.sg, admin@open.gov.sg"
                         rows={3}
-                        fontSize="sm"
                       />
                     </Box>
                   )}
                 </Box>
 
-                <Radio
-                  value="dropdown_field"
-                  isDisabled={respondentType !== 'dropdown_field'}
-                  colorScheme="primary"
-                >
-                  <Text
-                    textStyle="body-1"
-                    color={
-                      respondentType === 'dropdown_field'
-                        ? 'secondary.500'
-                        : 'secondary.400'
-                    }
-                  >
-                    Emails assigned to options in a dropdown field
-                  </Text>
-                </Radio>
+                {/* Dropdown field */}
+                <Box>
+                  <Radio value="dropdown_field" colorScheme="primary">
+                    <Text textStyle="body-1" color="secondary.500">
+                      Emails assigned to options in a dropdown field
+                    </Text>
+                  </Radio>
+                  {respondentType === 'dropdown_field' && (
+                    <Box pl="1.75rem" pt="0.75rem">
+                      <SingleSelect
+                        name="editDropdownFieldSelect"
+                        isClearable={false}
+                        placeholder="Select a dropdown field"
+                        items={[
+                          ...dropdownFields.map((f) => ({
+                            value: f.id,
+                            label: f.name,
+                          })),
+                          {
+                            value: '__create_dropdown__',
+                            label: '+ Create dropdown field',
+                          },
+                        ]}
+                        value={selectedFieldId ?? ''}
+                        onChange={(value) => {
+                          if (value === '__create_dropdown__') {
+                            setFocus({
+                              type: 'create_field',
+                              fieldType: 'dropdown',
+                            })
+                          } else {
+                            setSelectedFieldId(value || null)
+                            setEditedMapping(undefined)
+                          }
+                        }}
+                      />
+                      {selectedDropdownField?.options && (
+                        <Button
+                          variant="outline"
+                          colorScheme="primary"
+                          size="sm"
+                          mt="0.75rem"
+                          onClick={() => setIsMappingModalOpen(true)}
+                        >
+                          {editedMapping
+                            ? `${
+                                Object.values(editedMapping).filter(
+                                  (e) => e.length > 0,
+                                ).length
+                              } option${
+                                Object.values(editedMapping).filter(
+                                  (e) => e.length > 0,
+                                ).length !== 1
+                                  ? 's'
+                                  : ''
+                              } mapped - Edit`
+                            : '+ Add emails to options'}
+                        </Button>
+                      )}
+                    </Box>
+                  )}
+                </Box>
               </Stack>
             </RadioGroup>
           </FormControl>
@@ -222,19 +353,91 @@ export const EditRespondentForm = (): JSX.Element => {
 
         {/* CTA */}
         <Divider />
-        <Flex justify="flex-end" gap="0.75rem" px="1.5rem" py="1rem">
-          <Button variant="clear" onClick={navigateBack}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="primary"
-            onClick={handleSave}
-            isDisabled={!canSave}
-          >
-            Save changes
-          </Button>
+        <Flex justify="space-between" align="center" px="1.5rem" py="1rem">
+          <IconButton
+            aria-label="Delete respondent"
+            icon={<Icon as={BiTrash} fontSize="1.25rem" />}
+            variant="clear"
+            colorScheme="danger"
+            size="sm"
+            onClick={() => setIsDeleteModalOpen(true)}
+          />
+          <Flex gap="0.75rem">
+            <Button variant="clear" onClick={navigateBack}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="primary"
+              onClick={handleSave}
+              isDisabled={!canSave}
+            >
+              Save changes
+            </Button>
+          </Flex>
         </Flex>
       </Box>
+
+      {/* Delete confirmation modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete respondent</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text color="secondary.500">
+              Are you sure you want to delete &quot;{respondent.name}&quot;?
+              This will also remove them from any assigned steps and
+              notifications.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <ButtonGroup>
+              <Button
+                variant="clear"
+                colorScheme="secondary"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                colorScheme="danger"
+                onClick={() => {
+                  setIsDeleteModalOpen(false)
+                  // Navigate back first so pool renders with card still present
+                  navigateBack()
+                  // Mark card as deleting (triggers fade-out in pool)
+                  useWorkflowBuilderStore.setState({
+                    deletingRespondentId: respondentId,
+                  })
+                  // Actually remove after animation
+                  setTimeout(() => {
+                    removeRespondent(respondentId)
+                    useWorkflowBuilderStore.setState({
+                      deletingRespondentId: null,
+                    })
+                  }, 300)
+                }}
+              >
+                Delete
+              </Button>
+            </ButtonGroup>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Option-email mapping modal for dropdown fields */}
+      {selectedDropdownField?.options && (
+        <OptionEmailMappingModal
+          isOpen={isMappingModalOpen}
+          onClose={() => setIsMappingModalOpen(false)}
+          options={selectedDropdownField.options}
+          initialMapping={editedMapping}
+          onSave={setEditedMapping}
+        />
+      )}
     </Flex>
   )
 }

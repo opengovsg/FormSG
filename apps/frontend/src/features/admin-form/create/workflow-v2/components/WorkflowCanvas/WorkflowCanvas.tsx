@@ -99,7 +99,7 @@ const ExpandableConnectorGap = ({
 
 export const WorkflowCanvas = ({
   isDragging = false,
-  isDraggingRespondent = false,
+  isDraggingRespondent: _isDraggingRespondent = false,
 }: WorkflowCanvasProps): JSX.Element => {
   const steps = useWorkflowBuilderStore(stepsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -155,7 +155,7 @@ export const WorkflowCanvas = ({
   // Determine step card mode
   const getStepCardMode = (): StepCardMode => {
     if (isInAddStepsContext) return 'add_steps'
-    if (isRespondentStepFocus) return 'respondent_focus'
+    if (isRespondentStepFocus || isNotificationFocus) return 'respondent_focus'
     if (isInRespondentContext) return 'respondent_pool'
     return 'summary'
   }
@@ -407,6 +407,7 @@ export const WorkflowCanvas = ({
           <EmailNotificationCard
             isRespondentPhase={isInRespondentContext}
             isFocused={isNotificationFocus}
+            anotherElementFocused={isRespondentStepFocus}
           />
         </Box>
       </Box>

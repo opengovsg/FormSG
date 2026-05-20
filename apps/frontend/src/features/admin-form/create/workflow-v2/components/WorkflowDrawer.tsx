@@ -12,6 +12,8 @@ import { StepNamingForm } from './AddStepsPanel/StepNamingForm'
 import { SummaryPanel } from './SummaryPanel/SummaryPanel'
 import {
   AddRespondentsPanel,
+  CreateDropdownFieldForm,
+  CreateEmailFieldForm,
   EditRespondentForm,
   NewRespondentForm,
   NotificationFocusPanel,
@@ -48,6 +50,11 @@ const DrawerContent = (): JSX.Element => {
       return <EditRespondentForm />
     case 'notification_focus':
       return <NotificationFocusPanel />
+    case 'create_field':
+      if (focusState.fieldType === 'email') return <CreateEmailFieldForm />
+      if (focusState.fieldType === 'dropdown')
+        return <CreateDropdownFieldForm />
+      return <SummaryPanel />
     default:
       return <SummaryPanel />
   }

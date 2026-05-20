@@ -11,6 +11,10 @@ import { Box, Checkbox, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { useDraggable } from '@dnd-kit/core'
 
 import type { Respondent, RespondentType } from '../../types'
+import {
+  fieldsSelector,
+  useWorkflowBuilderStore,
+} from '../../workflowBuilderStore'
 
 const RESPONDENT_TYPE_ICON: Record<RespondentType, typeof BiUser> = {
   form_link: BiUser,
@@ -39,8 +43,20 @@ export const RespondentCard = ({
   onToggle,
   onEdit,
 }: RespondentCardProps): JSX.Element => {
+  const fields = useWorkflowBuilderStore(fieldsSelector)
   const isDraggable = respondent.type !== 'form_link'
   const TypeIcon = RESPONDENT_TYPE_ICON[respondent.type]
+
+  // Derive description from linked field for field-dependent types
+  const linkedField = respondent.linkedFieldId
+    ? fields.find((f) => f.id === respondent.linkedFieldId)
+    : undefined
+  const displayDescription =
+    respondent.type === 'email_field' && linkedField
+      ? `Emails filled into the ${linkedField.number}. ${linkedField.name} field`
+      : respondent.type === 'dropdown_field' && linkedField
+        ? `Emails assigned to options in the ${linkedField.number}. ${linkedField.name} field`
+        : respondent.description
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: respondent.id,
@@ -96,9 +112,9 @@ export const RespondentCard = ({
           <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
             {respondent.name}
           </Text>
-          {respondent.description && (
+          {displayDescription && (
             <Text textStyle="body-2" color="secondary.400" noOfLines={2}>
-              {respondent.description}
+              {displayDescription}
             </Text>
           )}
         </Box>
@@ -146,7 +162,17 @@ export const RespondentCardOverlay = ({
 }: {
   respondent: Respondent
 }): JSX.Element => {
+  const fields = useWorkflowBuilderStore(fieldsSelector)
   const TypeIcon = RESPONDENT_TYPE_ICON[respondent.type]
+  const linkedField = respondent.linkedFieldId
+    ? fields.find((f) => f.id === respondent.linkedFieldId)
+    : undefined
+  const displayDescription =
+    respondent.type === 'email_field' && linkedField
+      ? `Emails filled into the ${linkedField.number}. ${linkedField.name} field`
+      : respondent.type === 'dropdown_field' && linkedField
+        ? `Emails assigned to options in the ${linkedField.number}. ${linkedField.name} field`
+        : respondent.description
 
   return (
     <Box
@@ -171,9 +197,9 @@ export const RespondentCardOverlay = ({
           <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
             {respondent.name}
           </Text>
-          {respondent.description && (
+          {displayDescription && (
             <Text textStyle="body-2" color="secondary.400" noOfLines={2}>
-              {respondent.description}
+              {displayDescription}
             </Text>
           )}
         </Stack>

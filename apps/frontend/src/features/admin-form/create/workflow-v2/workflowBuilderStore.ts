@@ -77,6 +77,8 @@ export const previewStepNameSelector = (state: WorkflowStore) =>
   state.previewStepName
 export const notificationRecipientIdsSelector = (state: WorkflowStore) =>
   state.notificationRecipientIds
+export const pendingFieldSelectionSelector = (state: WorkflowStore) =>
+  state.pendingFieldSelection
 
 export function completedPhases(state: WorkflowStore): Phase[] {
   const completed: Phase[] = []
@@ -164,6 +166,8 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     focusState: { type: 'summary' } as FocusState,
     pendingInsertIndex: null,
     previewStepName: null,
+    pendingFieldSelection: null,
+    deletingRespondentId: null,
 
     // Sprint 1 actions
     setFocus: (focusState) => set({ focusState }),
@@ -281,6 +285,33 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
           (id) => id !== respondentId,
         ),
       })),
+
+    removeRespondent: (respondentId) =>
+      set((state) => ({
+        respondents: state.respondents.filter((r) => r.id !== respondentId),
+        steps: state.steps.map((s) => ({
+          ...s,
+          respondentIds: s.respondentIds.filter((id) => id !== respondentId),
+        })),
+        notificationRecipientIds: state.notificationRecipientIds.filter(
+          (id) => id !== respondentId,
+        ),
+      })),
+
+    // Sprint 3b actions
+    addField: (data) =>
+      set((state) => ({
+        fields: [
+          ...state.fields,
+          {
+            ...data,
+            id: `field-${Date.now()}`,
+            number: state.fields.length + 1,
+          },
+        ],
+      })),
+
+    setPendingFieldSelection: (id) => set({ pendingFieldSelection: id }),
 
     // Sprint 4+ stubs
     assignField: stubAction('assignField'),

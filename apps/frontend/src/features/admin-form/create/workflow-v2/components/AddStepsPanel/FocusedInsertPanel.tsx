@@ -120,7 +120,7 @@ export const FocusedInsertPanel = (): JSX.Element => {
         {/* CTA - flows after content */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button colorScheme="primary" onClick={handleDone}>
+          <Button variant="clear" colorScheme="primary" onClick={handleDone}>
             Done
           </Button>
         </Flex>

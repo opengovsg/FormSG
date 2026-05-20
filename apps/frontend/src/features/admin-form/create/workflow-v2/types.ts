@@ -26,6 +26,7 @@ export type Respondent = {
   description?: string
   email?: string
   linkedFieldId?: string
+  optionsToRecipientsMap?: Record<string, string[]>
   isCustom: boolean
 }
 
@@ -43,6 +44,7 @@ export type FormField = {
   name: string
   fieldType: FieldType
   number: number
+  options?: string[] // dropdown field options
 }
 
 // Phases
@@ -64,6 +66,11 @@ export type FocusState =
   | { type: 'new_respondent'; fromStepId?: string }
   | { type: 'edit_respondent'; respondentId: string }
   | { type: 'notification_focus' }
+  | {
+      type: 'create_field'
+      fieldType: 'email' | 'dropdown'
+      fromStepId?: string
+    }
 
 // Store interface
 export type WorkflowStore = {
@@ -79,6 +86,8 @@ export type WorkflowStore = {
   progressCardExpanded: boolean
   pendingInsertIndex: number | null
   previewStepName: string | null
+  pendingFieldSelection: string | null
+  deletingRespondentId: string | null
 
   // Actions - Sprint 1
   setFocus: (state: FocusState) => void
@@ -101,6 +110,12 @@ export type WorkflowStore = {
   updateRespondent: (id: string, data: Partial<Omit<Respondent, 'id'>>) => void
   assignNotificationRecipient: (respondentId: string) => void
   unassignNotificationRecipient: (respondentId: string) => void
+
+  removeRespondent: (respondentId: string) => void
+
+  // Actions - Sprint 3b
+  addField: (data: Omit<FormField, 'id' | 'number'>) => void
+  setPendingFieldSelection: (id: string | null) => void
 
   // Actions - Sprint 4+ stubs
   assignField: (stepId: string, fieldId: string) => void

@@ -68,9 +68,14 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
 
   if (!step) return <Box />
 
+  const isFirstStep = step.order === 0
+
   // Truncate step name for header
   const truncatedName =
     step.name.length > 25 ? `${step.name.slice(0, 25)}...` : step.name
+
+  // Form link respondent for Step 1 info display
+  const formLinkRespondent = respondents.find((r) => r.type === 'form_link')
 
   return (
     <Flex
@@ -110,63 +115,100 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
           textAlign="center"
           noOfLines={1}
         >
-          Select respondents for &ldquo;{truncatedName}&rdquo;
+          {isFirstStep
+            ? step.name
+            : `Select respondents for \u201C${truncatedName}\u201D`}
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
 
       {/* Scrollable content */}
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
-        {/* Respondent cards with checkboxes */}
-        <Stack spacing="0.75rem">
-          {assignableRespondents.map((r) => (
-            <RespondentCard
-              key={r.id}
-              respondent={r}
-              showCheckbox
-              isChecked={step.respondentIds.includes(r.id)}
-              onToggle={() => handleToggle(r.id)}
-            />
-          ))}
-        </Stack>
-
-        {/* Add new respondent link */}
-        <Box
-          as="button"
-          type="button"
-          w="100%"
-          textAlign="start"
-          borderRadius="8px"
-          border="1px solid"
-          borderColor="neutral.300"
-          bg="white"
-          p="1rem"
-          mt="0.75rem"
-          cursor="pointer"
-          _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-          transition="border-color 0.2s, background 0.2s"
-          onClick={handleAddNewRespondent}
-        >
-          <HStack spacing="0.75rem">
-            <Icon
-              as={BsFillPlusCircleFill}
-              fontSize="1.5rem"
-              color="primary.500"
-              flexShrink={0}
-            />
-            <Text textStyle="subhead-1" color="primary.500">
-              Add a new respondent to this workflow
+        {isFirstStep ? (
+          <>
+            {/* Step 1 info panel */}
+            <Text textStyle="body-2" color="secondary.400" mb="1.5rem">
+              This is the first step of the workflow. Anyone who receives the
+              form link will be able to fill in this step.
             </Text>
-          </HStack>
-        </Box>
+            {formLinkRespondent && (
+              <RespondentCard respondent={formLinkRespondent} />
+            )}
+            <Text textStyle="body-2" color="secondary.400" mt="1.5rem">
+              The respondent for this step cannot be changed. Other steps are
+              accessed via unique links sent by email.
+            </Text>
 
-        {/* CTA */}
-        <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
-        <Flex justify="flex-end" py="1rem">
-          <Button colorScheme="primary" onClick={handleBack}>
-            Done with this step
-          </Button>
-        </Flex>
+            {/* CTA */}
+            <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
+            <Flex justify="flex-end" py="1rem">
+              <Button
+                variant="clear"
+                colorScheme="primary"
+                onClick={handleBack}
+              >
+                Done with this step
+              </Button>
+            </Flex>
+          </>
+        ) : (
+          <>
+            {/* Respondent cards with checkboxes */}
+            <Stack spacing="0.75rem">
+              {assignableRespondents.map((r) => (
+                <RespondentCard
+                  key={r.id}
+                  respondent={r}
+                  showCheckbox
+                  isChecked={step.respondentIds.includes(r.id)}
+                  onToggle={() => handleToggle(r.id)}
+                />
+              ))}
+            </Stack>
+
+            {/* Add new respondent link */}
+            <Box
+              as="button"
+              type="button"
+              w="100%"
+              textAlign="start"
+              borderRadius="8px"
+              border="1px solid"
+              borderColor="neutral.300"
+              bg="white"
+              p="1rem"
+              mt="0.75rem"
+              cursor="pointer"
+              _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+              transition="border-color 0.2s, background 0.2s"
+              onClick={handleAddNewRespondent}
+            >
+              <HStack spacing="0.75rem">
+                <Icon
+                  as={BsFillPlusCircleFill}
+                  fontSize="1.5rem"
+                  color="primary.500"
+                  flexShrink={0}
+                />
+                <Text textStyle="subhead-1" color="primary.500">
+                  Add a new respondent to this workflow
+                </Text>
+              </HStack>
+            </Box>
+
+            {/* CTA */}
+            <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
+            <Flex justify="flex-end" py="1rem">
+              <Button
+                variant="clear"
+                colorScheme="primary"
+                onClick={handleBack}
+              >
+                Done with this step
+              </Button>
+            </Flex>
+          </>
+        )}
       </Box>
     </Flex>
   )

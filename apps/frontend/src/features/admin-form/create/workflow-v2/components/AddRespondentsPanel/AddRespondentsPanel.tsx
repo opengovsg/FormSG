@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { BsFillPlusCircleFill } from 'react-icons/bs'
 import {
@@ -18,16 +18,21 @@ import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/
 import {
   respondentsSelector,
   setFocusSelector,
-  stepsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
 import { RespondentCard } from './RespondentCard'
 
+const deletingRespondentIdSelector = (s: {
+  deletingRespondentId: string | null
+}) => s.deletingRespondentId
+
 export const AddRespondentsPanel = (): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
-  const steps = useWorkflowBuilderStore(stepsSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
+  const deletingRespondentId = useWorkflowBuilderStore(
+    deletingRespondentIdSelector,
+  )
 
   const handleBack = useCallback(() => {
     setFocus({ type: 'summary' })
@@ -36,12 +41,6 @@ export const AddRespondentsPanel = (): JSX.Element => {
   const handleAddNewRespondent = useCallback(() => {
     setFocus({ type: 'new_respondent' })
   }, [setFocus])
-
-  // Check if all steps have at least one respondent
-  const allStepsAssigned = useMemo(
-    () => steps.length > 1 && steps.every((s) => s.respondentIds.length > 0),
-    [steps],
-  )
 
   return (
     <Flex
@@ -95,29 +94,40 @@ export const AddRespondentsPanel = (): JSX.Element => {
         <Stack spacing="0.75rem">
           {respondents
             .filter((r) => r.type !== 'form_link')
-            .map((r) => (
-              <RespondentCard
-                key={r.id}
-                respondent={r}
-                onEdit={
-                  r.isCustom
-                    ? () =>
-                        setFocus({
-                          type: 'edit_respondent',
-                          respondentId: r.id,
-                        })
-                    : r.type === 'collaborator'
-                      ? () => {
-                          // Open collaborators modal (placeholder: navigate to collaborators page)
-                          const collaboratorsButton = document.querySelector(
-                            '[aria-label="Manage collaborators"]',
-                          ) as HTMLButtonElement | null
-                          collaboratorsButton?.click()
-                        }
-                      : undefined
-                }
-              />
-            ))}
+            .map((r) => {
+              const isDeleting = r.id === deletingRespondentId
+              return (
+                <Box
+                  key={r.id}
+                  overflow="hidden"
+                  maxH={isDeleting ? 0 : '10rem'}
+                  opacity={isDeleting ? 0 : 1}
+                  transform={isDeleting ? 'scale(0.95)' : 'scale(1)'}
+                  transition="max-height 0.3s ease, opacity 0.2s ease, transform 0.2s ease"
+                >
+                  <RespondentCard
+                    respondent={r}
+                    onEdit={
+                      r.isCustom
+                        ? () =>
+                            setFocus({
+                              type: 'edit_respondent',
+                              respondentId: r.id,
+                            })
+                        : r.type === 'collaborator'
+                          ? () => {
+                              const collaboratorsButton =
+                                document.querySelector(
+                                  '[aria-label="Manage collaborators"]',
+                                ) as HTMLButtonElement | null
+                              collaboratorsButton?.click()
+                            }
+                          : undefined
+                    }
+                  />
+                </Box>
+              )
+            })}
         </Stack>
 
         {/* Add new respondent link */}
@@ -153,7 +163,7 @@ export const AddRespondentsPanel = (): JSX.Element => {
         {/* CTA */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button colorScheme="primary" onClick={handleBack}>
+          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
             Done adding respondents
           </Button>
         </Flex>

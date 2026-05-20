@@ -127,14 +127,14 @@ export const CanvasStepCard = ({
   const handleCardClick = useCallback(() => {
     if (isAddSteps && compact) {
       setFocus({ type: 'step_edit', stepId: step.id })
-    } else if (isRespondentPhase && !isFirstStep) {
+    } else if (isRespondentPhase) {
       setFocus({
         type: 'step_focus',
         phase: 'add_respondents',
         stepId: step.id,
       })
     }
-  }, [isAddSteps, isRespondentPhase, isFirstStep, compact, setFocus, step.id])
+  }, [isAddSteps, isRespondentPhase, compact, setFocus, step.id])
 
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -149,15 +149,17 @@ export const CanvasStepCard = ({
   // Show fields sections only in summary and add_steps modes
   const showFieldsSections = !isRespondentPhase
 
-  // Show respondent drop zone in respondent phase (except Step 1)
-  const showRespondentDropZone = isRespondentPhase && !isFirstStep
+  // Show respondent drop zone in pool view (all cards) or focus view (only focused card)
+  const isPoolView = mode === 'respondent_pool'
+  const showRespondentDropZone =
+    !isFirstStep && (isPoolView || (mode === 'respondent_focus' && isFocused))
 
-  // Respondent chips get X buttons during respondent phase (except Step 1)
-  const showRespondentRemove = isRespondentPhase && !isFirstStep
+  // Respondent chips get X buttons in pool view (all cards) or focus view (only focused card)
+  const showRespondentRemove =
+    !isFirstStep && (isPoolView || (mode === 'respondent_focus' && isFocused))
 
-  // Clickable card in add_steps compact or respondent phase (except Step 1)
-  const isClickable =
-    (isAddSteps && compact) || (isRespondentPhase && !isFirstStep)
+  // Clickable card in add_steps compact or respondent phase (including Step 1)
+  const isClickable = (isAddSteps && compact) || isRespondentPhase
 
   const cardRef = setSortableRef
 

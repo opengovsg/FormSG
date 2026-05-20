@@ -25,6 +25,8 @@ import { RespondentDropZone } from './RespondentDropZone'
 type EmailNotificationCardProps = {
   isRespondentPhase?: boolean
   isFocused?: boolean
+  /** True when another element (a step) has focus, so this card should hide interactive elements */
+  anotherElementFocused?: boolean
 }
 
 /**
@@ -34,6 +36,7 @@ type EmailNotificationCardProps = {
 export const EmailNotificationCard = ({
   isRespondentPhase = false,
   isFocused = false,
+  anotherElementFocused = false,
 }: EmailNotificationCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const notificationRecipientIds = useWorkflowBuilderStore(
@@ -100,7 +103,7 @@ export const EmailNotificationCard = ({
                 <TagLabel textStyle="caption-1" color="secondary.500">
                   {r.name}
                 </TagLabel>
-                {isRespondentPhase && (
+                {isRespondentPhase && (!anotherElementFocused || isFocused) && (
                   <TagCloseButton
                     onClick={() => unassignNotificationRecipient(r.id)}
                   />
@@ -125,8 +128,8 @@ export const EmailNotificationCard = ({
           )}
         </Wrap>
 
-        {/* Drop zone during respondent phase */}
-        {isRespondentPhase && (
+        {/* Drop zone during respondent phase (hidden when another element is focused) */}
+        {isRespondentPhase && (!anotherElementFocused || isFocused) && (
           <RespondentDropZone
             droppableId="respondent-drop-notification"
             droppableData={{ type: 'notification_drop' }}

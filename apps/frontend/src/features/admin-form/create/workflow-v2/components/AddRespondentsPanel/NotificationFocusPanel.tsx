@@ -155,7 +155,7 @@ export const NotificationFocusPanel = (): JSX.Element => {
         {/* CTA */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button colorScheme="primary" onClick={handleBack}>
+          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
             Done with this step
           </Button>
         </Flex>
