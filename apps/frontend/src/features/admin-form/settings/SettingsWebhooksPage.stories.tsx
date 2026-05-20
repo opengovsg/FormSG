@@ -1,5 +1,7 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import {
@@ -40,6 +42,30 @@ export default {
 const Template: StoryFn = () => <SettingsWebhooksPage />
 export const StorageModeEmpty = Template.bind({})
 StorageModeEmpty.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Encrypt,
+        },
+      }),
+    },
+  },
+}
+
+const mrfCutoverOnGrowthBook = new GrowthBook({
+  features: { [featureFlags.mrfCutover]: { defaultValue: true } },
+})
+
+export const StorageModeMrfCutoverOn = Template.bind({})
+StorageModeMrfCutoverOn.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOnGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+StorageModeMrfCutoverOn.parameters = {
   msw: {
     handlers: {
       default: buildMswRoutes({

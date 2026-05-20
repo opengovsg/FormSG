@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
 import { Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
+import { FormId } from 'formsg-shared/types/form/form'
 
 import { useUser } from '~features/user/queries'
 
@@ -26,7 +28,9 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     })
   }, [userRes.user?.email, gb])
 
+  const { formId } = useParams()
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
+  const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
 
   const enableWebhooks =
     !isLoading &&
@@ -43,14 +47,19 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     )
   }
 
-  const isStorageMode = settings?.responseMode === FormResponseMode.Encrypt
+  const showV1SchemaInfobox =
+    isMrfCutoverEnabled &&
+    settings?.responseMode === FormResponseMode.Encrypt &&
+    !!formId
 
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
         {t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
-      {isStorageMode && <WebhookV1SchemaInfobox />}
+      {showV1SchemaInfobox && (
+        <WebhookV1SchemaInfobox formId={formId as FormId} />
+      )}
       <WebhooksSection />
     </Skeleton>
   )
