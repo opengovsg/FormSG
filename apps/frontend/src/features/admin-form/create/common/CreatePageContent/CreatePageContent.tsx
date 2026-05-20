@@ -7,7 +7,7 @@ import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTa
 import MagicFormBuilderProvider from '../../builder-and-design/MagicFormBuilder/MagicFormBuilderProvider'
 import { EndPageTab } from '../../end-page/EndPageTab'
 import { CreatePageLogicTab } from '../../logic/CreatePageLogicTab'
-import { CreatePageWorkflowTab } from '../../workflow/CreatePageWorkflowTab'
+import { CreatePageWorkflowTabV2 } from '../../workflow-v2'
 
 export const CreatePageContent = (): JSX.Element => {
   const { activeTab } = useCreatePageSidebar()
@@ -17,7 +17,7 @@ export const CreatePageContent = (): JSX.Element => {
     case DrawerTabs.EndPage:
       return <EndPageTab />
     case DrawerTabs.Workflow:
-      return <CreatePageWorkflowTab />
+      return <CreatePageWorkflowTabV2 />
     default:
       // builder or design
       return (
