@@ -175,10 +175,16 @@ export const WorkflowCanvas = ({
                             !showAddStepsConnectors &&
                             !isStepNaming &&
                             !isStepEdit
-                              ? '6rem'
+                              ? 'none'
                               : 0
                           }
-                          overflow="hidden"
+                          overflow={
+                            !showAddStepsConnectors &&
+                            !isStepNaming &&
+                            !isStepEdit
+                              ? 'visible'
+                              : 'hidden'
+                          }
                           transition="opacity 0.35s ease, max-height 0.35s ease"
                           pointerEvents={
                             !showAddStepsConnectors ? 'auto' : 'none'
