@@ -151,20 +151,54 @@ export const WorkflowCanvas = ({
             <Fragment key={step.id}>
               {i > 0 && (
                 <>
-                  {/* Between-step connectors: only ONE block renders based on state */}
-                  {isSummary ? (
-                    <ExpandableConnectorGap
-                      onClick={() => handleAddStepClick(i)}
-                    />
-                  ) : isAddStepsPhase ? (
-                    (() => {
-                      // Whether this position has a visible connector between the two lines
-                      const hasVisibleMiddle =
-                        (!isDragging && !isFocusedInsert) || // "+" visible
-                        (isDragging && !isFocusedInsert) || // drag drop zone visible
-                        (isFocusedInsert && pendingInsertIndex === i) // focused drop zone visible
-                      return (
-                        <Box position="relative">
+                  {/* Between-step connectors: crossfade between summary and add-steps modes */}
+                  {(() => {
+                    const showAddStepsConnectors = isAddStepsPhase
+                    const hasVisibleMiddle =
+                      showAddStepsConnectors &&
+                      ((!isDragging && !isFocusedInsert) ||
+                        (isDragging && !isFocusedInsert) ||
+                        (isFocusedInsert && pendingInsertIndex === i))
+
+                    return (
+                      <Box position="relative">
+                        {/* Summary mode: hover-expandable gap (fades out when entering Add Steps) */}
+                        <Box
+                          opacity={
+                            !showAddStepsConnectors &&
+                            !isStepNaming &&
+                            !isStepEdit
+                              ? 1
+                              : 0
+                          }
+                          maxH={
+                            !showAddStepsConnectors &&
+                            !isStepNaming &&
+                            !isStepEdit
+                              ? '6rem'
+                              : 0
+                          }
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                          pointerEvents={
+                            !showAddStepsConnectors ? 'auto' : 'none'
+                          }
+                        >
+                          <ExpandableConnectorGap
+                            onClick={() => handleAddStepClick(i)}
+                          />
+                        </Box>
+
+                        {/* Add Steps mode: connection line + connectors (fades in from summary) */}
+                        <Box
+                          opacity={showAddStepsConnectors ? 1 : 0}
+                          maxH={showAddStepsConnectors ? '12rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                          pointerEvents={
+                            showAddStepsConnectors ? 'auto' : 'none'
+                          }
+                        >
                           <Box
                             opacity={fadedOpacity}
                             transition="opacity 0.3s ease"
@@ -222,13 +256,21 @@ export const WorkflowCanvas = ({
                             </Box>
                           )}
                         </Box>
-                      )
-                    })()
-                  ) : (
-                    <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
-                      <ConnectionLine />
-                    </Box>
-                  )}
+
+                        {/* Step naming/editing: just a connection line */}
+                        <Box
+                          opacity={
+                            isStepNaming || isStepEdit ? fadedOpacity : 0
+                          }
+                          maxH={isStepNaming || isStepEdit ? '4rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                        >
+                          <ConnectionLine />
+                        </Box>
+                      </Box>
+                    )
+                  })()}
                 </>
               )}
 

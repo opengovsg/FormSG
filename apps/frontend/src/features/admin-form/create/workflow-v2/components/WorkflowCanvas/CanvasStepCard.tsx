@@ -197,31 +197,21 @@ export const CanvasStepCard = ({
           </HStack>
         </Flex>
 
-        {/* Detailed sections - hidden in compact mode */}
-        {!compact && (
-          <>
-            {/* Respondent section */}
-            <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
-              <Text textStyle="subhead-2" color="secondary.500">
-                Respondent in this step
-              </Text>
-              <Wrap spacing="0.25rem">
-                {stepRespondents.map((r) => (
-                  <WrapItem key={r.id}>
-                    <Tag
-                      size="sm"
-                      bg="primary.100"
-                      borderRadius="4px"
-                      px="0.5rem"
-                      py="0.25rem"
-                    >
-                      <TagLabel textStyle="caption-1" color="secondary.500">
-                        {r.name}
-                      </TagLabel>
-                    </Tag>
-                  </WrapItem>
-                ))}
-                {stepRespondents.length === 0 && (
+        {/* Detailed sections - animated collapse in compact mode */}
+        <Box
+          overflow="hidden"
+          maxH={compact ? 0 : '40rem'}
+          opacity={compact ? 0 : 1}
+          transition="max-height 0.35s ease, opacity 0.25s ease"
+        >
+          {/* Respondent section */}
+          <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+            <Text textStyle="subhead-2" color="secondary.500">
+              Respondent in this step
+            </Text>
+            <Wrap spacing="0.25rem">
+              {stepRespondents.map((r) => (
+                <WrapItem key={r.id}>
                   <Tag
                     size="sm"
                     bg="primary.100"
@@ -230,21 +220,50 @@ export const CanvasStepCard = ({
                     py="0.25rem"
                   >
                     <TagLabel textStyle="caption-1" color="secondary.500">
-                      None
+                      {r.name}
                     </TagLabel>
                   </Tag>
-                )}
-              </Wrap>
-            </Stack>
+                </WrapItem>
+              ))}
+              {stepRespondents.length === 0 && (
+                <Tag
+                  size="sm"
+                  bg="primary.100"
+                  borderRadius="4px"
+                  px="0.5rem"
+                  py="0.25rem"
+                >
+                  <TagLabel textStyle="caption-1" color="secondary.500">
+                    None
+                  </TagLabel>
+                </Tag>
+              )}
+            </Wrap>
+          </Stack>
 
-            {/* Fields section */}
-            <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
-              <Text textStyle="subhead-2" color="secondary.500">
-                Fields to fill
-              </Text>
-              <Wrap spacing="0.25rem">
-                {allFieldsAssigned ? (
-                  <WrapItem>
+          {/* Fields section */}
+          <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+            <Text textStyle="subhead-2" color="secondary.500">
+              Fields to fill
+            </Text>
+            <Wrap spacing="0.25rem">
+              {allFieldsAssigned ? (
+                <WrapItem>
+                  <Tag
+                    size="sm"
+                    bg="primary.100"
+                    borderRadius="4px"
+                    px="0.5rem"
+                    py="0.25rem"
+                  >
+                    <TagLabel textStyle="caption-1" color="secondary.500">
+                      All fields
+                    </TagLabel>
+                  </Tag>
+                </WrapItem>
+              ) : stepFields.length > 0 ? (
+                stepFields.map((f) => (
+                  <WrapItem key={f.id}>
                     <Tag
                       size="sm"
                       bg="primary.100"
@@ -253,12 +272,36 @@ export const CanvasStepCard = ({
                       py="0.25rem"
                     >
                       <TagLabel textStyle="caption-1" color="secondary.500">
-                        All fields
+                        {f.number}. {f.name}
                       </TagLabel>
                     </Tag>
                   </WrapItem>
-                ) : stepFields.length > 0 ? (
-                  stepFields.map((f) => (
+                ))
+              ) : (
+                <Tag
+                  size="sm"
+                  bg="primary.100"
+                  borderRadius="4px"
+                  px="0.5rem"
+                  py="0.25rem"
+                >
+                  <TagLabel textStyle="caption-1" color="secondary.500">
+                    None
+                  </TagLabel>
+                </Tag>
+              )}
+            </Wrap>
+          </Stack>
+
+          {/* Approval fields (review steps only) */}
+          {step.type === 'review' && (
+            <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+              <Text textStyle="subhead-2" color="secondary.500">
+                Fields to indicate approval
+              </Text>
+              <Wrap spacing="0.25rem">
+                {approvalFields.length > 0 ? (
+                  approvalFields.map((f) => (
                     <WrapItem key={f.id}>
                       <Tag
                         size="sm"
@@ -288,48 +331,8 @@ export const CanvasStepCard = ({
                 )}
               </Wrap>
             </Stack>
-
-            {/* Approval fields (review steps only) */}
-            {step.type === 'review' && (
-              <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
-                <Text textStyle="subhead-2" color="secondary.500">
-                  Fields to indicate approval
-                </Text>
-                <Wrap spacing="0.25rem">
-                  {approvalFields.length > 0 ? (
-                    approvalFields.map((f) => (
-                      <WrapItem key={f.id}>
-                        <Tag
-                          size="sm"
-                          bg="primary.100"
-                          borderRadius="4px"
-                          px="0.5rem"
-                          py="0.25rem"
-                        >
-                          <TagLabel textStyle="caption-1" color="secondary.500">
-                            {f.number}. {f.name}
-                          </TagLabel>
-                        </Tag>
-                      </WrapItem>
-                    ))
-                  ) : (
-                    <Tag
-                      size="sm"
-                      bg="primary.100"
-                      borderRadius="4px"
-                      px="0.5rem"
-                      py="0.25rem"
-                    >
-                      <TagLabel textStyle="caption-1" color="secondary.500">
-                        None
-                      </TagLabel>
-                    </Tag>
-                  )}
-                </Wrap>
-              </Stack>
-            )}
-          </>
-        )}
+          )}
+        </Box>
       </Box>
 
       {/* Delete confirmation dialog */}
