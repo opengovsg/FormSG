@@ -321,6 +321,7 @@ export const IndividualResponsePage = (): JSX.Element => {
                       questionNumber={row.questionNumber}
                       downloadUrl={row.downloadUrl}
                       attachmentDecryptionKey={attachmentDecryptionKey}
+                      unanswered={row.unanswered}
                     />
                   ))
                 : data?.responses.map((r, idx) => (

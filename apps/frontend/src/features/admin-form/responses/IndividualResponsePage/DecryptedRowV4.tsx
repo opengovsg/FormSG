@@ -209,10 +209,23 @@ export const DecryptedRowV4 = memo(
     questionNumber,
     downloadUrl,
     attachmentDecryptionKey,
+    unanswered,
   }: DecryptedRowV4Props): JSX.Element => {
-    switch (field.fieldType) {
-      case BasicField.Section:
+    if (unanswered) {
+      if (field.fieldType === BasicField.Section) {
         return <DecryptedHeaderRowV4 field={field} />
+      }
+      return (
+        <Stack>
+          <DecryptedQuestionLabelV4
+            field={field}
+            questionNumber={questionNumber}
+          />
+        </Stack>
+      )
+    }
+
+    switch (field.fieldType) {
       case BasicField.Attachment:
         return (
           <DecryptedAttachmentRowV4
