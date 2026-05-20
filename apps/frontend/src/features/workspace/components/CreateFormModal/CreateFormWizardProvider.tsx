@@ -119,16 +119,15 @@ const useCreateFormWizardContext = (
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode, emails }) => {
       switch (responseMode) {
-        case FormResponseMode.Encrypt:
+        case FormResponseMode.Encrypt: {
+          const cutoverDefaultEmails = user?.email ? [user.email] : []
           return createStorageModeFormMutation.mutate(
             {
               title,
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
-              // NOTE (MRF-CUTOVER): During the cutover modal flow, there is no emails input.
-              emails:
-                emails.filter(Boolean) || (user?.email ? [user.email] : []),
+              emails: emails ? emails.filter(Boolean) : cutoverDefaultEmails,
             },
             {
               onSuccess: () => {
@@ -136,6 +135,7 @@ const useCreateFormWizardContext = (
               },
             },
           )
+        }
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
