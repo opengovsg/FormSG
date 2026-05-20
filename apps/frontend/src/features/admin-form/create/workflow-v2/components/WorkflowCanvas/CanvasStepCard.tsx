@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   BiCheckCircle,
   BiGridVertical,
@@ -110,13 +110,24 @@ export const CanvasStepCard = ({
     }
   }, [compact, setFocus, step.id])
 
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const handleConfirmDelete = useCallback(() => {
-    removeStep(step.id)
     onClose()
+    setIsDeleting(true)
+    setTimeout(() => {
+      removeStep(step.id)
+    }, 300)
   }, [removeStep, step.id, onClose])
 
   return (
-    <>
+    <Box
+      overflow="hidden"
+      maxH={isDeleting ? 0 : '20rem'}
+      opacity={isDeleting ? 0 : 1}
+      transform={isDeleting ? 'scale(0.95)' : 'scale(1)'}
+      transition="max-height 0.3s ease, opacity 0.2s ease, transform 0.2s ease"
+    >
       <Box
         ref={setNodeRef}
         {...(sortable && steps.length > 1
@@ -361,7 +372,7 @@ export const CanvasStepCard = ({
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-    </>
+    </Box>
   )
 }
 
