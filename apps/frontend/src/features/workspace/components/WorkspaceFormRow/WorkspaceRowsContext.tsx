@@ -8,6 +8,7 @@ import { AdminDashboardFormMetaDto, FormStatus } from 'formsg-shared/types'
 
 import CollaboratorModal from '~features/admin-form/common/components/CollaboratorModal'
 import { ShareFormModal } from '~features/admin-form/share'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { DeleteFormModal } from '../DeleteFormModal/DeleteFormModal'
 import { DuplicateFormModal } from '../DuplicateFormModal'
@@ -36,6 +37,9 @@ export const WorkspaceRowsProvider = ({
   const shareFormModalDisclosure = useDisclosure()
   const collabModalDisclosure = useDisclosure()
   const deleteFormModalDisclosure = useDisclosure()
+
+  const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
+  const dupeWorkspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
   const onOpenDupeFormModal = (meta?: AdminDashboardFormMetaDto) => {
     setActiveFormMeta(meta)
@@ -78,6 +82,8 @@ export const WorkspaceRowsProvider = ({
       <DuplicateFormModal
         isOpen={dupeFormModalDisclosure.isOpen}
         onClose={dupeFormModalDisclosure.onClose}
+        formIdToDuplicate={activeFormMeta?._id}
+        workspaceId={dupeWorkspaceId}
       />
       <ShareFormModal
         isOpen={shareFormModalDisclosure.isOpen}

@@ -2,13 +2,11 @@ import { act, renderHook } from '@testing-library/react'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
-import { useWorkspaceRowsContext } from '~features/workspace/components/WorkspaceFormRow/WorkspaceRowsContext'
 import {
   useDuplicateFormMutations,
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
-import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
@@ -22,8 +20,6 @@ vi.mock('~features/workspace/queries')
 vi.mock('~features/admin-form/common/queries')
 vi.mock('~features/workspace/mutations')
 vi.mock('~features/user/queries')
-vi.mock('~features/workspace/WorkspaceContext')
-vi.mock('~features/workspace/components/WorkspaceFormRow/WorkspaceRowsContext')
 vi.mock('../CreateFormModal/CreateFormWizardProvider')
 
 const MOCK_FORM_TITLE = 'My Test Form'
@@ -59,10 +55,6 @@ describe('DupeFormWizardProvider', () => {
       setCurrentStep: vi.fn(),
     }))
 
-    vi.mocked(useWorkspaceRowsContext).mockReturnValue({
-      activeFormMeta: { _id: MOCK_FORM_ID } as any,
-    } as any)
-
     vi.mocked(usePreviewForm).mockReturnValue({
       data: makeMockPreviewFormData() as any,
       isLoading: false,
@@ -71,11 +63,6 @@ describe('DupeFormWizardProvider', () => {
     vi.mocked(useDashboard).mockReturnValue({
       data: makeMockDashboardForms(),
       isLoading: false,
-    } as any)
-
-    vi.mocked(useWorkspaceContext).mockReturnValue({
-      activeWorkspace: { _id: 'ws1' } as any,
-      isDefaultWorkspace: true,
     } as any)
 
     vi.mocked(useUser).mockReturnValue({
@@ -94,7 +81,11 @@ describe('DupeFormWizardProvider', () => {
   })
 
   it('should call reset() with a generated title on the Details step', () => {
-    renderHook(() => useDupeFormWizardContext(vi.fn()))
+    renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
 
     expect(mockReset).toHaveBeenCalledTimes(1)
     expect(mockReset).toHaveBeenCalledWith(
@@ -105,7 +96,11 @@ describe('DupeFormWizardProvider', () => {
   it('should not call reset() when dashboardForms changes after moving past the Details step', () => {
     // Bug scenario: dashboard refetches after form is created, triggering useEffect
     // which previously overwrote the title used for the secret key filename.
-    const { rerender } = renderHook(() => useDupeFormWizardContext(vi.fn()))
+    const { rerender } = renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
 
     expect(mockReset).toHaveBeenCalledTimes(1)
     mockReset.mockClear()
@@ -129,7 +124,11 @@ describe('DupeFormWizardProvider', () => {
   it('should call reset() again when dashboardForms changes while still on the Details step', () => {
     // Confirm that the guard does not break legitimate re-computation of the title
     // while the user is still on the Details step (e.g. slow initial load).
-    const { rerender } = renderHook(() => useDupeFormWizardContext(vi.fn()))
+    const { rerender } = renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
 
     expect(mockReset).toHaveBeenCalledWith(
       expect.objectContaining({ title: `${MOCK_FORM_TITLE}_1` }),
