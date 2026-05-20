@@ -23,7 +23,6 @@ import Input from '~components/Input'
 
 import DataClassificationInfoBox from '~features/admin-form/settings/components/DataClassificationInfoBox'
 
-import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import {
   CreateFormWizardInputProps,
   useCreateFormWizard,
@@ -127,13 +126,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 name="responseMode"
                 control={control}
                 render={({ field }) => (
-                  <WorkspaceRowsProvider>
-                    <FormResponseOptions
-                      {...field}
-                      hasMyInfoChildren={hasMyInfoChildren}
-                      handleEmailButtonPress={handleEmailButtonPress}
-                    />
-                  </WorkspaceRowsProvider>
+                  <FormResponseOptions
+                    {...field}
+                    hasMyInfoChildren={hasMyInfoChildren}
+                    handleEmailButtonPress={handleEmailButtonPress}
+                  />
                 )}
                 rules={{
                   required: t(
