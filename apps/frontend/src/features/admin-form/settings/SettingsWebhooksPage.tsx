@@ -11,6 +11,7 @@ import { useUser } from '~features/user/queries'
 import { CategoryHeader } from './components/CategoryHeader'
 import { WebhooksSection } from './components/WebhooksSection'
 import { WebhooksUnsupportedMsg } from './components/WebhooksSection/WebhooksUnsupportedMsg'
+import { WebhookV1SchemaInfobox } from './components/WebhooksSection/WebhookV1SchemaInfobox'
 import { useAdminFormSettings } from './queries'
 
 export const SettingsWebhooksPage = (): JSX.Element => {
@@ -42,11 +43,14 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     )
   }
 
+  const isStorageMode = settings?.responseMode === FormResponseMode.Encrypt
+
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
         {t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
+      {isStorageMode && <WebhookV1SchemaInfobox />}
       <WebhooksSection />
     </Skeleton>
   )
