@@ -53,6 +53,9 @@ describe('DupeFormWizardProvider', () => {
       direction: 1 as const,
       keypair: { publicKey: 'pk', secretKey: 'sk' } as any,
       setCurrentStep: vi.fn(),
+      isMrfCutoverEnabled: false,
+      goToStorageModeDetails: vi.fn(),
+      goToMrfDetails: vi.fn(),
     }))
 
     vi.mocked(usePreviewForm).mockReturnValue({
