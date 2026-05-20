@@ -1,5 +1,5 @@
 import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
-import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
+import { adaptV3ToV4, adaptV4ToV3 } from '@opengovsg/formsg-sdk'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
@@ -460,6 +460,7 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: {
                 encryptedContent: mrfSubmission.encryptedContent,
                 version: mrfSubmission.version,
+                mrfVersion: mrfSubmission.mrfVersion,
               },
               workflowStep: mrfSubmission.workflowStep + 1,
               workflow: mrfSubmission.workflow,
@@ -557,6 +558,9 @@ export const validateMultirespondentSubmission = async (
                     req.body.submissionSecretKey,
                     previousSubmission,
                   )
+                console.log(
+                  `previousSubmissionDecryptedContent: ${JSON.stringify(previousSubmissionDecryptedContent)}`,
+                )
 
                 if (!previousSubmissionDecryptedContent) {
                   return err(
@@ -564,8 +568,26 @@ export const validateMultirespondentSubmission = async (
                   )
                 }
 
-                const previousResponses =
-                  previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+                /**
+                 * Since the incoming client responses are in V3,
+                 * if previous submission was encrypted in V4 format, convert to V3
+                 * to facilitate comparison.
+                 */
+                const previousResponses = (() => {
+                  const responses = previousSubmissionDecryptedContent.responses
+                  const entries = Object.values(responses)
+                  if (
+                    entries.length > 0 &&
+                    'provenance' in (entries[0] as object) && //TODO: verify preferred option
+                    previousSubmission.mrfVersion === 2
+                  ) {
+                    return adaptV4ToV3(
+                      responses as FieldResponsesV4,
+                    ) as ParsedClearFormFieldResponsesV3
+                  }
+                  // Response is in v3 format, return as is
+                  return responses as ParsedClearFormFieldResponsesV3
+                })()
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
