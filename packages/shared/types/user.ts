@@ -31,6 +31,7 @@ export const UserBase = z.object({
       statusTracker: z.boolean().optional(),
       signatureField: z.boolean().optional(),
       singpassMrf: z.boolean().optional(),
+      createStorageModeForV1Webhook: z.boolean().optional(),
     })
     .optional(),
   flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
