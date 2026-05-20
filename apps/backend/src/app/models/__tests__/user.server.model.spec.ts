@@ -146,6 +146,18 @@ describe('User Model', () => {
         'This email is not a valid agency email',
       )
     })
+
+    it('should persist createStorageModeForV1Webhook beta flag', async () => {
+      const saved = await User.create({
+        email: VALID_USER_EMAIL,
+        agency: agency._id,
+        contact: VALID_CONTACT,
+        betaFlags: { createStorageModeForV1Webhook: true },
+      })
+
+      const user = await User.findById(saved._id).lean()
+      expect(user?.betaFlags?.createStorageModeForV1Webhook).toBe(true)
+    })
   })
 
   describe('Methods', () => {
