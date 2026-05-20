@@ -133,6 +133,29 @@ MrfCutoverOnWebhookV1Beta.parameters = {
   ],
 }
 
+export const MrfCutoverOnAllExceptions = Template.bind({})
+MrfCutoverOnAllExceptions.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfCutoverOnAllExceptions.parameters = {
+  msw: [
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        betaFlags: {
+          children: true,
+          createStorageModeForV1Webhook: true,
+        },
+      },
+    }),
+  ],
+}
+
 export const StorageModeAckScreen = () => {
   const secretKey = 'mock-secret-key'
 
