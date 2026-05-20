@@ -2,7 +2,9 @@
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
@@ -33,6 +35,7 @@ interface UseCommonFormWizardProviderProps {
 export const useCommonFormWizardProvider = ({
   defaultValues,
 }: UseCommonFormWizardProviderProps = {}) => {
+  const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
 
@@ -43,8 +46,24 @@ export const useCommonFormWizardProvider = ({
   const keypair = useMemo(() => formsgSdk.crypto.generate(), [])
 
   const formMethods = useForm<CreateFormWizardInputProps>({
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      ...(isMrfCutoverEnabled
+        ? { responseMode: FormResponseMode.Multirespondent }
+        : {}),
+    },
   })
+
+  const { setValue } = formMethods
+
+  const goToStorageModeDetails = () => {
+    setValue('responseMode', FormResponseMode.Encrypt)
+    setCurrentStep([CreateFormFlowStates.StorageModeDetails, 1])
+  }
+  const goToMrfDetails = () => {
+    setValue('responseMode', FormResponseMode.Multirespondent)
+    setCurrentStep([CreateFormFlowStates.Details, -1])
+  }
 
   return {
     formMethods,
@@ -52,6 +71,9 @@ export const useCommonFormWizardProvider = ({
     currentStep,
     direction,
     setCurrentStep,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
   }
 }
 
@@ -59,12 +81,20 @@ const useCreateFormWizardContext = (
   onClose: () => void,
 ): CreateFormWizardContextReturn => {
   const { t } = useTranslation()
-  const { formMethods, currentStep, direction, keypair, setCurrentStep } =
-    useCommonFormWizardProvider({
-      defaultValues: {
-        responseMode: FormResponseMode.Encrypt,
-      },
-    })
+  const {
+    formMethods,
+    currentStep,
+    direction,
+    keypair,
+    setCurrentStep,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
+  } = useCommonFormWizardProvider({
+    defaultValues: {
+      responseMode: FormResponseMode.Encrypt,
+    },
+  })
 
   const { handleSubmit, setValue } = formMethods
 
@@ -193,6 +223,9 @@ const useCreateFormWizardContext = (
     hasMyInfoChildren: false,
     modalHeader: t('features.workspace.modals.forms.create.title.setup'),
     onClose,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
   }
 }
 
