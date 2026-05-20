@@ -67,7 +67,7 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
             use this if you need a feature not yet available in the current
             version.
           </Text>
-          <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
+          <FormControl isRequired isInvalid={!!errors.title} mb="2.5rem">
             <FormLabel useMarkdownForDescription>
               {t('features.workspace.modals.forms.create.details.name.label')}
             </FormLabel>

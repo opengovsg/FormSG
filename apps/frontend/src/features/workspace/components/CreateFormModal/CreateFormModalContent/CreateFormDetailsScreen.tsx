@@ -2,6 +2,7 @@ import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
+  Box,
   Container,
   FormControl,
   ModalBody,
@@ -62,7 +63,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isLoading,
     isFetching,
     modalHeader,
-    isSingpass,
     hasMyInfoChildren,
     isMrfCutoverEnabled,
     goToStorageModeDetails,
@@ -117,7 +117,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             ) : null}
           </FormControl>
           {isMrfCutoverEnabled ? (
-            <EscapeHatchLink onClick={goToStorageModeDetails} />
+            <Box my="2.5rem">
+              <EscapeHatchLink onClick={goToStorageModeDetails} />
+            </Box>
           ) : (
             <FormControl
               isRequired
@@ -184,7 +186,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 <EmailFormRecipientsInput />
               </FormControl>
             )}
-          <DataClassificationInfoBox />
+          {!isMrfCutoverEnabled && <DataClassificationInfoBox />}
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
