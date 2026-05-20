@@ -62,6 +62,8 @@ export type FocusState =
   | { type: 'step_edit'; stepId: string }
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }
+  | { type: 'edit_respondent'; respondentId: string }
+  | { type: 'notification_focus' }
 
 // Store interface
 export type WorkflowStore = {
@@ -70,6 +72,7 @@ export type WorkflowStore = {
   respondents: Respondent[]
   fields: FormField[]
   statusTrackingEnabled: boolean
+  notificationRecipientIds: string[]
 
   // UI state (not persisted)
   focusState: FocusState
@@ -84,19 +87,26 @@ export type WorkflowStore = {
   setPendingInsertIndex: (index: number | null) => void
   setPreviewStepName: (name: string | null) => void
 
-  // Actions - Sprint 2+
+  // Actions - Sprint 2
   addStep: (type: StepType, name: string, insertIndex: number) => void
   removeStep: (stepId: string) => void
   renameStep: (stepId: string, name: string) => void
   reorderSteps: (fromIndex: number, toIndex: number) => void
+  toggleStatusTracking: () => void
+
+  // Actions - Sprint 3
   assignRespondent: (stepId: string, respondentId: string) => void
   unassignRespondent: (stepId: string, respondentId: string) => void
+  addRespondent: (data: Omit<Respondent, 'id'>) => void
+  updateRespondent: (id: string, data: Partial<Omit<Respondent, 'id'>>) => void
+  assignNotificationRecipient: (respondentId: string) => void
+  unassignNotificationRecipient: (respondentId: string) => void
+
+  // Actions - Sprint 4+ stubs
   assignField: (stepId: string, fieldId: string) => void
   assignApprovalField: (stepId: string, fieldId: string) => void
   unassignField: (stepId: string, fieldId: string) => void
   unassignApprovalField: (stepId: string, fieldId: string) => void
   assignAllFields: (stepId: string) => void
   unassignAllFields: (stepId: string) => void
-  addRespondent: (data: Omit<Respondent, 'id'>) => void
-  toggleStatusTracking: () => void
 }

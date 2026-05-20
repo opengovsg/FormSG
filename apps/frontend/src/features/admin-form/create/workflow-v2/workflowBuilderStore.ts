@@ -1,7 +1,12 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { DEFAULT_FIELDS, DEFAULT_RESPONDENTS, DEFAULT_STEPS } from './mockData'
+import {
+  DEFAULT_FIELDS,
+  DEFAULT_NOTIFICATION_RECIPIENT_IDS,
+  DEFAULT_RESPONDENTS,
+  DEFAULT_STEPS,
+} from './mockData'
 import type {
   FocusState,
   FormField,
@@ -21,6 +26,7 @@ type PersistedState = {
   fields: FormField[]
   statusTrackingEnabled: boolean
   progressCardExpanded: boolean
+  notificationRecipientIds: string[]
 }
 
 const DEFAULT_PERSISTED: PersistedState = {
@@ -29,13 +35,16 @@ const DEFAULT_PERSISTED: PersistedState = {
   fields: DEFAULT_FIELDS,
   statusTrackingEnabled: false,
   progressCardExpanded: false,
+  notificationRecipientIds: DEFAULT_NOTIFICATION_RECIPIENT_IDS,
 }
 
 function loadPersistedState(): PersistedState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_PERSISTED
-    return JSON.parse(raw) as PersistedState
+    const parsed = JSON.parse(raw) as Partial<PersistedState>
+    // Merge with defaults so new fields added in later sprints get their defaults
+    return { ...DEFAULT_PERSISTED, ...parsed }
   } catch {
     return DEFAULT_PERSISTED
   }
@@ -66,6 +75,8 @@ export const pendingInsertIndexSelector = (state: WorkflowStore) =>
   state.pendingInsertIndex
 export const previewStepNameSelector = (state: WorkflowStore) =>
   state.previewStepName
+export const notificationRecipientIdsSelector = (state: WorkflowStore) =>
+  state.notificationRecipientIds
 
 export function completedPhases(state: WorkflowStore): Phase[] {
   const completed: Phase[] = []
@@ -112,7 +123,7 @@ export function phaseStatus(state: WorkflowStore, phase: Phase): PhaseStatus {
 }
 
 const stubAction = (name: string) => () => {
-  throw new Error(`${name} is not implemented until Sprint 3+`)
+  throw new Error(`${name} is not implemented until Sprint 4+`)
 }
 
 function recalculateOrder(steps: WorkflowStep[]): WorkflowStep[] {
@@ -147,6 +158,7 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     fields: initialPersisted.fields,
     statusTrackingEnabled: initialPersisted.statusTrackingEnabled,
     progressCardExpanded: initialPersisted.progressCardExpanded,
+    notificationRecipientIds: initialPersisted.notificationRecipientIds,
 
     // UI state
     focusState: { type: 'summary' } as FocusState,
@@ -215,16 +227,68 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
         statusTrackingEnabled: !state.statusTrackingEnabled,
       })),
 
-    // Sprint 3+ stubs
-    assignRespondent: stubAction('assignRespondent'),
-    unassignRespondent: stubAction('unassignRespondent'),
+    // Sprint 3 actions
+    assignRespondent: (stepId, respondentId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId && !s.respondentIds.includes(respondentId)
+            ? { ...s, respondentIds: [...s.respondentIds, respondentId] }
+            : s,
+        ),
+      })),
+
+    unassignRespondent: (stepId, respondentId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? {
+                ...s,
+                respondentIds: s.respondentIds.filter(
+                  (id) => id !== respondentId,
+                ),
+              }
+            : s,
+        ),
+      })),
+
+    addRespondent: (data) =>
+      set((state) => ({
+        respondents: [
+          ...state.respondents,
+          { ...data, id: `resp-${Date.now()}` },
+        ],
+      })),
+
+    updateRespondent: (id, data) =>
+      set((state) => ({
+        respondents: state.respondents.map((r) =>
+          r.id === id ? { ...r, ...data } : r,
+        ),
+      })),
+
+    assignNotificationRecipient: (respondentId) =>
+      set((state) => ({
+        notificationRecipientIds: state.notificationRecipientIds.includes(
+          respondentId,
+        )
+          ? state.notificationRecipientIds
+          : [...state.notificationRecipientIds, respondentId],
+      })),
+
+    unassignNotificationRecipient: (respondentId) =>
+      set((state) => ({
+        notificationRecipientIds: state.notificationRecipientIds.filter(
+          (id) => id !== respondentId,
+        ),
+      })),
+
+    // Sprint 4+ stubs
     assignField: stubAction('assignField'),
     assignApprovalField: stubAction('assignApprovalField'),
     unassignField: stubAction('unassignField'),
     unassignApprovalField: stubAction('unassignApprovalField'),
     assignAllFields: stubAction('assignAllFields'),
     unassignAllFields: stubAction('unassignAllFields'),
-    addRespondent: stubAction('addRespondent'),
   })),
 )
 
@@ -236,5 +300,6 @@ useWorkflowBuilderStore.subscribe((state) => {
     fields: state.fields,
     statusTrackingEnabled: state.statusTrackingEnabled,
     progressCardExpanded: state.progressCardExpanded,
+    notificationRecipientIds: state.notificationRecipientIds,
   })
 })

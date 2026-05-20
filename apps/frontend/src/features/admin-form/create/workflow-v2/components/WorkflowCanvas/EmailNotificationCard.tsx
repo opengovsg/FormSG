@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BiMailSend } from 'react-icons/bi'
 import {
   Box,
@@ -6,25 +7,70 @@ import {
   Icon,
   Stack,
   Tag,
+  TagCloseButton,
   TagLabel,
   Text,
   Wrap,
   WrapItem,
 } from '@chakra-ui/react'
 
+import {
+  notificationRecipientIdsSelector,
+  respondentsSelector,
+  useWorkflowBuilderStore,
+} from '../../workflowBuilderStore'
+
+import { RespondentDropZone } from './RespondentDropZone'
+
+type EmailNotificationCardProps = {
+  isRespondentPhase?: boolean
+  isFocused?: boolean
+}
+
 /**
  * Card showing email notification config below WORKFLOW END divider.
- * Matches Step card styling: white bg, 1px neutral.300 border, 8px radius, 24px padding.
+ * During respondent phase, clickable to enter focus mode for notification recipients.
  */
-export const EmailNotificationCard = (): JSX.Element => {
+export const EmailNotificationCard = ({
+  isRespondentPhase = false,
+  isFocused = false,
+}: EmailNotificationCardProps): JSX.Element => {
+  const respondents = useWorkflowBuilderStore(respondentsSelector)
+  const notificationRecipientIds = useWorkflowBuilderStore(
+    notificationRecipientIdsSelector,
+  )
+  const unassignNotificationRecipient = useWorkflowBuilderStore(
+    (s) => s.unassignNotificationRecipient,
+  )
+  const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
+
+  const notificationRespondents = useMemo(
+    () => respondents.filter((r) => notificationRecipientIds.includes(r.id)),
+    [respondents, notificationRecipientIds],
+  )
+
+  const handleClick = () => {
+    if (isRespondentPhase && !isFocused) {
+      setFocus({ type: 'notification_focus' })
+    }
+  }
+
   return (
     <Box
       w="100%"
       borderRadius="8px"
       bg="white"
-      border="1px solid"
-      borderColor="neutral.300"
+      border={isFocused ? '2px solid' : '1px solid'}
+      borderColor={isFocused ? 'primary.500' : 'neutral.300'}
       py="1.5rem"
+      cursor={isRespondentPhase ? 'pointer' : undefined}
+      onClick={handleClick}
+      _hover={
+        isRespondentPhase && !isFocused
+          ? { borderColor: 'primary.500', bg: 'primary.100' }
+          : undefined
+      }
+      transition="border-color 0.2s, background 0.2s"
     >
       {/* Header */}
       <Flex align="center" px="1.5rem">
@@ -42,20 +88,51 @@ export const EmailNotificationCard = (): JSX.Element => {
           Who gets notified
         </Text>
         <Wrap spacing="0.25rem">
-          <WrapItem>
-            <Tag
-              size="sm"
-              bg="primary.100"
-              borderRadius="4px"
-              px="0.5rem"
-              py="0.25rem"
-            >
-              <TagLabel textStyle="caption-1" color="secondary.500">
-                Collaborators on this form
-              </TagLabel>
-            </Tag>
-          </WrapItem>
+          {notificationRespondents.map((r) => (
+            <WrapItem key={r.id}>
+              <Tag
+                size="sm"
+                bg="primary.100"
+                borderRadius="4px"
+                px="0.5rem"
+                py="0.25rem"
+              >
+                <TagLabel textStyle="caption-1" color="secondary.500">
+                  {r.name}
+                </TagLabel>
+                {isRespondentPhase && (
+                  <TagCloseButton
+                    onClick={() => unassignNotificationRecipient(r.id)}
+                  />
+                )}
+              </Tag>
+            </WrapItem>
+          ))}
+          {notificationRespondents.length === 0 && !isRespondentPhase && (
+            <WrapItem>
+              <Tag
+                size="sm"
+                bg="primary.100"
+                borderRadius="4px"
+                px="0.5rem"
+                py="0.25rem"
+              >
+                <TagLabel textStyle="caption-1" color="secondary.500">
+                  None
+                </TagLabel>
+              </Tag>
+            </WrapItem>
+          )}
         </Wrap>
+
+        {/* Drop zone during respondent phase */}
+        {isRespondentPhase && (
+          <RespondentDropZone
+            droppableId="respondent-drop-notification"
+            droppableData={{ type: 'notification_drop' }}
+            variant={isFocused ? 'step_focus' : 'pool'}
+          />
+        )}
       </Stack>
     </Box>
   )

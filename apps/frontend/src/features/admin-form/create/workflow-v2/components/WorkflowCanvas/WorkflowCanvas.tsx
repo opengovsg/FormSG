@@ -18,12 +18,13 @@ import {
   ConnectionLine,
   WorkflowEndDivider,
 } from './CanvasDecorations'
-import { CanvasStepCard } from './CanvasStepCard'
+import { CanvasStepCard, type StepCardMode } from './CanvasStepCard'
 import { DropZone } from './DropZone'
 import { EmailNotificationCard } from './EmailNotificationCard'
 
 type WorkflowCanvasProps = {
   isDragging?: boolean
+  isDraggingRespondent?: boolean
 }
 
 /**
@@ -98,6 +99,7 @@ const ExpandableConnectorGap = ({
 
 export const WorkflowCanvas = ({
   isDragging = false,
+  isDraggingRespondent = false,
 }: WorkflowCanvasProps): JSX.Element => {
   const steps = useWorkflowBuilderStore(stepsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -108,26 +110,56 @@ export const WorkflowCanvas = ({
     (s) => s.setPendingInsertIndex,
   )
 
+  // Add Steps phase flags
   const isAddStepsPhase =
     focusState.type === 'phase' && focusState.phase === 'add_steps'
   const isStepNaming = focusState.type === 'step_naming'
   const isStepEdit = focusState.type === 'step_edit'
   const isInAddStepsContext = isAddStepsPhase || isStepNaming || isStepEdit
-  const isSummary =
-    focusState.type === 'summary' ||
-    (focusState.type === 'phase' && focusState.phase !== 'add_steps')
+
+  // Respondent phase flags
+  const isRespondentPoolPhase =
+    focusState.type === 'phase' && focusState.phase === 'add_respondents'
+  const isRespondentStepFocus =
+    focusState.type === 'step_focus' && focusState.phase === 'add_respondents'
+  const respondentStepFocusId = isRespondentStepFocus ? focusState.stepId : null
+  const isNewRespondent = focusState.type === 'new_respondent'
+  const isEditRespondent = focusState.type === 'edit_respondent'
+  const isNotificationFocus = focusState.type === 'notification_focus'
+  const isInRespondentContext =
+    isRespondentPoolPhase ||
+    isRespondentStepFocus ||
+    isNewRespondent ||
+    isEditRespondent ||
+    isNotificationFocus
+
+  // Summary: default view or any non-add-steps/non-respondent phase
+  const isSummary = !isInAddStepsContext && !isInRespondentContext
 
   const namingInsertIndex = isStepNaming ? focusState.insertIndex : -1
   const namingStepType = isStepNaming ? focusState.stepType : 'collect'
 
   // Focused insert mode: "+" was clicked, showing drop zone at that position
-  // Stays active during drag so the focused drop zone persists
   const isFocusedInsert = isAddStepsPhase && pendingInsertIndex !== null
 
-  // During step naming, step edit, or focused insert, non-focused elements fade
+  // During step naming, step edit, focused insert, or respondent step focus, non-focused elements fade
   const editingStepId = isStepEdit ? focusState.stepId : null
-  const hasFocusedView = isStepNaming || isStepEdit || isFocusedInsert
+  const hasFocusedView =
+    isStepNaming ||
+    isStepEdit ||
+    isFocusedInsert ||
+    isRespondentStepFocus ||
+    isNotificationFocus
   const fadedOpacity = hasFocusedView ? 0.5 : 1
+
+  // Determine step card mode
+  const getStepCardMode = (): StepCardMode => {
+    if (isInAddStepsContext) return 'add_steps'
+    if (isRespondentStepFocus) return 'respondent_focus'
+    if (isInRespondentContext) return 'respondent_pool'
+    return 'summary'
+  }
+  const stepCardMode = getStepCardMode()
 
   const handleAddStepClick = useCallback(
     (insertIndex: number) => {
@@ -137,11 +169,31 @@ export const WorkflowCanvas = ({
     [setFocus, setPendingInsertIndex],
   )
 
+  const handleCanvasClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Only trigger if clicking the canvas background itself, not a child
+      if (e.target !== e.currentTarget) return
+
+      if (isRespondentStepFocus || isNotificationFocus) {
+        setFocus({ type: 'phase', phase: 'add_respondents' })
+      } else if (isStepEdit) {
+        setFocus({ type: 'phase', phase: 'add_steps' })
+      }
+    },
+    [isRespondentStepFocus, isNotificationFocus, isStepEdit, setFocus],
+  )
+
   const stepIds = steps.map((s) => s.id)
 
   return (
-    <Box flex={1} overflow="auto" bg="primary.100">
-      <Box maxW="42.5rem" py="2rem" px="1rem" mx="auto">
+    <Box flex={1} overflow="auto" bg="primary.100" onClick={handleCanvasClick}>
+      <Box
+        maxW="42.5rem"
+        py="2rem"
+        px="1rem"
+        mx="auto"
+        onClick={handleCanvasClick}
+      >
         <SortableContext
           items={stepIds}
           strategy={verticalListSortingStrategy}
@@ -162,33 +214,13 @@ export const WorkflowCanvas = ({
 
                     return (
                       <Box position="relative">
-                        {/* Summary mode: hover-expandable gap (fades out when entering Add Steps) */}
+                        {/* Summary mode: hover-expandable gap (hidden during add steps and respondent phases) */}
                         <Box
-                          opacity={
-                            !showAddStepsConnectors &&
-                            !isStepNaming &&
-                            !isStepEdit
-                              ? 1
-                              : 0
-                          }
-                          maxH={
-                            !showAddStepsConnectors &&
-                            !isStepNaming &&
-                            !isStepEdit
-                              ? 'none'
-                              : 0
-                          }
-                          overflow={
-                            !showAddStepsConnectors &&
-                            !isStepNaming &&
-                            !isStepEdit
-                              ? 'visible'
-                              : 'hidden'
-                          }
+                          opacity={isSummary ? 1 : 0}
+                          maxH={isSummary ? 'none' : 0}
+                          overflow={isSummary ? 'visible' : 'hidden'}
                           transition="opacity 0.35s ease, max-height 0.35s ease"
-                          pointerEvents={
-                            !showAddStepsConnectors ? 'auto' : 'none'
-                          }
+                          pointerEvents={isSummary ? 'auto' : 'none'}
                         >
                           <ExpandableConnectorGap
                             onClick={() => handleAddStepClick(i)}
@@ -226,31 +258,12 @@ export const WorkflowCanvas = ({
                             />
                           </Box>
 
-                          <Box
-                            opacity={isDragging && !isFocusedInsert ? 1 : 0}
-                            maxH={isDragging && !isFocusedInsert ? '8rem' : 0}
-                            overflow="hidden"
-                            transition="opacity 0.3s ease, max-height 0.3s ease"
-                            pointerEvents={
-                              isDragging && !isFocusedInsert ? 'auto' : 'none'
-                            }
-                          >
+                          {isDragging && !isFocusedInsert && (
                             <DropZone insertIndex={i} isDragging />
-                          </Box>
+                          )}
 
-                          {pendingInsertIndex === i && (
-                            <Box
-                              opacity={isFocusedInsert ? 1 : 0}
-                              maxH={isFocusedInsert ? '8rem' : 0}
-                              overflow="hidden"
-                              transition="opacity 0.3s ease, max-height 0.3s ease"
-                              pointerEvents={isFocusedInsert ? 'auto' : 'none'}
-                            >
-                              <DropZone
-                                insertIndex={i}
-                                isDragging={isDragging}
-                              />
-                            </Box>
+                          {isFocusedInsert && pendingInsertIndex === i && (
+                            <DropZone insertIndex={i} isDragging={isDragging} />
                           )}
 
                           {hasVisibleMiddle && (
@@ -269,6 +282,16 @@ export const WorkflowCanvas = ({
                             isStepNaming || isStepEdit ? fadedOpacity : 0
                           }
                           maxH={isStepNaming || isStepEdit ? '4rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                        >
+                          <ConnectionLine />
+                        </Box>
+
+                        {/* Respondent phase: just a connection line (no "+" buttons) */}
+                        <Box
+                          opacity={isInRespondentContext ? fadedOpacity : 0}
+                          maxH={isInRespondentContext ? '4rem' : 0}
                           overflow="hidden"
                           transition="opacity 0.35s ease, max-height 0.35s ease"
                         >
@@ -294,14 +317,20 @@ export const WorkflowCanvas = ({
               )}
 
               <Box
-                opacity={editingStepId === step.id ? 1 : fadedOpacity}
+                opacity={
+                  editingStepId === step.id || respondentStepFocusId === step.id
+                    ? 1
+                    : fadedOpacity
+                }
                 transition="opacity 0.3s ease"
               >
                 <CanvasStepCard
                   step={step}
-                  compact={isInAddStepsContext}
-                  sortable={isAddStepsPhase}
-                  isFocused={editingStepId === step.id}
+                  mode={stepCardMode}
+                  isFocused={
+                    editingStepId === step.id ||
+                    respondentStepFocusId === step.id
+                  }
                 />
               </Box>
             </Fragment>
@@ -332,7 +361,7 @@ export const WorkflowCanvas = ({
               />
             </>
           ) : null
-        ) : (
+        ) : isInRespondentContext || isStepEdit ? null : (
           // All other states: show connection line + appropriate connector
           <>
             <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
@@ -350,34 +379,35 @@ export const WorkflowCanvas = ({
                     onClick={() => handleAddStepClick(steps.length)}
                   />
                 </Box>
-                {!isFocusedInsert && (
-                  <Box
-                    opacity={isDragging ? 1 : 0}
-                    maxH={isDragging ? '8rem' : 0}
-                    overflow="hidden"
-                    transition="opacity 0.3s ease, max-height 0.3s ease"
-                    pointerEvents={isDragging ? 'auto' : 'none'}
-                  >
-                    <DropZone insertIndex={steps.length} isDragging />
-                  </Box>
+                {!isFocusedInsert && isDragging && (
+                  <DropZone insertIndex={steps.length} isDragging />
                 )}
               </>
             )}
           </>
         )}
 
-        {/* Summary / editing: always-visible "+" at bottom (hidden during naming) */}
-        {!isAddStepsPhase && !isStepNaming && (
-          <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
-            <AddStepConnector
-              onClick={() => handleAddStepClick(steps.length)}
-            />
-          </Box>
-        )}
+        {/* Summary: always-visible "+" at bottom (hidden during naming, editing, and respondent phase) */}
+        {!isAddStepsPhase &&
+          !isStepNaming &&
+          !isStepEdit &&
+          !isInRespondentContext && (
+            <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
+              <AddStepConnector
+                onClick={() => handleAddStepClick(steps.length)}
+              />
+            </Box>
+          )}
 
-        <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
+        <Box
+          opacity={isNotificationFocus ? 1 : fadedOpacity}
+          transition="opacity 0.3s ease"
+        >
           <WorkflowEndDivider />
-          <EmailNotificationCard />
+          <EmailNotificationCard
+            isRespondentPhase={isInRespondentContext}
+            isFocused={isNotificationFocus}
+          />
         </Box>
       </Box>
     </Box>

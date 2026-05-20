@@ -11,12 +11,15 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 
+import { RespondentCardOverlay } from './components/AddRespondentsPanel'
 import { StepTypeCardOverlay } from './components/AddStepsPanel/StepTypeCard'
 import { StepCardOverlay } from './components/WorkflowCanvas/CanvasStepCard'
 import { WorkflowCanvas } from './components/WorkflowCanvas/WorkflowCanvas'
 import { WorkflowDrawer } from './components/WorkflowDrawer'
-import type { StepType, WorkflowStep } from './types'
+import type { Respondent, StepType, WorkflowStep } from './types'
 import {
+  focusStateSelector,
+  respondentsSelector,
   setFocusSelector,
   stepsSelector,
   useWorkflowBuilderStore,
@@ -26,12 +29,21 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const reorderSteps = useWorkflowBuilderStore((s) => s.reorderSteps)
   const steps = useWorkflowBuilderStore(stepsSelector)
+  const respondents = useWorkflowBuilderStore(respondentsSelector)
+  const focusState = useWorkflowBuilderStore(focusStateSelector)
+  const assignRespondent = useWorkflowBuilderStore((s) => s.assignRespondent)
+  const assignNotificationRecipient = useWorkflowBuilderStore(
+    (s) => s.assignNotificationRecipient,
+  )
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
 
   const [activeStepType, setActiveStepType] = useState<StepType | null>(null)
   const [activeDragStep, setActiveDragStep] = useState<WorkflowStep | null>(
+    null,
+  )
+  const [activeRespondent, setActiveRespondent] = useState<Respondent | null>(
     null,
   )
 
@@ -52,6 +64,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       } else if (data?.type === 'step_card') {
         const step = steps.find((s) => s.id === event.active.id)
         if (step) setActiveDragStep(step)
+      } else if (data?.type === 'respondent_card') {
+        setActiveRespondent(data.respondent as Respondent)
       }
     },
     [steps],
@@ -61,6 +75,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
     (event: DragEndEvent) => {
       setActiveStepType(null)
       setActiveDragStep(null)
+      setActiveRespondent(null)
 
       const { active, over } = event
       if (!over) return
@@ -86,9 +101,42 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         if (fromIndex !== toIndex) {
           reorderSteps(fromIndex, toIndex)
         }
+        return
+      }
+
+      // Respondent dropped on step card
+      if (
+        activeData?.type === 'respondent_card' &&
+        overData?.type === 'respondent_drop'
+      ) {
+        const respondentId = active.id as string
+        const stepId = overData.stepId as string
+        assignRespondent(stepId, respondentId)
+        // Auto-focus the step after drop
+        setFocus({
+          type: 'step_focus',
+          phase: 'add_respondents',
+          stepId,
+        })
+        return
+      }
+
+      // Respondent dropped on notification card
+      if (
+        activeData?.type === 'respondent_card' &&
+        overData?.type === 'notification_drop'
+      ) {
+        assignNotificationRecipient(active.id as string)
+        return
       }
     },
-    [setFocus, reorderSteps],
+    [
+      setFocus,
+      reorderSteps,
+      assignRespondent,
+      assignNotificationRecipient,
+      setPendingInsertIndex,
+    ],
   )
 
   return (
@@ -99,12 +147,17 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       onDragEnd={handleDragEnd}
     >
       <WorkflowDrawer />
-      <WorkflowCanvas isDragging={activeStepType !== null} />
+      <WorkflowCanvas
+        isDragging={activeStepType !== null}
+        isDraggingRespondent={activeRespondent !== null}
+      />
       <DragOverlay>
         {activeStepType ? (
           <StepTypeCardOverlay stepType={activeStepType} />
         ) : activeDragStep ? (
           <StepCardOverlay step={activeDragStep} />
+        ) : activeRespondent ? (
+          <RespondentCardOverlay respondent={activeRespondent} />
         ) : null}
       </DragOverlay>
     </DndContext>

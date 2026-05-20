@@ -3,10 +3,10 @@ import type { FormField, Respondent, WorkflowStep } from './types'
 export const DEFAULT_RESPONDENTS: Respondent[] = [
   {
     id: 'resp-form-link',
-    name: 'Anyone you share the form link with',
+    name: 'Anyone with the form link',
     type: 'form_link',
     description:
-      'Anyone who receives the form URL will get access to the first step of the workflow',
+      'Anyone who receives the form URL will get access to this step. Other steps are accessed via unique links sent by email.',
     isCustom: false,
   },
   {
@@ -36,6 +36,11 @@ export const CREW_CHANGE_FIELDS: FormField[] = [
 
 // Default: no fields yet (form just created)
 export const DEFAULT_FIELDS: FormField[] = []
+
+// Default notification recipients: collaborators get notified
+export const DEFAULT_NOTIFICATION_RECIPIENT_IDS: string[] = [
+  'resp-collaborator',
+]
 
 export const DEFAULT_STEPS: WorkflowStep[] = [
   {

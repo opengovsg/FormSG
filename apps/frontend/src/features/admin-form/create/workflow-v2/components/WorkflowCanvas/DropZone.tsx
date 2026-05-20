@@ -1,5 +1,4 @@
-import { BiPlus } from 'react-icons/bi'
-import { Box, Center, HStack, Icon, Text } from '@chakra-ui/react'
+import { Box, Center, Text } from '@chakra-ui/react'
 import { useDroppable } from '@dnd-kit/core'
 
 type DropZoneProps = {
@@ -34,28 +33,16 @@ export const DropZone = ({
         borderRadius="4px"
         border="2px dashed"
         borderColor={isOver ? 'primary.500' : 'primary.400'}
-        bg={isOver ? 'primary.100' : 'transparent'}
+        bg={isOver ? 'primary.200' : 'primary.100'}
         transition="background 0.15s, border-color 0.15s"
       >
-        {isDragging ? (
-          <HStack spacing="0.5rem">
-            <Icon as={BiPlus} color="primary.500" />
-            <Text
-              textStyle="subhead-1"
-              color="primary.500"
-              textAlign="center"
-              fontWeight={isOver ? '600' : '400'}
-            >
-              {isOver
-                ? 'Drop here to add step'
-                : 'Drag a step from the left panel into this box'}
-            </Text>
-          </HStack>
-        ) : (
-          <Text textStyle="subhead-1" color="primary.500" textAlign="center">
-            Click on a step in the left panel or drag it into this box
-          </Text>
-        )}
+        <Text textStyle="subhead-2" color="primary.500" textAlign="center">
+          {isDragging
+            ? isOver
+              ? 'Drop here to add step'
+              : 'Drag a step from the left panel into this box'
+            : 'Click on a step in the left panel or drag it into this box'}
+        </Text>
       </Center>
     </Box>
   )

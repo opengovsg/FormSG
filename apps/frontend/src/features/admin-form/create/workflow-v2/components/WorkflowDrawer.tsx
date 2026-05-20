@@ -10,6 +10,13 @@ import { FocusedInsertPanel } from './AddStepsPanel/FocusedInsertPanel'
 import { StepEditForm } from './AddStepsPanel/StepEditForm'
 import { StepNamingForm } from './AddStepsPanel/StepNamingForm'
 import { SummaryPanel } from './SummaryPanel/SummaryPanel'
+import {
+  AddRespondentsPanel,
+  EditRespondentForm,
+  NewRespondentForm,
+  NotificationFocusPanel,
+  StepFocusRespondentPanel,
+} from './AddRespondentsPanel'
 import { AddStepsPanel } from './AddStepsPanel'
 
 const DrawerContent = (): JSX.Element => {
@@ -19,15 +26,28 @@ const DrawerContent = (): JSX.Element => {
   switch (focusState.type) {
     case 'phase':
       if (focusState.phase === 'add_steps') {
-        // Focused insert mode: simplified panel
         if (pendingInsertIndex !== null) return <FocusedInsertPanel />
         return <AddStepsPanel />
+      }
+      if (focusState.phase === 'add_respondents') {
+        return <AddRespondentsPanel />
       }
       return <SummaryPanel />
     case 'step_naming':
       return <StepNamingForm />
     case 'step_edit':
       return <StepEditForm />
+    case 'step_focus':
+      if (focusState.phase === 'add_respondents') {
+        return <StepFocusRespondentPanel />
+      }
+      return <SummaryPanel />
+    case 'new_respondent':
+      return <NewRespondentForm />
+    case 'edit_respondent':
+      return <EditRespondentForm />
+    case 'notification_focus':
+      return <NotificationFocusPanel />
     default:
       return <SummaryPanel />
   }

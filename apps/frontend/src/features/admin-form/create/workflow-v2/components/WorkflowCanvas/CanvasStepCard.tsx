@@ -20,6 +20,7 @@ import {
   IconButton,
   Stack,
   Tag,
+  TagCloseButton,
   TagLabel,
   Text,
   useDisclosure,
@@ -37,33 +38,51 @@ import {
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
+import { RespondentDropZone } from './RespondentDropZone'
+
+export type StepCardMode =
+  | 'summary'
+  | 'add_steps'
+  | 'respondent_pool'
+  | 'respondent_focus'
+
 type CanvasStepCardProps = {
   step: WorkflowStep
-  compact?: boolean
-  sortable?: boolean
+  mode?: StepCardMode
   isFocused?: boolean
 }
 
 export const CanvasStepCard = ({
   step,
-  compact = false,
-  sortable = false,
+  mode = 'summary',
   isFocused = false,
 }: CanvasStepCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const fields = useWorkflowBuilderStore(fieldsSelector)
   const steps = useWorkflowBuilderStore(stepsSelector)
   const removeStep = useWorkflowBuilderStore((s) => s.removeStep)
+  const unassignRespondent = useWorkflowBuilderStore(
+    (s) => s.unassignRespondent,
+  )
+  const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
 
+  // Derived mode flags
+  const isAddSteps = mode === 'add_steps'
+  const isRespondentPhase =
+    mode === 'respondent_pool' || mode === 'respondent_focus'
+  const compact = isAddSteps
+  const sortable = isAddSteps
+
   const isFaded = false
 
+  // Sortable (for add_steps reorder)
   const {
     attributes,
     listeners,
-    setNodeRef,
+    setNodeRef: setSortableRef,
     transform,
     transition,
     isDragging: isSortDragging,
@@ -99,16 +118,23 @@ export const CanvasStepCard = ({
     [fields, step.fieldIds],
   )
 
-  const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
+  // Step 1 (order 0) is locked during respondent phase - no drop zone, no click, no remove
+  const isFirstStep = step.order === 0
 
-  const showDragHandle = steps.length > 1
-  const showDelete = steps.length > 1 && step.order > 0
+  const showDragHandle = isAddSteps && steps.length > 1
+  const showDelete = isAddSteps && steps.length > 1 && step.order > 0
 
   const handleCardClick = useCallback(() => {
-    if (compact) {
+    if (isAddSteps && compact) {
       setFocus({ type: 'step_edit', stepId: step.id })
+    } else if (isRespondentPhase && !isFirstStep) {
+      setFocus({
+        type: 'step_focus',
+        phase: 'add_respondents',
+        stepId: step.id,
+      })
     }
-  }, [compact, setFocus, step.id])
+  }, [isAddSteps, isRespondentPhase, isFirstStep, compact, setFocus, step.id])
 
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -120,16 +146,31 @@ export const CanvasStepCard = ({
     }, 300)
   }, [removeStep, step.id, onClose])
 
+  // Show fields sections only in summary and add_steps modes
+  const showFieldsSections = !isRespondentPhase
+
+  // Show respondent drop zone in respondent phase (except Step 1)
+  const showRespondentDropZone = isRespondentPhase && !isFirstStep
+
+  // Respondent chips get X buttons during respondent phase (except Step 1)
+  const showRespondentRemove = isRespondentPhase && !isFirstStep
+
+  // Clickable card in add_steps compact or respondent phase (except Step 1)
+  const isClickable =
+    (isAddSteps && compact) || (isRespondentPhase && !isFirstStep)
+
+  const cardRef = setSortableRef
+
   return (
     <Box
       overflow="hidden"
-      maxH={isDeleting ? 0 : '20rem'}
+      maxH={isDeleting ? 0 : '40rem'}
       opacity={isDeleting ? 0 : 1}
       transform={isDeleting ? 'scale(0.95)' : 'scale(1)'}
       transition="max-height 0.3s ease, opacity 0.2s ease, transform 0.2s ease"
     >
       <Box
-        ref={setNodeRef}
+        ref={cardRef}
         {...(sortable && steps.length > 1
           ? { ...listeners, ...attributes }
           : {})}
@@ -143,10 +184,16 @@ export const CanvasStepCard = ({
         opacity={isFaded ? 0.5 : 1}
         transition="opacity 0.2s, border-color 0.2s, box-shadow 0.2s"
         py={compact ? '1rem' : '1.5rem'}
-        cursor={compact && sortable && steps.length > 1 ? 'grab' : undefined}
+        cursor={
+          isClickable
+            ? sortable && steps.length > 1
+              ? 'grab'
+              : 'pointer'
+            : undefined
+        }
         onClick={handleCardClick}
         _hover={
-          compact
+          isClickable
             ? {
                 borderColor: 'primary.500',
                 bg: 'primary.100',
@@ -154,9 +201,7 @@ export const CanvasStepCard = ({
             : undefined
         }
         _active={
-          compact && sortable && steps.length > 1
-            ? { cursor: 'grabbing' }
-            : undefined
+          sortable && steps.length > 1 ? { cursor: 'grabbing' } : undefined
         }
       >
         {/* Step header */}
@@ -233,10 +278,18 @@ export const CanvasStepCard = ({
                     <TagLabel textStyle="caption-1" color="secondary.500">
                       {r.name}
                     </TagLabel>
+                    {showRespondentRemove && (
+                      <TagCloseButton
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          unassignRespondent(step.id, r.id)
+                        }}
+                      />
+                    )}
                   </Tag>
                 </WrapItem>
               ))}
-              {stepRespondents.length === 0 && (
+              {stepRespondents.length === 0 && !showRespondentDropZone && (
                 <Tag
                   size="sm"
                   bg="primary.100"
@@ -250,70 +303,27 @@ export const CanvasStepCard = ({
                 </Tag>
               )}
             </Wrap>
+
+            {/* Respondent drop zone */}
+            {showRespondentDropZone && (
+              <RespondentDropZone
+                droppableId={`respondent-drop-${step.id}`}
+                droppableData={{ type: 'respondent_drop', stepId: step.id }}
+                variant={isFocused ? 'step_focus' : 'pool'}
+              />
+            )}
           </Stack>
 
-          {/* Fields section */}
-          <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
-            <Text textStyle="subhead-2" color="secondary.500">
-              Fields to fill
-            </Text>
-            <Wrap spacing="0.25rem">
-              {allFieldsAssigned ? (
-                <WrapItem>
-                  <Tag
-                    size="sm"
-                    bg="primary.100"
-                    borderRadius="4px"
-                    px="0.5rem"
-                    py="0.25rem"
-                  >
-                    <TagLabel textStyle="caption-1" color="secondary.500">
-                      All fields
-                    </TagLabel>
-                  </Tag>
-                </WrapItem>
-              ) : stepFields.length > 0 ? (
-                stepFields.map((f) => (
-                  <WrapItem key={f.id}>
-                    <Tag
-                      size="sm"
-                      bg="primary.100"
-                      borderRadius="4px"
-                      px="0.5rem"
-                      py="0.25rem"
-                    >
-                      <TagLabel textStyle="caption-1" color="secondary.500">
-                        {f.number}. {f.name}
-                      </TagLabel>
-                    </Tag>
-                  </WrapItem>
-                ))
-              ) : (
-                <Tag
-                  size="sm"
-                  bg="primary.100"
-                  borderRadius="4px"
-                  px="0.5rem"
-                  py="0.25rem"
-                >
-                  <TagLabel textStyle="caption-1" color="secondary.500">
-                    None
-                  </TagLabel>
-                </Tag>
-              )}
-            </Wrap>
-          </Stack>
-
-          {/* Approval fields (review steps only) */}
-          {step.type === 'review' && (
-            <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
-              <Text textStyle="subhead-2" color="secondary.500">
-                Fields to indicate approval
-              </Text>
-              <Wrap spacing="0.25rem">
-                {approvalFields.length > 0 ? (
-                  approvalFields.map((f) => (
-                    <WrapItem key={f.id}>
+          {/* Fields section - hidden during respondent phase */}
+          {showFieldsSections && (
+            <>
+              <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+                <Text textStyle="subhead-2" color="secondary.500">
+                  Fields to fill
+                </Text>
+                <Wrap spacing="0.25rem">
+                  {allFieldsAssigned ? (
+                    <WrapItem>
                       <Tag
                         size="sm"
                         bg="primary.100"
@@ -322,26 +332,85 @@ export const CanvasStepCard = ({
                         py="0.25rem"
                       >
                         <TagLabel textStyle="caption-1" color="secondary.500">
-                          {f.number}. {f.name}
+                          All fields
                         </TagLabel>
                       </Tag>
                     </WrapItem>
-                  ))
-                ) : (
-                  <Tag
-                    size="sm"
-                    bg="primary.100"
-                    borderRadius="4px"
-                    px="0.5rem"
-                    py="0.25rem"
-                  >
-                    <TagLabel textStyle="caption-1" color="secondary.500">
-                      None
-                    </TagLabel>
-                  </Tag>
-                )}
-              </Wrap>
-            </Stack>
+                  ) : stepFields.length > 0 ? (
+                    stepFields.map((f) => (
+                      <WrapItem key={f.id}>
+                        <Tag
+                          size="sm"
+                          bg="primary.100"
+                          borderRadius="4px"
+                          px="0.5rem"
+                          py="0.25rem"
+                        >
+                          <TagLabel textStyle="caption-1" color="secondary.500">
+                            {f.number}. {f.name}
+                          </TagLabel>
+                        </Tag>
+                      </WrapItem>
+                    ))
+                  ) : (
+                    <Tag
+                      size="sm"
+                      bg="primary.100"
+                      borderRadius="4px"
+                      px="0.5rem"
+                      py="0.25rem"
+                    >
+                      <TagLabel textStyle="caption-1" color="secondary.500">
+                        None
+                      </TagLabel>
+                    </Tag>
+                  )}
+                </Wrap>
+              </Stack>
+
+              {/* Approval fields (review steps only) */}
+              {step.type === 'review' && (
+                <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+                  <Text textStyle="subhead-2" color="secondary.500">
+                    Fields to indicate approval
+                  </Text>
+                  <Wrap spacing="0.25rem">
+                    {approvalFields.length > 0 ? (
+                      approvalFields.map((f) => (
+                        <WrapItem key={f.id}>
+                          <Tag
+                            size="sm"
+                            bg="primary.100"
+                            borderRadius="4px"
+                            px="0.5rem"
+                            py="0.25rem"
+                          >
+                            <TagLabel
+                              textStyle="caption-1"
+                              color="secondary.500"
+                            >
+                              {f.number}. {f.name}
+                            </TagLabel>
+                          </Tag>
+                        </WrapItem>
+                      ))
+                    ) : (
+                      <Tag
+                        size="sm"
+                        bg="primary.100"
+                        borderRadius="4px"
+                        px="0.5rem"
+                        py="0.25rem"
+                      >
+                        <TagLabel textStyle="caption-1" color="secondary.500">
+                          None
+                        </TagLabel>
+                      </Tag>
+                    )}
+                  </Wrap>
+                </Stack>
+              )}
+            </>
           )}
         </Box>
       </Box>
