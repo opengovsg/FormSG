@@ -105,17 +105,18 @@ export const augmentDecryptedResponsesV4 = (
   const results: AugmentedDecryptedResponseV4[] = []
 
   orderedFieldIds.forEach((fieldId, index) => {
-    const field = responsesV4[fieldId]
+    const fieldFromResponse = responsesV4[fieldId]
     const formField = formFieldMap.get(fieldId)
 
-    const fieldType = field?.fieldType ?? (formField?.fieldType as BasicField)
-    if (!fieldType || !formField || !isBasicField(fieldType)) return
+    const fieldType =
+      fieldFromResponse?.fieldType ?? (formField?.fieldType as BasicField)
+    if (!isBasicField(fieldType)) return
 
     const isNonResponse = NON_RESPONSE_FIELD_SET.has(fieldType)
     if (isNonResponse) {
       nonResponseFieldsCount++
       // Only Section headers are rendered; other non-response fields (e.g. Statement) are skipped
-      if (fieldType === BasicField.Section) {
+      if (fieldType === BasicField.Section && formField) {
         results.push({
           fieldId,
           field: buildSyntheticField(formField),
@@ -127,10 +128,12 @@ export const augmentDecryptedResponsesV4 = (
 
     results.push({
       fieldId,
-      field: field ?? buildSyntheticField(formField),
+      field:
+        fieldFromResponse ??
+        (formField ? buildSyntheticField(formField) : undefined),
       questionNumber: index + 1 - nonResponseFieldsCount,
       downloadUrl: attachmentMetadata[fieldId],
-      unanswered: !field,
+      unanswered: !fieldFromResponse,
     })
   })
 
