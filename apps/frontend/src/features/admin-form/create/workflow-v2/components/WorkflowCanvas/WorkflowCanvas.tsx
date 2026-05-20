@@ -151,52 +151,81 @@ export const WorkflowCanvas = ({
             <Fragment key={step.id}>
               {i > 0 && (
                 <>
-                  {/* Summary view: hover-reveal "+" between steps */}
-                  {isSummary && (
+                  {/* Between-step connectors: only ONE block renders based on state */}
+                  {isSummary ? (
                     <ExpandableConnectorGap
                       onClick={() => handleAddStepClick(i)}
                     />
-                  )}
+                  ) : isAddStepsPhase ? (
+                    (() => {
+                      // Whether this position has a visible connector between the two lines
+                      const hasVisibleMiddle =
+                        (!isDragging && !isFocusedInsert) || // "+" visible
+                        (isDragging && !isFocusedInsert) || // drag drop zone visible
+                        (isFocusedInsert && pendingInsertIndex === i) // focused drop zone visible
+                      return (
+                        <Box position="relative">
+                          <Box
+                            opacity={fadedOpacity}
+                            transition="opacity 0.3s ease"
+                          >
+                            <ConnectionLine />
+                          </Box>
 
-                  {/* Add Steps focused insert: drop zone at pendingInsertIndex, faded connectors elsewhere */}
-                  {isFocusedInsert &&
-                    (pendingInsertIndex === i ? (
-                      <>
-                        <Box opacity={fadedOpacity} transition="opacity 0.2s">
-                          <ConnectionLine />
+                          <Box
+                            opacity={!isDragging && !isFocusedInsert ? 1 : 0}
+                            maxH={!isDragging && !isFocusedInsert ? '4rem' : 0}
+                            overflow="hidden"
+                            transition="opacity 0.3s ease, max-height 0.3s ease"
+                            pointerEvents={
+                              !isDragging && !isFocusedInsert ? 'auto' : 'none'
+                            }
+                          >
+                            <AddStepConnector
+                              onClick={() => handleAddStepClick(i)}
+                            />
+                          </Box>
+
+                          <Box
+                            opacity={isDragging && !isFocusedInsert ? 1 : 0}
+                            maxH={isDragging && !isFocusedInsert ? '8rem' : 0}
+                            overflow="hidden"
+                            transition="opacity 0.3s ease, max-height 0.3s ease"
+                            pointerEvents={
+                              isDragging && !isFocusedInsert ? 'auto' : 'none'
+                            }
+                          >
+                            <DropZone insertIndex={i} isDragging />
+                          </Box>
+
+                          {pendingInsertIndex === i && (
+                            <Box
+                              opacity={isFocusedInsert ? 1 : 0}
+                              maxH={isFocusedInsert ? '8rem' : 0}
+                              overflow="hidden"
+                              transition="opacity 0.3s ease, max-height 0.3s ease"
+                              pointerEvents={isFocusedInsert ? 'auto' : 'none'}
+                            >
+                              <DropZone
+                                insertIndex={i}
+                                isDragging={isDragging}
+                              />
+                            </Box>
+                          )}
+
+                          {hasVisibleMiddle && (
+                            <Box
+                              opacity={fadedOpacity}
+                              transition="opacity 0.3s ease"
+                            >
+                              <ConnectionLine />
+                            </Box>
+                          )}
                         </Box>
-                        <DropZone insertIndex={i} />
-                        <Box opacity={fadedOpacity} transition="opacity 0.2s">
-                          <ConnectionLine />
-                        </Box>
-                      </>
-                    ) : (
-                      <Box opacity={fadedOpacity} transition="opacity 0.2s">
-                        <ConnectionLine />
-                      </Box>
-                    ))}
-
-                  {/* Add Steps normal idle: "+" between every step */}
-                  {isAddStepsPhase && !isDragging && !isFocusedInsert && (
-                    <Box transition="opacity 0.2s">
-                      <ConnectionLine />
-                      <AddStepConnector onClick={() => handleAddStepClick(i)} />
-                      <ConnectionLine />
-                    </Box>
-                  )}
-
-                  {/* Add Steps dragging (non-focused): drop zones everywhere */}
-                  {isAddStepsPhase && isDragging && !isFocusedInsert && (
-                    <Box transition="opacity 0.2s">
-                      <ConnectionLine />
-                      <DropZone insertIndex={i} isDragging />
-                      <ConnectionLine />
-                    </Box>
-                  )}
-
-                  {/* Step naming/editing: just connection lines */}
-                  {(isStepNaming || isStepEdit) && (
-                    <Box opacity={fadedOpacity} transition="opacity 0.2s">
+                      )
+                    })()
+                  ) : (
+                    <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
                       <ConnectionLine />
                     </Box>
                   )}
@@ -210,7 +239,7 @@ export const WorkflowCanvas = ({
                     stepType={namingStepType}
                     name={previewStepName || ''}
                   />
-                  <Box opacity={fadedOpacity} transition="opacity 0.2s">
+                  <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
                     <ConnectionLine />
                   </Box>
                 </>
@@ -218,7 +247,7 @@ export const WorkflowCanvas = ({
 
               <Box
                 opacity={editingStepId === step.id ? 1 : fadedOpacity}
-                transition="opacity 0.2s"
+                transition="opacity 0.3s ease"
               >
                 <CanvasStepCard
                   step={step}
@@ -236,7 +265,7 @@ export const WorkflowCanvas = ({
           // Focused insert: only show drop zone at the focused position
           pendingInsertIndex === steps.length ? (
             <>
-              <Box opacity={fadedOpacity} transition="opacity 0.2s">
+              <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
                 <ConnectionLine />
               </Box>
               <DropZone insertIndex={steps.length} isDragging={isDragging} />
@@ -246,7 +275,7 @@ export const WorkflowCanvas = ({
           // Step naming: preview card at end
           namingInsertIndex >= steps.length ? (
             <>
-              <Box opacity={fadedOpacity} transition="opacity 0.2s">
+              <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
                 <ConnectionLine />
               </Box>
               <PreviewStepCard
@@ -258,30 +287,47 @@ export const WorkflowCanvas = ({
         ) : (
           // All other states: show connection line + appropriate connector
           <>
-            <Box opacity={fadedOpacity} transition="opacity 0.2s">
+            <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
               <ConnectionLine />
             </Box>
-            {isAddStepsPhase && !isDragging && (
-              <AddStepConnector
-                onClick={() => handleAddStepClick(steps.length)}
-              />
-            )}
-            {isAddStepsPhase && isDragging && !isFocusedInsert && (
-              <DropZone insertIndex={steps.length} isDragging />
+            {isAddStepsPhase && (
+              <>
+                <Box
+                  opacity={isDragging ? 0 : 1}
+                  maxH={isDragging ? 0 : '4rem'}
+                  overflow="hidden"
+                  transition="opacity 0.3s ease, max-height 0.3s ease"
+                >
+                  <AddStepConnector
+                    onClick={() => handleAddStepClick(steps.length)}
+                  />
+                </Box>
+                {!isFocusedInsert && (
+                  <Box
+                    opacity={isDragging ? 1 : 0}
+                    maxH={isDragging ? '8rem' : 0}
+                    overflow="hidden"
+                    transition="opacity 0.3s ease, max-height 0.3s ease"
+                    pointerEvents={isDragging ? 'auto' : 'none'}
+                  >
+                    <DropZone insertIndex={steps.length} isDragging />
+                  </Box>
+                )}
+              </>
             )}
           </>
         )}
 
-        {/* Summary / naming / editing: always-visible "+" at bottom */}
-        {!isAddStepsPhase && (
-          <Box opacity={fadedOpacity} transition="opacity 0.2s">
+        {/* Summary / editing: always-visible "+" at bottom (hidden during naming) */}
+        {!isAddStepsPhase && !isStepNaming && (
+          <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
             <AddStepConnector
               onClick={() => handleAddStepClick(steps.length)}
             />
           </Box>
         )}
 
-        <Box opacity={fadedOpacity} transition="opacity 0.2s">
+        <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
           <WorkflowEndDivider />
           <EmailNotificationCard />
         </Box>

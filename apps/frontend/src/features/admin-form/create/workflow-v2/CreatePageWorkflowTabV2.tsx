@@ -12,22 +12,28 @@ import {
 } from '@dnd-kit/core'
 
 import { StepTypeCardOverlay } from './components/AddStepsPanel/StepTypeCard'
+import { StepCardOverlay } from './components/WorkflowCanvas/CanvasStepCard'
 import { WorkflowCanvas } from './components/WorkflowCanvas/WorkflowCanvas'
 import { WorkflowDrawer } from './components/WorkflowDrawer'
-import type { StepType } from './types'
+import type { StepType, WorkflowStep } from './types'
 import {
   setFocusSelector,
+  stepsSelector,
   useWorkflowBuilderStore,
 } from './workflowBuilderStore'
 
 export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const reorderSteps = useWorkflowBuilderStore((s) => s.reorderSteps)
+  const steps = useWorkflowBuilderStore(stepsSelector)
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
 
   const [activeStepType, setActiveStepType] = useState<StepType | null>(null)
+  const [activeDragStep, setActiveDragStep] = useState<WorkflowStep | null>(
+    null,
+  )
 
   // Require 8px of movement before activating drag, so clicks work normally
   const mouseSensor = useSensor(MouseSensor, {
@@ -38,16 +44,23 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   })
   const sensors = useSensors(mouseSensor, touchSensor)
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const data = event.active.data.current
-    if (data?.type === 'step_type') {
-      setActiveStepType(data.stepType as StepType)
-    }
-  }, [])
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const data = event.active.data.current
+      if (data?.type === 'step_type') {
+        setActiveStepType(data.stepType as StepType)
+      } else if (data?.type === 'step_card') {
+        const step = steps.find((s) => s.id === event.active.id)
+        if (step) setActiveDragStep(step)
+      }
+    },
+    [steps],
+  )
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveStepType(null)
+      setActiveDragStep(null)
 
       const { active, over } = event
       if (!over) return
@@ -90,6 +103,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       <DragOverlay>
         {activeStepType ? (
           <StepTypeCardOverlay stepType={activeStepType} />
+        ) : activeDragStep ? (
+          <StepCardOverlay step={activeDragStep} />
         ) : null}
       </DragOverlay>
     </DndContext>

@@ -41,7 +41,7 @@ export const DropZone = ({
           <HStack spacing="0.5rem">
             <Icon as={BiPlus} color="primary.500" />
             <Text
-              textStyle="body-2"
+              textStyle="subhead-1"
               color="primary.500"
               textAlign="center"
               fontWeight={isOver ? '600' : '400'}
@@ -52,7 +52,7 @@ export const DropZone = ({
             </Text>
           </HStack>
         ) : (
-          <Text textStyle="body-2" color="primary.500" textAlign="center">
+          <Text textStyle="subhead-1" color="primary.500" textAlign="center">
             Click on a step in the left panel or drag it into this box
           </Text>
         )}

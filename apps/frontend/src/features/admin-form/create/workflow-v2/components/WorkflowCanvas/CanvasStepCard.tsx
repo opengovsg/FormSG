@@ -76,7 +76,7 @@ export const CanvasStepCard = ({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isSortDragging ? 0.5 : undefined,
+    opacity: isSortDragging ? 0.3 : undefined,
   }
 
   const stepRespondents = useMemo(
@@ -119,6 +119,9 @@ export const CanvasStepCard = ({
     <>
       <Box
         ref={setNodeRef}
+        {...(sortable && steps.length > 1
+          ? { ...listeners, ...attributes }
+          : {})}
         style={style}
         w="100%"
         textAlign="start"
@@ -129,14 +132,19 @@ export const CanvasStepCard = ({
         opacity={isFaded ? 0.5 : 1}
         transition="opacity 0.2s, border-color 0.2s, box-shadow 0.2s"
         py={compact ? '1rem' : '1.5rem'}
+        cursor={compact && sortable && steps.length > 1 ? 'grab' : undefined}
         onClick={handleCardClick}
         _hover={
           compact
             ? {
-                borderColor: 'secondary.300',
-                boxShadow: 'sm',
-                cursor: 'pointer',
+                borderColor: 'primary.500',
+                bg: 'primary.100',
               }
+            : undefined
+        }
+        _active={
+          compact && sortable && steps.length > 1
+            ? { cursor: 'grabbing' }
             : undefined
         }
       >
@@ -351,5 +359,44 @@ export const CanvasStepCard = ({
         </AlertDialogOverlay>
       </AlertDialog>
     </>
+  )
+}
+
+/**
+ * Floating overlay shown during canvas step card drag.
+ * Matches the compact card style with shadow.
+ */
+export const StepCardOverlay = ({
+  step,
+}: {
+  step: WorkflowStep
+}): JSX.Element => {
+  return (
+    <Box
+      w="100%"
+      maxW="42.5rem"
+      borderRadius="8px"
+      bg="white"
+      border="1px solid"
+      borderColor="primary.500"
+      boxShadow="lg"
+      py="1rem"
+      cursor="grabbing"
+    >
+      <Flex justify="space-between" align="center" px="1.5rem">
+        <HStack spacing="1rem" flex={1} minW={0}>
+          <Icon
+            as={step.type === 'review' ? BiCheckCircle : BiSpreadsheet}
+            fontSize="1.5rem"
+            color="secondary.500"
+            flexShrink={0}
+          />
+          <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
+            {step.name}
+          </Text>
+        </HStack>
+        <Icon as={BiGridVertical} fontSize="1.25rem" color="neutral.500" />
+      </Flex>
+    </Box>
   )
 }

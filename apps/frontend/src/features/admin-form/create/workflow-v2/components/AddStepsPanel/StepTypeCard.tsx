@@ -96,7 +96,8 @@ export const StepTypeCardOverlay = ({
 
   return (
     <Box
-      w="300px"
+      w="30rem"
+      maxW="calc(33.25rem - 3rem)"
       borderRadius="8px"
       border="1px solid"
       borderColor="primary.500"
