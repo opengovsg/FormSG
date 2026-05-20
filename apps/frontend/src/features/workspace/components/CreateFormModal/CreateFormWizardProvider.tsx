@@ -56,9 +56,10 @@ export const useCommonFormWizardProvider = ({
 
   const { setValue } = formMethods
 
+  // TODO [MRF-CUTOVER]: Remove after cutover. -1 is used temporarily as there is an existing animation bug with +1.
   const goToStorageModeDetails = () => {
     setValue('responseMode', FormResponseMode.Encrypt)
-    setCurrentStep([CreateFormFlowStates.StorageModeDetails, 1])
+    setCurrentStep([CreateFormFlowStates.StorageModeDetails, -1])
   }
   const goToMrfDetails = () => {
     setValue('responseMode', FormResponseMode.Multirespondent)
@@ -125,7 +126,9 @@ const useCreateFormWizardContext = (
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
-              emails: emails.filter(Boolean),
+              // NOTE (MRF-CUTOVER): During the cutover modal flow, there is no emails input.
+              emails:
+                emails.filter(Boolean) || (user?.email ? [user.email] : []),
             },
             {
               onSuccess: () => {
