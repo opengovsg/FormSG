@@ -15,7 +15,13 @@ const logger = createLoggerWithLabel(module)
 export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
 
 export class AuthSsoServiceClass {
+  // Cooldown between discovery retries after a failure, so a transient
+  // upstream outage doesn't permanently disable SSO until process restart
+  // but we also don't hammer the discovery endpoint on every request.
+  private static readonly DISCOVERY_RETRY_INTERVAL_MS = 60_000
+
   private clientConfigPromise: Promise<oidcClient.Configuration> | null = null
+  private discoveryFailedAt: number | null = null
   private readonly config: ISsoVarsSchema
   private readonly isConfigured: boolean
 
@@ -27,10 +33,21 @@ export class AuthSsoServiceClass {
   /**
    * Initializes the OIDC client configuration by performing discovery.
    * This is done lazily to prevent startup crashes if the discovery URL is unreachable.
+   * On failure, the cached rejected promise is reused for DISCOVERY_RETRY_INTERVAL_MS
+   * and then discarded so the next request re-attempts discovery.
    */
   private initializeClientConfig(): void {
     if (this.clientConfigPromise) {
-      return
+      const recentlyFailed =
+        this.discoveryFailedAt !== null &&
+        Date.now() - this.discoveryFailedAt <
+          AuthSsoServiceClass.DISCOVERY_RETRY_INTERVAL_MS
+      if (this.discoveryFailedAt === null || recentlyFailed) {
+        return
+      }
+      // Cooldown elapsed: discard the stale rejected promise and try again.
+      this.clientConfigPromise = null
+      this.discoveryFailedAt = null
     }
 
     const { discoveryUrl, clientId, clientSecret } = this.config
@@ -67,6 +84,7 @@ export class AuthSsoServiceClass {
               'Error while discovering SSO client configuration from upstream service. SSO login is unavailable.',
             error,
           })
+          this.discoveryFailedAt = Date.now()
           // Return rejected promise to satisfy typesafe/no-throw-sync-func linter rule.
           // This rejected promise is safe - it's stored in clientConfigPromise and only
           // accessed via ResultAsync.fromPromise() which properly handles rejections.
@@ -86,6 +104,7 @@ export class AuthSsoServiceClass {
           'Error while parsing SSO discovery URL. SSO login is unavailable.',
         error,
       })
+      this.discoveryFailedAt = Date.now()
       // Create a rejected promise
       this.clientConfigPromise = Promise.reject(
         new SsoCreateRedirectUrlError(
