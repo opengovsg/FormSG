@@ -67,7 +67,7 @@ export class AuthSsoServiceClass {
               'Error while discovering SSO client configuration from upstream service. SSO login is unavailable.',
             error,
           })
-          // Return a rejected promise to avoid throwing in catch handler
+          // Return rejected promise to satisfy typesafe/no-throw-sync-func linter rule
           return Promise.reject(
             new SsoCreateRedirectUrlError(
               'SSO service discovery failed. Please try again later.',
@@ -118,7 +118,15 @@ export class AuthSsoServiceClass {
     // Initialize the client config if not already done
     this.initializeClientConfig()
 
-    if (!this.clientConfigPromise) {
+    // TypeScript doesn't know that initializeClientConfig always sets clientConfigPromise,
+    // so we need to check for it explicitly
+    const configPromise = this.clientConfigPromise
+    if (!configPromise) {
+      // This should never happen, but handle it gracefully
+      logger.error({
+        message: 'SSO client configuration promise was not initialized',
+        meta: logMeta,
+      })
       return errAsync(
         new SsoCreateRedirectUrlError(
           'SSO service initialization failed. Please try again later.',
@@ -126,7 +134,7 @@ export class AuthSsoServiceClass {
       )
     }
 
-    return ResultAsync.fromPromise(this.clientConfigPromise, (error) => {
+    return ResultAsync.fromPromise(configPromise, (error) => {
       logger.error({
         message:
           'Error while retrieving SSO client configuration. SSO service may be unavailable.',
