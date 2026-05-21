@@ -15,6 +15,8 @@ import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
+import { transformInputsToOutputs } from '~features/public-form/utils/inputTransformation'
+
 const OTHERS_PREFIX = 'Others: '
 
 // Extend SDK set with yes_no (treated as generic string in flatten context)
@@ -35,10 +37,10 @@ const ADDRESS_FIELD_ORDER = [
 /**
  * Flattens V4 responses into FormField[] for consumption by the existing
  * CSV pipeline (CsvRecord, EncryptedResponseCsvGenerator, Response classes).
- *
+ * Also handles unanswered fields by inserting empty-string answers, to maintain consistency.
  * The output is ordered to match the form definition order (consistent with
  * the V3 processDecryptedContentV3 path). Fields present in v4Responses but
- * not in formFields are appended at the end.
+ * not in formFields are appended at the end (verified fields)
  */
 export const flattenV4ToFormFields = ({
   v4Responses,
@@ -47,27 +49,25 @@ export const flattenV4ToFormFields = ({
   v4Responses: FieldResponsesV4
   formFields: FormFieldDto[]
 }): FormField[] => {
-  const orderedEntries: [string, (typeof v4Responses)[string]][] = [
-    // First: fields in form definition order
-    ...formFields
-      .filter((ff) => v4Responses[ff._id])
-      .map(
-        (ff) =>
-          [ff._id, v4Responses[ff._id]] as [
-            string,
-            (typeof v4Responses)[string],
-          ],
-      ),
-    // Then: any remaining fields not in formFields (e.g. verified fields)
-    ...Object.entries(v4Responses).filter(
-      ([id]) => !formFields.some((ff) => ff._id === id),
-    ),
-  ]
+  const formFieldIdSet = new Set(formFields.map((ff) => ff._id))
 
+  // Fields in form definition order, including unanswered ones
   const v1Fields: FormField[] = []
 
-  for (const [fieldId, field] of orderedEntries) {
+  for (const ff of formFields) {
+    const field = v4Responses[ff._id]
+    if (!field) {
+      // Reuse v3 transform to get the correct empty output shape per field type.
+      // This returns null for Statement/Image (excluded, matching v3 behavior)
+      // and the correct answerArray shape for compound fields like Address, Table, etc.
+      const emptyOutput = transformInputsToOutputs(ff)
+      if (emptyOutput) {
+        v1Fields.push(emptyOutput as unknown as FormField)
+      }
+      continue
+    }
     const { fieldType, question } = field
+    const fieldId = ff._id
 
     // Generic string fields (including yes_no)
     if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
@@ -188,6 +188,19 @@ export const flattenV4ToFormFields = ({
         break
       }
     }
+  }
+
+  // Append any extra entries (e.g. verified SPCP/sgID fields) not in formFields
+  for (const [fieldId, fieldResponse] of Object.entries(v4Responses)) {
+    if (formFieldIdSet.has(fieldId)) continue
+    const { fieldType, question } = fieldResponse
+    const answer = fieldResponse.answer as StringAnswerV4
+    v1Fields.push({
+      _id: fieldId,
+      question,
+      fieldType,
+      answer: answer?.value ?? '',
+    })
   }
 
   return v1Fields

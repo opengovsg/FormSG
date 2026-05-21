@@ -1,5 +1,4 @@
 import {
-  adaptV3ToV4,
   DecryptedContent,
   DecryptedContentV3,
   FieldResponsesV4,
@@ -23,6 +22,8 @@ import {
   pickBaseOutputFromSchema,
   transformInputsToOutputs,
 } from '~features/public-form/utils/inputTransformation'
+
+import { flattenV4ToFormFields } from './flattenV4ToFormFields'
 
 /**
  * Returns a verifiedFormField matching the given verifiedKey containing the given value.
@@ -197,4 +198,23 @@ export const convertVerifiedToV4 = (
     }
   }
   return v4Verified
+}
+
+/**
+ * Converts V4 decrypted responses into FormField[] for use with the shared
+ * augmentDecryptedResponses pipeline. Unanswered fields are included as
+ * empty strings. Verified content (SPCP/sgID) is merged in before flattening.
+ */
+export const processDecryptedContentV4 = (
+  formFields: FormFieldDto[],
+  responses: FieldResponsesV4,
+  verified?: Record<string, string>,
+): VerifiedFormField[] => {
+  const v4Responses = verified
+    ? { ...responses, ...convertVerifiedToV4(verified) }
+    : responses
+  return flattenV4ToFormFields({
+    v4Responses,
+    formFields,
+  }) as VerifiedFormField[]
 }
