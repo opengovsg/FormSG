@@ -71,7 +71,7 @@ export const flattenV4ToFormFields = ({
 
     // Generic string fields (including yes_no)
     if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
-      const answer = field.answer as StringAnswerV4
+      const answer = fieldResponse.answer as StringAnswerV4
       v1Fields.push({
         _id: fieldId,
         question,
@@ -84,7 +84,7 @@ export const flattenV4ToFormFields = ({
     switch (fieldType) {
       case BasicField.Email:
       case BasicField.Mobile: {
-        const answer = field.answer as VerifiableAnswerV4
+        const answer = fieldResponse.answer as VerifiableAnswerV4
         v1Fields.push({
           _id: fieldId,
           question,
@@ -98,7 +98,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Radio: {
-        const answer = field.answer as RadioAnswerV4
+        const answer = fieldResponse.answer as RadioAnswerV4
         v1Fields.push({
           _id: fieldId,
           question,
@@ -111,7 +111,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Checkbox: {
-        const answer = field.answer as CheckboxAnswerV4
+        const answer = fieldResponse.answer as CheckboxAnswerV4
         const answerArray = answer.value.map((v) =>
           v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE &&
           answer.othersInput !== undefined
@@ -128,7 +128,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Attachment: {
-        const answer = field.answer as AttachmentAnswerV4
+        const answer = fieldResponse.answer as AttachmentAnswerV4
         v1Fields.push({
           _id: fieldId,
           question,
@@ -139,7 +139,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Table: {
-        const answer = field.answer as TableAnswerV4
+        const answer = fieldResponse.answer as TableAnswerV4
         const rows = Object.values(answer).sort((a, b) => a.rowNum - b.rowNum)
         const answerArray: string[][] = rows.map((row) =>
           Object.values(row.value).map(String),
@@ -154,7 +154,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Address: {
-        const answer = field.answer as AddressAnswerV4
+        const answer = fieldResponse.answer as AddressAnswerV4
         const answerArray = ADDRESS_FIELD_ORDER.map((key) => answer[key].value)
         v1Fields.push({
           _id: fieldId,
@@ -166,7 +166,7 @@ export const flattenV4ToFormFields = ({
       }
 
       case BasicField.Signature: {
-        const answer = field.answer as SignatureAnswerV4
+        const answer = fieldResponse.answer as SignatureAnswerV4
         v1Fields.push({
           _id: fieldId,
           question,
@@ -178,7 +178,7 @@ export const flattenV4ToFormFields = ({
 
       default: {
         // Passthrough for unknown field types
-        const answer = field.answer as StringAnswerV4
+        const answer = fieldResponse.answer as StringAnswerV4
         v1Fields.push({
           _id: fieldId,
           question,
