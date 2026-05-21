@@ -67,8 +67,11 @@ export class AuthSsoServiceClass {
               'Error while discovering SSO client configuration from upstream service. SSO login is unavailable.',
             error,
           })
-          throw new SsoCreateRedirectUrlError(
-            'SSO service discovery failed. Please try again later.',
+          // Return a rejected promise to avoid throwing in catch handler
+          return Promise.reject(
+            new SsoCreateRedirectUrlError(
+              'SSO service discovery failed. Please try again later.',
+            ),
           )
         })
     } catch (error) {
@@ -77,7 +80,8 @@ export class AuthSsoServiceClass {
           action: 'AuthSsoServiceClass.initializeClientConfig',
           error,
         },
-        message: 'Error while parsing SSO discovery URL. SSO login is unavailable.',
+        message:
+          'Error while parsing SSO discovery URL. SSO login is unavailable.',
         error,
       })
       // Create a rejected promise
