@@ -61,7 +61,7 @@ export type FocusState =
   | { type: 'summary' }
   | { type: 'phase'; phase: Phase }
   | { type: 'step_focus'; phase: Phase; stepId: string }
-  | { type: 'step_edit'; stepId: string }
+  | { type: 'step_edit'; stepId: string; fromSummary?: boolean }
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }
   | { type: 'edit_respondent'; respondentId: string }
@@ -116,8 +116,9 @@ export type WorkflowStore = {
   // Actions - Sprint 3b
   addField: (data: Omit<FormField, 'id' | 'number'>) => void
   setPendingFieldSelection: (id: string | null) => void
+  syncFields: (fields: FormField[]) => void
 
-  // Actions - Sprint 4+ stubs
+  // Actions - Sprint 4
   assignField: (stepId: string, fieldId: string) => void
   assignApprovalField: (stepId: string, fieldId: string) => void
   unassignField: (stepId: string, fieldId: string) => void

@@ -124,10 +124,6 @@ export function phaseStatus(state: WorkflowStore, phase: Phase): PhaseStatus {
   return 'not_started'
 }
 
-const stubAction = (name: string) => () => {
-  throw new Error(`${name} is not implemented until Sprint 4+`)
-}
-
 function recalculateOrder(steps: WorkflowStep[]): WorkflowStep[] {
   return steps.map((s, i) => ({ ...s, order: i }))
 }
@@ -313,13 +309,79 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
 
     setPendingFieldSelection: (id) => set({ pendingFieldSelection: id }),
 
-    // Sprint 4+ stubs
-    assignField: stubAction('assignField'),
-    assignApprovalField: stubAction('assignApprovalField'),
-    unassignField: stubAction('unassignField'),
-    unassignApprovalField: stubAction('unassignApprovalField'),
-    assignAllFields: stubAction('assignAllFields'),
-    unassignAllFields: stubAction('unassignAllFields'),
+    syncFields: (fields) => set({ fields }),
+
+    // Sprint 4 actions
+    assignField: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? {
+                ...s,
+                fieldIds: s.fieldIds.includes(fieldId)
+                  ? s.fieldIds
+                  : [...s.fieldIds, fieldId],
+                approvalFieldIds: s.approvalFieldIds.filter(
+                  (id) => id !== fieldId,
+                ),
+              }
+            : s,
+        ),
+      })),
+
+    unassignField: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? { ...s, fieldIds: s.fieldIds.filter((id) => id !== fieldId) }
+            : s,
+        ),
+      })),
+
+    assignApprovalField: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? {
+                ...s,
+                approvalFieldIds: s.approvalFieldIds.includes(fieldId)
+                  ? s.approvalFieldIds
+                  : [...s.approvalFieldIds, fieldId],
+                fieldIds: s.fieldIds.filter((id) => id !== fieldId),
+              }
+            : s,
+        ),
+      })),
+
+    unassignApprovalField: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? {
+                ...s,
+                approvalFieldIds: s.approvalFieldIds.filter(
+                  (id) => id !== fieldId,
+                ),
+              }
+            : s,
+        ),
+      })),
+
+    assignAllFields: (stepId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId
+            ? { ...s, fieldIds: state.fields.map((f) => f.id) }
+            : s,
+        ),
+      })),
+
+    unassignAllFields: (stepId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId ? { ...s, fieldIds: [] } : s,
+        ),
+      })),
   })),
 )
 

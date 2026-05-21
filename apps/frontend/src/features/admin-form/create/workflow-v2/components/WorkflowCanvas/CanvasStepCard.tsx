@@ -38,6 +38,7 @@ import {
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
+import { FieldDropZone } from './FieldDropZone'
 import { RespondentDropZone } from './RespondentDropZone'
 
 export type StepCardMode =
@@ -45,6 +46,8 @@ export type StepCardMode =
   | 'add_steps'
   | 'respondent_pool'
   | 'respondent_focus'
+  | 'field_pool'
+  | 'field_focus'
 
 type CanvasStepCardProps = {
   step: WorkflowStep
@@ -64,6 +67,10 @@ export const CanvasStepCard = ({
   const unassignRespondent = useWorkflowBuilderStore(
     (s) => s.unassignRespondent,
   )
+  const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
+  const unassignApprovalField = useWorkflowBuilderStore(
+    (s) => s.unassignApprovalField,
+  )
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -73,6 +80,8 @@ export const CanvasStepCard = ({
   const isAddSteps = mode === 'add_steps'
   const isRespondentPhase =
     mode === 'respondent_pool' || mode === 'respondent_focus'
+  const isFieldPhase = mode === 'field_pool' || mode === 'field_focus'
+  const isSummaryMode = mode === 'summary'
   const compact = isAddSteps
   const sortable = isAddSteps
 
@@ -133,8 +142,28 @@ export const CanvasStepCard = ({
         phase: 'add_respondents',
         stepId: step.id,
       })
+    } else if (isFieldPhase) {
+      setFocus({
+        type: 'step_focus',
+        phase: 'assign_fields',
+        stepId: step.id,
+      })
+    } else if (isSummaryMode) {
+      setFocus({
+        type: 'step_edit',
+        stepId: step.id,
+        fromSummary: true,
+      })
     }
-  }, [isAddSteps, isRespondentPhase, compact, setFocus, step.id])
+  }, [
+    isAddSteps,
+    isRespondentPhase,
+    isFieldPhase,
+    isSummaryMode,
+    compact,
+    setFocus,
+    step.id,
+  ])
 
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -146,7 +175,7 @@ export const CanvasStepCard = ({
     }, 300)
   }, [removeStep, step.id, onClose])
 
-  // Show fields sections only in summary and add_steps modes
+  // Show fields sections in summary, add_steps, and field phase (hidden in respondent phase)
   const showFieldsSections = !isRespondentPhase
 
   // Show respondent drop zone in pool view (all cards) or focus view (only focused card)
@@ -158,8 +187,17 @@ export const CanvasStepCard = ({
   const showRespondentRemove =
     !isFirstStep && (isPoolView || (mode === 'respondent_focus' && isFocused))
 
-  // Clickable card in add_steps compact or respondent phase (including Step 1)
-  const isClickable = (isAddSteps && compact) || isRespondentPhase
+  // Field X buttons: pool view (all cards) or focus view (only focused card)
+  const isFieldPoolView = mode === 'field_pool'
+  const showFieldRemove =
+    isFieldPoolView || (mode === 'field_focus' && isFocused)
+
+  // Clickable card in add_steps compact, respondent phase, field phase, or summary
+  const isClickable =
+    (isAddSteps && compact) ||
+    isRespondentPhase ||
+    isFieldPhase ||
+    isSummaryMode
 
   const cardRef = setSortableRef
 
@@ -324,7 +362,7 @@ export const CanvasStepCard = ({
                   Fields to fill
                 </Text>
                 <Wrap spacing="0.25rem">
-                  {allFieldsAssigned ? (
+                  {allFieldsAssigned && !showFieldRemove ? (
                     <WrapItem>
                       <Tag
                         size="sm"
@@ -351,6 +389,14 @@ export const CanvasStepCard = ({
                           <TagLabel textStyle="caption-1" color="secondary.500">
                             {f.number}. {f.name}
                           </TagLabel>
+                          {showFieldRemove && (
+                            <TagCloseButton
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                unassignField(step.id, f.id)
+                              }}
+                            />
+                          )}
                         </Tag>
                       </WrapItem>
                     ))
@@ -368,6 +414,15 @@ export const CanvasStepCard = ({
                     </Tag>
                   )}
                 </Wrap>
+
+                {/* Field drop zone */}
+                {showFieldRemove && (
+                  <FieldDropZone
+                    droppableId={`field-drop-${step.id}`}
+                    droppableData={{ type: 'field_drop', stepId: step.id }}
+                    variant={isFocused ? 'step_focus' : 'pool'}
+                  />
+                )}
               </Stack>
 
               {/* Approval fields (review steps only) */}
@@ -393,6 +448,14 @@ export const CanvasStepCard = ({
                             >
                               {f.number}. {f.name}
                             </TagLabel>
+                            {showFieldRemove && (
+                              <TagCloseButton
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  unassignApprovalField(step.id, f.id)
+                                }}
+                              />
+                            )}
                           </Tag>
                         </WrapItem>
                       ))
@@ -410,6 +473,19 @@ export const CanvasStepCard = ({
                       </Tag>
                     )}
                   </Wrap>
+
+                  {/* Approval field drop zone */}
+                  {showFieldRemove && (
+                    <FieldDropZone
+                      droppableId={`approval-field-drop-${step.id}`}
+                      droppableData={{
+                        type: 'approval_field_drop',
+                        stepId: step.id,
+                      }}
+                      variant={isFocused ? 'step_focus' : 'pool'}
+                      text="Drag a Yes/No field from the left panel"
+                    />
+                  )}
                 </Stack>
               )}
             </>

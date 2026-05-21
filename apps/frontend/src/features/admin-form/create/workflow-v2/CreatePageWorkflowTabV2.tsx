@@ -13,10 +13,11 @@ import {
 
 import { RespondentCardOverlay } from './components/AddRespondentsPanel'
 import { StepTypeCardOverlay } from './components/AddStepsPanel/StepTypeCard'
+import { FieldCardOverlay } from './components/AssignFieldsPanel'
 import { StepCardOverlay } from './components/WorkflowCanvas/CanvasStepCard'
 import { WorkflowCanvas } from './components/WorkflowCanvas/WorkflowCanvas'
 import { WorkflowDrawer } from './components/WorkflowDrawer'
-import type { Respondent, StepType, WorkflowStep } from './types'
+import type { FormField, Respondent, StepType, WorkflowStep } from './types'
 import {
   focusStateSelector,
   respondentsSelector,
@@ -35,6 +36,10 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const assignNotificationRecipient = useWorkflowBuilderStore(
     (s) => s.assignNotificationRecipient,
   )
+  const assignField = useWorkflowBuilderStore((s) => s.assignField)
+  const assignApprovalField = useWorkflowBuilderStore(
+    (s) => s.assignApprovalField,
+  )
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
@@ -46,6 +51,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const [activeRespondent, setActiveRespondent] = useState<Respondent | null>(
     null,
   )
+  const [activeField, setActiveField] = useState<FormField | null>(null)
 
   // Require 8px of movement before activating drag, so clicks work normally
   const mouseSensor = useSensor(MouseSensor, {
@@ -66,6 +72,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         if (step) setActiveDragStep(step)
       } else if (data?.type === 'respondent_card') {
         setActiveRespondent(data.respondent as Respondent)
+      } else if (data?.type === 'field_card') {
+        setActiveField(data.field as FormField)
       }
     },
     [steps],
@@ -76,6 +84,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       setActiveStepType(null)
       setActiveDragStep(null)
       setActiveRespondent(null)
+      setActiveField(null)
 
       const { active, over } = event
       if (!over) return
@@ -129,12 +138,46 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         assignNotificationRecipient(active.id as string)
         return
       }
+
+      // Field dropped on step card (regular fields)
+      if (
+        activeData?.type === 'field_card' &&
+        overData?.type === 'field_drop'
+      ) {
+        const fieldId = active.id as string
+        const stepId = overData.stepId as string
+        assignField(stepId, fieldId)
+        setFocus({
+          type: 'step_focus',
+          phase: 'assign_fields',
+          stepId,
+        })
+        return
+      }
+
+      // Field dropped on approval zone (review steps)
+      if (
+        activeData?.type === 'field_card' &&
+        overData?.type === 'approval_field_drop'
+      ) {
+        const fieldId = active.id as string
+        const stepId = overData.stepId as string
+        assignApprovalField(stepId, fieldId)
+        setFocus({
+          type: 'step_focus',
+          phase: 'assign_fields',
+          stepId,
+        })
+        return
+      }
     },
     [
       setFocus,
       reorderSteps,
       assignRespondent,
       assignNotificationRecipient,
+      assignField,
+      assignApprovalField,
       setPendingInsertIndex,
     ],
   )
@@ -158,6 +201,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
           <StepCardOverlay step={activeDragStep} />
         ) : activeRespondent ? (
           <RespondentCardOverlay respondent={activeRespondent} />
+        ) : activeField ? (
+          <FieldCardOverlay field={activeField} />
         ) : null}
       </DragOverlay>
     </DndContext>

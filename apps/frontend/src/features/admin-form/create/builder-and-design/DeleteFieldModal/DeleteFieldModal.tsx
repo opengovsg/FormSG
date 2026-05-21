@@ -19,6 +19,11 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
+import {
+  respondentsSelector,
+  stepsSelector,
+  useWorkflowBuilderStore,
+} from '../../workflow-v2/workflowBuilderStore'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import { useDeleteFormField } from '../mutations/useDeleteFormField'
 import {
@@ -48,15 +53,70 @@ export const DeleteFieldModal = (): JSX.Element => {
     }
   }, [idToFieldMap, stateData, logicedFieldIdsSet])
 
+  // Workflow checks
+  const steps = useWorkflowBuilderStore(stepsSelector)
+  const respondents = useWorkflowBuilderStore(respondentsSelector)
+  const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
+  const unassignApprovalField = useWorkflowBuilderStore(
+    (s) => s.unassignApprovalField,
+  )
+
+  const workflowWarning = useMemo(() => {
+    if (stateData.state !== FieldBuilderState.EditingField) return null
+    const fid = stateData.field._id
+
+    // Check if field is used for routing (linked to a respondent)
+    const linkedRespondent = respondents.find((r) => r.linkedFieldId === fid)
+    if (linkedRespondent) {
+      const linkedSteps = steps.filter((s) =>
+        s.respondentIds.includes(linkedRespondent.id),
+      )
+      const stepName = linkedSteps[0]?.name ?? 'a step'
+      return {
+        title: 'This field is used for workflow routing',
+        body: `Removing this field will remove the workflow routing for ${stepName}`,
+      }
+    }
+
+    // Check if field is assigned to any step
+    const assignedSteps = steps.filter(
+      (s) => s.fieldIds.includes(fid) || s.approvalFieldIds.includes(fid),
+    )
+    if (assignedSteps.length > 0) {
+      const stepName = assignedSteps[0].name
+      return {
+        title: 'This field is currently assigned to a step',
+        body: `Removing this field will also remove it from ${stepName}`,
+      }
+    }
+
+    return null
+  }, [stateData, steps, respondents])
+
   const { deleteFieldMutation } = useDeleteFormField()
 
   const handleDeleteConfirmation = useCallback(() => {
     if (stateData.state === FieldBuilderState.EditingField) {
-      deleteFieldMutation.mutate(stateData.field._id, {
+      const fid = stateData.field._id
+
+      // Clean up workflow assignments on delete
+      steps.forEach((s) => {
+        if (s.fieldIds.includes(fid)) unassignField(s.id, fid)
+        if (s.approvalFieldIds.includes(fid)) unassignApprovalField(s.id, fid)
+      })
+
+      deleteFieldMutation.mutate(fid, {
         onSuccess: onClose,
       })
     }
-  }, [deleteFieldMutation, onClose, stateData])
+  }, [
+    deleteFieldMutation,
+    onClose,
+    stateData,
+    steps,
+    unassignField,
+    unassignApprovalField,
+  ])
 
   const {
     title,
@@ -69,9 +129,11 @@ export const DeleteFieldModal = (): JSX.Element => {
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>{title}</ModalHeader>
+        <ModalHeader>{workflowWarning?.title ?? title}</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">{fieldIsInLogic ? logic : field}</Text>
+          <Text color="secondary.500">
+            {workflowWarning?.body ?? (fieldIsInLogic ? logic : field)}
+          </Text>
           <UnorderedList
             spacing="0.5rem"
             listStyleType="none"

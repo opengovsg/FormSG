@@ -114,7 +114,10 @@ export const WorkflowCanvas = ({
   const isAddStepsPhase =
     focusState.type === 'phase' && focusState.phase === 'add_steps'
   const isStepNaming = focusState.type === 'step_naming'
-  const isStepEdit = focusState.type === 'step_edit'
+  const isStepEdit = focusState.type === 'step_edit' && !focusState.fromSummary
+  const isStepEditFromSummary =
+    focusState.type === 'step_edit' && !!focusState.fromSummary
+  const stepEditFromSummaryId = isStepEditFromSummary ? focusState.stepId : null
   const isInAddStepsContext = isAddStepsPhase || isStepNaming || isStepEdit
 
   // Respondent phase flags
@@ -133,8 +136,20 @@ export const WorkflowCanvas = ({
     isEditRespondent ||
     isNotificationFocus
 
-  // Summary: default view or any non-add-steps/non-respondent phase
-  const isSummary = !isInAddStepsContext && !isInRespondentContext
+  // Field phase flags
+  const isFieldPoolPhase =
+    focusState.type === 'phase' && focusState.phase === 'assign_fields'
+  const isFieldStepFocus =
+    focusState.type === 'step_focus' && focusState.phase === 'assign_fields'
+  const fieldStepFocusId = isFieldStepFocus ? focusState.stepId : null
+  const isInFieldContext = isFieldPoolPhase || isFieldStepFocus
+
+  // Summary: default view or any non-add-steps/non-respondent/non-field phase
+  const isSummary =
+    !isInAddStepsContext &&
+    !isInRespondentContext &&
+    !isInFieldContext &&
+    !isStepEditFromSummary
 
   const namingInsertIndex = isStepNaming ? focusState.insertIndex : -1
   const namingStepType = isStepNaming ? focusState.stepType : 'collect'
@@ -149,7 +164,9 @@ export const WorkflowCanvas = ({
     isStepEdit ||
     isFocusedInsert ||
     isRespondentStepFocus ||
-    isNotificationFocus
+    isNotificationFocus ||
+    isFieldStepFocus ||
+    isStepEditFromSummary
   const fadedOpacity = hasFocusedView ? 0.5 : 1
 
   // Determine step card mode
@@ -157,6 +174,8 @@ export const WorkflowCanvas = ({
     if (isInAddStepsContext) return 'add_steps'
     if (isRespondentStepFocus || isNotificationFocus) return 'respondent_focus'
     if (isInRespondentContext) return 'respondent_pool'
+    if (isFieldStepFocus) return 'field_focus'
+    if (isInFieldContext) return 'field_pool'
     return 'summary'
   }
   const stepCardMode = getStepCardMode()
@@ -176,11 +195,22 @@ export const WorkflowCanvas = ({
 
       if (isRespondentStepFocus || isNotificationFocus) {
         setFocus({ type: 'phase', phase: 'add_respondents' })
+      } else if (isFieldStepFocus) {
+        setFocus({ type: 'phase', phase: 'assign_fields' })
       } else if (isStepEdit) {
         setFocus({ type: 'phase', phase: 'add_steps' })
+      } else if (isStepEditFromSummary) {
+        setFocus({ type: 'summary' })
       }
     },
-    [isRespondentStepFocus, isNotificationFocus, isStepEdit, setFocus],
+    [
+      isRespondentStepFocus,
+      isNotificationFocus,
+      isFieldStepFocus,
+      isStepEdit,
+      isStepEditFromSummary,
+      setFocus,
+    ],
   )
 
   const stepIds = steps.map((s) => s.id)
@@ -297,6 +327,26 @@ export const WorkflowCanvas = ({
                         >
                           <ConnectionLine />
                         </Box>
+
+                        {/* Field phase: just a connection line (no "+" buttons) */}
+                        <Box
+                          opacity={isInFieldContext ? fadedOpacity : 0}
+                          maxH={isInFieldContext ? '4rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                        >
+                          <ConnectionLine />
+                        </Box>
+
+                        {/* Step edit from summary: just a connection line */}
+                        <Box
+                          opacity={isStepEditFromSummary ? fadedOpacity : 0}
+                          maxH={isStepEditFromSummary ? '4rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                        >
+                          <ConnectionLine />
+                        </Box>
                       </Box>
                     )
                   })()}
@@ -318,7 +368,10 @@ export const WorkflowCanvas = ({
 
               <Box
                 opacity={
-                  editingStepId === step.id || respondentStepFocusId === step.id
+                  editingStepId === step.id ||
+                  respondentStepFocusId === step.id ||
+                  fieldStepFocusId === step.id ||
+                  stepEditFromSummaryId === step.id
                     ? 1
                     : fadedOpacity
                 }
@@ -329,7 +382,9 @@ export const WorkflowCanvas = ({
                   mode={stepCardMode}
                   isFocused={
                     editingStepId === step.id ||
-                    respondentStepFocusId === step.id
+                    respondentStepFocusId === step.id ||
+                    fieldStepFocusId === step.id ||
+                    stepEditFromSummaryId === step.id
                   }
                 />
               </Box>
@@ -361,7 +416,10 @@ export const WorkflowCanvas = ({
               />
             </>
           ) : null
-        ) : isInRespondentContext || isStepEdit ? null : (
+        ) : isInRespondentContext ||
+          isInFieldContext ||
+          isStepEdit ||
+          isStepEditFromSummary ? null : (
           // All other states: show connection line + appropriate connector
           <>
             <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
@@ -387,11 +445,13 @@ export const WorkflowCanvas = ({
           </>
         )}
 
-        {/* Summary: always-visible "+" at bottom (hidden during naming, editing, and respondent phase) */}
+        {/* Summary: always-visible "+" at bottom (hidden during naming, editing, respondent phase, field phase, and step edit from summary) */}
         {!isAddStepsPhase &&
           !isStepNaming &&
           !isStepEdit &&
-          !isInRespondentContext && (
+          !isStepEditFromSummary &&
+          !isInRespondentContext &&
+          !isInFieldContext && (
             <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
               <AddStepConnector
                 onClick={() => handleAddStepClick(steps.length)}

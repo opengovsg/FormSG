@@ -9,6 +9,7 @@ import {
 import { FocusedInsertPanel } from './AddStepsPanel/FocusedInsertPanel'
 import { StepEditForm } from './AddStepsPanel/StepEditForm'
 import { StepNamingForm } from './AddStepsPanel/StepNamingForm'
+import { StepEditPanel } from './SummaryPanel/StepEditPanel'
 import { SummaryPanel } from './SummaryPanel/SummaryPanel'
 import {
   AddRespondentsPanel,
@@ -20,6 +21,7 @@ import {
   StepFocusRespondentPanel,
 } from './AddRespondentsPanel'
 import { AddStepsPanel } from './AddStepsPanel'
+import { AssignFieldsPanel, StepFocusFieldPanel } from './AssignFieldsPanel'
 
 const DrawerContent = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -34,14 +36,21 @@ const DrawerContent = (): JSX.Element => {
       if (focusState.phase === 'add_respondents') {
         return <AddRespondentsPanel />
       }
+      if (focusState.phase === 'assign_fields') {
+        return <AssignFieldsPanel />
+      }
       return <SummaryPanel />
     case 'step_naming':
       return <StepNamingForm />
     case 'step_edit':
+      if (focusState.fromSummary) return <StepEditPanel />
       return <StepEditForm />
     case 'step_focus':
       if (focusState.phase === 'add_respondents') {
         return <StepFocusRespondentPanel />
+      }
+      if (focusState.phase === 'assign_fields') {
+        return <StepFocusFieldPanel />
       }
       return <SummaryPanel />
     case 'new_respondent':

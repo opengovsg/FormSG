@@ -111,7 +111,7 @@ const PhaseIndicator = ({
         w="2rem"
         h="2rem"
         borderRadius="full"
-        bg="success.700"
+        bg="success.500"
         flexShrink={0}
       >
         <Icon as={BiCheck} fontSize="1.25rem" color="white" />
