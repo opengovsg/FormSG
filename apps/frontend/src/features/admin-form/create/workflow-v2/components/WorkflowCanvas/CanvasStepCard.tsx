@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BiCheckCircle,
+  BiEditAlt,
   BiGridVertical,
   BiSpreadsheet,
   BiTrash,
@@ -83,7 +84,7 @@ export const CanvasStepCard = ({
   const isFieldPhase = mode === 'field_pool' || mode === 'field_focus'
   const isSummaryMode = mode === 'summary'
   const compact = isAddSteps
-  const sortable = isAddSteps
+  const sortable = isAddSteps || isSummaryMode
 
   const isFaded = false
 
@@ -95,17 +96,22 @@ export const CanvasStepCard = ({
     transform,
     transition,
     isDragging: isSortDragging,
+    isOver: isSortOver,
   } = useSortable({
     id: step.id,
     data: { type: 'step_card', sortIndex: step.order },
     disabled: !sortable || steps.length <= 1,
   })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isSortDragging ? 0.3 : undefined,
-  }
+  // In summary mode, skip the sort transform/transition to avoid layout glitches
+  // with the connection lines between cards. Cards just snap on drop.
+  const style = isSummaryMode
+    ? { opacity: isSortDragging ? 0.3 : undefined }
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isSortDragging ? 0.3 : undefined,
+      }
 
   const stepRespondents = useMemo(
     () => respondents.filter((r) => step.respondentIds.includes(r.id)),
@@ -130,7 +136,7 @@ export const CanvasStepCard = ({
   // Step 1 (order 0) is locked during respondent phase - no drop zone, no click, no remove
   const isFirstStep = step.order === 0
 
-  const showDragHandle = isAddSteps && steps.length > 1
+  const showDragHandle = (isAddSteps || isSummaryMode) && steps.length > 1
   const showDelete = isAddSteps && steps.length > 1 && step.order > 0
 
   const handleCardClick = useCallback(() => {
@@ -176,7 +182,8 @@ export const CanvasStepCard = ({
   }, [removeStep, step.id, onClose])
 
   // Show fields sections in summary, add_steps, and field phase (hidden in respondent phase)
-  const showFieldsSections = !isRespondentPhase
+  // Exception: always show on the focused step so user sees full step context
+  const showFieldsSections = !isRespondentPhase || isFocused
 
   // Show respondent drop zone in pool view (all cards) or focus view (only focused card)
   const isPoolView = mode === 'respondent_pool'
@@ -199,7 +206,24 @@ export const CanvasStepCard = ({
     isFieldPhase ||
     isSummaryMode
 
-  const cardRef = setSortableRef
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Combine sortable ref with scroll ref
+  const cardRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      setSortableRef(node)
+      ;(scrollRef as React.MutableRefObject<HTMLDivElement | null>).current =
+        node
+    },
+    [setSortableRef],
+  )
+
+  // Auto-scroll to focused step
+  useEffect(() => {
+    if (isFocused && scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [isFocused])
 
   return (
     <Box
@@ -210,6 +234,7 @@ export const CanvasStepCard = ({
       transition="max-height 0.3s ease, opacity 0.2s ease, transform 0.2s ease"
     >
       <Box
+        data-step-card
         ref={cardRef}
         {...(sortable && steps.length > 1
           ? { ...listeners, ...attributes }
@@ -219,8 +244,8 @@ export const CanvasStepCard = ({
         textAlign="start"
         borderRadius="8px"
         bg="white"
-        border={isFocused ? '2px solid' : '1px solid'}
-        borderColor={isFocused ? 'primary.500' : 'neutral.300'}
+        border={isFocused || isSortOver ? '2px solid' : '1px solid'}
+        borderColor={isFocused || isSortOver ? 'primary.500' : 'neutral.300'}
         opacity={isFaded ? 0.5 : 1}
         transition="opacity 0.2s, border-color 0.2s, box-shadow 0.2s"
         py={compact ? '1rem' : '1.5rem'}
@@ -257,7 +282,20 @@ export const CanvasStepCard = ({
               {step.name}
             </Text>
           </HStack>
-          <HStack spacing="0.5rem" flexShrink={0} align="center">
+          <HStack
+            spacing="0.5rem"
+            flexShrink={0}
+            align="center"
+            opacity={isSummaryMode && showDragHandle ? 0 : 1}
+            transition="opacity 0.15s ease"
+            sx={
+              isSummaryMode && showDragHandle
+                ? {
+                    '[data-step-card]:hover &': { opacity: 1 },
+                  }
+                : undefined
+            }
+          >
             {showDelete && (
               <IconButton
                 aria-label="Delete step"
@@ -273,6 +311,11 @@ export const CanvasStepCard = ({
                   onOpen()
                 }}
               />
+            )}
+            {isSummaryMode && showDragHandle && (
+              <Box p="0.25rem" display="flex" alignItems="center">
+                <Icon as={BiEditAlt} fontSize="1.25rem" color="neutral.500" />
+              </Box>
             )}
             {showDragHandle && (
               <Box

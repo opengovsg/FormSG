@@ -1,5 +1,16 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
+  Box,
+  Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Stack,
+} from '@chakra-ui/react'
+import {
   DndContext,
   type DragEndEvent,
   DragOverlay,
@@ -10,6 +21,8 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+
+import { ModalCloseButton } from '~components/Modal'
 
 import { RespondentCardOverlay } from './components/AddRespondentsPanel'
 import { StepTypeCardOverlay } from './components/AddStepsPanel/StepTypeCard'
@@ -33,6 +46,9 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const assignRespondent = useWorkflowBuilderStore((s) => s.assignRespondent)
+  const unassignRespondent = useWorkflowBuilderStore(
+    (s) => s.unassignRespondent,
+  )
   const assignNotificationRecipient = useWorkflowBuilderStore(
     (s) => s.assignNotificationRecipient,
   )
@@ -52,6 +68,12 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
     null,
   )
   const [activeField, setActiveField] = useState<FormField | null>(null)
+
+  // Step 1 reorder confirmation modal
+  const [pendingReorder, setPendingReorder] = useState<{
+    fromIndex: number
+    toIndex: number
+  } | null>(null)
 
   // Require 8px of movement before activating drag, so clicks work normally
   const mouseSensor = useSensor(MouseSensor, {
@@ -78,6 +100,50 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
     },
     [steps],
   )
+
+  const executeReorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      // Check if this reorder involves position 0 (step 1)
+      const involvesStep1 = fromIndex === 0 || toIndex === 0
+
+      if (involvesStep1) {
+        // Clear respondents from both involved steps after reorder
+        const stepAtFrom = steps[fromIndex]
+        const stepAtTo = steps[toIndex]
+
+        reorderSteps(fromIndex, toIndex)
+
+        // Clear respondents from both steps
+        if (stepAtFrom) {
+          stepAtFrom.respondentIds.forEach((rId) =>
+            unassignRespondent(stepAtFrom.id, rId),
+          )
+        }
+        if (stepAtTo) {
+          stepAtTo.respondentIds.forEach((rId) =>
+            unassignRespondent(stepAtTo.id, rId),
+          )
+        }
+
+        // Auto-assign "Anyone with the form link" to the new step 1
+        // After reorder, the step at index 0 is the new step 1
+        const reorderedSteps = useWorkflowBuilderStore.getState().steps
+        if (reorderedSteps[0]) {
+          assignRespondent(reorderedSteps[0].id, 'resp-form-link')
+        }
+      } else {
+        reorderSteps(fromIndex, toIndex)
+      }
+    },
+    [steps, reorderSteps, unassignRespondent, assignRespondent],
+  )
+
+  const handleConfirmReorder = useCallback(() => {
+    if (pendingReorder) {
+      executeReorder(pendingReorder.fromIndex, pendingReorder.toIndex)
+      setPendingReorder(null)
+    }
+  }, [pendingReorder, executeReorder])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -108,7 +174,12 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         const fromIndex = activeData.sortIndex as number
         const toIndex = overData.sortIndex as number
         if (fromIndex !== toIndex) {
-          reorderSteps(fromIndex, toIndex)
+          // If this involves step 1, show confirmation modal
+          if (fromIndex === 0 || toIndex === 0) {
+            setPendingReorder({ fromIndex, toIndex })
+          } else {
+            reorderSteps(fromIndex, toIndex)
+          }
         }
         return
       }
@@ -183,28 +254,72 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   )
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <WorkflowDrawer />
-      <WorkflowCanvas
-        isDragging={activeStepType !== null}
-        isDraggingRespondent={activeRespondent !== null}
-      />
-      <DragOverlay>
-        {activeStepType ? (
-          <StepTypeCardOverlay stepType={activeStepType} />
-        ) : activeDragStep ? (
-          <StepCardOverlay step={activeDragStep} />
-        ) : activeRespondent ? (
-          <RespondentCardOverlay respondent={activeRespondent} />
-        ) : activeField ? (
-          <FieldCardOverlay field={activeField} />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <WorkflowDrawer />
+        <WorkflowCanvas
+          isDragging={activeStepType !== null}
+          isDraggingRespondent={activeRespondent !== null}
+        />
+        <DragOverlay>
+          {activeStepType ? (
+            <StepTypeCardOverlay stepType={activeStepType} />
+          ) : activeDragStep ? (
+            <StepCardOverlay step={activeDragStep} />
+          ) : activeRespondent ? (
+            <RespondentCardOverlay respondent={activeRespondent} />
+          ) : activeField ? (
+            <FieldCardOverlay field={activeField} />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+
+      {/* Step 1 reorder confirmation modal */}
+      <Modal
+        isOpen={pendingReorder !== null}
+        onClose={() => setPendingReorder(null)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700" pr="4rem">
+            Moving step to position 1
+          </ModalHeader>
+          <ModalBody color="secondary.500" textStyle="body-2">
+            Step 1 is always accessed via the form link. Moving this step to
+            position 1 will:
+            <Box as="ul" pl="1.25rem" mt="0.5rem">
+              <li>Clear respondents from both steps</li>
+              <li>
+                Assign &ldquo;Anyone with the form link&rdquo; to the new Step 1
+              </li>
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Stack
+              spacing="1rem"
+              w="100%"
+              direction={{ base: 'column', md: 'row-reverse' }}
+            >
+              <Button colorScheme="primary" onClick={handleConfirmReorder}>
+                Confirm
+              </Button>
+              <Button
+                colorScheme="secondary"
+                variant="clear"
+                onClick={() => setPendingReorder(null)}
+              >
+                Cancel
+              </Button>
+            </Stack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   )
 }

@@ -60,7 +60,7 @@ export type PhaseStatus = 'not_started' | 'in_progress' | 'done'
 export type FocusState =
   | { type: 'summary' }
   | { type: 'phase'; phase: Phase }
-  | { type: 'step_focus'; phase: Phase; stepId: string }
+  | { type: 'step_focus'; phase: Phase; stepId: string; fromStepEdit?: boolean }
   | { type: 'step_edit'; stepId: string; fromSummary?: boolean }
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }

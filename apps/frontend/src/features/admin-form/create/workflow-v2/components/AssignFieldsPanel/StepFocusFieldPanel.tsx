@@ -44,8 +44,12 @@ export const StepFocusFieldPanel = (): JSX.Element => {
   const step = steps.find((s) => s.id === stepId)
 
   const handleBack = useCallback(() => {
-    setFocus({ type: 'phase', phase: 'assign_fields' })
-  }, [setFocus])
+    if (focusState.type === 'step_focus' && focusState.fromStepEdit && stepId) {
+      setFocus({ type: 'step_edit', stepId, fromSummary: true })
+    } else {
+      setFocus({ type: 'phase', phase: 'assign_fields' })
+    }
+  }, [setFocus, focusState, stepId])
 
   if (!step) return <></>
 

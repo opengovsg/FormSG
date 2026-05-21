@@ -1,5 +1,12 @@
-import { useCallback, useRef } from 'react'
-import { BiCheck, BiLeftArrowAlt, BiListCheck, BiUser } from 'react-icons/bi'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  BiCheck,
+  BiChevronRight,
+  BiLeftArrowAlt,
+  BiListCheck,
+  BiTrash,
+  BiUser,
+} from 'react-icons/bi'
 import {
   AlertDialog,
   AlertDialogBody,
@@ -9,11 +16,13 @@ import {
   AlertDialogOverlay,
   Box,
   Button,
+  Center,
+  chakra,
   Divider,
   Flex,
-  HStack,
   Icon,
   IconButton,
+  Input,
   Stack,
   Text,
   useDisclosure,
@@ -28,11 +37,14 @@ import {
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
+const MAX_NAME_LENGTH = 50
+
 export const StepEditPanel = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const steps = useWorkflowBuilderStore(stepsSelector)
   const removeStep = useWorkflowBuilderStore((s) => s.removeStep)
+  const renameStep = useWorkflowBuilderStore((s) => s.renameStep)
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const cancelRef = useRef<HTMLButtonElement>(null)
@@ -40,14 +52,18 @@ export const StepEditPanel = (): JSX.Element => {
   const stepId = focusState.type === 'step_edit' ? focusState.stepId : undefined
   const step = steps.find((s) => s.id === stepId)
 
+  const [editName, setEditName] = useState(step?.name ?? '')
+
+  // Sync local state if step name changes externally
+  useEffect(() => {
+    if (step) setEditName(step.name)
+  }, [step?.name])
+
   const handleBack = useCallback(() => {
     setFocus({ type: 'summary' })
   }, [setFocus])
 
   if (!step || !stepId) return <></>
-
-  const truncatedName =
-    step.name.length > 25 ? step.name.slice(0, 25) + '...' : step.name
 
   const hasRespondents = step.respondentIds.length > 0
   const hasFields = step.fieldIds.length > 0 || step.approvalFieldIds.length > 0
@@ -56,6 +72,15 @@ export const StepEditPanel = (): JSX.Element => {
     onClose()
     removeStep(stepId)
     setFocus({ type: 'summary' })
+  }
+
+  const handleNameBlur = () => {
+    const trimmed = editName.trim()
+    if (trimmed && trimmed !== step.name) {
+      renameStep(stepId, trimmed)
+    } else {
+      setEditName(step.name)
+    }
   }
 
   return (
@@ -96,133 +121,177 @@ export const StepEditPanel = (): JSX.Element => {
           textAlign="center"
           noOfLines={1}
         >
-          Edit &ldquo;{truncatedName}&rdquo;
+          Edit &ldquo;{step.name}&rdquo;
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
 
       {/* Content */}
-      <Box flex={1} overflow="auto" px="1.5rem" pt="1.5rem" pb="1.5rem">
+      <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
+        {/* Step name input - matching StepNamingForm style */}
+        <Stack spacing="0.5rem">
+          <Text textStyle="subhead-2" color="secondary.500">
+            Step name
+          </Text>
+          <Input
+            value={editName}
+            onChange={(e) => {
+              if (e.target.value.length <= MAX_NAME_LENGTH)
+                setEditName(e.target.value)
+            }}
+            onBlur={handleNameBlur}
+            maxLength={MAX_NAME_LENGTH}
+          />
+          <Text textStyle="caption-1" color="secondary.400" textAlign="right">
+            ({editName.length}/{MAX_NAME_LENGTH})
+          </Text>
+        </Stack>
+
+        {/* Divider below step name */}
+        <Divider mx="-1.5rem" w="auto" mt="1rem" mb="1rem" />
+
+        {/* Sub-task cards - matching SectionCard style */}
         <Stack spacing="0.75rem">
-          {/* Add respondents sub-task card */}
-          <Box
-            as="button"
-            type="button"
+          {/* Add respondents */}
+          <chakra.button
             w="100%"
             textAlign="start"
             borderRadius="8px"
-            border="1px solid"
-            borderColor="neutral.300"
-            bg="white"
+            bg="transparent"
+            border="2px solid"
+            borderColor="transparent"
             p="1rem"
             cursor="pointer"
-            _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-            transition="border-color 0.2s, background 0.2s"
+            transition="all 0.15s"
+            _hover={{ bg: 'neutral.100' }}
             onClick={() =>
               setFocus({
                 type: 'step_focus',
                 phase: 'add_respondents',
                 stepId,
+                fromStepEdit: true,
               })
             }
           >
-            <HStack spacing="0.75rem">
+            <Flex align="center" gap="0.75rem">
               {hasRespondents ? (
-                <Flex
-                  w="1.5rem"
-                  h="1.5rem"
+                <Center
+                  w="2rem"
+                  h="2rem"
                   borderRadius="full"
                   bg="success.500"
-                  align="center"
-                  justify="center"
                   flexShrink={0}
                 >
-                  <Icon as={BiCheck} color="white" fontSize="1rem" />
-                </Flex>
+                  <Icon as={BiCheck} fontSize="1.25rem" color="white" />
+                </Center>
               ) : (
-                <Icon
-                  as={BiUser}
-                  fontSize="1.5rem"
-                  color="secondary.400"
+                <Center
+                  w="2rem"
+                  h="2rem"
+                  borderRadius="full"
+                  bg="neutral.200"
                   flexShrink={0}
-                />
+                >
+                  <Icon as={BiUser} fontSize="1.25rem" color="secondary.400" />
+                </Center>
               )}
-              <Text textStyle="subhead-1" color="secondary.500">
+              <Text
+                textStyle="subhead-1"
+                color="secondary.500"
+                flex={1}
+                noOfLines={1}
+              >
                 Add respondents
               </Text>
-            </HStack>
-          </Box>
+              <Icon
+                as={BiChevronRight}
+                fontSize="1.25rem"
+                color="secondary.400"
+                flexShrink={0}
+              />
+            </Flex>
+          </chakra.button>
 
-          {/* Assign fields sub-task card */}
-          <Box
-            as="button"
-            type="button"
+          {/* Assign fields */}
+          <chakra.button
             w="100%"
             textAlign="start"
             borderRadius="8px"
-            border="1px solid"
-            borderColor="neutral.300"
-            bg="white"
+            bg="transparent"
+            border="2px solid"
+            borderColor="transparent"
             p="1rem"
             cursor="pointer"
-            _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-            transition="border-color 0.2s, background 0.2s"
+            transition="all 0.15s"
+            _hover={{ bg: 'neutral.100' }}
             onClick={() =>
               setFocus({
                 type: 'step_focus',
                 phase: 'assign_fields',
                 stepId,
+                fromStepEdit: true,
               })
             }
           >
-            <HStack spacing="0.75rem">
+            <Flex align="center" gap="0.75rem">
               {hasFields ? (
-                <Flex
-                  w="1.5rem"
-                  h="1.5rem"
+                <Center
+                  w="2rem"
+                  h="2rem"
                   borderRadius="full"
                   bg="success.500"
-                  align="center"
-                  justify="center"
                   flexShrink={0}
                 >
-                  <Icon as={BiCheck} color="white" fontSize="1rem" />
-                </Flex>
+                  <Icon as={BiCheck} fontSize="1.25rem" color="white" />
+                </Center>
               ) : (
-                <Icon
-                  as={BiListCheck}
-                  fontSize="1.5rem"
-                  color="secondary.400"
+                <Center
+                  w="2rem"
+                  h="2rem"
+                  borderRadius="full"
+                  bg="neutral.200"
                   flexShrink={0}
-                />
+                >
+                  <Icon
+                    as={BiListCheck}
+                    fontSize="1.25rem"
+                    color="secondary.400"
+                  />
+                </Center>
               )}
-              <Text textStyle="subhead-1" color="secondary.500">
+              <Text
+                textStyle="subhead-1"
+                color="secondary.500"
+                flex={1}
+                noOfLines={1}
+              >
                 Assign fields
               </Text>
-            </HStack>
-          </Box>
+              <Icon
+                as={BiChevronRight}
+                fontSize="1.25rem"
+                color="secondary.400"
+                flexShrink={0}
+              />
+            </Flex>
+          </chakra.button>
         </Stack>
 
-        {/* Delete step */}
-        {step.order > 0 && (
-          <>
-            <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
-            <Flex py="1rem">
-              <Button
-                variant="clear"
-                colorScheme="danger"
-                size="sm"
-                onClick={onOpen}
-              >
-                Delete step
-              </Button>
-            </Flex>
-          </>
-        )}
-
-        {/* Done editing */}
-        <Divider mx="-1.5rem" w="auto" mt={step.order === 0 ? '1.5rem' : 0} />
-        <Flex justify="flex-end" py="1rem">
+        {/* Footer: delete + done */}
+        <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
+        <Flex justify="space-between" align="center" py="1rem">
+          {step.order > 0 ? (
+            <IconButton
+              aria-label="Delete step"
+              icon={<BiTrash fontSize="1.25rem" />}
+              variant="clear"
+              colorScheme="danger"
+              size="sm"
+              onClick={onOpen}
+            />
+          ) : (
+            <Box />
+          )}
           <Button variant="clear" colorScheme="primary" onClick={handleBack}>
             Done editing
           </Button>

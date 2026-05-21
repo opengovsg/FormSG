@@ -227,7 +227,7 @@ export const WorkflowCanvas = ({
         <SortableContext
           items={stepIds}
           strategy={verticalListSortingStrategy}
-          disabled={!isAddStepsPhase}
+          disabled={!isAddStepsPhase && !isSummary}
         >
           {steps.map((step, i) => (
             <Fragment key={step.id}>

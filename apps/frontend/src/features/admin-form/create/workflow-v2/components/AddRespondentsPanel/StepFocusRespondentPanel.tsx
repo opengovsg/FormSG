@@ -47,8 +47,12 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
   )
 
   const handleBack = useCallback(() => {
-    setFocus({ type: 'phase', phase: 'add_respondents' })
-  }, [setFocus])
+    if (focusState.type === 'step_focus' && focusState.fromStepEdit) {
+      setFocus({ type: 'step_edit', stepId, fromSummary: true })
+    } else {
+      setFocus({ type: 'phase', phase: 'add_respondents' })
+    }
+  }, [setFocus, focusState, stepId])
 
   const handleAddNewRespondent = useCallback(() => {
     setFocus({ type: 'new_respondent', fromStepId: stepId })

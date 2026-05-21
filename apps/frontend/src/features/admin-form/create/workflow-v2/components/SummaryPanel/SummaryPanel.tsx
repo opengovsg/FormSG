@@ -141,8 +141,8 @@ export const SummaryPanel = (): JSX.Element => {
               p="1rem"
               borderRadius="8px"
               border="2px solid"
-              borderColor="primary.300"
-              bg="primary.100"
+              borderColor="#445FCD"
+              bg="#F8F9FD"
               cursor="pointer"
               _hover={{ borderColor: 'primary.500' }}
               transition="border-color 0.2s"
