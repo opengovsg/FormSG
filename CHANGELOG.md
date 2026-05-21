@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.4](https://github.com/opengovsg/formsg/compare/v7.20.3...v7.20.4) (2026-05-21)
+
+
+### Miscellaneous
+
+* Merge pull request #9458 from opengovsg/fix/v4-response-page-numbering1 ([#9458](https://github.com/opengovsg/formsg/commit/2659e9ccec10839061acf0bb1f82ea991ab84163))
+
 ## [7.20.3](https://github.com/opengovsg/formsg/compare/v7.20.2...v7.20.3) (2026-05-19)
 
 
