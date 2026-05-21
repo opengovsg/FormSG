@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import formsgPackage from '@opengovsg/formsg-sdk'
 import { FormField, PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import { expose } from 'comlink'
@@ -167,7 +168,7 @@ async function decryptSubmissionData(
           )
           break
         }
-        console.warn(
+        datadogLogs.logger.warn(
           'Could not decrypt MRF response in v4, falling back to v3',
           { submissionId: submissionData._id },
         )
@@ -182,7 +183,9 @@ async function decryptSubmissionData(
         version,
       })
       if (!decryptedObject) {
-        console.error('Invalid decryption for multirespondent response')
+        datadogLogs.logger.error(
+          'Invalid decryption for multirespondent response',
+        )
         return {
           isSubmissionDecryptionSuccessful: false,
         }
