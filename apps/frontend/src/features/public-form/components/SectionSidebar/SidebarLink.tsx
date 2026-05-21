@@ -101,7 +101,7 @@ export const SidebarLink = ({
       <VisuallyHidden>
         {t('features.publicForm.components.sidebarLink.navigateToSection')}
       </VisuallyHidden>
-      {title}
+      <span>{title}</span>
     </chakra.button>
   )
 }

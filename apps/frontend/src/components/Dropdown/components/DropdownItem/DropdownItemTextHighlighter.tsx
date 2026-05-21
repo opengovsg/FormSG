@@ -31,13 +31,23 @@ export const DropdownItemTextHighlighter = ({
   const markedComponents = useMemo(() => {
     const result = fuzzysort.single(inputValue, textToHighlight)
     // Return the original text if no match is found.
-    if (!result) return textToHighlight
+    if (!result) return [textToHighlight]
     return result.highlight((m, i) => (
-      <HighlightMark showHoverBg={showHoverBg} key={i}>
+      <HighlightMark showHoverBg={showHoverBg} key={`m-${i}`}>
         {m}
       </HighlightMark>
     ))
   }, [inputValue, showHoverBg, textToHighlight])
 
-  return <chakra.span>{markedComponents}</chakra.span>
+  // Wrap unmatched string fragments in <span> so every child of the outer
+  // span is a stable element. Browser translation engines can wrap text
+  // nodes in <font>, which breaks React reconciliation if it later tries to
+  // remove or replace those text nodes directly.
+  return (
+    <chakra.span>
+      {markedComponents.map((node, i) =>
+        typeof node === 'string' ? <span key={`u-${i}`}>{node}</span> : node,
+      )}
+    </chakra.span>
+  )
 }
