@@ -108,7 +108,7 @@ export const FullFooter = ({
             ))}
           </Stack>
           <Text textStyle="legal" color={`${textColorScheme}.500`}>
-            ©{currentYear} Open Government Products
+            {`©${currentYear} Open Government Products`}
           </Text>
         </Box>
       </FullFooter.Section>

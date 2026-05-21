@@ -158,7 +158,7 @@ export const DayOfMonth = forwardRef<DayOfMonthProps, 'button'>(
           ref={ref}
           {...props}
         >
-          {date.getDate()}
+          <span>{date.getDate()}</span>
         </chakra.button>
       </Flex>
     )

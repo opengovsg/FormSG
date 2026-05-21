@@ -32,7 +32,14 @@ export interface ButtonProps extends ChakraButtonProps {
 
 export const Button = forwardRef<ButtonProps, 'button'>(
   (
-    { children, spinnerFontSize, isFullWidth, isHighContrast, ...props },
+    {
+      children,
+      spinnerFontSize,
+      isFullWidth,
+      isHighContrast,
+      loadingText,
+      ...props
+    },
     ref,
   ) => {
     const gb = useGrowthBook()
@@ -53,10 +60,17 @@ export const Button = forwardRef<ButtonProps, 'button'>(
       <Spinner fontSize={spinnerFontSize ?? '1.5rem'} />
     )
 
+    // Chakra renders loadingText as a raw text node sibling to the spinner
+    // when isLoading is true. Wrap in a span for the same reason as
+    // children below.
+    const wrappedLoadingText =
+      loadingText !== undefined ? <span>{loadingText}</span> : undefined
+
     return (
       <ChakraButton
         ref={ref}
         spinner={spinner}
+        loadingText={wrappedLoadingText}
         width={isFullWidth ? '100%' : undefined}
         {...props}
         {...(isFullWidth ? { minH: '3.5rem' } : {})}

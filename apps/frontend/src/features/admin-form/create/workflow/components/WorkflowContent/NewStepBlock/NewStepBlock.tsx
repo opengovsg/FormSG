@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
-import { Button } from '@chakra-ui/react'
 
 import { FormWorkflowStep } from 'formsg-shared/types'
+
+import Button from '~components/Button'
 
 import {
   isCreatingStateSelector,
