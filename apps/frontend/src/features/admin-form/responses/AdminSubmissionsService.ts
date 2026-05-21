@@ -23,15 +23,12 @@ import {
 } from './common/utils/decryptionWorker'
 import { getEncryptedResponsesStream } from './ResponsesPage/storage/StorageResponsesService'
 import { CleanableDecryptionWorkerApi } from './ResponsesPage/storage/types'
-import {
-  augmentDecryptedResponses,
-  augmentDecryptedResponsesV4,
-} from './ResponsesPage/storage/utils/augmentDecryptedResponses'
+import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   buildFormFieldMetaMap,
-  convertVerifiedToV4,
   processDecryptedContent,
   processDecryptedContentV3,
+  processDecryptedContentV4,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
 
 /**
@@ -108,11 +105,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent,
-    processedContentV4,
-    submissionSecretKey,
-    mrfVersion,
-    responsesV4
+  let processedContent, submissionSecretKey, mrfVersion
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -140,6 +133,8 @@ export const getDecryptedSubmissionById = async ({
         encryptedSubmission.form_fields,
         decryptedContent,
       )
+      submissionSecretKey = decryptedContent.submissionSecretKey
+
       if (useV4) {
         const formFieldsMeta = buildFormFieldMetaMap(
           encryptedSubmission.form_fields,
@@ -157,8 +152,8 @@ export const getDecryptedSubmissionById = async ({
         )
 
         if (!decryptedV4) {
-          datadogLogs.logger.error(
-            'Could not decrypt the multirespondent form response in v4',
+          datadogLogs.logger.warn(
+            'Could not decrypt MRF response in v4, falling back to v3',
             {
               meta: {
                 action: 'getDecryptedSubmissionById',
@@ -167,28 +162,21 @@ export const getDecryptedSubmissionById = async ({
               },
             },
           )
-          throw new Error(
-            'Could not decrypt the multirespondent form response in v4',
+        } else {
+          processedContent = processDecryptedContentV4(
+            encryptedSubmission.form_fields,
+            decryptedV4.responses,
+            decryptedV4.verified,
           )
+          submissionSecretKey = decryptedV4.submissionSecretKey
         }
-
-        const processedContentV4 = decryptedV4.verified
-          ? {
-              ...decryptedV4.responses,
-              ...convertVerifiedToV4(decryptedV4.verified),
-            }
-          : decryptedV4.responses
-        responsesV4 = augmentDecryptedResponsesV4(
-          encryptedSubmission.form_fields,
-          processedContentV4,
-          encryptedSubmission.attachmentMetadata,
-        )
       }
-      submissionSecretKey = decryptedContent.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
       break
     }
   }
+
+  if (!processedContent) throw new Error('Could not process submission content')
 
   const responses = augmentDecryptedResponses(
     processedContent,
@@ -209,7 +197,6 @@ export const getDecryptedSubmissionById = async ({
         ? encryptedSubmission.mrfMeta
         : undefined,
     responses,
-    responsesV4,
     mrfVersion,
   }
 }
