@@ -2900,8 +2900,9 @@ describe('submission.service', () => {
       )
     })
 
-    it('should return errAsync if lambda returns an errored response (e.g. file not found) when a valid file key is used', async () => {
+    it('should retry on NOT_FOUND and return errAsync after exhausting retries when file is persistently not found in quarantine bucket', async () => {
       // Arrange
+      jest.useFakeTimers()
       const failurePayload = {
         statusCode: 404,
         body: JSON.stringify({
@@ -2910,23 +2911,64 @@ describe('submission.service', () => {
       }
       const awsSpy = jest
         .spyOn(aws.guarddutyLambda, 'invoke')
-        .mockImplementationOnce(() => {
+        .mockImplementation(() => {
           return Promise.resolve({
             Payload: JSON.stringify(failurePayload),
           })
         })
 
       // Act
-      const actualResult = await triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      const promise = triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      await jest.runAllTimersAsync()
+      const actualResult = await promise
 
       // Assert
-      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(awsSpy).toHaveBeenCalledTimes(3) // initial + 2 retries
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new GuardDutyInvalidFileKeyError(
           'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
         ),
       )
+      jest.useRealTimers()
+    })
+
+    it('should retry on NOT_FOUND and return okAsync when file becomes visible on a subsequent attempt', async () => {
+      // Arrange
+      jest.useFakeTimers()
+      const failurePayload = {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: 'File not found',
+        }),
+      }
+      const successPayload = {
+        statusCode: 200,
+        body: JSON.stringify(MOCK_SUCCESS_BODY_PAYLOAD),
+      }
+      const awsSpy = jest
+        .spyOn(aws.guarddutyLambda, 'invoke')
+        .mockImplementationOnce(() =>
+          Promise.resolve({ Payload: JSON.stringify(failurePayload) }),
+        )
+        .mockImplementationOnce(() =>
+          Promise.resolve({ Payload: JSON.stringify(successPayload) }),
+        )
+      const expectedSuccessOutput = {
+        statusCode: 200,
+        body: MOCK_SUCCESS_BODY_PAYLOAD,
+      }
+
+      // Act
+      const promise = triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      await jest.runAllTimersAsync()
+      const actualResult = await promise
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSuccessOutput)
+      jest.useRealTimers()
     })
 
     it("should return errAsync if the lambda's errored response is not in the right format", async () => {
