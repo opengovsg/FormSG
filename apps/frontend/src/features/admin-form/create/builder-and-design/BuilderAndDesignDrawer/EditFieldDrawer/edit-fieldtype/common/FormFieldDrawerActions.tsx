@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FieldValues, UseFormHandleSubmit } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
@@ -71,7 +71,9 @@ export const FormFieldDrawerActions = ({
 
 /**
  * Multi-select dropdown for assigning the current field to workflow steps.
- * Only renders when a workflow exists and the field is being edited.
+ * Renders during both field creation and editing when a workflow exists.
+ * During creation, selections are stored locally and applied once the field
+ * is saved and receives an _id from the backend.
  */
 const WorkflowFieldAssignment = (): JSX.Element | null => {
   const stateData = useFieldBuilderStore(stateDataSelector)
@@ -86,7 +88,31 @@ const WorkflowFieldAssignment = (): JSX.Element | null => {
     return undefined
   }, [stateData])
 
+  const isCreating = stateData.state === FieldBuilderState.CreatingField
   const hasWorkflow = steps.length > 1
+
+  // Pending step selections made during field creation (before _id exists)
+  const [pendingStepIds, setPendingStepIds] = useState<string[]>([])
+  const pendingRef = useRef<string[]>([])
+
+  // When fieldId appears after creation, apply any pending assignments
+  useEffect(() => {
+    if (fieldId && pendingRef.current.length > 0) {
+      for (const stepId of pendingRef.current) {
+        assignField(stepId, fieldId)
+      }
+      pendingRef.current = []
+      setPendingStepIds([])
+    }
+  }, [fieldId, assignField])
+
+  // Reset pending state when entering creation mode
+  useEffect(() => {
+    if (isCreating) {
+      setPendingStepIds([])
+      pendingRef.current = []
+    }
+  }, [isCreating])
 
   const items = useMemo(
     () => steps.map((s) => ({ value: s.id, label: s.name })),
@@ -97,13 +123,19 @@ const WorkflowFieldAssignment = (): JSX.Element | null => {
     () =>
       fieldId
         ? steps.filter((s) => s.fieldIds.includes(fieldId)).map((s) => s.id)
-        : [],
-    [steps, fieldId],
+        : pendingStepIds,
+    [steps, fieldId, pendingStepIds],
   )
 
   const handleChange = useCallback(
     (values: string[]) => {
-      if (!fieldId) return
+      if (!fieldId) {
+        // During creation: store selections locally
+        setPendingStepIds(values)
+        pendingRef.current = values
+        return
+      }
+      // During editing: apply immediately
       const prev = new Set(selectedValues)
       const next = new Set(values)
       for (const v of values) {
@@ -116,7 +148,7 @@ const WorkflowFieldAssignment = (): JSX.Element | null => {
     [selectedValues, assignField, unassignField, fieldId],
   )
 
-  if (!hasWorkflow || !fieldId) return null
+  if (!hasWorkflow) return null
 
   return (
     <Box pb="2rem">

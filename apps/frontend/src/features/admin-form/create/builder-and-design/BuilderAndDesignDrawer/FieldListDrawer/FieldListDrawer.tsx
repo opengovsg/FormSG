@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt, BiSearch } from 'react-icons/bi'
 import {
@@ -100,6 +100,14 @@ export const FieldListDrawer = (): JSX.Element => {
   )
   const showProgressCard = hasWorkflow && completedCount < 4
 
+  // Collapse progress card when user scrolls the field list
+  const [isCompact, setIsCompact] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return
+    setIsCompact(scrollRef.current.scrollTop > 20)
+  }, [])
+
   const tabsDataList = [
     {
       header: t('builder.tabs.basic'),
@@ -149,14 +157,15 @@ export const FieldListDrawer = (): JSX.Element => {
         {showProgressCard && (
           <Box
             mb="0.75rem"
-            p="0.75rem"
+            px="0.75rem"
+            py={isCompact ? '0.5rem' : '0.75rem'}
             borderRadius="8px"
             border="1px solid"
             borderColor="primary.300"
             bg="primary.100"
             cursor="pointer"
             _hover={{ borderColor: 'primary.500' }}
-            transition="border-color 0.2s"
+            transition="all 0.2s"
             onClick={() => handleWorkflowClick(false)}
           >
             <Flex justify="space-between" align="center">
@@ -169,13 +178,20 @@ export const FieldListDrawer = (): JSX.Element => {
                 fontSize="1.25rem"
               />
             </Flex>
-            <Progress
-              value={(completedCount / 4) * 100}
-              size="xs"
-              colorScheme="primary"
-              borderRadius="full"
-              mt="0.5rem"
-            />
+            <Box
+              overflow="hidden"
+              maxH={isCompact ? '0' : '1rem'}
+              opacity={isCompact ? 0 : 1}
+              transition="all 0.2s"
+            >
+              <Progress
+                value={(completedCount / 4) * 100}
+                size="xs"
+                colorScheme="primary"
+                borderRadius="full"
+                mt="0.5rem"
+              />
+            </Box>
           </Box>
         )}
         <FieldSearchBar
@@ -192,7 +208,13 @@ export const FieldListDrawer = (): JSX.Element => {
         </TabList>
         <Divider w="auto" mx="-1.5rem" />
       </Box>
-      <TabPanels pb="1rem" flex={1} overflowY="auto">
+      <TabPanels
+        ref={scrollRef}
+        onScroll={handleScroll}
+        pb="1rem"
+        flex={1}
+        overflowY="auto"
+      >
         {tabsDataList.map((tab) => (
           <TabPanel key={tab.key}>
             <tab.component searchValue={searchValue} />
