@@ -173,7 +173,9 @@ export class AuthSsoServiceClass {
           meta: logMeta,
           error,
         })
-        return new SsoCreateRedirectUrlError()
+        return new SsoCreateRedirectUrlError(
+          'Failed to calculate PKCE code challenge for SSO authentication',
+        )
       },
     )
     return ResultAsync.combine([
@@ -234,7 +236,9 @@ export class AuthSsoServiceClass {
             meta: { ...logMeta, error },
             error,
           })
-          return new SsoCreateRedirectUrlError()
+          return new SsoCreateRedirectUrlError(
+            'Failed to retrieve access token from SSO service',
+          )
         },
       )
     })
@@ -265,7 +269,9 @@ export class AuthSsoServiceClass {
             meta: logMeta,
             error,
           })
-          return new SsoCreateRedirectUrlError()
+          return new SsoCreateRedirectUrlError(
+            'Failed to retrieve user information from SSO service',
+          )
         },
       ).map((userInfo) => {
         logger.info({
