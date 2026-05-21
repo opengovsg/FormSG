@@ -9,6 +9,7 @@ import {
 import { FocusedInsertPanel } from './AddStepsPanel/FocusedInsertPanel'
 import { StepEditForm } from './AddStepsPanel/StepEditForm'
 import { StepNamingForm } from './AddStepsPanel/StepNamingForm'
+import { NotificationEditPanel } from './SummaryPanel/NotificationEditPanel'
 import { StepEditPanel } from './SummaryPanel/StepEditPanel'
 import { SummaryPanel } from './SummaryPanel/SummaryPanel'
 import {
@@ -57,6 +58,8 @@ const DrawerContent = (): JSX.Element => {
       return <NewRespondentForm />
     case 'edit_respondent':
       return <EditRespondentForm />
+    case 'notification_edit':
+      return <NotificationEditPanel />
     case 'notification_focus':
       return <NotificationFocusPanel />
     case 'create_field':

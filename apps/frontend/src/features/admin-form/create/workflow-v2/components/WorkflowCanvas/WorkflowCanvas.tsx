@@ -129,6 +129,7 @@ export const WorkflowCanvas = ({
   const isNewRespondent = focusState.type === 'new_respondent'
   const isEditRespondent = focusState.type === 'edit_respondent'
   const isNotificationFocus = focusState.type === 'notification_focus'
+  const isNotificationEdit = focusState.type === 'notification_edit'
   const isInRespondentContext =
     isRespondentPoolPhase ||
     isRespondentStepFocus ||
@@ -149,7 +150,8 @@ export const WorkflowCanvas = ({
     !isInAddStepsContext &&
     !isInRespondentContext &&
     !isInFieldContext &&
-    !isStepEditFromSummary
+    !isStepEditFromSummary &&
+    !isNotificationEdit
 
   const namingInsertIndex = isStepNaming ? focusState.insertIndex : -1
   const namingStepType = isStepNaming ? focusState.stepType : 'collect'
@@ -165,6 +167,7 @@ export const WorkflowCanvas = ({
     isFocusedInsert ||
     isRespondentStepFocus ||
     isNotificationFocus ||
+    isNotificationEdit ||
     isFieldStepFocus ||
     isStepEditFromSummary
   const fadedOpacity = hasFocusedView ? 0.5 : 1
@@ -193,7 +196,9 @@ export const WorkflowCanvas = ({
       // Only trigger if clicking the canvas background itself, not a child
       if (e.target !== e.currentTarget) return
 
-      if (isRespondentStepFocus || isNotificationFocus) {
+      if (isNotificationEdit) {
+        setFocus({ type: 'summary' })
+      } else if (isRespondentStepFocus || isNotificationFocus) {
         setFocus({ type: 'phase', phase: 'add_respondents' })
       } else if (isFieldStepFocus) {
         setFocus({ type: 'phase', phase: 'assign_fields' })
@@ -204,6 +209,7 @@ export const WorkflowCanvas = ({
       }
     },
     [
+      isNotificationEdit,
       isRespondentStepFocus,
       isNotificationFocus,
       isFieldStepFocus,
@@ -347,6 +353,16 @@ export const WorkflowCanvas = ({
                         >
                           <ConnectionLine />
                         </Box>
+
+                        {/* Notification edit: just a connection line */}
+                        <Box
+                          opacity={isNotificationEdit ? fadedOpacity : 0}
+                          maxH={isNotificationEdit ? '4rem' : 0}
+                          overflow="hidden"
+                          transition="opacity 0.35s ease, max-height 0.35s ease"
+                        >
+                          <ConnectionLine />
+                        </Box>
                       </Box>
                     )
                   })()}
@@ -419,7 +435,8 @@ export const WorkflowCanvas = ({
         ) : isInRespondentContext ||
           isInFieldContext ||
           isStepEdit ||
-          isStepEditFromSummary ? null : (
+          isStepEditFromSummary ||
+          isNotificationEdit ? null : (
           // All other states: show connection line + appropriate connector
           <>
             <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
@@ -451,7 +468,8 @@ export const WorkflowCanvas = ({
           !isStepEdit &&
           !isStepEditFromSummary &&
           !isInRespondentContext &&
-          !isInFieldContext && (
+          !isInFieldContext &&
+          !isNotificationEdit && (
             <Box opacity={fadedOpacity} transition="opacity 0.3s ease">
               <AddStepConnector
                 onClick={() => handleAddStepClick(steps.length)}
@@ -460,13 +478,20 @@ export const WorkflowCanvas = ({
           )}
 
         <Box
-          opacity={isNotificationFocus ? 1 : fadedOpacity}
+          opacity={isNotificationFocus || isNotificationEdit ? 1 : fadedOpacity}
           transition="opacity 0.3s ease"
+          _hover={
+            hasFocusedView && !isNotificationFocus && !isNotificationEdit
+              ? { opacity: 0.85 }
+              : undefined
+          }
         >
           <WorkflowEndDivider />
           <EmailNotificationCard
             isRespondentPhase={isInRespondentContext}
             isFocused={isNotificationFocus}
+            isNotificationEdit={isNotificationEdit}
+            isSummaryMode={isSummary}
             anotherElementFocused={isRespondentStepFocus}
           />
         </Box>

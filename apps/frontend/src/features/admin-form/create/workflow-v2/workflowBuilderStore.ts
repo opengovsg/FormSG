@@ -27,6 +27,7 @@ type PersistedState = {
   statusTrackingEnabled: boolean
   progressCardExpanded: boolean
   notificationRecipientIds: string[]
+  notificationLabel: string
 }
 
 const DEFAULT_PERSISTED: PersistedState = {
@@ -36,6 +37,7 @@ const DEFAULT_PERSISTED: PersistedState = {
   statusTrackingEnabled: false,
   progressCardExpanded: false,
   notificationRecipientIds: DEFAULT_NOTIFICATION_RECIPIENT_IDS,
+  notificationLabel: 'Receive final email notification',
 }
 
 function loadPersistedState(): PersistedState {
@@ -79,6 +81,8 @@ export const notificationRecipientIdsSelector = (state: WorkflowStore) =>
   state.notificationRecipientIds
 export const pendingFieldSelectionSelector = (state: WorkflowStore) =>
   state.pendingFieldSelection
+export const notificationLabelSelector = (state: WorkflowStore) =>
+  state.notificationLabel
 
 export function completedPhases(state: WorkflowStore): Phase[] {
   const completed: Phase[] = []
@@ -157,6 +161,7 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     statusTrackingEnabled: initialPersisted.statusTrackingEnabled,
     progressCardExpanded: initialPersisted.progressCardExpanded,
     notificationRecipientIds: initialPersisted.notificationRecipientIds,
+    notificationLabel: initialPersisted.notificationLabel,
 
     // UI state
     focusState: { type: 'summary' } as FocusState,
@@ -294,6 +299,8 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
         ),
       })),
 
+    renameNotificationLabel: (name) => set({ notificationLabel: name }),
+
     // Sprint 3b actions
     addField: (data) =>
       set((state) => ({
@@ -394,5 +401,6 @@ useWorkflowBuilderStore.subscribe((state) => {
     statusTrackingEnabled: state.statusTrackingEnabled,
     progressCardExpanded: state.progressCardExpanded,
     notificationRecipientIds: state.notificationRecipientIds,
+    notificationLabel: state.notificationLabel,
   })
 })

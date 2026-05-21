@@ -16,6 +16,7 @@ import {
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
 import {
+  focusStateSelector,
   notificationRecipientIdsSelector,
   respondentsSelector,
   useWorkflowBuilderStore,
@@ -28,6 +29,7 @@ export const NotificationFocusPanel = (): JSX.Element => {
   const notificationRecipientIds = useWorkflowBuilderStore(
     notificationRecipientIdsSelector,
   )
+  const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
   const assignNotificationRecipient = useWorkflowBuilderStore(
     (s) => s.assignNotificationRecipient,
@@ -43,8 +45,15 @@ export const NotificationFocusPanel = (): JSX.Element => {
   )
 
   const handleBack = useCallback(() => {
-    setFocus({ type: 'phase', phase: 'add_respondents' })
-  }, [setFocus])
+    if (
+      focusState.type === 'notification_focus' &&
+      focusState.fromNotificationEdit
+    ) {
+      setFocus({ type: 'notification_edit' })
+    } else {
+      setFocus({ type: 'phase', phase: 'add_respondents' })
+    }
+  }, [focusState, setFocus])
 
   const handleToggle = useCallback(
     (respondentId: string) => {

@@ -65,7 +65,8 @@ export type FocusState =
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }
   | { type: 'edit_respondent'; respondentId: string }
-  | { type: 'notification_focus' }
+  | { type: 'notification_edit' }
+  | { type: 'notification_focus'; fromNotificationEdit?: boolean }
   | {
       type: 'create_field'
       fieldType: 'email' | 'dropdown'
@@ -80,6 +81,7 @@ export type WorkflowStore = {
   fields: FormField[]
   statusTrackingEnabled: boolean
   notificationRecipientIds: string[]
+  notificationLabel: string
 
   // UI state (not persisted)
   focusState: FocusState
@@ -112,6 +114,7 @@ export type WorkflowStore = {
   unassignNotificationRecipient: (respondentId: string) => void
 
   removeRespondent: (respondentId: string) => void
+  renameNotificationLabel: (name: string) => void
 
   // Actions - Sprint 3b
   addField: (data: Omit<FormField, 'id' | 'number'>) => void

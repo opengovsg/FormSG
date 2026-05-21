@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BiMailSend } from 'react-icons/bi'
+import { BiEditAlt, BiMailSend } from 'react-icons/bi'
 import {
   Box,
   Flex,
@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react'
 
 import {
+  notificationLabelSelector,
   notificationRecipientIdsSelector,
   respondentsSelector,
   useWorkflowBuilderStore,
@@ -25,6 +26,8 @@ import { RespondentDropZone } from './RespondentDropZone'
 type EmailNotificationCardProps = {
   isRespondentPhase?: boolean
   isFocused?: boolean
+  isNotificationEdit?: boolean
+  isSummaryMode?: boolean
   /** True when another element (a step) has focus, so this card should hide interactive elements */
   anotherElementFocused?: boolean
 }
@@ -36,12 +39,15 @@ type EmailNotificationCardProps = {
 export const EmailNotificationCard = ({
   isRespondentPhase = false,
   isFocused = false,
+  isNotificationEdit = false,
+  isSummaryMode = false,
   anotherElementFocused = false,
 }: EmailNotificationCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const notificationRecipientIds = useWorkflowBuilderStore(
     notificationRecipientIdsSelector,
   )
+  const notificationLabel = useWorkflowBuilderStore(notificationLabelSelector)
   const unassignNotificationRecipient = useWorkflowBuilderStore(
     (s) => s.unassignNotificationRecipient,
   )
@@ -52,37 +58,64 @@ export const EmailNotificationCard = ({
     [respondents, notificationRecipientIds],
   )
 
+  const isClickable = isRespondentPhase || isSummaryMode
+  const isHighlighted = isFocused || isNotificationEdit
+
   const handleClick = () => {
     if (isRespondentPhase && !isFocused) {
       setFocus({ type: 'notification_focus' })
+    } else if (isSummaryMode && !isNotificationEdit) {
+      setFocus({ type: 'notification_edit' })
     }
   }
 
+  // Hoverable when clickable OR when in respondent phase with another element focused
+  const showHover = (isClickable || isRespondentPhase) && !isHighlighted
+
   return (
     <Box
+      data-email-card
       w="100%"
       borderRadius="8px"
       bg="white"
-      border={isFocused ? '2px solid' : '1px solid'}
-      borderColor={isFocused ? 'primary.500' : 'neutral.300'}
+      border={isHighlighted ? '2px solid' : '1px solid'}
+      borderColor={isHighlighted ? 'primary.500' : 'neutral.300'}
       py="1.5rem"
-      cursor={isRespondentPhase ? 'pointer' : undefined}
+      cursor={isClickable ? 'pointer' : undefined}
       onClick={handleClick}
       _hover={
-        isRespondentPhase && !isFocused
+        showHover
           ? { borderColor: 'primary.500', bg: 'primary.100' }
           : undefined
       }
       transition="border-color 0.2s, background 0.2s"
     >
       {/* Header */}
-      <Flex align="center" px="1.5rem">
-        <HStack spacing="1rem">
-          <Icon as={BiMailSend} fontSize="1.5rem" color="secondary.500" />
-          <Text textStyle="subhead-1" color="secondary.500">
-            Receive final email notification
+      <Flex justify="space-between" align="center" px="1.5rem">
+        <HStack spacing="1rem" flex={1} minW={0}>
+          <Icon
+            as={BiMailSend}
+            fontSize="1.5rem"
+            color="secondary.500"
+            flexShrink={0}
+          />
+          <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
+            {notificationLabel}
           </Text>
         </HStack>
+        {isSummaryMode && (
+          <HStack
+            spacing="0.5rem"
+            flexShrink={0}
+            opacity={0}
+            transition="opacity 0.15s ease"
+            sx={{ '[data-email-card]:hover &': { opacity: 1 } }}
+          >
+            <Box p="0.25rem" display="flex" alignItems="center">
+              <Icon as={BiEditAlt} fontSize="1.25rem" color="neutral.500" />
+            </Box>
+          </HStack>
+        )}
       </Flex>
 
       {/* Who gets notified */}
