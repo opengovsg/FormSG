@@ -131,7 +131,7 @@ export const NotificationEditPanel = (): JSX.Element => {
         <Divider mx="-1.5rem" w="auto" mt="1rem" mb="1rem" />
 
         {/* Sub-task card: Manage recipients */}
-        <Stack spacing="0.75rem">
+        <Stack spacing="0.5rem">
           <chakra.button
             w="100%"
             textAlign="start"
@@ -139,7 +139,8 @@ export const NotificationEditPanel = (): JSX.Element => {
             bg="transparent"
             border="2px solid"
             borderColor="transparent"
-            p="1rem"
+            py="0.75rem"
+            px="1rem"
             cursor="pointer"
             transition="all 0.15s"
             _hover={{ bg: 'neutral.100' }}
@@ -193,7 +194,7 @@ export const NotificationEditPanel = (): JSX.Element => {
         {/* Footer: done editing */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             Done editing
           </Button>
         </Flex>

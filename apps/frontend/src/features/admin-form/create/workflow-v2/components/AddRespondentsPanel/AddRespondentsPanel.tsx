@@ -1,12 +1,10 @@
 import { useCallback } from 'react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
-import { BsFillPlusCircleFill } from 'react-icons/bs'
+import { BiLeftArrowAlt, BiPlus } from 'react-icons/bi'
 import {
   Box,
   Button,
   Divider,
   Flex,
-  HStack,
   Icon,
   IconButton,
   Stack,
@@ -91,7 +89,7 @@ export const AddRespondentsPanel = (): JSX.Element => {
         </Text>
 
         {/* Respondent pool cards (exclude form_link - shown on Step 1 automatically) */}
-        <Stack spacing="0.75rem">
+        <Stack spacing="0.5rem">
           {respondents
             .filter((r) => r.type !== 'form_link')
             .map((r) => {
@@ -130,40 +128,21 @@ export const AddRespondentsPanel = (): JSX.Element => {
             })}
         </Stack>
 
-        {/* Add new respondent link */}
-        <Box
-          as="button"
-          type="button"
-          w="100%"
-          textAlign="start"
-          borderRadius="8px"
-          border="1px solid"
-          borderColor="neutral.300"
-          bg="white"
-          p="1rem"
-          mt="0.75rem"
-          cursor="pointer"
-          _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-          transition="border-color 0.2s, background 0.2s"
+        {/* Add new respondent */}
+        <Button
+          variant="clear"
+          colorScheme="primary"
+          leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
+          mt="0.5rem"
           onClick={handleAddNewRespondent}
         >
-          <HStack spacing="0.75rem">
-            <Icon
-              as={BsFillPlusCircleFill}
-              fontSize="1.5rem"
-              color="primary.500"
-              flexShrink={0}
-            />
-            <Text textStyle="subhead-1" color="primary.500">
-              Add a new respondent to this workflow
-            </Text>
-          </HStack>
-        </Box>
+          Add a new respondent
+        </Button>
 
         {/* CTA */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             Done adding respondents
           </Button>
         </Flex>

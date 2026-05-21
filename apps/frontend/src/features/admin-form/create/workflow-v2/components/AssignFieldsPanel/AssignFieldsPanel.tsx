@@ -1,13 +1,11 @@
 import { useCallback, useEffect } from 'react'
-import { BiLeftArrowAlt, BiLinkExternal } from 'react-icons/bi'
-import { BsFillPlusCircleFill } from 'react-icons/bs'
+import { BiBox, BiLeftArrowAlt, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
   Divider,
   Flex,
-  HStack,
   Icon,
   IconButton,
   Stack,
@@ -124,84 +122,68 @@ export const AssignFieldsPanel = (): JSX.Element => {
 
       {/* Scrollable content */}
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
-        <Text textStyle="body-2" color="secondary.400" mb="1.5rem">
-          Assign fields to steps so that they can be filled in or edited. These
-          were fields you created in the form-builder.
-        </Text>
-
         {fields.length === 0 ? (
-          <Box
-            borderRadius="8px"
-            border="1px solid"
-            borderColor="neutral.300"
-            bg="white"
-            p="1.5rem"
-            textAlign="center"
+          <Flex
+            direction="column"
+            align="center"
+            pt="2rem"
+            pb="1rem"
+            gap="0.5rem"
           >
-            <Text textStyle="body-2" color="secondary.400">
-              No fields yet. Create fields in the form builder first.
-            </Text>
-          </Box>
-        ) : (
-          <Stack spacing="0.75rem">
-            {fields.map((f) => (
-              <FieldCard
-                key={f.id}
-                field={f}
-                onEdit={() => {
-                  if (formId) {
-                    window.open(`/admin/form/${formId}`, '_blank')
-                  }
-                }}
-              />
-            ))}
-          </Stack>
-        )}
-
-        {/* Add new field link */}
-        <Box
-          as="button"
-          type="button"
-          role="group"
-          w="100%"
-          textAlign="start"
-          borderRadius="8px"
-          border="1px solid"
-          borderColor="neutral.300"
-          bg="white"
-          p="1rem"
-          mt="0.75rem"
-          cursor="pointer"
-          _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-          transition="border-color 0.2s, background 0.2s"
-          onClick={handleAddNewField}
-        >
-          <Flex align="center" gap="0.75rem">
             <Icon
-              as={BsFillPlusCircleFill}
-              fontSize="1.5rem"
-              color="primary.500"
-              flexShrink={0}
+              as={BiBox}
+              fontSize="2rem"
+              color="secondary.300"
+              mb="0.25rem"
             />
-            <Text textStyle="subhead-1" color="primary.500" flex={1}>
-              Add new field
-            </Text>
-            <Box
-              opacity={0}
-              _groupHover={{ opacity: 1 }}
-              transition="opacity 0.15s"
-              display="flex"
-              alignItems="center"
+            <Text
+              textStyle="subhead-1"
+              color="secondary.500"
+              textAlign="center"
             >
-              <Icon as={BiLinkExternal} fontSize="1rem" color="secondary.400" />
-            </Box>
+              No fields yet
+            </Text>
+            <Button
+              colorScheme="primary"
+              rightIcon={<Icon as={BiLinkExternal} fontSize="0.875rem" />}
+              onClick={handleAddNewField}
+            >
+              Add new field in form builder
+            </Button>
           </Flex>
-        </Box>
+        ) : (
+          <>
+            <Stack spacing="0.5rem">
+              {fields.map((f) => (
+                <FieldCard
+                  key={f.id}
+                  field={f}
+                  onEdit={() => {
+                    if (formId) {
+                      window.open(`/admin/form/${formId}`, '_blank')
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+
+            {/* Add new field */}
+            <Button
+              variant="clear"
+              colorScheme="primary"
+              rightIcon={<Icon as={BiLinkExternal} fontSize="0.875rem" />}
+              mt="0.5rem"
+              onClick={handleAddNewField}
+            >
+              Add new field in form builder
+            </Button>
+          </>
+        )}
 
         {/* CTA */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             Done assigning fields
           </Button>
         </Flex>

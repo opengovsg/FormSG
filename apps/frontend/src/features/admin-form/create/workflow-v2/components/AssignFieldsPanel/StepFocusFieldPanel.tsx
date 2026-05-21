@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
+import { BiBox, BiLeftArrowAlt, BiLinkExternal } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
   Checkbox,
   Divider,
   Flex,
+  Icon,
   IconButton,
   Stack,
   Text,
@@ -24,6 +26,7 @@ import {
 import { FieldCard } from './FieldCard'
 
 export const StepFocusFieldPanel = (): JSX.Element => {
+  const { formId } = useParams()
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const steps = useWorkflowBuilderStore(stepsSelector)
@@ -159,7 +162,7 @@ export const StepFocusFieldPanel = (): JSX.Element => {
 
         {/* Field checkboxes - single shared pool for all step types */}
         {/* Checking assigns to "Fields to fill". For review steps, drag to approval zone on canvas to reassign. */}
-        <Stack spacing="0.75rem">
+        <Stack spacing="0.5rem">
           {fields.map((f) => {
             const isInFill = step.fieldIds.includes(f.id)
             const isInApproval = step.approvalFieldIds.includes(f.id)
@@ -193,15 +196,44 @@ export const StepFocusFieldPanel = (): JSX.Element => {
         )}
 
         {fields.length === 0 && (
-          <Text textStyle="body-2" color="secondary.400">
-            No fields yet. Create fields in the form builder first.
-          </Text>
+          <Flex
+            direction="column"
+            align="center"
+            pt="2rem"
+            pb="1rem"
+            gap="0.5rem"
+          >
+            <Icon
+              as={BiBox}
+              fontSize="2rem"
+              color="secondary.300"
+              mb="0.25rem"
+            />
+            <Text
+              textStyle="subhead-1"
+              color="secondary.500"
+              textAlign="center"
+            >
+              No fields yet
+            </Text>
+            <Button
+              colorScheme="primary"
+              rightIcon={<Icon as={BiLinkExternal} fontSize="0.875rem" />}
+              onClick={() => {
+                if (formId) {
+                  window.open(`/admin/form/${formId}`, '_blank')
+                }
+              }}
+            >
+              Add new field in form builder
+            </Button>
+          </Flex>
         )}
 
         {/* CTA */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             Done with this step
           </Button>
         </Flex>

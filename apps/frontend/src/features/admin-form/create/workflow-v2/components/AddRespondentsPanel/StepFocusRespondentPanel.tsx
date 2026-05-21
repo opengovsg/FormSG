@@ -1,12 +1,10 @@
 import { useCallback, useMemo } from 'react'
-import { BiLeftArrowAlt } from 'react-icons/bi'
-import { BsFillPlusCircleFill } from 'react-icons/bs'
+import { BiLeftArrowAlt, BiPlus, BiUser } from 'react-icons/bi'
 import {
   Box,
   Button,
   Divider,
   Flex,
-  HStack,
   Icon,
   IconButton,
   Stack,
@@ -78,9 +76,6 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
   const truncatedName =
     step.name.length > 25 ? `${step.name.slice(0, 25)}...` : step.name
 
-  // Form link respondent for Step 1 info display
-  const formLinkRespondent = respondents.find((r) => r.type === 'form_link')
-
   return (
     <Flex
       h="100%"
@@ -130,24 +125,42 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
         {isFirstStep ? (
           <>
-            {/* Step 1 info panel */}
-            <Text textStyle="body-2" color="secondary.400" mb="1.5rem">
-              This is the first step of the workflow. Anyone who receives the
-              form link will be able to fill in this step.
-            </Text>
-            {formLinkRespondent && (
-              <RespondentCard respondent={formLinkRespondent} />
-            )}
-            <Text textStyle="body-2" color="secondary.400" mt="1.5rem">
-              The respondent for this step cannot be changed. Other steps are
-              accessed via unique links sent by email.
-            </Text>
+            {/* Step 1 — not configurable */}
+            <Flex
+              direction="column"
+              align="center"
+              pt="2rem"
+              pb="1rem"
+              gap="0.5rem"
+            >
+              <Icon
+                as={BiUser}
+                fontSize="2rem"
+                color="secondary.300"
+                mb="0.25rem"
+              />
+              <Text
+                textStyle="subhead-1"
+                color="secondary.500"
+                textAlign="center"
+              >
+                This is the first step
+              </Text>
+              <Text
+                textStyle="body-2"
+                color="secondary.400"
+                textAlign="center"
+                maxW="22rem"
+              >
+                Anyone who receives the form link can fill it in
+              </Text>
+            </Flex>
 
             {/* CTA */}
             <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
             <Flex justify="flex-end" py="1rem">
               <Button
-                variant="clear"
+                variant="outline"
                 colorScheme="primary"
                 onClick={handleBack}
               >
@@ -158,7 +171,7 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
         ) : (
           <>
             {/* Respondent cards with checkboxes */}
-            <Stack spacing="0.75rem">
+            <Stack spacing="0.5rem">
               {assignableRespondents.map((r) => (
                 <RespondentCard
                   key={r.id}
@@ -170,41 +183,22 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
               ))}
             </Stack>
 
-            {/* Add new respondent link */}
-            <Box
-              as="button"
-              type="button"
-              w="100%"
-              textAlign="start"
-              borderRadius="8px"
-              border="1px solid"
-              borderColor="neutral.300"
-              bg="white"
-              p="1rem"
-              mt="0.75rem"
-              cursor="pointer"
-              _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-              transition="border-color 0.2s, background 0.2s"
+            {/* Add new respondent */}
+            <Button
+              variant="clear"
+              colorScheme="primary"
+              leftIcon={<Icon as={BiPlus} fontSize="1.25rem" />}
+              mt="0.5rem"
               onClick={handleAddNewRespondent}
             >
-              <HStack spacing="0.75rem">
-                <Icon
-                  as={BsFillPlusCircleFill}
-                  fontSize="1.5rem"
-                  color="primary.500"
-                  flexShrink={0}
-                />
-                <Text textStyle="subhead-1" color="primary.500">
-                  Add a new respondent to this workflow
-                </Text>
-              </HStack>
-            </Box>
+              Add a new respondent
+            </Button>
 
             {/* CTA */}
             <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
             <Flex justify="flex-end" py="1rem">
               <Button
-                variant="clear"
+                variant="outline"
                 colorScheme="primary"
                 onClick={handleBack}
               >

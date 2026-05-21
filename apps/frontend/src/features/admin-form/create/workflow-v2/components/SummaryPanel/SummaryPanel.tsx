@@ -7,9 +7,11 @@ import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/
 
 import type { Phase, PhaseStatus } from '../../types'
 import {
+  fieldsSelector,
   focusStateSelector,
   phaseStatus as getPhaseStatus,
   setFocusSelector,
+  stepsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
@@ -49,6 +51,8 @@ export const SummaryPanel = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
 
+  const steps = useWorkflowBuilderStore(stepsSelector)
+  const fields = useWorkflowBuilderStore(fieldsSelector)
   const storeState = useWorkflowBuilderStore((state) => state)
 
   const phaseStatuses = useMemo((): Record<Phase, PhaseStatus> => {
@@ -70,6 +74,34 @@ export const SummaryPanel = (): JSX.Element => {
     if (focusState.type === 'summary') return firstIncompletePhase
     return null
   }, [focusState, firstIncompletePhase])
+
+  const subtitles = useMemo((): Partial<Record<Phase, string>> => {
+    const stepsWithoutRespondents = steps.filter(
+      (s) => s.respondentIds.length === 0,
+    ).length
+    const stepsWithoutFields = steps.filter(
+      (s) => s.fieldIds.length === 0 && s.approvalFieldIds.length === 0,
+    ).length
+    const assignedFieldIds = new Set(
+      steps.flatMap((s) => [...s.fieldIds, ...s.approvalFieldIds]),
+    )
+    const unassignedFields = fields.filter(
+      (f) => !assignedFieldIds.has(f.id),
+    ).length
+
+    return {
+      add_respondents:
+        stepsWithoutRespondents > 0
+          ? `${stepsWithoutRespondents} step${stepsWithoutRespondents === 1 ? '' : 's'} without respondents`
+          : undefined,
+      assign_fields:
+        stepsWithoutFields > 0
+          ? `${stepsWithoutFields} step${stepsWithoutFields === 1 ? ' has' : 's have'} no fields`
+          : unassignedFields > 0
+            ? `${unassignedFields} field${unassignedFields === 1 ? '' : 's'} unassigned`
+            : undefined,
+    }
+  }, [steps, fields])
 
   const handlePhaseClick = useCallback(
     (phase: Phase) => {
@@ -107,19 +139,20 @@ export const SummaryPanel = (): JSX.Element => {
 
       {/* Scrollable content */}
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
-        <Text textStyle="body-2" color="secondary.400" mb="1.5rem">
+        <Text textStyle="body-2" color="secondary.400" mb="1rem">
           A workflow lets you split your form into steps, so different people
           can fill in or approve different parts.
         </Text>
 
         {/* Phase cards */}
-        <Stack spacing="0.75rem">
+        <Stack spacing="0.5rem">
           {PHASES.map((config) => (
             <SectionCard
               key={config.phase}
               phase={config.phase}
               title={config.title}
               description={config.description}
+              subtitle={subtitles[config.phase]}
               status={phaseStatuses[config.phase]}
               isActive={activePhase === config.phase}
               isFirstIncomplete={firstIncompletePhase === config.phase}

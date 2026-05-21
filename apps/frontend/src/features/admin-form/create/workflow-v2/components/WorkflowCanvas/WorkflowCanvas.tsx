@@ -491,7 +491,7 @@ export const WorkflowCanvas = ({
             isRespondentPhase={isInRespondentContext}
             isFocused={isNotificationFocus}
             isNotificationEdit={isNotificationEdit}
-            isSummaryMode={isSummary}
+            isSummaryMode={isSummary || isStepEditFromSummary}
             anotherElementFocused={isRespondentStepFocus}
           />
         </Box>

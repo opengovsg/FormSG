@@ -151,7 +151,7 @@ export const AddStepsPanel = (): JSX.Element => {
         {/* CTA - flows after content */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             {hasMultipleSteps ? 'Done adding steps' : 'Done'}
           </Button>
         </Flex>

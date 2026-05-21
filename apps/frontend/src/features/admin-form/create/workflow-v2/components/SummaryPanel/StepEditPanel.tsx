@@ -151,7 +151,7 @@ export const StepEditPanel = (): JSX.Element => {
         <Divider mx="-1.5rem" w="auto" mt="1rem" mb="1rem" />
 
         {/* Sub-task cards - matching SectionCard style */}
-        <Stack spacing="0.75rem">
+        <Stack spacing="0.5rem">
           {/* Add respondents */}
           <chakra.button
             w="100%"
@@ -160,7 +160,8 @@ export const StepEditPanel = (): JSX.Element => {
             bg="transparent"
             border="2px solid"
             borderColor="transparent"
-            p="1rem"
+            py="0.75rem"
+            px="1rem"
             cursor="pointer"
             transition="all 0.15s"
             _hover={{ bg: 'neutral.100' }}
@@ -220,7 +221,8 @@ export const StepEditPanel = (): JSX.Element => {
             bg="transparent"
             border="2px solid"
             borderColor="transparent"
-            p="1rem"
+            py="0.75rem"
+            px="1rem"
             cursor="pointer"
             transition="all 0.15s"
             _hover={{ bg: 'neutral.100' }}
@@ -279,20 +281,13 @@ export const StepEditPanel = (): JSX.Element => {
 
         {/* Footer: delete + done */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
-        <Flex justify="space-between" align="center" py="1rem">
-          {step.order > 0 ? (
-            <IconButton
-              aria-label="Delete step"
-              icon={<BiTrash fontSize="1.25rem" />}
-              variant="clear"
-              colorScheme="danger"
-              size="sm"
-              onClick={onOpen}
-            />
-          ) : (
-            <Box />
+        <Flex justify="flex-end" align="center" gap="0.5rem" py="1rem">
+          {step.order > 0 && (
+            <Button variant="clear" colorScheme="danger" onClick={onOpen}>
+              Delete step
+            </Button>
           )}
-          <Button variant="clear" colorScheme="primary" onClick={handleBack}>
+          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
             Done editing
           </Button>
         </Flex>

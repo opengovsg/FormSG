@@ -17,6 +17,7 @@ type SectionCardProps = {
   phase: Phase
   title: string
   description?: string
+  subtitle?: string
   status: PhaseStatus
   isActive: boolean
   isFirstIncomplete: boolean
@@ -34,6 +35,7 @@ export const SectionCard = ({
   phase,
   title,
   description,
+  subtitle,
   status,
   isActive,
   isFirstIncomplete,
@@ -52,7 +54,8 @@ export const SectionCard = ({
       bg={isActive ? '#F8F9FD' : 'transparent'}
       border="2px solid"
       borderColor={isActive ? '#445FCD' : 'transparent'}
-      p="1rem"
+      py="0.75rem"
+      px="1rem"
       cursor="pointer"
       transition="all 0.15s"
       _hover={{
@@ -65,15 +68,19 @@ export const SectionCard = ({
         <PhaseIndicator icon={PhaseIcon} status={status} isActive={isActive} />
 
         {/* Content */}
-        <Stack flex={1} minW={0} spacing="0.25rem">
+        <Stack flex={1} minW={0} spacing="0.125rem">
           <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
             {title}
           </Text>
-          {description && isActive && (
+          {isActive && description ? (
             <Text textStyle="body-2" color="secondary.500" noOfLines={2}>
               {description}
             </Text>
-          )}
+          ) : !isActive && subtitle ? (
+            <Text textStyle="body-2" color="secondary.400" noOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
         </Stack>
 
         {/* Trailing */}
