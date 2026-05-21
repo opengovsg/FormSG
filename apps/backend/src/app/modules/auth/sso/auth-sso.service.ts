@@ -1,11 +1,11 @@
-import { okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { getValidatedIdTokenClaims } from 'oauth4webapi'
 import * as oidcClient from 'openid-client'
 
 import { ISsoVarsSchema } from 'src/types'
 
 import { isDev } from '../../../config/config'
-import { sso } from '../../../config/features/sso.config'
+import { isSsoConfigured, sso } from '../../../config/features/sso.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { resolveAppUrl } from '../../../utils/urls'
 
@@ -15,13 +15,26 @@ const logger = createLoggerWithLabel(module)
 export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
 
 export class AuthSsoServiceClass {
-  private clientConfigPromise: Promise<oidcClient.Configuration>
+  private clientConfigPromise: Promise<oidcClient.Configuration> | null = null
+  private readonly config: ISsoVarsSchema
+  private readonly isConfigured: boolean
 
-  constructor({
-    discoveryUrl: _discoveryUrl,
-    clientId,
-    clientSecret,
-  }: ISsoVarsSchema) {
+  constructor(config: ISsoVarsSchema) {
+    this.config = config
+    this.isConfigured = isSsoConfigured()
+  }
+
+  /**
+   * Initializes the OIDC client configuration by performing discovery.
+   * This is done lazily to prevent startup crashes if the discovery URL is unreachable.
+   */
+  private initializeClientConfig(): void {
+    if (this.clientConfigPromise) {
+      return
+    }
+
+    const { discoveryUrl, clientId, clientSecret } = this.config
+
     const clientAuth: oidcClient.ClientAuth | undefined = clientSecret
       ? oidcClient.ClientSecretPost(clientSecret)
       : undefined
@@ -34,26 +47,46 @@ export class AuthSsoServiceClass {
       clientDiscoveryRequestOptions.execute = [oidcClient.allowInsecureRequests]
     }
 
-    const oidcServer = new URL(_discoveryUrl)
-    this.clientConfigPromise = oidcClient
-      .discovery(
-        oidcServer,
-        clientId,
-        undefined, // clientMetadata,
-        clientAuth,
-        clientDiscoveryRequestOptions,
-      )
-      .catch((error) => {
-        logger.error({
-          meta: {
-            action: 'AuthSsoServiceClass.constructor',
+    try {
+      const oidcServer = new URL(discoveryUrl)
+      this.clientConfigPromise = oidcClient
+        .discovery(
+          oidcServer,
+          clientId,
+          undefined, // clientMetadata,
+          clientAuth,
+          clientDiscoveryRequestOptions,
+        )
+        .catch((error) => {
+          logger.error({
+            meta: {
+              action: 'AuthSsoServiceClass.initializeClientConfig',
+              error,
+            },
+            message:
+              'Error while discovering SSO client configuration from upstream service. SSO login is unavailable.',
             error,
-          },
-          message: 'Error while discovering SSO client configuration',
-          error,
+          })
+          throw new SsoCreateRedirectUrlError(
+            'SSO service discovery failed. Please try again later.',
+          )
         })
-        throw new SsoCreateRedirectUrlError()
+    } catch (error) {
+      logger.error({
+        meta: {
+          action: 'AuthSsoServiceClass.initializeClientConfig',
+          error,
+        },
+        message: 'Error while parsing SSO discovery URL. SSO login is unavailable.',
+        error,
       })
+      // Create a rejected promise
+      this.clientConfigPromise = Promise.reject(
+        new SsoCreateRedirectUrlError(
+          'SSO service configuration is invalid. Please try again later.',
+        ),
+      )
+    }
   }
 
   getClientConfigResult(): ResultAsync<
@@ -63,13 +96,42 @@ export class AuthSsoServiceClass {
     const logMeta = {
       action: 'getClientConfigResult',
     }
+
+    // Check if SSO is configured before attempting to use it
+    if (!this.isConfigured) {
+      logger.warn({
+        message:
+          'SSO is not properly configured. Cannot retrieve client configuration.',
+        meta: logMeta,
+      })
+      return errAsync(
+        new SsoCreateRedirectUrlError(
+          'SSO service is not configured. Please use Email OTP login.',
+        ),
+      )
+    }
+
+    // Initialize the client config if not already done
+    this.initializeClientConfig()
+
+    if (!this.clientConfigPromise) {
+      return errAsync(
+        new SsoCreateRedirectUrlError(
+          'SSO service initialization failed. Please try again later.',
+        ),
+      )
+    }
+
     return ResultAsync.fromPromise(this.clientConfigPromise, (error) => {
       logger.error({
-        message: 'Error while retrieving SSO client configuration',
+        message:
+          'Error while retrieving SSO client configuration. SSO service may be unavailable.',
         meta: logMeta,
         error,
       })
-      return new SsoCreateRedirectUrlError()
+      return new SsoCreateRedirectUrlError(
+        'SSO service is currently unavailable. Please try again later or use Email OTP login.',
+      )
     })
   }
   /**
