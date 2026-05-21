@@ -27,7 +27,7 @@ export class AuthSsoServiceClass {
 
   constructor(config: ISsoVarsSchema) {
     this.config = config
-    this.isConfigured = isSsoConfigured()
+    this.isConfigured = isSsoConfigured(config)
   }
 
   /**
