@@ -2640,7 +2640,10 @@ describe('submission.service', () => {
       cleanFileKey: 'cleanFileKey',
       destinationVersionId: 'destinationVersionId',
     }
-    afterEach(() => jest.restoreAllMocks()) // Clear unused spies to prevent test pollution
+    afterEach(() => {
+      jest.restoreAllMocks() // Clear unused spies to prevent test pollution
+      jest.useRealTimers() // Guarantee fake timers don't leak into later tests
+    })
 
     it('should return errAsync when quarantine file key is not a valid uuid', async () => {
       // Arrange
@@ -2930,7 +2933,6 @@ describe('submission.service', () => {
           'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
         ),
       )
-      jest.useRealTimers()
     })
 
     it('should retry on NOT_FOUND and return okAsync when file becomes visible on a subsequent attempt', async () => {
@@ -2968,7 +2970,6 @@ describe('submission.service', () => {
       expect(awsSpy).toHaveBeenCalledTimes(2)
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSuccessOutput)
-      jest.useRealTimers()
     })
 
     it("should return errAsync if the lambda's errored response is not in the right format", async () => {

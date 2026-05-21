@@ -1184,17 +1184,23 @@ export const triggerGuardDutyScanning = (
     // but production has seen the file still not visible after that window.
     // Retry the entire invocation when the lambda returns NOT_FOUND so the
     // quarantine bucket has more time to converge before we give up.
-    /* eslint-disable typesafe/no-throw-sync-func
-     * Throws inside this async callback reject the promise; they are
-     * caught by the surrounding ResultAsync.fromPromise.
-     */
     promiseRetry<ParseVirusScannerLambdaPayloadOkType>(
       async (retry, attemptNo) => {
-        const data: InvokeCommandOutput =
-          await AwsConfig.guarddutyLambda.invoke({
+        let data: InvokeCommandOutput
+        try {
+          data = await AwsConfig.guarddutyLambda.invoke({
             FunctionName: AwsConfig.guarddutyLambdaFunctionName,
             Payload: JSON.stringify({ key: quarantineFileKey }),
           })
+        } catch (error) {
+          logger.error({
+            message:
+              'GUARDDUTY Error encountered when invoking virus scanning lambda',
+            meta: { ...logMeta, attemptNo },
+            error,
+          })
+          return Promise.reject(new GuardDutyVirusScanFailedError())
+        }
 
         if (!data || !data.Payload) {
           logger.error({
@@ -1202,7 +1208,9 @@ export const triggerGuardDutyScanning = (
               'data or data.Payload from virus scanner lambda is undefined',
             meta: { ...logMeta, attemptNo },
           })
-          throw new GuardDutyParseVirusScannerLambdaPayloadError()
+          return Promise.reject(
+            new GuardDutyParseVirusScannerLambdaPayloadError(),
+          )
         }
 
         const parseResult = parseVirusScannerLambdaPayload(data.Payload)
@@ -1213,34 +1221,43 @@ export const triggerGuardDutyScanning = (
 
         const parseError = parseResult.error
 
-        logger.error({
-          message:
-            'GUARDDUTY Error returned from virus scanning lambda or parsing lambda output',
-          meta: { ...logMeta, attemptNo },
-          error: parseError,
-        })
-
         if (parseError instanceof ParseVirusScannerLambdaPayloadError) {
-          throw new GuardDutyParseVirusScannerLambdaPayloadError()
+          logger.error({
+            message: 'GUARDDUTY Error parsing virus scanning lambda output',
+            meta: { ...logMeta, attemptNo },
+            error: parseError,
+          })
+          return Promise.reject(
+            new GuardDutyParseVirusScannerLambdaPayloadError(),
+          )
         }
 
         if (parseError.statusCode === StatusCodes.NOT_FOUND) {
-          const notFoundError = new GuardDutyInvalidFileKeyError(
-            'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-          )
+          // Expected transient outcome: S3 eventual consistency. Log at
+          // warn so the retry chatter doesn't flood error dashboards.
           logger.warn({
             message:
               'GUARDDUTY File not visible in quarantine bucket, retrying',
             meta: { ...logMeta, attemptNo },
           })
-          return retry(notFoundError)
+          return retry(
+            new GuardDutyInvalidFileKeyError(
+              'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
+            ),
+          )
         }
+
+        logger.error({
+          message: 'GUARDDUTY Error returned from virus scanning lambda',
+          meta: { ...logMeta, attemptNo },
+          error: parseError,
+        })
 
         if (parseError.statusCode !== StatusCodes.BAD_REQUEST) {
-          throw new GuardDutyVirusScanFailedError()
+          return Promise.reject(new GuardDutyVirusScanFailedError())
         }
 
-        throw new GuardDutyMaliciousFileDetectedError()
+        return Promise.reject(new GuardDutyMaliciousFileDetectedError())
       },
       {
         retries: 2, // 3 total attempts on top of the lambda's internal retries
@@ -1249,7 +1266,6 @@ export const triggerGuardDutyScanning = (
         randomize: true,
       },
     ),
-    /* eslint-enable typesafe/no-throw-sync-func */
     (error): TriggerGuardDutyScanningError => {
       if (
         error instanceof GuardDutyInvalidFileKeyError ||
@@ -1261,8 +1277,7 @@ export const triggerGuardDutyScanning = (
       }
 
       logger.error({
-        message:
-          'GUARDDUTY Error encountered when invoking virus scanning lambda',
+        message: 'GUARDDUTY Unexpected error from virus scanning retry chain',
         meta: logMeta,
         error,
       })
