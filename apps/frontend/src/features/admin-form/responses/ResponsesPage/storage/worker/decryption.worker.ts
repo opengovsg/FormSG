@@ -19,12 +19,11 @@ import {
 } from '../types'
 import { CsvRecord } from '../utils/CsvRecord.class'
 import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptAttachment'
-import { flattenV4ToFormFields } from '../utils/flattenV4ToFormFields'
 import {
   buildFormFieldMetaMap,
-  convertVerifiedToV4,
   processDecryptedContent,
   processDecryptedContentV3,
+  processDecryptedContentV4,
 } from '../utils/processDecryptedContent'
 
 // WorkerCtx extends the shared DecryptionCtx; add worker-specific deps here if needed.
@@ -159,46 +158,40 @@ async function decryptSubmissionData(
           },
           formFieldsMeta,
         )
-        if (!decryptedV4) {
-          console.error(
-            'Invalid decryption for multirespondent response in v4',
-            { submissionId: submissionData._id },
+        if (decryptedV4) {
+          mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
+          decryptedResponses = processDecryptedContentV4(
+            submissionData.form_fields,
+            decryptedV4.responses,
+            decryptedV4.verified,
           )
-          return {
-            isSubmissionDecryptionSuccessful: false,
-          }
+          break
         }
-        mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
-        const v4Responses = decryptedV4.verified
-          ? {
-              ...decryptedV4.responses,
-              ...convertVerifiedToV4(decryptedV4.verified),
-            }
-          : decryptedV4.responses
-        decryptedResponses = flattenV4ToFormFields({
-          v4Responses,
-          formFields: submissionData.form_fields,
-        })
-      } else {
-        const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
-          encryptedSubmissionSecretKey:
-            submissionData.encryptedSubmissionSecretKey,
-          encryptedContent,
-          verifiedContent,
-          version,
-        })
-        if (!decryptedObject) {
-          console.error('Invalid decryption for multirespondent response')
-          return {
-            isSubmissionDecryptionSuccessful: false,
-          }
-        }
-        mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
-        decryptedResponses = await processDecryptedContentV3(
-          submissionData.form_fields,
-          decryptedObject,
+        console.warn(
+          'Could not decrypt MRF response in v4, falling back to v3',
+          { submissionId: submissionData._id },
         )
       }
+
+      // Perform v3 decryption if v4 deryption fails or is not attempted (useV4 = false)
+      const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
+        encryptedSubmissionSecretKey:
+          submissionData.encryptedSubmissionSecretKey,
+        encryptedContent,
+        verifiedContent,
+        version,
+      })
+      if (!decryptedObject) {
+        console.error('Invalid decryption for multirespondent response')
+        return {
+          isSubmissionDecryptionSuccessful: false,
+        }
+      }
+      mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
+      decryptedResponses = await processDecryptedContentV3(
+        submissionData.form_fields,
+        decryptedObject,
+      )
       break
     }
     default: {
