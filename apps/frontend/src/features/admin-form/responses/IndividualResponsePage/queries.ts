@@ -1,6 +1,8 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
@@ -14,32 +16,29 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useIndividualSubmission = ({
-  useV4,
-}: { useV4?: boolean } = {}) => {
+export const useIndividualSubmission = () => {
   const { formId, submissionId } = useParams()
 
   if (!formId || !submissionId) {
     throw new Error('No formId or submissionId provided')
   }
 
-  return useGetIndividualDecryptedSubmission({ formId, submissionId, useV4 })
+  return useGetIndividualDecryptedSubmission({ formId, submissionId })
 }
 
 export const useGetIndividualDecryptedSubmission = ({
   formId,
   submissionId,
-  useV4,
 }: {
   formId: string
   submissionId: string
-  useV4?: boolean
 }) => {
   const toast = useToast({
     status: 'danger',
   })
   const { secretKey } = useStorageResponsesContext()
   const { data: { responseMode } = {} } = useAdminForm()
+  const useV4 = useFeatureIsOn(featureFlags.answerObjectDecryption)
 
   return useQuery(
     adminFormResponsesKeys.individual(formId, submissionId, useV4),
