@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.5](https://github.com/opengovsg/formsg/compare/v7.20.4...v7.20.5) (2026-05-21)
+
+
+### Bug Fixes
+
+* **backend:** otp prefix paste ([c53ab7e](https://github.com/opengovsg/formsg/commit/c53ab7e5551eb3a59a9c940ea48ffd2de76ebda7))
+* **sms:** separate OTP prefix from digits in verification SMS ([3ea5762](https://github.com/opengovsg/formsg/commit/3ea5762f7a409fe7f2b8338c55aaf089e8c2df83))
+
+
+### Miscellaneous
+
+* Merge pull request #9469 from opengovsg/fix/frontend/react-translate-compatibility ([#9469](https://github.com/opengovsg/formsg/commit/56ca62beae22d3db7e5739bad2be3123d428f2ac))
+
 ## [7.20.4](https://github.com/opengovsg/formsg/compare/v7.20.3...v7.20.4) (2026-05-21)
 
 
