@@ -259,7 +259,7 @@ export const FieldAssignPanel = (): JSX.Element => {
         {/* Info box */}
         <Box mb="1.5rem">
           <InlineMessage>
-            To edit field settings, go to{' '}
+            {'To edit field settings, go to '}
             <chakra.span
               as="a"
               color="primary.500"

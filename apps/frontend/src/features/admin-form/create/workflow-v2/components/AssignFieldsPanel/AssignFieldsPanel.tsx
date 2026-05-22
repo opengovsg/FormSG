@@ -74,7 +74,7 @@ export const AssignFieldsPanel = (): JSX.Element => {
 
   const handleAddNewField = useCallback(() => {
     if (formId) {
-      window.open(`/admin/form/${formId}`, '_blank')
+      window.location.href = `/admin/form/${formId}`
     }
   }, [formId])
 
@@ -145,7 +145,7 @@ export const AssignFieldsPanel = (): JSX.Element => {
             </Text>
             <Button
               colorScheme="primary"
-              rightIcon={<Icon as={BiLinkExternal} fontSize="0.875rem" />}
+              rightIcon={<Icon as={BiLinkExternal} fontSize="1.125rem" />}
               onClick={handleAddNewField}
             >
               Add new field in form builder
@@ -169,7 +169,7 @@ export const AssignFieldsPanel = (): JSX.Element => {
             <Button
               variant="clear"
               colorScheme="primary"
-              rightIcon={<Icon as={BiLinkExternal} fontSize="0.875rem" />}
+              rightIcon={<Icon as={BiLinkExternal} fontSize="1.125rem" />}
               mt="0.5rem"
               onClick={handleAddNewField}
             >

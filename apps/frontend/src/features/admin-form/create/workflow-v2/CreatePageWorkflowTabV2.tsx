@@ -68,6 +68,9 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
     null,
   )
   const [activeField, setActiveField] = useState<FormField | null>(null)
+  const [draggingFieldType, setDraggingFieldType] = useState<string | null>(
+    null,
+  )
 
   // Step 1 reorder confirmation modal
   const [pendingReorder, setPendingReorder] = useState<{
@@ -96,6 +99,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         setActiveRespondent(data.respondent as Respondent)
       } else if (data?.type === 'field_card') {
         setActiveField(data.field as FormField)
+        setDraggingFieldType((data.field as FormField).fieldType)
       }
     },
     [steps],
@@ -151,6 +155,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       setActiveDragStep(null)
       setActiveRespondent(null)
       setActiveField(null)
+      setDraggingFieldType(null)
 
       const { active, over } = event
       if (!over) return
@@ -265,6 +270,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         <WorkflowCanvas
           isDragging={activeStepType !== null}
           isDraggingRespondent={activeRespondent !== null}
+          draggingFieldType={draggingFieldType}
         />
         <DragOverlay>
           {activeStepType ? (

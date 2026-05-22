@@ -25,6 +25,7 @@ import { EmailNotificationCard } from './EmailNotificationCard'
 type WorkflowCanvasProps = {
   isDragging?: boolean
   isDraggingRespondent?: boolean
+  draggingFieldType?: string | null
 }
 
 /**
@@ -99,7 +100,8 @@ const ExpandableConnectorGap = ({
 
 export const WorkflowCanvas = ({
   isDragging = false,
-  isDraggingRespondent: _isDraggingRespondent = false,
+  isDraggingRespondent = false,
+  draggingFieldType = null,
 }: WorkflowCanvasProps): JSX.Element => {
   const steps = useWorkflowBuilderStore(stepsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -402,6 +404,9 @@ export const WorkflowCanvas = ({
                     fieldStepFocusId === step.id ||
                     stepEditFromSummaryId === step.id
                   }
+                  isDraggingField={draggingFieldType !== null}
+                  isDraggingYesNo={draggingFieldType === 'yes_no'}
+                  isDraggingRespondent={isDraggingRespondent}
                 />
               </Box>
             </Fragment>
@@ -494,6 +499,7 @@ export const WorkflowCanvas = ({
             isSummaryMode={isSummary || isStepEditFromSummary}
             anotherElementFocused={isRespondentStepFocus}
             isDisabled={isInAddStepsContext || isInFieldContext}
+            isDraggingRespondent={isDraggingRespondent}
           />
         </Box>
       </Box>
