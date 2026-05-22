@@ -57,6 +57,7 @@ import {
   AttachmentTooLargeError,
   DownloadCleanFileFailedError,
   GuardDutyInvalidFileKeyError,
+  GuardDutyVirusScanFailedError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
@@ -2640,6 +2641,23 @@ describe('submission.service', () => {
       cleanFileKey: 'cleanFileKey',
       destinationVersionId: 'destinationVersionId',
     }
+    const mockHeadObjectWith = (
+      result: { ContentLength?: number } | (() => never),
+    ) =>
+      jest.spyOn(aws.s3, 'headObject').mockImplementation(
+        () =>
+          ({
+            promise:
+              typeof result === 'function'
+                ? result
+                : () => Promise.resolve(result),
+          }) as never,
+      )
+    beforeEach(() => {
+      // Default: object exists with a positive ContentLength. Tests for
+      // the empty / missing object branches override this mock.
+      mockHeadObjectWith({ ContentLength: 100 })
+    })
     afterEach(() => {
       jest.restoreAllMocks() // Clear unused spies to prevent test pollution
       jest.useRealTimers() // Guarantee fake timers don't leak into later tests
@@ -2970,6 +2988,122 @@ describe('submission.service', () => {
       expect(awsSpy).toHaveBeenCalledTimes(2)
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSuccessOutput)
+    })
+
+    it('should retry and return errAsync without invoking the lambda when the quarantine object has zero ContentLength', async () => {
+      // Arrange
+      jest.useFakeTimers()
+      const headSpy = mockHeadObjectWith({ ContentLength: 0 })
+      const lambdaSpy = jest.spyOn(aws.guarddutyLambda, 'invoke')
+
+      // Act
+      const promise = triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      await jest.runAllTimersAsync()
+      const actualResult = await promise
+
+      // Assert
+      expect(headSpy).toHaveBeenCalledTimes(3) // initial + 2 retries
+      expect(lambdaSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new GuardDutyInvalidFileKeyError(
+          'GUARDDUTY Invalid file key - file in the quarantine bucket is empty. The file must be re-uploaded.',
+        ),
+      )
+    })
+
+    it('should retry on zero ContentLength and invoke the lambda once a non-empty object becomes visible', async () => {
+      // Arrange
+      jest.useFakeTimers()
+      const headSpy = jest
+        .spyOn(aws.s3, 'headObject')
+        .mockImplementationOnce(
+          () =>
+            ({
+              promise: () => Promise.resolve({ ContentLength: 0 }),
+            }) as never,
+        )
+        .mockImplementation(
+          () =>
+            ({
+              promise: () => Promise.resolve({ ContentLength: 100 }),
+            }) as never,
+        )
+      const successPayload = {
+        statusCode: 200,
+        body: JSON.stringify(MOCK_SUCCESS_BODY_PAYLOAD),
+      }
+      const lambdaSpy = jest
+        .spyOn(aws.guarddutyLambda, 'invoke')
+        .mockImplementationOnce(() =>
+          Promise.resolve({ Payload: JSON.stringify(successPayload) }),
+        )
+      const expectedSuccessOutput = {
+        statusCode: 200,
+        body: MOCK_SUCCESS_BODY_PAYLOAD,
+      }
+
+      // Act
+      const promise = triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      await jest.runAllTimersAsync()
+      const actualResult = await promise
+
+      // Assert
+      expect(headSpy).toHaveBeenCalledTimes(2)
+      expect(lambdaSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSuccessOutput)
+    })
+
+    it('should retry and return errAsync when headObject reports the quarantine object is missing', async () => {
+      // Arrange
+      jest.useFakeTimers()
+      const headSpy = mockHeadObjectWith(() => {
+        const notFoundErr = Object.assign(new Error('NotFound'), {
+          code: 'NotFound',
+          statusCode: 404,
+        })
+        throw notFoundErr
+      })
+      const lambdaSpy = jest.spyOn(aws.guarddutyLambda, 'invoke')
+
+      // Act
+      const promise = triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+      await jest.runAllTimersAsync()
+      const actualResult = await promise
+
+      // Assert
+      expect(headSpy).toHaveBeenCalledTimes(3)
+      expect(lambdaSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new GuardDutyInvalidFileKeyError(
+          'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
+        ),
+      )
+    })
+
+    it('should return errAsync without retrying when headObject fails with a non-404 error', async () => {
+      // Arrange
+      const headSpy = mockHeadObjectWith(() => {
+        const accessDeniedErr = Object.assign(new Error('AccessDenied'), {
+          code: 'AccessDenied',
+          statusCode: 403,
+        })
+        throw accessDeniedErr
+      })
+      const lambdaSpy = jest.spyOn(aws.guarddutyLambda, 'invoke')
+
+      // Act
+      const actualResult = await triggerGuardDutyScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(headSpy).toHaveBeenCalledOnce()
+      expect(lambdaSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new GuardDutyVirusScanFailedError(),
+      )
     })
 
     it("should return errAsync if the lambda's errored response is not in the right format", async () => {

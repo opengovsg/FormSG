@@ -1,6 +1,7 @@
 import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
-import { ManagedUpload } from 'aws-sdk/clients/s3'
+import { AWSError } from 'aws-sdk'
+import { HeadObjectOutput, ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import {
@@ -1186,6 +1187,62 @@ export const triggerGuardDutyScanning = (
     // quarantine bucket has more time to converge before we give up.
     promiseRetry<ParseVirusScannerLambdaPayloadOkType>(
       async (retry, attemptNo) => {
+        // Defense-in-depth check before invoking the lambda: confirm that
+        // the quarantined object exists and is non-empty. S3 may briefly
+        // expose object metadata before the body is fully written, and a
+        // truncated upload (e.g. respondent dropped the connection) can
+        // leave a 0-byte object behind. The lambda performs its own check
+        // but doing it here saves an unnecessary invocation and lets the
+        // outer retry loop cover the eventual-consistency window.
+        let headObjectResult: HeadObjectOutput
+        try {
+          headObjectResult = await AwsConfig.s3
+            .headObject({
+              Bucket: AwsConfig.guarddutyQuarantineS3Bucket,
+              Key: quarantineFileKey,
+            })
+            .promise()
+        } catch (error) {
+          const awsError = error as AWSError
+          if (awsError?.statusCode === StatusCodes.NOT_FOUND) {
+            logger.warn({
+              message:
+                'GUARDDUTY Quarantine object metadata not yet visible, retrying',
+              meta: { ...logMeta, attemptNo },
+            })
+            return retry(
+              new GuardDutyInvalidFileKeyError(
+                'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
+              ),
+            )
+          }
+          logger.error({
+            message: 'GUARDDUTY Error checking quarantine object metadata',
+            meta: { ...logMeta, attemptNo },
+            error,
+          })
+          return Promise.reject(new GuardDutyVirusScanFailedError())
+        }
+
+        if (
+          !headObjectResult.ContentLength ||
+          headObjectResult.ContentLength <= 0
+        ) {
+          logger.warn({
+            message: 'GUARDDUTY Quarantine object has zero size, retrying',
+            meta: {
+              ...logMeta,
+              attemptNo,
+              contentLength: headObjectResult.ContentLength,
+            },
+          })
+          return retry(
+            new GuardDutyInvalidFileKeyError(
+              'GUARDDUTY Invalid file key - file in the quarantine bucket is empty. The file must be re-uploaded.',
+            ),
+          )
+        }
+
         let data: InvokeCommandOutput
         try {
           data = await AwsConfig.guarddutyLambda.invoke({
