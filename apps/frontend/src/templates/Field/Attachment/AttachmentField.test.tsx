@@ -170,6 +170,28 @@ describe('attachment validation', () => {
     expect(error).not.toBeNull()
   })
 
+  it('rejects 0-byte image file at the dropzone validator', async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    render(<ValidationOptional />)
+    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+
+    // Act — 0-byte PNG (image type goes through the compression branch
+    // and previously bypassed the size===0 validator check).
+    const emptyImage = new File([], 'empty.png', { type: 'image/png' })
+    Object.defineProperty(emptyImage, 'size', { value: 0 })
+    await user.upload(input, emptyImage)
+
+    // Assert
+    await waitFor(() => {
+      const error = screen.queryByText(
+        /An error has occurred whilst parsing your zip file/i,
+      )
+      expect(error).not.toBeNull()
+    })
+  })
+
   it('renders error when zip file contains invalid extensions', async () => {
     // Arrange
     const user = userEvent.setup()

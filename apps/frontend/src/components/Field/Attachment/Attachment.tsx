@@ -236,6 +236,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
+        // 0-byte check runs for all file types — images included — so that
+        // empty files cannot bypass the validator via the compression branch.
+        if (file.size === 0) {
+          return {
+            code: 'file-empty',
+            message: t(
+              'features.publicForm.components.fields.attachment.error.zipParsing',
+            ),
+          }
+        }
         if (!IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type)) {
           if (maxSize && file.size > maxSize) {
             return {
@@ -243,14 +253,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               message: t(
                 'features.publicForm.components.fields.attachment.error.fileTooLarge',
                 { readableMaxSize },
-              ),
-            }
-          }
-          if (file.size === 0) {
-            return {
-              code: 'file-empty',
-              message: t(
-                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             }
           }
