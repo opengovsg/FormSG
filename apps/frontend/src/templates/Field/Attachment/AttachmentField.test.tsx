@@ -11,6 +11,7 @@ import { AttachmentSize } from 'formsg-shared/types/field'
 import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
+import fileArrayBuffer from '~utils/fileArrayBuffer'
 
 import { AttachmentFieldSchema } from '../types'
 
@@ -30,7 +31,21 @@ vi.mock('@datadog/browser-logs', () => ({
   },
 }))
 
+vi.mock('~utils/fileArrayBuffer', async () => {
+  const actual = await vi.importActual<typeof import('~utils/fileArrayBuffer')>(
+    '~utils/fileArrayBuffer',
+  )
+  return {
+    __esModule: true,
+    default: vi.fn(actual.default),
+  }
+})
+
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
@@ -251,6 +266,52 @@ describe('attachment validation', () => {
       originalSize: 2 * MB,
       originalType: 'image/png',
     })
+    // Privacy: payload must only carry metadata, never file contents.
+    expect(Object.keys(payload as object).sort()).toEqual(
+      ['fileName', 'formId', 'originalSize', 'originalType', 'reason'].sort(),
+    )
+  })
+
+  it('rejects empty file clone, shows reading error, and logs warn', async () => {
+    // Arrange — fileArrayBuffer returns an empty buffer, so the clone is 0 bytes
+    // even though the source file is not. The clone is what flows to S3, so this
+    // is the path that previously slipped past the dropzone validator.
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    render(<ValidationOptional />)
+    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+
+    vi.mocked(fileArrayBuffer).mockResolvedValueOnce(new ArrayBuffer(0))
+
+    const sourceFile = new File(['real content'], 'doc.pdf', {
+      type: 'application/pdf',
+    })
+
+    // Act
+    await user.upload(input, sourceFile)
+
+    // Assert — existing reading-error message surfaces.
+    await waitFor(() => {
+      const error = screen.queryByText(/error reading your file/i)
+      expect(error).not.toBeNull()
+    })
+
+    // Assert — no file ends up attached (no remove-file affordance rendered).
+    expect(screen.queryByLabelText(/click to remove file/i)).toBeNull()
+
+    // Assert — exactly one warn with fileCloneEmpty reason and both sizes.
+    expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
+    const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
+    expect(payload).toMatchObject({
+      reason: 'fileCloneEmpty',
+      fileName: 'doc.pdf',
+      originalSize: sourceFile.size,
+      cloneSize: 0,
+    })
+    // Privacy: payload must only carry metadata, never file contents.
+    expect(Object.keys(payload as object).sort()).toEqual(
+      ['cloneSize', 'fileName', 'formId', 'originalSize', 'reason'].sort(),
+    )
   })
 
   it('renders error when zip file contains invalid extensions', async () => {

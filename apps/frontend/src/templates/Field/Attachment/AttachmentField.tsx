@@ -87,6 +87,23 @@ export const AttachmentField = ({
           const buffer = await fileArrayBuffer(file)
           const clone = new File([buffer], file.name, { type: file.type })
 
+          // Defensive: some browsers / file pickers (e.g. Android + Google
+          // Drive) can produce a clone that resolves to 0 bytes even when
+          // the source file has content. Reject before it reaches S3.
+          if (clone.size === 0) {
+            setErrorMessage(
+              'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+            )
+            datadogLogs.logger.warn('attachment file clone is empty', {
+              formId,
+              fileName: file.name,
+              originalSize: file.size,
+              cloneSize: clone.size,
+              reason: 'fileCloneEmpty',
+            })
+            return onChange(undefined)
+          }
+
           /**
            * Set a custom field to force attachment field to remain dirty.
            * React Hook Form is unable to evaluate dirtiness file when comparing File objects https://react-hook-form.com/docs/useformstate#return
@@ -109,7 +126,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, setErrorMessage, schema.disabled],
+    [clearErrors, fieldName, formId, setErrorMessage, schema.disabled],
   )
 
   return (
