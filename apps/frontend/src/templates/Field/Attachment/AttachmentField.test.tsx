@@ -1,6 +1,8 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { composeStories } from '@storybook/react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import imageCompression from 'browser-image-compression'
 import JSZip from 'jszip'
 import { merge } from 'lodash'
 
@@ -13,6 +15,20 @@ import { REQUIRED_ERROR } from '~constants/validation'
 import { AttachmentFieldSchema } from '../types'
 
 import * as stories from './AttachmentField.stories'
+
+vi.mock('browser-image-compression', () => ({
+  __esModule: true,
+  default: vi.fn(),
+}))
+
+vi.mock('@datadog/browser-logs', () => ({
+  datadogLogs: {
+    logger: {
+      warn: vi.fn(),
+      error: vi.fn(),
+    },
+  },
+}))
 
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
 
@@ -189,6 +205,51 @@ describe('attachment validation', () => {
         /An error has occurred whilst parsing your zip file/i,
       )
       expect(error).not.toBeNull()
+    })
+  })
+
+  it('rejects empty image-compression blob, surfaces processing error, and logs warn', async () => {
+    // Arrange — schema is 1MB so a 2MB image triggers the compression branch.
+    const user = userEvent.setup()
+    const schema: AttachmentFieldSchema = merge(
+      {},
+      ValidationOptional.args?.schema,
+      { attachmentSize: AttachmentSize.OneMb },
+    )
+    render(<ValidationOptional schema={schema} />)
+    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+
+    // imageCompression resolves to an empty blob (the regression scenario).
+    vi.mocked(imageCompression).mockResolvedValueOnce(
+      new Blob([], { type: 'image/jpeg' }) as unknown as File,
+    )
+
+    const largeImage = new File(['x'], 'photo.png', { type: 'image/png' })
+    Object.defineProperty(largeImage, 'size', { value: 2 * MB })
+
+    // Act
+    await user.upload(input, largeImage)
+
+    // Assert — user sees the new processing-error message.
+    await waitFor(() => {
+      const error = screen.queryByText(
+        /there was an issue processing your image/i,
+      )
+      expect(error).not.toBeNull()
+    })
+
+    // Assert — onChange was NOT called: no file info / no "you have submitted" success.
+    // The dropzone should still be present (no AttachmentFileInfo rendered).
+    expect(screen.queryByLabelText(/click to remove file/i)).toBeNull()
+
+    // Assert — datadog warn emitted once with the documented payload shape.
+    expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
+    const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
+    expect(payload).toMatchObject({
+      reason: 'imageCompressionEmpty',
+      fileName: 'photo.png',
+      originalSize: 2 * MB,
+      originalType: 'image/png',
     })
   })
 

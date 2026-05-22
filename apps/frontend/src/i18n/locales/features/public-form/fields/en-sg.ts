@@ -32,6 +32,8 @@ export const enSG: Fields = {
       zipFileInvalidType:
         'The following file extensions in your zip file are not valid: {stringOfInvalidExtensions}',
       zipParsing: 'An error has occurred whilst parsing your zip file',
+      imageProcessingError:
+        'There was an issue processing your image. Please try again or upload a different file.',
     },
   },
   email: {

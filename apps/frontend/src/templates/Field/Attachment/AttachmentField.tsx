@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import {
   Controller,
   ControllerRenderProps,
@@ -13,6 +13,8 @@ import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
+
+import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
@@ -34,6 +36,11 @@ export const AttachmentField = ({
   isHighContrast,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
+  // Read PublicFormContext non-throwingly so admin-side usages (form builder,
+  // storybook) that mount AttachmentField outside the public form provider
+  // continue to render.
+  const publicFormContext = useContext(PublicFormContext)
+  const formId = publicFormContext?.formId
   const validationRules = useAttachmentValidationRules(
     schema,
     disableRequiredValidation,
@@ -121,6 +128,7 @@ export const AttachmentField = ({
             title={`${schema.questionNumber}. ${schema.title}`}
             showDownload={showDownload}
             showRemove={!schema.disabled}
+            formId={formId}
           />
         )}
         name={fieldName}

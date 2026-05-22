@@ -10,6 +10,7 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
@@ -113,6 +114,13 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Callback function that is invoked when replace button is clicked. 'Show Replace' must be present for function to work.
    */
   handleReplaceFileOverride?: () => void
+
+  /**
+   * Public form id. When present, attached to Datadog warn logs emitted by
+   * defensive empty-file short-circuits so the originating form can be
+   * identified during quarantine-bucket triage.
+   */
+  formId?: string
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -136,6 +144,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       handleDownloadFileOverride,
       handleRemoveFileOverride,
       handleReplaceFileOverride,
+      formId,
       ...props
     },
     ref,
@@ -221,17 +230,34 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             initialQuality: 0.8,
             useWebWorker: false,
             preserveExif: true,
-          }).then((blob) =>
-            onChange(
+          }).then((blob) => {
+            // Defensive: if compression resolves to a 0-byte blob, do not
+            // hand it downstream — it would land in the GuardDuty quarantine
+            // bucket and break the virus-scanner lambda.
+            if (blob.size === 0) {
+              datadogLogs.logger.warn('attachment empty after compression', {
+                formId,
+                fileName: acceptedFile.name,
+                originalSize: acceptedFile.size,
+                originalType: acceptedFile.type,
+                reason: 'imageCompressionEmpty',
+              })
+              return onError?.(
+                t(
+                  'features.publicForm.components.fields.attachment.error.imageProcessingError',
+                ),
+              )
+            }
+            return onChange(
               new File([blob], acceptedFile.name, {
                 type: blob.type,
               }),
-            ),
-          )
+            )
+          })
         }
         onChange(acceptedFile)
       },
-      [accept, maxSize, onChange, onError, t],
+      [accept, formId, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
