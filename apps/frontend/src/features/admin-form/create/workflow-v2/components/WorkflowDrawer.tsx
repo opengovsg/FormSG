@@ -22,7 +22,11 @@ import {
   StepFocusRespondentPanel,
 } from './AddRespondentsPanel'
 import { AddStepsPanel } from './AddStepsPanel'
-import { AssignFieldsPanel, StepFocusFieldPanel } from './AssignFieldsPanel'
+import {
+  AssignFieldsPanel,
+  FieldAssignPanel,
+  StepFocusFieldPanel,
+} from './AssignFieldsPanel'
 
 const DrawerContent = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -62,6 +66,8 @@ const DrawerContent = (): JSX.Element => {
       return <NotificationEditPanel />
     case 'notification_focus':
       return <NotificationFocusPanel />
+    case 'field_assign':
+      return <FieldAssignPanel />
     case 'create_field':
       if (focusState.fieldType === 'email') return <CreateEmailFieldForm />
       if (focusState.fieldType === 'dropdown')

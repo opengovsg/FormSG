@@ -158,11 +158,9 @@ export const AssignFieldsPanel = (): JSX.Element => {
                 <FieldCard
                   key={f.id}
                   field={f}
-                  onEdit={() => {
-                    if (formId) {
-                      window.open(`/admin/form/${formId}`, '_blank')
-                    }
-                  }}
+                  onEdit={() =>
+                    setFocus({ type: 'field_assign', fieldId: f.id })
+                  }
                 />
               ))}
             </Stack>

@@ -76,7 +76,7 @@ export const EmailNotificationCard = ({
     <Box
       data-email-card
       w="100%"
-      borderRadius="8px"
+      borderRadius="12px"
       bg="white"
       border={isHighlighted ? '2px solid' : '1px solid'}
       borderColor={isHighlighted ? 'primary.500' : 'neutral.300'}
@@ -119,9 +119,9 @@ export const EmailNotificationCard = ({
       </Flex>
 
       {/* Who gets notified */}
-      <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+      <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
         <Text textStyle="subhead-2" color="secondary.500">
-          Who gets notified
+          Recipients
         </Text>
         <Wrap spacing="0.25rem">
           {notificationRespondents.map((r) => (

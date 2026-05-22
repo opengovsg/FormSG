@@ -140,24 +140,19 @@ export const StepFocusFieldPanel = (): JSX.Element => {
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
         {/* Master checkbox for Step 1 */}
         {isFirstStep && fields.length > 0 && (
-          <Flex
-            align="center"
-            gap="0.75rem"
-            mb="1rem"
-            cursor="pointer"
-            onClick={handleMasterToggle}
-          >
+          <Box mb="1rem">
             <Checkbox
               isChecked={allChecked}
               isIndeterminate={isIndeterminate}
               onChange={handleMasterToggle}
               colorScheme="primary"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <Text textStyle="subhead-1" color="secondary.500">
-              Assign all fields for first step
-            </Text>
-          </Flex>
+              spacing="0.75rem"
+            >
+              <Text textStyle="subhead-1" color="secondary.500">
+                Assign all fields for first step
+              </Text>
+            </Checkbox>
+          </Box>
         )}
 
         {/* Field checkboxes - single shared pool for all step types */}

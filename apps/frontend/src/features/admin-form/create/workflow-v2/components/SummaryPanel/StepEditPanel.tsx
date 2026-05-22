@@ -130,7 +130,7 @@ export const StepEditPanel = (): JSX.Element => {
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
         {/* Step name input - matching StepNamingForm style */}
         <Stack spacing="0.5rem">
-          <Text textStyle="subhead-2" color="secondary.500">
+          <Text textStyle="subhead-1" color="secondary.500">
             Step name
           </Text>
           <Input

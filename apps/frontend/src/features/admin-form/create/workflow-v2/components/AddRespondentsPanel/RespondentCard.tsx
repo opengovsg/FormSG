@@ -71,7 +71,7 @@ export const RespondentCard = ({
       role="group"
       w="100%"
       textAlign="start"
-      borderRadius="8px"
+      borderRadius="12px"
       border="1px solid"
       borderColor="neutral.300"
       bg="white"
@@ -178,7 +178,7 @@ export const RespondentCardOverlay = ({
     <Box
       w="30rem"
       maxW="calc(33.25rem - 3rem)"
-      borderRadius="8px"
+      borderRadius="12px"
       border="1px solid"
       borderColor="primary.500"
       bg="white"

@@ -50,7 +50,7 @@ export const SectionCard = ({
     <chakra.button
       w="100%"
       textAlign="start"
-      borderRadius="8px"
+      borderRadius="12px"
       bg={isActive ? '#F8F9FD' : 'transparent'}
       border="2px solid"
       borderColor={isActive ? '#445FCD' : 'transparent'}

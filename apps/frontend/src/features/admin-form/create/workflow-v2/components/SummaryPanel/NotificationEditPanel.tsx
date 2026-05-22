@@ -110,7 +110,7 @@ export const NotificationEditPanel = (): JSX.Element => {
       >
         {/* Notification label input - matching StepNamingForm style */}
         <Stack spacing="0.5rem">
-          <Text textStyle="subhead-2" color="secondary.500">
+          <Text textStyle="subhead-1" color="secondary.500">
             Step name
           </Text>
           <Input

@@ -2,9 +2,9 @@ import {
   BiCalendar,
   BiCaretDownSquare,
   BiChat,
+  BiEditAlt,
   BiEnvelope,
   BiGridVertical,
-  BiLinkExternal,
   BiText,
   BiToggleRight,
 } from 'react-icons/bi'
@@ -56,7 +56,7 @@ export const FieldCard = ({
       role="group"
       w="100%"
       textAlign="start"
-      borderRadius="8px"
+      borderRadius="12px"
       border="1px solid"
       borderColor="neutral.300"
       bg="white"
@@ -103,7 +103,7 @@ export const FieldCard = ({
               display="flex"
               alignItems="center"
             >
-              <Icon as={BiLinkExternal} fontSize="1rem" color="secondary.400" />
+              <Icon as={BiEditAlt} fontSize="1rem" color="secondary.400" />
             </Box>
           )}
           <Box display="flex" alignItems="center">
@@ -129,7 +129,7 @@ export const FieldCardOverlay = ({
     <Box
       w="30rem"
       maxW="calc(33.25rem - 3rem)"
-      borderRadius="8px"
+      borderRadius="12px"
       border="1px solid"
       borderColor="primary.500"
       bg="white"

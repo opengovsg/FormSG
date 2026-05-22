@@ -242,7 +242,7 @@ export const CanvasStepCard = ({
         style={style}
         w="100%"
         textAlign="start"
-        borderRadius="8px"
+        borderRadius="12px"
         bg="white"
         border={isFocused || isSortOver ? '2px solid' : '1px solid'}
         borderColor={isFocused || isSortOver ? 'primary.500' : 'neutral.300'}
@@ -344,9 +344,9 @@ export const CanvasStepCard = ({
           transition="max-height 0.35s ease, opacity 0.25s ease"
         >
           {/* Respondent section */}
-          <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+          <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
             <Text textStyle="subhead-2" color="secondary.500">
-              Respondent in this step
+              Respondents
             </Text>
             <Wrap spacing="0.25rem">
               {stepRespondents.map((r) => (
@@ -400,9 +400,9 @@ export const CanvasStepCard = ({
           {/* Fields section - hidden during respondent phase */}
           {showFieldsSections && (
             <>
-              <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+              <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
                 <Text textStyle="subhead-2" color="secondary.500">
-                  Fields to fill
+                  Fields
                 </Text>
                 <Wrap spacing="0.25rem">
                   {allFieldsAssigned && !showFieldRemove ? (
@@ -470,9 +470,9 @@ export const CanvasStepCard = ({
 
               {/* Approval fields (review steps only) */}
               {step.type === 'review' && (
-                <Stack spacing="0.5rem" px="1.5rem" mt="1.5rem">
+                <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
                   <Text textStyle="subhead-2" color="secondary.500">
-                    Fields to indicate approval
+                    Approval fields
                   </Text>
                   <Wrap spacing="0.25rem">
                     {approvalFields.length > 0 ? (
@@ -579,7 +579,7 @@ export const StepCardOverlay = ({
     <Box
       w="100%"
       maxW="42.5rem"
-      borderRadius="8px"
+      borderRadius="12px"
       bg="white"
       border="1px solid"
       borderColor="primary.500"

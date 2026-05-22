@@ -72,6 +72,7 @@ export type FocusState =
       fieldType: 'email' | 'dropdown'
       fromStepId?: string
     }
+  | { type: 'field_assign'; fieldId: string }
 
 // Store interface
 export type WorkflowStore = {

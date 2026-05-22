@@ -19,7 +19,7 @@ export const DropZone = ({
     <Box
       ref={setNodeRef}
       w="100%"
-      borderRadius="8px"
+      borderRadius="12px"
       bg="white"
       border="1px solid"
       borderColor={isOver ? 'primary.500' : 'neutral.300'}
