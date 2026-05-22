@@ -493,6 +493,7 @@ export const WorkflowCanvas = ({
             isNotificationEdit={isNotificationEdit}
             isSummaryMode={isSummary || isStepEditFromSummary}
             anotherElementFocused={isRespondentStepFocus}
+            isDisabled={isInAddStepsContext || isInFieldContext}
           />
         </Box>
       </Box>

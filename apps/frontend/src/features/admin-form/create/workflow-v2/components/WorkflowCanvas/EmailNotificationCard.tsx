@@ -30,6 +30,8 @@ type EmailNotificationCardProps = {
   isSummaryMode?: boolean
   /** True when another element (a step) has focus, so this card should hide interactive elements */
   anotherElementFocused?: boolean
+  /** True during add steps and assign fields phases to fade and disable the card */
+  isDisabled?: boolean
 }
 
 /**
@@ -42,6 +44,7 @@ export const EmailNotificationCard = ({
   isNotificationEdit = false,
   isSummaryMode = false,
   anotherElementFocused = false,
+  isDisabled = false,
 }: EmailNotificationCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const notificationRecipientIds = useWorkflowBuilderStore(
@@ -81,14 +84,16 @@ export const EmailNotificationCard = ({
       border={isHighlighted ? '2px solid' : '1px solid'}
       borderColor={isHighlighted ? 'primary.500' : 'neutral.300'}
       py="1.5rem"
-      cursor={isClickable ? 'pointer' : undefined}
-      onClick={handleClick}
+      cursor={isDisabled ? undefined : isClickable ? 'pointer' : undefined}
+      onClick={isDisabled ? undefined : handleClick}
       _hover={
-        showHover
+        !isDisabled && showHover
           ? { borderColor: 'primary.500', bg: 'primary.100' }
           : undefined
       }
-      transition="border-color 0.2s, background 0.2s"
+      opacity={isDisabled ? 0.5 : 1}
+      pointerEvents={isDisabled ? 'none' : undefined}
+      transition="border-color 0.2s, background 0.2s, opacity 0.2s"
     >
       {/* Header */}
       <Flex justify="space-between" align="center" px="1.5rem">
