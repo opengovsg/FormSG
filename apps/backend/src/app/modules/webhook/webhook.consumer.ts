@@ -6,7 +6,7 @@ import { Consumer } from 'sqs-consumer'
 import { SubmissionWebhookInfo } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
-import { getEncryptSubmissionModel } from '../../models/submission.server.model'
+import getSubmissionModel from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
@@ -21,7 +21,7 @@ import * as WebhookService from './webhook.service'
 import { isSuccessfulResponse } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const Submission = getSubmissionModel(mongoose)
 
 /**
  * Starts polling a queue for webhook messages.
@@ -215,7 +215,7 @@ const retrieveWebhookInfo = (
   SubmissionNotFoundError | PossibleDatabaseError
 > => {
   return ResultAsync.fromPromise(
-    EncryptSubmission.retrieveWebhookInfoById(submissionId),
+    Submission.retrieveWebhookInfoById(submissionId),
     (error) => {
       logger.error({
         message: 'Error while retrieving webhook info for submission',
