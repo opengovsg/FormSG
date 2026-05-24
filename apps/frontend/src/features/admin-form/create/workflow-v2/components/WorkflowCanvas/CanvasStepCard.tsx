@@ -18,10 +18,10 @@ import {
   Box,
   Button,
   Center,
+  Divider,
   Flex,
   HStack,
   Icon,
-  IconButton,
   Stack,
   Tag,
   TagCloseButton,
@@ -44,6 +44,7 @@ import {
   stepsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
+import { STEP_TYPE_CONFIG } from '../AddStepsPanel/StepTypeCard'
 
 import { FieldDropZone } from './FieldDropZone'
 import { RespondentDropZone } from './RespondentDropZone'
@@ -418,7 +419,7 @@ export const CanvasStepCard = ({
         inset={showAsDropZone ? 0 : undefined}
         w="100%"
       >
-        <Box
+        <Flex
           data-step-card
           ref={cardRef}
           {...(sortable && steps.length > 1
@@ -433,7 +434,6 @@ export const CanvasStepCard = ({
           borderColor={isFocused || isSortOver ? 'primary.500' : 'neutral.300'}
           opacity={isFaded ? 0.5 : 1}
           transition="opacity 0.2s, border-color 0.2s, box-shadow 0.2s"
-          py={compact ? '1rem' : '1.5rem'}
           cursor={
             isClickable
               ? sortable && steps.length > 1
@@ -441,7 +441,6 @@ export const CanvasStepCard = ({
                 : 'pointer'
               : undefined
           }
-          onClick={handleCardClick}
           _hover={
             isClickable
               ? {
@@ -454,274 +453,214 @@ export const CanvasStepCard = ({
             sortable && steps.length > 1 ? { cursor: 'grabbing' } : undefined
           }
         >
-          {/* Step header */}
-          <Flex justify="space-between" align="center" px="1.5rem">
-            <HStack spacing="1rem" flex={1} minW={0}>
-              <Icon
-                as={step.type === 'review' ? BiCheckCircle : BiSpreadsheet}
-                fontSize="1.5rem"
-                color="secondary.500"
-                flexShrink={0}
-              />
-              <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
-                {step.name}
-              </Text>
-            </HStack>
-            <HStack
-              spacing="0.5rem"
-              flexShrink={0}
-              align="center"
-              opacity={
-                (isSummaryMode && showDragHandle) ||
-                (isRespondentPhase && !isLockedStep1) ||
-                isFieldPhase
-                  ? 0
-                  : 1
-              }
-              transition="opacity 0.15s ease"
-              sx={
-                (isSummaryMode && showDragHandle) ||
-                (isRespondentPhase && !isLockedStep1) ||
-                isFieldPhase
-                  ? {
-                      '[data-step-card]:hover &': { opacity: 1 },
-                    }
-                  : undefined
-              }
-            >
-              {showDelete && (
-                <IconButton
-                  aria-label="Delete step"
-                  icon={<BiTrash fontSize="1.25rem" />}
-                  variant="clear"
-                  size="xs"
-                  minW="auto"
-                  h="auto"
-                  p="0.25rem"
-                  color="danger.500"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onOpen()
-                  }}
-                />
-              )}
-              {(isSummaryMode ||
-                (isRespondentPhase && !isLockedStep1) ||
-                isFieldPhase) && (
-                <Box
-                  p="0.25rem"
-                  display="flex"
-                  alignItems="center"
-                  cursor="pointer"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFocus({
-                      type: 'step_edit',
-                      stepId: step.id,
-                      fromSummary: true,
-                      returnTo: isRespondentPhase
-                        ? 'add_respondents'
-                        : isFieldPhase
-                          ? 'assign_fields'
-                          : undefined,
-                    })
-                  }}
-                >
-                  <Icon as={BiEditAlt} fontSize="1.25rem" color="neutral.500" />
-                </Box>
-              )}
-              {showDragHandle && (
-                <Box
-                  {...listeners}
-                  {...attributes}
-                  cursor="grab"
-                  p="0.25rem"
-                  display="flex"
-                  alignItems="center"
+          {/* Main card content area */}
+          <Box
+            flex={1}
+            minW={0}
+            py={compact ? '1rem' : '1.5rem'}
+            onClick={handleCardClick}
+          >
+            {/* Step header */}
+            <Flex justify="space-between" align="center" px="1.5rem">
+              <HStack spacing="1rem" flex={1} minW={0}>
+                <Center
+                  w="2rem"
+                  h="2rem"
+                  borderRadius="full"
+                  bg={step.type === 'review' ? 'theme-teal.100' : 'primary.100'}
+                  flexShrink={0}
                 >
                   <Icon
-                    as={BiGridVertical}
+                    as={step.type === 'review' ? BiCheckCircle : BiSpreadsheet}
                     fontSize="1.25rem"
-                    color="neutral.500"
+                    color={
+                      step.type === 'review' ? 'theme-teal.500' : 'primary.500'
+                    }
                   />
-                </Box>
-              )}
-            </HStack>
-          </Flex>
-
-          {/* Detailed sections - animated collapse in compact mode */}
-          <Box
-            overflow="hidden"
-            maxH={compact ? 0 : '40rem'}
-            opacity={compact ? 0 : 1}
-            transition="max-height 0.35s ease, opacity 0.25s ease"
-          >
-            {/* Respondent section */}
-            <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
-              <Text textStyle="subhead-2" color="secondary.500">
-                Respondents
-              </Text>
-              <Wrap spacing="0.25rem">
-                {stepRespondents.map((r) => (
-                  <WrapItem key={r.id}>
-                    <Tag
-                      size="sm"
-                      bg="primary.100"
-                      borderRadius="4px"
-                      px="0.5rem"
-                      py="0.25rem"
-                      animation="chipAppear 0.3s ease"
-                      sx={{
-                        '@keyframes chipAppear': {
-                          from: {
-                            opacity: 0,
-                            transform: 'scale(0.8)',
-                          },
-                          to: { opacity: 1, transform: 'scale(1)' },
-                        },
-                      }}
-                    >
-                      <TagLabel textStyle="caption-1" color="secondary.500">
-                        {r.name}
-                      </TagLabel>
-                      {showRespondentRemove && (
-                        <TagCloseButton
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            unassignRespondent(step.id, r.id)
-                          }}
-                        />
-                      )}
-                    </Tag>
-                  </WrapItem>
-                ))}
-                {stepRespondents.length === 0 && !showRespondentDropZone && (
-                  <Tag
-                    size="sm"
-                    bg="primary.100"
-                    borderRadius="4px"
-                    px="0.5rem"
-                    py="0.25rem"
+                </Center>
+                <Stack spacing="0" flex={1} minW={0}>
+                  <Text
+                    textStyle="subhead-1"
+                    color="secondary.500"
+                    noOfLines={1}
                   >
-                    <TagLabel textStyle="caption-1" color="secondary.500">
-                      None
-                    </TagLabel>
-                  </Tag>
-                )}
-              </Wrap>
-
-              {/* Respondent drop zone */}
-              {showRespondentDropZone && (
-                <RespondentDropZone
-                  droppableId={`respondent-drop-${step.id}`}
-                  droppableData={{ type: 'respondent_drop', stepId: step.id }}
-                  variant={isFocused ? 'step_focus' : 'pool'}
-                />
-              )}
-            </Stack>
-
-            {/* Fields section - hidden during respondent phase */}
-            {showFieldsSections && (
-              <>
-                <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
-                  <Text textStyle="subhead-2" color="secondary.500">
-                    Fields
+                    {step.name}
                   </Text>
-                  <Wrap spacing="0.25rem">
-                    {allFieldsAssigned && !showFieldRemove ? (
-                      <WrapItem>
-                        <Tag
-                          size="sm"
-                          bg="primary.100"
-                          borderRadius="4px"
-                          px="0.5rem"
-                          py="0.25rem"
-                        >
-                          <TagLabel textStyle="caption-1" color="secondary.500">
-                            All fields
-                          </TagLabel>
-                        </Tag>
-                      </WrapItem>
-                    ) : stepFields.length > 0 ? (
-                      stepFields.map((f) => (
-                        <WrapItem key={f.id}>
-                          <Tag
-                            size="sm"
-                            bg="primary.100"
-                            borderRadius="4px"
-                            px="0.5rem"
-                            py="0.25rem"
-                            animation="chipAppear 0.3s ease"
-                            sx={{
-                              '@keyframes chipAppear': {
-                                from: {
-                                  opacity: 0,
-                                  transform: 'scale(0.8)',
-                                },
-                                to: {
-                                  opacity: 1,
-                                  transform: 'scale(1)',
-                                },
-                              },
-                            }}
-                          >
-                            <TagLabel
-                              textStyle="caption-1"
-                              color="secondary.500"
-                            >
-                              {f.number}. {f.name}
-                            </TagLabel>
-                            {showFieldRemove && (
-                              <TagCloseButton
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  unassignField(step.id, f.id)
-                                }}
-                              />
-                            )}
-                          </Tag>
-                        </WrapItem>
-                      ))
-                    ) : (
+                  <Text
+                    textStyle="caption-1"
+                    color="secondary.400"
+                    noOfLines={1}
+                  >
+                    {STEP_TYPE_CONFIG[step.type].title}
+                  </Text>
+                </Stack>
+              </HStack>
+              <HStack spacing="0.5rem" flexShrink={0} align="center">
+                {/* Edit icon - hover reveal */}
+                {(isSummaryMode ||
+                  isAddSteps ||
+                  (isRespondentPhase && !isLockedStep1) ||
+                  isFieldPhase) && (
+                  <Box
+                    p="0.25rem"
+                    display="flex"
+                    alignItems="center"
+                    cursor="pointer"
+                    opacity={0}
+                    transition="opacity 0.15s ease"
+                    sx={{
+                      '[data-step-card]:hover &': { opacity: 1 },
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setFocus({
+                        type: 'step_edit',
+                        stepId: step.id,
+                        fromSummary: true,
+                        returnTo: isAddSteps
+                          ? 'add_steps'
+                          : isRespondentPhase
+                            ? 'add_respondents'
+                            : isFieldPhase
+                              ? 'assign_fields'
+                              : undefined,
+                      })
+                    }}
+                  >
+                    <Icon
+                      as={BiEditAlt}
+                      fontSize="1.25rem"
+                      color="neutral.500"
+                    />
+                  </Box>
+                )}
+                {/* Drag handle - always visible */}
+                {showDragHandle && (
+                  <Box
+                    {...listeners}
+                    {...attributes}
+                    cursor="grab"
+                    p="0.25rem"
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Icon
+                      as={BiGridVertical}
+                      fontSize="1.25rem"
+                      color="neutral.500"
+                    />
+                  </Box>
+                )}
+              </HStack>
+            </Flex>
+
+            {/* Detailed sections - animated collapse in compact mode */}
+            <Box
+              overflow="hidden"
+              maxH={compact ? 0 : '40rem'}
+              opacity={compact ? 0 : 1}
+              transition="max-height 0.35s ease, opacity 0.25s ease"
+            >
+              <Divider borderColor="neutral.300" mt="1rem" />
+
+              {/* Respondent section */}
+              <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
+                <Text textStyle="subhead-2" color="secondary.500">
+                  Respondents
+                </Text>
+                <Wrap spacing="0.25rem">
+                  {stepRespondents.map((r) => (
+                    <WrapItem key={r.id}>
                       <Tag
                         size="sm"
                         bg="primary.100"
                         borderRadius="4px"
                         px="0.5rem"
                         py="0.25rem"
+                        animation="chipAppear 0.3s ease"
+                        sx={{
+                          '@keyframes chipAppear': {
+                            from: {
+                              opacity: 0,
+                              transform: 'scale(0.8)',
+                            },
+                            to: { opacity: 1, transform: 'scale(1)' },
+                          },
+                        }}
                       >
                         <TagLabel textStyle="caption-1" color="secondary.500">
-                          None
+                          {r.name}
                         </TagLabel>
+                        {showRespondentRemove && (
+                          <TagCloseButton
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              unassignRespondent(step.id, r.id)
+                            }}
+                          />
+                        )}
                       </Tag>
-                    )}
-                  </Wrap>
-
-                  {/* Field drop zone */}
-                  {showFieldRemove && (
-                    <FieldDropZone
-                      droppableId={`field-drop-${step.id}`}
-                      droppableData={{ type: 'field_drop', stepId: step.id }}
-                      variant={isFocused ? 'step_focus' : 'pool'}
-                    />
+                    </WrapItem>
+                  ))}
+                  {stepRespondents.length === 0 && !showRespondentDropZone && (
+                    <Tag
+                      size="sm"
+                      bg="primary.100"
+                      borderRadius="4px"
+                      px="0.5rem"
+                      py="0.25rem"
+                    >
+                      <TagLabel textStyle="caption-1" color="secondary.500">
+                        None
+                      </TagLabel>
+                    </Tag>
                   )}
-                </Stack>
+                </Wrap>
 
-                {/* Approval fields (review steps only) */}
-                {step.type === 'review' && (
+                {/* Respondent drop zone */}
+                {showRespondentDropZone && (
+                  <RespondentDropZone
+                    droppableId={`respondent-drop-${step.id}`}
+                    droppableData={{ type: 'respondent_drop', stepId: step.id }}
+                    variant={isFocused ? 'step_focus' : 'pool'}
+                  />
+                )}
+              </Stack>
+
+              {/* Fields section - hidden during respondent phase */}
+              {showFieldsSections && (
+                <>
                   <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
                     <Text textStyle="subhead-2" color="secondary.500">
-                      Approval fields
+                      Fields
                     </Text>
                     <Wrap spacing="0.25rem">
-                      {approvalFields.length > 0 ? (
-                        approvalFields.map((f) => (
+                      {allFieldsAssigned && !showFieldRemove ? (
+                        <WrapItem>
+                          <Tag
+                            size="sm"
+                            bg="primary.100"
+                            borderRadius="4px"
+                            px="0.5rem"
+                            py="0.25rem"
+                          >
+                            <TagLabel
+                              textStyle="caption-1"
+                              color="secondary.500"
+                            >
+                              All fields
+                            </TagLabel>
+                          </Tag>
+                        </WrapItem>
+                      ) : stepFields.length > 0 ? (
+                        stepFields.map((f) => (
                           <WrapItem key={f.id}>
                             <Tag
                               size="sm"
                               bg="primary.100"
                               borderRadius="4px"
                               px="0.5rem"
+                              py="0.25rem"
                               animation="chipAppear 0.3s ease"
                               sx={{
                                 '@keyframes chipAppear': {
@@ -735,7 +674,6 @@ export const CanvasStepCard = ({
                                   },
                                 },
                               }}
-                              py="0.25rem"
                             >
                               <TagLabel
                                 textStyle="caption-1"
@@ -747,7 +685,7 @@ export const CanvasStepCard = ({
                                 <TagCloseButton
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    unassignApprovalField(step.id, f.id)
+                                    unassignField(step.id, f.id)
                                   }}
                                 />
                               )}
@@ -769,28 +707,128 @@ export const CanvasStepCard = ({
                       )}
                     </Wrap>
 
-                    {/* Approval field drop zone */}
+                    {/* Field drop zone */}
                     {showFieldRemove && (
                       <FieldDropZone
-                        droppableId={`approval-field-drop-${step.id}`}
-                        droppableData={{
-                          type: 'approval_field_drop',
-                          stepId: step.id,
-                        }}
+                        droppableId={`field-drop-${step.id}`}
+                        droppableData={{ type: 'field_drop', stepId: step.id }}
                         variant={isFocused ? 'step_focus' : 'pool'}
-                        text="Drag a Yes/No field from the left panel"
                       />
                     )}
                   </Stack>
-                )}
-              </>
-            )}
+
+                  {/* Approval fields (review steps only) */}
+                  {step.type === 'review' && (
+                    <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
+                      <Text textStyle="subhead-2" color="secondary.500">
+                        Approval fields
+                      </Text>
+                      <Wrap spacing="0.25rem">
+                        {approvalFields.length > 0 ? (
+                          approvalFields.map((f) => (
+                            <WrapItem key={f.id}>
+                              <Tag
+                                size="sm"
+                                bg="primary.100"
+                                borderRadius="4px"
+                                px="0.5rem"
+                                animation="chipAppear 0.3s ease"
+                                sx={{
+                                  '@keyframes chipAppear': {
+                                    from: {
+                                      opacity: 0,
+                                      transform: 'scale(0.8)',
+                                    },
+                                    to: {
+                                      opacity: 1,
+                                      transform: 'scale(1)',
+                                    },
+                                  },
+                                }}
+                                py="0.25rem"
+                              >
+                                <TagLabel
+                                  textStyle="caption-1"
+                                  color="secondary.500"
+                                >
+                                  {f.number}. {f.name}
+                                </TagLabel>
+                                {showFieldRemove && (
+                                  <TagCloseButton
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      unassignApprovalField(step.id, f.id)
+                                    }}
+                                  />
+                                )}
+                              </Tag>
+                            </WrapItem>
+                          ))
+                        ) : (
+                          <Tag
+                            size="sm"
+                            bg="primary.100"
+                            borderRadius="4px"
+                            px="0.5rem"
+                            py="0.25rem"
+                          >
+                            <TagLabel
+                              textStyle="caption-1"
+                              color="secondary.500"
+                            >
+                              None
+                            </TagLabel>
+                          </Tag>
+                        )}
+                      </Wrap>
+
+                      {/* Approval field drop zone */}
+                      {showFieldRemove && (
+                        <FieldDropZone
+                          droppableId={`approval-field-drop-${step.id}`}
+                          droppableData={{
+                            type: 'approval_field_drop',
+                            stepId: step.id,
+                          }}
+                          variant={isFocused ? 'step_focus' : 'pool'}
+                          text="Drag a Yes/No field from the left panel"
+                        />
+                      )}
+                    </Stack>
+                  )}
+                </>
+              )}
+            </Box>
           </Box>
-        </Box>
+
+          {/* Trash corner - add_steps phase only */}
+          {showDelete && (
+            <Flex align="center" flexShrink={0}>
+              <Box h="1.5rem" w="1px" bg="neutral.300" />
+              <Flex
+                align="center"
+                justify="center"
+                w="3.25rem"
+                alignSelf="stretch"
+                cursor="pointer"
+                borderTopRightRadius="11px"
+                borderBottomRightRadius="11px"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onOpen()
+                }}
+                _hover={{ bg: 'danger.100' }}
+                transition="background 0.15s"
+              >
+                <Icon as={BiTrash} fontSize="1.25rem" color="danger.500" />
+              </Flex>
+            </Flex>
+          )}
+        </Flex>
 
         {/* Lock icon for Step 1 during respondent phase */}
         {isLockedStep1 && (
-          <Box position="absolute" top="0.75rem" right="0.75rem" zIndex={3}>
+          <Box position="absolute" top="1.5rem" right="1.5rem" zIndex={3}>
             <Icon as={BiLock} fontSize="1.25rem" color="secondary.400" />
           </Box>
         )}
@@ -859,15 +897,27 @@ export const StepCardOverlay = ({
     >
       <Flex justify="space-between" align="center" px="1.5rem">
         <HStack spacing="1rem" flex={1} minW={0}>
-          <Icon
-            as={step.type === 'review' ? BiCheckCircle : BiSpreadsheet}
-            fontSize="1.5rem"
-            color="secondary.500"
+          <Center
+            w="2rem"
+            h="2rem"
+            borderRadius="8px"
+            bg={step.type === 'review' ? 'theme-teal.100' : 'primary.100'}
             flexShrink={0}
-          />
-          <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
-            {step.name}
-          </Text>
+          >
+            <Icon
+              as={step.type === 'review' ? BiCheckCircle : BiSpreadsheet}
+              fontSize="1.25rem"
+              color={step.type === 'review' ? 'theme-teal.500' : 'primary.500'}
+            />
+          </Center>
+          <Stack spacing="0" flex={1} minW={0}>
+            <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
+              {step.name}
+            </Text>
+            <Text textStyle="caption-1" color="secondary.400" noOfLines={1}>
+              {STEP_TYPE_CONFIG[step.type].title}
+            </Text>
+          </Stack>
         </HStack>
         <Icon as={BiGridVertical} fontSize="1.25rem" color="neutral.500" />
       </Flex>

@@ -3,6 +3,7 @@ import { BiEditAlt, BiLock, BiMailSend, BiPlus } from 'react-icons/bi'
 import {
   Box,
   Center,
+  Divider,
   Flex,
   HStack,
   Icon,
@@ -165,12 +166,19 @@ export const EmailNotificationCard = ({
           {/* Header */}
           <Flex justify="space-between" align="center" px="1.5rem">
             <HStack spacing="1rem" flex={1} minW={0}>
-              <Icon
-                as={BiMailSend}
-                fontSize="1.5rem"
-                color="secondary.500"
+              <Center
+                w="2rem"
+                h="2rem"
+                borderRadius="full"
+                bg="theme-purple.100"
                 flexShrink={0}
-              />
+              >
+                <Icon
+                  as={BiMailSend}
+                  fontSize="1.25rem"
+                  color="theme-purple.500"
+                />
+              </Center>
               <Text textStyle="subhead-1" color="secondary.500" noOfLines={1}>
                 {notificationLabel}
               </Text>
@@ -191,6 +199,8 @@ export const EmailNotificationCard = ({
               </HStack>
             )}
           </Flex>
+
+          <Divider borderColor="neutral.300" mt="1rem" />
 
           {/* Who gets notified */}
           <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
@@ -250,7 +260,7 @@ export const EmailNotificationCard = ({
 
       {/* Lock icon when not a valid target */}
       {isDisabled && !isDraggingRespondent && (
-        <Box position="absolute" top="0.75rem" right="0.75rem" zIndex={3}>
+        <Box position="absolute" top="1.5rem" right="1.5rem" zIndex={3}>
           <Icon as={BiLock} fontSize="1.25rem" color="secondary.400" />
         </Box>
       )}

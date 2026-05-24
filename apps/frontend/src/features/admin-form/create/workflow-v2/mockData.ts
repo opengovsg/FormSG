@@ -46,7 +46,8 @@ export const DEFAULT_STEPS: WorkflowStep[] = [
   {
     id: 'step-1',
     type: 'collect',
-    name: 'Step 1: Fill up a response',
+    name: 'Step 1',
+    isCustomName: false,
     order: 0,
     respondentIds: ['resp-form-link'],
     fieldIds: [],

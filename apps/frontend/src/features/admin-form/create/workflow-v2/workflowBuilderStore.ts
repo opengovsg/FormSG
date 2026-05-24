@@ -46,7 +46,13 @@ function loadPersistedState(): PersistedState {
     if (!raw) return DEFAULT_PERSISTED
     const parsed = JSON.parse(raw) as Partial<PersistedState>
     // Merge with defaults so new fields added in later sprints get their defaults
-    return { ...DEFAULT_PERSISTED, ...parsed }
+    const merged = { ...DEFAULT_PERSISTED, ...parsed }
+    // Migration: add isCustomName to steps that don't have it
+    merged.steps = merged.steps.map((s) => ({
+      ...s,
+      isCustomName: s.isCustomName ?? false,
+    }))
+    return merged
   } catch {
     return DEFAULT_PERSISTED
   }
@@ -135,18 +141,13 @@ function recalculateOrder(steps: WorkflowStep[]): WorkflowStep[] {
 }
 
 /**
- * Update "Step N:" prefix in step names to match their actual position.
- * If a name starts with "Step <number>:", replace with the correct number.
- * If it doesn't have a prefix, leave it as-is.
+ * Update step names to match their actual position.
+ * Only updates steps where isCustomName is false.
  */
 function renumberStepNames(steps: WorkflowStep[]): WorkflowStep[] {
   return steps.map((s, i) => {
-    const prefixMatch = s.name.match(/^Step \d+: /)
-    if (prefixMatch) {
-      return {
-        ...s,
-        name: `Step ${i + 1}: ${s.name.slice(prefixMatch[0].length)}`,
-      }
+    if (!s.isCustomName) {
+      return { ...s, name: `Step ${i + 1}` }
     }
     return s
   })
@@ -195,10 +196,12 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     // Sprint 2 actions
     addStep: (type, name, insertIndex) =>
       set((state) => {
+        const defaultName = `Step ${insertIndex + 1}`
         const newStep: WorkflowStep = {
           id: `step-${Date.now()}`,
           type,
           name,
+          isCustomName: name !== defaultName,
           order: 0,
           respondentIds: [],
           fieldIds: [],
@@ -222,7 +225,9 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
 
     renameStep: (stepId, name) =>
       set((state) => ({
-        steps: state.steps.map((s) => (s.id === stepId ? { ...s, name } : s)),
+        steps: state.steps.map((s) =>
+          s.id === stepId ? { ...s, name, isCustomName: true } : s,
+        ),
       })),
 
     reorderSteps: (fromIndex, toIndex) =>

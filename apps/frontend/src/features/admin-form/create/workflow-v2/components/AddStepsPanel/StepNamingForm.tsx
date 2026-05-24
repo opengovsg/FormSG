@@ -42,7 +42,7 @@ export const StepNamingForm = (): JSX.Element => {
       key={`${stepType}-${insertIndex}`}
       stepType={stepType}
       insertIndex={insertIndex}
-      defaultName={`Step ${insertIndex + 1}: ${config.title}`}
+      defaultName={`Step ${insertIndex + 1}`}
       displayTitle={stepType === 'review' ? 'Review and approve' : config.title}
       setFocus={setFocus}
       addStep={addStep}

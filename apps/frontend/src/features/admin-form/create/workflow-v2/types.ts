@@ -5,6 +5,7 @@ export type WorkflowStep = {
   id: string
   type: StepType
   name: string
+  isCustomName: boolean
   order: number
   respondentIds: string[]
   fieldIds: string[]
