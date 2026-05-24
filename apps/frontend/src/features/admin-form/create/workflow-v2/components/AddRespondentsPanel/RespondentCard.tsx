@@ -13,6 +13,7 @@ import { useDraggable } from '@dnd-kit/core'
 import type { Respondent, RespondentType } from '../../types'
 import {
   fieldsSelector,
+  justDraggedIdSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
@@ -64,6 +65,9 @@ export const RespondentCard = ({
     disabled: !isDraggable,
   })
 
+  const justDraggedId = useWorkflowBuilderStore(justDraggedIdSelector)
+  const isJustDragged = justDraggedId === respondent.id
+
   return (
     <Box
       ref={isDraggable ? setNodeRef : undefined}
@@ -87,8 +91,8 @@ export const RespondentCard = ({
           ? { cursor: 'grabbing' }
           : undefined
       }
-      transition="border-color 0.2s, background 0.2s, opacity 0.2s"
-      opacity={isDragging ? 0.4 : 1}
+      transition="border-color 0.2s, background 0.2s, opacity 0.3s ease"
+      opacity={isDragging || isJustDragged ? 0.4 : 1}
       onClick={showCheckbox ? onToggle : onEdit}
     >
       <Flex align="center" gap="0.75rem">

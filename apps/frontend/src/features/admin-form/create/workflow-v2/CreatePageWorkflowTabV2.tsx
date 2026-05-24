@@ -59,6 +59,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
+  const setJustDraggedId = useWorkflowBuilderStore((s) => s.setJustDraggedId)
 
   const [activeStepType, setActiveStepType] = useState<StepType | null>(null)
   const [activeDragStep, setActiveDragStep] = useState<WorkflowStep | null>(
@@ -69,6 +70,9 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   )
   const [activeField, setActiveField] = useState<FormField | null>(null)
   const [draggingFieldType, setDraggingFieldType] = useState<string | null>(
+    null,
+  )
+  const [justDroppedStepId, setJustDroppedStepId] = useState<string | null>(
     null,
   )
 
@@ -151,11 +155,20 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      setActiveStepType(null)
-      setActiveDragStep(null)
-      setActiveRespondent(null)
-      setActiveField(null)
+      // Track which card was just dragged so it can fade back in gently
+      setJustDraggedId(event.active.id as string)
+      setTimeout(() => setJustDraggedId(null), 200)
+
+      // Clear drag type flags immediately so drop zones hide
       setDraggingFieldType(null)
+
+      // Delay clearing overlay content so the drop animation can play
+      setTimeout(() => {
+        setActiveStepType(null)
+        setActiveDragStep(null)
+        setActiveRespondent(null)
+        setActiveField(null)
+      }, 300)
 
       const { active, over } = event
       if (!over) return
@@ -197,6 +210,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         const respondentId = active.id as string
         const stepId = overData.stepId as string
         assignRespondent(stepId, respondentId)
+        setJustDroppedStepId(stepId)
+        setTimeout(() => setJustDroppedStepId(null), 400)
         // Auto-focus the step after drop
         setFocus({
           type: 'step_focus',
@@ -212,6 +227,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         overData?.type === 'notification_drop'
       ) {
         assignNotificationRecipient(active.id as string)
+        setJustDroppedStepId('notification')
+        setTimeout(() => setJustDroppedStepId(null), 400)
         return
       }
 
@@ -223,6 +240,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         const fieldId = active.id as string
         const stepId = overData.stepId as string
         assignField(stepId, fieldId)
+        setJustDroppedStepId(stepId)
+        setTimeout(() => setJustDroppedStepId(null), 400)
         setFocus({
           type: 'step_focus',
           phase: 'assign_fields',
@@ -239,6 +258,8 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         const fieldId = active.id as string
         const stepId = overData.stepId as string
         assignApprovalField(stepId, fieldId)
+        setJustDroppedStepId(stepId)
+        setTimeout(() => setJustDroppedStepId(null), 400)
         setFocus({
           type: 'step_focus',
           phase: 'assign_fields',
@@ -255,6 +276,7 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       assignField,
       assignApprovalField,
       setPendingInsertIndex,
+      setJustDraggedId,
     ],
   )
 
@@ -271,8 +293,9 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
           isDragging={activeStepType !== null}
           isDraggingRespondent={activeRespondent !== null}
           draggingFieldType={draggingFieldType}
+          justDroppedStepId={justDroppedStepId}
         />
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeStepType ? (
             <StepTypeCardOverlay stepType={activeStepType} />
           ) : activeDragStep ? (

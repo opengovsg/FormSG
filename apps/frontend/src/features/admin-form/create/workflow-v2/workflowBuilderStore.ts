@@ -83,6 +83,8 @@ export const pendingFieldSelectionSelector = (state: WorkflowStore) =>
   state.pendingFieldSelection
 export const notificationLabelSelector = (state: WorkflowStore) =>
   state.notificationLabel
+export const justDraggedIdSelector = (state: WorkflowStore) =>
+  state.justDraggedId
 
 export function completedPhases(state: WorkflowStore): Phase[] {
   const completed: Phase[] = []
@@ -169,6 +171,10 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     previewStepName: null,
     pendingFieldSelection: null,
     deletingRespondentId: null,
+    justDraggedId: null,
+
+    // UI actions
+    setJustDraggedId: (id) => set({ justDraggedId: id }),
 
     // Sprint 1 actions
     setFocus: (focusState) => set({ focusState }),

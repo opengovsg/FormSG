@@ -61,7 +61,12 @@ export type FocusState =
   | { type: 'summary' }
   | { type: 'phase'; phase: Phase }
   | { type: 'step_focus'; phase: Phase; stepId: string; fromStepEdit?: boolean }
-  | { type: 'step_edit'; stepId: string; fromSummary?: boolean }
+  | {
+      type: 'step_edit'
+      stepId: string
+      fromSummary?: boolean
+      returnTo?: Phase
+    }
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }
   | { type: 'edit_respondent'; respondentId: string }
@@ -91,6 +96,10 @@ export type WorkflowStore = {
   previewStepName: string | null
   pendingFieldSelection: string | null
   deletingRespondentId: string | null
+  justDraggedId: string | null
+
+  // Actions - UI
+  setJustDraggedId: (id: string | null) => void
 
   // Actions - Sprint 1
   setFocus: (state: FocusState) => void

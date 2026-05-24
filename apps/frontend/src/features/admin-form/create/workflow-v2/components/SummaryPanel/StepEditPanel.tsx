@@ -60,8 +60,12 @@ export const StepEditPanel = (): JSX.Element => {
   }, [step?.name])
 
   const handleBack = useCallback(() => {
-    setFocus({ type: 'summary' })
-  }, [setFocus])
+    if (focusState.type === 'step_edit' && focusState.returnTo) {
+      setFocus({ type: 'phase', phase: focusState.returnTo })
+    } else {
+      setFocus({ type: 'summary' })
+    }
+  }, [setFocus, focusState])
 
   if (!step || !stepId) return <></>
 

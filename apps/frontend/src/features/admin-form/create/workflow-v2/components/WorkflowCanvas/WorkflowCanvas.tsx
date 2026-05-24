@@ -26,6 +26,7 @@ type WorkflowCanvasProps = {
   isDragging?: boolean
   isDraggingRespondent?: boolean
   draggingFieldType?: string | null
+  justDroppedStepId?: string | null
 }
 
 /**
@@ -102,6 +103,7 @@ export const WorkflowCanvas = ({
   isDragging = false,
   isDraggingRespondent = false,
   draggingFieldType = null,
+  justDroppedStepId = null,
 }: WorkflowCanvasProps): JSX.Element => {
   const steps = useWorkflowBuilderStore(stepsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
@@ -407,6 +409,7 @@ export const WorkflowCanvas = ({
                   isDraggingField={draggingFieldType !== null}
                   isDraggingYesNo={draggingFieldType === 'yes_no'}
                   isDraggingRespondent={isDraggingRespondent}
+                  justDroppedStepId={justDroppedStepId}
                 />
               </Box>
             </Fragment>
@@ -498,8 +501,10 @@ export const WorkflowCanvas = ({
             isNotificationEdit={isNotificationEdit}
             isSummaryMode={isSummary || isStepEditFromSummary}
             anotherElementFocused={isRespondentStepFocus}
-            isDisabled={isInAddStepsContext || isInFieldContext}
+            isDisabled={isInFieldContext}
+            isAddStepsPhase={isInAddStepsContext}
             isDraggingRespondent={isDraggingRespondent}
+            justDroppedStepId={justDroppedStepId}
           />
         </Box>
       </Box>

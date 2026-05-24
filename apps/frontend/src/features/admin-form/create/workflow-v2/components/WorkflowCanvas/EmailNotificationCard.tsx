@@ -16,6 +16,8 @@ import {
 } from '@chakra-ui/react'
 import { useDroppable } from '@dnd-kit/core'
 
+import Tooltip from '~components/Tooltip'
+
 import {
   notificationLabelSelector,
   notificationRecipientIdsSelector,
@@ -32,10 +34,13 @@ type EmailNotificationCardProps = {
   isSummaryMode?: boolean
   /** True when another element (a step) has focus, so this card should hide interactive elements */
   anotherElementFocused?: boolean
-  /** True during add steps and assign fields phases to fade and disable the card */
+  /** True during assign fields phase to fade and disable the card */
   isDisabled?: boolean
+  /** True during add steps phase - card is interactive, clicking opens notification edit */
+  isAddStepsPhase?: boolean
   /** True when a respondent card is being dragged */
   isDraggingRespondent?: boolean
+  justDroppedStepId?: string | null
 }
 
 /**
@@ -49,7 +54,9 @@ export const EmailNotificationCard = ({
   isSummaryMode = false,
   anotherElementFocused = false,
   isDisabled = false,
+  isAddStepsPhase = false,
   isDraggingRespondent = false,
+  justDroppedStepId = null,
 }: EmailNotificationCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const notificationRecipientIds = useWorkflowBuilderStore(
@@ -66,13 +73,13 @@ export const EmailNotificationCard = ({
     [respondents, notificationRecipientIds],
   )
 
-  const isClickable = isRespondentPhase || isSummaryMode
+  const isClickable = isRespondentPhase || isSummaryMode || isAddStepsPhase
   const isHighlighted = isFocused || isNotificationEdit
 
   const handleClick = () => {
     if (isRespondentPhase && !isFocused) {
       setFocus({ type: 'notification_focus' })
-    } else if (isSummaryMode && !isNotificationEdit) {
+    } else if ((isSummaryMode || isAddStepsPhase) && !isNotificationEdit) {
       setFocus({ type: 'notification_edit' })
     }
   }
@@ -89,7 +96,7 @@ export const EmailNotificationCard = ({
     },
   )
 
-  return (
+  const cardContent = (
     <Box position="relative">
       {/* Drop zone layer - fades in when respondent is being dragged */}
       <Box
@@ -117,7 +124,10 @@ export const EmailNotificationCard = ({
             border="2px dashed"
             borderColor={isNotifDropOver ? 'primary.500' : 'primary.400'}
             bg={isNotifDropOver ? 'primary.200' : 'primary.100'}
-            transition="background 0.15s, border-color 0.15s"
+            transform={
+              justDroppedStepId === 'notification' ? 'scale(0.95)' : 'scale(1)'
+            }
+            transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
           >
             <Text textStyle="subhead-2" color="primary.500" textAlign="center">
               + Drag into {notificationLabel}
@@ -165,7 +175,9 @@ export const EmailNotificationCard = ({
                 {notificationLabel}
               </Text>
             </HStack>
-            {isSummaryMode && (
+            {(isSummaryMode ||
+              isAddStepsPhase ||
+              (isRespondentPhase && !isFocused)) && (
               <HStack
                 spacing="0.5rem"
                 flexShrink={0}
@@ -244,4 +256,14 @@ export const EmailNotificationCard = ({
       )}
     </Box>
   )
+
+  if (isDisabled && !isDraggingRespondent) {
+    return (
+      <Tooltip label="Only respondents can be added to this card.">
+        {cardContent}
+      </Tooltip>
+    )
+  }
+
+  return cardContent
 }

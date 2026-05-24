@@ -12,6 +12,10 @@ import { Box, Checkbox, Flex, Icon, Text } from '@chakra-ui/react'
 import { useDraggable } from '@dnd-kit/core'
 
 import type { FieldType, FormField } from '../../types'
+import {
+  justDraggedIdSelector,
+  useWorkflowBuilderStore,
+} from '../../workflowBuilderStore'
 
 const FIELD_TYPE_ICON: Record<FieldType, typeof BiText> = {
   short_text: BiText,
@@ -48,6 +52,9 @@ export const FieldCard = ({
     data: { type: 'field_card', field },
   })
 
+  const justDraggedId = useWorkflowBuilderStore(justDraggedIdSelector)
+  const isJustDragged = justDraggedId === field.id
+
   return (
     <Box
       ref={setNodeRef}
@@ -64,8 +71,8 @@ export const FieldCard = ({
       cursor={showCheckbox ? 'pointer' : 'grab'}
       _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
       _active={!showCheckbox ? { cursor: 'grabbing' } : undefined}
-      transition="border-color 0.2s, background 0.2s, opacity 0.2s"
-      opacity={isDragging ? 0.4 : 1}
+      transition="border-color 0.2s, background 0.2s, opacity 0.3s ease"
+      opacity={isDragging || isJustDragged ? 0.4 : 1}
       onClick={showCheckbox ? onToggle : onEdit}
     >
       <Flex align="center" gap="0.75rem">

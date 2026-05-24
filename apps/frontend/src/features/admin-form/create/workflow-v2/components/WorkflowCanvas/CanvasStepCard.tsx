@@ -35,6 +35,8 @@ import { useDroppable } from '@dnd-kit/core'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+import Tooltip from '~components/Tooltip'
+
 import type { WorkflowStep } from '../../types'
 import {
   fieldsSelector,
@@ -61,6 +63,7 @@ type CanvasStepCardProps = {
   isDraggingField?: boolean
   isDraggingYesNo?: boolean
   isDraggingRespondent?: boolean
+  justDroppedStepId?: string | null
 }
 
 export const CanvasStepCard = ({
@@ -70,6 +73,7 @@ export const CanvasStepCard = ({
   isDraggingField = false,
   isDraggingYesNo = false,
   isDraggingRespondent = false,
+  justDroppedStepId = null,
 }: CanvasStepCardProps): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const fields = useWorkflowBuilderStore(fieldsSelector)
@@ -286,8 +290,9 @@ export const CanvasStepCard = ({
 
   // Drop zone content for when showAsDropZone is true
   const isFieldDrag = isDraggingField
+  const isJustDropped = justDroppedStepId === step.id
 
-  return (
+  const cardContent = (
     <Box
       overflow="hidden"
       maxH={isDeleting ? 0 : '40rem'}
@@ -334,7 +339,8 @@ export const CanvasStepCard = ({
                   border="2px dashed"
                   borderColor={isFieldDropOver ? 'primary.500' : 'primary.400'}
                   bg={isFieldDropOver ? 'primary.200' : 'primary.100'}
-                  transition="background 0.15s, border-color 0.15s"
+                  transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
+                  transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
                 >
                   <Text
                     textStyle="subhead-2"
@@ -356,7 +362,8 @@ export const CanvasStepCard = ({
                     isApprovalDropOver ? 'primary.500' : 'primary.400'
                   }
                   bg={isApprovalDropOver ? 'primary.200' : 'primary.100'}
-                  transition="background 0.15s, border-color 0.15s"
+                  transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
+                  transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
                 >
                   <Text
                     textStyle="subhead-2"
@@ -386,7 +393,8 @@ export const CanvasStepCard = ({
                     ? 'primary.200'
                     : 'primary.100'
                 }
-                transition="background 0.15s, border-color 0.15s"
+                transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
+                transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
               >
                 <Text
                   textStyle="subhead-2"
@@ -463,10 +471,18 @@ export const CanvasStepCard = ({
               spacing="0.5rem"
               flexShrink={0}
               align="center"
-              opacity={isSummaryMode && showDragHandle ? 0 : 1}
+              opacity={
+                (isSummaryMode && showDragHandle) ||
+                (isRespondentPhase && !isLockedStep1) ||
+                isFieldPhase
+                  ? 0
+                  : 1
+              }
               transition="opacity 0.15s ease"
               sx={
-                isSummaryMode && showDragHandle
+                (isSummaryMode && showDragHandle) ||
+                (isRespondentPhase && !isLockedStep1) ||
+                isFieldPhase
                   ? {
                       '[data-step-card]:hover &': { opacity: 1 },
                     }
@@ -489,8 +505,28 @@ export const CanvasStepCard = ({
                   }}
                 />
               )}
-              {isSummaryMode && showDragHandle && (
-                <Box p="0.25rem" display="flex" alignItems="center">
+              {(isSummaryMode ||
+                (isRespondentPhase && !isLockedStep1) ||
+                isFieldPhase) && (
+                <Box
+                  p="0.25rem"
+                  display="flex"
+                  alignItems="center"
+                  cursor="pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFocus({
+                      type: 'step_edit',
+                      stepId: step.id,
+                      fromSummary: true,
+                      returnTo: isRespondentPhase
+                        ? 'add_respondents'
+                        : isFieldPhase
+                          ? 'assign_fields'
+                          : undefined,
+                    })
+                  }}
+                >
                   <Icon as={BiEditAlt} fontSize="1.25rem" color="neutral.500" />
                 </Box>
               )}
@@ -534,6 +570,16 @@ export const CanvasStepCard = ({
                       borderRadius="4px"
                       px="0.5rem"
                       py="0.25rem"
+                      animation="chipAppear 0.3s ease"
+                      sx={{
+                        '@keyframes chipAppear': {
+                          from: {
+                            opacity: 0,
+                            transform: 'scale(0.8)',
+                          },
+                          to: { opacity: 1, transform: 'scale(1)' },
+                        },
+                      }}
                     >
                       <TagLabel textStyle="caption-1" color="secondary.500">
                         {r.name}
@@ -605,6 +651,19 @@ export const CanvasStepCard = ({
                             borderRadius="4px"
                             px="0.5rem"
                             py="0.25rem"
+                            animation="chipAppear 0.3s ease"
+                            sx={{
+                              '@keyframes chipAppear': {
+                                from: {
+                                  opacity: 0,
+                                  transform: 'scale(0.8)',
+                                },
+                                to: {
+                                  opacity: 1,
+                                  transform: 'scale(1)',
+                                },
+                              },
+                            }}
                           >
                             <TagLabel
                               textStyle="caption-1"
@@ -663,6 +722,19 @@ export const CanvasStepCard = ({
                               bg="primary.100"
                               borderRadius="4px"
                               px="0.5rem"
+                              animation="chipAppear 0.3s ease"
+                              sx={{
+                                '@keyframes chipAppear': {
+                                  from: {
+                                    opacity: 0,
+                                    transform: 'scale(0.8)',
+                                  },
+                                  to: {
+                                    opacity: 1,
+                                    transform: 'scale(1)',
+                                  },
+                                },
+                              }}
                               py="0.25rem"
                             >
                               <TagLabel
@@ -752,6 +824,16 @@ export const CanvasStepCard = ({
       </AlertDialog>
     </Box>
   )
+
+  if (isLockedStep1) {
+    return (
+      <Tooltip label="This is the first step. Anyone with the form link can respond.">
+        {cardContent}
+      </Tooltip>
+    )
+  }
+
+  return cardContent
 }
 
 /**

@@ -3,6 +3,10 @@ import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { useDraggable } from '@dnd-kit/core'
 
 import type { StepType } from '../../types'
+import {
+  justDraggedIdSelector,
+  useWorkflowBuilderStore,
+} from '../../workflowBuilderStore'
 
 type StepTypeCardProps = {
   stepType: StepType
@@ -37,6 +41,9 @@ export const StepTypeCard = ({
     data: { type: 'step_type', stepType },
   })
 
+  const justDraggedId = useWorkflowBuilderStore(justDraggedIdSelector)
+  const isJustDragged = justDraggedId === `step-type-${stepType}`
+
   return (
     <Box
       ref={setNodeRef}
@@ -54,8 +61,8 @@ export const StepTypeCard = ({
       cursor="grab"
       _hover={{ borderColor: 'primary.500', bg: 'primary.100' }}
       _active={{ cursor: 'grabbing' }}
-      transition="border-color 0.2s, background 0.2s, opacity 0.2s"
-      opacity={isDragging ? 0.4 : 1}
+      transition="border-color 0.2s, background 0.2s, opacity 0.3s ease"
+      opacity={isDragging || isJustDragged ? 0.4 : 1}
       onClick={onClick}
     >
       <Flex align="center" gap="0.75rem">

@@ -66,6 +66,7 @@ export default defineConfig(() => {
     },
     base: './',
     server: {
+      allowedHosts: ['.ngrok-free.dev'],
       proxy: {
         '/api/v3': 'http://127.0.0.1:5001',
       },
