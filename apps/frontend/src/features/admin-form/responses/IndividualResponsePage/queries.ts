@@ -1,8 +1,6 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
@@ -38,12 +36,10 @@ export const useGetIndividualDecryptedSubmission = ({
   })
   const { secretKey } = useStorageResponsesContext()
   const { data: { responseMode } = {} } = useAdminForm()
-  const useV4 = useFeatureIsOn(featureFlags.answerObjectDecryption)
 
   return useQuery(
-    adminFormResponsesKeys.individual(formId, submissionId, useV4),
-    () =>
-      getDecryptedSubmissionById({ formId, submissionId, secretKey, useV4 }),
+    adminFormResponsesKeys.individual(formId, submissionId),
+    () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
     {
       staleTime:
         responseMode === FormResponseMode.Multirespondent

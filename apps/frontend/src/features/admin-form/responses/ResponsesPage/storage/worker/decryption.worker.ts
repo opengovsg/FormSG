@@ -146,57 +146,36 @@ async function decryptSubmissionData(
       break
     }
     case SubmissionType.Multirespondent: {
-      if (useV4) {
-        const formFieldsMeta = buildFormFieldMetaMap(submissionData.form_fields)
-        const decryptedV4 = ctx.formsgSdk.cryptoV3.decryptToV4(
-          secretKey,
-          {
-            encryptedSubmissionSecretKey:
-              submissionData.encryptedSubmissionSecretKey,
-            encryptedContent,
-            verifiedContent,
-            version,
-          },
-          formFieldsMeta,
-        )
-        if (decryptedV4) {
-          mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
-          decryptedResponses = processDecryptedContentV4(
-            submissionData.form_fields,
-            decryptedV4.responses,
-            decryptedV4.verified,
-          )
-          break
-        }
-        datadogLogs.logger.warn(
-          'Could not decrypt MRF response in v4, falling back to v3',
-          { submissionId: submissionData._id },
-        )
-      }
-
-      // Perform v3 decryption if v4 deryption fails or is not attempted (useV4 = false)
-      const decryptedObject = ctx.formsgSdk.cryptoV3.decrypt(secretKey, {
-        encryptedSubmissionSecretKey:
-          submissionData.encryptedSubmissionSecretKey,
-        encryptedContent,
-        verifiedContent,
-        version,
-      })
-      if (!decryptedObject) {
-        datadogLogs.logger.error(
-          'Invalid decryption for multirespondent response',
-        )
+      const formFieldsMeta = buildFormFieldMetaMap(submissionData.form_fields)
+      const decryptedV4 = ctx.formsgSdk.cryptoV3.decryptToV4(
+        secretKey,
+        {
+          encryptedSubmissionSecretKey:
+            submissionData.encryptedSubmissionSecretKey,
+          encryptedContent,
+          verifiedContent,
+          version,
+        },
+        formFieldsMeta,
+      )
+      if (!decryptedV4) {
+        datadogLogs.logger.error('Could not decrypt MRF response in v4', {
+          submissionId: submissionData._id,
+        })
         return {
           isSubmissionDecryptionSuccessful: false,
         }
       }
-      mrfSubmissionSecretKey = decryptedObject.submissionSecretKey
-      decryptedResponses = await processDecryptedContentV3(
+
+      mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
+      decryptedResponses = processDecryptedContentV4(
         submissionData.form_fields,
-        decryptedObject,
+        decryptedV4.responses,
+        decryptedV4.verified,
       )
       break
     }
+
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = submissionData

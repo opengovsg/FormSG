@@ -91,12 +91,10 @@ export const getDecryptedSubmissionById = async ({
   formId,
   submissionId,
   secretKey,
-  useV4,
 }: {
   formId: string
   submissionId: string
   secretKey?: string
-  useV4?: boolean
 }) => {
   if (!secretKey) return
 
@@ -120,57 +118,38 @@ export const getDecryptedSubmissionById = async ({
       break
     }
     case SubmissionType.Multirespondent: {
-      const decryptedContent = formsgSdk.cryptoV3.decrypt(secretKey, {
-        encryptedContent: encryptedSubmission.encryptedContent,
-        encryptedSubmissionSecretKey:
-          encryptedSubmission.encryptedSubmissionSecretKey,
-        verifiedContent: encryptedSubmission.verifiedContent,
-        version: encryptedSubmission.version,
-      })
-      if (!decryptedContent)
-        throw new Error('Could not decrypt the multirespondent form response')
-      processedContent = await processDecryptedContentV3(
+      const formFieldsMeta = buildFormFieldMetaMap(
         encryptedSubmission.form_fields,
-        decryptedContent,
       )
-      submissionSecretKey = decryptedContent.submissionSecretKey
+      const decryptedV4 = formsgSdk.cryptoV3.decryptToV4(
+        secretKey,
+        {
+          encryptedContent: encryptedSubmission.encryptedContent,
+          encryptedSubmissionSecretKey:
+            encryptedSubmission.encryptedSubmissionSecretKey,
+          verifiedContent: encryptedSubmission.verifiedContent,
+          version: encryptedSubmission.version,
+        },
+        formFieldsMeta,
+      )
 
-      if (useV4) {
-        const formFieldsMeta = buildFormFieldMetaMap(
-          encryptedSubmission.form_fields,
-        )
-        const decryptedV4 = formsgSdk.cryptoV3.decryptToV4(
-          secretKey,
-          {
-            encryptedContent: encryptedSubmission.encryptedContent,
-            encryptedSubmissionSecretKey:
-              encryptedSubmission.encryptedSubmissionSecretKey,
-            verifiedContent: encryptedSubmission.verifiedContent,
-            version: encryptedSubmission.version,
+      if (!decryptedV4) {
+        datadogLogs.logger.error('Could not decrypt MRF response in v4', {
+          meta: {
+            action: 'getDecryptedSubmissionById',
+            formId,
+            submissionId,
           },
-          formFieldsMeta,
-        )
-
-        if (!decryptedV4) {
-          datadogLogs.logger.warn(
-            'Could not decrypt MRF response in v4, falling back to v3',
-            {
-              meta: {
-                action: 'getDecryptedSubmissionById',
-                formId,
-                submissionId,
-              },
-            },
-          )
-        } else {
-          processedContent = processDecryptedContentV4(
-            encryptedSubmission.form_fields,
-            decryptedV4.responses,
-            decryptedV4.verified,
-          )
-          submissionSecretKey = decryptedV4.submissionSecretKey
-        }
+        })
+        throw new Error('Could not process submission content')
       }
+
+      processedContent = processDecryptedContentV4(
+        encryptedSubmission.form_fields,
+        decryptedV4.responses,
+        decryptedV4.verified,
+      )
+      submissionSecretKey = decryptedV4.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
       break
     }
