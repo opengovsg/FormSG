@@ -144,11 +144,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     ref,
   ) => {
     const { t } = useTranslation()
-    // Read PublicFormContext non-throwingly so admin-side usages (form builder,
-    // storybook) that mount Attachment outside the public form provider
-    // continue to render. formId is used only for telemetry on the defensive
-    // empty-file short-circuit and may legitimately be undefined.
-    const formId = useContext(PublicFormContext)?.formId
+    const publicFormId = useContext(PublicFormContext)?.formId
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -230,12 +226,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             useWebWorker: false,
             preserveExif: true,
           }).then((blob) => {
-            // Defensive: if compression resolves to a 0-byte blob, do not
-            // hand it downstream — it would land in the GuardDuty quarantine
-            // bucket and break the virus-scanner lambda.
             if (blob.size === 0) {
               datadogLogs.logger.warn('attachment empty after compression', {
-                formId,
+                formId: publicFormId,
                 fileName: acceptedFile.name,
                 originalSize: acceptedFile.size,
                 originalType: acceptedFile.type,
@@ -256,13 +249,11 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
         onChange(acceptedFile)
       },
-      [accept, formId, maxSize, onChange, onError, t],
+      [accept, publicFormId, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
-        // 0-byte check runs for all file types — images included — so that
-        // empty files cannot bypass the validator via the compression branch.
         if (file.size === 0) {
           return {
             code: 'file-empty',

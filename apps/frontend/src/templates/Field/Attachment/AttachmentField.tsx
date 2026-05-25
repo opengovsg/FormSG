@@ -38,11 +38,7 @@ export const AttachmentField = ({
 }: AttachmentFieldProps): JSX.Element => {
   const { t } = useTranslation()
   const fieldName = schema._id
-  // Read PublicFormContext non-throwingly so admin-side usages (form builder,
-  // storybook) that mount AttachmentField outside the public form provider
-  // continue to render.
-  const publicFormContext = useContext(PublicFormContext)
-  const formId = publicFormContext?.formId
+  const publicFormId = useContext(PublicFormContext)?.formId
   const validationRules = useAttachmentValidationRules(
     schema,
     disableRequiredValidation,
@@ -89,9 +85,6 @@ export const AttachmentField = ({
           const buffer = await fileArrayBuffer(file)
           const clone = new File([buffer], file.name, { type: file.type })
 
-          // Defensive: some browsers / file pickers (e.g. Android + Google
-          // Drive) can produce a clone that resolves to 0 bytes even when
-          // the source file has content. Reject before it reaches S3.
           if (clone.size === 0) {
             setErrorMessage(
               t(
@@ -99,7 +92,7 @@ export const AttachmentField = ({
               ),
             )
             datadogLogs.logger.warn('attachment file clone is empty', {
-              formId,
+              formId: publicFormId,
               fileName: file.name,
               originalSize: file.size,
               cloneSize: clone.size,
@@ -132,7 +125,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, formId, setErrorMessage, schema.disabled, t],
+    [clearErrors, fieldName, publicFormId, setErrorMessage, schema.disabled, t],
   )
 
   return (
