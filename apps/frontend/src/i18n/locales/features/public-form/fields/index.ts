@@ -33,6 +33,7 @@ export interface Fields {
       zipFileInvalidType: string
       zipParsing: string
       imageProcessingError: string
+      fileReadError: string
     }
   }
   verification: {

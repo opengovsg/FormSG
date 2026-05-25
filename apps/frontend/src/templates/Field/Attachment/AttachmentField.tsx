@@ -4,6 +4,7 @@ import {
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from 'formsg-shared/constants/file'
@@ -35,6 +36,7 @@ export const AttachmentField = ({
   colorTheme = FormColorTheme.Blue,
   isHighContrast,
 }: AttachmentFieldProps): JSX.Element => {
+  const { t } = useTranslation()
   const fieldName = schema._id
   // Read PublicFormContext non-throwingly so admin-side usages (form builder,
   // storybook) that mount AttachmentField outside the public form provider
@@ -92,7 +94,9 @@ export const AttachmentField = ({
           // the source file has content. Reject before it reaches S3.
           if (clone.size === 0) {
             setErrorMessage(
-              'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+              t(
+                'features.publicForm.components.fields.attachment.error.fileReadError',
+              ),
             )
             datadogLogs.logger.warn('attachment file clone is empty', {
               formId,
@@ -115,7 +119,9 @@ export const AttachmentField = ({
           return onChange(clone)
         } catch (error) {
           setErrorMessage(
-            'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+            t(
+              'features.publicForm.components.fields.attachment.error.fileReadError',
+            ),
           )
 
           // For RUM error tracking
@@ -126,7 +132,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, formId, setErrorMessage, schema.disabled],
+    [clearErrors, fieldName, formId, setErrorMessage, schema.disabled, t],
   )
 
   return (
