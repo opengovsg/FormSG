@@ -32,6 +32,8 @@ export interface Fields {
       tooManyFiles: string
       zipFileInvalidType: string
       zipParsing: string
+      imageProcessingError: string
+      fileReadError: string
     }
   }
   verification: {
