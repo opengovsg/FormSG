@@ -849,7 +849,6 @@ export class MailService {
         }),
       )
       const emailData: EmailData = {
-        emailTitle: `${formTitle} has been completed by all respondents`,
         formTitle,
         responseId: refNo,
         timestamp: submissionTime,
@@ -860,7 +859,7 @@ export class MailService {
       return this.#sendEmailWithTemplate({
         emails: adminEmails,
         formId: String(form._id),
-        subject: `Completed - ${formTitle} (${refNo})`,
+        subject: `Response received - ${formTitle} (${refNo})`,
         htmlData: emailData,
         attachments: attachmentsToInclude,
         replyTo: replyToEmails?.join(', '),
@@ -1199,9 +1198,7 @@ export class MailService {
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    // Prepare data for EmailTemplate (2-column responsive)
     const emailTemplateData: EmailData = {
-      emailTitle: `${formTitle} has been completed by all respondents`,
       formTitle,
       responseId: responseId.toString(),
       timestamp,
@@ -1211,7 +1208,7 @@ export class MailService {
     return this.#sendEmailWithTemplate({
       emails,
       formId,
-      subject: `Completed - ${formTitle} (${responseId})`,
+      subject: `Response received - ${formTitle} (${responseId})`,
       htmlData: emailTemplateData,
       attachments,
       emailType: EmailType.WorkflowCompletion,
