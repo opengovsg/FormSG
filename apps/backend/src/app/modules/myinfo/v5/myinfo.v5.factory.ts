@@ -54,4 +54,5 @@ export const MyInfoV5Service = new MyInfoV5ServiceClass({
   clientId: spcpMyInfoConfig.myInfoV5ClientId,
   redirectUri: `${config.app.appUrl}${MYINFO_ROUTER_PREFIX}${MYINFO_V5_REDIRECT_PATH}`,
   rpKeyset: buildKeyset(),
+  dpopEnabled: spcpMyInfoConfig.myInfoV5DpopEnabled,
 })

@@ -57,6 +57,11 @@ type IMyInfoConfig = {
   myInfoV5RpJwksSecret: string
   myInfoV5RpJwksPublicPath: string
   myInfoV5RpJwksSecretPath: string
+  /**
+   * Whether to use RFC 9449 DPoP for token/userinfo. Required by Singpass v5
+   * in production; mockpass and dev still use Bearer.
+   */
+  myInfoV5DpopEnabled: boolean
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -200,6 +205,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: '',
     env: 'MYINFO_V5_RP_JWKS_SECRET_PATH',
+  },
+  myInfoV5DpopEnabled: {
+    doc: 'Enable RFC 9449 DPoP for the v5 token + userinfo calls. Required by production Singpass; off by default so dev/mockpass keep working under Bearer auth.',
+    format: Boolean,
+    default: false,
+    env: 'MYINFO_V5_DPOP_ENABLED',
   },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",

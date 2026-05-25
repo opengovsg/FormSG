@@ -71,14 +71,18 @@ export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
 }
 
 /**
- * Cookie that carries the PKCE code_verifier from the redirect-URL endpoint to
- * the v5 OAuth callback. Required because v5 mandates PKCE (RFC 7636) — the
- * verifier is generated when we send the user off to Singpass and must be
- * presented when we redeem the auth code at the token endpoint.
+ * Cookie that carries a session id pointing to a `MyInfoV5Session` document.
+ * That document holds the PKCE code verifier AND (when DPoP is enabled) the
+ * private JWK for the per-session DPoP keypair.
+ *
+ * Why server-side and not cookie-side: a DPoP private JWK is sensitive and
+ * non-trivial in size; the OAuth round trip can land on a different pod from
+ * the one that started the login; both make a server-side store the right
+ * call. See `myinfo.v5.session.model.ts`.
  */
-export const MYINFO_V5_PKCE_COOKIE_NAME = 'MyInfoV5Pkce'
+export const MYINFO_V5_SESSION_COOKIE_NAME = 'MyInfoV5Session'
 
-export const MYINFO_V5_PKCE_COOKIE_OPTIONS = {
+export const MYINFO_V5_SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax' as const,
   secure: !config.isDevOrTest,

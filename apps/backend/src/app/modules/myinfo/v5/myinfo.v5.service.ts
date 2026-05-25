@@ -11,6 +11,7 @@ import {
   generateNonce,
   generatePkceVerifier,
 } from './myinfo.v5.crypto'
+import { createDpopProof, type DpopKeyPair } from './myinfo.v5.dpop'
 import {
   MyInfoV5ConfigError,
   MyInfoV5TokenError,
@@ -47,6 +48,7 @@ export class MyInfoV5ServiceClass {
   readonly #clientId: string
   readonly #redirectUri: string
   readonly #rpKeyset: MyInfoV5RpKeyset | null
+  readonly #dpopEnabled: boolean
   #discoveryDoc: MyInfoV5DiscoveryDocument | null = null
   #idpJwks: ReturnType<typeof jose.createRemoteJWKSet> | null = null
 
@@ -59,21 +61,41 @@ export class MyInfoV5ServiceClass {
     return Boolean(this.#issuer && this.#clientId && this.#rpKeyset)
   }
 
+  /** Exposed for tests + diagnostics. */
+  get dpopEnabled(): boolean {
+    return this.#dpopEnabled
+  }
+
   constructor({
     issuer,
     clientId,
     redirectUri,
     rpKeyset,
+    dpopEnabled = false,
   }: {
     issuer: string
     clientId: string
     redirectUri: string
     rpKeyset: MyInfoV5RpKeyset | null
+    /**
+     * RFC 9449 DPoP — required by Singpass v5 in production. Off by default to
+     * match mockpass (which uses Bearer). Configurable per-instance so the
+     * same code path serves both.
+     *
+     * When enabled, callers MUST pass a per-session DPoP keypair into
+     * `exchangeCodeForTokens` and `fetchUserinfo`. The same keypair binds the
+     * access token (token endpoint) to its use on the resource endpoint, so
+     * losing it between calls invalidates the token. Sessions persist the
+     * private JWK in Mongo (see `myinfo.v5.session.model.ts`) keyed by a
+     * session-id cookie so the flow survives load-balancer pod hops.
+     */
+    dpopEnabled?: boolean
   }) {
     this.#issuer = issuer
     this.#clientId = clientId
     this.#redirectUri = redirectUri
     this.#rpKeyset = rpKeyset
+    this.#dpopEnabled = dpopEnabled
   }
 
   /**
@@ -173,11 +195,23 @@ export class MyInfoV5ServiceClass {
   exchangeCodeForTokens({
     code,
     codeVerifier,
+    dpopKeypair,
   }: {
     code: string
     codeVerifier: string
+    /**
+     * Required when `dpopEnabled` is true. The same keypair MUST be reused
+     * when calling `fetchUserinfo`, because the access token will be bound to
+     * its thumbprint.
+     */
+    dpopKeypair?: DpopKeyPair
   }): ResultAsync<MyInfoV5TokenResponse, MyInfoV5TokenError> {
     if (!this.#rpKeyset) return errAsync(new MyInfoV5TokenError('No keyset'))
+    if (this.#dpopEnabled && !dpopKeypair) {
+      return errAsync(
+        new MyInfoV5TokenError('DPoP enabled but no keypair supplied'),
+      )
+    }
     const sigJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'sig')
     if (!sigJwk) return errAsync(new MyInfoV5TokenError('No sig key'))
     return ResultAsync.fromPromise(
@@ -205,13 +239,23 @@ export class MyInfoV5ServiceClass {
           code_verifier: codeVerifier,
         })
 
+        const headers: Record<string, string> = {
+          'content-type': 'application/x-www-form-urlencoded',
+        }
+        if (this.#dpopEnabled && dpopKeypair) {
+          // RFC 9449 §5: attach a DPoP proof to the token request so the AS
+          // binds the issued access token to our session keypair's thumbprint.
+          headers.dpop = await createDpopProof({
+            keypair: dpopKeypair,
+            htm: 'POST',
+            htu: disc.token_endpoint,
+          })
+        }
+
         const response = await axios.post<MyInfoV5TokenResponse>(
           disc.token_endpoint,
           body.toString(),
-          {
-            headers: { 'content-type': 'application/x-www-form-urlencoded' },
-            timeout: 10000,
-          },
+          { headers, timeout: 10000 },
         )
         return response.data
       }),
@@ -230,26 +274,55 @@ export class MyInfoV5ServiceClass {
    * Fetch + decrypt the userinfo response, returning the JWS claims.
    *
    * Wire: GET ${userinfo_endpoint}
-   *   Authorization: Bearer ${access_token}        // TODO(v5-prod): switch to DPoP
+   *   Authorization: {Bearer|DPoP} ${access_token}
+   *   DPoP: <proof JWT>            (only when dpopEnabled)
    * Response: application/jwt — a JWE wrapping a JWS whose payload is the
    *   set of MyInfo claims.
    */
-  fetchUserinfo(
-    accessToken: string,
-  ): ResultAsync<MyInfoV5UserinfoClaims, MyInfoV5UserinfoError> {
+  fetchUserinfo({
+    accessToken,
+    dpopKeypair,
+  }: {
+    accessToken: string
+    /**
+     * Required when `dpopEnabled` is true. MUST be the same keypair that was
+     * passed to `exchangeCodeForTokens` — Singpass rejects userinfo calls
+     * whose DPoP proof key doesn't match the thumbprint bound to the token.
+     */
+    dpopKeypair?: DpopKeyPair
+  }): ResultAsync<MyInfoV5UserinfoClaims, MyInfoV5UserinfoError> {
     if (!this.#rpKeyset) {
       return errAsync(new MyInfoV5UserinfoError('No keyset'))
+    }
+    if (this.#dpopEnabled && !dpopKeypair) {
+      return errAsync(
+        new MyInfoV5UserinfoError('DPoP enabled but no keypair supplied'),
+      )
     }
     const encJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'enc')
     if (!encJwk) return errAsync(new MyInfoV5UserinfoError('No enc key'))
     return ResultAsync.fromPromise(
       (async () => {
         const disc = await this.#fetchDiscovery()
+        const headers: Record<string, string> = {
+          accept: 'application/jwt',
+        }
+        if (this.#dpopEnabled && dpopKeypair) {
+          // RFC 9449 §7: present the access token under the `DPoP` scheme and
+          // attach a proof that includes `ath` so the RS can confirm the token
+          // is being used by the same keypair that was DPoP-bound at issuance.
+          headers.authorization = `DPoP ${accessToken}`
+          headers.dpop = await createDpopProof({
+            keypair: dpopKeypair,
+            htm: 'GET',
+            htu: disc.userinfo_endpoint,
+            accessToken,
+          })
+        } else {
+          headers.authorization = `Bearer ${accessToken}`
+        }
         const response = await axios.get<string>(disc.userinfo_endpoint, {
-          headers: {
-            authorization: `Bearer ${accessToken}`,
-            accept: 'application/jwt',
-          },
+          headers,
           // userinfo body is a JWT string; let axios keep it as text.
           transformResponse: (raw) => raw,
           timeout: 10000,

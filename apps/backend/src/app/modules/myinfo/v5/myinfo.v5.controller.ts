@@ -8,7 +8,6 @@ import { ControllerHandler } from '../../core/core.types'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-  MYINFO_V5_PKCE_COOKIE_NAME,
 } from '../myinfo.constants'
 import {
   MyInfoAuthCodeCookiePayload,
@@ -146,5 +145,3 @@ export const handleMyInfoV5Login = [
   validateV5Login,
   loginToMyInfoV5,
 ] as ControllerHandler[]
-
-export const MYINFO_V5_PKCE_COOKIE_NAME_EXPORTED = MYINFO_V5_PKCE_COOKIE_NAME

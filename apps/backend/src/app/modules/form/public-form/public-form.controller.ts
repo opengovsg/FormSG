@@ -16,7 +16,9 @@ import {
 } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, okAsync, Result } from 'neverthrow'
+import * as jose from 'jose'
+import mongoose from 'mongoose'
+import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
 import { isTest } from '../../../config/config'
@@ -32,8 +34,8 @@ import {
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
-  MYINFO_V5_PKCE_COOKIE_NAME,
-  MYINFO_V5_PKCE_COOKIE_OPTIONS,
+  MYINFO_V5_SESSION_COOKIE_NAME,
+  MYINFO_V5_SESSION_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
@@ -45,7 +47,12 @@ import {
   internalAttrListToV5Scopes,
   v5ClaimsToMyInfoData,
 } from '../../myinfo/v5/myinfo.v5.adapter'
+import {
+  generateDpopKeyPair,
+  importDpopKeyPair,
+} from '../../myinfo/v5/myinfo.v5.dpop'
 import { MyInfoV5Service } from '../../myinfo/v5/myinfo.v5.factory'
+import getMyInfoV5SessionModel from '../../myinfo/v5/myinfo.v5.session.model'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
@@ -79,6 +86,36 @@ import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Create the per-session v5 OAuth scratch row (PKCE verifier + optional DPoP
+ * private JWK) and return its opaque id. The id is what the cookie carries —
+ * keeping the private key off the wire.
+ */
+async function persistV5Session({
+  codeVerifier,
+  dpopEnabled,
+}: {
+  codeVerifier: string
+  dpopEnabled: boolean
+}): Promise<string> {
+  const SessionModel = getMyInfoV5SessionModel(mongoose)
+  let dpopPrivateJwk: import('jose').JWK
+  if (dpopEnabled) {
+    const keypair = await generateDpopKeyPair()
+    dpopPrivateJwk = await jose.exportJWK(keypair.privateKey)
+  } else {
+    // When DPoP is off we still create a session row so the cookie remains
+    // the single signal that "v5 was used"; the JWK field is a sentinel and
+    // is ignored downstream.
+    dpopPrivateJwk = { kty: 'oct', k: '' }
+  }
+  const session = await SessionModel.createSession({
+    codeVerifier,
+    dpopPrivateJwk,
+  })
+  return session._id
+}
 
 /**
  * Handler for GET /:formId/publicform endpoint
@@ -224,25 +261,47 @@ export const handleGetPublicForm: ControllerHandler<
         MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
 
-      // Dispatch v3 vs v5 on the PKCE cookie. The v5 redirect handler sets
-      // it when starting a v5 login; v3 forms never set it. This avoids a
-      // schema change to the auth code cookie and keeps the form-view path
-      // agnostic of where the user came from.
-      const pkceVerifier: unknown = req.cookies[MYINFO_V5_PKCE_COOKIE_NAME]
-      if (typeof pkceVerifier === 'string' && pkceVerifier.length > 0) {
+      // Dispatch v3 vs v5 on the session cookie. The v5 redirect handler sets
+      // it when starting a v5 login; v3 forms never set it. The cookie holds
+      // an opaque session id pointing to a Mongo doc with the PKCE verifier
+      // and (if DPoP is enabled) the per-session DPoP private JWK — needed
+      // because the auth round trip may straddle pods.
+      const sessionIdCookie: unknown =
+        req.cookies[MYINFO_V5_SESSION_COOKIE_NAME]
+      if (typeof sessionIdCookie === 'string' && sessionIdCookie.length > 0) {
         res.clearCookie(
-          MYINFO_V5_PKCE_COOKIE_NAME,
-          MYINFO_V5_PKCE_COOKIE_OPTIONS,
+          MYINFO_V5_SESSION_COOKIE_NAME,
+          MYINFO_V5_SESSION_COOKIE_OPTIONS,
         )
+        const SessionModel = getMyInfoV5SessionModel(mongoose)
+        const session = await SessionModel.consumeSession(sessionIdCookie)
+        if (!session) {
+          logger.error({
+            message: 'MyInfo v5 session not found or expired',
+            meta: logMeta,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+        const dpopKeypair = MyInfoV5Service.dpopEnabled
+          ? await importDpopKeyPair(session.dpopPrivateJwk)
+          : undefined
         const v5Result = await extractAuthCode(authCodeCookie)
           .asyncAndThen((authCode) =>
             MyInfoV5Service.exchangeCodeForTokens({
               code: authCode,
-              codeVerifier: pkceVerifier,
+              codeVerifier: session.codeVerifier,
+              dpopKeypair,
             }),
           )
           .andThen((tokenResp) =>
-            MyInfoV5Service.fetchUserinfo(tokenResp.access_token),
+            MyInfoV5Service.fetchUserinfo({
+              accessToken: tokenResp.access_token,
+              dpopKeypair,
+            }),
           )
           .map((claims) => v5ClaimsToMyInfoData(claims))
         if (v5Result.isErr()) {
@@ -734,18 +793,32 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               scopes: internalAttrListToV5Scopes(form.getUniqueMyInfoAttrs()),
               encodedQuery,
-            }).map(({ redirectURL, codeVerifier }) => {
-              // PKCE verifier follows the user round-trip in a httpOnly cookie.
-              // Its presence on the way back ALSO acts as the dispatch signal
-              // for the form-view path — that way the cookie schema for v3
-              // forms stays untouched.
-              res.cookie(
-                MYINFO_V5_PKCE_COOKIE_NAME,
-                codeVerifier,
-                MYINFO_V5_PKCE_COOKIE_OPTIONS,
-              )
-              return redirectURL
-            })
+            }).andThen(({ redirectURL, codeVerifier }) =>
+              ResultAsync.fromPromise(
+                persistV5Session({
+                  codeVerifier,
+                  dpopEnabled: MyInfoV5Service.dpopEnabled,
+                }).then((sessionId) => {
+                  // Cookie carries an opaque session id; the actual PKCE
+                  // verifier + DPoP private JWK live server-side so the round
+                  // trip survives a load-balancer pod hop.
+                  res.cookie(
+                    MYINFO_V5_SESSION_COOKIE_NAME,
+                    sessionId,
+                    MYINFO_V5_SESSION_COOKIE_OPTIONS,
+                  )
+                  return redirectURL
+                }),
+                (error) => {
+                  logger.error({
+                    message: 'Failed to save v5 session',
+                    meta: { action: 'handleFormAuthRedirect', formId },
+                    error,
+                  })
+                  return new AuthTypeMismatchError(FormAuthType.MyInfo)
+                },
+              ),
+            )
           }
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
