@@ -565,7 +565,7 @@ export const PublicFormProvider = ({
       setPreviousAttachments(decryptedAttachments)
     }
 
-    if (encryptedPreviousSubmission?.mrfVersion === 1) {
+    if (encryptedPreviousSubmission?.mrfVersion != null) {
       if (submissionSecretKey) decryptAttachments()
     } else {
       // Backward compatibility to retrieve attachments from the DB itself once
@@ -578,7 +578,7 @@ export const PublicFormProvider = ({
           if (response.fieldType === BasicField.Attachment) {
             previousAttachments[id] = Uint8Array.from(
               //@ts-expect-error 'content' required for backward compatibility, but
-              // does not exist on AttachmentFieldResponseV3 in mrfVersion === 1 versions
+              // does not exist on AttachmentFieldResponseV3 in mrfVersion  >= 1 versions
               response.answer.content.data,
             )
           }
