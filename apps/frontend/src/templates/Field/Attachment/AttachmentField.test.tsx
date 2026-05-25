@@ -219,11 +219,9 @@ describe('attachment validation', () => {
     Object.defineProperty(emptyImage, 'size', { value: 0 })
     await user.upload(input, emptyImage)
 
-    // Assert
+    // Assert — fileEmpty validator error surfaces (not the compression path).
     await waitFor(() => {
-      const error = screen.queryByText(
-        /An error has occurred whilst parsing your zip file/i,
-      )
+      const error = screen.queryByText(/you have uploaded an empty file/i)
       expect(error).not.toBeNull()
     })
   })
