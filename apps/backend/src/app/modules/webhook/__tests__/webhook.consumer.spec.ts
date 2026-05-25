@@ -6,7 +6,7 @@ import { WebhookResponse } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
-import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
+import getSubmissionModel from 'src/app/models/submission.server.model'
 import { SubmissionWebhookInfo } from 'src/types'
 
 import { createWebhookQueueHandler } from '../webhook.consumer'
@@ -18,7 +18,7 @@ import { WebhookQueueMessageObject } from '../webhook.types'
 jest.mock('../webhook.service')
 const MockWebhookService = jest.mocked(WebhookService)
 
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 const MOCK_WEBHOOK_SUCCESS_RESPONSE: WebhookResponse = {
   signature: 'mockSignature',
@@ -132,7 +132,7 @@ describe('webhook.consumer', () => {
 
     it('should reject when submission ID cannot be found', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce(null)
 
       await expect(
@@ -145,7 +145,7 @@ describe('webhook.consumer', () => {
 
     it('should reject when database error occurs', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockRejectedValueOnce(new Error(''))
 
       await expect(
@@ -158,7 +158,7 @@ describe('webhook.consumer', () => {
 
     it('should resolve when form has no webhook URL', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce({
           ...MOCK_WEBHOOK_INFO,
           webhookUrl: '',
@@ -174,7 +174,7 @@ describe('webhook.consumer', () => {
 
     it('should resolve when form does not have retries enabled', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce({
           ...MOCK_WEBHOOK_INFO,
           isRetryEnabled: false,
@@ -190,7 +190,7 @@ describe('webhook.consumer', () => {
 
     it('should resolve without requeuing when webhook succeeds', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
       MockWebhookService.sendWebhook.mockReturnValueOnce(
         okAsync(MOCK_WEBHOOK_SUCCESS_RESPONSE),
@@ -212,7 +212,7 @@ describe('webhook.consumer', () => {
 
     it('should requeue webhook when retry fails and there are retries remaining', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
       MockWebhookService.sendWebhook.mockReturnValueOnce(
         // note failure response instead of success
@@ -235,7 +235,7 @@ describe('webhook.consumer', () => {
 
     it('should resolve without requeuing when retry fails and there are no retries remaining', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
       MockWebhookService.sendWebhook.mockReturnValueOnce(
         okAsync(MOCK_WEBHOOK_SUCCESS_RESPONSE),
@@ -264,7 +264,7 @@ describe('webhook.consumer', () => {
 
     it('should reject when retry fails and subsequently fails to be requeued', async () => {
       jest
-        .spyOn(EncryptSubmissionModel, 'retrieveWebhookInfoById')
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
         .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
       MockWebhookService.sendWebhook.mockReturnValueOnce(
         okAsync(MOCK_WEBHOOK_FAILURE_RESPONSE),

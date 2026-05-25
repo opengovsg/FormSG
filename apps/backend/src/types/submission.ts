@@ -53,7 +53,10 @@ export type FindFormsWithSubsAboveResult = {
   count: number
 }
 
-export interface IPopulatedWebhookSubmission extends IEncryptedSubmissionSchema {
+export type IPopulatedWebhookSubmission = (
+  | IEncryptedSubmissionSchema
+  | IMultirespondentSubmissionSchema
+) & {
   form: {
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
@@ -109,6 +112,29 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
    * @returns created submission if successful, null otherwise
    */
   saveIfSubmitterIdIsUnique: SaveIfSubmitterIdIsUniqueType
+
+  /**
+   * Retrieves webhook-related info for a given submission. Resolves via
+   * the discriminator, so Encrypt and Multirespondent submissions are
+   * both supported.
+   * @param submissionId
+   * @returns Object containing webhook destination and data
+   */
+  retrieveWebhookInfoById(
+    submissionId: string,
+  ): Promise<SubmissionWebhookInfo | null>
+
+  /**
+   * Adds a record of a webhook response to a submission. Resolves via
+   * the discriminator, so Encrypt and Multirespondent submissions are
+   * both supported.
+   * @param submissionId ID of submission to update
+   * @param webhookResponse Response data to push
+   */
+  addWebhookResponse(
+    submissionId: string,
+    webhookResponse: WebhookResponse,
+  ): Promise<ISubmissionSchema | null>
 }
 
 export interface IEmailSubmissionSchema
@@ -270,25 +296,6 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       submissionId: string,
     ): Promise<StorageModeSubmissionData | null>
-
-    /**
-     * Adds a record of a webhook response to a submission
-     * @param submissionId ID of submission to update
-     * @param webhookResponse Response data to push
-     */
-    addWebhookResponse(
-      submissionId: string,
-      webhookResponse: WebhookResponse,
-    ): Promise<IEncryptedSubmissionSchema | null>
-
-    /**
-     * Retrieves webhook-related info for a given submission.
-     * @param submissionId
-     * @returns Object containing webhook destination and data
-     */
-    retrieveWebhookInfoById(
-      submissionId: string,
-    ): Promise<SubmissionWebhookInfo | null>
   }
 
 export type IMultirespondentSubmissionModel =

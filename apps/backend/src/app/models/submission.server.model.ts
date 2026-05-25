@@ -4,6 +4,7 @@ import {
   SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import moment from 'moment-timezone'
 import mongoose, {
@@ -44,6 +45,33 @@ import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
+const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
+  {
+    webhookUrl: {
+      type: String,
+      required: true,
+    },
+    signature: {
+      type: String,
+      required: true,
+    },
+    response: {
+      status: {
+        type: Number,
+        required: true,
+      },
+      headers: String,
+      data: String,
+    },
+  },
+  {
+    timestamps: {
+      createdAt: 'created',
+      updatedAt: false,
+    },
+  },
+)
+
 // Exported for use in pending submissions model
 export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
@@ -82,6 +110,7 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
         type: Number,
       },
     },
+    webhookResponses: [webhookResponseSchema],
   },
   {
     timestamps: {
@@ -118,6 +147,35 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
       },
     },
   ]).exec()
+}
+
+SubmissionSchema.statics.addWebhookResponse = function (
+  this: ISubmissionModel,
+  submissionId: string,
+  webhookResponse: WebhookResponse,
+): Promise<ISubmissionSchema | null> {
+  return this.findByIdAndUpdate(
+    submissionId,
+    { $push: { webhookResponses: webhookResponse } },
+    { new: true, setDefaultsOnInsert: true, runValidators: true },
+  ).exec()
+}
+
+SubmissionSchema.statics.retrieveWebhookInfoById = async function (
+  this: ISubmissionModel,
+  submissionId: string,
+): Promise<SubmissionWebhookInfo | null> {
+  const populatedSubmission = (await this.findById(submissionId).populate([
+    { path: 'form', select: 'webhook' },
+    { path: 'paymentId' },
+  ])) as IPopulatedWebhookSubmission | null
+  if (!populatedSubmission) return null
+  const webhookView = await populatedSubmission.getWebhookView()
+  return {
+    webhookUrl: populatedSubmission.form.webhook?.url ?? '',
+    isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
+    webhookView,
+  }
 }
 
 /**
@@ -199,33 +257,6 @@ EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
   return Promise.resolve(null)
 }
 
-const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
-  {
-    webhookUrl: {
-      type: String,
-      required: true,
-    },
-    signature: {
-      type: String,
-      required: true,
-    },
-    response: {
-      status: {
-        type: Number,
-        required: true,
-      },
-      headers: String,
-      data: String,
-    },
-  },
-  {
-    timestamps: {
-      createdAt: 'created',
-      updatedAt: false,
-    },
-  },
-)
-
 // Exported for use in pending submissions model
 export const EncryptSubmissionSchema = new Schema<
   IEncryptedSubmissionSchema,
@@ -253,7 +284,6 @@ export const EncryptSubmissionSchema = new Schema<
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
   },
-  webhookResponses: [webhookResponseSchema],
 })
 
 /**
@@ -271,7 +301,7 @@ EncryptSubmissionSchema.methods.getWebhookView = async function (
   )
 
   if (this.paymentId) {
-    await (this as IPopulatedWebhookSubmission).populate('paymentId')
+    await (this as IEncryptedSubmissionSchema).populate('paymentId')
   }
   const paymentContent = this.populated('paymentId')
     ? getPaymentWebhookEventObject(this.paymentId)
@@ -291,39 +321,6 @@ EncryptSubmissionSchema.methods.getWebhookView = async function (
   return {
     data: webhookData,
   }
-}
-
-EncryptSubmissionSchema.statics.addWebhookResponse = function (
-  submissionId: string,
-  webhookResponse: WebhookResponse,
-): Promise<IEncryptedSubmissionSchema | null> {
-  return this.findByIdAndUpdate(
-    submissionId,
-    { $push: { webhookResponses: webhookResponse } },
-    { new: true, setDefaultsOnInsert: true, runValidators: true },
-  ).exec()
-}
-
-EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
-  this: IEncryptSubmissionModel,
-  submissionId: string,
-): Promise<SubmissionWebhookInfo | null> {
-  return this.findById(submissionId)
-    .populate([{ path: 'form', select: 'webhook' }, { path: 'paymentId' }])
-    .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
-      if (!populatedSubmission) return null
-      const webhookView = populatedSubmission.getWebhookView()
-      return Promise.all([populatedSubmission, webhookView])
-    })
-    .then((arr) => {
-      if (!arr) return null
-      const [populatedSubmission, webhookView] = arr
-      return {
-        webhookUrl: populatedSubmission.form.webhook?.url ?? '',
-        isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
-        webhookView,
-      }
-    })
 }
 
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
@@ -524,6 +521,30 @@ EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
     .exec()
 }
 
+const submittedStepSchema = new Schema(
+  {
+    isApproval: {
+      type: Boolean,
+      required: true,
+    },
+    submittedAt: {
+      type: String,
+      required: true,
+    },
+    nextStepRecipientEmails: {
+      type: [String],
+    },
+    submitterId: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
+    },
+  },
+  { _id: false },
+)
+
 export const MultirespondentSubmissionSchema = new Schema<
   IMultirespondentSubmissionSchema,
   IMultirespondentSubmissionModel
@@ -568,7 +589,7 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
   },
   submittedSteps: {
-    type: Array,
+    type: [submittedStepSchema],
     default: [],
   },
 })
