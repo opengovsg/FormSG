@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
 import {
@@ -18,6 +18,8 @@ import { MB } from 'formsg-shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
+
+import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
@@ -114,13 +116,6 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Callback function that is invoked when replace button is clicked. 'Show Replace' must be present for function to work.
    */
   handleReplaceFileOverride?: () => void
-
-  /**
-   * Public form id. When present, attached to Datadog warn logs emitted by
-   * defensive empty-file short-circuits so the originating form can be
-   * identified during quarantine-bucket triage.
-   */
-  formId?: string
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -144,12 +139,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       handleDownloadFileOverride,
       handleRemoveFileOverride,
       handleReplaceFileOverride,
-      formId,
       ...props
     },
     ref,
   ) => {
     const { t } = useTranslation()
+    // Read PublicFormContext non-throwingly so admin-side usages (form builder,
+    // storybook) that mount Attachment outside the public form provider
+    // continue to render. formId is used only for telemetry on the defensive
+    // empty-file short-circuit and may legitimately be undefined.
+    const formId = useContext(PublicFormContext)?.formId
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -268,7 +267,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           return {
             code: 'file-empty',
             message: t(
-              'features.publicForm.components.fields.attachment.error.zipParsing',
+              'features.publicForm.components.fields.attachment.error.fileEmpty',
             ),
           }
         }

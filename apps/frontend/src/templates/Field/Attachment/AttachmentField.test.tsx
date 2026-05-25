@@ -13,6 +13,11 @@ import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 import { REQUIRED_ERROR } from '~constants/validation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
 
+import {
+  PublicFormContext,
+  PublicFormContextProps,
+} from '~features/public-form/PublicFormContext'
+
 import { AttachmentFieldSchema } from '../types'
 
 import * as stories from './AttachmentField.stories'
@@ -312,6 +317,85 @@ describe('attachment validation', () => {
     expect(Object.keys(payload as object).sort()).toEqual(
       ['cloneSize', 'fileName', 'formId', 'originalSize', 'reason'].sort(),
     )
+  })
+
+  it('logs the public-form formId in empty-clone warn payload when wrapped in PublicFormContext', async () => {
+    // Arrange — when the field is rendered inside a public-form flow, the
+    // datadog warn payload must carry the form's id so quarantine-bucket
+    // triage can link the event back to the originating form.
+    const user = userEvent.setup()
+    const schema = ValidationOptional.args?.schema
+    const PUBLIC_FORM_ID = 'public-form-id-clone'
+    const providerValue = {
+      formId: PUBLIC_FORM_ID,
+    } as unknown as PublicFormContextProps
+
+    render(
+      <PublicFormContext.Provider value={providerValue}>
+        <ValidationOptional />
+      </PublicFormContext.Provider>,
+    )
+    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+
+    vi.mocked(fileArrayBuffer).mockResolvedValueOnce(new ArrayBuffer(0))
+
+    const sourceFile = new File(['real content'], 'doc.pdf', {
+      type: 'application/pdf',
+    })
+
+    // Act
+    await user.upload(input, sourceFile)
+
+    // Assert
+    await waitFor(() => {
+      expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
+    })
+    const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
+    expect(payload).toMatchObject({
+      reason: 'fileCloneEmpty',
+      formId: PUBLIC_FORM_ID,
+    })
+  })
+
+  it('logs the public-form formId in empty-compression warn payload when wrapped in PublicFormContext', async () => {
+    // Arrange — public-form flow + image-compression returns an empty blob.
+    const user = userEvent.setup()
+    const schema: AttachmentFieldSchema = merge(
+      {},
+      ValidationOptional.args?.schema,
+      { attachmentSize: AttachmentSize.OneMb },
+    )
+    const PUBLIC_FORM_ID = 'public-form-id-compress'
+    const providerValue = {
+      formId: PUBLIC_FORM_ID,
+    } as unknown as PublicFormContextProps
+
+    render(
+      <PublicFormContext.Provider value={providerValue}>
+        <ValidationOptional schema={schema} />
+      </PublicFormContext.Provider>,
+    )
+    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+
+    vi.mocked(imageCompression).mockResolvedValueOnce(
+      new Blob([], { type: 'image/jpeg' }) as unknown as File,
+    )
+
+    const largeImage = new File(['x'], 'photo.png', { type: 'image/png' })
+    Object.defineProperty(largeImage, 'size', { value: 2 * MB })
+
+    // Act
+    await user.upload(input, largeImage)
+
+    // Assert
+    await waitFor(() => {
+      expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
+    })
+    const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
+    expect(payload).toMatchObject({
+      reason: 'imageCompressionEmpty',
+      formId: PUBLIC_FORM_ID,
+    })
   })
 
   it('renders error when zip file contains invalid extensions', async () => {

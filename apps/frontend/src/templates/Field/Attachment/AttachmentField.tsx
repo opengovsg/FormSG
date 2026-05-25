@@ -151,7 +151,6 @@ export const AttachmentField = ({
             title={`${schema.questionNumber}. ${schema.title}`}
             showDownload={showDownload}
             showRemove={!schema.disabled}
-            formId={formId}
           />
         )}
         name={fieldName}
