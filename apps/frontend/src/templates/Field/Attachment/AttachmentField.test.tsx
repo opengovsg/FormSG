@@ -147,6 +147,11 @@ describe('validation optional', () => {
 })
 
 describe('attachment validation', () => {
+  const PUBLIC_FORM_ID = 'public-form-id'
+  const providerValue = {
+    formId: PUBLIC_FORM_ID,
+  } as unknown as PublicFormContextProps
+
   it('renders error when file with invalid extension is uploaded', async () => {
     // Arrange
     const user = userEvent.setup({ applyAccept: false })
@@ -213,54 +218,58 @@ describe('attachment validation', () => {
     render(<ValidationOptional />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
 
-    // Act — 0-byte PNG (image type goes through the compression branch
-    // and previously bypassed the size===0 validator check).
-    const emptyImage = new File([], 'empty.png', { type: 'image/png' })
-    Object.defineProperty(emptyImage, 'size', { value: 0 })
-    await user.upload(input, emptyImage)
+    // Act
+    // RATIONALE: image types previously bypassed the size===0 check via the
+    // compression branch — this is the regression we guard against.
+    const zeroByteImage = new File([], 'empty.png', { type: 'image/png' })
+    Object.defineProperty(zeroByteImage, 'size', { value: 0 })
+    await user.upload(input, zeroByteImage)
 
-    // Assert — fileEmpty validator error surfaces (not the compression path).
+    // Assert
     await waitFor(() => {
-      const error = screen.queryByText(/you have uploaded an empty file/i)
-      expect(error).not.toBeNull()
+      const fileEmptyError = screen.queryByText(
+        /you have uploaded an empty file/i,
+      )
+      expect(fileEmptyError).not.toBeNull()
     })
   })
 
   it('rejects empty image-compression blob, surfaces processing error, and logs warn', async () => {
-    // Arrange — schema is 1MB so a 2MB image triggers the compression branch.
+    // Arrange
     const user = userEvent.setup()
-    const schema: AttachmentFieldSchema = merge(
+    const oneMbLimitSchema: AttachmentFieldSchema = merge(
       {},
       ValidationOptional.args?.schema,
       { attachmentSize: AttachmentSize.OneMb },
     )
-    render(<ValidationOptional schema={schema} />)
-    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+    render(<ValidationOptional schema={oneMbLimitSchema} />)
+    const input = screen.getByTestId(oneMbLimitSchema._id) as HTMLInputElement
 
-    // imageCompression resolves to an empty blob (the regression scenario).
-    vi.mocked(imageCompression).mockResolvedValueOnce(
-      new Blob([], { type: 'image/jpeg' }) as unknown as File,
-    )
+    const emptyCompressedBlob = new Blob([], {
+      type: 'image/jpeg',
+    }) as unknown as File
+    vi.mocked(imageCompression).mockResolvedValueOnce(emptyCompressedBlob)
 
-    const largeImage = new File(['x'], 'photo.png', { type: 'image/png' })
-    Object.defineProperty(largeImage, 'size', { value: 2 * MB })
+    const overSizeLimitImage = new File(['x'], 'photo.png', {
+      type: 'image/png',
+    })
+    Object.defineProperty(overSizeLimitImage, 'size', { value: 2 * MB })
 
     // Act
-    await user.upload(input, largeImage)
+    await user.upload(input, overSizeLimitImage)
 
-    // Assert — user sees the new processing-error message.
+    // Assert
     await waitFor(() => {
-      const error = screen.queryByText(
+      const processingError = screen.queryByText(
         /there was an issue processing your image/i,
       )
-      expect(error).not.toBeNull()
+      expect(processingError).not.toBeNull()
     })
 
-    // Assert — onChange was NOT called: no file info / no "you have submitted" success.
-    // The dropzone should still be present (no AttachmentFileInfo rendered).
-    expect(screen.queryByLabelText(/click to remove file/i)).toBeNull()
+    const removeFileAffordance =
+      screen.queryByLabelText(/click to remove file/i)
+    expect(removeFileAffordance).toBeNull()
 
-    // Assert — datadog warn emitted once with the documented payload shape.
     expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
     const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
     expect(payload).toMatchObject({
@@ -269,64 +278,59 @@ describe('attachment validation', () => {
       originalSize: 2 * MB,
       originalType: 'image/png',
     })
-    // Privacy: payload must only carry metadata, never file contents.
+    // RATIONALE: payload must only carry metadata, never file contents (privacy).
     expect(Object.keys(payload as object).sort()).toEqual(
       ['fileName', 'formId', 'originalSize', 'originalType', 'reason'].sort(),
     )
   })
 
   it('rejects empty file clone, shows reading error, and logs warn', async () => {
-    // Arrange — fileArrayBuffer returns an empty buffer, so the clone is 0 bytes
-    // even though the source file is not. The clone is what flows to S3, so this
-    // is the path that previously slipped past the dropzone validator.
+    // Arrange
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
     render(<ValidationOptional />)
     const input = screen.getByTestId(schema!._id) as HTMLInputElement
 
+    // RATIONALE: the cloned file, not the source file, is what flows to S3, so a
+    // 0-byte clone from a non-empty source is the path that previously
+    // slipped past the dropzone validator.
     vi.mocked(fileArrayBuffer).mockResolvedValueOnce(new ArrayBuffer(0))
 
-    const sourceFile = new File(['real content'], 'doc.pdf', {
+    const nonEmptySourceFile = new File(['real content'], 'doc.pdf', {
       type: 'application/pdf',
     })
 
     // Act
-    await user.upload(input, sourceFile)
+    await user.upload(input, nonEmptySourceFile)
 
-    // Assert — existing reading-error message surfaces.
+    // Assert
     await waitFor(() => {
-      const error = screen.queryByText(/error reading your file/i)
-      expect(error).not.toBeNull()
+      const readingError = screen.queryByText(/error reading your file/i)
+      expect(readingError).not.toBeNull()
     })
 
-    // Assert — no file ends up attached (no remove-file affordance rendered).
-    expect(screen.queryByLabelText(/click to remove file/i)).toBeNull()
+    const removeFileAffordance =
+      screen.queryByLabelText(/click to remove file/i)
+    expect(removeFileAffordance).toBeNull()
 
-    // Assert — exactly one warn with fileCloneEmpty reason and both sizes.
     expect(datadogLogs.logger.warn).toHaveBeenCalledTimes(1)
     const [, payload] = vi.mocked(datadogLogs.logger.warn).mock.calls[0]
     expect(payload).toMatchObject({
       reason: 'fileCloneEmpty',
       fileName: 'doc.pdf',
-      originalSize: sourceFile.size,
+      originalSize: nonEmptySourceFile.size,
       cloneSize: 0,
     })
-    // Privacy: payload must only carry metadata, never file contents.
+    // RATIONALE: payload must only carry metadata, never file contents (privacy).
     expect(Object.keys(payload as object).sort()).toEqual(
       ['cloneSize', 'fileName', 'formId', 'originalSize', 'reason'].sort(),
     )
   })
 
   it('logs the public-form formId in empty-clone warn payload when wrapped in PublicFormContext', async () => {
-    // Arrange — when the field is rendered inside a public-form flow, the
-    // datadog warn payload must carry the form's id so quarantine-bucket
-    // triage can link the event back to the originating form.
+    // Arrange
     const user = userEvent.setup()
     const schema = ValidationOptional.args?.schema
-    const PUBLIC_FORM_ID = 'public-form-id-clone'
-    const providerValue = {
-      formId: PUBLIC_FORM_ID,
-    } as unknown as PublicFormContextProps
 
     render(
       <PublicFormContext.Provider value={providerValue}>
@@ -337,12 +341,12 @@ describe('attachment validation', () => {
 
     vi.mocked(fileArrayBuffer).mockResolvedValueOnce(new ArrayBuffer(0))
 
-    const sourceFile = new File(['real content'], 'doc.pdf', {
+    const nonEmptySourceFile = new File(['real content'], 'doc.pdf', {
       type: 'application/pdf',
     })
 
     // Act
-    await user.upload(input, sourceFile)
+    await user.upload(input, nonEmptySourceFile)
 
     // Assert
     await waitFor(() => {
@@ -356,9 +360,9 @@ describe('attachment validation', () => {
   })
 
   it('logs the public-form formId in empty-compression warn payload when wrapped in PublicFormContext', async () => {
-    // Arrange — public-form flow + image-compression returns an empty blob.
+    // Arrange
     const user = userEvent.setup()
-    const schema: AttachmentFieldSchema = merge(
+    const oneMbLimitSchema: AttachmentFieldSchema = merge(
       {},
       ValidationOptional.args?.schema,
       { attachmentSize: AttachmentSize.OneMb },
@@ -370,20 +374,23 @@ describe('attachment validation', () => {
 
     render(
       <PublicFormContext.Provider value={providerValue}>
-        <ValidationOptional schema={schema} />
+        <ValidationOptional schema={oneMbLimitSchema} />
       </PublicFormContext.Provider>,
     )
-    const input = screen.getByTestId(schema!._id) as HTMLInputElement
+    const input = screen.getByTestId(oneMbLimitSchema._id) as HTMLInputElement
 
-    vi.mocked(imageCompression).mockResolvedValueOnce(
-      new Blob([], { type: 'image/jpeg' }) as unknown as File,
-    )
+    const emptyCompressedBlob = new Blob([], {
+      type: 'image/jpeg',
+    }) as unknown as File
+    vi.mocked(imageCompression).mockResolvedValueOnce(emptyCompressedBlob)
 
-    const largeImage = new File(['x'], 'photo.png', { type: 'image/png' })
-    Object.defineProperty(largeImage, 'size', { value: 2 * MB })
+    const overSizeLimitImage = new File(['x'], 'photo.png', {
+      type: 'image/png',
+    })
+    Object.defineProperty(overSizeLimitImage, 'size', { value: 2 * MB })
 
     // Act
-    await user.upload(input, largeImage)
+    await user.upload(input, overSizeLimitImage)
 
     // Assert
     await waitFor(() => {
