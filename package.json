@@ -73,7 +73,8 @@
     "lint-staged": "^15.2.10",
     "prettier": "^3.5.3",
     "rimraf": "^5.0.5",
-    "skills": "^1.5.7"
+    "skills": "^1.5.7",
+    "tsx": "^4.22.3"
   },
   "config": {
     "//": [

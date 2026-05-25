@@ -2,7 +2,12 @@ import { Router } from 'express'
 
 import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
 
-import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
+import { handleMyInfoV5Login, handleV5Jwks } from './v5/myinfo.v5.controller'
+import {
+  MYINFO_REDIRECT_PATH,
+  MYINFO_V5_JWKS_PATH,
+  MYINFO_V5_REDIRECT_PATH,
+} from './myinfo.constants'
 import {
   handleMyInfoLogin,
   handleRedirectURLRequest,
@@ -26,3 +31,20 @@ MyInfoRouter.get(
   authCallbackForwardingMiddleware,
   handleMyInfoLogin,
 )
+
+/**
+ * v5 — Singpass Auth API v5 / MyInfo v5.
+ * Mounted alongside v3 so flag-gated traffic can route here without affecting
+ * v3 forms. Path is registered as a separate redirect URI with Singpass.
+ */
+MyInfoRouter.get(
+  MYINFO_V5_REDIRECT_PATH,
+  authCallbackForwardingMiddleware,
+  handleMyInfoV5Login,
+)
+
+/**
+ * Public RP JWKS used by the Singpass IdP to verify our client_assertion and
+ * encrypt the userinfo JWE.
+ */
+MyInfoRouter.get(MYINFO_V5_JWKS_PATH, handleV5Jwks)

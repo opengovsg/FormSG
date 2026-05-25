@@ -17,7 +17,6 @@
     "lint-ci": "pnpm exec eslint src/ --quiet"
   },
   "dependencies": {
-    "formsg-shared": "workspace:*",
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",
@@ -64,6 +63,7 @@
     "express-session": "^1.18.2",
     "express-winston": "^4.2.0",
     "file-saver": "^2.0.5",
+    "formsg-shared": "workspace:*",
     "fp-ts": "^2.16.9",
     "helmet": "^8.1.0",
     "hot-shots": "^10.1.1",
@@ -199,6 +199,7 @@
     "ts-loader": "^8.2.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "tsx": "^4.22.3",
     "type-fest": "^4.17.0",
     "typescript": "^5.4.5",
     "worker-loader": "^2.0.0"

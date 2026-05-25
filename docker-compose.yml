@@ -81,6 +81,12 @@ services:
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - MYINFO_JWT_SECRET=mockJwtSecret
+      # MyInfo v5 — Singpass Auth API v5. The issuer URL is parameterized so
+      # the same code path works against mockpass and prod (different host).
+      - MYINFO_V5_ISSUER=http://localhost:5156/singpass/v2
+      - MYINFO_V5_CLIENT_ID=mockClientId
+      - MYINFO_V5_RP_JWKS_PUBLIC_PATH=src/app/modules/myinfo/v5/__fixtures__/keys/dev-rp-public.json
+      - MYINFO_V5_RP_JWKS_SECRET_PATH=src/app/modules/myinfo/v5/__fixtures__/keys/dev-rp-secret.json
       - SGID_HOSTNAME=http://localhost:5156
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
@@ -145,13 +151,19 @@ services:
       - SSO_CLIENT_SECRET
 
   mockpass:
-    image: opengovsg/mockpass:4.6.4
+    # Bumped to 4.6.7 to pick up Singpass Auth v2 (== MyInfo v5) userinfo
+    # mocking. See https://github.com/opengovsg/mockpass/pull/737.
+    image: opengovsg/mockpass:4.6.7
     depends_on:
       - backend
     environment:
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true
+      # Mockpass reads ONE endpoint per IdP for both SPCP OIDC v1 (Singpass login)
+      # and Singpass Auth v2 / MyInfo v5. The /sp/.well-known/jwks.json endpoint
+      # merges both keysets in dev so both flows work. In prod each flow registers
+      # its own URL with Singpass.
       - SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
       - CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156

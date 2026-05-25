@@ -17,6 +17,20 @@ export const MYINFO_ROUTER_PREFIX = '/mi'
 export const MYINFO_REDIRECT_PATH = '/login'
 
 /**
+ * Callback path for the Singpass Auth API v5 / MyInfo v5 flow. Registered as a
+ * separate redirect URI with Singpass so v3 and v5 callbacks can co-exist
+ * during the flag-gated rollout.
+ */
+export const MYINFO_V5_REDIRECT_PATH = '/v5/login'
+
+/**
+ * Path under MYINFO_ROUTER_PREFIX that serves the RP public JWKS for v5.
+ * Singpass (and mockpass in dev) fetches this to verify client_assertion
+ * signatures and to encrypt the userinfo JWE.
+ */
+export const MYINFO_V5_JWKS_PATH = '/v5/.well-known/jwks.json'
+
+/**
  * Name of cookie which passes the OAuth authorisation code
  * from the /myinfo/login endpoint to the public form endpoint.
  */
@@ -53,6 +67,22 @@ export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
   // Important for security - auth code cannot be read by client-side JS
   httpOnly: true,
   secure: !config.isDevOrTest,
+  maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
+}
+
+/**
+ * Cookie that carries the PKCE code_verifier from the redirect-URL endpoint to
+ * the v5 OAuth callback. Required because v5 mandates PKCE (RFC 7636) — the
+ * verifier is generated when we send the user off to Singpass and must be
+ * presented when we redeem the auth code at the token endpoint.
+ */
+export const MYINFO_V5_PKCE_COOKIE_NAME = 'MyInfoV5Pkce'
+
+export const MYINFO_V5_PKCE_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: !config.isDevOrTest,
+  // Same TTL as the auth code cookie — both are tied to a single login round-trip.
   maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
 }
 

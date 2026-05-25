@@ -32,6 +32,8 @@ import {
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
+  MYINFO_V5_PKCE_COOKIE_NAME,
+  MYINFO_V5_PKCE_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
@@ -39,6 +41,11 @@ import {
   extractAuthCode,
   getMyInfoEserviceIdInForm,
 } from '../../myinfo/myinfo.util'
+import {
+  internalAttrListToV5Scopes,
+  v5ClaimsToMyInfoData,
+} from '../../myinfo/v5/myinfo.v5.adapter'
+import { MyInfoV5Service } from '../../myinfo/v5/myinfo.v5.factory'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
@@ -216,6 +223,45 @@ export const handleGetPublicForm: ControllerHandler<
         MYINFO_AUTH_CODE_COOKIE_NAME,
         MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
+
+      // Dispatch v3 vs v5 on the PKCE cookie. The v5 redirect handler sets
+      // it when starting a v5 login; v3 forms never set it. This avoids a
+      // schema change to the auth code cookie and keeps the form-view path
+      // agnostic of where the user came from.
+      const pkceVerifier: unknown = req.cookies[MYINFO_V5_PKCE_COOKIE_NAME]
+      if (typeof pkceVerifier === 'string' && pkceVerifier.length > 0) {
+        res.clearCookie(
+          MYINFO_V5_PKCE_COOKIE_NAME,
+          MYINFO_V5_PKCE_COOKIE_OPTIONS,
+        )
+        const v5Result = await extractAuthCode(authCodeCookie)
+          .asyncAndThen((authCode) =>
+            MyInfoV5Service.exchangeCodeForTokens({
+              code: authCode,
+              codeVerifier: pkceVerifier,
+            }),
+          )
+          .andThen((tokenResp) =>
+            MyInfoV5Service.fetchUserinfo(tokenResp.access_token),
+          )
+          .map((claims) => v5ClaimsToMyInfoData(claims))
+        if (v5Result.isErr()) {
+          logger.error({
+            message: 'MyInfo v5 login error',
+            meta: logMeta,
+            error: v5Result.error,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+        myInfoFields = v5Result.value
+        spcpSession = { userName: myInfoFields.getUinFin() }
+        break
+      }
+
       const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
       const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
         .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
@@ -676,7 +722,31 @@ export const _handleFormAuthRedirect: ControllerHandler<
         featureFlags.useFormsgEsrvcId,
       )
       switch (form.authType) {
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
+          // Flag-gated dispatch to MyInfo v5. We check both the flag AND
+          // whether v5 is fully provisioned; if either is missing we fall
+          // back to v3 so a half-configured v5 deploy doesn't break logins.
+          const useV5 =
+            Boolean(req.growthbook?.isOn(featureFlags.switchMyinfoV5)) &&
+            MyInfoV5Service.isConfigured
+          if (useV5) {
+            return MyInfoV5Service.createRedirectURL({
+              formId,
+              scopes: internalAttrListToV5Scopes(form.getUniqueMyInfoAttrs()),
+              encodedQuery,
+            }).map(({ redirectURL, codeVerifier }) => {
+              // PKCE verifier follows the user round-trip in a httpOnly cookie.
+              // Its presence on the way back ALSO acts as the dispatch signal
+              // for the form-view path — that way the cookie schema for v3
+              // forms stays untouched.
+              res.cookie(
+                MYINFO_V5_PKCE_COOKIE_NAME,
+                codeVerifier,
+                MYINFO_V5_PKCE_COOKIE_OPTIONS,
+              )
+              return redirectURL
+            })
+          }
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
@@ -686,6 +756,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 encodedQuery,
               }),
           )
+        }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(

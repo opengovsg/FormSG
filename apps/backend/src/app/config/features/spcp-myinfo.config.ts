@@ -47,6 +47,16 @@ type IMyInfoConfig = {
   myInfoClientId: string
   myInfoClientSecret: string
   myInfoJwtSecret: string
+  // v5 — Singpass Auth API v5 / FAPI 2.0
+  // Parameterized so mockpass (http://localhost:5156/singpass/v2) and real
+  // Singpass (https://stg-id.singpass.gov.sg/auth/v2 or prod equivalent)
+  // share one code path.
+  myInfoV5Issuer: string
+  myInfoV5ClientId: string
+  myInfoV5RpJwksPublic: string
+  myInfoV5RpJwksSecret: string
+  myInfoV5RpJwksPublicPath: string
+  myInfoV5RpJwksSecretPath: string
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -154,6 +164,42 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'MYINFO_JWT_SECRET',
+  },
+  myInfoV5Issuer: {
+    doc: 'Issuer URL for Singpass Auth API v5 / MyInfo v5. Discovery doc is fetched from `${issuer}/.well-known/openid-configuration`. Parameterized so the same code targets mockpass (http://localhost:5156/singpass/v2) and prod Singpass.',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_ISSUER',
+  },
+  myInfoV5ClientId: {
+    doc: 'OAuth2 client ID registered with Singpass for the MyInfo v5 / Auth API v5 flow. Distinct from the v3 client id during dual-running.',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_CLIENT_ID',
+  },
+  myInfoV5RpJwksPublic: {
+    doc: 'RP public JWKS for the v5 flow (EC keys, sig + enc). Served at /api/v3/mi/v5/.well-known/jwks.json so the IdP can fetch it. Empty default — v5 stays soft-disabled until provisioned.',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_RP_JWKS_PUBLIC',
+  },
+  myInfoV5RpJwksSecret: {
+    doc: 'RP private JWKS for the v5 flow (EC keys, sig + enc). Used to sign client_assertion JWTs and to decrypt userinfo JWEs. Empty default — v5 stays soft-disabled until provisioned.',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_RP_JWKS_SECRET',
+  },
+  myInfoV5RpJwksPublicPath: {
+    doc: 'Path to RP public JWKS file (alternative to MYINFO_V5_RP_JWKS_PUBLIC).',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_RP_JWKS_PUBLIC_PATH',
+  },
+  myInfoV5RpJwksSecretPath: {
+    doc: 'Path to RP private JWKS file (alternative to MYINFO_V5_RP_JWKS_SECRET).',
+    format: String,
+    default: '',
+    env: 'MYINFO_V5_RP_JWKS_SECRET_PATH',
   },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",
