@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { JSONWebKeySet } from 'jose'
 import * as jose from 'jose'
-import { err, errAsync, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -355,6 +355,88 @@ export class MyInfoV5ServiceClass {
         })
         return new MyInfoV5UserinfoError()
       },
+    )
+  }
+
+  /**
+   * OIDC §3.1.3.7: the `nonce` claim in the ID Token MUST equal the nonce we
+   * generated for the authorize request. This defeats replay of a leaked auth
+   * code: an attacker who didn't observe our nonce cannot get a matching ID
+   * Token.
+   *
+   * The ID Token from Singpass arrives as either a JWE wrapping a JWS, or a
+   * bare JWS (depending on `id_token_encryption_alg_values_supported` and the
+   * mockpass profile). We detect by segment count and handle both.
+   *
+   * Backward-compat: callers can opt in by passing `expectedNonce`. If the
+   * caller doesn't know what to expect (e.g. session predates this feature),
+   * skipping this check entirely is the right thing — we leave that decision
+   * to the controller.
+   */
+  verifyIdToken({
+    idToken,
+    expectedNonce,
+  }: {
+    idToken: string
+    expectedNonce: string
+  }): ResultAsync<{ nonce?: string; sub?: string }, MyInfoV5UserinfoError> {
+    if (!this.#rpKeyset) {
+      return errAsync(new MyInfoV5UserinfoError('No keyset'))
+    }
+    // A JOSE compact JWE has 5 base64url segments; a JWS has 3.
+    const segments = idToken.split('.').length
+    const encJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'enc')
+    if (segments === 5 && !encJwk) {
+      return errAsync(
+        new MyInfoV5UserinfoError(
+          'id_token is encrypted but no enc key available',
+        ),
+      )
+    }
+    if (segments !== 3 && segments !== 5) {
+      return errAsync(
+        new MyInfoV5UserinfoError(
+          `Unexpected id_token segment count: ${segments}`,
+        ),
+      )
+    }
+    return ResultAsync.fromPromise(
+      (async () => {
+        let jws: string
+        if (segments === 5 && encJwk) {
+          const encKey = (await jose.importJWK(
+            encJwk,
+            (encJwk.alg as string) ?? 'ECDH-ES+A256KW',
+          )) as jose.KeyLike
+          const { plaintext } = await jose.compactDecrypt(idToken, encKey)
+          jws = new TextDecoder().decode(plaintext)
+        } else {
+          jws = idToken
+        }
+        const idpJwks = await this.#getIdpJwks()
+        const { payload } = await jose.jwtVerify(jws, idpJwks)
+        return payload
+      })(),
+      (error) => {
+        logger.error({
+          message: 'v5 id_token verification failed',
+          meta: { action: 'verifyIdToken' },
+          error,
+        })
+        return new MyInfoV5UserinfoError()
+      },
+    ).andThen((payload) =>
+      payload.nonce === expectedNonce
+        ? okAsync({
+            nonce:
+              typeof payload.nonce === 'string' ? payload.nonce : undefined,
+            sub: typeof payload.sub === 'string' ? payload.sub : undefined,
+          })
+        : errAsync(
+            new MyInfoV5UserinfoError(
+              'id_token nonce mismatch — possible replay',
+            ),
+          ),
     )
   }
 }

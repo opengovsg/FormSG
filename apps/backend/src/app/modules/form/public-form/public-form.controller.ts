@@ -95,9 +95,11 @@ const logger = createLoggerWithLabel(module)
 async function persistV5Session({
   codeVerifier,
   dpopEnabled,
+  nonce,
 }: {
   codeVerifier: string
   dpopEnabled: boolean
+  nonce: string
 }): Promise<string> {
   const SessionModel = getMyInfoV5SessionModel(mongoose)
   let dpopPrivateJwk: import('jose').JWK
@@ -113,6 +115,7 @@ async function persistV5Session({
   const session = await SessionModel.createSession({
     codeVerifier,
     dpopPrivateJwk,
+    nonce,
   })
   return session._id
 }
@@ -262,12 +265,12 @@ export const handleGetPublicForm: ControllerHandler<
       )
 
       // Dispatch v3 vs v5 on the session cookie. The v5 redirect handler sets
-      // it when starting a v5 login; v3 forms never set it. The cookie holds
-      // an opaque session id pointing to a Mongo doc with the PKCE verifier
-      // and (if DPoP is enabled) the per-session DPoP private JWK — needed
-      // because the auth round trip may straddle pods.
+      // it when starting a v5 login; v3 forms never set it. The cookie is
+      // HMAC-signed via cookie-parser with config.sessionSecret, so we read
+      // from `signedCookies` — cookie-parser surfaces tampered values as
+      // `false`, which falls through to v3 below.
       const sessionIdCookie: unknown =
-        req.cookies[MYINFO_V5_SESSION_COOKIE_NAME]
+        req.signedCookies[MYINFO_V5_SESSION_COOKIE_NAME]
       if (typeof sessionIdCookie === 'string' && sessionIdCookie.length > 0) {
         res.clearCookie(
           MYINFO_V5_SESSION_COOKIE_NAME,
@@ -297,12 +300,43 @@ export const handleGetPublicForm: ControllerHandler<
               dpopKeypair,
             }),
           )
-          .andThen((tokenResp) =>
-            MyInfoV5Service.fetchUserinfo({
-              accessToken: tokenResp.access_token,
-              dpopKeypair,
-            }),
-          )
+          .andThen((tokenResp) => {
+            // OIDC §3.1.3.7: verify the id_token's nonce against the one we
+            // sent on the authorize request. Backward-compat: skip when
+            // either side of the pair is missing (older session row without
+            // a nonce, or IdP that didn't return an id_token), with a logged
+            // warning rather than a hard failure. A nonce *mismatch* is
+            // hard-fail since that's the replay case we exist to defeat.
+            const sessionNonce =
+              typeof session.nonce === 'string' && session.nonce.length > 0
+                ? session.nonce
+                : undefined
+            const idToken = tokenResp.id_token
+            if (!sessionNonce || !idToken) {
+              logger.warn({
+                message:
+                  'v5 nonce verification skipped: missing session nonce or id_token',
+                meta: {
+                  ...logMeta,
+                  hasSessionNonce: !!sessionNonce,
+                  hasIdToken: !!idToken,
+                },
+              })
+              return MyInfoV5Service.fetchUserinfo({
+                accessToken: tokenResp.access_token,
+                dpopKeypair,
+              })
+            }
+            return MyInfoV5Service.verifyIdToken({
+              idToken,
+              expectedNonce: sessionNonce,
+            }).andThen(() =>
+              MyInfoV5Service.fetchUserinfo({
+                accessToken: tokenResp.access_token,
+                dpopKeypair,
+              }),
+            )
+          })
           .map((claims) => v5ClaimsToMyInfoData(claims))
         if (v5Result.isErr()) {
           logger.error({
@@ -793,11 +827,12 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               scopes: internalAttrListToV5Scopes(form.getUniqueMyInfoAttrs()),
               encodedQuery,
-            }).andThen(({ redirectURL, codeVerifier }) =>
+            }).andThen(({ redirectURL, codeVerifier, nonce }) =>
               ResultAsync.fromPromise(
                 persistV5Session({
                   codeVerifier,
                   dpopEnabled: MyInfoV5Service.dpopEnabled,
+                  nonce,
                 }).then((sessionId) => {
                   // Cookie carries an opaque session id; the actual PKCE
                   // verifier + DPoP private JWK live server-side so the round

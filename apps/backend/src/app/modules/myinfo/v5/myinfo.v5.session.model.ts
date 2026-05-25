@@ -38,6 +38,13 @@ export interface IMyInfoV5Session {
    * Mixed so the deserialized doc preserves the JWK shape directly.
    */
   dpopPrivateJwk: JWK
+  /**
+   * OIDC nonce we sent on the authorize request. The IdP echoes it back in
+   * the ID token; we verify equality after token exchange to defeat token-
+   * replay attempts. Optional for backward-compat with sessions created
+   * before nonce verification landed.
+   */
+  nonce?: string
   expireAt: Date
 }
 
@@ -45,6 +52,7 @@ export interface IMyInfoV5SessionModel {
   createSession(args: {
     codeVerifier: string
     dpopPrivateJwk: JWK
+    nonce?: string
   }): Promise<IMyInfoV5Session>
   /** One-shot: returns the session and deletes it. */
   consumeSession(sessionId: string): Promise<IMyInfoV5Session | null>
@@ -61,6 +69,7 @@ const schema = new Schema<IMyInfoV5Session>(
     },
     codeVerifier: { type: String, required: true },
     dpopPrivateJwk: { type: Object, required: true },
+    nonce: { type: String, required: false },
     expireAt: { type: Date, required: true },
   },
   { timestamps: { createdAt: 'created', updatedAt: false }, _id: false },
@@ -74,12 +83,14 @@ schema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 schema.statics.createSession = async function (args: {
   codeVerifier: string
   dpopPrivateJwk: JWK
+  nonce?: string
 }): Promise<IMyInfoV5Session> {
   const sessionId = crypto.randomUUID()
   return this.create({
     _id: sessionId,
     codeVerifier: args.codeVerifier,
     dpopPrivateJwk: args.dpopPrivateJwk,
+    nonce: args.nonce,
     expireAt: new Date(Date.now() + SESSION_TTL_MS),
   })
 }

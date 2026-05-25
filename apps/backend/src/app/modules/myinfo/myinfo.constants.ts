@@ -86,6 +86,10 @@ export const MYINFO_V5_SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax' as const,
   secure: !config.isDevOrTest,
+  // HMAC-signed via cookie-parser using `config.sessionSecret`, mirroring
+  // the `stripeState` precedent. Reads must come from `req.signedCookies`,
+  // not `req.cookies`, or the value comes back undefined.
+  signed: true,
   // Same TTL as the auth code cookie — both are tied to a single login round-trip.
   maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
 }
