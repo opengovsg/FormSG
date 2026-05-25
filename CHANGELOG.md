@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.6](https://github.com/opengovsg/formsg/compare/v7.20.5...v7.20.6) (2026-05-25)
+
+
+### Bug Fixes
+
+* mrf v3 webhook retries, payload inconsistencies and incorrect submittedSteps values (#9414) ([#9414](https://github.com/opengovsg/formsg/commit/953b2f3091d909d7fcfa22f606c50150a9bc5816))
+
+
+### Documentation
+
+* Add DPG badge to README (#9477) ([#9477](https://github.com/opengovsg/formsg/commit/f09922de5b78b31c1472b418558ae5ac5e28315e))
+
+
+### Chores
+
+* email subject title update (#9486) ([#9486](https://github.com/opengovsg/formsg/commit/7f14e809aae2a13b395079f25627d7c68e2b1b7f))
+
 ## [7.20.5](https://github.com/opengovsg/formsg/compare/v7.20.4...v7.20.5) (2026-05-21)
 
 
