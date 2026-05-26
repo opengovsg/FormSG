@@ -2,6 +2,8 @@
 'use strict'
 
 const log = require('../lib/logger')
+const { EMAIL_COLLATION } = require('../lib/db')
+const { normalizeEmail } = require('../lib/normalize')
 
 /** @typedef {import('../lib/types').AnyModel} AnyModel */
 /** @typedef {import('../lib/types').EmailMap} EmailMap */
@@ -20,28 +22,71 @@ async function preflight({ User, mapping, allowMissing }) {
   log.info(`Pre-flight: scanning ${oldEmails.length} oldEmails for matching users`)
   /** @type {Array<{ _id: unknown, email: string }>} */
   const oldDocs = await User.find({ email: { $in: oldEmails } })
+    .collation(EMAIL_COLLATION)
     .select('_id email')
     .lean()
 
   /** @type {Map<string, unknown>} */
   const oldByEmail = new Map()
   for (const u of oldDocs) {
-    oldByEmail.set(u.email, u._id)
+    // Stored email may be mixed-case; key by normalized so mapping/missing logic works.
+    oldByEmail.set(normalizeEmail(u.email), u._id)
   }
   const missing = oldEmails.filter((e) => !oldByEmail.has(e))
   log.info(
     `Pre-flight: ${oldByEmail.size} of ${oldEmails.length} oldEmails have a matching user (${missing.length} missing)`,
   )
+
+  if (missing.length > 0) {
+    // Diagnostics: help the operator figure out *why* the email didn't match.
+    // We check:
+    //   (1) Total user count — catches "wrong DB" and "empty staging".
+    //   (2) Case-insensitive regex match — catches legacy non-lowercased rows.
+    //   (3) Trim-equality via regex anchors — catches surrounding whitespace.
+    // Bounded to first 20 missing emails to avoid hammering the DB.
+    const totalUsers = await User.estimatedDocumentCount()
+    log.warn(`Diagnostic: User collection has ~${totalUsers} documents total`)
+
+    const sample = missing.slice(0, 20)
+    for (const m of sample) {
+      const escaped = m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const caseInsensitive = await User.findOne({
+        email: { $regex: `^${escaped}$`, $options: 'i' },
+      })
+        .select('_id email')
+        .lean()
+      if (caseInsensitive) {
+        log.warn(
+          `  '${m}' — found as '${caseInsensitive.email}' (case differs)`,
+        )
+        continue
+      }
+      const trimmed = await User.findOne({
+        email: { $regex: `^\\s*${escaped}\\s*$`, $options: 'i' },
+      })
+        .select('_id email')
+        .lean()
+      if (trimmed) {
+        log.warn(
+          `  '${m}' — found as ${JSON.stringify(trimmed.email)} (surrounding whitespace)`,
+        )
+        continue
+      }
+      log.warn(`  '${m}' — no user found by any variant; check the DB / collection`)
+    }
+  }
+
   if (missing.length > 0 && !allowMissing) {
-    log.error(`Missing users for the following oldEmails (first 20):`, missing.slice(0, 20))
     throw new Error(
-      `${missing.length} oldEmail(s) have no matching User. Re-run with --allow-missing to proceed anyway.`,
+      `${missing.length} oldEmail(s) have no matching User. See diagnostics above. ` +
+        `Re-run with --allow-missing to proceed anyway, or fix the input/DB first.`,
     )
   }
 
   log.info(`Pre-flight: checking newEmail collisions in User collection`)
   /** @type {Array<{ _id: unknown, email: string }>} */
   const newDocs = await User.find({ email: { $in: newEmails } })
+    .collation(EMAIL_COLLATION)
     .select('_id email')
     .lean()
 
@@ -53,10 +98,11 @@ async function preflight({ User, mapping, allowMissing }) {
   /** @type {Array<{ newEmail: string, existingUserId: string, mappedOldEmail: string }>} */
   const tolerated = []
   for (const u of newDocs) {
+    const storedNorm = normalizeEmail(u.email)
     /** @type {string | null} */
     let mappedOldEmail = null
     for (const [o, n] of mapping.entries()) {
-      if (n === u.email) {
+      if (n === storedNorm) {
         mappedOldEmail = o
         break
       }

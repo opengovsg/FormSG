@@ -124,7 +124,22 @@ async function runPhase2Cconditional(ctx) {
                         as: 'entry',
                         in: {
                           $gt: [
-                            { $size: { $setIntersection: ['$$entry.v', oldEmails] } },
+                            {
+                              $size: {
+                                $setIntersection: [
+                                  // Lowercase each recipient before the intersection so
+                                  // mixed-case stored emails match the lowercased oldEmails.
+                                  {
+                                    $map: {
+                                      input: '$$entry.v',
+                                      as: 'r',
+                                      in: { $toLower: '$$r' },
+                                    },
+                                  },
+                                  oldEmails,
+                                ],
+                              },
+                            },
                             0,
                           ],
                         },

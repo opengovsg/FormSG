@@ -92,7 +92,9 @@ async function main() {
   assert(db, 'db handle')
 
   const users = [
-    { email: 'alice.old@x.gov.sg', name: 'Alice' },
+    // Alice is intentionally seeded MIXED-CASE to verify case-insensitive
+    // matching: the CSV says alice.old@x.gov.sg, but the DB has Alice.OLD@X.gov.sg.
+    { email: 'Alice.OLD@X.gov.sg', name: 'Alice' },
     { email: 'bob.old@x.gov.sg', name: 'Bob' },
     { email: 'carol.old@x.gov.sg', name: 'Carol' },
     { email: 'dave@x.gov.sg', name: 'Dave' }, // untouched control
@@ -108,7 +110,9 @@ async function main() {
       title: 'F1',
       responseMode: 'encrypt',
       permissionList: [
-        { email: 'alice.old@x.gov.sg', write: false },
+        // Alice's permission entry is also mixed-case to verify the form scan
+        // finds it via collation.
+        { email: 'Alice.OLD@X.gov.sg', write: false },
         { email: 'bob.old@x.gov.sg', write: false },
         { email: 'bob.new@x.gov.sg', write: true },
         { email: 'unrelated@x.gov.sg', write: false },

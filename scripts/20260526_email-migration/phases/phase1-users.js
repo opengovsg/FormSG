@@ -3,13 +3,15 @@
 
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
+const { EMAIL_COLLATION } = require('../lib/db')
+const { normalizeEmail } = require('../lib/normalize')
 
 /** @typedef {import('../lib/types').PhaseContext} PhaseContext */
 
 const PHASE = '1'
 
 /**
- * @param {{ code?: number, message?: string } | unknown} err
+ * @param {unknown} err
  * @returns {err is { code: number, message?: string }}
  */
 function isMongoErrorWithCode(err) {
@@ -24,9 +26,11 @@ function isMongoErrorWithCode(err) {
 /**
  * Phase 1: rewrite User.email from oldEmail to newEmail.
  *
- * Filter guard: `email: oldEmail` makes the update idempotent and safe under
- * concurrent edits. If something flipped the email between scan and write,
- * matchedCount === 0 and we log skip:concurrent-modification.
+ * The scan uses case-insensitive collation so mixed-case stored emails match
+ * the lowercased CSV input. The TOCTOU guard on updateOne uses the actual
+ * stored email value (preserving case), so we don't need collation on the
+ * write. The $set writes the lowercased newEmail, normalizing case as a
+ * side effect.
  *
  * @param {PhaseContext} ctx
  */
@@ -37,6 +41,7 @@ async function runPhase1(ctx) {
 
   /** @type {Array<{ _id: unknown, email: string }>} */
   const users = await User.find({ email: { $in: oldEmails } })
+    .collation(EMAIL_COLLATION)
     .select('_id email')
     .lean()
   log.info(`[Phase 1] ${users.length} users matched; planned writes: ${users.length}`)
@@ -49,18 +54,32 @@ async function runPhase1(ctx) {
     users,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (user) => {
-      const oldEmail = user.email
-      const newEmail = mapping.get(oldEmail)
+      // user.email is the stored value (may be mixed case). The mapping is
+      // keyed by normalized lowercase. Use the stored value as the TOCTOU
+      // guard in the updateOne filter; use normalized for mapping lookup.
+      const storedEmail = user.email
+      const normalizedOld = normalizeEmail(storedEmail)
+      const newEmail = mapping.get(normalizedOld)
       if (!newEmail) {
         skippedNotMapped++
-        backup.audit({ phase: PHASE, _id: String(user._id), status: 'skip:not-mapped', oldEmail })
+        backup.audit({
+          phase: PHASE,
+          _id: String(user._id),
+          status: 'skip:not-mapped',
+          oldEmail: storedEmail,
+        })
         return
       }
 
       /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await User.findById(user._id).lean()
       if (!fullDoc) {
-        backup.audit({ phase: PHASE, _id: String(user._id), status: 'skip:vanished', oldEmail })
+        backup.audit({
+          phase: PHASE,
+          _id: String(user._id),
+          status: 'skip:vanished',
+          oldEmail: storedEmail,
+        })
         return
       }
       backup.snapshotUser(fullDoc)
@@ -69,7 +88,7 @@ async function runPhase1(ctx) {
         backup.audit({
           phase: PHASE,
           _id: String(user._id),
-          oldEmail,
+          oldEmail: storedEmail,
           newEmail,
           status: 'dry-run',
         })
@@ -80,7 +99,7 @@ async function runPhase1(ctx) {
       let res
       try {
         res = await User.updateOne(
-          { _id: user._id, email: oldEmail },
+          { _id: user._id, email: storedEmail },
           { $set: { email: newEmail } },
           { writeConcern: { w: 'majority' } },
         )
@@ -89,14 +108,14 @@ async function runPhase1(ctx) {
           backup.audit({
             phase: PHASE,
             _id: String(user._id),
-            oldEmail,
+            oldEmail: storedEmail,
             newEmail,
             status: 'fail:E11000',
             error: String(err.message || err),
           })
           backup.flushBatch()
           throw new Error(
-            `[Phase 1] E11000 on user ${user._id} ('${oldEmail}' -> '${newEmail}'). Aborting phase.`,
+            `[Phase 1] E11000 on user ${user._id} ('${storedEmail}' -> '${newEmail}'). Aborting phase.`,
           )
         }
         throw err
@@ -107,7 +126,7 @@ async function runPhase1(ctx) {
         backup.audit({
           phase: PHASE,
           _id: String(user._id),
-          oldEmail,
+          oldEmail: storedEmail,
           newEmail,
           status: 'skip:concurrent-modification',
         })
@@ -118,7 +137,7 @@ async function runPhase1(ctx) {
       backup.audit({
         phase: PHASE,
         _id: String(user._id),
-        oldEmail,
+        oldEmail: storedEmail,
         newEmail,
         status: 'applied',
         updateResult: { matched: res.matchedCount, modified: res.modifiedCount },

@@ -6,7 +6,7 @@ const { execSync } = require('child_process')
 const log = require('./lib/logger')
 const { parseCli } = require('./lib/args')
 const { loadCsv } = require('./lib/csv')
-const { connect, disconnect, models, mongoose } = require('./lib/db')
+const { connect, disconnect, models, mongoose, EMAIL_COLLATION } = require('./lib/db')
 const { BackupStore } = require('./lib/backup')
 const { TokenBucket } = require('./lib/rate-limit')
 const { confirm } = require('./lib/confirm')
@@ -121,19 +121,25 @@ async function main() {
     const oldEmails = [...csvResult.map.keys()]
 
     if (wants('1')) {
-      const plan = await User.countDocuments({ email: { $in: oldEmails } })
+      const plan = await User.countDocuments({ email: { $in: oldEmails } }).collation(
+        EMAIL_COLLATION,
+      )
       if (await maybeConfirm({ dryRun: args.dryRun, phaseLabel: 'Phase 1', plannedRows: plan })) {
         await runPhase1(ctx)
       }
     }
     if (wants('2a')) {
-      const plan = await Form.countDocuments({ 'permissionList.email': { $in: oldEmails } })
+      const plan = await Form.countDocuments({
+        'permissionList.email': { $in: oldEmails },
+      }).collation(EMAIL_COLLATION)
       if (await maybeConfirm({ dryRun: args.dryRun, phaseLabel: 'Phase 2A', plannedRows: plan })) {
         await runPhase2A(ctx)
       }
     }
     if (wants('2b')) {
-      const plan = await Form.countDocuments({ emails: { $in: oldEmails } })
+      const plan = await Form.countDocuments({ emails: { $in: oldEmails } }).collation(
+        EMAIL_COLLATION,
+      )
       if (await maybeConfirm({ dryRun: args.dryRun, phaseLabel: 'Phase 2B', plannedRows: plan })) {
         await runPhase2B(ctx)
       }

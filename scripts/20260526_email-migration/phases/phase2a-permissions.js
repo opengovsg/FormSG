@@ -4,6 +4,7 @@
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 const { normalizeEmail } = require('../lib/normalize')
+const { EMAIL_COLLATION } = require('../lib/db')
 
 /** @typedef {import('../lib/types').PhaseContext} PhaseContext */
 /** @typedef {import('../lib/types').EmailMap} EmailMap */
@@ -109,6 +110,7 @@ async function runPhase2A(ctx) {
 
   /** @type {Array<{ _id: unknown, permissionList: PermissionEntry[], lastModified: Date }>} */
   const forms = await Form.find({ 'permissionList.email': { $in: oldEmails } })
+    .collation(EMAIL_COLLATION)
     .select('_id permissionList lastModified')
     .lean()
   log.info(`[Phase 2A] ${forms.length} forms matched`)

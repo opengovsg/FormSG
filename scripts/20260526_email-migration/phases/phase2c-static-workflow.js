@@ -4,6 +4,7 @@
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 const { rewriteEmails } = require('./phase2b-emails')
+const { EMAIL_COLLATION } = require('../lib/db')
 
 /** @typedef {import('../lib/types').PhaseContext} PhaseContext */
 /** @typedef {import('../lib/types').EmailMap} EmailMap */
@@ -48,6 +49,7 @@ async function runPhase2Cstatic(ctx) {
       $elemMatch: { workflow_type: 'static', emails: { $in: oldEmails } },
     },
   })
+    .collation(EMAIL_COLLATION)
     .select('_id form_workflows lastModified')
     .lean()
   log.info(`[Phase 2C-i] ${forms.length} forms matched`)
