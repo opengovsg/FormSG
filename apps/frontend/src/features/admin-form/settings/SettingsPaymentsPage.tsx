@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { FormResponseMode } from 'formsg-shared/types'
 
 import { CategoryHeader } from './components/CategoryHeader'
@@ -6,6 +8,7 @@ import { PaymentsUnsupportedMsg } from './components/PaymentSettingsSection/Paym
 import { useAdminFormSettings } from './queries'
 
 export const SettingsPaymentsPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading } = useAdminFormSettings()
 
   // Payments are only supported in storage mode; show message if form response mode is enything else.
@@ -15,7 +18,9 @@ export const SettingsPaymentsPage = (): JSX.Element => {
 
   return (
     <>
-      <CategoryHeader>Payments</CategoryHeader>
+      <CategoryHeader>
+        {t('features.adminForm.settings.payments.title')}
+      </CategoryHeader>
       <PaymentSettingsSection />
     </>
   )
