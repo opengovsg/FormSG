@@ -52,7 +52,7 @@ export const BillingForm = ({
             isReadOnly={formState.isSubmitting}
             mb="2.5rem"
           >
-            <FormLabel isRequired>Enter e-service or form ID</FormLabel>
+            <FormLabel isRequired>Enter e-service ID</FormLabel>
             <Input
               autoComplete="email"
               autoFocus
