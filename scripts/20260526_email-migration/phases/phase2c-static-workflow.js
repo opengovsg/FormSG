@@ -12,23 +12,23 @@ const { rewriteEmails } = require('./phase2b-emails')
 const PHASE = '2c-static'
 
 /**
- * Identify static-workflow steps that need updates.
+ * Identify static-workflow steps that need updates. Replace semantics only.
  *
  * @param {WorkflowStep[] | undefined} workflows
  * @param {EmailMap} mapping
- * @returns {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[] }>}
+ * @returns {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[], collisions: Array<{ oldEmail: string, newEmail: string }> }>}
  */
 function planStaticSteps(workflows, mapping) {
-  /** @type {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[] }>} */
+  /** @type {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[], collisions: Array<{ oldEmail: string, newEmail: string }> }>} */
   const out = []
   for (const step of workflows || []) {
     if (!step || step.workflow_type !== 'static') continue
     const stepId = step._id
     if (!stepId) continue
     const original = Array.isArray(step.emails) ? step.emails : []
-    const { newEmails, changed } = rewriteEmails(original, mapping)
+    const { newEmails, changed, collisions } = rewriteEmails(original, mapping)
     if (changed) {
-      out.push({ stepId, originalEmails: original, newEmails })
+      out.push({ stepId, originalEmails: original, newEmails, collisions })
     }
   }
   return out
@@ -38,9 +38,9 @@ function planStaticSteps(workflows, mapping) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2Cstatic(ctx) {
-  const { Form, mapping, backup, bucket, batchSize, dryRun } = ctx
+  const { Form, mapping, backup, bucket, batchSize, dryRun, collisionPrompt } = ctx
   const oldEmails = [...mapping.keys()]
-  log.info(`[Phase 2C-i] scanning forms with static workflow emails in oldEmails`)
+  log.info(`[Phase 2C-i] (replace-only) scanning forms with static workflow emails in oldEmails`)
 
   /** @type {Array<{ _id: unknown, form_workflows: WorkflowStep[], lastModified: Date }>} */
   const forms = await Form.find({
@@ -55,14 +55,49 @@ async function runPhase2Cstatic(ctx) {
   let appliedWrites = 0
   let skippedConcurrentWrites = 0
   let formsTouched = 0
+  let skippedByOperator = 0
+  let aborted = false
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
+      if (aborted) return
+
       const plans = planStaticSteps(form.form_workflows, mapping)
       if (plans.length === 0) return
       formsTouched++
+
+      // Resolve any collisions across all steps in this form before writing.
+      for (const plan of plans) {
+        for (const c of plan.collisions) {
+          const decision = await collisionPrompt.ask({
+            formId: String(form._id),
+            location: `form_workflows[${String(plan.stepId)}].emails`,
+            oldEmail: c.oldEmail,
+            newEmail: c.newEmail,
+            detail: 'replace would shrink the step recipient list',
+          })
+          if (decision === 'abort') {
+            aborted = true
+            backup.audit({ phase: PHASE, _id: String(form._id), status: 'fail:operator-abort' })
+            backup.flushBatch()
+            throw new Error('[Phase 2C-i] operator aborted at collision prompt')
+          }
+          if (decision === 'skip') {
+            skippedByOperator++
+            backup.audit({
+              phase: PHASE,
+              _id: String(form._id),
+              stepId: String(plan.stepId),
+              status: 'skip:operator-decline',
+              oldEmail: c.oldEmail,
+              newEmail: c.newEmail,
+            })
+            return
+          }
+        }
+      }
 
       /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await Form.findById(form._id).lean()
@@ -127,9 +162,9 @@ async function runPhase2Cstatic(ctx) {
   )
 
   log.info(
-    `[Phase 2C-i] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites}${dryRun ? ' (DRY-RUN)' : ''}`,
+    `[Phase 2C-i] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites} skipped-by-operator=${skippedByOperator}${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { formsTouched, appliedWrites, skippedConcurrentWrites }
+  return { formsTouched, appliedWrites, skippedConcurrentWrites, skippedByOperator }
 }
 
 module.exports = { runPhase2Cstatic, planStaticSteps }

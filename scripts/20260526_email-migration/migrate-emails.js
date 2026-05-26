@@ -9,7 +9,9 @@ const { loadCsv } = require('./lib/csv')
 const { connect, disconnect, models, mongoose } = require('./lib/db')
 const { BackupStore } = require('./lib/backup')
 const { TokenBucket } = require('./lib/rate-limit')
-const { confirm, closeReadline } = require('./lib/confirm')
+const { confirm } = require('./lib/confirm')
+const { closeReadline } = require('./lib/stdin')
+const { CollisionPrompt } = require('./lib/collision-prompt')
 const { preflight } = require('./phases/preflight')
 const { runPhase1 } = require('./phases/phase1-users')
 const { runPhase2A } = require('./phases/phase2a-permissions')
@@ -64,7 +66,7 @@ async function main() {
   }
 
   log.info(
-    `Starting migration: phase=${args.phase} dryRun=${args.dryRun} batchSize=${args.batchSize} rate=${args.maxWritesPerSec}/s`,
+    `Starting migration: phase=${args.phase} mode=${args.mode} dryRun=${args.dryRun} batchSize=${args.batchSize} rate=${args.maxWritesPerSec}/s`,
   )
 
   await connect(dbUri)
@@ -97,6 +99,7 @@ async function main() {
   log.info(`Backup dir: ${backup.dir}`)
 
   const bucket = new TokenBucket(args.maxWritesPerSec)
+  const collisionPrompt = new CollisionPrompt()
   /** @type {PhaseContext} */
   const ctx = {
     User,
@@ -105,8 +108,10 @@ async function main() {
     mapping: csvResult.map,
     backup,
     bucket,
+    collisionPrompt,
     batchSize: args.batchSize,
     dryRun: args.dryRun,
+    mode: args.mode,
   }
 
   let exitCode = 0
@@ -133,31 +138,31 @@ async function main() {
         await runPhase2B(ctx)
       }
     }
-    if (wants('2c')) {
-      const planStatic = await Form.countDocuments({
-        form_workflows: {
-          $elemMatch: { workflow_type: 'static', emails: { $in: oldEmails } },
-        },
-      })
-      if (
-        await maybeConfirm({
-          dryRun: args.dryRun,
-          phaseLabel: 'Phase 2C-i (static)',
-          plannedRows: planStatic,
-        })
-      ) {
-        await runPhase2Cstatic(ctx)
-      }
-      if (
-        await maybeConfirm({
-          dryRun: args.dryRun,
-          phaseLabel: 'Phase 2C-ii (conditional)',
-          plannedRows: 'unknown-pre-scan',
-        })
-      ) {
-        await runPhase2Cconditional(ctx)
-      }
-    }
+    // if (wants('2c')) {
+    //   const planStatic = await Form.countDocuments({
+    //     form_workflows: {
+    //       $elemMatch: { workflow_type: 'static', emails: { $in: oldEmails } },
+    //     },
+    //   })
+    //   if (
+    //     await maybeConfirm({
+    //       dryRun: args.dryRun,
+    //       phaseLabel: 'Phase 2C-i (static)',
+    //       plannedRows: planStatic,
+    //     })
+    //   ) {
+    //     await runPhase2Cstatic(ctx)
+    //   }
+    //   if (
+    //     await maybeConfirm({
+    //       dryRun: args.dryRun,
+    //       phaseLabel: 'Phase 2C-ii (conditional)',
+    //       plannedRows: 'unknown-pre-scan',
+    //     })
+    //   ) {
+    //     await runPhase2Cconditional(ctx)
+    //   }
+    // }
     if (wants('verify') || args.phase === 'all') {
       const v = await runPhase3({ User, Form, backup })
       if (v.failed > 0) {

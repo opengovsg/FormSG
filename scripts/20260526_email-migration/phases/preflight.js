@@ -45,8 +45,13 @@ async function preflight({ User, mapping, allowMissing }) {
     .select('_id email')
     .lean()
 
+  /** @type {Set<string>} */
+  const missingSet = new Set(missing)
+
   /** @type {Array<{ newEmail: string, existingUserId: string, expectedOldEmail: string, expectedUserId: string | null }>} */
   const collisions = []
+  /** @type {Array<{ newEmail: string, existingUserId: string, mappedOldEmail: string }>} */
+  const tolerated = []
   for (const u of newDocs) {
     /** @type {string | null} */
     let mappedOldEmail = null
@@ -58,14 +63,25 @@ async function preflight({ User, mapping, allowMissing }) {
     }
     if (!mappedOldEmail) continue
     const expectedId = oldByEmail.get(mappedOldEmail)
-    if (!expectedId || String(expectedId) !== String(u._id)) {
-      collisions.push({
+    if (expectedId && String(expectedId) === String(u._id)) continue
+
+    // No expected old user. This commonly means the user was already migrated
+    // in a previous run. Tolerate when --allow-missing is set; otherwise this
+    // is still ambiguous so default to refusing.
+    if (!expectedId && missingSet.has(mappedOldEmail) && allowMissing) {
+      tolerated.push({
         newEmail: u.email,
         existingUserId: String(u._id),
-        expectedOldEmail: mappedOldEmail,
-        expectedUserId: expectedId ? String(expectedId) : null,
+        mappedOldEmail,
       })
+      continue
     }
+    collisions.push({
+      newEmail: u.email,
+      existingUserId: String(u._id),
+      expectedOldEmail: mappedOldEmail,
+      expectedUserId: expectedId ? String(expectedId) : null,
+    })
   }
 
   if (collisions.length > 0) {
@@ -74,7 +90,15 @@ async function preflight({ User, mapping, allowMissing }) {
       `${collisions.length} newEmail(s) are already taken by a different User. Resolve before re-running.`,
     )
   }
-  log.info(`Pre-flight: no newEmail collisions`)
+  if (tolerated.length > 0) {
+    log.warn(
+      `Pre-flight: ${tolerated.length} newEmail(s) already exist with no matching oldEmail — ` +
+        `assuming prior partial migration (--allow-missing). First 10:`,
+      tolerated.slice(0, 10),
+    )
+  } else {
+    log.info(`Pre-flight: no newEmail collisions`)
+  }
 
   return { missing, oldByEmail }
 }

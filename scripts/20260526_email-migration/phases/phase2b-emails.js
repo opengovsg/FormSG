@@ -11,30 +11,69 @@ const { normalizeEmail } = require('../lib/normalize')
 const PHASE = '2b'
 
 /**
- * Map a notification-emails list. Order is preserved per first occurrence;
- * duplicates are silently dropped (shrink accepted per spec).
+ * Replace-mode rewrite for an email list. Mapped entries are swapped to the
+ * new value; duplicates are silently dropped (shrink accepted per spec) — but
+ * a true collision (both old and new originally present) is also flagged for
+ * the caller to confirm.
+ *
+ * Exported because Phase 2C-static reuses this for workflow step emails.
  *
  * @param {string[]} emails
  * @param {EmailMap} mapping
- * @returns {{ newEmails: string[], changed: boolean }}
+ * @returns {{ newEmails: string[], changed: boolean, collisions: Array<{ oldEmail: string, newEmail: string }> }}
  */
 function rewriteEmails(emails, mapping) {
+  /** @type {Set<string>} */
+  const presentNormalized = new Set(emails.map(normalizeEmail))
   /** @type {Set<string>} */
   const seen = new Set()
   /** @type {string[]} */
   const out = []
+  /** @type {Array<{ oldEmail: string, newEmail: string }>} */
+  const collisions = []
   let changed = false
+
   for (const raw of emails) {
     const orig = normalizeEmail(raw)
     const mapped = mapping.get(orig)
     const next = mapped || orig
-    if (mapped) changed = true
+    if (mapped) {
+      changed = true
+      if (presentNormalized.has(mapped) && mapped !== orig) {
+        collisions.push({ oldEmail: orig, newEmail: mapped })
+      }
+    }
     if (seen.has(next)) {
       changed = true
       continue
     }
     seen.add(next)
     out.push(next)
+  }
+  return { newEmails: out, changed, collisions }
+}
+
+/**
+ * Add-mode rewrite: leave existing entries untouched; append the new email
+ * after the list (preserving order) whenever it isn't already present.
+ *
+ * @param {string[]} emails
+ * @param {EmailMap} mapping
+ * @returns {{ newEmails: string[], changed: boolean }}
+ */
+function addEmails(emails, mapping) {
+  const normalized = emails.map(normalizeEmail)
+  /** @type {Set<string>} */
+  const present = new Set(normalized)
+  const out = [...normalized]
+  let changed = false
+  for (const orig of normalized) {
+    const mapped = mapping.get(orig)
+    if (!mapped) continue
+    if (present.has(mapped)) continue
+    out.push(mapped)
+    present.add(mapped)
+    changed = true
   }
   return { newEmails: out, changed }
 }
@@ -43,9 +82,9 @@ function rewriteEmails(emails, mapping) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2B(ctx) {
-  const { Form, mapping, backup, bucket, batchSize, dryRun } = ctx
+  const { Form, mapping, backup, bucket, batchSize, dryRun, mode, collisionPrompt } = ctx
   const oldEmails = [...mapping.keys()]
-  log.info(`[Phase 2B] scanning forms with emails in oldEmails`)
+  log.info(`[Phase 2B] mode=${mode} — scanning forms with emails in oldEmails`)
 
   /** @type {Array<{ _id: unknown, emails: string[], responseMode?: string, lastModified: Date }>} */
   const forms = await Form.find({ emails: { $in: oldEmails } })
@@ -56,15 +95,63 @@ async function runPhase2B(ctx) {
   let applied = 0
   let skippedConcurrent = 0
   let skippedNoChange = 0
+  let skippedByOperator = 0
+  let aborted = false
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
-      const { newEmails, changed } = rewriteEmails(form.emails || [], mapping)
+      if (aborted) return
+
+      const original = form.emails || []
+      /** @type {string[]} */
+      let newEmails
+      let changed
+      /** @type {Array<{ oldEmail: string, newEmail: string }>} */
+      let collisions = []
+
+      if (mode === 'add') {
+        const r = addEmails(original, mapping)
+        newEmails = r.newEmails
+        changed = r.changed
+      } else {
+        const r = rewriteEmails(original, mapping)
+        newEmails = r.newEmails
+        changed = r.changed
+        collisions = r.collisions
+      }
+
       if (!changed) {
         skippedNoChange++
         return
+      }
+
+      for (const c of collisions) {
+        const decision = await collisionPrompt.ask({
+          formId: String(form._id),
+          location: 'emails',
+          oldEmail: c.oldEmail,
+          newEmail: c.newEmail,
+          detail: 'replace would shrink the notification list',
+        })
+        if (decision === 'abort') {
+          aborted = true
+          backup.audit({ phase: PHASE, _id: String(form._id), status: 'fail:operator-abort' })
+          backup.flushBatch()
+          throw new Error('[Phase 2B] operator aborted phase at collision prompt')
+        }
+        if (decision === 'skip') {
+          skippedByOperator++
+          backup.audit({
+            phase: PHASE,
+            _id: String(form._id),
+            status: 'skip:operator-decline',
+            oldEmail: c.oldEmail,
+            newEmail: c.newEmail,
+          })
+          return
+        }
       }
 
       if (form.responseMode === 'email' && newEmails.length === 0) {
@@ -92,7 +179,8 @@ async function runPhase2B(ctx) {
           phase: PHASE,
           _id: String(form._id),
           status: 'dry-run',
-          originalLength: (form.emails || []).length,
+          mode,
+          originalLength: original.length,
           newLength: newEmails.length,
         })
         return
@@ -119,8 +207,9 @@ async function runPhase2B(ctx) {
         phase: PHASE,
         _id: String(form._id),
         status: 'applied',
+        mode,
         lastModifiedAtScan: form.lastModified,
-        originalLength: (form.emails || []).length,
+        originalLength: original.length,
         newLength: newEmails.length,
         updateResult: { matched: res.matchedCount, modified: res.modifiedCount },
       })
@@ -128,9 +217,13 @@ async function runPhase2B(ctx) {
   )
 
   log.info(
-    `[Phase 2B] done: applied=${applied} skipped-concurrent=${skippedConcurrent} skipped-no-change=${skippedNoChange}${dryRun ? ' (DRY-RUN)' : ''}`,
+    `[Phase 2B] done: applied=${applied} ` +
+      `skipped-concurrent=${skippedConcurrent} ` +
+      `skipped-no-change=${skippedNoChange} ` +
+      `skipped-by-operator=${skippedByOperator}` +
+      `${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { applied, skippedConcurrent, skippedNoChange }
+  return { applied, skippedConcurrent, skippedNoChange, skippedByOperator }
 }
 
-module.exports = { runPhase2B, rewriteEmails }
+module.exports = { runPhase2B, rewriteEmails, addEmails }
