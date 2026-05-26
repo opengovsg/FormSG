@@ -213,7 +213,7 @@ const transformToSignatureOutput = (
   schema: SignatureFieldSchema,
   input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
-  let answerArray: string[] = []
+  let answerArray: [string, string] = ['', '']
   if (input && input.value.length > 0) {
     answerArray = [input.type, convertToSignatureStringOutput(input.value)]
   }

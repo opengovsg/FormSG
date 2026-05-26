@@ -134,7 +134,7 @@ export type UenResponse = z.infer<typeof UenResponse>
 
 export const SignatureResponse = MultiAnswerResponse.extend({
   fieldType: z.literal(BasicField.Signature),
-  answerArray: z.array(z.string()) as unknown as z.Schema<string[]>,
+  answerArray: z.tuple([z.string(), z.string()]), // [signatureType, stringifiedSignatureValue]
 })
 
 export type SignatureResponse = z.infer<typeof SignatureResponse>

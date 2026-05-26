@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
 import {
@@ -10,6 +10,7 @@ import {
   useMergeRefs,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import { datadogLogs } from '@datadog/browser-logs'
 import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
@@ -17,6 +18,8 @@ import { MB } from 'formsg-shared/constants/file'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
+
+import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
@@ -141,6 +144,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     ref,
   ) => {
     const { t } = useTranslation()
+    const publicFormId = useContext(PublicFormContext)?.formId
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -221,21 +225,43 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             initialQuality: 0.8,
             useWebWorker: false,
             preserveExif: true,
-          }).then((blob) =>
-            onChange(
+          }).then((blob) => {
+            if (blob.size === 0) {
+              datadogLogs.logger.warn('attachment empty after compression', {
+                formId: publicFormId,
+                fileName: acceptedFile.name,
+                originalSize: acceptedFile.size,
+                originalType: acceptedFile.type,
+                reason: 'imageCompressionEmpty',
+              })
+              return onError?.(
+                t(
+                  'features.publicForm.components.fields.attachment.error.imageProcessingError',
+                ),
+              )
+            }
+            return onChange(
               new File([blob], acceptedFile.name, {
                 type: blob.type,
               }),
-            ),
-          )
+            )
+          })
         }
         onChange(acceptedFile)
       },
-      [accept, maxSize, onChange, onError, t],
+      [accept, publicFormId, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
+        if (file.size === 0) {
+          return {
+            code: 'file-empty',
+            message: t(
+              'features.publicForm.components.fields.attachment.error.fileEmpty',
+            ),
+          }
+        }
         if (!IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type)) {
           if (maxSize && file.size > maxSize) {
             return {
@@ -243,14 +269,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               message: t(
                 'features.publicForm.components.fields.attachment.error.fileTooLarge',
                 { readableMaxSize },
-              ),
-            }
-          }
-          if (file.size === 0) {
-            return {
-              code: 'file-empty',
-              message: t(
-                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             }
           }

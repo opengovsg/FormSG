@@ -171,7 +171,7 @@ export const flattenV4ToFormFields = ({
           _id: fieldId,
           question,
           fieldType,
-          answerArray: [JSON.stringify(answer.value)],
+          answerArray: [answer.type, JSON.stringify(answer.value)],
         })
         break
       }

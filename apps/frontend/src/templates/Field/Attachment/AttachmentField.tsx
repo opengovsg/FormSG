@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import {
   Controller,
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from 'formsg-shared/constants/file'
@@ -13,6 +14,8 @@ import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
 import Attachment from '~components/Field/Attachment'
+
+import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
@@ -33,7 +36,9 @@ export const AttachmentField = ({
   colorTheme = FormColorTheme.Blue,
   isHighContrast,
 }: AttachmentFieldProps): JSX.Element => {
+  const { t } = useTranslation()
   const fieldName = schema._id
+  const publicFormId = useContext(PublicFormContext)?.formId
   const validationRules = useAttachmentValidationRules(
     schema,
     disableRequiredValidation,
@@ -80,6 +85,22 @@ export const AttachmentField = ({
           const buffer = await fileArrayBuffer(file)
           const clone = new File([buffer], file.name, { type: file.type })
 
+          if (clone.size === 0) {
+            setErrorMessage(
+              t(
+                'features.publicForm.components.fields.attachment.error.fileReadError',
+              ),
+            )
+            datadogLogs.logger.warn('attachment file clone is empty', {
+              formId: publicFormId,
+              fileName: file.name,
+              originalSize: file.size,
+              cloneSize: clone.size,
+              reason: 'fileCloneEmpty',
+            })
+            return onChange(undefined)
+          }
+
           /**
            * Set a custom field to force attachment field to remain dirty.
            * React Hook Form is unable to evaluate dirtiness file when comparing File objects https://react-hook-form.com/docs/useformstate#return
@@ -91,7 +112,9 @@ export const AttachmentField = ({
           return onChange(clone)
         } catch (error) {
           setErrorMessage(
-            'There was an error reading your file. If you are uploading a file and using online storage such as Google Drive, download your file before attaching the downloaded version. Otherwise, please refresh and try again.',
+            t(
+              'features.publicForm.components.fields.attachment.error.fileReadError',
+            ),
           )
 
           // For RUM error tracking
@@ -102,7 +125,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, setErrorMessage, schema.disabled],
+    [clearErrors, fieldName, publicFormId, setErrorMessage, schema.disabled, t],
   )
 
   return (
