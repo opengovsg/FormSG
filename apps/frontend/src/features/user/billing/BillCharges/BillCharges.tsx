@@ -127,9 +127,9 @@ export const BillCharges = ({
       <Stack spacing="2rem">
         <Stack spacing="0.5rem">
           <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
-            Bill charges
+            Singpass transactions
           </Text>
-          <Text>Export monthly bill charges</Text>
+          <Text>Export monthly transactions</Text>
         </Stack>
         <Flex flexDir="column" h="100%">
           <Grid
