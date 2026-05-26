@@ -1,21 +1,29 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 
+/** @typedef {import('../lib/types').AnyModel} AnyModel */
+/** @typedef {import('../lib/types').EmailMap} EmailMap */
+
 /**
  * DB-side pre-flight checks. CSV-shape checks already ran in lib/csv.js.
  *
- * Returns nothing; throws to abort the run.
+ * Throws to abort the run.
+ *
+ * @param {{ User: AnyModel, mapping: EmailMap, allowMissing: boolean }} args
  */
 async function preflight({ User, mapping, allowMissing }) {
   const oldEmails = [...mapping.keys()]
   const newEmails = [...mapping.values()]
 
   log.info(`Pre-flight: scanning ${oldEmails.length} oldEmails for matching users`)
+  /** @type {Array<{ _id: unknown, email: string }>} */
   const oldDocs = await User.find({ email: { $in: oldEmails } })
     .select('_id email')
     .lean()
 
+  /** @type {Map<string, unknown>} */
   const oldByEmail = new Map()
   for (const u of oldDocs) {
     oldByEmail.set(u.email, u._id)
@@ -32,13 +40,15 @@ async function preflight({ User, mapping, allowMissing }) {
   }
 
   log.info(`Pre-flight: checking newEmail collisions in User collection`)
+  /** @type {Array<{ _id: unknown, email: string }>} */
   const newDocs = await User.find({ email: { $in: newEmails } })
     .select('_id email')
     .lean()
 
+  /** @type {Array<{ newEmail: string, existingUserId: string, expectedOldEmail: string, expectedUserId: string | null }>} */
   const collisions = []
   for (const u of newDocs) {
-    // Find the oldEmail that maps to this newEmail.
+    /** @type {string | null} */
     let mappedOldEmail = null
     for (const [o, n] of mapping.entries()) {
       if (n === u.email) {
@@ -46,10 +56,7 @@ async function preflight({ User, mapping, allowMissing }) {
         break
       }
     }
-    if (!mappedOldEmail) {
-      // Shouldn't happen (we queried by newEmails) but be defensive.
-      continue
-    }
+    if (!mappedOldEmail) continue
     const expectedId = oldByEmail.get(mappedOldEmail)
     if (!expectedId || String(expectedId) !== String(u._id)) {
       collisions.push({

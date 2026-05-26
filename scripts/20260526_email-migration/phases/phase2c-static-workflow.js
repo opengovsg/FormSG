@@ -1,16 +1,25 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 const { rewriteEmails } = require('./phase2b-emails')
 
+/** @typedef {import('../lib/types').PhaseContext} PhaseContext */
+/** @typedef {import('../lib/types').EmailMap} EmailMap */
+/** @typedef {import('../lib/types').WorkflowStep} WorkflowStep */
+
 const PHASE = '2c-static'
 
 /**
  * Identify static-workflow steps that need updates.
- * Returns [{ stepId, originalEmails, newEmails }, ...] for steps that changed.
+ *
+ * @param {WorkflowStep[] | undefined} workflows
+ * @param {EmailMap} mapping
+ * @returns {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[] }>}
  */
 function planStaticSteps(workflows, mapping) {
+  /** @type {Array<{ stepId: unknown, originalEmails: string[], newEmails: string[] }>} */
   const out = []
   for (const step of workflows || []) {
     if (!step || step.workflow_type !== 'static') continue
@@ -25,17 +34,15 @@ function planStaticSteps(workflows, mapping) {
   return out
 }
 
-async function runPhase2Cstatic({
-  Form,
-  mapping,
-  backup,
-  bucket,
-  batchSize,
-  dryRun,
-}) {
+/**
+ * @param {PhaseContext} ctx
+ */
+async function runPhase2Cstatic(ctx) {
+  const { Form, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2C-i] scanning forms with static workflow emails in oldEmails`)
 
+  /** @type {Array<{ _id: unknown, form_workflows: WorkflowStep[], lastModified: Date }>} */
   const forms = await Form.find({
     form_workflows: {
       $elemMatch: { workflow_type: 'static', emails: { $in: oldEmails } },
@@ -57,6 +64,7 @@ async function runPhase2Cstatic({
       if (plans.length === 0) return
       formsTouched++
 
+      /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await Form.findById(form._id).lean()
       if (!fullDoc) {
         backup.audit({ phase: PHASE, _id: String(form._id), status: 'skip:vanished' })
@@ -64,9 +72,7 @@ async function runPhase2Cstatic({
       }
       backup.snapshotForm(fullDoc)
 
-      // Chain lastModified across multiple writes on the same form: each write
-      // bumps it, so the second filter must use the timestamp from the first
-      // successful write, not the original scan.
+      /** @type {Date} */
       let expectedLastModified = form.lastModified
 
       for (const plan of plans) {
@@ -83,6 +89,7 @@ async function runPhase2Cstatic({
         }
 
         await bucket.take()
+        /** @type {{ lastModified: Date } | null} */
         const res = await Form.findOneAndUpdate(
           {
             _id: form._id,
@@ -102,8 +109,6 @@ async function runPhase2Cstatic({
             status: 'skip:concurrent-modification',
             lastModifiedAtScan: expectedLastModified,
           })
-          // Don't continue with further plans on this form — the doc moved
-          // and our subsequent reads of form_workflows are stale.
           return
         }
         appliedWrites++

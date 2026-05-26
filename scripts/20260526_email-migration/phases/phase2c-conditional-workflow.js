@@ -1,15 +1,27 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 const { normalizeEmail } = require('../lib/normalize')
 
+/** @typedef {import('../lib/types').PhaseContext} PhaseContext */
+/** @typedef {import('../lib/types').EmailMap} EmailMap */
+/** @typedef {import('../lib/types').DropdownField} DropdownField */
+
 const PHASE = '2c-conditional'
 
 const BAD_KEY_RE = /[.$\x00]/
 
+/**
+ * @param {string[]} list
+ * @param {EmailMap} mapping
+ * @returns {{ newRecipients: string[], changed: boolean }}
+ */
 function rewriteRecipients(list, mapping) {
+  /** @type {Set<string>} */
   const seen = new Set()
+  /** @type {string[]} */
   const out = []
   let changed = false
   for (const raw of list) {
@@ -29,49 +41,53 @@ function rewriteRecipients(list, mapping) {
 
 /**
  * Find every (fieldId, optionKey) on this form that needs a recipient rewrite.
- * Returns [{ fieldId, optionKey, originalRecipients, newRecipients }, ...].
  * Throws if any optionKey contains a pathological character.
+ *
+ * @param {Array<Record<string, unknown>> | undefined} formFields
+ * @param {EmailMap} mapping
+ * @returns {Array<{ fieldId: unknown, optionKey: string, originalRecipients: string[], newRecipients: string[] }>}
  */
 function planConditionalWrites(formFields, mapping) {
+  /** @type {Array<{ fieldId: unknown, optionKey: string, originalRecipients: string[], newRecipients: string[] }>} */
   const out = []
   for (const field of formFields || []) {
     if (!field || field.fieldType !== 'dropdown') continue
-    const map = field.optionsToRecipientsMap
+    const map = /** @type {Record<string, unknown> | undefined} */ (
+      field.optionsToRecipientsMap
+    )
     if (!map || typeof map !== 'object') continue
     const fieldId = field._id
     if (!fieldId) continue
     for (const [optionKey, recipients] of Object.entries(map)) {
       if (BAD_KEY_RE.test(optionKey)) {
         throw new Error(
-          `optionsToRecipientsMap key on field ${fieldId} contains forbidden character ('.', '$', or NUL): ${JSON.stringify(optionKey)}. Manual handling required.`,
+          `optionsToRecipientsMap key on field ${String(fieldId)} contains forbidden character ('.', '$', or NUL): ${JSON.stringify(optionKey)}. Manual handling required.`,
         )
       }
       if (!Array.isArray(recipients)) continue
-      const { newRecipients, changed } = rewriteRecipients(recipients, mapping)
+      /** @type {string[]} */
+      const recArr = recipients
+      const { newRecipients, changed } = rewriteRecipients(recArr, mapping)
       if (changed) {
-        out.push({ fieldId, optionKey, originalRecipients: recipients, newRecipients })
+        out.push({ fieldId, optionKey, originalRecipients: recArr, newRecipients })
       }
     }
   }
   return out
 }
 
-async function runPhase2Cconditional({
-  Form,
-  mongoose,
-  mapping,
-  backup,
-  bucket,
-  batchSize,
-  dryRun,
-}) {
+/**
+ * @param {PhaseContext} ctx
+ */
+async function runPhase2Cconditional(ctx) {
+  const { Form, mongoose, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2C-ii] aggregating forms with conditional recipients in oldEmails`)
 
-  // Server-side filter via $objectToArray. Use the underlying collection so we
-  // can pass `allowDiskUse` and use a cursor (Mongoose Model.aggregate also
-  // supports cursor but the raw driver is simpler here).
-  const coll = mongoose.connection.db.collection(Form.collection.name)
+  const conn = mongoose.connection.db
+  if (!conn) throw new Error('Mongo connection not established')
+  const coll = conn.collection(Form.collection.name)
+
   const pipeline = [
     { $match: { 'form_fields.optionsToRecipientsMap': { $exists: true, $type: 'object' } } },
     {
@@ -115,8 +131,11 @@ async function runPhase2Cconditional({
   ]
 
   const cursor = coll.aggregate(pipeline, { allowDiskUse: true })
+  /** @type {Array<{ _id: unknown, form_fields: Array<Record<string, unknown>>, lastModified: Date }>} */
   const forms = []
-  for await (const f of cursor) forms.push(f)
+  for await (const f of cursor) {
+    forms.push(/** @type {any} */ (f))
+  }
   log.info(`[Phase 2C-ii] ${forms.length} forms matched`)
 
   let appliedWrites = 0
@@ -131,6 +150,7 @@ async function runPhase2Cconditional({
       if (plans.length === 0) return
       formsTouched++
 
+      /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await Form.findById(form._id).lean()
       if (!fullDoc) {
         backup.audit({ phase: PHASE, _id: String(form._id), status: 'skip:vanished' })
@@ -138,6 +158,7 @@ async function runPhase2Cconditional({
       }
       backup.snapshotForm(fullDoc)
 
+      /** @type {Date} */
       let expectedLastModified = form.lastModified
 
       for (const plan of plans) {
@@ -156,6 +177,7 @@ async function runPhase2Cconditional({
 
         await bucket.take()
         const setPath = `form_fields.$.optionsToRecipientsMap.${plan.optionKey}`
+        /** @type {{ lastModified: Date } | null} */
         const res = await Form.findOneAndUpdate(
           {
             _id: form._id,
@@ -176,7 +198,6 @@ async function runPhase2Cconditional({
             status: 'skip:concurrent-modification',
             lastModifiedAtScan: expectedLastModified,
           })
-          // Same reasoning as 2C-i: abandon further plans on this form.
           return
         }
         appliedWrites++

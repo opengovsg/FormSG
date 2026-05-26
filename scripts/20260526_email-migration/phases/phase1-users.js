@@ -1,9 +1,25 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 
+/** @typedef {import('../lib/types').PhaseContext} PhaseContext */
+
 const PHASE = '1'
+
+/**
+ * @param {{ code?: number, message?: string } | unknown} err
+ * @returns {err is { code: number, message?: string }}
+ */
+function isMongoErrorWithCode(err) {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    typeof /** @type {{ code: unknown }} */ (err).code === 'number'
+  )
+}
 
 /**
  * Phase 1: rewrite User.email from oldEmail to newEmail.
@@ -11,18 +27,15 @@ const PHASE = '1'
  * Filter guard: `email: oldEmail` makes the update idempotent and safe under
  * concurrent edits. If something flipped the email between scan and write,
  * matchedCount === 0 and we log skip:concurrent-modification.
+ *
+ * @param {PhaseContext} ctx
  */
-async function runPhase1({
-  User,
-  mapping,
-  backup,
-  bucket,
-  batchSize,
-  dryRun,
-}) {
+async function runPhase1(ctx) {
+  const { User, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 1] scanning users for ${oldEmails.length} oldEmails`)
 
+  /** @type {Array<{ _id: unknown, email: string }>} */
   const users = await User.find({ email: { $in: oldEmails } })
     .select('_id email')
     .lean()
@@ -39,13 +52,12 @@ async function runPhase1({
       const oldEmail = user.email
       const newEmail = mapping.get(oldEmail)
       if (!newEmail) {
-        // Race against pre-flight; shouldn't happen.
         skippedNotMapped++
         backup.audit({ phase: PHASE, _id: String(user._id), status: 'skip:not-mapped', oldEmail })
         return
       }
 
-      // Snapshot before any mutation.
+      /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await User.findById(user._id).lean()
       if (!fullDoc) {
         backup.audit({ phase: PHASE, _id: String(user._id), status: 'skip:vanished', oldEmail })
@@ -73,8 +85,7 @@ async function runPhase1({
           { writeConcern: { w: 'majority' } },
         )
       } catch (err) {
-        if (err && err.code === 11000) {
-          // Hard-stop the phase: pre-flight should have prevented this.
+        if (isMongoErrorWithCode(err) && err.code === 11000) {
           backup.audit({
             phase: PHASE,
             _id: String(user._id),

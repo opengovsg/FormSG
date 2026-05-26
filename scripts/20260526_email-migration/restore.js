@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 'use strict'
 
 const fs = require('fs')
@@ -10,12 +11,14 @@ const { connect, disconnect, models } = require('./lib/db')
 const { confirm } = require('./lib/confirm')
 
 /**
- * Restore touched documents back to their pre-mutation snapshots.
- *
- * Strategy: read the audit log, group by document _id, and for every doc that
- * has at least one 'applied' write, $set the document body from the snapshot.
- * Per-document; no global transaction.
+ * @param {unknown} err
+ * @returns {string}
  */
+function formatErr(err) {
+  if (err instanceof Error) return err.stack || err.message
+  return String(err)
+}
+
 async function main() {
   const { values } = parseArgs({
     args: process.argv.slice(2),
@@ -38,7 +41,7 @@ async function main() {
   }
 
   const dryRun = !values['no-dry-run']
-  const backupDir = values['backup-dir']
+  const backupDir = /** @type {string} */ (values['backup-dir'])
   const auditPath = path.join(backupDir, 'audit.ndjson')
   if (!fs.existsSync(auditPath)) {
     throw new Error(`audit.ndjson not found in ${backupDir}`)
@@ -47,14 +50,21 @@ async function main() {
   const formsDir = path.join(backupDir, 'forms')
 
   const raw = fs.readFileSync(auditPath, 'utf8')
-  const rows = raw.split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l))
+  /** @type {Array<Record<string, unknown>>} */
+  const rows = raw
+    .split('\n')
+    .filter((l) => l.trim())
+    .map((l) => JSON.parse(l))
   const applied = rows.filter((r) => r.status === 'applied')
 
+  /** @type {Set<string>} */
   const userIds = new Set()
+  /** @type {Set<string>} */
   const formIds = new Set()
   for (const r of applied) {
-    if (r.phase === '1') userIds.add(r._id)
-    else formIds.add(r._id)
+    const id = String(r._id)
+    if (r.phase === '1') userIds.add(id)
+    else formIds.add(id)
   }
 
   log.info(
@@ -83,7 +93,9 @@ async function main() {
       log.warn(`No snapshot for user ${id}; skipping`)
       continue
     }
-    const snap = EJSON.parse(fs.readFileSync(snapPath, 'utf8'), { relaxed: false })
+    const snap = /** @type {Record<string, unknown>} */ (
+      EJSON.parse(fs.readFileSync(snapPath, 'utf8'), { relaxed: false })
+    )
     const { _id, ...rest } = snap
     if (dryRun) {
       log.info(`[DRY] would restore user ${id}`)
@@ -100,7 +112,9 @@ async function main() {
       log.warn(`No snapshot for form ${id}; skipping`)
       continue
     }
-    const snap = EJSON.parse(fs.readFileSync(snapPath, 'utf8'), { relaxed: false })
+    const snap = /** @type {Record<string, unknown>} */ (
+      EJSON.parse(fs.readFileSync(snapPath, 'utf8'), { relaxed: false })
+    )
     const { _id, ...rest } = snap
     if (dryRun) {
       log.info(`[DRY] would restore form ${id}`)
@@ -110,11 +124,13 @@ async function main() {
     restored++
   }
 
-  log.info(`Restore done: restored=${restored} missingSnapshots=${missingSnapshot}${dryRun ? ' (DRY-RUN)' : ''}`)
+  log.info(
+    `Restore done: restored=${restored} missingSnapshots=${missingSnapshot}${dryRun ? ' (DRY-RUN)' : ''}`,
+  )
   await disconnect()
 }
 
 main().catch((err) => {
-  log.error(`Restore failed: ${err && err.stack ? err.stack : err}`)
+  log.error(`Restore failed: ${formatErr(err)}`)
   process.exit(1)
 })

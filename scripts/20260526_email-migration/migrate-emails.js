@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 'use strict'
 
 const { execSync } = require('child_process')
@@ -17,6 +18,8 @@ const { runPhase2Cstatic } = require('./phases/phase2c-static-workflow')
 const { runPhase2Cconditional } = require('./phases/phase2c-conditional-workflow')
 const { runPhase3 } = require('./phases/phase3-verify')
 
+/** @typedef {import('./lib/types').PhaseContext} PhaseContext */
+
 function gitSha() {
   try {
     return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
@@ -27,6 +30,19 @@ function gitSha() {
   }
 }
 
+/**
+ * @param {unknown} err
+ * @returns {string}
+ */
+function formatErr(err) {
+  if (err instanceof Error) return err.stack || err.message
+  return String(err)
+}
+
+/**
+ * @param {{ dryRun: boolean, phaseLabel: string, plannedRows: number | string }} args
+ * @returns {Promise<boolean>}
+ */
 async function maybeConfirm({ dryRun, phaseLabel, plannedRows }) {
   if (dryRun) return true
   const phrase = `MIGRATE ${plannedRows}`
@@ -59,7 +75,6 @@ async function main() {
     `CSV loaded: ${csvResult.map.size} migrations (raw rows: ${csvResult.totalRows}, dropped no-ops: ${csvResult.droppedNoop})`,
   )
 
-  // Pre-flight always runs.
   await preflight({
     User,
     mapping: csvResult.map,
@@ -82,6 +97,7 @@ async function main() {
   log.info(`Backup dir: ${backup.dir}`)
 
   const bucket = new TokenBucket(args.maxWritesPerSec)
+  /** @type {PhaseContext} */
   const ctx = {
     User,
     Form,
@@ -95,6 +111,7 @@ async function main() {
 
   let exitCode = 0
   try {
+    /** @param {string} p */
     const wants = (p) => args.phase === 'all' || args.phase === p
     const oldEmails = [...csvResult.map.keys()]
 
@@ -131,7 +148,6 @@ async function main() {
       ) {
         await runPhase2Cstatic(ctx)
       }
-      // Conditional plan count is expensive (aggregation); show "unknown" and confirm once.
       if (
         await maybeConfirm({
           dryRun: args.dryRun,
@@ -150,7 +166,7 @@ async function main() {
       }
     }
   } catch (err) {
-    log.error(`Fatal: ${err && err.stack ? err.stack : err}`)
+    log.error(`Fatal: ${formatErr(err)}`)
     exitCode = 1
   } finally {
     backup.close()
@@ -162,6 +178,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  log.error(`Unhandled: ${err && err.stack ? err.stack : err}`)
+  log.error(`Unhandled: ${formatErr(err)}`)
   process.exit(1)
 })

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 'use strict'
 
 /**
@@ -18,6 +19,11 @@ const os = require('os')
 const mongoose = require('mongoose')
 const { MongoMemoryServer } = require('mongodb-memory-server')
 
+/**
+ * @param {unknown} cond
+ * @param {string} msg
+ * @returns {asserts cond}
+ */
 function assert(cond, msg) {
   if (!cond) {
     console.error(`ASSERTION FAILED: ${msg}`)
@@ -170,31 +176,51 @@ async function main() {
   console.log('--- verifying post-state ---')
   await mongoose.connect(uri)
   const db2 = mongoose.connection.db
+  assert(db2, 'db connection established')
 
-  const uAlice = await db2.collection('users').findOne({ _id: userInsert.insertedIds[0] })
+  /**
+   * @template T
+   * @param {T | null} doc
+   * @param {string} label
+   * @returns {T}
+   */
+  function requireDoc(doc, label) {
+    assert(doc, `${label} not found`)
+    return doc
+  }
+
+  const uAlice = requireDoc(
+    await db2.collection('users').findOne({ _id: userInsert.insertedIds[0] }),
+    'Alice',
+  )
   assert(uAlice.email === 'alice.new@x.gov.sg', `Alice email: ${uAlice.email}`)
 
-  const uDave = await db2.collection('users').findOne({ _id: userInsert.insertedIds[3] })
+  const uDave = requireDoc(
+    await db2.collection('users').findOne({ _id: userInsert.insertedIds[3] }),
+    'Dave',
+  )
   assert(uDave.email === 'dave@x.gov.sg', `Dave untouched: ${uDave.email}`)
 
-  const f1 = await db2.collection('forms').findOne({ title: 'F1' })
-  const f1Emails = f1.permissionList.map((p) => p.email).sort()
+  const f1 = requireDoc(await db2.collection('forms').findOne({ title: 'F1' }), 'F1')
+  /** @type {Array<{ email: string, write: boolean }>} */
+  const f1List = f1.permissionList
+  const f1Emails = f1List.map((p) => p.email).sort()
   assert(
     JSON.stringify(f1Emails) ===
       JSON.stringify(['alice.new@x.gov.sg', 'bob.new@x.gov.sg', 'unrelated@x.gov.sg']),
     `F1 permissionList emails: ${JSON.stringify(f1Emails)}`,
   )
-  const bobEntry = f1.permissionList.find((p) => p.email === 'bob.new@x.gov.sg')
-  assert(bobEntry.write === true, `F1 Bob merged write rights: ${bobEntry.write}`)
+  const bobEntry = f1List.find((p) => p.email === 'bob.new@x.gov.sg')
+  assert(bobEntry && bobEntry.write === true, `F1 Bob merged write rights: ${bobEntry?.write}`)
 
-  const f2 = await db2.collection('forms').findOne({ title: 'F2' })
+  const f2 = requireDoc(await db2.collection('forms').findOne({ title: 'F2' }), 'F2')
   assert(
     JSON.stringify(f2.emails) ===
       JSON.stringify(['carol.new@x.gov.sg', 'other@x.gov.sg']),
     `F2 emails (dedupe shrink): ${JSON.stringify(f2.emails)}`,
   )
 
-  const f3 = await db2.collection('forms').findOne({ title: 'F3' })
+  const f3 = requireDoc(await db2.collection('forms').findOne({ title: 'F3' }), 'F3')
   assert(
     JSON.stringify(f3.form_workflows[0].emails) ===
       JSON.stringify(['alice.new@x.gov.sg', 'noop@x.gov.sg']),
@@ -205,7 +231,7 @@ async function main() {
     `F3 step 1 untouched: ${JSON.stringify(f3.form_workflows[1].emails)}`,
   )
 
-  const f4 = await db2.collection('forms').findOne({ title: 'F4' })
+  const f4 = requireDoc(await db2.collection('forms').findOne({ title: 'F4' }), 'F4')
   const map = f4.form_fields[0].optionsToRecipientsMap
   assert(
     JSON.stringify(map.yes) === JSON.stringify(['bob.new@x.gov.sg', 'extra@x.gov.sg']),
@@ -216,7 +242,10 @@ async function main() {
     `F4 'no' untouched: ${JSON.stringify(map.no)}`,
   )
 
-  const f5 = await db2.collection('forms').findOne({ title: 'F5-untouched' })
+  const f5 = requireDoc(
+    await db2.collection('forms').findOne({ title: 'F5-untouched' }),
+    'F5',
+  )
   assert(
     f5.permissionList[0].email === 'unrelated@x.gov.sg',
     `F5 untouched: ${f5.permissionList[0].email}`,

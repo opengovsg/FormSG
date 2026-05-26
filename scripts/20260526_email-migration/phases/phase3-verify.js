@@ -1,10 +1,21 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 
+/** @typedef {import('../lib/types').AnyModel} AnyModel */
+/** @typedef {import('../lib/backup').BackupStore} BackupStore */
+
 const FORM_PHASES = new Set(['2a', '2b', '2c-static', '2c-conditional'])
 
+/**
+ * @template T
+ * @param {T[]} arr
+ * @param {number} size
+ * @returns {T[][]}
+ */
 function chunk(arr, size) {
+  /** @type {T[][]} */
   const out = []
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
   return out
@@ -14,17 +25,21 @@ function chunk(arr, size) {
  * Re-read every touched user and form. The mere fact that Mongoose hydrates
  * the document without throwing is the schema-readability check. For users we
  * additionally assert the email matches the audit-recorded newEmail.
+ *
+ * @param {{ User: AnyModel, Form: AnyModel, backup: BackupStore }} args
  */
 async function runPhase3({ User, Form, backup }) {
   const audit = backup.readAudit()
 
-  const userTargets = new Map() // _id -> expected newEmail
+  /** @type {Map<string, string>} */
+  const userTargets = new Map()
+  /** @type {Set<string>} */
   const formIds = new Set()
 
   for (const row of audit) {
     if (row.status !== 'applied') continue
     if (row.phase === '1') {
-      userTargets.set(row._id, row.newEmail)
+      if (row.newEmail) userTargets.set(row._id, row.newEmail)
     } else if (FORM_PHASES.has(row.phase)) {
       formIds.add(row._id)
     }
@@ -38,7 +53,9 @@ async function runPhase3({ User, Form, backup }) {
   let userEmailMismatch = 0
   let userMissing = 0
   for (const idChunk of chunk([...userTargets.keys()], 500)) {
+    /** @type {Array<{ _id: unknown, email: string }>} */
     const docs = await User.find({ _id: { $in: idChunk } })
+    /** @type {Set<string>} */
     const found = new Set(docs.map((d) => String(d._id)))
     for (const id of idChunk) {
       if (!found.has(id)) {
@@ -51,7 +68,7 @@ async function runPhase3({ User, Form, backup }) {
       if (doc.email !== expected) {
         userEmailMismatch++
         log.error(
-          `[Phase 3] user ${doc._id} email mismatch: got '${doc.email}', expected '${expected}'`,
+          `[Phase 3] user ${String(doc._id)} email mismatch: got '${doc.email}', expected '${expected}'`,
         )
       } else {
         userHydratedOk++
@@ -62,7 +79,9 @@ async function runPhase3({ User, Form, backup }) {
   let formHydratedOk = 0
   let formMissing = 0
   for (const idChunk of chunk([...formIds], 500)) {
+    /** @type {Array<{ _id: unknown }>} */
     const docs = await Form.find({ _id: { $in: idChunk } })
+    /** @type {Set<string>} */
     const found = new Set(docs.map((d) => String(d._id)))
     for (const id of idChunk) {
       if (!found.has(id)) {

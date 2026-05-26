@@ -1,17 +1,27 @@
+// @ts-check
 'use strict'
 
 const log = require('../lib/logger')
 const { runWithConcurrency } = require('../lib/confirm')
 const { normalizeEmail } = require('../lib/normalize')
 
+/** @typedef {import('../lib/types').PhaseContext} PhaseContext */
+/** @typedef {import('../lib/types').EmailMap} EmailMap */
+
 const PHASE = '2b'
 
 /**
  * Map a notification-emails list. Order is preserved per first occurrence;
  * duplicates are silently dropped (shrink accepted per spec).
+ *
+ * @param {string[]} emails
+ * @param {EmailMap} mapping
+ * @returns {{ newEmails: string[], changed: boolean }}
  */
 function rewriteEmails(emails, mapping) {
+  /** @type {Set<string>} */
   const seen = new Set()
+  /** @type {string[]} */
   const out = []
   let changed = false
   for (const raw of emails) {
@@ -20,7 +30,7 @@ function rewriteEmails(emails, mapping) {
     const next = mapped || orig
     if (mapped) changed = true
     if (seen.has(next)) {
-      changed = true // shrink counts as a change worth recording
+      changed = true
       continue
     }
     seen.add(next)
@@ -29,17 +39,15 @@ function rewriteEmails(emails, mapping) {
   return { newEmails: out, changed }
 }
 
-async function runPhase2B({
-  Form,
-  mapping,
-  backup,
-  bucket,
-  batchSize,
-  dryRun,
-}) {
+/**
+ * @param {PhaseContext} ctx
+ */
+async function runPhase2B(ctx) {
+  const { Form, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2B] scanning forms with emails in oldEmails`)
 
+  /** @type {Array<{ _id: unknown, emails: string[], responseMode?: string, lastModified: Date }>} */
   const forms = await Form.find({ emails: { $in: oldEmails } })
     .select('_id emails responseMode lastModified')
     .lean()
@@ -59,9 +67,6 @@ async function runPhase2B({
         return
       }
 
-      // EmailForm requires emails non-empty. Shrink can't go below 1 unless the
-      // input was already empty (in which case we wouldn't have matched).
-      // Be defensive anyway.
       if (form.responseMode === 'email' && newEmails.length === 0) {
         backup.audit({
           phase: PHASE,
@@ -74,6 +79,7 @@ async function runPhase2B({
         )
       }
 
+      /** @type {{ _id: unknown } & Record<string, unknown> | null} */
       const fullDoc = await Form.findById(form._id).lean()
       if (!fullDoc) {
         backup.audit({ phase: PHASE, _id: String(form._id), status: 'skip:vanished' })
