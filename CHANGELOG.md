@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.20.7](https://github.com/opengovsg/formsg/compare/v7.20.6...v7.20.7) (2026-05-26)
+
+
+### Bug Fixes
+
+* **frontend:** close 0-byte upload bypass paths in attachment field (#9482) ([#9482](https://github.com/opengovsg/formsg/commit/5a92062b753b95026bb0b99e2ab6eb8e9c38f469))
+* signature canvas for v4 display (#9485) ([#9485](https://github.com/opengovsg/formsg/commit/f0e7c03cc1f93c91e97761c5a65f16a2e7c0d533))
+
 ## [7.20.6](https://github.com/opengovsg/formsg/compare/v7.20.5...v7.20.6) (2026-05-25)
 
 
