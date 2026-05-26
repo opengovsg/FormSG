@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.21.0](https://github.com/opengovsg/formsg/compare/v7.20.7...v7.21.0) (2026-05-26)
+
+
+### Features
+
+* **i18n:** extract text for admin form settings (#9422) ([#9422](https://github.com/opengovsg/formsg/commit/cd1fb38e0523cff31fb91bcd2182ac4bae278c0b))
+
+
+### Refactors
+
+* rename billing to singpass transactions (#9424) ([#9424](https://github.com/opengovsg/formsg/commit/a7f585ff468a8589ce0bdec74d2a98ecfaae1d66))
+
 ## [7.20.7](https://github.com/opengovsg/formsg/compare/v7.20.6...v7.20.7) (2026-05-26)
 
 

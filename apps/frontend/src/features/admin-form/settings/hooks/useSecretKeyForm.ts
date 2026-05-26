@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { useForm, UseFormSetError, UseFormSetValue } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 
@@ -27,6 +28,8 @@ export const useSecretKeyForm = ({
   onSubmit,
   hasAck = false,
 }: UseSecretKeyFormProps) => {
+  const { t } = useTranslation()
+
   const {
     formState: { errors },
     setError,
@@ -44,31 +47,36 @@ export const useSecretKeyForm = ({
     e.stopPropagation()
   }
 
-  const processFile = (
-    file: File,
-    setError: UseFormSetError<SecretKeyFormInputs>,
-    setValue: UseFormSetValue<SecretKeyFormInputs>,
-  ) => {
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      if (!e.target) return
-      const text = e.target.result?.toString()
+  const processFile = useCallback(
+    (
+      file: File,
+      setError: UseFormSetError<SecretKeyFormInputs>,
+      setValue: UseFormSetValue<SecretKeyFormInputs>,
+    ) => {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        if (!e.target) return
+        const text = e.target.result?.toString()
 
-      if (!text || !SECRET_KEY_REGEX.test(text)) {
-        return setError(
-          SECRET_KEY_NAME,
-          {
-            type: 'invalidFile',
-            message: 'Selected file seems to be invalid',
-          },
-          { shouldFocus: true },
-        )
+        if (!text || !SECRET_KEY_REGEX.test(text)) {
+          return setError(
+            SECRET_KEY_NAME,
+            {
+              type: 'invalidFile',
+              message: t(
+                'features.adminForm.settings.secretKeyVerification.errors.invalidFile',
+              ),
+            },
+            { shouldFocus: true },
+          )
+        }
+
+        setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
       }
-
-      setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
-    }
-    reader.readAsText(file)
-  }
+      reader.readAsText(file)
+    },
+    [t],
+  )
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -80,7 +88,7 @@ export const useSecretKeyForm = ({
 
       processFile(file, setError, setValue)
     },
-    [setError, setValue],
+    [processFile, setError, setValue],
   )
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -114,7 +122,9 @@ export const useSecretKeyForm = ({
           SECRET_KEY_NAME,
           {
             type: 'invalidKey',
-            message: 'The secret key provided is invalid',
+            message: t(
+              'features.adminForm.settings.secretKeyVerification.errors.invalidKey',
+            ),
           },
           { shouldFocus: true },
         )
@@ -137,7 +147,7 @@ export const useSecretKeyForm = ({
 
       processFile(file, setError, setValue)
     },
-    [setError, setValue],
+    [processFile, setError, setValue],
   )
 
   // Reset form before closing.
