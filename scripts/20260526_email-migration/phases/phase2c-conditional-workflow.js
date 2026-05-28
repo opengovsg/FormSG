@@ -92,7 +92,7 @@ function planConditionalWrites(formFields, mapping) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2Cconditional(ctx) {
-  const { Form, mongoose, mapping, backup, bucket, batchSize, dryRun, collisionPrompt } = ctx
+  const { Form, mongoose, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2C-ii] (replace-only) aggregating forms with conditional recipients in oldEmails`)
 
@@ -168,46 +168,29 @@ async function runPhase2Cconditional(ctx) {
   let appliedWrites = 0
   let skippedConcurrentWrites = 0
   let formsTouched = 0
-  let skippedByOperator = 0
-  let aborted = false
+  let mergedCollisions = 0
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
-      if (aborted) return
-
       const plans = planConditionalWrites(form.form_fields, mapping)
       if (plans.length === 0) return
       formsTouched++
 
       for (const plan of plans) {
-        for (const c of plan.collisions) {
-          const decision = await collisionPrompt.ask({
-            formId: String(form._id),
-            location: `form_fields[${String(plan.fieldId)}].optionsToRecipientsMap.${plan.optionKey}`,
-            oldEmail: c.oldEmail,
-            newEmail: c.newEmail,
-            detail: 'replace would shrink the recipient list for this option',
-          })
-          if (decision === 'abort') {
-            aborted = true
-            backup.audit({ phase: PHASE, _id: String(form._id), status: 'fail:operator-abort' })
-            backup.flushBatch()
-            throw new Error('[Phase 2C-ii] operator aborted at collision prompt')
-          }
-          if (decision === 'skip') {
-            skippedByOperator++
+        if (plan.collisions.length > 0) {
+          mergedCollisions += plan.collisions.length
+          for (const c of plan.collisions) {
             backup.audit({
               phase: PHASE,
               _id: String(form._id),
               fieldId: String(plan.fieldId),
               optionKey: plan.optionKey,
-              status: 'skip:operator-decline',
+              status: 'merged-collision',
               oldEmail: c.oldEmail,
               newEmail: c.newEmail,
             })
-            return
           }
         }
       }
@@ -279,9 +262,9 @@ async function runPhase2Cconditional(ctx) {
   )
 
   log.info(
-    `[Phase 2C-ii] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites} skipped-by-operator=${skippedByOperator}${dryRun ? ' (DRY-RUN)' : ''}`,
+    `[Phase 2C-ii] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites} merged-collisions=${mergedCollisions}${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { formsTouched, appliedWrites, skippedConcurrentWrites, skippedByOperator }
+  return { formsTouched, appliedWrites, skippedConcurrentWrites, mergedCollisions }
 }
 
 module.exports = {

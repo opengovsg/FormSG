@@ -83,7 +83,7 @@ function addEmails(emails, mapping) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2B(ctx) {
-  const { Form, mapping, backup, bucket, batchSize, dryRun, mode, collisionPrompt } = ctx
+  const { Form, mapping, backup, bucket, batchSize, dryRun, mode } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2B] mode=${mode} — scanning forms with emails in oldEmails`)
 
@@ -97,15 +97,12 @@ async function runPhase2B(ctx) {
   let applied = 0
   let skippedConcurrent = 0
   let skippedNoChange = 0
-  let skippedByOperator = 0
-  let aborted = false
+  let mergedCollisions = 0
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
-      if (aborted) return
-
       const original = form.emails || []
       /** @type {string[]} */
       let newEmails
@@ -129,30 +126,16 @@ async function runPhase2B(ctx) {
         return
       }
 
-      for (const c of collisions) {
-        const decision = await collisionPrompt.ask({
-          formId: String(form._id),
-          location: 'emails',
-          oldEmail: c.oldEmail,
-          newEmail: c.newEmail,
-          detail: 'replace would shrink the notification list',
-        })
-        if (decision === 'abort') {
-          aborted = true
-          backup.audit({ phase: PHASE, _id: String(form._id), status: 'fail:operator-abort' })
-          backup.flushBatch()
-          throw new Error('[Phase 2B] operator aborted phase at collision prompt')
-        }
-        if (decision === 'skip') {
-          skippedByOperator++
+      if (collisions.length > 0) {
+        mergedCollisions += collisions.length
+        for (const c of collisions) {
           backup.audit({
             phase: PHASE,
             _id: String(form._id),
-            status: 'skip:operator-decline',
+            status: 'merged-collision',
             oldEmail: c.oldEmail,
             newEmail: c.newEmail,
           })
-          return
         }
       }
 
@@ -222,10 +205,10 @@ async function runPhase2B(ctx) {
     `[Phase 2B] done: applied=${applied} ` +
       `skipped-concurrent=${skippedConcurrent} ` +
       `skipped-no-change=${skippedNoChange} ` +
-      `skipped-by-operator=${skippedByOperator}` +
+      `merged-collisions=${mergedCollisions}` +
       `${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { applied, skippedConcurrent, skippedNoChange, skippedByOperator }
+  return { applied, skippedConcurrent, skippedNoChange, mergedCollisions }
 }
 
 module.exports = { runPhase2B, rewriteEmails, addEmails }

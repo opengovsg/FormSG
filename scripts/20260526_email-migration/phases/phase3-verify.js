@@ -6,7 +6,7 @@ const log = require('../lib/logger')
 /** @typedef {import('../lib/types').AnyModel} AnyModel */
 /** @typedef {import('../lib/backup').BackupStore} BackupStore */
 
-const FORM_PHASES = new Set(['2a', '2b', '2c-static', '2c-conditional'])
+const FORM_PHASES = new Set(['1-reassign', '2a', '2b', '2c-static', '2c-conditional'])
 
 /**
  * @template T

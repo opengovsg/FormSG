@@ -11,7 +11,6 @@ const { BackupStore } = require('./lib/backup')
 const { TokenBucket } = require('./lib/rate-limit')
 const { confirm } = require('./lib/confirm')
 const { closeReadline } = require('./lib/stdin')
-const { CollisionPrompt } = require('./lib/collision-prompt')
 const { preflight } = require('./phases/preflight')
 const { runPhase1 } = require('./phases/phase1-users')
 const { runPhase2A } = require('./phases/phase2a-permissions')
@@ -80,6 +79,7 @@ async function main() {
   await preflight({
     User,
     mapping: csvResult.map,
+    dryRun: args.dryRun,
     allowMissing: args.allowMissing,
   })
 
@@ -99,7 +99,6 @@ async function main() {
   log.info(`Backup dir: ${backup.dir}`)
 
   const bucket = new TokenBucket(args.maxWritesPerSec)
-  const collisionPrompt = new CollisionPrompt()
   /** @type {PhaseContext} */
   const ctx = {
     User,
@@ -108,7 +107,6 @@ async function main() {
     mapping: csvResult.map,
     backup,
     bucket,
-    collisionPrompt,
     batchSize: args.batchSize,
     dryRun: args.dryRun,
     mode: args.mode,

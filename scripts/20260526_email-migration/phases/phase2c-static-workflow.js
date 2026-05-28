@@ -39,7 +39,7 @@ function planStaticSteps(workflows, mapping) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2Cstatic(ctx) {
-  const { Form, mapping, backup, bucket, batchSize, dryRun, collisionPrompt } = ctx
+  const { Form, mapping, backup, bucket, batchSize, dryRun } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2C-i] (replace-only) scanning forms with static workflow emails in oldEmails`)
 
@@ -57,46 +57,28 @@ async function runPhase2Cstatic(ctx) {
   let appliedWrites = 0
   let skippedConcurrentWrites = 0
   let formsTouched = 0
-  let skippedByOperator = 0
-  let aborted = false
+  let mergedCollisions = 0
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
-      if (aborted) return
-
       const plans = planStaticSteps(form.form_workflows, mapping)
       if (plans.length === 0) return
       formsTouched++
 
-      // Resolve any collisions across all steps in this form before writing.
       for (const plan of plans) {
-        for (const c of plan.collisions) {
-          const decision = await collisionPrompt.ask({
-            formId: String(form._id),
-            location: `form_workflows[${String(plan.stepId)}].emails`,
-            oldEmail: c.oldEmail,
-            newEmail: c.newEmail,
-            detail: 'replace would shrink the step recipient list',
-          })
-          if (decision === 'abort') {
-            aborted = true
-            backup.audit({ phase: PHASE, _id: String(form._id), status: 'fail:operator-abort' })
-            backup.flushBatch()
-            throw new Error('[Phase 2C-i] operator aborted at collision prompt')
-          }
-          if (decision === 'skip') {
-            skippedByOperator++
+        if (plan.collisions.length > 0) {
+          mergedCollisions += plan.collisions.length
+          for (const c of plan.collisions) {
             backup.audit({
               phase: PHASE,
               _id: String(form._id),
               stepId: String(plan.stepId),
-              status: 'skip:operator-decline',
+              status: 'merged-collision',
               oldEmail: c.oldEmail,
               newEmail: c.newEmail,
             })
-            return
           }
         }
       }
@@ -164,9 +146,9 @@ async function runPhase2Cstatic(ctx) {
   )
 
   log.info(
-    `[Phase 2C-i] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites} skipped-by-operator=${skippedByOperator}${dryRun ? ' (DRY-RUN)' : ''}`,
+    `[Phase 2C-i] done: forms-touched=${formsTouched} writes-applied=${appliedWrites} writes-skipped-concurrent=${skippedConcurrentWrites} merged-collisions=${mergedCollisions}${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { formsTouched, appliedWrites, skippedConcurrentWrites, skippedByOperator }
+  return { formsTouched, appliedWrites, skippedConcurrentWrites, mergedCollisions }
 }
 
 module.exports = { runPhase2Cstatic, planStaticSteps }

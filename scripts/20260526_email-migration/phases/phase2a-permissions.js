@@ -9,7 +9,6 @@ const { EMAIL_COLLATION } = require('../lib/db')
 /** @typedef {import('../lib/types').PhaseContext} PhaseContext */
 /** @typedef {import('../lib/types').EmailMap} EmailMap */
 /** @typedef {import('../lib/types').PermissionEntry} PermissionEntry */
-/** @typedef {import('../lib/collision-prompt').CollisionPrompt} CollisionPrompt */
 
 const PHASE = '2a'
 
@@ -104,7 +103,7 @@ function planPermissionList(list, mapping, mode) {
  * @param {PhaseContext} ctx
  */
 async function runPhase2A(ctx) {
-  const { Form, mapping, backup, bucket, batchSize, dryRun, mode, collisionPrompt } = ctx
+  const { Form, mapping, backup, bucket, batchSize, dryRun, mode } = ctx
   const oldEmails = [...mapping.keys()]
   log.info(`[Phase 2A] mode=${mode} — scanning forms with permissionList.email in oldEmails`)
 
@@ -118,53 +117,27 @@ async function runPhase2A(ctx) {
   let applied = 0
   let skippedConcurrent = 0
   let skippedNoChange = 0
-  let skippedByOperator = 0
-  let aborted = false
+  let mergedCollisions = 0
 
   await runWithConcurrency(
     forms,
     { concurrency: batchSize, batchSize, onBatch: () => backup.flushBatch() },
     async (form) => {
-      if (aborted) return
-
       const plan = planPermissionList(form.permissionList || [], mapping, mode)
       if (!plan.changed) {
         skippedNoChange++
         return
       }
-
       if (plan.collisions.length > 0) {
-        // Replace-mode collisions: ask the operator before committing.
+        mergedCollisions += plan.collisions.length
         for (const c of plan.collisions) {
-          const decision = await collisionPrompt.ask({
-            formId: String(form._id),
-            location: 'permissionList',
+          backup.audit({
+            phase: PHASE,
+            _id: String(form._id),
+            status: 'merged-collision',
             oldEmail: c.oldEmail,
             newEmail: c.newEmail,
-            detail: 'replace would merge write rights via OR',
           })
-          if (decision === 'abort') {
-            aborted = true
-            backup.audit({
-              phase: PHASE,
-              _id: String(form._id),
-              status: 'fail:operator-abort',
-            })
-            backup.flushBatch()
-            throw new Error('[Phase 2A] operator aborted phase at collision prompt')
-          }
-          if (decision === 'skip') {
-            skippedByOperator++
-            backup.audit({
-              phase: PHASE,
-              _id: String(form._id),
-              status: 'skip:operator-decline',
-              oldEmail: c.oldEmail,
-              newEmail: c.newEmail,
-            })
-            return
-          }
-          // 'merge' — fall through to write the planned list.
         }
       }
 
@@ -223,10 +196,10 @@ async function runPhase2A(ctx) {
     `[Phase 2A] done: applied=${applied} ` +
       `skipped-concurrent=${skippedConcurrent} ` +
       `skipped-no-change=${skippedNoChange} ` +
-      `skipped-by-operator=${skippedByOperator}` +
+      `merged-collisions=${mergedCollisions}` +
       `${dryRun ? ' (DRY-RUN)' : ''}`,
   )
-  return { applied, skippedConcurrent, skippedNoChange, skippedByOperator }
+  return { applied, skippedConcurrent, skippedNoChange, mergedCollisions }
 }
 
 module.exports = { runPhase2A, planPermissionList }
