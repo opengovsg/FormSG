@@ -15,9 +15,8 @@ const logger = createLoggerWithLabel(module)
 export const SSO_LOGIN_OAUTH_STATE = 'ssoLogin'
 
 export class AuthSsoServiceClass {
-  // Cooldown between discovery retries after a failure, so a transient
-  // upstream outage doesn't permanently disable SSO until process restart
-  // but we also don't hammer the discovery endpoint on every request.
+  // RATIONALE: bound retries so a transient outage doesn't disable SSO until
+  // restart, without hammering the discovery endpoint on every request.
   private static readonly DISCOVERY_RETRY_INTERVAL_MS = 60_000
 
   private clientConfigPromise: Promise<oidcClient.Configuration> | null = null
@@ -31,10 +30,8 @@ export class AuthSsoServiceClass {
   }
 
   /**
-   * Initializes the OIDC client configuration by performing discovery.
-   * This is done lazily to prevent startup crashes if the discovery URL is unreachable.
-   * On failure, the cached rejected promise is reused for DISCOVERY_RETRY_INTERVAL_MS
-   * and then discarded so the next request re-attempts discovery.
+   * RATIONALE: discover lazily so an unreachable URL doesn't crash startup;
+   * cache failures for DISCOVERY_RETRY_INTERVAL_MS before retrying.
    */
   private initializeClientConfig(): void {
     if (this.clientConfigPromise) {
@@ -45,7 +42,6 @@ export class AuthSsoServiceClass {
       if (this.discoveryFailedAt === null || recentlyFailed) {
         return
       }
-      // Cooldown elapsed: discard the stale rejected promise and try again.
       this.clientConfigPromise = null
       this.discoveryFailedAt = null
     }
@@ -85,9 +81,8 @@ export class AuthSsoServiceClass {
             error,
           })
           this.discoveryFailedAt = Date.now()
-          // Return rejected promise to satisfy typesafe/no-throw-sync-func linter rule.
-          // This rejected promise is safe - it's stored in clientConfigPromise and only
-          // accessed via ResultAsync.fromPromise() which properly handles rejections.
+          // RATIONALE: reject (not throw) to satisfy typesafe/no-throw-sync-func;
+          // consumed via ResultAsync.fromPromise().
           return Promise.reject(
             new SsoCreateRedirectUrlError(
               'SSO service discovery failed. Please try again later.',
@@ -105,7 +100,6 @@ export class AuthSsoServiceClass {
         error,
       })
       this.discoveryFailedAt = Date.now()
-      // Create a rejected promise
       this.clientConfigPromise = Promise.reject(
         new SsoCreateRedirectUrlError(
           'SSO service configuration is invalid. Please try again later.',
@@ -122,7 +116,6 @@ export class AuthSsoServiceClass {
       action: 'getClientConfigResult',
     }
 
-    // Check if SSO is configured before attempting to use it
     if (!this.isConfigured) {
       logger.warn({
         message:
@@ -136,14 +129,11 @@ export class AuthSsoServiceClass {
       )
     }
 
-    // Initialize the client config if not already done
     this.initializeClientConfig()
 
-    // TypeScript doesn't know that initializeClientConfig always sets clientConfigPromise,
-    // so we need to check for it explicitly
+    // RATIONALE: initializeClientConfig always sets this, but TS can't prove it.
     const configPromise = this.clientConfigPromise
     if (!configPromise) {
-      // This should never happen, but handle it gracefully
       logger.error({
         message: 'SSO client configuration promise was not initialized',
         meta: logMeta,

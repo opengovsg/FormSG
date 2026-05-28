@@ -11,8 +11,7 @@ convict.addFormat(url)
 
 export const optionalValuesFromSsm: Path<ISsoVarsSchema>[] = [] //['hostname']
 
-// Placeholder defaults used when SSO env vars are not provided. Referenced by
-// both the schema below and isSsoConfigured() so the two cannot drift apart.
+// RATIONALE: shared between the schema and isSsoConfigured() so they can't drift.
 const SSO_PLACEHOLDER_CLIENT_ID = 'client-id'
 const SSO_PLACEHOLDER_CLIENT_SECRET = 'test'
 
@@ -38,22 +37,16 @@ export const ssoVarsSchema: Schema<ISsoVarsSchema> = {
   },
 }
 
-// Load SSO configuration. All vars have schema defaults, so missing env vars
-// do not throw at startup; isSsoConfigured() reports at runtime whether the
-// loaded values are usable.
+// RATIONALE: every var has a default so missing env doesn't throw at startup;
+// isSsoConfigured() decides at runtime whether values are usable.
 const ssoConfig = convict(ssoVarsSchema)
 resetToApplicationDefaultForUndefinedSsmValues(ssoConfig, optionalValuesFromSsm)
 
 export const sso = ssoConfig.validate({ allowed: 'strict' }).getProperties()
 
-/**
- * Validates if the SSO configuration is properly set up.
- * Checks if the discovery URL is valid and environment variables are not default/placeholder values.
- */
 export const isSsoConfigured = (config: ISsoVarsSchema): boolean => {
   const { discoveryUrl, clientId, clientSecret } = config
 
-  // Check if environment variables are blank or default values
   if (
     !discoveryUrl ||
     !clientId ||
@@ -76,7 +69,6 @@ export const isSsoConfigured = (config: ISsoVarsSchema): boolean => {
     return false
   }
 
-  // Validate that discoveryUrl is a valid URL
   try {
     new URL(discoveryUrl)
   } catch (error) {
