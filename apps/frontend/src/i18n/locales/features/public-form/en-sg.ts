@@ -4,6 +4,25 @@ import { enSG as table } from './table'
 import { PublicForm } from '.'
 
 export const enSG: PublicForm = {
+  backendErrors: {
+    verification: {
+      sessionExpired: 'Your session has expired, please refresh and try again.',
+      otpExpired: 'Your OTP has expired, please request for a new one.',
+      otpRetryExceeded:
+        'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      wrongOtp: 'Wrong OTP.',
+      waitForOtp:
+        'You must wait for {waitForOtpSeconds} seconds between each OTP request.',
+      otpRequestCountExceeded:
+        'You have requested too many OTPs. Please refresh and try again.',
+      invalidNumber:
+        'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      mailSend:
+        'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      outdatedForm:
+        'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+    },
+  },
   errors: {
     notAvailable: 'This form is not available.',
     notFound: 'Form not found',

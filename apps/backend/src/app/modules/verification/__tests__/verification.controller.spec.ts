@@ -107,6 +107,17 @@ const mockCpOidcServiceClass = jest.mocked(
 )
 
 describe('Verification controller', () => {
+  const VERIFICATION_BACKEND_ERROR_KEY_PREFIX =
+    'features.publicForm.backendErrors.verification'
+  const expectedVerificationError = (
+    key: string,
+    message: string,
+    messageParams?: Record<string, string | number>,
+  ) => ({
+    message,
+    messageKey: `${VERIFICATION_BACKEND_ERROR_KEY_PREFIX}.${key}`,
+    ...(messageParams ? { messageParams } : {}),
+  })
   const MOCK_FORM_ID = new ObjectId().toHexString()
   const MOCK_TRANSACTION_ID = new ObjectId().toHexString()
   const MOCK_FIELD_ID = new ObjectId().toHexString()
@@ -538,9 +549,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError("don't eat expired food")),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -594,10 +606,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
-      const expectedResponse = {
-        message:
-          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'mailSend',
+        'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -623,10 +635,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
-      const expectedResponse = {
-        message:
-          'This phone number does not seem to be valid. Please try again with a valid phone number.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'invalidNumber',
+        'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -652,10 +664,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
-      const expected = {
-        message:
-          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
-      }
+      const expected = expectedVerificationError(
+        'outdatedForm',
+        'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1082,9 +1094,11 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
-      const expectedResponse = {
-        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-      }
+      const expectedResponse = expectedVerificationError(
+        'waitForOtp',
+        `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        { waitForOtpSeconds: WAIT_FOR_OTP_SECONDS },
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1399,9 +1413,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError("don't eat expired food")),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1455,10 +1470,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new MailSendError()),
       )
-      const expectedResponse = {
-        message:
-          'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'mailSend',
+        'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1484,10 +1499,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new InvalidNumberError()),
       )
-      const expectedResponse = {
-        message:
-          'This phone number does not seem to be valid. Please try again with a valid phone number.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'invalidNumber',
+        'This phone number does not seem to be valid. Please try again with a valid phone number.',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1513,10 +1528,10 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new SmsLimitExceededError()),
       )
-      const expected = {
-        message:
-          'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
-      }
+      const expected = expectedVerificationError(
+        'outdatedForm',
+        'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1943,9 +1958,11 @@ describe('Verification controller', () => {
       MockVerificationService.sendNewOtp.mockReturnValueOnce(
         errAsync(new WaitForOtpError()),
       )
-      const expectedResponse = {
-        message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
-      }
+      const expectedResponse = expectedVerificationError(
+        'waitForOtp',
+        `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        { waitForOtpSeconds: WAIT_FOR_OTP_SECONDS },
+      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -2408,9 +2425,12 @@ describe('Verification controller', () => {
         MockVerificationService.resetFieldForTransaction,
       ).toHaveBeenCalledWith(resetFieldForTransactionToHaveBeenCalledWith)
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedVerificationError(
+          'sessionExpired',
+          'Your session has expired, please refresh and try again.',
+        ),
+      )
     })
 
     it('should return 404 when form is not found', async () => {
@@ -2587,9 +2607,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2720,9 +2741,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your OTP has expired, please request for a new one.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpExpired',
+        'Your OTP has expired, please request for a new one.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2749,10 +2771,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
-      const expectedResponse = {
-        message:
-          'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpRetryExceeded',
+        'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2779,9 +2801,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
-      const expectedResponse = {
-        message: 'Wrong OTP.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'wrongOtp',
+        'Wrong OTP.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -2890,9 +2913,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new TransactionExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your session has expired, please refresh and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'sessionExpired',
+        'Your session has expired, please refresh and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3023,9 +3047,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpExpiredError()),
       )
-      const expectedResponse = {
-        message: 'Your OTP has expired, please request for a new one.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpExpired',
+        'Your OTP has expired, please request for a new one.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3052,10 +3077,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new OtpRetryExceededError()),
       )
-      const expectedResponse = {
-        message:
-          'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'otpRetryExceeded',
+        'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
@@ -3082,9 +3107,10 @@ describe('Verification controller', () => {
       MockVerificationService.verifyOtp.mockReturnValueOnce(
         errAsync(new WrongOtpError()),
       )
-      const expectedResponse = {
-        message: 'Wrong OTP.',
-      }
+      const expectedResponse = expectedVerificationError(
+        'wrongOtp',
+        'Wrong OTP.',
+      )
 
       // Act
       await VerificationController._handleOtpVerification(
