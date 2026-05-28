@@ -2,9 +2,11 @@ import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
+import { ErrorDto } from 'formsg-shared/types'
 import { ErrorCode } from 'formsg-shared/types/errorCodes'
 
 import { env } from '~/env'
+import i18n from '~/i18n/i18n'
 
 import { ApiError } from '~typings/core'
 
@@ -27,6 +29,32 @@ export class HttpError extends Error {
 export class SingleSubmissionValidationError extends HttpError {
   constructor() {
     super('Single submission validation failed', StatusCodes.BAD_REQUEST)
+  }
+}
+
+const isErrorDto = (data: unknown): data is ErrorDto => {
+  return typeof data === 'object' && data !== null
+}
+
+const getTranslatedBackendMessage = (data: unknown): string | undefined => {
+  if (!isErrorDto(data)) return undefined
+
+  const { message, messageKey, messageParams } = data
+  if (typeof messageKey === 'string') {
+    const translatedMessage = i18n.t(messageKey, messageParams)
+    return translatedMessage === messageKey ? message : translatedMessage
+  }
+
+  return typeof message === 'string' ? message : undefined
+}
+
+const parseJsonSafely = (text: string): unknown => {
+  if (!text) return null
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return text
   }
 }
 
@@ -60,8 +88,9 @@ export const transformAxiosError = (error: Error): ApiError => {
           statusCode,
         )
       }
-      if (error.response.data?.message) {
-        return new HttpError(error.response.data.message, statusCode)
+      const backendMessage = getTranslatedBackendMessage(error.response.data)
+      if (backendMessage) {
+        return new HttpError(backendMessage, statusCode)
       }
       if (error.response.statusText) {
         return new HttpError(error.response.statusText, statusCode)
@@ -121,14 +150,22 @@ ApiService.interceptors.response.use(
 )
 
 export const processFetchResponse = async (response: Response) => {
+  let responseBody = ''
   try {
     // throw if response status not 2XX
     if (response.status < 200 || response.status >= 300) {
-      throw new Error(`Non-2XX response: ${response.status}`)
-    } else {
-      const data = await response.json()
-      return data
+      responseBody = await response.text()
+      const parsedErrorBody = parseJsonSafely(responseBody)
+      throw new HttpError(
+        getTranslatedBackendMessage(parsedErrorBody) ??
+          (typeof parsedErrorBody === 'string' ? parsedErrorBody : undefined) ??
+          (response.statusText || `Error: ${response.status}`),
+        response.status,
+      )
     }
+
+    const data = await response.json()
+    return data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // No guarantee that error is an Error object
@@ -139,7 +176,7 @@ export const processFetchResponse = async (response: Response) => {
           status: response.status,
           statusText: response.statusText,
           headers: [...(response.headers?.entries() || [])],
-          body: await response.text(),
+          body: responseBody,
         },
         error: {
           name: error.name,
