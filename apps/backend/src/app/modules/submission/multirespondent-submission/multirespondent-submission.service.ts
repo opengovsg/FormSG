@@ -516,6 +516,13 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+        const responseJson = buildMrfResponseJson({
+          formFields: form.form_fields,
+          responses,
+          responseId: submissionId,
+          timestamp: latestSubmissionTimestamp,
+        })
+
         const emailAttachments = []
         emailAttachments.push(...(attachments ?? []))
         if (responsePdf) {
@@ -532,6 +539,7 @@ const sendMrfOutcomeEmails = ({
             timestamp: latestSubmissionTimestamp,
             isRejected,
             formQuestionAnswers,
+            responseJson,
             attachments: emailAttachments,
             replyTo:
               extractEmailAnswersFromResponses(responses).join(', ') ||
@@ -558,6 +566,7 @@ const sendMrfOutcomeEmails = ({
           submissionId,
           timestamp: latestSubmissionTimestamp,
           formQuestionAnswers,
+          responseJson,
           attachments: emailAttachments,
           replyTo:
             extractEmailAnswersFromResponses(responses).join(', ') || undefined,

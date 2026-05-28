@@ -45,6 +45,7 @@ import {
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
+  buildMrfResponseJson,
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
@@ -1051,5 +1052,199 @@ describe('multirespondent-submission.utils', () => {
       responses: null as unknown as FieldResponsesV3,
     })
     expect(nullResult).toEqual([])
+  })
+
+  describe('buildMrfResponseJson', () => {
+    const BASE_ARGS = { responseId: 'abc123', timestamp: '1 Jan 2025' }
+
+    it('should prepend Response ID and Timestamp as first two entries', () => {
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields: [], responses: {} }),
+      )
+      expect(result[0]).toEqual({ question: 'Response ID', answer: 'abc123' })
+      expect(result[1]).toEqual({ question: 'Timestamp', answer: '1 Jan 2025' })
+    })
+
+    it('should include question and answer for a basic field', () => {
+      const fieldId = '1'
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: fieldId,
+              title: 'Name',
+              fieldType: BasicField.ShortText,
+            } as IShortTextFieldSchema,
+          ],
+          responses: {
+            [fieldId]: {
+              fieldType: BasicField.ShortText,
+              answer: 'Alice',
+            } as ShortTextResponseV3,
+          },
+        }),
+      )
+      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+    })
+
+    it('should output address sub-fields as separate flat entries', () => {
+      const fieldId = '1'
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: fieldId,
+              title: 'Home Address',
+              fieldType: BasicField.Address,
+            } as IAddressCompoundFieldSchema,
+          ],
+          responses: {
+            [fieldId]: {
+              fieldType: BasicField.Address,
+              answer: {
+                addressSubFields: {
+                  blockNumber: '161',
+                  streetName: 'BUKIT BATOK STREET 11',
+                  buildingName: '',
+                  levelNumber: '01',
+                  unitNumber: '02',
+                  postalCode: '650161',
+                } as AddressAttributes,
+              },
+            } as AddressResponseV3,
+          },
+        }),
+      )
+      expect(result[2]).toEqual({
+        question: 'Home Address - blockNumber',
+        answer: '161',
+      })
+      expect(result[3]).toEqual({
+        question: 'Home Address - streetName',
+        answer: 'BUKIT BATOK STREET 11',
+      })
+      expect(result[4]).toEqual({
+        question: 'Home Address - buildingName',
+        answer: '',
+      })
+      expect(result[5]).toEqual({
+        question: 'Home Address - levelNumber',
+        answer: '01',
+      })
+      expect(result[6]).toEqual({
+        question: 'Home Address - unitNumber',
+        answer: '02',
+      })
+      expect(result[7]).toEqual({
+        question: 'Home Address - postalCode',
+        answer: '650161',
+      })
+    })
+
+    it('should not add [Verified] prefix to email field questions', () => {
+      const fieldId = '1'
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: fieldId,
+              title: 'Email',
+              fieldType: BasicField.Email,
+            } as IEmailFieldSchema,
+          ],
+          responses: {
+            [fieldId]: {
+              fieldType: BasicField.Email,
+              answer: { value: 'alice@example.com', signature: 'sig' },
+            } as EmailResponseV3,
+          },
+        }),
+      )
+      expect(result[2]).toEqual({
+        question: 'Email',
+        answer: 'alice@example.com',
+      })
+    })
+
+    it('should output empty string for fields with no response', () => {
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: '1',
+              title: 'Unanswered',
+              fieldType: BasicField.ShortText,
+            } as IShortTextFieldSchema,
+          ],
+          responses: {},
+        }),
+      )
+      expect(result[2]).toEqual({ question: 'Unanswered', answer: '' })
+    })
+
+    it('should exclude non-response fields (Section, Statement, Image)', () => {
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: '1',
+              title: 'Section Header',
+              fieldType: BasicField.Section,
+            } as FormFieldSchema,
+            {
+              _id: '2',
+              title: 'Statement',
+              fieldType: BasicField.Statement,
+            } as FormFieldSchema,
+            {
+              _id: '3',
+              title: 'Image',
+              fieldType: BasicField.Image,
+            } as FormFieldSchema,
+            {
+              _id: '4',
+              title: 'Name',
+              fieldType: BasicField.ShortText,
+            } as IShortTextFieldSchema,
+          ],
+          responses: {
+            '4': {
+              fieldType: BasicField.ShortText,
+              answer: 'Alice',
+            } as ShortTextResponseV3,
+          },
+        }),
+      )
+      expect(result).toHaveLength(3) // Response ID + Timestamp + Name
+      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+    })
+
+    it('should not include fieldType in output entries', () => {
+      const fieldId = '1'
+      const result = JSON.parse(
+        buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields: [
+            {
+              _id: fieldId,
+              title: 'Name',
+              fieldType: BasicField.ShortText,
+            } as IShortTextFieldSchema,
+          ],
+          responses: {
+            [fieldId]: {
+              fieldType: BasicField.ShortText,
+              answer: 'Alice',
+            } as ShortTextResponseV3,
+          },
+        }),
+      )
+      expect(result[2]).not.toHaveProperty('fieldType')
+    })
   })
 })

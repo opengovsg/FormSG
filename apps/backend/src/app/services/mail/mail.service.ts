@@ -1028,7 +1028,6 @@ export class MailService {
     formId,
     paymentId,
     paymentAmount,
-    useStandardisedEmailTemplate,
   }: {
     email: string
     formTitle: string
@@ -1191,6 +1190,7 @@ export class MailService {
     submissionId,
     timestamp,
     formQuestionAnswers,
+    responseJson,
     attachments,
     replyTo,
   }: {
@@ -1201,6 +1201,7 @@ export class MailService {
     submissionId?: string
     timestamp: string
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1209,6 +1210,7 @@ export class MailService {
       responseId: responseId.toString(),
       timestamp,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({
@@ -1233,6 +1235,7 @@ export class MailService {
     timestamp,
     isRejected,
     formQuestionAnswers,
+    responseJson,
     attachments,
     replyTo,
   }: {
@@ -1244,6 +1247,7 @@ export class MailService {
     timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1257,6 +1261,7 @@ export class MailService {
       timestamp,
       outcome,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({

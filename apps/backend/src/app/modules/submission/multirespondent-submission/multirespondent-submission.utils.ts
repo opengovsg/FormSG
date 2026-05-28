@@ -12,6 +12,7 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { NON_RESPONSE_FIELD_SET } from 'formsg-shared/utils/field'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
@@ -435,7 +436,7 @@ const getQuestionAnswerPairsForOneField = ({
     }
     case BasicField.Signature: {
       const signatureQuestionAnswer = {
-        question: `[signature] ${questionTitle}`,
+        question: `[Signature] ${questionTitle}`,
         answer: SIGNATURE_CAPTURED_STRING,
         signatureDataPngDataUri: includeSignatureDataPngDataUri
           ? convertToSignaturePngDataUri(response.answer.value)
@@ -552,6 +553,75 @@ export const getResponsesDataFromMrfResponses = ({
       fieldType: questionAnswerPair.fieldType,
     }
   })
+}
+
+/**
+ * Serialises MRF submission responses into a JSON string for email attachment.
+ * Built directly from raw form fields and responses so that specific field
+ * types (e.g. Address) can be handled in custom ways than the generic question-answer pair extraction
+ * fields are handled consistently with the email body.
+ */
+export const buildMrfResponseJson = ({
+  formFields,
+  responses,
+  responseId,
+  timestamp,
+}: {
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  responses: FieldResponsesV3
+  responseId: string
+  timestamp: string
+}): string => {
+  const entries: Array<{ question: string; answer: string }> = [
+    { question: 'Response ID', answer: responseId },
+    { question: 'Timestamp', answer: timestamp },
+  ]
+
+  for (const field of formFields) {
+    // Skip non-response fields and fields without titles
+    if (NON_RESPONSE_FIELD_SET.has(field.fieldType as BasicField)) continue
+    if (!field.title) continue
+
+    const response = responses[field._id]
+    if (!response) {
+      entries.push({ question: field.title, answer: '' })
+      continue
+    }
+
+    switch (response.fieldType) {
+      case BasicField.Address: {
+        for (const [key, value] of Object.entries(
+          response.answer.addressSubFields,
+        )) {
+          entries.push({ question: `${field.title} - ${key}`, answer: value })
+        }
+        break
+      }
+      case BasicField.Email:
+      case BasicField.Mobile:
+        entries.push({ question: field.title, answer: response.answer.value })
+        break
+      default: {
+        const pairs = getQuestionAnswerPairsForOneField({
+          formField: field,
+          response,
+          includeSignatureDataPngDataUri: false,
+        })
+        for (const pair of pairs) {
+          entries.push({ question: pair.question, answer: pair.answer })
+        }
+      }
+    }
+  }
+
+  for (const key in responses) {
+    if (startsWithSPCPFieldTitle(key)) {
+      const { answer } = responses[key] as NdiResponseV3
+      entries.push({ question: key, answer })
+    }
+  }
+
+  return JSON.stringify(entries)
 }
 
 /**
