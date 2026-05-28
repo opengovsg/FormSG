@@ -558,9 +558,6 @@ export const validateMultirespondentSubmission = async (
                     req.body.submissionSecretKey,
                     previousSubmission,
                   )
-                console.log(
-                  `previousSubmissionDecryptedContent: ${JSON.stringify(previousSubmissionDecryptedContent)}`,
-                )
 
                 if (!previousSubmissionDecryptedContent) {
                   return err(

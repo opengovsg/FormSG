@@ -27,7 +27,6 @@ import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augment
 import {
   buildFormFieldMetaMap,
   processDecryptedContent,
-  processDecryptedContentV3,
   processDecryptedContentV4,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
 
