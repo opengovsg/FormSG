@@ -220,3 +220,32 @@ DisabledHighContrast.args = {
   isHighContrast: true,
   defaultValue: validValidationDefaultValues,
 }
+
+const LONG_DROPDOWN_OPTION =
+  'This is a very long dropdown option label that should not be truncated when disabled'
+
+const longDropdownSchema: TableFieldSchema = {
+  ...baseSchema,
+  columns: baseSchema.columns.map((c) =>
+    c.columnType === BasicField.Dropdown
+      ? { ...c, fieldOptions: [LONG_DROPDOWN_OPTION, 'Short'] }
+      : c,
+  ),
+}
+
+const longDropdownDefaultValues = longDropdownSchema.columns.reduce<
+  Record<string, string>
+>((acc, c) => {
+  if (c.columnType === BasicField.ShortText) {
+    acc[c._id] = 'Some short value'
+  } else if (c.columnType === BasicField.Dropdown) {
+    acc[c._id] = LONG_DROPDOWN_OPTION
+  }
+  return acc
+}, {})
+
+export const DisabledWithLongDropdownOption = Template.bind({})
+DisabledWithLongDropdownOption.args = {
+  schema: { ...longDropdownSchema, disabled: true },
+  defaultValue: longDropdownDefaultValues,
+}
