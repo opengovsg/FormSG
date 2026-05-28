@@ -29,6 +29,13 @@ export interface SharedSelectContextReturnProps<
 
   /** Renders without overflow limit */
   fullWidth?: boolean
+  /**
+   * When true and the select is disabled, the selected label allows
+   * horizontal scrolling and exposes the full label via a native `title`
+   * tooltip instead of ellipsis truncation. Opt-in to avoid regressing
+   * existing consumers' disabled rendering.
+   */
+  isDisabledScrollable?: boolean
 }
 
 interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>

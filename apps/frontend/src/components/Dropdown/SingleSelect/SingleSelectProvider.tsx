@@ -68,6 +68,7 @@ export const SingleSelectProvider = ({
   variant,
   fullWidth = false,
   isHighContrast = false,
+  isDisabledScrollable = false,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -285,6 +286,7 @@ export const SingleSelectProvider = ({
         virtualListRef,
         virtualListHeight,
         fullWidth,
+        isDisabledScrollable,
         onBlur,
       }}
     >
