@@ -1,6 +1,6 @@
 {
   "name": "formsg-backend",
-  "version": "7.21.0",
+  "version": "7.21.1",
   "private": true,
   "homepage": ".",
   "scripts": {
