@@ -417,19 +417,22 @@ const getQuestionAnswerPairsForOneField = ({
         'value' in response.answer
           ? response.answer.value
           : 'othersInput' in response.answer
-            ? response.answer.othersInput
+            ? 'Others: ' + response.answer.othersInput
             : ''
       break
-    case BasicField.Checkbox:
-      // eslint-disable-next-line no-case-declarations
-      const selectedAnswers =
-        (response.answer.othersInput
-          ? [...response.answer.value, response.answer.othersInput]
-          : [...response.answer.value]
-        ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
-
-      answer = selectedAnswers.toString()
+    case BasicField.Checkbox: {
+      answer = response.answer.value
+        .map((val) =>
+          val === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
+            ? response.answer.othersInput
+              ? 'Others: ' + response.answer.othersInput
+              : null
+            : val,
+        )
+        .filter(Boolean)
+        .join(', ')
       break
+    }
     case BasicField.Signature: {
       const signatureQuestionAnswer = {
         question: `[signature] ${questionTitle}`,
