@@ -5,6 +5,19 @@ import { Table } from './table'
 export * from './en-sg'
 
 export interface PublicForm {
+  backendErrors: {
+    verification: {
+      sessionExpired: string
+      otpExpired: string
+      otpRetryExceeded: string
+      wrongOtp: string
+      waitForOtp: string
+      otpRequestCountExceeded: string
+      invalidNumber: string
+      mailSend: string
+      outdatedForm: string
+    }
+  }
   errors: {
     notAvailable: string
     notFound: string
