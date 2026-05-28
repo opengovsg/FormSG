@@ -36,8 +36,10 @@ export const createPresignedPostDataPromise = (
           Bucket: params.bucketName,
           Expires: params.expiresSeconds,
           Conditions: [
-            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-            ['content-length-range', 0, params.size],
+            // Content length restrictions: 1 byte to MAX_UPLOAD_FILE_SIZE.
+            // Minimum is 1 (not 0) so S3 rejects empty uploads at the edge
+            // with EntityTooSmall, keeping 0-byte objects out of quarantine.
+            ['content-length-range', 1, params.size],
           ],
           Fields: {
             key: params.key ?? crypto.randomUUID(),

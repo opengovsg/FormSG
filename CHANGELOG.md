@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.21.1](https://github.com/opengovsg/formsg/compare/v7.21.0...v7.21.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* **backend:** reject 0-byte uploads at presigned POST policy (#9483) ([#9483](https://github.com/opengovsg/formsg/commit/bc83515e5f79fb937e9300d8ffb91444991f4284))
+* **backend:** update sso integration behavior (#9459) ([#9459](https://github.com/opengovsg/formsg/commit/b6434431efe9e2be0a4e2d395b308c5d37bd930d))
+* **table:** show full dropdown label in disabled MRF cells (#9501) ([#9501](https://github.com/opengovsg/formsg/commit/d9bdd5b4d63816b028714752ec9b7727fc011295))
+
 ## [7.21.0](https://github.com/opengovsg/formsg/compare/v7.20.7...v7.21.0) (2026-05-26)
 
 

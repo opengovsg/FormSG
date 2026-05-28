@@ -448,12 +448,14 @@ export const handleStreamEncryptedResponses = [
  * Exported for testing
  */
 export const getS3PresignedPostData: ControllerHandler<
-  unknown,
+  { formId: string },
   AttachmentPresignedPostDataMapType[] | ErrorDto,
   AttachmentSizeMapType[]
 > = async (req, res) => {
+  const { formId } = req.params
   const logMeta = {
     action: 'getS3PresignedPostData',
+    formId,
     ...createReqMeta(req),
   }
 

@@ -144,6 +144,7 @@ const DropdownColumnCell = ({
       render={({ field }) => (
         <SingleSelect
           isDisabled={isDisabled}
+          isDisabledScrollable
           colorScheme={`theme-${colorTheme}`}
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
