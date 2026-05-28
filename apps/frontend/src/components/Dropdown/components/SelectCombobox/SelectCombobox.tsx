@@ -44,6 +44,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       getInputProps,
       styles,
       isDisabled,
+      isDisabledScrollable,
       isSearchable,
       isReadOnly,
       isInvalid,
@@ -104,14 +105,22 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             ) : null}
             <Text
               textStyle="body-1"
-              noOfLines={1}
-              {...(isDisabled
+              {...(isDisabled && isDisabledScrollable
                 ? {
                     ...hideScrollbarStyles,
                     color: 'neutral.800',
-                    pointerEvents: 'none',
+                    title: selectedItemMeta.label,
                   }
-                : {})}
+                : {
+                    noOfLines: 1,
+                    ...(isDisabled
+                      ? {
+                          ...hideScrollbarStyles,
+                          color: 'neutral.800',
+                          pointerEvents: 'none',
+                        }
+                      : {}),
+                  })}
             >
               {selectedItemMeta.label}
             </Text>
