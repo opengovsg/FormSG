@@ -2545,7 +2545,7 @@ describe('submission.service', () => {
             ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
             Fields: { key: uuid1 },
-            Conditions: [['content-length-range', 0, 1]],
+            Conditions: [['content-length-range', 1, 1]],
           },
           expect.any(Function), // anonymous error handling function
         ],
@@ -2554,7 +2554,7 @@ describe('submission.service', () => {
             ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
             Fields: { key: uuid2 },
-            Conditions: [['content-length-range', 0, 2]],
+            Conditions: [['content-length-range', 1, 2]],
           },
           expect.any(Function), // anonymous error handling function
         ],
@@ -2598,7 +2598,7 @@ describe('submission.service', () => {
           Bucket: aws.guarddutyQuarantineS3Bucket,
           Fields: { key: expect.stringMatching(REGEX_UUID) },
           Expires: 1 * 60, // expires in 1 minutes
-          Conditions: [['content-length-range', 0, 1]],
+          Conditions: [['content-length-range', 1, 1]],
         },
         expect.any(Function), // anonymous error handling function
       )
