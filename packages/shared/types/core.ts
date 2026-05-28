@@ -12,8 +12,12 @@ export type FrontendRuntimeEnv = {
   ddSampleRatePublic?: number
 }
 
+export type I18nMessageParams = Record<string, string | number>
+
 export interface ErrorDto {
   message: string
+  messageKey?: string
+  messageParams?: I18nMessageParams
 }
 
 export interface SuccessMessageDto {
