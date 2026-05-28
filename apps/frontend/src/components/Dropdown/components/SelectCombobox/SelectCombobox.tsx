@@ -130,7 +130,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
               return (
                 <Text textStyle="body-1" {...labelStyles}>
-                  {selectedItemMeta.label}
+                  <span>{selectedItemMeta.label}</span>
                 </Text>
               )
             })()}
