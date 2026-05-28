@@ -36,6 +36,17 @@ const hideScrollbarStyles = {
   },
 } as const
 
+const disabledLabelColor = 'neutral.800'
+
+const truncatedLabelStyles = { noOfLines: 1 } as const
+
+const disabledTruncatedLabelStyles = {
+  ...truncatedLabelStyles,
+  ...hideScrollbarStyles,
+  color: disabledLabelColor,
+  pointerEvents: 'none',
+} as const
+
 export const SelectCombobox = forwardRef<HTMLInputElement>(
   (_props, ref): JSX.Element => {
     const {
@@ -103,27 +114,26 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
                 aria-disabled={isDisabled}
               />
             ) : null}
-            <Text
-              textStyle="body-1"
-              {...(isDisabled && isDisabledScrollable
-                ? {
-                    ...hideScrollbarStyles,
-                    color: 'neutral.800',
-                    title: selectedItemMeta.label,
-                  }
-                : {
-                    noOfLines: 1,
-                    ...(isDisabled
-                      ? {
-                          ...hideScrollbarStyles,
-                          color: 'neutral.800',
-                          pointerEvents: 'none',
-                        }
-                      : {}),
-                  })}
-            >
-              {selectedItemMeta.label}
-            </Text>
+            {(() => {
+              const disabledScrollableLabelStyles = {
+                ...hideScrollbarStyles,
+                color: disabledLabelColor,
+                title: selectedItemMeta.label,
+              }
+
+              const labelStyles =
+                isDisabled && isDisabledScrollable
+                  ? disabledScrollableLabelStyles
+                  : isDisabled
+                    ? disabledTruncatedLabelStyles
+                    : truncatedLabelStyles
+
+              return (
+                <Text textStyle="body-1" {...labelStyles}>
+                  {selectedItemMeta.label}
+                </Text>
+              )
+            })()}
           </Stack>
           <Input
             isReadOnly={!isSearchable || isReadOnly}
