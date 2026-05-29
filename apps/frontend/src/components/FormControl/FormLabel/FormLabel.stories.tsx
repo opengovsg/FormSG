@@ -39,7 +39,7 @@ export const WithMarkdownDescription = Template.bind({})
 WithMarkdownDescription.args = {
   children: 'This is a label',
   description:
-    'Description _can_ **have** [Markdown](https://guides.github.com/features/mastering-markdown/)',
+    'Description _can_ **have** [Markdown](https://guides.github.com/features/mastering-markdown/)\n\n- First bullet point\n- Second bullet with **bold text**\n- Third bullet with a [link](https://example.com)',
   useMarkdownForDescription: true,
 }
 
