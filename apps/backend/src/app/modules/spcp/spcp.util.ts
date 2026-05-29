@@ -168,11 +168,7 @@ export const validateSpcpForm = <T extends IFormSchema>(
 
 // Typeguard to ensure that form has eserviceId and correct authType
 const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
-  return (
-    !!form.authType &&
-    [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
-    !!form.esrvcId
-  )
+  return form.authType === FormAuthType.CP && !!form.esrvcId
 }
 
 /**
@@ -185,16 +181,11 @@ const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
  */
 export const getRedirectTargetSpcpOidc = (
   formId: string,
-  authType: FormAuthType.SP | FormAuthType.CP,
-  isPersistentLogin?: boolean,
+  _authType: FormAuthType.CP,
+  _isPersistentLogin?: boolean,
   encodedQuery?: string,
 ): RedirectTargetSpcpOidc => {
-  // Need to cast to boolean because undefined is allowed as a valid value
-  const persistentLogin =
-    authType === FormAuthType.SP ? !!isPersistentLogin : false
-  return encodedQuery
-    ? `/${formId}-${persistentLogin}-${encodedQuery}`
-    : `/${formId}-${persistentLogin}`
+  return encodedQuery ? `/${formId}-false-${encodedQuery}` : `/${formId}-false`
 }
 
 // Typeguards

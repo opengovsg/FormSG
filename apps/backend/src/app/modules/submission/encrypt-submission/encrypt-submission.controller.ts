@@ -49,7 +49,6 @@ import {
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
-import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
@@ -150,28 +149,6 @@ const submitEncryptModeForm = async (
   let userInfo
   const { authType } = formDef
   switch (authType) {
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(FormAuthType.SP)
-      const jwtPayloadResult = await oidcService
-        .extractJwt(req.cookies)
-        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify Singpass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      userName = jwtPayloadResult.value.userName
-      break
-    }
     case FormAuthType.CP: {
       const oidcService = getOidcService(FormAuthType.CP)
       const jwtPayloadResult = await oidcService
@@ -195,21 +172,16 @@ const submitEncryptModeForm = async (
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
-    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
       const jwtPayloadResult = await extractMyInfoLoginJwt(
         req.cookies,
         authType,
       )
         .andThen(MyInfoService.verifyLoginJwt)
-        .map(({ uinFin }) => {
-          return uinFin
-        })
+        .map(({ uinFin }) => uinFin)
         .mapErr((error) => {
           logger.error({
-            message: `Error verifying MyInfo${
-              authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
-            } hashes`,
+            message: 'Error verifying MyInfo hashes',
             meta: logMeta,
             error,
           })
@@ -220,9 +192,7 @@ const submitEncryptModeForm = async (
           jwtPayloadResult.error,
         )
         logger.error({
-          message: `Failed to verify ${
-            authType === FormAuthType.SGID_MyInfo ? 'SGID' : 'Singpass'
-          } JWT with auth client`,
+          message: 'Failed to verify Singpass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
@@ -234,27 +204,6 @@ const submitEncryptModeForm = async (
       userName = jwtPayloadResult.value
       break
     }
-    case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
-        req.cookies.jwtSgid,
-      )
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify sgID JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      userName = jwtPayloadResult.value.userName
-      break
-    }
   }
 
   const submitterId = userName?.toUpperCase()
@@ -262,11 +211,7 @@ const submitEncryptModeForm = async (
   if (
     submitterId &&
     form.whitelistedSubmitterIds?.isWhitelistEnabled &&
-    (form.authType === FormAuthType.SP ||
-      form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo)
+    (form.authType === FormAuthType.CP || form.authType === FormAuthType.MyInfo)
   ) {
     const hasRespondentNotWhitelistedErrorResult =
       await FormService.checkHasRespondentNotWhitelistedFailure(
@@ -324,10 +269,7 @@ const submitEncryptModeForm = async (
         })
         break
       }
-      case FormAuthType.SP:
-      case FormAuthType.SGID:
-      case FormAuthType.MyInfo:
-      case FormAuthType.SGID_MyInfo: {
+      case FormAuthType.MyInfo: {
         if (!userName) break
         parsedResponses.addNdiResponses({
           authType: form.authType,
@@ -339,11 +281,8 @@ const submitEncryptModeForm = async (
 
     // generate verified content which is used to construct submitter login id for form response
     if (
-      form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo
+      form.authType === FormAuthType.MyInfo
     ) {
       const encryptVerifiedContentResult =
         VerifiedContentService.getVerifiedContent({

@@ -15,14 +15,12 @@ export const FormBanner = (): JSX.Element | null => {
     data: {
       siteBannerContent,
       isGeneralMaintenance,
-      isSPMaintenance,
       isCPMaintenance,
       myInfoBannerContent,
     } = {},
   } = useEnv()
   const siteBannerContentGB = useFeatureValue('site-banner-content', '')
   const isGeneralMaintenanceGB = useFeatureValue('is-general-maintenance', '')
-  const isSPMaintenanceGB = useFeatureValue('is-sp-maintenance', '')
   const isCPMaintenanceGB = useFeatureValue('is-cp-maintenance', '')
   const myInfoBannerContentGB = useFeatureValue('myinfo-banner-content', '')
   const { form } = usePublicFormContext()
@@ -32,7 +30,6 @@ export const FormBanner = (): JSX.Element | null => {
     () =>
       siteBannerContent ||
       isGeneralMaintenance ||
-      (form?.authType === FormAuthType.SP && isSPMaintenance) ||
       (form?.authType === FormAuthType.CP && isCPMaintenance) ||
       (form?.authType === FormAuthType.MyInfo && myInfoBannerContent) ||
       undefined,
@@ -40,7 +37,6 @@ export const FormBanner = (): JSX.Element | null => {
       form?.authType,
       isCPMaintenance,
       isGeneralMaintenance,
-      isSPMaintenance,
       myInfoBannerContent,
       siteBannerContent,
     ],
@@ -51,7 +47,6 @@ export const FormBanner = (): JSX.Element | null => {
     () =>
       siteBannerContentGB ||
       isGeneralMaintenanceGB ||
-      (form?.authType === FormAuthType.SP && isSPMaintenanceGB) ||
       (form?.authType === FormAuthType.CP && isCPMaintenanceGB) ||
       (form?.authType === FormAuthType.MyInfo && myInfoBannerContentGB) ||
       undefined,
@@ -59,7 +54,6 @@ export const FormBanner = (): JSX.Element | null => {
       form?.authType,
       isCPMaintenanceGB,
       isGeneralMaintenanceGB,
-      isSPMaintenanceGB,
       myInfoBannerContentGB,
       siteBannerContentGB,
     ],

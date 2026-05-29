@@ -19,8 +19,6 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
-import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
-import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
@@ -208,44 +206,13 @@ export const _handleGenerateOtp: ControllerHandler<
                 return error
               })
           }
-          case FormAuthType.SP: {
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .extractJwt(req.cookies)
-              .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify Singpass JWT with sp oidc client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          }
-          case FormAuthType.SGID:
-            return SgidService.extractSgidSingpassJwtPayload(
-              req.cookies[SGID_COOKIE_NAME],
-            )
-              .map(() => form)
-              .mapErr((error) => {
-                logger.error({
-                  message: 'Failed to verify sgID JWT with auth client',
-                  meta: logMeta,
-                  error,
-                })
-                return error
-              })
-          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
             return MyInfoUtil.extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: `Failed to verify MyInfo${
-                    authType === FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
-                  } hashes`,
+                  message: 'Failed to verify MyInfo hashes',
                   meta: logMeta,
                   error,
                 })

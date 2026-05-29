@@ -33,15 +33,7 @@ export type ExtractedNDIPayload =
   | ExtractedSingpassNDIPayload
   | ExtractedCorppassNDIPayload
 
-export type SgidJwtPayload = {
-  userName: string
-  rememberMe: boolean
-}
-
-export type JwtPayload =
-  | SingpassJwtPayload
-  | CorppassJwtPayload
-  | SgidJwtPayload
+export type JwtPayload = SingpassJwtPayload | CorppassJwtPayload
 
 type CookieTimestamp = {
   iat: number // iat and exp are present after cookie has been set
@@ -50,12 +42,9 @@ type CookieTimestamp = {
 
 export type SingpassJwtPayloadFromCookie = SingpassJwtPayload & CookieTimestamp
 export type CorppassJwtPayloadFromCookie = CorppassJwtPayload & CookieTimestamp
-export type SgidJwtPayloadFromCookie = SgidJwtPayload & CookieTimestamp
-
 export type JwtPayloadFromCookie =
   | SingpassJwtPayloadFromCookie
   | CorppassJwtPayloadFromCookie
-  | SgidJwtPayloadFromCookie
 
 export type SpcpDomainSettings =
   | { domain: string; path: string }
@@ -69,7 +58,7 @@ export interface ParsedSpcpParams {
 }
 
 export type SpcpForm<T extends IFormSchema> = T & {
-  authType: FormAuthType.SP | FormAuthType.CP
+  authType: FormAuthType.CP
   esrvcId: string
 }
 

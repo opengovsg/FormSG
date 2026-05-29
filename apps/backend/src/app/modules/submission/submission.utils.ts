@@ -109,15 +109,6 @@ import {
   PaymentNotFoundError,
 } from '../payments/payments.errors'
 import {
-  SGID_COOKIE_NAME,
-  SGID_MYINFO_LOGIN_COOKIE_NAME,
-} from '../sgid/sgid.constants'
-import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-  SgidVerifyJwtError,
-} from '../sgid/sgid.errors'
-import {
   CreateRedirectUrlError,
   InvalidJwtError,
   MissingJwtError,
@@ -211,9 +202,6 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case SgidMissingJwtError:
-    case SgidVerifyJwtError:
-    case SgidInvalidJwtError:
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
@@ -864,26 +852,12 @@ export const generateHashedSubmitterId = (id: string, salt: string) => {
 
 /**
  * Returns the cookie name based on auth type
- * Valid AuthTypes are SP / CP / MyInfo / SGID
  */
 export const getCookieNameByAuthType = (
-  authType:
-    | FormAuthType.SP
-    | FormAuthType.CP
-    | FormAuthType.MyInfo
-    | FormAuthType.SGID
-    | FormAuthType.SGID_MyInfo,
+  authType: FormAuthType.CP | FormAuthType.MyInfo,
 ): string => {
-  switch (authType) {
-    case FormAuthType.SGID_MyInfo:
-      return SGID_MYINFO_LOGIN_COOKIE_NAME
-    case FormAuthType.MyInfo:
-      return MYINFO_LOGIN_COOKIE_NAME
-    case FormAuthType.SGID:
-      return SGID_COOKIE_NAME
-    default:
-      return JwtName[authType]
-  }
+  if (authType === FormAuthType.MyInfo) return MYINFO_LOGIN_COOKIE_NAME
+  return JwtName[authType]
 }
 
 /**

@@ -7,7 +7,6 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
-import { pickBy } from 'lodash'
 
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
@@ -27,14 +26,8 @@ export interface SingpassAuthOptionsRadioProps {
 
 type RadioOptionsType = [FormAuthType, string][]
 
-const COLLAPSED_FORM_SINGPASS_AUTHTYPES = pickBy(
-  FORM_SINGPASS_AUTHTYPES,
-  (_, key) =>
-    [FormAuthType.MyInfo, FormAuthType.CP].includes(key as FormAuthType),
-)
-
 const baseRadioOptions: RadioOptionsType = Object.entries(
-  COLLAPSED_FORM_SINGPASS_AUTHTYPES,
+  FORM_SINGPASS_AUTHTYPES,
 ) as [FormAuthType, string][]
 
 export const SingpassAuthOptionsRadio = ({
@@ -114,11 +107,7 @@ export const SingpassAuthOptionsRadio = ({
             <Radio value={authType} isDisabled={checkIsDisabled()}>
               <Flex>
                 {text}
-                {[
-                  FormAuthType.SGID,
-                  FormAuthType.SGID_MyInfo,
-                  FormAuthType.MyInfo,
-                ].includes(authType) ? (
+                {authType === FormAuthType.MyInfo ? (
                   <>
                     <Spacer w="16px" />
                     <Tag size="sm" variant="subtle">

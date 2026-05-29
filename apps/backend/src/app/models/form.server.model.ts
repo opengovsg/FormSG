@@ -532,9 +532,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              ((this.authType === FormAuthType.MyInfo ||
-                this.authType === FormAuthType.SGID_MyInfo) &&
-                myInfoFieldCount <= 30)
+              (this.authType === FormAuthType.MyInfo && myInfoFieldCount <= 30)
             )
           },
           message:
@@ -946,10 +944,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormSchema.method<IFormSchema>(
     'getUniqueMyInfoAttrs',
     function getUniqueMyInfoAttrs() {
-      if (
-        this.authType !== FormAuthType.MyInfo &&
-        this.authType !== FormAuthType.SGID_MyInfo
-      ) {
+      if (this.authType !== FormAuthType.MyInfo) {
         return []
       }
 

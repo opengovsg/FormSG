@@ -19,10 +19,10 @@ type BillingColumnData = Pick<
   'formName' | 'adminEmail' | 'authType' | 'total'
 >
 
-const AUTHTYPE_TO_TEXT: { [K in FormAuthType]?: string } = {
+const AUTHTYPE_TO_TEXT: Record<string, string> = {
   [FormAuthType.NIL]: '-',
-  [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.SGID]: 'sgID',
+  SP: 'Singpass', // kept for historical billing records
+  SGID: 'sgID', // kept for historical billing records
   [FormAuthType.MyInfo]: 'MyInfo',
   [FormAuthType.CP]: 'Corppass',
 }

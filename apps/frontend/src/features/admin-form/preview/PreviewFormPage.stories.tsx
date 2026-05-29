@@ -170,7 +170,7 @@ SingpassUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -196,7 +196,7 @@ SingpassAuthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),
@@ -247,7 +247,7 @@ SgidUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),
@@ -264,7 +264,7 @@ SgidAuthorized.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),

@@ -9,7 +9,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin4@mock.gov.sg',
         formName: 'form1',
         formId: 'form1id' as FormId,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.NIL,
         total: 5,
       },
       {
@@ -30,7 +30,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin5@mock.gov.sg',
         formName: 'form4',
         formId: 'form4id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         total: 7,
       },
       {
@@ -45,7 +45,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin7@mock.gov.sg',
         formName: 'form6',
         formId: 'form6id' as FormId,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.NIL,
         total: 5,
       },
       {
@@ -59,14 +59,14 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin1@mock.gov.sg',
         formName: 'form8',
         formId: 'form8id' as FormId,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.NIL,
         total: 3,
       },
       {
         adminEmail: 'admin7@mock.gov.sg',
         formName: 'form9',
         formId: 'form9id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         total: 14,
       },
       {
@@ -80,7 +80,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin8@mock.gov.sg',
         formName: 'form11',
         formId: 'form11id' as FormId,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.NIL,
         total: 5,
       },
       {

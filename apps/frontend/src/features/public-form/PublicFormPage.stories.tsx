@@ -290,7 +290,7 @@ SingpassUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -313,7 +313,7 @@ SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -340,7 +340,7 @@ SingpassAuthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
         spcpSession: {
           userName: 'S1234567A',
@@ -418,7 +418,7 @@ SgidUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),
@@ -436,7 +436,7 @@ SgidUnauthorizedSubmitterIdCollectionEnabled.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           isSubmitterIdCollectionEnabled: true,
         },
       },
@@ -454,7 +454,7 @@ SgidAuthorized.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
         },
         spcpSession: {
           userName: 'S0000000Z',
@@ -474,7 +474,7 @@ SgidMyInfoUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'SGID_MyInfo login form',
-          authType: FormAuthType.SGID_MyInfo,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),
@@ -494,7 +494,7 @@ SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
       overrides: {
         form: {
           title: 'SGID_MyInfo login form',
-          authType: FormAuthType.SGID_MyInfo,
+          authType: FormAuthType.MyInfo,
           isSubmitterIdCollectionEnabled: true,
         },
       },
@@ -550,7 +550,7 @@ SgIdSingleSubmissionFailureMessage.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           isSingleSubmission: true,
         },
         errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
@@ -570,7 +570,7 @@ SingpassSingleSubmissionFailureMessage.parameters = {
       overrides: {
         form: {
           title: 'SP login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           isSingleSubmission: true,
         },
         errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
@@ -610,7 +610,7 @@ SgIdSingleSubmissionFailureModalAfterSubmit.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           isSingleSubmission: true,
         },
         spcpSession: {
@@ -656,7 +656,7 @@ SgIdRespondentNotWhitelistedFailureMessage.parameters = {
       overrides: {
         form: {
           title: 'SGID login form',
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           whitelistedSubmitterIds: {
             isWhitelistEnabled: true,
           },

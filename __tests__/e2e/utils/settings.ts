@@ -19,8 +19,7 @@ const _getSettings = (
 ): E2eSettingsOptions => {
   // Inject form auth settings
   if (custom?.authType && custom.authType !== FormAuthType.NIL) {
-    // Only SGID does not require e-service ID
-    if (custom.authType !== FormAuthType.SGID && !custom.esrvcId) {
+    if (!custom.esrvcId) {
       custom.esrvcId = 'test_esrvcid'
     }
     // All auth types have an NRIC

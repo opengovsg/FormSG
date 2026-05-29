@@ -39,40 +39,6 @@ import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
 
-const SGID_SUPPORTED_V1 = [
-  MyInfoAttribute.Name,
-  MyInfoAttribute.DateOfBirth,
-  MyInfoAttribute.PassportNumber,
-  MyInfoAttribute.PassportExpiryDate,
-  // This is disabled due to MyInfo and sgID-MyInfo not using the same
-  // phone number formats.
-  // MyInfo phone numbers support country code, while sgID-MyInfo does not.
-  // MyInfoAttribute.MobileNo,
-]
-const SGID_SUPPORTED_V2 = [
-  ...SGID_SUPPORTED_V1,
-  MyInfoAttribute.Sex,
-  MyInfoAttribute.Race,
-  MyInfoAttribute.Nationality,
-  MyInfoAttribute.HousingType,
-  MyInfoAttribute.HdbType,
-  MyInfoAttribute.RegisteredAddress,
-  MyInfoAttribute.BirthCountry,
-  MyInfoAttribute.VehicleNo,
-  MyInfoAttribute.Employment,
-  MyInfoAttribute.WorkpassStatus,
-  MyInfoAttribute.Marital,
-  MyInfoAttribute.MobileNo,
-  MyInfoAttribute.WorkpassExpiryDate,
-  MyInfoAttribute.ResidentialStatus,
-  MyInfoAttribute.Dialect,
-  MyInfoAttribute.Occupation,
-  MyInfoAttribute.CountryOfMarriage,
-  MyInfoAttribute.MarriageCertNo,
-  MyInfoAttribute.MarriageDate,
-  MyInfoAttribute.DivorceDate,
-]
-
 export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
@@ -99,18 +65,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
    * If sgID is used, checks if the corresponding
    * MyInfo field is supported by sgID.
    */
-  const sgIDUnSupported = useCallback(
-    (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
-      const sgidSupported: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_V2)
-
-      return (
-        form?.authType === FormAuthType.SGID_MyInfo &&
-        !sgidSupported.has(fieldType)
-      )
-    },
-    [],
-  )
-
   // myInfo should be disabled if
   // 1. form auth type is not myInfo
   // 2. # of myInfo fields >= 30
@@ -118,17 +72,16 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
     () =>
       form
         ? form.form_fields.filter(isMyInfo).length >= 30 ||
-          (form.authType !== FormAuthType.MyInfo &&
-            form.authType !== FormAuthType.SGID_MyInfo)
+          form.authType !== FormAuthType.MyInfo
         : true,
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
   const isDisabledCheck = useCallback(
     (fieldType: MyInfoAttribute): boolean => {
-      return isDisabled || sgIDUnSupported(form, fieldType)
+      return isDisabled
     },
-    [form, isDisabled, sgIDUnSupported],
+    [isDisabled],
   )
 
   const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
@@ -285,8 +238,7 @@ const MyInfoText = ({
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
-  const isMyInfoDisabled =
-    authType !== FormAuthType.MyInfo && authType !== FormAuthType.SGID_MyInfo
+  const isMyInfoDisabled = authType !== FormAuthType.MyInfo
   const numMyInfoFields = useMemo(
     () => form_fields.filter((ff) => isMyInfo(ff)).length,
     [form_fields],

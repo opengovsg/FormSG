@@ -14,7 +14,6 @@ const frontendVars = {
   logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
   formsgSdkMode: config.formsgSdkMode,
   captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
-  isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
@@ -30,8 +29,7 @@ const frontendVars = {
 }
 const environment = ejs.render(
   `
-    // Singpass/Corppass maintenance message
-    var isSPMaintenance = "<%- isSPMaintenance %>"
+    // Corppass maintenance message
     var isCPMaintenance = "<%- isCPMaintenance %>"
     var myInfoBannerContent = "<%- myInfoBannerContent %>"
     var isGeneralMaintenance = "<%- isGeneralMaintenance %>"

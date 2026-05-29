@@ -152,25 +152,6 @@ test.describe('Email form submission', () => {
     })
   })
 
-  test('Create and submit email mode form with Singpass authentication', async ({
-    page,
-  }) => {
-    test.setTimeout(60 * 1000)
-    // Define
-    const formFields = ALL_FIELDS
-    const formLogics = NO_LOGIC
-    const formSettings = getEmailSettings({
-      authType: FormAuthType.SP,
-    })
-
-    // Test
-    await runEmailSubmissionTest(page, Form, {
-      formFields,
-      formLogics,
-      formSettings,
-    })
-  })
-
   test('Create and submit email mode form with Corppass authentication', async ({
     page,
   }) => {
@@ -180,25 +161,6 @@ test.describe('Email form submission', () => {
     const formLogics = NO_LOGIC
     const formSettings = getEmailSettings({
       authType: FormAuthType.CP,
-    })
-
-    // Test
-    await runEmailSubmissionTest(page, Form, {
-      formFields,
-      formLogics,
-      formSettings,
-    })
-  })
-
-  test('Create and submit email mode form with SGID authentication', async ({
-    page,
-  }) => {
-    test.setTimeout(60 * 1000)
-    // Define
-    const formFields = ALL_FIELDS
-    const formLogics = NO_LOGIC
-    const formSettings = getEmailSettings({
-      authType: FormAuthType.SGID,
     })
 
     // Test

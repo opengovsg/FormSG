@@ -44,8 +44,6 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
-import { SGIDMyInfoData } from '../sgid/sgid.adapter'
-import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
@@ -392,14 +390,8 @@ export const isMyInfoAuthCodeCookie = (
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
-  authType: FormAuthType.MyInfo | FormAuthType.SGID_MyInfo,
 ): Result<string, MyInfoMissingLoginCookieError> => {
-  const jwt =
-    cookies[
-      authType === FormAuthType.MyInfo
-        ? MYINFO_LOGIN_COOKIE_NAME
-        : SGID_MYINFO_LOGIN_COOKIE_NAME
-    ]
+  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
   if (typeof jwt === 'string' && !!jwt) {
     return ok(jwt)
   }
@@ -582,7 +574,7 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
-  myInfoData: MyInfoData | SGIDMyInfoData,
+  myInfoData: MyInfoData,
 ) => {
   const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
   const myInfoSource =

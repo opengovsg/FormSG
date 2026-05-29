@@ -25,16 +25,12 @@ const getDispayedAuthTypeText = (
   t: (key: string) => string,
 ) => {
   switch (authType) {
-    case FormAuthType.SP:
     case FormAuthType.MyInfo:
       return t('features.publicForm.components.formAuth.authType.singpass')
     case FormAuthType.CP:
       return t(
         'features.publicForm.components.formAuth.authType.singpassCorporate',
       )
-    case FormAuthType.SGID:
-    case FormAuthType.SGID_MyInfo:
-      return t('features.publicForm.components.formAuth.authType.singpassApp')
   }
 }
 

@@ -128,7 +128,7 @@ PublicEmailSingpassForm.parameters = {
     handlers: {
       default: buildEmailModeMswRoutes({
         status: FormStatus.Public,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.MyInfo,
         esrvcId: 'STORYBOOK-TEST',
         responseMode: FormResponseMode.Email,
       }),
@@ -195,7 +195,7 @@ PrivateEmailSingpassFormSubmitterIdCollectionEnabled.parameters = {
     handlers: {
       default: buildEmailModeMswRoutes({
         status: FormStatus.Private,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         isSubmitterIdCollectionEnabled: true,
       }),
     },
@@ -228,7 +228,7 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
     handlers: {
       default: buildEmailModeMswRoutes({
         status: FormStatus.Private,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         isSingleSubmission: true,
       }),
     },
@@ -242,7 +242,7 @@ PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
     handlers: {
       default: buildEncryptModeMswRoutes({
         status: FormStatus.Private,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         isSingleSubmission: true,
         isSubmitterIdCollectionEnabled: true,
       }),
@@ -311,7 +311,7 @@ PrivateStorageSgidPaymentEnabledForm.parameters = {
       default: [
         ...buildEncryptModeMswRoutes({
           status: FormStatus.Private,
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Encrypt,
           payments_channel: DUMMY_STRIPE_PAYMENT_CHANNEL_VALUE,
         }),
@@ -328,7 +328,7 @@ PrivateStorageSgidWhitelistEnabledForm.parameters = {
       default: [
         ...buildEncryptModeMswRoutes({
           status: FormStatus.Private,
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Encrypt,
           whitelistedSubmitterIds: {
             isWhitelistEnabled: true,
