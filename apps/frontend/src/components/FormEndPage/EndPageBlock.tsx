@@ -112,7 +112,9 @@ export const EndPageBlock = ({
         </Text>
         {paragraph ? (
           <Box mt="0.75rem">
-            <MarkdownText multilineBreaks components={mdComponents}>{paragraph}</MarkdownText>
+            <MarkdownText multilineBreaks components={mdComponents}>
+              {paragraph}
+            </MarkdownText>
           </Box>
         ) : null}
       </Box>
