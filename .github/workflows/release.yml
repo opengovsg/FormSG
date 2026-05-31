@@ -1,0 +1,98 @@
+name: Release
+
+# Cuts a monorepo app release from `develop`, replacing the old laptop flow
+# (scripts/release_prep.sh). Does exactly what that script did by hand:
+# bumps the app package.json files via .internal.versionrc.js, regenerates
+# CHANGELOG.md, commits both back to develop, pushes the vX.Y.Z tag, and
+# updates the GitHub Releases page.
+#
+# The tag push fans out to the build (build-release-image.yml), staging deploy
+# (deploy-ecs-stg.yml) and production deploy (deploy-ecs-prod.yml) workflows.
+#
+# The SDK release flow is separate: see .github/workflows/publish-sdk.yml.
+
+on:
+  workflow_dispatch:
+
+# Only one release may be in flight at a time, so two dispatches can't race to
+# bump the version off the same base commit.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22.22'
+  PNPM_VERSION: '10.30.3'
+  CTV_VERSION: '12.6.1' # commit-and-tag-version, pinned to package.json
+
+jobs:
+  release:
+    name: Cut release
+    runs-on: ubuntu-latest
+    # `release` GitHub Environment gates who can cut a tag (required reviewers
+    # configured in repo settings).
+    environment: release
+    steps:
+      # A GitHub App token (not GITHUB_TOKEN) is required for two reasons:
+      # 1. it can be granted bypass of develop's branch protection to push the
+      #    version-bump commit; and
+      # 2. pushes made with GITHUB_TOKEN do not trigger other workflows, so the
+      #    tag push would not start the build/deploy workflows.
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+
+      - name: Checkout develop
+        uses: actions/checkout@v4.3.1
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure git identity
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          bot_user_id="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${bot_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Bumps the eight app package.json files, regenerates CHANGELOG.md, and
+      # creates the `chore: bump version to vX.Y.Z` commit + matching vX.Y.Z tag
+      # locally. Same config the laptop flow used.
+      - name: Bump version, regenerate changelog and tag
+        run: pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .internal.versionrc.js
+
+      - name: Resolve release version
+        id: version
+        run: echo "tag=v$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Push commit and tag
+        run: |
+          git push origin HEAD:develop
+          git push origin "refs/tags/${{ steps.version.outputs.tag }}"
+
+      - name: Update GitHub Releases page
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --verify-tag \
+            --generate-notes
