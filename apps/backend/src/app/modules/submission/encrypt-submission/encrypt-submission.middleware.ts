@@ -37,6 +37,7 @@ import {
   isAttachmentResponse,
   isQuarantinedAttachmentResponse,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 import {
@@ -625,8 +626,7 @@ export const createFormsgAndRetrieveForm = async (
       meta: logMeta,
       error: formResult.error,
     })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(formResult.error))
   }
 
   // Step 3b: Set formsg.formDef in req.body

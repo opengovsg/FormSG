@@ -6,7 +6,7 @@ import {
 import { Middleware } from '../../../utils/pipeline-middleware'
 import { FormRespondentNotWhitelistedError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import { mapRouteError } from '../submission.utils'
+import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import {
   ProcessedMultirespondentSubmissionHandlerType,
@@ -38,8 +38,7 @@ export const ensureSubmitterIdIsWhitelisted: Middleware<
       error,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(error)
-    res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(error))
     return
   }
 
@@ -55,10 +54,7 @@ export const ensureSubmitterIdIsWhitelisted: Middleware<
       error: formRespondentNotWhitelistedError,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(
-      formRespondentNotWhitelistedError,
-    )
-    res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(formRespondentNotWhitelistedError))
     return
   }
 
