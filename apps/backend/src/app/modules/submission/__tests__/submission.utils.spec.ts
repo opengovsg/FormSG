@@ -7,6 +7,7 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 import { readFileSync } from 'fs'
+import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, merge } from 'lodash'
 import path from 'path'
 
@@ -14,12 +15,26 @@ import {
   IMultirespondentSubmissionSchema,
   SingleAnswerFieldResponse,
 } from '../../../../types'
+import { VerifyJwtError } from '../../spcp/spcp.errors'
+import {
+  AttachmentSizeLimitExceededError,
+  AttachmentUploadError,
+  DownloadCleanFileFailedError,
+  ExpectedResponseNotFoundError,
+  GuardDutyDownloadCleanFileFailedError,
+  GuardDutyVirusScanFailedError,
+  InvalidWorkflowTypeError,
+  MissingSubmitterIdError,
+  VirusScanFailedError,
+} from '../submission.errors'
 import {
   areAttachmentsMoreThanLimit,
   buildMrfMetadata,
   getInvalidFileExtensions,
   getResponseModeFilter,
   mapAttachmentsFromResponses,
+  mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 const RESOURCES = path.join(
@@ -80,6 +95,108 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
   }) as unknown as SingleAnswerFieldResponse
 
 describe('submission.utils', () => {
+  describe('mapRouteError', () => {
+    it.each([
+      [
+        new VerifyJwtError(),
+        StatusCodes.UNAUTHORIZED,
+        'Something went wrong with your login. Please try logging in and submitting again.',
+        'loginFailed',
+      ],
+      [
+        new AttachmentUploadError(),
+        StatusCodes.BAD_REQUEST,
+        'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+        'files.uploadFailed',
+      ],
+      [
+        new AttachmentSizeLimitExceededError(),
+        StatusCodes.BAD_REQUEST,
+        'Total attachment size exceeds maximum file size limit. Please reduce your total attachment size and try again.',
+        'files.totalSizeExceeded',
+      ],
+      [
+        new VirusScanFailedError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Virus scan failed. Please try again.',
+        'files.virusScanFailed',
+      ],
+      [
+        new GuardDutyVirusScanFailedError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Virus scan failed. Please try again.',
+        'files.virusScanFailed',
+      ],
+      [
+        new DownloadCleanFileFailedError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Attempt to download clean file failed. Please try again.',
+        'files.cleanFileDownloadFailed',
+      ],
+      [
+        new GuardDutyDownloadCleanFileFailedError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Attempt to download clean file failed. Please try again.',
+        'files.cleanFileDownloadFailed',
+      ],
+      [
+        new MissingSubmitterIdError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Failed to retrieve submitter ID. Please try again.',
+        'mrf.missingSubmitterId',
+      ],
+      [
+        new InvalidWorkflowTypeError(),
+        StatusCodes.BAD_REQUEST,
+        'Invalid workflow type encountered. Please contact the form admin and try again later.',
+        'mrf.invalidWorkflowType',
+      ],
+      [
+        new ExpectedResponseNotFoundError(),
+        StatusCodes.BAD_REQUEST,
+        'Response for the Yes/No field for this approval step is not found',
+        'mrf.expectedResponseNotFound',
+      ],
+    ])(
+      'should include message key for migrated submission error %#',
+      (error, statusCode, errorMessage, key) => {
+        expect(mapRouteError(error)).toEqual({
+          statusCode,
+          errorMessage,
+          errorMessageKey: `features.publicForm.backendErrors.submission.${key}`,
+        })
+      },
+    )
+  })
+
+  describe('sendRouteError', () => {
+    it('should serialize legacy message, i18n metadata, and extra response body fields', () => {
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn().mockReturnThis(),
+      }
+
+      sendRouteError(
+        mockRes as never,
+        {
+          statusCode: StatusCodes.BAD_REQUEST,
+          errorMessage: 'Fallback message',
+          errorMessageKey: 'features.publicForm.backendErrors.submission.test',
+          errorMessageParams: { count: 1 },
+        },
+        { spcpSubmissionFailure: true },
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Fallback message',
+        messageKey: 'features.publicForm.backendErrors.submission.test',
+        messageParams: { count: 1 },
+        spcpSubmissionFailure: true,
+      })
+    })
+  })
+
   describe('buildMrfMetadata', () => {
     const YES_NO_FIELD = {
       _id: 'yes_no_field_id',
