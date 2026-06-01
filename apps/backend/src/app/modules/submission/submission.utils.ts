@@ -1,6 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import crypto from 'crypto'
+import { Response } from 'express'
 import {
   AdminEmailPdfFeatureValue,
   featureFlags,
@@ -84,6 +85,7 @@ import {
   EmptyErrorFieldError,
   MalformedParametersError,
 } from '../core/core.errors'
+import { ErrorResponseData } from '../core/core.types'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -137,6 +139,7 @@ import {
   DownloadCleanFileFailedError,
   ExpectedResponseNotFoundError,
   FeatureDisabledError,
+  GuardDutyDownloadCleanFileFailedError,
   GuardDutyInvalidFileKeyError,
   GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
@@ -145,6 +148,7 @@ import {
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
+  InvalidWorkflowTypeError,
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
@@ -174,6 +178,32 @@ type ResponseModeFilterParam = {
 }
 
 const MB_MULTIPLIER = 1000000
+const PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX =
+  'features.publicForm.backendErrors.submission'
+
+const submissionErrorKey = (suffix: string) =>
+  `${PUBLIC_FORM_BACKEND_ERROR_KEY_PREFIX}.${suffix}`
+
+const buildErrorDto = ({
+  errorMessage,
+  errorMessageKey,
+  errorMessageParams,
+}: ErrorResponseData) => ({
+  message: errorMessage,
+  ...(errorMessageKey ? { messageKey: errorMessageKey } : {}),
+  ...(errorMessageParams ? { messageParams: errorMessageParams } : {}),
+})
+
+export const sendRouteError = (
+  res: Response,
+  routeError: ErrorResponseData,
+  extraBody: Record<string, unknown> = {},
+) => {
+  return res.status(routeError.statusCode).json({
+    ...buildErrorDto(routeError),
+    ...extraBody,
+  })
+}
 
 /**
  * Handler to map ApplicationErrors to their correct status code and error
@@ -190,16 +220,19 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+        errorMessageKey: submissionErrorKey('files.uploadFailed'),
       }
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('saveFailed'),
       }
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
+        errorMessageKey: submissionErrorKey('loginFailed'),
       }
     case FormRespondentNotWhitelistedError:
       return {
@@ -225,23 +258,27 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
+        errorMessageKey: submissionErrorKey('loginFailed'),
       }
     case MyInfoMissingHashError:
       return {
         statusCode: StatusCodes.GONE,
         errorMessage:
           'MyInfo verification expired, please refresh and try again.',
+        errorMessageKey: submissionErrorKey('myInfo.expired'),
       }
     case MyInfoHashDidNotMatchError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: 'MyInfo verification failed.',
+        errorMessageKey: submissionErrorKey('myInfo.failed'),
       }
     case MyInfoHashingError:
       return {
         statusCode: StatusCodes.SERVICE_UNAVAILABLE,
         errorMessage:
           'MyInfo verification unavailable, please try again later.',
+        errorMessageKey: submissionErrorKey('myInfo.unavailable'),
       }
     case MissingUserError:
       return {
@@ -252,6 +289,7 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
+        errorMessageKey: 'features.publicForm.errors.notFound',
       }
     case ResponseModeError:
     case InvalidPaymentProductsError:
@@ -269,46 +307,54 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.GONE,
         errorMessage: error.message,
+        errorMessageKey: 'features.publicForm.errors.deleted',
       }
     case PrivateFormError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage:
           'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+        errorMessageKey: 'features.publicForm.errors.private',
       }
     case CaptchaConnectionError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not verify captcha. Please submit again in a few minutes.',
+        errorMessageKey: submissionErrorKey('captcha.connection'),
       }
     case VerifyCaptchaError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was incorrect. Please submit again.',
+        errorMessageKey: submissionErrorKey('captcha.incorrect'),
       }
     case MissingCaptchaError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('captcha.missing'),
       }
     case TurnstileConnectionError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
           'Error connecting to Turnstile server . Please submit again in a few minutes.',
+        errorMessageKey: submissionErrorKey('turnstile.connection'),
       }
     case VerifyTurnstileError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Incorrect Turnstile parameters. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('turnstile.incorrectParameters'),
       }
     case MissingTurnstileError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Missing Turnstile challenge. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('turnstile.missingChallenge'),
       }
     case MalformedParametersError:
       return {
@@ -330,12 +376,14 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Invalid data was found. Please check your responses and submit again.',
+        errorMessageKey: submissionErrorKey('validation.invalidData'),
       }
     case DatabasePayloadSizeError:
       return {
         statusCode: StatusCodes.REQUEST_TOO_LONG,
         errorMessage:
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
+        errorMessageKey: submissionErrorKey('validation.submissionTooLarge'),
       }
     case ValidateFieldError:
     case ValidateFieldErrorV3:
@@ -347,6 +395,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+        errorMessageKey: submissionErrorKey('validation.invalidSubmission'),
       }
     case DatabaseConflictError:
     case ConflictError:
@@ -354,16 +403,33 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.CONFLICT,
         errorMessage:
           'The form has been updated. Please refresh and submit again.',
+        errorMessageKey: submissionErrorKey('validation.formUpdated'),
+      }
+    case MissingSubmitterIdError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.missingSubmitterId'),
+      }
+    case VirusScanFailedError:
+    case GuardDutyVirusScanFailedError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.virusScanFailed'),
+      }
+    case DownloadCleanFileFailedError:
+    case GuardDutyDownloadCleanFileFailedError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.cleanFileDownloadFailed'),
       }
     case FormWhitelistSettingNotFoundError:
-    case MissingSubmitterIdError:
     case PaymentNotFoundError:
     case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
-    case VirusScanFailedError:
-    case GuardDutyVirusScanFailedError:
-    case DownloadCleanFileFailedError:
     case ParseVirusScannerLambdaPayloadError:
     case GuardDutyParseVirusScannerLambdaPayloadError:
       return {
@@ -372,14 +438,30 @@ const errorMapper: MapRouteError = (
       }
     case SubmissionFailedError:
     case InvalidFieldIdError:
-    case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
     case GuardDutyInvalidFileKeyError:
     case GuardDutyMaliciousFileDetectedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case AttachmentSizeLimitExceededError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('files.totalSizeExceeded'),
+      }
     case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.expectedResponseNotFound'),
+      }
+    case InvalidWorkflowTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('mrf.invalidWorkflowType'),
       }
     case MrfReminderInvalidWorkflowStepError:
     case MrfReminderRecipientEmailsEmptyError:
@@ -392,11 +474,13 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'The link you used is no longer valid. Please contact the form admin that gave you this link.',
+        errorMessageKey: submissionErrorKey('mrf.invalidLink'),
       }
     case MailSendError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
+        errorMessageKey: submissionErrorKey('generic'),
       }
     default:
       logger.error({
@@ -410,6 +494,7 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: 'Something went wrong. Please try again.',
+        errorMessageKey: submissionErrorKey('generic'),
       }
   }
 }

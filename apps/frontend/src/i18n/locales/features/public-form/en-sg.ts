@@ -22,6 +22,60 @@ export const enSG: PublicForm = {
       outdatedForm:
         'Sorry, this form is outdated. Please refresh your browser to get the latest version of the form',
     },
+    submission: {
+      saveFailed: 'Failed to save submission. Please try again later.',
+      loginFailed:
+        'Something went wrong with your login. Please try logging in and submitting again.',
+      myInfo: {
+        expired: 'MyInfo verification expired, please refresh and try again.',
+        failed: 'MyInfo verification failed.',
+        unavailable: 'MyInfo verification unavailable, please try again later.',
+      },
+      captcha: {
+        connection:
+          'Could not verify captcha. Please submit again in a few minutes.',
+        incorrect: 'Captcha was incorrect. Please submit again.',
+        missing: 'Captcha was missing. Please refresh and submit again.',
+      },
+      turnstile: {
+        connection:
+          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+        incorrectParameters:
+          'Incorrect Turnstile parameters. Please refresh and submit again.',
+        missingChallenge:
+          'Missing Turnstile challenge. Please refresh and submit again.',
+      },
+      validation: {
+        invalidData:
+          'Invalid data was found. Please check your responses and submit again.',
+        submissionTooLarge:
+          'Submission too large to be saved. Please reduce the size of your submission and try again.',
+        invalidSubmission:
+          'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+        formUpdated:
+          'The form has been updated. Please refresh and submit again.',
+      },
+      files: {
+        uploadFailed:
+          'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+        totalSizeExceeded:
+          'Total attachment size exceeds maximum file size limit. Please reduce your total attachment size and try again.',
+        virusScanFailed: 'Virus scan failed. Please try again.',
+        cleanFileDownloadFailed:
+          'Attempt to download clean file failed. Please try again.',
+      },
+      mrf: {
+        missingSubmitterId:
+          'Failed to retrieve submitter ID. Please try again.',
+        invalidLink:
+          'The link you used is no longer valid. Please contact the form admin that gave you this link.',
+        invalidWorkflowType:
+          'Invalid workflow type encountered. Please contact the form admin and try again later.',
+        expectedResponseNotFound:
+          'Response for the Yes/No field for this approval step is not found',
+      },
+      generic: 'Something went wrong. Please try again.',
+    },
   },
   errors: {
     notAvailable: 'This form is not available.',

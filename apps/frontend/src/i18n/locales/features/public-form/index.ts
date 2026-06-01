@@ -17,6 +17,44 @@ export interface PublicForm {
       mailSend: string
       outdatedForm: string
     }
+    submission: {
+      saveFailed: string
+      loginFailed: string
+      myInfo: {
+        expired: string
+        failed: string
+        unavailable: string
+      }
+      captcha: {
+        connection: string
+        incorrect: string
+        missing: string
+      }
+      turnstile: {
+        connection: string
+        incorrectParameters: string
+        missingChallenge: string
+      }
+      validation: {
+        invalidData: string
+        submissionTooLarge: string
+        invalidSubmission: string
+        formUpdated: string
+      }
+      files: {
+        uploadFailed: string
+        totalSizeExceeded: string
+        virusScanFailed: string
+        cleanFileDownloadFailed: string
+      }
+      mrf: {
+        missingSubmitterId: string
+        invalidLink: string
+        invalidWorkflowType: string
+        expectedResponseNotFound: string
+      }
+      generic: string
+    }
   }
   errors: {
     notAvailable: string
