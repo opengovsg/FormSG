@@ -10,16 +10,16 @@ permissions:
 
 on:
   push:
-    branches:
-      - release-al2
+    tags:
+      - 'v*'
 
 jobs:
   deploy-scanner-guardduty:
     name: Deploy Scanner Guardduty
     uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
     with:
-      checkoutBranch: 'release-al2'
-      gha-environment: 'release-al2'
+      checkoutBranch: ${{ github.ref_name }}
+      gha-environment: 'production'
       environment: 'production'
       provisionedConcurrency: 10
     secrets:

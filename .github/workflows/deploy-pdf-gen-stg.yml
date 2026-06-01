@@ -10,16 +10,16 @@ permissions:
 
 on:
   push:
-    branches:
-      - stg
+    tags:
+      - 'v*'
 
 jobs:
-  deploy-pdf-gen-lambda: 
+  deploy-pdf-gen-lambda:
     name: Deploy PDF Generator Lambda
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
       gha-environment: 'stg'
-      checkoutBranch: 'stg'
+      checkoutBranch: ${{ github.ref_name }}
       environment: 'stg'
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

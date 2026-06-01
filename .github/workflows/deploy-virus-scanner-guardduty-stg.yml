@@ -10,15 +10,15 @@ permissions:
 
 on:
   push:
-    branches:
-      - stg
+    tags:
+      - 'v*'
 
 jobs:
   deploy-scanner-guardduty:
     name: Deploy Scanner GuardDuty
     uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
     with:
-      checkoutBranch: 'stg'
+      checkoutBranch: ${{ github.ref_name }}
       gha-environment: 'stg'
       environment: 'stg'
       provisionedConcurrency: 1
