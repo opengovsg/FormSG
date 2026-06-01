@@ -625,6 +625,8 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(500)
         expect(mockRes.json).toHaveBeenCalledWith({
           message: 'Failed to retrieve submitter ID. Please try again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.mrf.missingSubmitterId',
         })
       })
     })
