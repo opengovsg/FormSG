@@ -62,6 +62,7 @@ import {
   generateHashedSubmitterId,
   getCookieNameByAuthType,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -127,10 +128,7 @@ const submitEncryptModeForm = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
@@ -156,16 +154,12 @@ const submitEncryptModeForm = async (
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: 'Failed to verify Singpass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -178,16 +172,12 @@ const submitEncryptModeForm = async (
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: 'Failed to verify Corppass JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -216,9 +206,6 @@ const submitEncryptModeForm = async (
           return error
         })
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: `Failed to verify ${
             authType === FormAuthType.SGID_MyInfo ? 'SGID' : 'Singpass'
@@ -226,8 +213,7 @@ const submitEncryptModeForm = async (
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -239,16 +225,12 @@ const submitEncryptModeForm = async (
         req.cookies.jwtSgid,
       )
       if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
         logger.error({
           message: 'Failed to verify sgID JWT with auth client',
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
-        return res.status(statusCode).json({
-          message: errorMessage,
+        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
           spcpSubmissionFailure: true,
         })
       }
@@ -364,9 +346,12 @@ const submitEncryptModeForm = async (
           error,
         })
 
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
+        return sendRouteError(res, {
+          statusCode: StatusCodes.BAD_REQUEST,
+          errorMessage: 'Invalid data was found. Please submit again.',
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.validation.invalidData',
+        })
       } else {
         // No errors, set local variable to the encrypted string.
         verified = encryptVerifiedContentResult.value
@@ -384,12 +369,7 @@ const submitEncryptModeForm = async (
     )
 
     if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      return sendRouteError(res, mapRouteError(attachmentUploadResult.error))
     } else {
       attachmentMetadata = attachmentUploadResult.value
     }
@@ -872,11 +852,7 @@ const _getAllEncryptedResponse: ControllerHandler<
           meta: logMeta,
           error,
         })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
 }
