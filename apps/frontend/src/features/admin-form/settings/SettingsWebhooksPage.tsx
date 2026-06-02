@@ -21,7 +21,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     data: settings,
     isLoading,
     isError,
-    isFetching,
+    isRefetching,
     refetch,
   } = useAdminFormSettings()
   const userRes = useUser()
@@ -37,7 +37,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   // The settings fetch failed. Show an explicit error/retry state instead of
   // misreporting the form's response mode as unsupported.
   if (isError) {
-    return <WebhooksErrorMsg onRetry={refetch} isRetrying={isFetching} />
+    return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
   }
 
   const enableWebhooks =
