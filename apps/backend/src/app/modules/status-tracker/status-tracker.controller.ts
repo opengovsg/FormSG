@@ -38,8 +38,7 @@ const getStatusTrackerSubmissionData: ControllerHandler<
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
       // strip emails from submitted steps and workflow
-      // toObject() is required: spreading a Mongoose subdocument copies internals (_doc, $__parent)
-      // rather than the document fields, so submittedAt etc. would be lost.
+      // drop mongoose internals to extract documentFields (e.g. submittedAt, etc.)
       const strippedSubmittedSteps = submissionData
         .toObject()
         .submittedSteps?.map(
