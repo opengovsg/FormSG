@@ -1,5 +1,9 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import { StatusTrackerData, StrippedFormWorkflowDto } from 'formsg-shared/types'
+import {
+  StatusTrackerData,
+  StrippedFormWorkflowDto,
+  SubmittedStep,
+} from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
@@ -34,10 +38,14 @@ const getStatusTrackerSubmissionData: ControllerHandler<
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
       // strip emails from submitted steps and workflow
-      const strippedSubmittedSteps = submissionData.submittedSteps?.map(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        ({ nextStepRecipientEmails, ...rest }) => rest,
-      )
+      // toObject() is required: spreading a Mongoose subdocument copies internals (_doc, $__parent)
+      // rather than the document fields, so submittedAt etc. would be lost.
+      const strippedSubmittedSteps = submissionData
+        .toObject()
+        .submittedSteps?.map(
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          ({ nextStepRecipientEmails, ...rest }: SubmittedStep) => rest,
+        )
 
       const strippedWorkflow: StrippedFormWorkflowDto = stripWorkflowEmails(
         submissionData.workflow,
