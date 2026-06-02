@@ -42,7 +42,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
 
   const enableWebhooks =
     !isLoading &&
-    (settings?.responseMode == FormResponseMode.Encrypt ||
+    (settings?.responseMode === FormResponseMode.Encrypt ||
       (settings?.responseMode === FormResponseMode.Multirespondent &&
         enableMrfWebhooks))
 
