@@ -15,6 +15,8 @@ describe('SettingsWebhooksPage', () => {
     })
 
     await screen.findByText(ERROR_MSG)
+    // The error is announced to assistive tech (it appears after an async failure).
+    expect(screen.getByRole('alert')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /try again/i }),
     ).toBeInTheDocument()

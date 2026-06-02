@@ -12,7 +12,7 @@ export const WebhooksErrorMsg = ({
   isRetrying = false,
 }: WebhooksErrorMsgProps): JSX.Element => {
   return (
-    <Flex justify="center" flexDir="column" textAlign="center">
+    <Flex justify="center" flexDir="column" textAlign="center" role="alert">
       <Text textStyle="h2" as="h2" color="primary.500" mb="1rem">
         Couldn't load webhook settings
       </Text>
