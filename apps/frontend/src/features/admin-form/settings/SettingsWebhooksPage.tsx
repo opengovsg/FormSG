@@ -23,8 +23,6 @@ export const SettingsWebhooksPage = (): JSX.Element => {
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
 
-  // The settings fetch failed. Show an explicit error/retry state instead of
-  // misreporting the form's response mode as unsupported.
   if (isError) {
     return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
   }
