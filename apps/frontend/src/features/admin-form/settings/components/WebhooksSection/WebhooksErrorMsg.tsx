@@ -24,7 +24,7 @@ export const WebhooksErrorMsg = ({
         <Button
           isLoading={isRetrying}
           loadingText="Trying again…"
-          onClick={onRetry}
+          onClick={() => void onRetry()}
         >
           Try again
         </Button>
