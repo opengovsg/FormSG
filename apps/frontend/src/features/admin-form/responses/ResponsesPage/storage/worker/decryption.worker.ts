@@ -23,7 +23,6 @@ import { downloadAndDecryptAttachmentsAsZip } from '../utils/downloadAndDecryptA
 import {
   buildFormFieldMetaMap,
   processDecryptedContent,
-  processDecryptedContentV3,
   processDecryptedContentV4,
 } from '../utils/processDecryptedContent'
 
@@ -109,11 +108,9 @@ async function decryptSubmissionData(
   {
     submissionData,
     secretKey,
-    useV4,
   }: {
     submissionData: SubmissionStreamDto
     secretKey: string
-    useV4?: boolean
   },
 ): Promise<
   | {
@@ -424,10 +421,9 @@ async function _parseAndDecryptSubmissionData(
   {
     submissionStreamDtoString,
     secretKey,
-    useV4,
   }: Pick<
     SubmissionDataForDecryption,
-    'submissionStreamDtoString' | 'secretKey' | 'useV4'
+    'submissionStreamDtoString' | 'secretKey'
   >,
 ): Promise<DecryptionResult> {
   let submission: SubmissionStreamDto
@@ -447,7 +443,6 @@ async function _parseAndDecryptSubmissionData(
   const decryptSubmissionDataResult = await decryptSubmissionData(ctx, {
     submissionData: submission,
     secretKey,
-    useV4,
   })
 
   if (!decryptSubmissionDataResult.isSubmissionDecryptionSuccessful) {
