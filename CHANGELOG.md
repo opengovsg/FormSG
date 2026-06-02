@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.21.2](https://github.com/opengovsg/formsg/compare/v7.21.1...v7.21.2) (2026-06-02)
+
+
+### Miscellaneous
+
+* Merge pull request #9517 from opengovsg/stg-alt2 ([#9517](https://github.com/opengovsg/formsg/commit/72e6634b6a23bd600300fe1ef5c0c958bed1e43b))
+
 ## [7.21.1](https://github.com/opengovsg/formsg/compare/v7.21.0...v7.21.1) (2026-05-28)
 
 
