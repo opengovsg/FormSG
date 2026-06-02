@@ -107,7 +107,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
         }
       }
     }
-  }, [sendOnboardingEmailMutation, formMethods])
+  }, [sendOnboardingEmailMutation, formMethods, t])
 
   const bottomCTARef = useRef<HTMLDivElement | null>(null)
 
