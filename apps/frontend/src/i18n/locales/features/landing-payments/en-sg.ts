@@ -30,7 +30,7 @@ export const enSG: LandingPayments = {
     trusted: {
       title: 'Trusted payment flows',
       description:
-        'We partner with Stripe, a leading payment provider, to ensure a secure and reliable payment experience. Respondents receive notifications from official gov.sg domains. ',
+        'We partner with Stripe, a leading payment provider, to ensure a secure and reliable payment experience. Respondents receive notifications from official gov.sg domains.',
     },
     invoicing: {
       title: 'Invoicing',
