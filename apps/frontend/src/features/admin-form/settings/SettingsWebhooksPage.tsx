@@ -10,13 +10,20 @@ import { useUser } from '~features/user/queries'
 
 import { CategoryHeader } from './components/CategoryHeader'
 import { WebhooksSection } from './components/WebhooksSection'
+import { WebhooksErrorMsg } from './components/WebhooksSection/WebhooksErrorMsg'
 import { WebhooksUnsupportedMsg } from './components/WebhooksSection/WebhooksUnsupportedMsg'
 import { useAdminFormSettings } from './queries'
 
 export const SettingsWebhooksPage = (): JSX.Element => {
   const { t } = useTranslation()
   const gb = useGrowthBook()
-  const { data: settings, isLoading } = useAdminFormSettings()
+  const {
+    data: settings,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useAdminFormSettings()
   const userRes = useUser()
 
   useEffect(() => {
@@ -26,6 +33,12 @@ export const SettingsWebhooksPage = (): JSX.Element => {
   }, [userRes.user?.email, gb])
 
   const enableMrfWebhooks = useFeatureIsOn(featureFlags.enableMrfWebhooks)
+
+  // The settings fetch failed. Show an explicit error/retry state instead of
+  // misreporting the form's response mode as unsupported.
+  if (isError) {
+    return <WebhooksErrorMsg onRetry={refetch} isRetrying={isFetching} />
+  }
 
   const enableWebhooks =
     !isLoading &&
