@@ -14,6 +14,7 @@ import { ControllerHandler } from '../core/core.types'
 import {
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
+  StripeMetadataNotFormsgError,
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
@@ -96,7 +97,8 @@ const _handleStripeEventUpdates: ControllerHandler<
         (error) => {
           if (
             error instanceof StripeMetadataIncorrectEnvError ||
-            error instanceof StripeMetadataInvalidError
+            error instanceof StripeMetadataInvalidError ||
+            error instanceof StripeMetadataNotFormsgError
           ) {
             // Intercept these errors and return 202 Accepted instead.
             // StripeMetadataIncorrectEnvError: the request will be processed by another environment server.
@@ -115,6 +117,8 @@ const _handleStripeEventUpdates: ControllerHandler<
       )
   )
 }
+
+export const _handleStripeEventUpdatesForTest = _handleStripeEventUpdates
 
 export const handleStripeEventUpdates = [
   validateStripeEvent,
