@@ -4,8 +4,10 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { FCC } from '~typings/react'
 
@@ -64,6 +66,32 @@ export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
+    const [searchParams, setSearchParams] = useSearchParams()
+    const hasReadTabParam = useRef(false)
+
+    // Read ?tab= query param on mount to set initial active tab
+    useEffect(() => {
+      if (hasReadTabParam.current) return
+      hasReadTabParam.current = true
+      const tabParam = searchParams.get('tab')
+      if (!tabParam) return
+
+      const tabMap: Record<string, DrawerTabs> = {
+        builder: DrawerTabs.Builder,
+        design: DrawerTabs.Design,
+        logic: DrawerTabs.Logic,
+        endpage: DrawerTabs.EndPage,
+        workflow: DrawerTabs.Workflow,
+      }
+      const tab = tabMap[tabParam.toLowerCase()]
+      if (tab !== undefined) {
+        setActiveTab(tab)
+        // Clean up the query param so it doesn't persist on refresh
+        searchParams.delete('tab')
+        setSearchParams(searchParams, { replace: true })
+      }
+    }, [searchParams, setSearchParams])
+
     // Any pending tab due to unsaved changes.
     // Pending tab can be `null` if the next tab state is to be closed.
     const [pendingTab, setPendingTab] = useState<

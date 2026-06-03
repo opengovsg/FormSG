@@ -71,7 +71,7 @@ export type FocusState =
   | { type: 'step_naming'; stepType: StepType; insertIndex: number }
   | { type: 'new_respondent'; fromStepId?: string }
   | { type: 'edit_respondent'; respondentId: string }
-  | { type: 'notification_edit' }
+  | { type: 'notification_edit'; fromAddSteps?: boolean }
   | { type: 'notification_focus'; fromNotificationEdit?: boolean }
   | {
       type: 'create_field'
@@ -131,6 +131,9 @@ export type WorkflowStore = {
   addField: (data: Omit<FormField, 'id' | 'number'>) => void
   setPendingFieldSelection: (id: string | null) => void
   syncFields: (fields: FormField[]) => void
+
+  // Actions - Store scoping
+  loadForForm: (formId: string, initialFocus?: FocusState) => void
 
   // Actions - Sprint 4
   assignField: (stepId: string, fieldId: string) => void

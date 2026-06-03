@@ -41,6 +41,8 @@ export const featureFlags = {
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
   answerObjectDecryption: 'answer-object-decryption' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
+  createFlowVariant: 'create-flow-variant' as const,
+  workflowNudge: 'workflow-nudge' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

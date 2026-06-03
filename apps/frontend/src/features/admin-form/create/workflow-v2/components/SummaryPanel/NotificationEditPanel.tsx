@@ -16,6 +16,7 @@ import {
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
 import {
+  focusStateSelector,
   notificationLabelSelector,
   notificationRecipientIdsSelector,
   setFocusSelector,
@@ -25,6 +26,7 @@ import {
 const MAX_NAME_LENGTH = 50
 
 export const NotificationEditPanel = (): JSX.Element => {
+  const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const notificationLabel = useWorkflowBuilderStore(notificationLabelSelector)
   const notificationRecipientIds = useWorkflowBuilderStore(
@@ -42,8 +44,14 @@ export const NotificationEditPanel = (): JSX.Element => {
   }, [notificationLabel])
 
   const handleBack = useCallback(() => {
-    setFocus({ type: 'summary' })
-  }, [setFocus])
+    const fromAddSteps =
+      focusState.type === 'notification_edit' && focusState.fromAddSteps
+    setFocus(
+      fromAddSteps
+        ? { type: 'phase', phase: 'add_steps' }
+        : { type: 'summary' },
+    )
+  }, [setFocus, focusState])
 
   const handleNameBlur = () => {
     const trimmed = editName.trim()
@@ -127,69 +135,79 @@ export const NotificationEditPanel = (): JSX.Element => {
           </Text>
         </Stack>
 
-        {/* Divider below label */}
-        <Divider mx="-1.5rem" w="auto" mt="1rem" mb="1rem" />
+        {/* Divider + Manage recipients - hidden when editing from add_steps phase */}
+        {!(
+          focusState.type === 'notification_edit' && focusState.fromAddSteps
+        ) && (
+          <>
+            <Divider mx="-1.5rem" w="auto" mt="1rem" mb="1rem" />
 
-        {/* Sub-task card: Manage recipients */}
-        <Stack spacing="0.5rem">
-          <chakra.button
-            w="100%"
-            textAlign="start"
-            borderRadius="8px"
-            bg="transparent"
-            border="2px solid"
-            borderColor="transparent"
-            py="0.75rem"
-            px="1rem"
-            cursor="pointer"
-            transition="all 0.15s"
-            _hover={{ bg: 'neutral.100' }}
-            onClick={() =>
-              setFocus({
-                type: 'notification_focus',
-                fromNotificationEdit: true,
-              })
-            }
-          >
-            <Flex align="center" gap="0.75rem">
-              {hasRecipients ? (
-                <Center
-                  w="2rem"
-                  h="2rem"
-                  borderRadius="full"
-                  bg="success.500"
-                  flexShrink={0}
-                >
-                  <Icon as={BiCheck} fontSize="1.25rem" color="white" />
-                </Center>
-              ) : (
-                <Center
-                  w="2rem"
-                  h="2rem"
-                  borderRadius="full"
-                  bg="neutral.200"
-                  flexShrink={0}
-                >
-                  <Icon as={BiUser} fontSize="1.25rem" color="secondary.400" />
-                </Center>
-              )}
-              <Text
-                textStyle="subhead-1"
-                color="secondary.500"
-                flex={1}
-                noOfLines={1}
+            {/* Sub-task card: Manage recipients */}
+            <Stack spacing="0.5rem">
+              <chakra.button
+                w="100%"
+                textAlign="start"
+                borderRadius="8px"
+                bg="transparent"
+                border="2px solid"
+                borderColor="transparent"
+                py="0.75rem"
+                px="1rem"
+                cursor="pointer"
+                transition="all 0.15s"
+                _hover={{ bg: 'neutral.100' }}
+                onClick={() =>
+                  setFocus({
+                    type: 'notification_focus',
+                    fromNotificationEdit: true,
+                  })
+                }
               >
-                Manage recipients
-              </Text>
-              <Icon
-                as={BiChevronRight}
-                fontSize="1.25rem"
-                color="secondary.400"
-                flexShrink={0}
-              />
-            </Flex>
-          </chakra.button>
-        </Stack>
+                <Flex align="center" gap="0.75rem">
+                  {hasRecipients ? (
+                    <Center
+                      w="2rem"
+                      h="2rem"
+                      borderRadius="full"
+                      bg="success.500"
+                      flexShrink={0}
+                    >
+                      <Icon as={BiCheck} fontSize="1.25rem" color="white" />
+                    </Center>
+                  ) : (
+                    <Center
+                      w="2rem"
+                      h="2rem"
+                      borderRadius="full"
+                      bg="neutral.200"
+                      flexShrink={0}
+                    >
+                      <Icon
+                        as={BiUser}
+                        fontSize="1.25rem"
+                        color="secondary.400"
+                      />
+                    </Center>
+                  )}
+                  <Text
+                    textStyle="subhead-1"
+                    color="secondary.500"
+                    flex={1}
+                    noOfLines={1}
+                  >
+                    Manage recipients
+                  </Text>
+                  <Icon
+                    as={BiChevronRight}
+                    fontSize="1.25rem"
+                    color="secondary.400"
+                    flexShrink={0}
+                  />
+                </Flex>
+              </chakra.button>
+            </Stack>
+          </>
+        )}
 
         {/* Footer: done editing */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />

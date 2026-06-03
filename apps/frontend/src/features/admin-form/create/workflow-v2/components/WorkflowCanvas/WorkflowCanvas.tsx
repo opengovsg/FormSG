@@ -122,7 +122,14 @@ export const WorkflowCanvas = ({
   const isStepEditFromSummary =
     focusState.type === 'step_edit' && !!focusState.fromSummary
   const stepEditFromSummaryId = isStepEditFromSummary ? focusState.stepId : null
-  const isInAddStepsContext = isAddStepsPhase || isStepNaming || isStepEdit
+  const isNotificationEdit = focusState.type === 'notification_edit'
+  const isNotificationEditFromAddSteps =
+    isNotificationEdit && !!focusState.fromAddSteps
+  const isInAddStepsContext =
+    isAddStepsPhase ||
+    isStepNaming ||
+    isStepEdit ||
+    isNotificationEditFromAddSteps
 
   // Respondent phase flags
   const isRespondentPoolPhase =
@@ -133,7 +140,6 @@ export const WorkflowCanvas = ({
   const isNewRespondent = focusState.type === 'new_respondent'
   const isEditRespondent = focusState.type === 'edit_respondent'
   const isNotificationFocus = focusState.type === 'notification_focus'
-  const isNotificationEdit = focusState.type === 'notification_edit'
   const isInRespondentContext =
     isRespondentPoolPhase ||
     isRespondentStepFocus ||

@@ -81,7 +81,7 @@ export const EmailNotificationCard = ({
     if (isRespondentPhase && !isFocused) {
       setFocus({ type: 'notification_focus' })
     } else if ((isSummaryMode || isAddStepsPhase) && !isNotificationEdit) {
-      setFocus({ type: 'notification_edit' })
+      setFocus({ type: 'notification_edit', fromAddSteps: isAddStepsPhase })
     }
   }
 
@@ -200,61 +200,68 @@ export const EmailNotificationCard = ({
             )}
           </Flex>
 
-          <Divider borderColor="neutral.300" mt="1rem" />
+          {!isAddStepsPhase && (
+            <>
+              <Divider borderColor="neutral.300" mt="1rem" />
 
-          {/* Who gets notified */}
-          <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
-            <Text textStyle="subhead-2" color="secondary.500">
-              Recipients
-            </Text>
-            <Wrap spacing="0.25rem">
-              {notificationRespondents.map((r) => (
-                <WrapItem key={r.id}>
-                  <Tag
-                    size="sm"
-                    bg="primary.100"
-                    borderRadius="4px"
-                    px="0.5rem"
-                    py="0.25rem"
-                  >
-                    <TagLabel textStyle="caption-1" color="secondary.500">
-                      {r.name}
-                    </TagLabel>
-                    {isRespondentPhase &&
-                      (!anotherElementFocused || isFocused) && (
-                        <TagCloseButton
-                          onClick={() => unassignNotificationRecipient(r.id)}
-                        />
-                      )}
-                  </Tag>
-                </WrapItem>
-              ))}
-              {notificationRespondents.length === 0 && !isRespondentPhase && (
-                <WrapItem>
-                  <Tag
-                    size="sm"
-                    bg="primary.100"
-                    borderRadius="4px"
-                    px="0.5rem"
-                    py="0.25rem"
-                  >
-                    <TagLabel textStyle="caption-1" color="secondary.500">
-                      None
-                    </TagLabel>
-                  </Tag>
-                </WrapItem>
-              )}
-            </Wrap>
+              {/* Who gets notified */}
+              <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
+                <Text textStyle="subhead-2" color="secondary.500">
+                  Recipients
+                </Text>
+                <Wrap spacing="0.25rem">
+                  {notificationRespondents.map((r) => (
+                    <WrapItem key={r.id}>
+                      <Tag
+                        size="sm"
+                        bg="primary.100"
+                        borderRadius="4px"
+                        px="0.5rem"
+                        py="0.25rem"
+                      >
+                        <TagLabel textStyle="caption-1" color="secondary.500">
+                          {r.name}
+                        </TagLabel>
+                        {isRespondentPhase &&
+                          (!anotherElementFocused || isFocused) && (
+                            <TagCloseButton
+                              onClick={() =>
+                                unassignNotificationRecipient(r.id)
+                              }
+                            />
+                          )}
+                      </Tag>
+                    </WrapItem>
+                  ))}
+                  {notificationRespondents.length === 0 &&
+                    !isRespondentPhase && (
+                      <WrapItem>
+                        <Tag
+                          size="sm"
+                          bg="primary.100"
+                          borderRadius="4px"
+                          px="0.5rem"
+                          py="0.25rem"
+                        >
+                          <TagLabel textStyle="caption-1" color="secondary.500">
+                            None
+                          </TagLabel>
+                        </Tag>
+                      </WrapItem>
+                    )}
+                </Wrap>
 
-            {/* Drop zone during respondent phase (hidden when another element is focused) */}
-            {isRespondentPhase && (!anotherElementFocused || isFocused) && (
-              <RespondentDropZone
-                droppableId="respondent-drop-notification"
-                droppableData={{ type: 'notification_drop' }}
-                variant={isFocused ? 'step_focus' : 'pool'}
-              />
-            )}
-          </Stack>
+                {/* Drop zone during respondent phase (hidden when another element is focused) */}
+                {isRespondentPhase && (!anotherElementFocused || isFocused) && (
+                  <RespondentDropZone
+                    droppableId="respondent-drop-notification"
+                    droppableData={{ type: 'notification_drop' }}
+                    variant={isFocused ? 'step_focus' : 'pool'}
+                  />
+                )}
+              </Stack>
+            </>
+          )}
         </Box>
       </Box>
 

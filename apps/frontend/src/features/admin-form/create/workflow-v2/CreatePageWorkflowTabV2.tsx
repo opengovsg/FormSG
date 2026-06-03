@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -40,6 +41,13 @@ import {
 } from './workflowBuilderStore'
 
 export const CreatePageWorkflowTabV2 = (): JSX.Element => {
+  const { formId } = useParams()
+  const loadForForm = useWorkflowBuilderStore((s) => s.loadForForm)
+
+  useEffect(() => {
+    if (formId) loadForForm(formId)
+  }, [formId, loadForForm])
+
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const reorderSteps = useWorkflowBuilderStore((s) => s.reorderSteps)
   const steps = useWorkflowBuilderStore(stepsSelector)

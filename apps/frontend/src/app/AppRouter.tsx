@@ -17,6 +17,7 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
   ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
+  CREATE_FORM_V2_ROUTE,
   DASHBOARD_ROUTE,
   EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
@@ -79,6 +80,10 @@ const PreviewFormPage = loadable(() => import('~features/admin-form/preview'))
 const TemplateFormPage = loadable(() => import('~features/admin-form/template'))
 const StatusTrackerPage = loadable(
   () => import('~features/public-form/components/StatusTrackerPage'),
+)
+const CreateFormFlowV2Page = loadable(
+  () =>
+    import('~features/workspace/components/CreateFormFlowV2/CreateFormFlowV2Page'),
 )
 
 const WithSuspense = ({ children }: { children: React.ReactNode }) => (
@@ -146,6 +151,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={BILLING_ROUTE}
           element={<PrivateElement element={<BillingPage />} />}
+        />
+        <Route
+          path={CREATE_FORM_V2_ROUTE}
+          element={<PrivateElement element={<CreateFormFlowV2Page />} />}
         />
         <Route path={PUBLICFORM_ROUTE}>
           <Route

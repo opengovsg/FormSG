@@ -43,6 +43,8 @@ import {
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
+import { useWorkflowNudge } from './useWorkflowNudge'
+import { WorkflowNudgeCard } from './WorkflowNudgeCard'
 
 const FieldSearchBar = ({
   searchValue,
@@ -100,6 +102,9 @@ export const FieldListDrawer = (): JSX.Element => {
   )
   const showProgressCard = hasWorkflow && completedCount < 4
 
+  // Workflow nudge for MRF forms that match workflow signals
+  const { shouldShowNudge, dismissNudge } = useWorkflowNudge()
+
   // Collapse progress card when user scrolls the field list
   const [isCompact, setIsCompact] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -154,7 +159,7 @@ export const FieldListDrawer = (): JSX.Element => {
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        {showProgressCard && (
+        {showProgressCard ? (
           <Box
             mb="0.75rem"
             px="0.75rem"
@@ -193,7 +198,12 @@ export const FieldListDrawer = (): JSX.Element => {
               />
             </Box>
           </Box>
-        )}
+        ) : shouldShowNudge ? (
+          <WorkflowNudgeCard
+            onDismiss={dismissNudge}
+            onClick={() => handleWorkflowClick(false)}
+          />
+        ) : null}
         <FieldSearchBar
           searchValue={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}

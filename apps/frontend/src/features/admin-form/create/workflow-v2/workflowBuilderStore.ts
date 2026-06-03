@@ -17,7 +17,7 @@ import type {
   WorkflowStore,
 } from './types'
 
-const STORAGE_KEY = 'mrf_workflow_state'
+const STORAGE_KEY_PREFIX = 'mrf_workflow_state_'
 
 // Shape of data that gets persisted to localStorage
 type PersistedState = {
@@ -40,12 +40,21 @@ const DEFAULT_PERSISTED: PersistedState = {
   notificationLabel: 'Receive final email notification',
 }
 
-function loadPersistedState(): PersistedState {
+// Track which formId is currently loaded so we persist to the right key
+let currentFormId: string | null = null
+
+function storageKeyFor(formId: string): string {
+  return `${STORAGE_KEY_PREFIX}${formId}`
+}
+
+function loadPersistedState(formId?: string): PersistedState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    // Load form-scoped key only
+    const key = formId ? storageKeyFor(formId) : null
+    const raw = key ? localStorage.getItem(key) : null
+
     if (!raw) return DEFAULT_PERSISTED
     const parsed = JSON.parse(raw) as Partial<PersistedState>
-    // Merge with defaults so new fields added in later sprints get their defaults
     const merged = { ...DEFAULT_PERSISTED, ...parsed }
     // Migration: add isCustomName to steps that don't have it
     merged.steps = merged.steps.map((s) => ({
@@ -62,9 +71,11 @@ function loadPersistedState(): PersistedState {
 let persistTimeout: ReturnType<typeof setTimeout> | null = null
 function persistState(state: PersistedState) {
   if (persistTimeout) clearTimeout(persistTimeout)
+  if (!currentFormId) return
+  const key = storageKeyFor(currentFormId)
   persistTimeout = setTimeout(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      localStorage.setItem(key, JSON.stringify(state))
     } catch {
       // localStorage full or unavailable - silently skip
     }
@@ -153,18 +164,16 @@ function renumberStepNames(steps: WorkflowStep[]): WorkflowStep[] {
   })
 }
 
-const initialPersisted = loadPersistedState()
-
 export const useWorkflowBuilderStore = create<WorkflowStore>()(
   devtools((set) => ({
-    // Persisted data
-    steps: initialPersisted.steps,
-    respondents: initialPersisted.respondents,
-    fields: initialPersisted.fields,
-    statusTrackingEnabled: initialPersisted.statusTrackingEnabled,
-    progressCardExpanded: initialPersisted.progressCardExpanded,
-    notificationRecipientIds: initialPersisted.notificationRecipientIds,
-    notificationLabel: initialPersisted.notificationLabel,
+    // Persisted data - starts with defaults, loadForForm replaces with form-specific data
+    steps: DEFAULT_PERSISTED.steps,
+    respondents: DEFAULT_PERSISTED.respondents,
+    fields: DEFAULT_PERSISTED.fields,
+    statusTrackingEnabled: DEFAULT_PERSISTED.statusTrackingEnabled,
+    progressCardExpanded: DEFAULT_PERSISTED.progressCardExpanded,
+    notificationRecipientIds: DEFAULT_PERSISTED.notificationRecipientIds,
+    notificationLabel: DEFAULT_PERSISTED.notificationLabel,
 
     // UI state
     focusState: { type: 'summary' } as FocusState,
@@ -328,6 +337,21 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     setPendingFieldSelection: (id) => set({ pendingFieldSelection: id }),
 
     syncFields: (fields) => set({ fields }),
+
+    loadForForm: (formId, initialFocus?) => {
+      if (currentFormId === formId) return
+      currentFormId = formId
+      const persisted = loadPersistedState(formId)
+      set({
+        ...persisted,
+        focusState: initialFocus ?? ({ type: 'summary' } as FocusState),
+        pendingInsertIndex: null,
+        previewStepName: null,
+        pendingFieldSelection: null,
+        deletingRespondentId: null,
+        justDraggedId: null,
+      })
+    },
 
     // Sprint 4 actions
     assignField: (stepId, fieldId) =>
