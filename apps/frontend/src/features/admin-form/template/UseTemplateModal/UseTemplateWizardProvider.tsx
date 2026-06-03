@@ -32,8 +32,16 @@ export const useUseTemplateWizardContext = (
     (field) => field.fieldType === 'children',
   )
 
-  const { formMethods, currentStep, direction, keypair, setCurrentStep } =
-    useCommonFormWizardProvider()
+  const {
+    formMethods,
+    currentStep,
+    direction,
+    keypair,
+    setCurrentStep,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
+  } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
 
@@ -168,6 +176,9 @@ export const useUseTemplateWizardContext = (
     hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),
     onClose,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
   }
 }
 

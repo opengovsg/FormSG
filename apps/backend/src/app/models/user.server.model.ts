@@ -84,6 +84,7 @@ const compileUserModel = (db: Mongoose) => {
         respondentCopy: Boolean,
         statusTracker: Boolean,
         signatureField: Boolean,
+        createStorageModeForV1Webhook: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags

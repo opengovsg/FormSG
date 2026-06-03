@@ -1,5 +1,7 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import {
@@ -51,6 +53,30 @@ StorageModeEmpty.parameters = {
   },
 }
 
+const mrfCutoverOnGrowthBook = new GrowthBook({
+  features: { [featureFlags.mrfCutover]: { defaultValue: true } },
+})
+
+export const StorageModeMrfCutoverOn = Template.bind({})
+StorageModeMrfCutoverOn.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverOnGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+StorageModeMrfCutoverOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Encrypt,
+        },
+      }),
+    },
+  },
+}
+
 export const StorageModeRetryEnabled = Template.bind({})
 StorageModeRetryEnabled.parameters = {
   msw: {
@@ -69,6 +95,19 @@ StorageModeRetryEnabled.parameters = {
 }
 
 export const UnsupportedEmailMode = Template.bind({})
+
+export const UnsupportedMultirespondentMode = Template.bind({})
+UnsupportedMultirespondentMode.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Multirespondent,
+        },
+      }),
+    },
+  },
+}
 
 export const Loading = Template.bind({})
 Loading.parameters = {
