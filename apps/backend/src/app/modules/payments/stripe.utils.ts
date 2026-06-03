@@ -123,7 +123,7 @@ export const getMetadataPaymentId = (
   | StripeMetadataInvalidError
   | StripeMetadataValidPaymentIdNotFoundError
   | StripeMetadataIncorrectEnvError
-> => {
+| StripeMetadataNotFormsgError
   const logMeta = {
     action: 'getMetadataPaymentId',
     metadata,
