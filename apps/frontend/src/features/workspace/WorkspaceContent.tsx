@@ -1,13 +1,16 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
+import { CREATE_FORM_V2_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
 
+import { useCreateFlowVariant } from './components/CreateFormFlowV2/useCreateFlowVariant'
 import CreateFormModal from './components/CreateFormModal'
 import {
   EmptyDefaultWorkspace,
@@ -30,6 +33,16 @@ export const WorkspaceContent = (): JSX.Element => {
     useWorkspaceContext()
   const createFormModalDisclosure = useDisclosure()
   const { user, isLoading: isUserLoading } = useUser()
+  const navigate = useNavigate()
+  const createFlowVariant = useCreateFlowVariant()
+
+  const handleOpenCreateForm = useCallback(() => {
+    if (createFlowVariant && createFlowVariant !== 'off') {
+      navigate(CREATE_FORM_V2_ROUTE)
+    } else {
+      createFormModalDisclosure.onOpen()
+    }
+  }, [createFlowVariant, navigate, createFormModalDisclosure])
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -55,7 +68,7 @@ export const WorkspaceContent = (): JSX.Element => {
       />
       {totalFormsCount === 0 && isDefaultWorkspace ? (
         <EmptyDefaultWorkspace
-          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+          handleOpenCreateFormModal={handleOpenCreateForm}
           isLoading={isLoading}
         />
       ) : (
@@ -84,9 +97,7 @@ export const WorkspaceContent = (): JSX.Element => {
                 {DASHBOARD_MESSAGE}
               </InlineMessage>
             )}
-            <WorkspaceHeader
-              handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-            />
+            <WorkspaceHeader handleOpenCreateFormModal={handleOpenCreateForm} />
           </Container>
           {totalFormsCount === 0 && !isDefaultWorkspace ? (
             <EmptyNewWorkspace isLoading={isLoading} />
