@@ -114,8 +114,13 @@ export const LoginPage = (): JSX.Element => {
         return t('features.login.LoginPage.forbidden')
       case StatusCodes.UNAUTHORIZED.toString():
         return t('features.login.LoginPage.expiredSession')
-      default:
+      default: {
+        const code = parseInt(statusCode ?? '')
+        if (code >= 500 && code < 600) {
+          return t('features.common.errors.serverError')
+        }
         return t('features.common.errors.generic')
+      }
     }
   }, [statusCode])
 
