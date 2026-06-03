@@ -71,3 +71,9 @@ export class ComputePaymentStateError extends ApplicationError {
     super(message, undefined, ErrorCodes.PAYMENT_STRIPE_COMPUTE_PAYMENT_STATE)
   }
 }
+
+export class StripeMetadataNotFormsgError extends ApplicationError {
+  constructor(message = 'Stripe metadata is not from FormSG') {
+    super(message, undefined, ErrorCodes.PAYMENT_STRIPE_METADATA_NOT_FORMSG)
+  }
+}
