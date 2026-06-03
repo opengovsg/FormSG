@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.22.0](https://github.com/opengovsg/formsg/compare/v7.21.2...v7.22.0) (2026-06-03)
+
+
+### Features
+
+* **mrf-cutover:** foundation — beta flag, feature flag key, escape-hatch copy composer (1/6) (#9462) ([#9462](https://github.com/opengovsg/formsg/commit/7c498f72bcf9f23c5e1a0da4c4832cb31b87232d))
+* **mrf-cutover:** webhook v1 schema infobox on storage-mode settings (3/6) (#9463) ([#9463](https://github.com/opengovsg/formsg/commit/e885b98a44c897071132b28e9f4fa3b7d08c8c63))
+
+
+### Bug Fixes
+
+* add mt to webhook section (#9530) ([#9530](https://github.com/opengovsg/formsg/commit/3b192a38fb3ba0d367fd3ae2c909a397ddcd8012))
+
+
+### Miscellaneous
+
+* Merge pull request #9468 from opengovsg/refactor/modal-cutover-prep ([#9468](https://github.com/opengovsg/formsg/commit/b4b89a78a081e5a7148c65bb1f123a0d4224ec86))
+
+
+### Builds
+
+* merge 7.21.2 back to develop (#9521) ([#9521](https://github.com/opengovsg/formsg/commit/2d7a69174f7efd125450e0e851bc2ecb96fe6482))
+
 ## [7.21.2](https://github.com/opengovsg/formsg/compare/v7.21.1...v7.21.2) (2026-06-02)
 
 
