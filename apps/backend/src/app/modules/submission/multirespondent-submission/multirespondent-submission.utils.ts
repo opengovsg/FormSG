@@ -3,6 +3,7 @@ import {
   BasicField,
   FieldResponsesV3,
   FieldResponseV3,
+  FormAuthType,
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
@@ -559,3 +560,30 @@ export const formatSubmittedStepTimestamp = ({
     .tz('Asia/Singapore')
     .format('ddd, DD MMM YYYY hh:mm:ss A')
 }
+
+/**
+ * Whether the form's Singpass/MyInfo (SPCP) authentication must be
+ * (re-)verified on the given MRF workflow step.
+ *
+ * Today SPCP is only enforced on the first step; later steps rely on the MRF
+ * JWT issued after the previous step. This centralises only the STEP rule (the
+ * `stepNumber === 1` part) that was duplicated across the OTP controller and
+ * the NDI submission middleware. It does NOT centralise the per-authType
+ * policy: each call site keeps its own authType handling, which differs by
+ * design (the controller verifies SP/CP/SGID/MyInfo/SGID_MyInfo; the middleware
+ * only builds NDI content for CP/MyInfo).
+ *
+ * The `form` parameter is taken so the body can later derive the answer from
+ * per-step form configuration (issue #9513 follow-up). Note: enabling Singpass
+ * on step 2+ is NOT just a change to this helper: the OTP controller's step-2+
+ * branch (the `previousSubmissionId` path) skips SPCP without calling this
+ * helper, so that branch must be wired up too (deriving the real step from the
+ * validated MRF JWT) or step-2+ enforcement will fail open.
+ *
+ * NOT behaviour-changing today: with no per-step config in the schema, it
+ * returns true only for step 1 of an auth-enabled form.
+ */
+export const isSingpassEnforcedOnStep = (
+  form: { authType: FormAuthType },
+  stepNumber: number,
+): boolean => form.authType !== FormAuthType.NIL && stepNumber === 1

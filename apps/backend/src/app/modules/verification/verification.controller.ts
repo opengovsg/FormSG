@@ -23,7 +23,10 @@ import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
-import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
+import {
+  getMrfCookieName,
+  isSingpassEnforcedOnStep,
+} from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
 
 import { MrfJwtValidationError } from './verification.errors'
@@ -114,9 +117,12 @@ export const _handleGenerateOtp: ControllerHandler<
     FormService.retrieveFullFormById(formId)
       // Step 2: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
-        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
-        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
-        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
+        // A previousSubmissionId means this is an MRF step 2+ request: verify the
+        // MRF JWT issued after the previous step. SPCP/MyInfo is not re-verified
+        // here because isSingpassEnforcedOnStep currently returns false for steps
+        // beyond the first. When per-step Singpass config is added (issue #9513
+        // follow-up), gate an SPCP check on isSingpassEnforcedOnStep(form, step)
+        // in this branch too.
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
@@ -189,8 +195,13 @@ export const _handleGenerateOtp: ControllerHandler<
             })
         }
 
-        // No previousSubmissionId, proceed with SPCP/MyInfo verification
+        // No previousSubmissionId => MRF first step. Re-verify SPCP/MyInfo only on
+        // steps where the form enforces it; isSingpassEnforcedOnStep is the shared
+        // step rule (this path keeps its own authType switch below).
         setFormTags(form)
+        if (!isSingpassEnforcedOnStep(form, 1)) {
+          return okAsync(form)
+        }
         const { authType } = form
         switch (authType) {
           case FormAuthType.CP: {
