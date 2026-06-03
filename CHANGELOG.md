@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.22.1](https://github.com/opengovsg/formsg/compare/v7.22.0...v7.22.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* **backend:** stripe event handling syntax error (#9536) ([#9536](https://github.com/opengovsg/formsg/commit/4446d74c1a7bfcda0b7655a17b65602db4d66148))
+
+
+### Miscellaneous
+
+* Merge pull request #9532 from opengovsg/fix/backend/handle-non-formsg-stripe-events ([#9532](https://github.com/opengovsg/formsg/commit/a399838ca32d7d227061f2fbf3eb9d92446b917c))
+
 ## [7.22.0](https://github.com/opengovsg/formsg/compare/v7.21.2...v7.22.0) (2026-06-03)
 
 

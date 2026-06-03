@@ -34,6 +34,7 @@ import {
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
+  StripeMetadataNotFormsgError,
   StripeMetadataValidPaymentIdNotFoundError,
 } from './stripe.errors'
 
@@ -44,6 +45,7 @@ export const mapRouteError: MapRouteError = (error: ApplicationError) => {
     case StripeMetadataInvalidError:
     case MalformedStripeEventObjectError:
     case MalformedStripeChargeObjectError:
+    case StripeMetadataNotFormsgError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -90,12 +92,20 @@ export const getChargeIdFromNestedCharge = (
 const isStripeMetadata = (
   obj: Stripe.Metadata,
 ): obj is StripePaymentMetadataDto =>
+  isStripeMetadataFormsg(obj) &&
+  hasProp(obj, 'paymentId') &&
+  hasProp(obj, 'paymentContactEmail')
+
+/**
+ * Helper function to typeguard Stripe metadata received from non-FormSG events
+ */
+const isStripeMetadataFormsg = (
+  obj: Stripe.Metadata,
+): obj is StripePaymentMetadataDto =>
   hasProp(obj, 'env') &&
   hasProp(obj, 'formTitle') &&
   hasProp(obj, 'formId') &&
-  hasProp(obj, 'submissionId') &&
-  hasProp(obj, 'paymentId') &&
-  hasProp(obj, 'paymentContactEmail')
+  hasProp(obj, 'submissionId')
 
 /**
  * Extracts the payment id from the metadata field of objects expected to have
@@ -113,10 +123,18 @@ export const getMetadataPaymentId = (
   | StripeMetadataInvalidError
   | StripeMetadataValidPaymentIdNotFoundError
   | StripeMetadataIncorrectEnvError
+  | StripeMetadataNotFormsgError
 > => {
   const logMeta = {
     action: 'getMetadataPaymentId',
     metadata,
+  }
+  if (!isStripeMetadataFormsg(metadata)) {
+    logger.warn({
+      message: 'Got non-FormSG Stripe metadata ',
+      meta: { ...logMeta, metadata },
+    })
+    return err(new StripeMetadataNotFormsgError())
   }
   if (!isStripeMetadata(metadata)) {
     logger.warn({
