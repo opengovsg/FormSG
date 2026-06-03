@@ -1,5 +1,9 @@
 import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
-import { adaptV3ToV4, adaptV4ToV3 } from '@opengovsg/formsg-sdk'
+import {
+  adaptV3ToV4,
+  adaptV4ToV3,
+  isFieldResponsesV4,
+} from '@opengovsg/formsg-sdk'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
@@ -572,12 +576,7 @@ export const validateMultirespondentSubmission = async (
                  */
                 const previousResponses = (() => {
                   const responses = previousSubmissionDecryptedContent.responses
-                  const entries = Object.values(responses)
-                  if (
-                    entries.length > 0 &&
-                    'provenance' in (entries[0] as object) && //TODO: verify preferred option
-                    previousSubmission.mrfVersion === 2
-                  ) {
+                  if (isFieldResponsesV4(responses)) {
                     return adaptV4ToV3(
                       responses as FieldResponsesV4,
                     ) as ParsedClearFormFieldResponsesV3
@@ -757,7 +756,6 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
-  // Set growthbook formId attribute for targetted feature flagging
   void req.growthbook?.setAttributes({
     ...req.growthbook.getAttributes(),
     formId: req.params.formId,
