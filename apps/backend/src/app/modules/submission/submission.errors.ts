@@ -324,3 +324,15 @@ export class MissingSubmitterIdError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_MISSING_SUBMITTER_ID)
   }
 }
+
+export class SubmissionEncryptionVerificationError extends ApplicationError {
+  constructor(
+    message = 'Post-encryption decryption verification failed. Submission not saved.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_ENCRYPTION_VERIFICATION_FAILED,
+    )
+  }
+}

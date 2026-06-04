@@ -60,6 +60,7 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
@@ -833,6 +834,23 @@ export const encryptSubmission = async (
     submissionSecretKey,
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
+
+  // Verify the encrypted content can be round-tripped back to V4 before saving
+  const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    { encryptedContent, version: req.body.version },
+  )
+  if (!decryptionVerification) {
+    const error = new SubmissionEncryptionVerificationError()
+    logger.error({
+      message: error.message,
+      meta: { action: 'encryptSubmission', ...createReqMeta(req) },
+      error,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(
