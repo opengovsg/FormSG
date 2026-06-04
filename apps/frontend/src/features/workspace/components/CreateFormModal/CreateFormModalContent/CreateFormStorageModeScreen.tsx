@@ -1,48 +1,22 @@
-import { RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiRightArrowAlt } from 'react-icons/bi'
-import {
-  Container,
-  Flex,
-  FormControl,
-  ModalBody,
-  ModalHeader,
-  Skeleton,
-  Text,
-} from '@chakra-ui/react'
+import { Container, Flex, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
-import { useFormTitleValidationRules } from '~utils/formValidation'
 import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormFieldMessage from '~components/FormControl/FormFieldMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
-import Input from '~components/Input'
 
-import {
-  CreateFormWizardInputProps,
-  useCreateFormWizard,
-} from '../CreateFormWizardContext'
+import { useCreateFormWizard } from '../CreateFormWizardContext'
 
-const FORM_TITLE_LENGTH_WARNING = 65
+import { FormTitleInput } from './FormTitleInput'
 
 export const CreateFormStorageModeScreen = (): JSX.Element => {
   const { t } = useTranslation()
   const {
-    formMethods,
     handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     isFetching,
     goToMrfDetails,
   } = useCreateFormWizard()
-  const {
-    register,
-    formState: { errors },
-    watch,
-  } = formMethods
-
-  const titleInputValue = watch('title')
-  const formTitleValidationRules = useFormTitleValidationRules()
 
   return (
     <>
@@ -67,31 +41,7 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
             use this if you need a feature not yet available in the current
             version.
           </Text>
-          <FormControl isRequired isInvalid={!!errors.title} mb="2.5rem">
-            <FormLabel useMarkdownForDescription>
-              {t('features.workspace.modals.forms.create.details.name.label')}
-            </FormLabel>
-            <Skeleton isLoaded={!isFetching}>
-              <Input
-                autoFocus
-                {...register(
-                  'title',
-                  formTitleValidationRules as RegisterOptions<
-                    CreateFormWizardInputProps,
-                    'title'
-                  >,
-                )}
-              />
-            </Skeleton>
-            <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-            {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
-              <FormFieldMessage>
-                {t(
-                  'features.workspace.modals.forms.create.details.name.message',
-                )}
-              </FormFieldMessage>
-            ) : null}
-          </FormControl>
+          <FormTitleInput mb="2.5rem" />
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
