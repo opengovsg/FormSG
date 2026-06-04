@@ -109,7 +109,7 @@ const PrintableDecryptedRow = ({
         </>
       )
     case BasicField.Signature: {
-      if (row.answerArray && row.answerArray.length > 1) {
+      if (row.answerArray && row.answerArray[1]) {
         const signatureVectorArray = JSON.parse(row.answerArray[1] as string)
         const signatureSvg = convertToSignatureSvgString(signatureVectorArray)
         return (
@@ -125,8 +125,9 @@ const PrintableDecryptedRow = ({
           </TableRow>
         )
       }
-      return <></>
+      return <StandardPrintableRow question={row.question} answer="" />
     }
+    // falls through to default
     default:
       return (
         <StandardPrintableRow
