@@ -1,6 +1,13 @@
+import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
+import {
+  adaptV3ToV4,
+  adaptV4ToV3,
+  isFieldResponsesV4,
+} from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -457,6 +464,7 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: {
                 encryptedContent: mrfSubmission.encryptedContent,
                 version: mrfSubmission.version,
+                mrfVersion: mrfSubmission.mrfVersion,
               },
               workflowStep: mrfSubmission.workflowStep + 1,
               workflow: mrfSubmission.workflow,
@@ -561,8 +569,21 @@ export const validateMultirespondentSubmission = async (
                   )
                 }
 
-                const previousResponses =
-                  previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+                /**
+                 * Since the incoming client responses are in V3,
+                 * if previous submission was encrypted in V4 format, convert to V3
+                 * to facilitate comparison.
+                 */
+                const previousResponses = (() => {
+                  const responses = previousSubmissionDecryptedContent.responses
+                  if (isFieldResponsesV4(responses)) {
+                    return adaptV4ToV3(
+                      responses as FieldResponsesV4,
+                    ) as ParsedClearFormFieldResponsesV3
+                  }
+                  // Response is in v3 format, return as is
+                  return responses as ParsedClearFormFieldResponsesV3
+                })()
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
@@ -735,6 +756,11 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
+  void req.growthbook?.setAttributes({
+    ...req.growthbook.getAttributes(),
+    formId: req.params.formId,
+  })
+
   const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
@@ -775,12 +801,38 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  const useV4Encryption =
+    req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false
+
+  let responsesToEncrypt:
+    | Record<
+        string,
+        ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+      >
+    | FieldResponsesV4 = strippedAttachmentResponses
+
+  if (useV4Encryption) {
+    // Build FormFieldMeta map from form definition for question text
+    const formFieldMeta: Record<string, FormFieldMeta> = {}
+    for (const field of formDef.form_fields) {
+      formFieldMeta[field._id] = {
+        question: field.title,
+        ...(field.myInfo?.attr && { myInfo: { attr: field.myInfo.attr } }),
+      }
+    }
+
+    responsesToEncrypt = adaptV3ToV4(strippedAttachmentResponses, {
+      formFields: formFieldMeta,
+      provenance: {},
+    })
+  }
+
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(
@@ -800,12 +852,10 @@ export const encryptSubmission = async (
     workflowStep: req.body.workflowStep,
     responses,
     /**
-     * MRF Version: 1
-     * ====================
-     * - Encrypted payload does not contain attachment contents
-     * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
+     * MRF Version: 1 — V3 encrypted responses
+     * MRF Version: 2 — V4 encrypted responses (with provenance)
      */
-    mrfVersion: 1,
+    mrfVersion: useV4Encryption ? 2 : 1,
   }
 
   return next()
