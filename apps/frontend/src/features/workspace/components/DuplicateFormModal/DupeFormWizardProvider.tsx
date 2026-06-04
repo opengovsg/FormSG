@@ -105,7 +105,8 @@ export const useDupeFormWizardContext = (
       }
 
       switch (responseMode) {
-        case FormResponseMode.Encrypt:
+        case FormResponseMode.Encrypt: {
+          const defaultEmails = adminEmail ? [adminEmail] : []
           return dupeStorageModeFormMutation.mutate(
             {
               formIdToDuplicate: sourceFormId,
@@ -113,7 +114,7 @@ export const useDupeFormWizardContext = (
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
-              emails: emails.filter(Boolean),
+              emails: (emails ?? defaultEmails).filter(Boolean),
             },
             {
               onSuccess: () => {
@@ -121,6 +122,7 @@ export const useDupeFormWizardContext = (
               },
             },
           )
+        }
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
@@ -185,7 +187,7 @@ export const useDupeFormWizardContext = (
 
       return dupeEmailModeFormMutation.mutate({
         formIdToDuplicate: sourceFormId,
-        emails: inputs.emails.filter(Boolean),
+        emails: (inputs.emails ?? []).filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
         workspaceId,
