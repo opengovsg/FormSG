@@ -1,4 +1,8 @@
-import { adaptV3ToV4, adaptV4ToV3 } from '@opengovsg/formsg-sdk'
+import {
+  adaptV3ToV4,
+  adaptV4ToV3,
+  isFieldResponsesV4,
+} from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { errAsync, ok, okAsync } from 'neverthrow'
@@ -35,10 +39,11 @@ jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../verified-content/verified-content.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/spcp/spcp.util')
-jest.mock('@opengovsg/formsg-sdk', () => ({
+jest.mock('@opengovsg/formsg-sdk/adapters', () => ({
   __esModule: true,
   adaptV3ToV4: jest.fn(),
   adaptV4ToV3: jest.fn(),
+  isFieldResponsesV4: jest.fn(),
 }))
 jest.mock('src/app/utils/logic-adaptor')
 jest.mock('../multirespondent-submission.utils')
@@ -998,6 +1003,8 @@ describe('Multirespondent Submission Middleware', () => {
         verified: {},
         submissionSecretKey: '',
       })
+
+      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
 
       jest
         .mocked(adaptV4ToV3)

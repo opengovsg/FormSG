@@ -3,7 +3,7 @@ import {
   adaptV3ToV4,
   adaptV4ToV3,
   isFieldResponsesV4,
-} from '@opengovsg/formsg-sdk'
+} from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
