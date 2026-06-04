@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.23.0](https://github.com/opengovsg/formsg/compare/v7.22.1...v7.23.0) (2026-06-04)
+
+
+### Features
+
+* **i18n:** add landing payments and not found error pages (#9522) ([#9522](https://github.com/opengovsg/formsg/commit/17d59ca99bd96c77d045219842a92416e61b5640))
+
+
+### Bug Fixes
+
+* **NumberField:** remove +/- stepper buttons (#9444) (#9448) ([#9444](https://github.com/opengovsg/formsg/commit/0c4c1ff66b3c39f8b532559bc1ba1c3bc884e30d))
+* **table:** add default for dropdown columns (#9526) ([#9526](https://github.com/opengovsg/formsg/commit/ca979eb7d3bc6fbbef6aa75de8aa2a846e6f52af))
+* enable line breaks in thank you page message (#9507) ([#9507](https://github.com/opengovsg/formsg/commit/ffccdd52202fa511ad05e27f08fbb496db0b19af))
+
+
+### Chores
+
+* add agent context and scratch to gitignore (#9544) ([#9544](https://github.com/opengovsg/formsg/commit/e386cd06986d89dbf0a7e454f2dcfe5786244c7c))
+
+
+### Miscellaneous
+
+* Merge pull request #9465 from opengovsg/feat/create-form-modal-cutover ([#9465](https://github.com/opengovsg/formsg/commit/46add49ed851cf3fcaaed323b5ad4a031f57d2c2))
+* Merge pull request #9527 from opengovsg/fix/signature-hover-theme-color ([#9527](https://github.com/opengovsg/formsg/commit/0b64e549b7064e6b318b7b85f9c89aba703a97f6))
+* Merge pull request #9545 from opengovsg/fix/optional-pdf-display ([#9545](https://github.com/opengovsg/formsg/commit/7fedc79f69e3aaf92d4415c30b3a8f18e1f67fc0))
+
 ## [7.22.1](https://github.com/opengovsg/formsg/compare/v7.22.0...v7.22.1) (2026-06-03)
 
 
