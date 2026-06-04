@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Accordion,
   Box,
@@ -58,13 +59,14 @@ type onboardingHelperTextType = {
   text: string
 }
 
-const onboardingSuccessHelperText: onboardingHelperTextType = {
-  icon: <BxsCheckCircle />,
-  text: 'An email has been sent to this email address.',
-}
-
 export const LandingPaymentsPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
+
+  const onboardingSuccessHelperText: onboardingHelperTextType = {
+    icon: <BxsCheckCircle />,
+    text: t('features.landingPayments.onboarding.success'),
+  }
   const fieldId = 'PAYMENT_ONBOARDING_EMAIL_FIELD_ID'
   const emailFieldSchema: EmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
@@ -96,17 +98,16 @@ export const LandingPaymentsPage = (): JSX.Element => {
       if (error instanceof Error) {
         if (error.message === 'Forbidden') {
           formMethods.setError(fieldId, {
-            message:
-              'We are unable to send you our guide because your email is not whitelisted on FormSG.',
+            message: t('features.landingPayments.onboarding.errors.forbidden'),
           })
         } else {
           formMethods.setError(fieldId, {
-            message: 'Something went wrong. Please try again later.',
+            message: t('features.landingPayments.onboarding.errors.general'),
           })
         }
       }
     }
-  }, [sendOnboardingEmailMutation, formMethods])
+  }, [sendOnboardingEmailMutation, formMethods, t])
 
   const bottomCTARef = useRef<HTMLDivElement | null>(null)
 
@@ -116,13 +117,15 @@ export const LandingPaymentsPage = (): JSX.Element => {
         bottomCTARef.current?.scrollIntoView({ behavior: 'smooth' })
       }
     >
-      Receive our guide for more information.
+      {t('features.landingPayments.helpCenter.linkToGuide')}
     </Link>
   )
 
   const Features = () => (
     <LandingSection>
-      <SectionTitleText maxW="37.5rem">Payment features</SectionTitleText>
+      <SectionTitleText maxW="37.5rem">
+        {t('features.landingPayments.features.title')}
+      </SectionTitleText>
       <SimpleGrid
         columns={{ base: 1, md: 2, lg: 3 }}
         spacingX="2.5rem"
@@ -131,33 +134,45 @@ export const LandingPaymentsPage = (): JSX.Element => {
       >
         <FeatureGridItem
           image={featureSelfServiceImg}
-          title="Self-service"
-          description="Start collecting payments in just a few simple steps."
+          title={t('features.landingPayments.features.selfService.title')}
+          description={t(
+            'features.landingPayments.features.selfService.description',
+          )}
         />
         <FeatureGridItem
           image={featureReconImg}
-          title="Simple reconciliation"
-          description="Associate a payment reference ID with every form response ID. Track payments and payouts in one dashboard."
+          title={t('features.landingPayments.features.reconciliation.title')}
+          description={t(
+            'features.landingPayments.features.reconciliation.description',
+          )}
         />
         <FeatureGridItem
           image={featureTrustedImg}
-          title="Trusted payment flows"
-          description="We partner with Stripe, a leading payment provider, to ensure a secure and reliable payment experience. Respondents receive notifications from official gov.sg domains. "
+          title={t('features.landingPayments.features.trusted.title')}
+          description={t(
+            'features.landingPayments.features.trusted.description',
+          )}
         />
         <FeatureGridItem
           image={featureInvoicingImg}
-          title="Invoicing"
-          description="Respondents receive an invoice as proof of payment for each completed transaction."
+          title={t('features.landingPayments.features.invoicing.title')}
+          description={t(
+            'features.landingPayments.features.invoicing.description',
+          )}
         />
         <FeatureGridItem
           image={featureMethodsImg}
-          title="Multiple payment methods"
-          description="We support credit card, debit card and PayNow."
+          title={t('features.landingPayments.features.paymentMethods.title')}
+          description={t(
+            'features.landingPayments.features.paymentMethods.description',
+          )}
         />
         <FeatureGridItem
           image={featureFlexibleImg}
-          title="Flexible"
-          description="We've got you covered whether you are collecting fixed amounts or varying amounts from respondents."
+          title={t('features.landingPayments.features.flexible.title')}
+          description={t(
+            'features.landingPayments.features.flexible.description',
+          )}
         />
       </SimpleGrid>
     </LandingSection>
@@ -165,15 +180,14 @@ export const LandingPaymentsPage = (): JSX.Element => {
 
   const HelpCenter = () => (
     <FeatureSection
-      title="Help Center"
+      title={t('features.landingPayments.helpCenter.title')}
       imgSrc={helpCenterImg}
       direction={{ base: 'column', lg: 'row' }}
       bg="primary.100"
     >
       <Box>
         <SectionBodyText mt="1rem">
-          Have a question? Most answers can be found in our self service Help
-          Center. Common questions include:
+          {t('features.landingPayments.helpCenter.description')}
         </SectionBodyText>
         <Accordion
           variant="medium"
@@ -182,32 +196,46 @@ export const LandingPaymentsPage = (): JSX.Element => {
           allowToggle
           whiteSpace="pre-wrap"
         >
-          <HelpAccordionItem title="What do I need to start collecting payments?">
+          <HelpAccordionItem
+            title={t(
+              'features.landingPayments.helpCenter.faq.whatDoINeed.question',
+            )}
+          >
             <Text>
-              You would need to create and verify your Stripe account, activate
-              your account and fill in the business onboarding form.{' '}
+              {t('features.landingPayments.helpCenter.faq.whatDoINeed.answer')}{' '}
               <LinkToBottomCTA />
             </Text>
           </HelpAccordionItem>
-          <HelpAccordionItem title="Are there any transaction fees?">
+          <HelpAccordionItem
+            title={t(
+              'features.landingPayments.helpCenter.faq.transactionFees.question',
+            )}
+          >
             <Text>
-              Stripe, our payment provider, charges transaction fees for every
-              payment. Government agencies can enjoy special transaction rates.{' '}
+              {t(
+                'features.landingPayments.helpCenter.faq.transactionFees.answer',
+              )}{' '}
               <LinkToBottomCTA />
             </Text>
           </HelpAccordionItem>
-          <HelpAccordionItem title="Is there an invoice or receipt provided?">
+          <HelpAccordionItem
+            title={t(
+              'features.landingPayments.helpCenter.faq.invoice.question',
+            )}
+          >
             <Text>
-              Respondents will receive a receipt generated by Stripe and an
-              invoice generated by FormSG upon successful payment. Invoices will
-              be sent to respondents for payment amounts less than S$1000.
+              {t('features.landingPayments.helpCenter.faq.invoice.answer')}
             </Text>
           </HelpAccordionItem>
-          <HelpAccordionItem title="How does reconciliation work?">
+          <HelpAccordionItem
+            title={t(
+              'features.landingPayments.helpCenter.faq.reconciliation.question',
+            )}
+          >
             <Text>
-              Each payment reference ID is associated with a form response ID.
-              Payment and payout status can be viewed in your form response page
-              as well as on the Stripe dashboard.
+              {t(
+                'features.landingPayments.helpCenter.faq.reconciliation.answer',
+              )}
             </Text>
           </HelpAccordionItem>
         </Accordion>
@@ -218,7 +246,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           <Icon as={BxsHelpCircle} ml="0.5rem" fontSize="1.5rem" />
         }
       >
-        Visit our Payments Help Center
+        {t('features.landingPayments.helpCenter.linkText')}
       </FeatureLink>
     </FeatureSection>
   )
@@ -245,12 +273,10 @@ export const LandingPaymentsPage = (): JSX.Element => {
               textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
               color={mainSectionTextColour}
             >
-              Collect payments on your form
+              {t('features.landingPayments.hero.title')}
             </Text>
             <SectionBodyText mt="1rem" color={mainSectionTextColour}>
-              Respondents can now pay for fees and services directly on your
-              form. Enter your agency email to receive our guide on how to get
-              started with payments.
+              {t('features.landingPayments.hero.description')}
             </SectionBodyText>
             <FormProvider {...formMethods}>
               <Flex alignItems="start" mt="2rem">
@@ -262,7 +288,9 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     isDisabled:
                       sendOnboardingEmailMutation.isLoading ||
                       sendOnboardingEmailMutation.isSuccess,
-                    placeholder: 'Enter your email',
+                    placeholder: t(
+                      'features.landingPayments.hero.emailPlaceholder',
+                    ),
                   }}
                 />
                 <Button
@@ -276,7 +304,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     sendOnboardingEmailMutation.isSuccess
                   }
                 >
-                  Submit
+                  {t('features.landingPayments.hero.submitButton')}
                 </Button>
               </Flex>
               {onboardingHelperText && (
@@ -307,7 +335,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
         >
           <GridItem alignSelf="center">
             <Text textStyle="h5" color="primary.100" mr="2rem">
-              Receive our guide to get started on payments
+              {t('features.landingPayments.bottomCta.title')}
             </Text>
           </GridItem>
           <GridItem w="100%">
@@ -321,7 +349,9 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     isDisabled:
                       sendOnboardingEmailMutation.isLoading ||
                       sendOnboardingEmailMutation.isSuccess,
-                    placeholder: 'Enter your email',
+                    placeholder: t(
+                      'features.landingPayments.hero.emailPlaceholder',
+                    ),
                   }}
                 />
                 <Button
@@ -335,7 +365,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                     sendOnboardingEmailMutation.isSuccess
                   }
                 >
-                  Submit
+                  {t('features.landingPayments.hero.submitButton')}
                 </Button>
               </Flex>
               {onboardingHelperText && (
