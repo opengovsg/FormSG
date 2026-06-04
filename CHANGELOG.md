@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.24.0](https://github.com/opengovsg/formsg/compare/v7.23.0...v7.24.0) (2026-06-04)
+
+
+### Features
+
+* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+
 ## [7.23.0](https://github.com/opengovsg/formsg/compare/v7.22.1...v7.23.0) (2026-06-04)
 
 
