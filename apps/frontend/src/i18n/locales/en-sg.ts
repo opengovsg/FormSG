@@ -4,7 +4,9 @@ import { enSG as adminForm } from './features/admin-form'
 import { enSG as app } from './features/app'
 import { enSG as common } from './features/common'
 import { enSG as landingPage } from './features/landing-page'
+import { enSG as landingPayments } from './features/landing-payments'
 import { enSG as login } from './features/login'
+import { enSG as notFoundError } from './features/not-found-error'
 import { enSG as publicForm } from './features/public-form'
 import { enSG as user } from './features/user'
 import { enSG as whatsNew } from './features/whats-new'
@@ -21,6 +23,8 @@ export const enSG: FallbackTranslation = {
       app,
       common,
       landingPage,
+      landingPayments,
+      notFoundError,
       login,
       publicForm,
       workspace,

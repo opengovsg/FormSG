@@ -23,7 +23,7 @@ export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
   // Email form props
-  emails: string[]
+  emails?: string[]
   // Storage form props
   storageAck?: boolean
 

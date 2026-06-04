@@ -71,3 +71,12 @@ coverage/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# AI Configurations
+# =======
+.claude
+.agents
+
+# Scratch files (usually used for AI state/context handoff)
+# =======
+.scratch 
