@@ -127,7 +127,6 @@ const PrintableDecryptedRow = ({
       }
       return <StandardPrintableRow question={row.question} answer="" />
     }
-    // falls through to default
     default:
       return (
         <StandardPrintableRow
