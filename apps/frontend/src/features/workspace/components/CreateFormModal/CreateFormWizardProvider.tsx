@@ -56,9 +56,10 @@ export const useCommonFormWizardProvider = ({
 
   const { setValue } = formMethods
 
+  // TODO [MRF-CUTOVER]: Remove after cutover. -1 is used temporarily as there is an existing animation bug with +1.
   const goToStorageModeDetails = () => {
     setValue('responseMode', FormResponseMode.Encrypt)
-    setCurrentStep([CreateFormFlowStates.StorageModeDetails, 1])
+    setCurrentStep([CreateFormFlowStates.StorageModeDetails, -1])
   }
   const goToMrfDetails = () => {
     setValue('responseMode', FormResponseMode.Multirespondent)
@@ -118,14 +119,15 @@ const useCreateFormWizardContext = (
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode, emails }) => {
       switch (responseMode) {
-        case FormResponseMode.Encrypt:
+        case FormResponseMode.Encrypt: {
+          const defaultEmails = adminEmail ? [adminEmail] : []
           return createStorageModeFormMutation.mutate(
             {
               title,
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
-              emails: emails.filter(Boolean),
+              emails: (emails ?? defaultEmails).filter(Boolean),
             },
             {
               onSuccess: () => {
@@ -133,6 +135,7 @@ const useCreateFormWizardContext = (
               },
             },
           )
+        }
         case FormResponseMode.Email:
           return
         case FormResponseMode.Multirespondent:
@@ -197,7 +200,7 @@ const useCreateFormWizardContext = (
   const handleCreateEmailModeForm = () => {
     return handleSubmit((inputs) => {
       createEmailModeFormMutation.mutate({
-        emails: inputs.emails.filter(Boolean),
+        emails: (inputs.emails ?? []).filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
         workspaceId,
