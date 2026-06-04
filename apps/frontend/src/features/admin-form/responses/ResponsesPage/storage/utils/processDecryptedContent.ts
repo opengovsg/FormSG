@@ -1,27 +1,16 @@
 import {
   DecryptedContent,
-  DecryptedContentV3,
   FieldResponsesV4,
   FormField as VerifiedFormField,
   FormFieldMeta,
 } from '@opengovsg/formsg-sdk'
 
-import {
-  AttachmentFieldResponseV3,
-  BasicField,
-  FieldResponse,
-  FormFieldDto,
-} from 'formsg-shared/types'
+import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import {
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
 } from 'formsg-shared/utils/verified-content'
-
-import {
-  pickBaseOutputFromSchema,
-  transformInputsToOutputs,
-} from '~features/public-form/utils/inputTransformation'
 
 import { flattenV4ToFormFields } from './flattenV4ToFormFields'
 
@@ -112,48 +101,6 @@ export const processDecryptedContent = (
 ): VerifiedFormField[] => {
   const { responses: displayedContent, verified } = decrypted
   // Convert decrypted content into displayable object.
-  return verified
-    ? displayedContent.concat(convertToResponseArray(verified))
-    : displayedContent
-}
-
-/**
- * Processes the decrypted content containing the previously encrypted responses
- * and verified content, and combines them into a single response array.
- * @param decrypted.responses the previously encrypted responses content
- * @param decrypted.verified the previously encrypted verified content,if it exists
- * @returns the processed content
- */
-export const processDecryptedContentV3 = async (
-  form_fields: FormFieldDto[],
-  decrypted: DecryptedContentV3,
-): Promise<VerifiedFormField[]> => {
-  const { responses, verified } = decrypted
-
-  // Convert decrypted content into displayable object.
-  const displayedContent = form_fields
-    .map((ff) => {
-      const response = responses[ff._id]
-      if (!response) {
-        return transformInputsToOutputs(ff)
-      }
-      if (response.fieldType === BasicField.Attachment) {
-        const answer = response.answer as AttachmentFieldResponseV3
-        return {
-          ...pickBaseOutputFromSchema(ff),
-          answer: answer.answer,
-        }
-      }
-
-      const decryptedResponse = transformInputsToOutputs(ff, response.answer)
-      if (decryptedResponse && 'myInfo' in ff) {
-        decryptedResponse.question = `[Myinfo] ${decryptedResponse.question} `
-      }
-      return decryptedResponse
-    })
-    .filter(
-      (output): output is FieldResponse => output !== null,
-    ) as VerifiedFormField[]
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent

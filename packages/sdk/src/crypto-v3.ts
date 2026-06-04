@@ -28,7 +28,7 @@ import { DecryptedContentV4, FieldResponsesV4, FormFieldMeta } from './types-v4'
  * Checks whether decrypted responses are already in V4 format.
  * V4 entries have a `provenance` object, which V3 entries lack.
  */
-function isFieldResponsesV4(
+export function isFieldResponsesV4(
   responses: Record<string, unknown>
 ): responses is FieldResponsesV4 {
   const entries = Object.values(responses)

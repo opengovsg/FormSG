@@ -1,3 +1,5 @@
+import type { FieldResponseV4 } from '@opengovsg/formsg-sdk'
+import { adaptV4ToV3, isFieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   EncryptedAttachmentContent,
   EncryptedFileContent,
@@ -57,10 +59,19 @@ export const decryptSubmission = ({
   )
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 
+  // If the submission was encrypted in V4 format, convert back to V3
+  // since the respondent form view expects V3 shape
+  const rawResponses = decryptedContent.responses
+  const responses: FieldResponsesV3 = isFieldResponsesV4(rawResponses)
+    ? (adaptV4ToV3(
+        rawResponses as Record<string, FieldResponseV4>,
+      ) as FieldResponsesV3)
+    : (rawResponses as FieldResponsesV3)
+
   // Add metadata for display.
   return {
     ...rest,
-    responses: decryptedContent.responses as FieldResponsesV3,
+    responses,
     submissionSecretKey: secretKey,
   }
 }

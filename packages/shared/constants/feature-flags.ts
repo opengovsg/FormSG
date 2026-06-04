@@ -42,6 +42,7 @@ export const featureFlags = {
   answerObjectDecryption: 'answer-object-decryption' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
   mrfCutover: 'mrf-cutover' as const,
+  answerObjectEncryption: 'answer-object-encryption' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

@@ -1,3 +1,8 @@
+import {
+  adaptV3ToV4,
+  adaptV4ToV3,
+  isFieldResponsesV4,
+} from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { errAsync, ok, okAsync } from 'neverthrow'
@@ -8,6 +13,7 @@ import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service'
 import * as SpcpUtil from 'src/app/modules/spcp/spcp.util'
 import * as VerifiedContentService from 'src/app/modules/verified-content/verified-content.service'
+import * as LogicAdaptor from 'src/app/utils/logic-adaptor'
 
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
@@ -15,12 +21,15 @@ import { SubmissionNotFoundError } from '../../submission.errors'
 import { generateHashedSubmitterId } from '../../submission.utils'
 import {
   createFormsgAndRetrieveForm,
+  encryptSubmission,
   handleNdiResponses,
+  validateMultirespondentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
+import * as MrfUtils from '../multirespondent-submission.utils'
 
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
@@ -30,11 +39,20 @@ jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../verified-content/verified-content.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/spcp/spcp.util')
+jest.mock('@opengovsg/formsg-sdk/adapters', () => ({
+  __esModule: true,
+  adaptV3ToV4: jest.fn(),
+  adaptV4ToV3: jest.fn(),
+  isFieldResponsesV4: jest.fn(),
+}))
+jest.mock('src/app/utils/logic-adaptor')
+jest.mock('../multirespondent-submission.utils')
 jest.mock('src/app/config/formsg-sdk', () => ({
   __esModule: true,
   default: {
     cryptoV3: {
       decryptFromSubmissionKey: jest.fn(),
+      encrypt: jest.fn(),
     },
   },
 }))
@@ -820,6 +838,275 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
         'SingPass Validated NRIC',
       )
+    })
+  })
+
+  describe('encryptSubmission', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+
+    const MOCK_FORM = {
+      _id: MOCK_FORM_ID,
+      publicKey: 'mockPublicKey',
+      form_fields: [
+        { _id: 'field1', fieldType: BasicField.ShortText, title: 'Field 1' },
+      ],
+    } as any
+
+    const MOCK_RESPONSES = {
+      field1: { fieldType: BasicField.ShortText, answer: 'hello' },
+    }
+
+    const createMockEncryptReq = (isV4FlagOn: boolean) =>
+      ({
+        params: { formId: MOCK_FORM_ID },
+        body: {
+          responses: { ...MOCK_RESPONSES },
+          version: 1,
+          workflowStep: 0,
+          responseMetadata: {},
+        },
+        formsg: {
+          formDef: MOCK_FORM,
+        },
+        growthbook: {
+          isOn: jest.fn().mockReturnValue(isV4FlagOn),
+          setAttributes: jest.fn().mockResolvedValue(undefined),
+          getAttributes: jest.fn().mockReturnValue({}),
+        },
+      }) as any
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      jest.resetAllMocks()
+      ;(formsgSdk.cryptoV3.encrypt as jest.Mock).mockReturnValue({
+        encryptedContent: 'mock-encrypted-content',
+        encryptedSubmissionSecretKey: 'mock-esk',
+        submissionSecretKey: 'mock-ssk',
+        submissionPublicKey: 'mock-spk',
+      })
+    })
+
+    it('should encrypt responses as V3 and set mrfVersion to 1 when feature flag is off', async () => {
+      const mockReq = createMockEncryptReq(false)
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(jest.mocked(adaptV3ToV4)).not.toHaveBeenCalled()
+      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
+      expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('should adapt V3 responses to V4 format and set mrfVersion to 2 when feature flag is on', async () => {
+      jest.mocked(adaptV3ToV4).mockReturnValue({
+        field1: { answer: 'hello', question: 'Field 1', provenance: {} },
+      } as any)
+
+      const mockReq = createMockEncryptReq(true)
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
+        { field1: { fieldType: BasicField.ShortText, answer: 'hello' } },
+        { formFields: { field1: { question: 'Field 1' } }, provenance: {} },
+      )
+      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+
+  describe('validateMultirespondentSubmission', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_SUBMISSION_ID = new ObjectId().toHexString()
+
+    const EDITABLE_FIELD_ID = 'field1'
+    const NON_EDITABLE_FIELD_ID = 'field2'
+
+    const SNAPSHOT_FORM_FIELDS = [
+      {
+        _id: EDITABLE_FIELD_ID,
+        fieldType: BasicField.ShortText,
+        title: 'Editable Field',
+      },
+      {
+        _id: NON_EDITABLE_FIELD_ID,
+        fieldType: BasicField.ShortText,
+        title: 'Non-editable Field',
+      },
+    ]
+
+    const SNAPSHOT_WORKFLOW = [
+      { step: 0, edit: [EDITABLE_FIELD_ID, NON_EDITABLE_FIELD_ID] },
+      { step: 1, edit: [EDITABLE_FIELD_ID] }, // only field1 editable at step 1
+    ]
+
+    // mrfVersion: 2 means responses were encrypted in V4 format
+    // workflowStep: 0 means the current incoming submission is at step 1
+    const MOCK_MRF_SUBMISSION_V2 = {
+      form: MOCK_FORM_ID,
+      encryptedContent: 'v4-encrypted-content',
+      version: 1,
+      mrfVersion: 2,
+      form_fields: SNAPSHOT_FORM_FIELDS,
+      form_logics: [],
+      workflow: SNAPSHOT_WORKFLOW,
+      workflowStep: 0,
+      _id: new ObjectId(),
+      created: new Date(),
+      modified: new Date(),
+      submissionType: 'Multirespondent',
+      authType: FormAuthType.NIL,
+      getWebhookView: jest.fn(),
+    } as any
+
+    // V4 decrypted responses (each entry has provenance)
+    const MOCK_V4_DECRYPTED_RESPONSES = {
+      [EDITABLE_FIELD_ID]: {
+        answer: 'original',
+        question: 'Editable Field',
+        provenance: {},
+      },
+      [NON_EDITABLE_FIELD_ID]: {
+        answer: 'locked-value',
+        question: 'Non-editable Field',
+        provenance: {},
+      },
+    }
+
+    // V3 responses produced by adaptV4ToV3
+    const MOCK_V3_CONVERTED_RESPONSES = {
+      [EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: 'original',
+      },
+      [NON_EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: 'locked-value',
+      },
+    }
+
+    const ALL_VISIBLE_FIELD_IDS = new Set([
+      EDITABLE_FIELD_ID,
+      NON_EDITABLE_FIELD_ID,
+    ])
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      jest.resetAllMocks()
+      ;(
+        formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
+      ).mockReturnValue({
+        responses: MOCK_V4_DECRYPTED_RESPONSES,
+        verified: {},
+        submissionSecretKey: '',
+      })
+
+      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
+
+      jest
+        .mocked(adaptV4ToV3)
+        .mockReturnValue(MOCK_V3_CONVERTED_RESPONSES as any)
+
+      jest
+        .mocked(LogicAdaptor.getVisibleFieldIdsV3)
+        .mockReturnValue(ok(ALL_VISIBLE_FIELD_IDS) as any)
+
+      jest
+        .mocked(LogicAdaptor.getLogicUnitPreventingSubmitV3)
+        .mockReturnValue(ok(undefined) as any)
+
+      jest
+        .mocked(MrfUtils.validateMrfFieldResponses)
+        .mockReturnValue(ok(MOCK_V3_CONVERTED_RESPONSES) as any)
+    })
+
+    it('should call adaptV4ToV3 and call next when previous mrfVersion is 2 and non-editable fields match', async () => {
+      const mockReq = createMockReq({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      mockReq.body.responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'updated',
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'locked-value',
+        },
+      }
+      mockReq.body.submissionSecretKey = 'submission-secret-key'
+      mockReq.formsg = {
+        formDef: {
+          _id: MOCK_FORM_ID,
+          form_fields: SNAPSHOT_FORM_FIELDS,
+          form_logics: [],
+          workflow: SNAPSHOT_WORKFLOW,
+        },
+        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+      }
+
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
+        MOCK_V4_DECRYPTED_RESPONSES,
+      )
+      expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('should reject submission when a non-editable field is tampered after V4-to-V3 conversion', async () => {
+      jest.mocked(adaptV4ToV3).mockReturnValue({
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'original',
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'locked-value',
+        },
+      } as any)
+
+      const mockReq = createMockReq({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      mockReq.body.responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'updated',
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: 'tampered', // differs from 'locked-value'
+        },
+      }
+      mockReq.body.submissionSecretKey = 'submission-secret-key'
+      mockReq.formsg = {
+        formDef: {
+          _id: MOCK_FORM_ID,
+          form_fields: SNAPSHOT_FORM_FIELDS,
+          form_logics: [],
+          workflow: SNAPSHOT_WORKFLOW,
+        },
+        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+      }
+
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
+        MOCK_V4_DECRYPTED_RESPONSES,
+      )
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(400)
     })
   })
 })
