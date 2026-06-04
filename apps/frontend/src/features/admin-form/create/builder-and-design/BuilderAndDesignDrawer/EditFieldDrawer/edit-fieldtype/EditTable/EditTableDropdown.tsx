@@ -30,7 +30,7 @@ export const EditTableDropdown = ({
         name={inputName}
         control={control}
         // Required so value exists (and does not crash the app) when column is swapped to Dropdown type.
-        defaultValue={[]}
+        defaultValue={['Option 1', 'Option 2']}
         rules={{
           required: REQUIRED_ERROR,
           validate: (value) => {
