@@ -231,7 +231,13 @@ const FieldRowContainer = ({
 
   const handleKeydown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.currentTarget !== e.target) {
+      const target = e.target as HTMLElement
+      const isEditable =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+
+      if (isEditable) {
         return
       }
 
