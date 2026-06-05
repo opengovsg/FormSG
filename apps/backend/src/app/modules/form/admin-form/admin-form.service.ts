@@ -22,6 +22,7 @@ import {
   FormFieldDto,
   FormLogoState,
   FormMetadata,
+  FormOrigin,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -494,7 +495,7 @@ type MultirespondentFormToCreate = Merge<
  * @returns err(Database*Error) on database errors
  */
 export const createForm = (
-  formParams: Merge<IForm, { admin: string }>,
+  formParams: Merge<IForm, { admin: string; formOrigin?: FormOrigin }>,
   workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
@@ -617,7 +618,7 @@ export const createForm = (
 // error handling will be done in parent createForm method.
 // Exported for testing
 export const createFormInWorkspaceTransaction = async (
-  formParams: Merge<IForm, { admin: string }>,
+  formParams: Merge<IForm, { admin: string; formOrigin?: FormOrigin }>,
   workspaceId: string,
 ): Promise<IFormDocument> => {
   let form: IFormDocument
@@ -635,7 +636,7 @@ export const createFormInWorkspaceTransaction = async (
 }
 
 export const processCreateFormInWorkspace = async (
-  formParams: Merge<IForm, { admin: string }>,
+  formParams: Merge<IForm, { admin: string; formOrigin?: FormOrigin }>,
   workspaceId: string,
   session?: ClientSession,
 ): Promise<IFormDocument> => {

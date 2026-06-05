@@ -23,6 +23,7 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormLogoState,
+  FormOrigin,
   FormResponseMode,
   FormSettings,
   FormWebhookResponseModeSettings,
@@ -143,6 +144,9 @@ const createFormValidator = celebrate({
           otherwise: Joi.forbidden(),
         }),
         workspaceId: Joi.string(),
+        // Optional form origin metadata captured during creation. Absent
+        // values default to `unspecified` at the schema layer.
+        formOrigin: Joi.string().valid(...Object.values(FormOrigin)),
       })
       .required()
       // Allow other form schema keys to be passed for form creation.

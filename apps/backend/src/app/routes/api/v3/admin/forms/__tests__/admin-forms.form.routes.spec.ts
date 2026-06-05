@@ -13,6 +13,7 @@ import {
   FormColorTheme,
   FormEndPage,
   FormLogoState,
+  FormOrigin,
   FormResponseMode,
   FormStartPage,
   FormStatus,
@@ -260,6 +261,66 @@ describe('admin-form.form.routes', () => {
           form_logics: [],
         }),
       )
+    })
+
+    it('should persist formOrigin when creating an MRF form with formOrigin', async () => {
+      // Arrange
+      const createMrfParams = {
+        form: {
+          responseMode: 'multirespondent',
+          title: 'mrf paper form test',
+          publicKey: 'some random public key',
+          formOrigin: FormOrigin.Paper,
+        },
+      }
+
+      // Act
+      const response = await request.post('/admin/forms').send(createMrfParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          responseMode: FormResponseMode.Multirespondent,
+          title: createMrfParams.form.title,
+          formOrigin: FormOrigin.Paper,
+        }),
+      )
+    })
+
+    it('should default formOrigin to unspecified when omitted on create', async () => {
+      // Arrange
+      const createParams = {
+        form: {
+          responseMode: 'encrypt',
+          title: 'no origin form test',
+          publicKey: 'some random public key',
+          emails: [],
+        },
+      }
+
+      // Act
+      const response = await request.post('/admin/forms').send(createParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.formOrigin).toEqual(FormOrigin.Unspecified)
+    })
+
+    it('should return 400 when formOrigin is not a valid origin', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          responseMode: 'encrypt',
+          title: 'invalid origin form test',
+          publicKey: 'some random public key',
+          emails: [],
+          formOrigin: 'not-a-real-origin',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
     })
 
     it('should return 400 when body.form.publicKey is missing', async () => {
