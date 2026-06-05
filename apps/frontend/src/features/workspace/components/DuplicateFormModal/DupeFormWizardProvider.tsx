@@ -48,6 +48,7 @@ export const useDupeFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -215,6 +216,7 @@ export const useDupeFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   }
 }
 

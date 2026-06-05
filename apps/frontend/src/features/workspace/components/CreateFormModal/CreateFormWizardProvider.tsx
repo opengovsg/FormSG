@@ -14,6 +14,7 @@ import {
   useCreateFormMutations,
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
+import { mapWizardAnswersToFormMetadata } from '~features/workspace/utils/formMetadata'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
@@ -65,6 +66,12 @@ export const useCommonFormWizardProvider = ({
     setValue('responseMode', FormResponseMode.Multirespondent)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
+  // Advance from the title screen to the paper-form question (post-cutover).
+  // handleSubmit gates the transition on title validation. Shared by the
+  // Create, Duplicate, and Use-Template wizards.
+  const goToPaperFormQuestion = formMethods.handleSubmit(() => {
+    setCurrentStep([CreateFormFlowStates.PaperFormQuestion, 1])
+  })
 
   return {
     formMethods,
@@ -75,6 +82,7 @@ export const useCommonFormWizardProvider = ({
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   }
 }
 
@@ -91,6 +99,7 @@ const useCreateFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   } = useCommonFormWizardProvider({
     defaultValues: {
       responseMode: FormResponseMode.Encrypt,
@@ -117,7 +126,10 @@ const useCreateFormWizardContext = (
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode, emails }) => {
+    ({ title, responseMode, emails, isPaperForm }) => {
+      const { formOrigin } = mapWizardAnswersToFormMetadata({
+        isPaperForm: isPaperForm ?? 'no',
+      })
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
           const defaultEmails = adminEmail ? [adminEmail] : []
@@ -128,6 +140,7 @@ const useCreateFormWizardContext = (
               publicKey: keypair.publicKey,
               workspaceId,
               emails: (emails ?? defaultEmails).filter(Boolean),
+              formOrigin,
             },
             {
               onSuccess: () => {
@@ -145,6 +158,7 @@ const useCreateFormWizardContext = (
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
+              formOrigin,
             },
             {
               onSuccess: () => {
@@ -229,6 +243,7 @@ const useCreateFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   }
 }
 

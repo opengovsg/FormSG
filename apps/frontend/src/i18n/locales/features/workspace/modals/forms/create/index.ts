@@ -50,6 +50,15 @@ export interface CreateFormModal {
     }
     create: string
   }
+  paperForm: {
+    title: string
+    options: {
+      yes: string
+      no: string
+    }
+    nextStep: string
+    required: string
+  }
   secretKey: {
     title: string
     message: {

@@ -30,6 +30,7 @@ import {
   EmailModeCreationScreen,
   EmailModeFeedbackScreen,
 } from './CreateFormModalContent/EmailModeFeedbackAndCreateScreen'
+import { PaperFormScreen } from './CreateFormModalContent/PaperFormScreen'
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import {
@@ -193,6 +194,27 @@ export const StorageModeAckScreen = () => {
           <CreateFormWizardProvider onClose={() => console.log('close modal')}>
             <ModalCloseButton />
             <SaveSecretKeyScreen useSaveSecretKeyHook={mockHook} />
+          </CreateFormWizardProvider>
+        </ModalContent>
+      </Modal>
+    </WorkspaceProvider>
+  )
+}
+
+export const PaperFormQuestion = () => {
+  return (
+    <WorkspaceProvider
+      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
+      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
+      setCurrentWorkspace={() => {
+        return
+      }}
+    >
+      <Modal isOpen onClose={() => console.log('close modal')} size="full">
+        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+          <CreateFormWizardProvider onClose={() => console.log('close modal')}>
+            <ModalCloseButton />
+            <PaperFormScreen />
           </CreateFormWizardProvider>
         </ModalContent>
       </Modal>

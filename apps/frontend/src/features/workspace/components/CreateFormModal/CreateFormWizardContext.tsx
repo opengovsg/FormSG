@@ -11,9 +11,12 @@ import {
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
 
+import { PaperFormAnswer } from '~features/workspace/utils/formMetadata'
+
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
+  PaperFormQuestion = 'paperFormQuestion',
   StorageModeDetails = 'storageModeDetails',
   EmailFeedback = 'emailFeedback',
   EmailModeCreation = 'emailModeCreation',
@@ -26,6 +29,8 @@ export interface CreateFormWizardInputProps {
   emails?: string[]
   // Storage form props
   storageAck?: boolean
+  // Form origin metadata: whether the form is currently a paper form.
+  isPaperForm?: PaperFormAnswer
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
@@ -52,6 +57,7 @@ export type CreateFormWizardContextReturn = {
   isMrfCutoverEnabled: boolean
   goToStorageModeDetails: () => void
   goToMrfDetails: () => void
+  goToPaperFormQuestion: () => void
 }
 
 export const CreateFormWizardContext = createContext<

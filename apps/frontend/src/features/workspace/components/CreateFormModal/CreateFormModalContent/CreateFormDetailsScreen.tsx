@@ -58,6 +58,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     hasMyInfoChildren,
     isMrfCutoverEnabled,
     goToStorageModeDetails,
+    goToPaperFormQuestion,
   } = useCreateFormWizard()
   const {
     control,
@@ -156,14 +157,22 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
-            onClick={handleCreateStorageModeOrMultirespondentForm}
+            // Post-cutover, the title screen leads into the paper-form question
+            // before the form is created; pre-cutover it creates directly.
+            onClick={
+              isMrfCutoverEnabled
+                ? goToPaperFormQuestion
+                : handleCreateStorageModeOrMultirespondentForm
+            }
             isFullWidth
             data-dd-action-name={getTrackingSubmissionActionName(
               responseModeValue,
             )}
           >
             <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.forms.create.details.create')}
+              {isMrfCutoverEnabled
+                ? t('features.workspace.modals.forms.create.paperForm.nextStep')
+                : t('features.workspace.modals.forms.create.details.create')}
             </Text>
           </Button>
         </Container>

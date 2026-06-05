@@ -13,6 +13,7 @@ import {
   EmailModeCreationScreen,
   EmailModeFeedbackScreen,
 } from './EmailModeFeedbackAndCreateScreen'
+import { PaperFormScreen } from './PaperFormScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
 /**
@@ -28,6 +29,9 @@ export const CreateFormModalContent = () => {
       <XMotionBox keyProp={currentStep} custom={direction}>
         {currentStep === CreateFormFlowStates.Details && (
           <CreateFormDetailsScreen />
+        )}
+        {currentStep === CreateFormFlowStates.PaperFormQuestion && (
+          <PaperFormScreen />
         )}
         {currentStep === CreateFormFlowStates.StorageModeDetails && (
           <CreateFormStorageModeScreen />

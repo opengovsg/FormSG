@@ -59,6 +59,15 @@ export const enSG: CreateFormModal = {
     },
     create: 'Create form',
   },
+  paperForm: {
+    title: 'Is this currently a paper form?',
+    options: {
+      yes: 'Yes',
+      no: 'No',
+    },
+    nextStep: 'Next step',
+    required: 'Please select an option to continue',
+  },
   secretKey: {
     title: 'Your form has been created! Download your Secret Key to proceed.',
     message: {

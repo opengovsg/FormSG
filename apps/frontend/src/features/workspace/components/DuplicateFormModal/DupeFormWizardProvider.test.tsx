@@ -56,6 +56,7 @@ describe('DupeFormWizardProvider', () => {
       isMrfCutoverEnabled: false,
       goToStorageModeDetails: vi.fn(),
       goToMrfDetails: vi.fn(),
+      goToPaperFormQuestion: vi.fn(),
     }))
 
     vi.mocked(usePreviewForm).mockReturnValue({

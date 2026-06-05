@@ -41,6 +41,7 @@ export const useUseTemplateWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -180,6 +181,7 @@ export const useUseTemplateWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToPaperFormQuestion,
   }
 }
 
