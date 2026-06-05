@@ -20,6 +20,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormOrigin,
   FormPaymentsChannel,
   FormPaymentsField,
   FormPermission,
@@ -763,6 +764,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
+      },
+
+      // Where the form's content originated before FormSG (e.g. a paper form).
+      // Defaults to `unspecified` so forms created before origin tracking
+      // existed (no value in the DB) read back as `unspecified`.
+      formOrigin: {
+        type: String,
+        enum: Object.values(FormOrigin),
+        default: FormOrigin.Unspecified,
       },
 
       status: {

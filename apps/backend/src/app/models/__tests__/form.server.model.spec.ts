@@ -15,6 +15,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormOrigin,
   FormPermission,
   FormResponseMode,
   FormStartPage,
@@ -113,6 +114,7 @@ const FORM_DEFAULTS = {
     isRetryEnabled: false,
   },
   status: 'PRIVATE',
+  formOrigin: FormOrigin.Unspecified,
   submissionLimit: null,
   goLinkSuffix: '',
   noSmsLimit: false,
@@ -188,6 +190,38 @@ describe('Form Model', () => {
         ])
         const expectedObject = merge({}, FORM_DEFAULTS, MOCK_FORM_PARAMS)
         expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should persist a form with an explicit formOrigin', async () => {
+        // Arrange + Act
+        const savedForm = await new Form({
+          ...MOCK_FORM_PARAMS,
+          formOrigin: FormOrigin.Paper,
+        }).save()
+
+        // Assert
+        expect(savedForm.formOrigin).toEqual(FormOrigin.Paper)
+      })
+
+      it('should default formOrigin to unspecified when absent', async () => {
+        // Arrange + Act
+        const savedForm = await new Form(MOCK_FORM_PARAMS).save()
+
+        // Assert
+        expect(savedForm.formOrigin).toEqual(FormOrigin.Unspecified)
+      })
+
+      it('should reject an invalid formOrigin value', async () => {
+        // Arrange + Act
+        const invalidForm = new Form({
+          ...MOCK_FORM_PARAMS,
+          formOrigin: 'not-a-real-origin',
+        })
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          mongoose.Error.ValidationError,
+        )
       })
 
       it('should create and save successfully with valid esrvcId', async () => {
