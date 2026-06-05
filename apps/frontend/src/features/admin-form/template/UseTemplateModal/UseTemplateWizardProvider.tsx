@@ -75,14 +75,14 @@ export const useUseTemplateWizardContext = (
       if (!formId) return
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
-          const cutoverDefaultEmails = adminEmail ? [adminEmail] : []
+          const defaultEmails = adminEmail ? [adminEmail] : []
           return useStorageModeFormTemplateMutation.mutate(
             {
               formIdToDuplicate: formId,
               title,
               responseMode,
               publicKey: keypair.publicKey,
-              emails: emails ? emails.filter(Boolean) : cutoverDefaultEmails,
+              emails: (emails ?? defaultEmails).filter(Boolean),
             },
             {
               onSuccess: () => {
@@ -153,7 +153,7 @@ export const useUseTemplateWizardContext = (
     handleSubmit((inputs) => {
       return useEmailModeFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
-        emails: inputs.emails.filter(Boolean),
+        emails: (inputs.emails ?? []).filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
       })

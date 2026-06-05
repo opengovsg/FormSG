@@ -120,14 +120,14 @@ const useCreateFormWizardContext = (
     ({ title, responseMode, emails }) => {
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
-          const cutoverDefaultEmails = user?.email ? [user.email] : []
+          const defaultEmails = adminEmail ? [adminEmail] : []
           return createStorageModeFormMutation.mutate(
             {
               title,
               responseMode,
               publicKey: keypair.publicKey,
               workspaceId,
-              emails: emails ? emails.filter(Boolean) : cutoverDefaultEmails,
+              emails: (emails ?? defaultEmails).filter(Boolean),
             },
             {
               onSuccess: () => {
@@ -200,7 +200,7 @@ const useCreateFormWizardContext = (
   const handleCreateEmailModeForm = () => {
     return handleSubmit((inputs) => {
       createEmailModeFormMutation.mutate({
-        emails: inputs.emails.filter(Boolean),
+        emails: (inputs.emails ?? []).filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
         workspaceId,
