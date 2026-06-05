@@ -111,6 +111,17 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
+/**
+ * Where a form's content originated before it existed in FormSG (e.g. it was
+ * previously a paper form). Recorded on every form at creation. Modelled as an
+ * open/extensible enum so future values (e.g. `digital-pdf`, `digital-word`,
+ * `digital-email`) can be added without a schema redesign.
+ */
+export enum FormOrigin {
+  Paper = 'paper',
+  Unspecified = 'unspecified',
+}
+
 export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
@@ -215,6 +226,12 @@ export interface FormBase {
   metadata?: FormMetadata
   hasMultiLang?: boolean
   supportedLanguages?: Language[]
+
+  /**
+   * Where the form's content originated before FormSG. Absent on forms created
+   * before origin tracking existed; such forms read back as `unspecified`.
+   */
+  formOrigin: FormOrigin
 }
 
 export interface EmailFormBase extends FormBase {
