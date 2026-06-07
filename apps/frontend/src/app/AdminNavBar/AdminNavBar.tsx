@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCommentDetail } from 'react-icons/bi'
-import { GoDotFill } from 'react-icons/go'
+// [whats-new drawer] preserved for future reuse
+// import { GoDotFill } from 'react-icons/go'
 import { useMutation } from 'react-query'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -17,12 +18,16 @@ import {
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import { delay } from 'lodash'
 
-import { SeenFlags } from 'formsg-shared/types'
-
+// [whats-new drawer] preserved for future reuse
+// import { SeenFlags } from 'formsg-shared/types'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
-import { FEATURE_REQUEST, FORM_GUIDE } from '~constants/links'
+import {
+  FEATURE_REQUEST,
+  FORM_GUIDE,
+  FORM_GUIDE_WHATS_NEW,
+} from '~constants/links'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
@@ -33,19 +38,21 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { getWogadLogoutUrl, logout } from '~services/AuthService'
-import Button from '~components/Button'
+// [whats-new drawer] preserved for future reuse
+// import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 
-import { SeenFlagsMapVersion } from '~features/user/constants'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
-import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
 import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
-import { getShowFeatureFlagLastSeen } from '~features/user/utils'
-import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
+// [whats-new drawer] preserved for future reuse
+// import { SeenFlagsMapVersion } from '~features/user/constants'
+// import { useUserMutations } from '~features/user/mutations'
+// import { getShowFeatureFlagLastSeen } from '~features/user/utils'
+// import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 import Menu from '../../components/Menu'
 
 const BrandSmallLogo = chakra(BrandMarkSvg)
@@ -89,60 +96,65 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
   )
 }
 
-interface WhatsNewNavBarTabProps {
-  onClick: () => void
-  shouldShowNotiifcation: boolean
-}
+// [whats-new drawer] Preserved for future reuse. The "What's new" tab now links
+// to the external What's New guide (FORM_GUIDE_WHATS_NEW) via the navLinks array
+// below, so the in-app drawer trigger (with notification dot) is no longer wired up. To restore
+// the drawer, uncomment this component, the disclosure/notification wiring and the
+// <WhatsNewDrawer /> render in AdminNavBar, and the related imports above.
+// interface WhatsNewNavBarTabProps {
+//   onClick: () => void
+//   shouldShowNotiifcation: boolean
+// }
 
-const WhatsNewNavBarTab = ({
-  onClick,
-  shouldShowNotiifcation,
-}: WhatsNewNavBarTabProps) => {
-  const isMobile = useIsMobile()
+// const WhatsNewNavBarTab = ({
+//   onClick,
+//   shouldShowNotiifcation,
+// }: WhatsNewNavBarTabProps) => {
+//   const isMobile = useIsMobile()
 
-  const { t } = useTranslation()
+//   const { t } = useTranslation()
 
-  const WHATS_NEW_LABEL = t('features.app.adminNavBar.whatsNew')
+//   const WHATS_NEW_LABEL = t('features.app.adminNavBar.whatsNew')
 
-  if (isMobile) {
-    return (
-      <Box position="relative">
-        <IconButton
-          variant="clear"
-          aria-label={WHATS_NEW_LABEL}
-          icon={<BxsRocket fontSize="1.25rem" color="primary.500" />}
-          onClick={onClick}
-        />
-        {shouldShowNotiifcation && (
-          <Icon
-            as={GoDotFill}
-            color="danger.500"
-            position="absolute"
-            ml="-15px"
-          />
-        )}
-      </Box>
-    )
-  }
+//   if (isMobile) {
+//     return (
+//       <Box position="relative">
+//         <IconButton
+//           variant="clear"
+//           aria-label={WHATS_NEW_LABEL}
+//           icon={<BxsRocket fontSize="1.25rem" color="primary.500" />}
+//           onClick={onClick}
+//         />
+//         {shouldShowNotiifcation && (
+//           <Icon
+//             as={GoDotFill}
+//             color="danger.500"
+//             position="absolute"
+//             ml="-15px"
+//           />
+//         )}
+//       </Box>
+//     )
+//   }
 
-  return (
-    <Box position="relative">
-      <Button
-        w="fit-content"
-        variant="link"
-        color="secondary.500"
-        onClick={onClick}
-        aria-label={WHATS_NEW_LABEL}
-        fontWeight="500"
-      >
-        {WHATS_NEW_LABEL}
-      </Button>
-      {shouldShowNotiifcation && (
-        <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
-      )}
-    </Box>
-  )
-}
+//   return (
+//     <Box position="relative">
+//       <Button
+//         w="fit-content"
+//         variant="link"
+//         color="secondary.500"
+//         onClick={onClick}
+//         aria-label={WHATS_NEW_LABEL}
+//         fontWeight="500"
+//       >
+//         {WHATS_NEW_LABEL}
+//       </Button>
+//       {shouldShowNotiifcation && (
+//         <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
+//       )}
+//     </Box>
+//   )
+// }
 
 export interface AdminNavBarProps {
   /* This prop is only for testing to show expanded menu state */
@@ -150,8 +162,10 @@ export interface AdminNavBarProps {
 }
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
-  const { user, isLoading: isUserLoading, removeQuery } = useUser()
-  const { updateLastSeenFlagMutation } = useUserMutations()
+  const { user, removeQuery } = useUser()
+  // [whats-new drawer] preserved for future reuse
+  // (also re-add `isLoading: isUserLoading` to the useUser() destructure above)
+  // const { updateLastSeenFlagMutation } = useUserMutations()
   const toast = useToast({ status: 'success', isClosable: true })
 
   const growthbook = useGrowthBook()
@@ -167,7 +181,8 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     }
   }, [growthbook, user?.email, user?.agency?.shortName])
 
-  const whatsNewFeatureDrawerDisclosure = useDisclosure()
+  // [whats-new drawer] preserved for future reuse
+  // const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
@@ -206,30 +221,31 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
     onOpen: onTransferOwnershipModalOpen,
   } = useDisclosure()
 
-  const shouldShowFeatureUpdateNotification = useMemo(() => {
-    if (isUserLoading || !user) return false
-    return getShowFeatureFlagLastSeen(
-      user,
-      SeenFlags.LastSeenFeatureUpdateVersion,
-    )
-  }, [isUserLoading, user])
+  // [whats-new drawer] preserved for future reuse
+  // const shouldShowFeatureUpdateNotification = useMemo(() => {
+  //   if (isUserLoading || !user) return false
+  //   return getShowFeatureFlagLastSeen(
+  //     user,
+  //     SeenFlags.LastSeenFeatureUpdateVersion,
+  //   )
+  // }, [isUserLoading, user])
 
-  const onWhatsNewDrawerOpen = useCallback(() => {
-    if (isUserLoading || !user) return
-    if (shouldShowFeatureUpdateNotification) {
-      updateLastSeenFlagMutation.mutateAsync({
-        version: SeenFlagsMapVersion.lastSeenFeatureUpdateVersion,
-        flag: SeenFlags.LastSeenFeatureUpdateVersion,
-      })
-    }
-    whatsNewFeatureDrawerDisclosure.onOpen()
-  }, [
-    isUserLoading,
-    updateLastSeenFlagMutation,
-    user,
-    whatsNewFeatureDrawerDisclosure,
-    shouldShowFeatureUpdateNotification,
-  ])
+  // const onWhatsNewDrawerOpen = useCallback(() => {
+  //   if (isUserLoading || !user) return
+  //   if (shouldShowFeatureUpdateNotification) {
+  //     updateLastSeenFlagMutation.mutateAsync({
+  //       version: SeenFlagsMapVersion.lastSeenFeatureUpdateVersion,
+  //       flag: SeenFlags.LastSeenFeatureUpdateVersion,
+  //     })
+  //   }
+  //   whatsNewFeatureDrawerDisclosure.onOpen()
+  // }, [
+  //   isUserLoading,
+  //   updateLastSeenFlagMutation,
+  //   user,
+  //   whatsNewFeatureDrawerDisclosure,
+  //   shouldShowFeatureUpdateNotification,
+  // ])
 
   // Emergency contact modal appears after the rollout announcement modal
   useEffect(() => {
@@ -288,6 +304,13 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       href: FORM_GUIDE,
       MobileIcon: BxsHelpCircle,
     },
+    // [whats-new drawer] "What's new" now links to the external What's New
+    // guide instead of opening the in-app drawer (preserved for future reuse).
+    {
+      label: t('features.app.adminNavBar.whatsNew'),
+      href: FORM_GUIDE_WHATS_NEW,
+      MobileIcon: BxsRocket,
+    },
   ]
 
   return (
@@ -306,10 +329,11 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           {navLinks.map((link, index) => (
             <AdminNavBarLink key={index} {...link} />
           ))}
-          <WhatsNewNavBarTab
+          {/* [whats-new drawer] preserved for future reuse */}
+          {/* <WhatsNewNavBarTab
             onClick={onWhatsNewDrawerOpen}
             shouldShowNotiifcation={shouldShowFeatureUpdateNotification}
-          />
+          /> */}
           <AvatarMenu
             name={user?.email}
             menuUsername={user?.email}
@@ -332,10 +356,11 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           </AvatarMenu>
         </HStack>
       </AdminNavBar.Container>
-      <WhatsNewDrawer
+      {/* [whats-new drawer] preserved for future reuse */}
+      {/* <WhatsNewDrawer
         isOpen={whatsNewFeatureDrawerDisclosure.isOpen}
         onClose={whatsNewFeatureDrawerDisclosure.onClose}
-      />
+      /> */}
       <EmergencyContactModal
         onClose={onContactModalClose}
         isOpen={isContactModalOpen}
