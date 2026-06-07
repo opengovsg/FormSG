@@ -80,6 +80,7 @@ const ShortTextColumnCell = ({
           colorScheme={`theme-${colorTheme}`}
           aria-labelledby={schema._id}
           isHighContrast={isHighContrast}
+          title={isDisabled ? field.value : undefined}
           {...field}
         />
       )}
