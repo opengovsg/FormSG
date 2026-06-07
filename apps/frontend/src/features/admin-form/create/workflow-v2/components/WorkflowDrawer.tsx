@@ -27,24 +27,37 @@ import {
   FieldAssignPanel,
   StepFocusFieldPanel,
 } from './AssignFieldsPanel'
+import { PhaseProgressBar } from './PhaseProgressBar'
 
 const DrawerContent = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const pendingInsertIndex = useWorkflowBuilderStore(pendingInsertIndexSelector)
 
   switch (focusState.type) {
-    case 'phase':
-      if (focusState.phase === 'add_steps') {
-        if (pendingInsertIndex !== null) return <FocusedInsertPanel />
-        return <AddStepsPanel />
+    case 'phase': {
+      // FocusedInsertPanel is a sub-state of add_steps, no progress bar
+      if (focusState.phase === 'add_steps' && pendingInsertIndex !== null) {
+        return <FocusedInsertPanel />
       }
-      if (focusState.phase === 'add_respondents') {
-        return <AddRespondentsPanel />
-      }
-      if (focusState.phase === 'assign_fields') {
-        return <AssignFieldsPanel />
-      }
-      return <SummaryPanel />
+
+      const phasePanel =
+        focusState.phase === 'add_steps' ? (
+          <AddStepsPanel />
+        ) : focusState.phase === 'add_respondents' ? (
+          <AddRespondentsPanel />
+        ) : focusState.phase === 'assign_fields' ? (
+          <AssignFieldsPanel />
+        ) : (
+          <SummaryPanel />
+        )
+
+      return (
+        <>
+          <PhaseProgressBar phase={focusState.phase} />
+          {phasePanel}
+        </>
+      )
+    }
     case 'step_naming':
       return <StepNamingForm />
     case 'step_edit':

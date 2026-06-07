@@ -7,14 +7,15 @@ import {
   DEFAULT_RESPONDENTS,
   DEFAULT_STEPS,
 } from './mockData'
-import type {
-  FocusState,
-  FormField,
-  Phase,
-  PhaseStatus,
-  Respondent,
-  WorkflowStep,
-  WorkflowStore,
+import {
+  type FocusState,
+  type FormField,
+  type Phase,
+  PHASE_ORDER,
+  type PhaseStatus,
+  type Respondent,
+  type WorkflowStep,
+  type WorkflowStore,
 } from './types'
 
 const STORAGE_KEY_PREFIX = 'mrf_workflow_state_'
@@ -134,15 +135,9 @@ export function phaseStatus(state: WorkflowStore, phase: Phase): PhaseStatus {
   if (done.includes(phase)) return 'done'
 
   // A phase is "in progress" if the phase before it is done (or it's the first phase)
-  const order: Phase[] = [
-    'add_steps',
-    'add_respondents',
-    'create_fields',
-    'assign_fields',
-  ]
-  const idx = order.indexOf(phase)
+  const idx = PHASE_ORDER.indexOf(phase)
   if (idx === 0) return 'in_progress'
-  if (done.includes(order[idx - 1])) return 'in_progress'
+  if (done.includes(PHASE_ORDER[idx - 1])) return 'in_progress'
 
   return 'not_started'
 }
@@ -190,6 +185,37 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     setFocus: (focusState) => set({ focusState }),
     setPendingInsertIndex: (index) => set({ pendingInsertIndex: index }),
     setPreviewStepName: (name) => set({ previewStepName: name }),
+
+    // Sprint 13 actions (linear wizard navigation)
+    nextPhase: () =>
+      set((state) => {
+        if (state.focusState.type !== 'phase') return state
+        const currentIdx = PHASE_ORDER.indexOf(state.focusState.phase)
+        if (currentIdx === -1 || currentIdx >= PHASE_ORDER.length - 1) {
+          return { focusState: { type: 'summary' } as FocusState }
+        }
+        return {
+          focusState: {
+            type: 'phase',
+            phase: PHASE_ORDER[currentIdx + 1],
+          } as FocusState,
+        }
+      }),
+
+    prevPhase: () =>
+      set((state) => {
+        if (state.focusState.type !== 'phase') return state
+        const currentIdx = PHASE_ORDER.indexOf(state.focusState.phase)
+        if (currentIdx <= 0) {
+          return { focusState: { type: 'summary' } as FocusState }
+        }
+        return {
+          focusState: {
+            type: 'phase',
+            phase: PHASE_ORDER[currentIdx - 1],
+          } as FocusState,
+        }
+      }),
 
     toggleProgressCard: () =>
       set((state) => ({

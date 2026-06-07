@@ -48,10 +48,12 @@ export const FormFieldDrawerActions = ({
   const { t } = useTranslation()
   const isMobile = useIsMobile()
 
+  const hasWorkflowSteps = useWorkflowBuilderStore(stepsSelector).length > 1
+
   return (
     <Box>
       <WorkflowFieldAssignment />
-      <Divider mx="-1.5rem" w="auto" />
+      {hasWorkflowSteps && <Divider mx="-1.5rem" w="auto" />}
       <Stack
         direction={{ base: 'column', md: 'row-reverse' }}
         justifyContent="end"

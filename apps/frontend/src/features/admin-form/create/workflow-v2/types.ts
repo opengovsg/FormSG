@@ -57,6 +57,21 @@ export type Phase =
 
 export type PhaseStatus = 'not_started' | 'in_progress' | 'done'
 
+// Phase sequence for wizard navigation
+export const PHASE_ORDER: Phase[] = [
+  'add_steps',
+  'add_respondents',
+  'create_fields',
+  'assign_fields',
+]
+
+export const PHASE_TITLES: Record<Phase, string> = {
+  add_steps: 'Add steps',
+  add_respondents: 'Add respondents',
+  create_fields: 'Create fields',
+  assign_fields: 'Assign fields',
+}
+
 // Focus state (discriminated union)
 export type FocusState =
   | { type: 'summary' }
@@ -134,6 +149,10 @@ export type WorkflowStore = {
 
   // Actions - Store scoping
   loadForForm: (formId: string, initialFocus?: FocusState) => void
+
+  // Actions - Sprint 13 (linear wizard navigation)
+  nextPhase: () => void
+  prevPhase: () => void
 
   // Actions - Sprint 4
   assignField: (stepId: string, fieldId: string) => void

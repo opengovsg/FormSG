@@ -30,6 +30,7 @@ export const AddStepsPanel = (): JSX.Element => {
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
+  const nextPhase = useWorkflowBuilderStore((s) => s.nextPhase)
   const toggleStatusTracking = useWorkflowBuilderStore(
     (s) => s.toggleStatusTracking,
   )
@@ -148,11 +149,11 @@ export const AddStepsPanel = (): JSX.Element => {
           </Flex>
         )}
 
-        {/* CTA - flows after content */}
+        {/* CTA - wizard navigation */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
-          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
-            {hasMultipleSteps ? 'Done adding steps' : 'Done'}
+          <Button variant="outline" colorScheme="primary" onClick={nextPhase}>
+            Next
           </Button>
         </Flex>
       </Box>

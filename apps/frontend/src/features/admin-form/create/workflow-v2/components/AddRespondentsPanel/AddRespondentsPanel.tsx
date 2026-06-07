@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiLeftArrowAlt, BiPlus } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -7,13 +8,22 @@ import {
   Flex,
   Icon,
   IconButton,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
   Text,
 } from '@chakra-ui/react'
 
+import { ModalCloseButton } from '~components/Modal'
+
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
 import {
+  fieldsSelector,
   respondentsSelector,
   setFocusSelector,
   useWorkflowBuilderStore,
@@ -27,14 +37,45 @@ const deletingRespondentIdSelector = (s: {
 
 export const AddRespondentsPanel = (): JSX.Element => {
   const respondents = useWorkflowBuilderStore(respondentsSelector)
+  const fields = useWorkflowBuilderStore(fieldsSelector)
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const deletingRespondentId = useWorkflowBuilderStore(
     deletingRespondentIdSelector,
   )
+  const { formId } = useParams()
+  const [showCreateFieldsModal, setShowCreateFieldsModal] = useState(false)
+
+  // Check if user has content fields (beyond respondent-linked ones)
+  const hasContentFields = useMemo(() => {
+    const respondentLinkedFieldIds = new Set(
+      respondents.map((r) => r.linkedFieldId).filter(Boolean),
+    )
+    return fields.some((f) => !respondentLinkedFieldIds.has(f.id))
+  }, [fields, respondents])
 
   const handleBack = useCallback(() => {
     setFocus({ type: 'summary' })
   }, [setFocus])
+
+  const handlePrevPhase = useCallback(() => {
+    setFocus({ type: 'phase', phase: 'add_steps' })
+  }, [setFocus])
+
+  const handleNext = useCallback(() => {
+    if (hasContentFields) {
+      setFocus({ type: 'phase', phase: 'assign_fields' })
+    } else {
+      setShowCreateFieldsModal(true)
+    }
+  }, [hasContentFields, setFocus])
+
+  const handleCreateFields = useCallback(() => {
+    setShowCreateFieldsModal(false)
+    setFocus({ type: 'summary' })
+    if (formId) {
+      window.open(`/admin/form/${formId}`, '_blank')
+    }
+  }, [setFocus, formId])
 
   const handleAddNewRespondent = useCallback(() => {
     setFocus({ type: 'new_respondent' })
@@ -139,14 +180,57 @@ export const AddRespondentsPanel = (): JSX.Element => {
           Add a new respondent
         </Button>
 
-        {/* CTA */}
+        {/* CTA - wizard navigation */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
-        <Flex justify="flex-end" py="1rem">
-          <Button variant="outline" colorScheme="primary" onClick={handleBack}>
-            Done adding respondents
+        <Flex justify="flex-end" py="1rem" gap="0.5rem">
+          <Button
+            variant="clear"
+            colorScheme="primary"
+            onClick={handlePrevPhase}
+          >
+            Previous
+          </Button>
+          <Button variant="outline" colorScheme="primary" onClick={handleNext}>
+            Next
           </Button>
         </Flex>
       </Box>
+
+      {/* Create fields modal */}
+      <Modal
+        isOpen={showCreateFieldsModal}
+        onClose={() => setShowCreateFieldsModal(false)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700" pr="4rem">
+            Create fields first
+          </ModalHeader>
+          <ModalBody color="secondary.500" textStyle="body-2">
+            You haven&apos;t created any fields yet. Create fields in the form
+            builder before assigning them to workflow steps.
+          </ModalBody>
+          <ModalFooter>
+            <Stack
+              spacing="1rem"
+              w="100%"
+              direction={{ base: 'column', md: 'row-reverse' }}
+            >
+              <Button colorScheme="primary" onClick={handleCreateFields}>
+                Create fields
+              </Button>
+              <Button
+                colorScheme="secondary"
+                variant="clear"
+                onClick={() => setShowCreateFieldsModal(false)}
+              >
+                Go back
+              </Button>
+            </Stack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   )
 }

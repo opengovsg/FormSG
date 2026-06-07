@@ -178,11 +178,20 @@ export const AssignFieldsPanel = (): JSX.Element => {
           </>
         )}
 
-        {/* CTA */}
+        {/* CTA - wizard navigation */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
-        <Flex justify="flex-end" py="1rem">
+        <Flex justify="flex-end" py="1rem" gap="0.5rem">
+          <Button
+            variant="clear"
+            colorScheme="primary"
+            onClick={() =>
+              setFocus({ type: 'phase', phase: 'add_respondents' })
+            }
+          >
+            Previous
+          </Button>
           <Button variant="outline" colorScheme="primary" onClick={handleBack}>
-            Done assigning fields
+            Done
           </Button>
         </Flex>
       </Box>

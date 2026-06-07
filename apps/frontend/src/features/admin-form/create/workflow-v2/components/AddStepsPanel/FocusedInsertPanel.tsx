@@ -43,7 +43,7 @@ export const FocusedInsertPanel = (): JSX.Element => {
 
   const handleDone = useCallback(() => {
     setPendingInsertIndex(null)
-    setFocus({ type: 'summary' })
+    setFocus({ type: 'phase', phase: 'add_steps' })
   }, [setFocus, setPendingInsertIndex])
 
   const handleStepTypeClick = useCallback(
