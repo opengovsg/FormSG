@@ -92,6 +92,13 @@ const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
+const paymentInvalidSettingsRouteError = {
+  statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+  errorMessage:
+    "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+  errorMessageKey:
+    'features.publicForm.backendErrors.submission.payment.invalidSettings',
+}
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
@@ -472,10 +479,7 @@ const _createPaymentSubmission = async ({
       message: 'Error when creating payment: amount is missing',
       meta: logMeta,
     })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-    })
+    return sendRouteError(res, paymentInvalidSettingsRouteError)
   }
 
   const paymentMinAmount =
@@ -490,10 +494,7 @@ const _createPaymentSubmission = async ({
       message: 'Error when creating payment: amount is not within bounds',
       meta: logMeta,
     })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-    })
+    return sendRouteError(res, paymentInvalidSettingsRouteError)
   }
   const paymentReceiptEmail =
     encryptedPayload.paymentReceiptEmail?.toLowerCase()
@@ -503,9 +504,9 @@ const _createPaymentSubmission = async ({
         'Error when creating payment: payment receipt email not provided.',
       meta: logMeta,
     })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    return sendRouteError(res, {
+      ...paymentInvalidSettingsRouteError,
+      statusCode: StatusCodes.BAD_REQUEST,
     })
   }
 
@@ -542,9 +543,12 @@ const _createPaymentSubmission = async ({
       error: err,
     })
     // Block the submission so that user can try to resubmit
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.BAD_REQUEST,
+      errorMessage:
         'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.pendingSubmissionSaveFailed',
     })
   }
 
@@ -595,9 +599,12 @@ const _createPaymentSubmission = async ({
       error: err,
     })
     // Return a 502 error here since the issue was with Stripe.
-    return res.status(StatusCodes.BAD_GATEWAY).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.BAD_GATEWAY,
+      errorMessage:
         'There was a problem creating the payment intent. Please try again.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.intentCreateFailed',
     })
   }
 
@@ -645,9 +652,12 @@ const _createPaymentSubmission = async ({
     }
     // Regardless of whether the cancellation succeeded or failed, block the
     // submission so that user can try to resubmit
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message:
+    return sendRouteError(res, {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      errorMessage:
         'There was a problem updating the payment document. Please try again.',
+      errorMessageKey:
+        'features.publicForm.backendErrors.submission.payment.documentUpdateFailed',
     })
   }
 

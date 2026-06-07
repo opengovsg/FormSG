@@ -74,6 +74,18 @@ export const enSG: PublicForm = {
         expectedResponseNotFound:
           'Response for the Yes/No field for this approval step is not found',
       },
+      payment: {
+        invalidSettings:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+        pendingSubmissionSaveFailed:
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+        intentCreateFailed:
+          'There was a problem creating the payment intent. Please try again.',
+        documentUpdateFailed:
+          'There was a problem updating the payment document. Please try again.',
+        settingsUpdated:
+          'The payment settings in this form have been updated. Please refresh and try again.',
+      },
       generic: 'Something went wrong. Please try again.',
     },
   },

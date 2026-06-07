@@ -53,6 +53,13 @@ export interface PublicForm {
         invalidWorkflowType: string
         expectedResponseNotFound: string
       }
+      payment: {
+        invalidSettings: string
+        pendingSubmissionSaveFailed: string
+        intentCreateFailed: string
+        documentUpdateFailed: string
+        settingsUpdated: string
+      }
       generic: string
     }
   }

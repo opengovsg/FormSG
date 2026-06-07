@@ -312,9 +312,12 @@ export const validatePaymentSubmission = async (
         meta: logMeta,
       })
 
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
           'The payment settings in this form have been updated. Please refresh and try again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.payment.settingsUpdated',
       })
     }
     return PaymentsService.validatePaymentProducts(

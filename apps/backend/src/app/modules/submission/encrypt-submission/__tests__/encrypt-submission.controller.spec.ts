@@ -10,6 +10,8 @@ import {
   ErrorCode,
   FormAuthType,
   MyInfoAttribute,
+  PaymentChannel,
+  PaymentType,
 } from 'formsg-shared/types'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
@@ -1375,6 +1377,59 @@ describe('encrypt-submission.controller', () => {
         performEncryptPostSubmissionActionsSpy.mock.calls[0][0]
           .respondentEmails,
       ).toEqual(mockRespondentEmails)
+    })
+  })
+
+  describe('payment submissions', () => {
+    it('should return message key when payment settings are invalid', async () => {
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: new ObjectId().toHexString() },
+          body: { responses: [] },
+        }),
+        {
+          formsg: {
+            filteredResponses: [],
+            respondentEmails: [],
+            responseMetadata: {},
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+              payments: {},
+              paymentReceiptEmail: 'test@example.com',
+            },
+            formDef: {
+              _id: new ObjectId(),
+            },
+            encryptedFormDef: {
+              _id: new ObjectId(),
+              authType: FormAuthType.NIL,
+              isSubmitterIdCollectionEnabled: false,
+              getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+              payments_field: {
+                enabled: true,
+                payment_type: PaymentType.Fixed,
+                gst_enabled: false,
+              },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'acct_mock',
+              },
+            },
+          } as unknown as FormCompleteDto,
+        },
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message:
+          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+        messageKey:
+          'features.publicForm.backendErrors.submission.payment.invalidSettings',
+      })
     })
   })
 })
