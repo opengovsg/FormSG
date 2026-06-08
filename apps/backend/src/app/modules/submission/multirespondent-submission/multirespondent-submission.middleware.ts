@@ -835,7 +835,7 @@ export const encryptSubmission = async (
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
-  // Verify the encrypted content can be round-tripped back to V4 before saving
+  // Verify the encrypted content can be decrypted using the generated submission secret key before saving
   const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
     submissionSecretKey,
     { encryptedContent, version: req.body.version },
