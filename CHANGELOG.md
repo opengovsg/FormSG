@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.26.0](https://github.com/opengovsg/formsg/compare/v7.25.0...v7.26.0) (2026-06-08)
+
+
+### Features
+
+* **frontend:** link "What's new" to Gitbook guide (#9557) ([#9557](https://github.com/opengovsg/formsg/commit/319707fcc7c56e179a02dd2238edc0eaae98328f))
+
+
+### Bug Fixes
+
+* **frontend:** show "(optional)" beside Description for input fields (#9562) ([#9562](https://github.com/opengovsg/formsg/commit/972d81cd0c8d9402bedf93afb48976fe3011e0fb))
+
 ## [7.25.0](https://github.com/opengovsg/formsg/compare/v7.24.0...v7.25.0) (2026-06-08)
 
 
