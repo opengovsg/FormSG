@@ -102,16 +102,17 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       bg="white"
       pos="sticky"
       top={0}
-      px="0.5rem"
+      px="0.75rem"
       py="1rem"
       borderRight="1px solid"
       borderColor="neutral.300"
       direction="column"
       justifyContent="space-between"
     >
-      <Stack spacing="0.5rem">
+      <Stack spacing="1rem">
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.fields.builder.addFields')}
+          shortLabel="Fields"
           trackingLabel="create_builder.drawer_tab.add_fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
@@ -120,6 +121,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.headerAndInstructions.title')}
+          shortLabel="Header"
           trackingLabel="create_builder.drawer_tab.edit_header"
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
@@ -128,6 +130,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.logic.addLogicBtn')}
+          shortLabel="Logic"
           trackingLabel="create_builder.drawer_tab.add_logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
@@ -136,6 +139,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
+          shortLabel="End Page"
           trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
@@ -144,9 +148,9 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         {data?.responseMode === FormResponseMode.Multirespondent && (
           <>
-            <Divider />
             <DrawerTabIcon
               label={t('features.adminForm.sidebar.workflow.title')}
+              shortLabel="Workflow"
               trackingLabel="create_builder.drawer_tab.add_workflow"
               icon={<MultiParty fontSize="1.5rem" />}
               onClick={handleDrawerWorkflowClick}

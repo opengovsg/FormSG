@@ -19,6 +19,7 @@ export const PUBLICFORM_ROUTE = '/:formId'
 export const USE_TEMPLATE_REDIRECT_SUBROUTE = 'use-template'
 export const MONGODB_ID_REGEX = /^([a-fA-F0-9]{24})$/
 
+export const CREATE_FORM_V2_ROUTE = '/create'
 export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */
 export const ADMINFORM_BUILD_SUBROUTE = ''

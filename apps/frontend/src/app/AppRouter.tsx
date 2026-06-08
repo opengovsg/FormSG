@@ -17,6 +17,7 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
   ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
+  CREATE_FORM_V2_ROUTE,
   DASHBOARD_ROUTE,
   EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
@@ -68,6 +69,10 @@ const UseTemplateRedirectPage = loadable(
 const PublicFormPage = loadable(
   () => import('~features/public-form/PublicFormPage'),
 )
+const CreateFormFlowV2Page = loadable(
+  () =>
+    import('~features/workspace/components/CreateFormFlowV2/CreateFormFlowV2Page'),
+)
 const WorkspacePage = loadable(() => import('~features/workspace'))
 const LandingPage = loadable(() => import('~pages/Landing/Home'))
 const LandingPaymentsPage = loadable(() => import('~pages/Landing/Payments'))
@@ -110,6 +115,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={DASHBOARD_ROUTE}
           element={<PrivateElement element={<WorkspacePage />} />}
+        />
+        <Route
+          path={CREATE_FORM_V2_ROUTE}
+          element={<PrivateElement element={<CreateFormFlowV2Page />} />}
         />
         <Route
           path={LOGIN_ROUTE}
