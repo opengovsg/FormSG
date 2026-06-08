@@ -14,6 +14,7 @@ import { CheckboxFieldValues } from '~templates/Field'
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
+  Origin = 'origin',
   StorageModeDetails = 'storageModeDetails',
   EmailFeedback = 'emailFeedback',
   EmailModeCreation = 'emailModeCreation',
@@ -52,6 +53,7 @@ export type CreateFormWizardContextReturn = {
   isMrfCutoverEnabled: boolean
   goToStorageModeDetails: () => void
   goToMrfDetails: () => void
+  goToLanding: () => void
 }
 
 export const CreateFormWizardContext = createContext<

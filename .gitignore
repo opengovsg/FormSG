@@ -79,4 +79,4 @@ coverage/
 
 # Scratch files (usually used for AI state/context handoff)
 # =======
-.scratch 
+.scratch .explore-ui/

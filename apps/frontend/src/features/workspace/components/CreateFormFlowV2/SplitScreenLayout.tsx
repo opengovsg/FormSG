@@ -1,8 +1,8 @@
 import { Box, Flex } from '@chakra-ui/react'
 
-export type WizardStep = 'name' | 'secretKey'
+export type WizardStep = 'name' | 'origin' | 'secretKey'
 
-const STEP_ORDER: WizardStep[] = ['name', 'secretKey']
+const STEP_ORDER: WizardStep[] = ['name', 'origin', 'secretKey']
 
 interface ProgressBarProps {
   currentStep: WizardStep

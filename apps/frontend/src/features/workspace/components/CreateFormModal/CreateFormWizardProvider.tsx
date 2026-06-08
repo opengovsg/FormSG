@@ -65,6 +65,9 @@ export const useCommonFormWizardProvider = ({
     setValue('responseMode', FormResponseMode.Multirespondent)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
+  const goToLanding = () => {
+    setCurrentStep([CreateFormFlowStates.Landing, 1])
+  }
 
   return {
     formMethods,
@@ -75,6 +78,7 @@ export const useCommonFormWizardProvider = ({
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToLanding,
   }
 }
 
@@ -91,6 +95,7 @@ const useCreateFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToLanding,
   } = useCommonFormWizardProvider({
     defaultValues: {
       responseMode: FormResponseMode.Encrypt,
@@ -131,7 +136,7 @@ const useCreateFormWizardContext = (
             },
             {
               onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
+                setCurrentStep([CreateFormFlowStates.Origin, 1])
               },
             },
           )
@@ -148,7 +153,7 @@ const useCreateFormWizardContext = (
             },
             {
               onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
+                setCurrentStep([CreateFormFlowStates.Origin, 1])
               },
             },
           )
@@ -229,6 +234,7 @@ const useCreateFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToLanding,
   }
 }
 

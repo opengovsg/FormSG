@@ -11,6 +11,8 @@ import { useCreateFormMutations } from '~features/workspace/mutations'
 
 import { FormNamePreview } from './FormNamePreview'
 import { FormNameStep } from './FormNameStep'
+import { FormOriginValue } from './OriginSelection'
+import { OriginStep } from './OriginStep'
 import { SecretKeyStep } from './SecretKeyStep'
 import { SplitScreenLayout, type WizardStep } from './SplitScreenLayout'
 
@@ -22,6 +24,10 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<WizardStep>('name')
   const [formId, setFormId] = useState<string>('')
+  const [_originData, setOriginData] = useState<{
+    selected: FormOriginValue[]
+    othersText: string
+  }>({ selected: [], othersText: '' })
 
   const keypair = useMemo(() => formsgSdk.crypto.generate(), [])
 
@@ -44,7 +50,7 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
       {
         onSuccess: (data) => {
           setFormId(data._id)
-          setCurrentStep('secretKey')
+          setCurrentStep('origin')
         },
       },
     )
@@ -53,6 +59,15 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
   const handleCancel = useCallback(() => {
     navigate(DASHBOARD_ROUTE)
   }, [navigate])
+
+  const handleOriginNext = useCallback(
+    (selected: FormOriginValue[], othersText: string) => {
+      setOriginData({ selected, othersText })
+      // TODO: persist origin data to form metadata via API
+      setCurrentStep('secretKey')
+    },
+    [],
+  )
 
   const handleSecretKeyNext = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}`)
@@ -71,6 +86,8 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
             isLoading={createMultirespondentModeFormMutation.isLoading}
           />
         )
+      case 'origin':
+        return <OriginStep onNext={handleOriginNext} />
       case 'secretKey':
         return (
           <SecretKeyStep
@@ -88,7 +105,7 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
   const rightPanel = (() => {
     switch (currentStep) {
       case 'name':
-        return <FormNamePreview title={title} />
+      case 'origin':
       case 'secretKey':
         return <FormNamePreview title={title} />
       default:
