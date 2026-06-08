@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.25.0](https://github.com/opengovsg/formsg/compare/v7.24.0...v7.25.0) (2026-06-08)
+
+
+### Features
+
+* **frontend:** remove beta badge from save draft toggle (#9556) ([#9556](https://github.com/opengovsg/formsg/commit/d616a9b816ac3bfcdb44744c0cd906a60984c60b))
+* **mrf-cutover:** default DuplicateFormModal to MRF with storage-mode escape hatch (5/6) (#9466) ([#9466](https://github.com/opengovsg/formsg/commit/0be568327e716eca49248afc43655f9ba845cdaa))
+
+
+### Chores
+
+* add observability for v4 encryption failures (#9559) ([#9559](https://github.com/opengovsg/formsg/commit/34b23d9c4e722adf40c7875042dba5a710362ebe))
+
 ## [7.24.0](https://github.com/opengovsg/formsg/compare/v7.23.0...v7.24.0) (2026-06-04)
 
 
