@@ -33,15 +33,8 @@ export const StepFocusFieldPanel = (): JSX.Element => {
   const fields = useWorkflowBuilderStore(fieldsSelector)
   const assignField = useWorkflowBuilderStore((s) => s.assignField)
   const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
-  const assignApprovalField = useWorkflowBuilderStore(
-    (s) => s.assignApprovalField,
-  )
-  const unassignApprovalField = useWorkflowBuilderStore(
-    (s) => s.unassignApprovalField,
-  )
   const assignAllFields = useWorkflowBuilderStore((s) => s.assignAllFields)
   const unassignAllFields = useWorkflowBuilderStore((s) => s.unassignAllFields)
-
   const stepId =
     focusState.type === 'step_focus' ? focusState.stepId : undefined
   const step = steps.find((s) => s.id === stepId)
@@ -57,7 +50,6 @@ export const StepFocusFieldPanel = (): JSX.Element => {
   if (!step) return <></>
 
   const isFirstStep = step.order === 0
-  const isReviewStep = step.type === 'review'
   const truncatedName =
     step.name.length > 25 ? step.name.slice(0, 25) + '...' : step.name
 
@@ -84,15 +76,6 @@ export const StepFocusFieldPanel = (): JSX.Element => {
     }
   }
 
-  const handleApprovalToggle = (fieldId: string) => {
-    if (!stepId) return
-    if (step.approvalFieldIds.includes(fieldId)) {
-      unassignApprovalField(stepId, fieldId)
-    } else {
-      assignApprovalField(stepId, fieldId)
-    }
-  }
-
   return (
     <Flex
       h="100%"
@@ -114,7 +97,7 @@ export const StepFocusFieldPanel = (): JSX.Element => {
         zIndex={1}
       >
         <IconButton
-          aria-label="Back to assign fields"
+          aria-label="Back to choose fields"
           icon={<BiLeftArrowAlt fontSize="1.25rem" />}
           variant="clear"
           colorScheme="secondary"
@@ -131,7 +114,7 @@ export const StepFocusFieldPanel = (): JSX.Element => {
           textAlign="center"
           noOfLines={1}
         >
-          Assign fields for {truncatedName}
+          Choose fields for {truncatedName}
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
@@ -155,40 +138,21 @@ export const StepFocusFieldPanel = (): JSX.Element => {
           </Box>
         )}
 
-        {/* Field checkboxes - single shared pool for all step types */}
-        {/* Checking assigns to "Fields to fill". For review steps, drag to approval zone on canvas to reassign. */}
+        {/* Field checkboxes - unified list for all step types */}
         <Stack spacing="0.5rem">
           {fields.map((f) => {
-            const isInFill = step.fieldIds.includes(f.id)
-            const isInApproval = step.approvalFieldIds.includes(f.id)
-            const isChecked = isInFill || isInApproval
+            const isChecked = step.fieldIds.includes(f.id)
             return (
               <FieldCard
                 key={f.id}
                 field={f}
                 showCheckbox
                 isChecked={isChecked}
-                onToggle={() => {
-                  if (isChecked) {
-                    // Uncheck: remove from whichever list it's in
-                    if (isInFill) handleFieldToggle(f.id)
-                    if (isInApproval) handleApprovalToggle(f.id)
-                  } else {
-                    // Check: default to "Fields to fill"
-                    handleFieldToggle(f.id)
-                  }
-                }}
+                onToggle={() => handleFieldToggle(f.id)}
               />
             )
           })}
         </Stack>
-
-        {isReviewStep && (
-          <Text textStyle="body-2" color="secondary.400" mt="0.75rem">
-            Drag a field to the approval drop zone on the canvas to assign it as
-            an approval field.
-          </Text>
-        )}
 
         {fields.length === 0 && (
           <Flex

@@ -26,23 +26,23 @@ type PhaseConfig = {
 const PHASES: PhaseConfig[] = [
   {
     phase: 'add_steps',
-    title: 'Add steps',
-    description: 'Plan out what will be done at each step of your workflow',
+    title: 'Plan your workflow steps',
+    description: 'Outline what happens in your workflow, and in what order',
   },
   {
     phase: 'add_respondents',
-    title: 'Add respondents',
+    title: 'Add people',
     description: 'Choose who fills in each step',
   },
   {
     phase: 'create_fields',
     title: 'Create fields in form builder',
-    description: 'Add the fields respondents will fill in',
+    description: 'Add the fields people will fill in',
   },
   {
     phase: 'assign_fields',
-    title: 'Assign fields',
-    description: 'Assign fields to each step',
+    title: 'Choose fields for each step',
+    description: 'Pick which fields belong to each step',
   },
 ]
 
@@ -80,11 +80,9 @@ export const SummaryPanel = (): JSX.Element => {
       (s) => s.respondentIds.length === 0,
     ).length
     const stepsWithoutFields = steps.filter(
-      (s) => s.fieldIds.length === 0 && s.approvalFieldIds.length === 0,
+      (s) => s.fieldIds.length === 0,
     ).length
-    const assignedFieldIds = new Set(
-      steps.flatMap((s) => [...s.fieldIds, ...s.approvalFieldIds]),
-    )
+    const assignedFieldIds = new Set(steps.flatMap((s) => s.fieldIds))
     const unassignedFields = fields.filter(
       (f) => !assignedFieldIds.has(f.id),
     ).length
@@ -92,7 +90,7 @@ export const SummaryPanel = (): JSX.Element => {
     return {
       add_respondents:
         stepsWithoutRespondents > 0
-          ? `${stepsWithoutRespondents} step${stepsWithoutRespondents === 1 ? '' : 's'} without respondents`
+          ? `${stepsWithoutRespondents} step${stepsWithoutRespondents === 1 ? '' : 's'} without people`
           : undefined,
       assign_fields:
         stepsWithoutFields > 0

@@ -197,7 +197,7 @@ export const NewRespondentForm = (): JSX.Element => {
           flex={1}
           textAlign="center"
         >
-          Add a new respondent
+          Add a new person
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
@@ -208,7 +208,7 @@ export const NewRespondentForm = (): JSX.Element => {
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
-              Respondent name
+              Name
             </FormLabel>
             <Input
               value={name}
@@ -230,7 +230,7 @@ export const NewRespondentForm = (): JSX.Element => {
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
-              Select a respondent
+              Select a person
             </FormLabel>
             <RadioGroup
               value={respondentType}
@@ -380,7 +380,7 @@ export const NewRespondentForm = (): JSX.Element => {
             onClick={handleSave}
             isDisabled={!canSave}
           >
-            Save respondent
+            Save person
           </Button>
         </Flex>
       </Box>

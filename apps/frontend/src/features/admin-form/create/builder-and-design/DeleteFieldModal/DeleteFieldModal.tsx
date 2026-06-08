@@ -57,8 +57,8 @@ export const DeleteFieldModal = (): JSX.Element => {
   const steps = useWorkflowBuilderStore(stepsSelector)
   const respondents = useWorkflowBuilderStore(respondentsSelector)
   const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
-  const unassignApprovalField = useWorkflowBuilderStore(
-    (s) => s.unassignApprovalField,
+  const setApprovalDecisionField = useWorkflowBuilderStore(
+    (s) => s.setApprovalDecisionField,
   )
 
   const workflowWarning = useMemo(() => {
@@ -80,7 +80,7 @@ export const DeleteFieldModal = (): JSX.Element => {
 
     // Check if field is assigned to any step
     const assignedSteps = steps.filter(
-      (s) => s.fieldIds.includes(fid) || s.approvalFieldIds.includes(fid),
+      (s) => s.fieldIds.includes(fid) || s.approvalDecisionFieldId === fid,
     )
     if (assignedSteps.length > 0) {
       const stepName = assignedSteps[0].name
@@ -102,7 +102,8 @@ export const DeleteFieldModal = (): JSX.Element => {
       // Clean up workflow assignments on delete
       steps.forEach((s) => {
         if (s.fieldIds.includes(fid)) unassignField(s.id, fid)
-        if (s.approvalFieldIds.includes(fid)) unassignApprovalField(s.id, fid)
+        if (s.approvalDecisionFieldId === fid)
+          setApprovalDecisionField(s.id, null)
       })
 
       deleteFieldMutation.mutate(fid, {
@@ -115,7 +116,7 @@ export const DeleteFieldModal = (): JSX.Element => {
     stateData,
     steps,
     unassignField,
-    unassignApprovalField,
+    setApprovalDecisionField,
   ])
 
   const {

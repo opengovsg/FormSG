@@ -115,7 +115,7 @@ export const AssignFieldsPanel = (): JSX.Element => {
           flex={1}
           textAlign="center"
         >
-          Assign fields
+          Choose fields for each step
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>

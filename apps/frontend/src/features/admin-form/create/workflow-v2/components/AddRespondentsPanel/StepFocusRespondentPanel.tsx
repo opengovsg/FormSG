@@ -116,7 +116,7 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
         >
           {isFirstStep
             ? step.name
-            : `Select respondents for \u201C${truncatedName}\u201D`}
+            : `Select people for \u201C${truncatedName}\u201D`}
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
@@ -191,7 +191,7 @@ export const StepFocusRespondentPanel = (): JSX.Element => {
               mt="0.5rem"
               onClick={handleAddNewRespondent}
             >
-              Add a new respondent
+              Add a new person
             </Button>
 
             {/* CTA */}

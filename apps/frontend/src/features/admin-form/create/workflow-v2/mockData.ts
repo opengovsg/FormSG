@@ -51,6 +51,6 @@ export const DEFAULT_STEPS: WorkflowStep[] = [
     order: 0,
     respondentIds: ['resp-form-link'],
     fieldIds: [],
-    approvalFieldIds: [],
+    approvalDecisionFieldId: null,
   },
 ]

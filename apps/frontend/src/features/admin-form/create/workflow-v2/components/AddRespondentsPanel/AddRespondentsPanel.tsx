@@ -118,7 +118,7 @@ export const AddRespondentsPanel = (): JSX.Element => {
           flex={1}
           textAlign="center"
         >
-          Add respondents
+          Add people
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
@@ -126,7 +126,7 @@ export const AddRespondentsPanel = (): JSX.Element => {
       {/* Scrollable content */}
       <Box flex={1} overflow="auto" px="1.5rem" pt="1rem" pb="1.5rem">
         <Text textStyle="body-2" color="secondary.400" mb="1.5rem">
-          Add respondents to fill up fields or receive notifications
+          Add people to fill in fields or receive notifications
         </Text>
 
         {/* Respondent pool cards (exclude form_link - shown on Step 1 automatically) */}
@@ -177,7 +177,7 @@ export const AddRespondentsPanel = (): JSX.Element => {
           mt="0.5rem"
           onClick={handleAddNewRespondent}
         >
-          Add a new respondent
+          Add a new person
         </Button>
 
         {/* CTA - wizard navigation */}

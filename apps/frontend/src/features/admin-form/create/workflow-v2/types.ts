@@ -9,7 +9,7 @@ export type WorkflowStep = {
   order: number
   respondentIds: string[]
   fieldIds: string[]
-  approvalFieldIds: string[] // review steps only
+  approvalDecisionFieldId: string | null // review steps only
 }
 
 // Respondent types
@@ -66,10 +66,10 @@ export const PHASE_ORDER: Phase[] = [
 ]
 
 export const PHASE_TITLES: Record<Phase, string> = {
-  add_steps: 'Add steps',
-  add_respondents: 'Add respondents',
+  add_steps: 'Plan your workflow steps',
+  add_respondents: 'Add people',
   create_fields: 'Create fields',
-  assign_fields: 'Assign fields',
+  assign_fields: 'Choose fields for each step',
 }
 
 // Focus state (discriminated union)
@@ -156,9 +156,10 @@ export type WorkflowStore = {
 
   // Actions - Sprint 4
   assignField: (stepId: string, fieldId: string) => void
-  assignApprovalField: (stepId: string, fieldId: string) => void
   unassignField: (stepId: string, fieldId: string) => void
-  unassignApprovalField: (stepId: string, fieldId: string) => void
   assignAllFields: (stepId: string) => void
   unassignAllFields: (stepId: string) => void
+
+  // Actions - Sprint 14 (approval decision)
+  setApprovalDecisionField: (stepId: string, fieldId: string | null) => void
 }

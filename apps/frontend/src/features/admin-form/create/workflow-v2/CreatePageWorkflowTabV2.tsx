@@ -61,9 +61,6 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
     (s) => s.assignNotificationRecipient,
   )
   const assignField = useWorkflowBuilderStore((s) => s.assignField)
-  const assignApprovalField = useWorkflowBuilderStore(
-    (s) => s.assignApprovalField,
-  )
   const setPendingInsertIndex = useWorkflowBuilderStore(
     (s) => s.setPendingInsertIndex,
   )
@@ -257,24 +254,6 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
         })
         return
       }
-
-      // Field dropped on approval zone (review steps)
-      if (
-        activeData?.type === 'field_card' &&
-        overData?.type === 'approval_field_drop'
-      ) {
-        const fieldId = active.id as string
-        const stepId = overData.stepId as string
-        assignApprovalField(stepId, fieldId)
-        setJustDroppedStepId(stepId)
-        setTimeout(() => setJustDroppedStepId(null), 400)
-        setFocus({
-          type: 'step_focus',
-          phase: 'assign_fields',
-          stepId,
-        })
-        return
-      }
     },
     [
       setFocus,
@@ -282,7 +261,6 @@ export const CreatePageWorkflowTabV2 = (): JSX.Element => {
       assignRespondent,
       assignNotificationRecipient,
       assignField,
-      assignApprovalField,
       setPendingInsertIndex,
       setJustDraggedId,
     ],

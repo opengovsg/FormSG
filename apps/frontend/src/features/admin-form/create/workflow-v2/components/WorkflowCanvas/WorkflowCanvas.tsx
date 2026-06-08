@@ -413,7 +413,6 @@ export const WorkflowCanvas = ({
                     stepEditFromSummaryId === step.id
                   }
                   isDraggingField={draggingFieldType !== null}
-                  isDraggingYesNo={draggingFieldType === 'yes_no'}
                   isDraggingRespondent={isDraggingRespondent}
                   justDroppedStepId={justDroppedStepId}
                 />

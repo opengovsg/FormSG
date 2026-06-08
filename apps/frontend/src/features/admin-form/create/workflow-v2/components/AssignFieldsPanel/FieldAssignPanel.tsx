@@ -1,13 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
   chakra,
@@ -16,10 +10,9 @@ import {
   IconButton,
   Stack,
   Text,
-  useDisclosure,
 } from '@chakra-ui/react'
 
-import { MultiSelect, SingleSelect } from '~components/Dropdown'
+import { MultiSelect } from '~components/Dropdown'
 import InlineMessage from '~components/InlineMessage'
 
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
@@ -39,26 +32,11 @@ export const FieldAssignPanel = (): JSX.Element => {
   const fields = useWorkflowBuilderStore(fieldsSelector)
   const assignField = useWorkflowBuilderStore((s) => s.assignField)
   const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
-  const assignApprovalField = useWorkflowBuilderStore(
-    (s) => s.assignApprovalField,
-  )
-  const unassignApprovalField = useWorkflowBuilderStore(
-    (s) => s.unassignApprovalField,
-  )
   const { formId } = useParams()
 
   const fieldId =
     focusState.type === 'field_assign' ? focusState.fieldId : undefined
   const field = fields.find((f) => f.id === fieldId)
-
-  // Conflict modal state
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const [conflictAction, setConflictAction] = useState<{
-    stepId: string
-    stepName: string
-    direction: 'to_regular' | 'to_approval'
-  } | null>(null)
 
   const handleBack = useCallback(() => {
     setFocus({ type: 'phase', phase: 'assign_fields' })
@@ -87,17 +65,6 @@ export const FieldAssignPanel = (): JSX.Element => {
       // Additions
       for (const v of values) {
         if (!prev.has(v)) {
-          // Check if field is an approval field in this step
-          const step = steps.find((s) => s.id === v)
-          if (step && step.approvalFieldIds.includes(fieldId)) {
-            setConflictAction({
-              stepId: v,
-              stepName: step.name,
-              direction: 'to_regular',
-            })
-            onOpen()
-            return
-          }
           assignField(v, fieldId)
         }
       }
@@ -109,98 +76,8 @@ export const FieldAssignPanel = (): JSX.Element => {
         }
       }
     },
-    [selectedStepIds, assignField, unassignField, fieldId, steps, onOpen],
+    [selectedStepIds, assignField, unassignField, fieldId],
   )
-
-  // Approval field SingleSelect (yes_no fields only)
-  const isYesNo = field?.fieldType === 'yes_no'
-
-  const reviewStepItems = useMemo(
-    () =>
-      steps
-        .filter((s) => s.type === 'review')
-        .map((s) => ({ value: s.id, label: s.name })),
-    [steps],
-  )
-
-  const selectedApprovalStepId = useMemo(
-    () =>
-      fieldId
-        ? (steps.find(
-            (s) => s.type === 'review' && s.approvalFieldIds.includes(fieldId),
-          )?.id ?? '')
-        : '',
-    [steps, fieldId],
-  )
-
-  const handleApprovalChange = useCallback(
-    (value: string) => {
-      if (!fieldId) return
-
-      // Clearing selection
-      if (!value) {
-        if (selectedApprovalStepId) {
-          unassignApprovalField(selectedApprovalStepId, fieldId)
-        }
-        return
-      }
-
-      // Check if field is a regular field in this step
-      const step = steps.find((s) => s.id === value)
-      if (step && step.fieldIds.includes(fieldId)) {
-        setConflictAction({
-          stepId: value,
-          stepName: step.name,
-          direction: 'to_approval',
-        })
-        onOpen()
-        return
-      }
-
-      // Remove from previous approval step if any
-      if (selectedApprovalStepId) {
-        unassignApprovalField(selectedApprovalStepId, fieldId)
-      }
-      assignApprovalField(value, fieldId)
-    },
-    [
-      fieldId,
-      selectedApprovalStepId,
-      steps,
-      assignApprovalField,
-      unassignApprovalField,
-      onOpen,
-    ],
-  )
-
-  const handleConfirmReassign = useCallback(() => {
-    if (!conflictAction || !fieldId) return
-    const { stepId, direction } = conflictAction
-
-    if (direction === 'to_regular') {
-      unassignApprovalField(stepId, fieldId)
-      assignField(stepId, fieldId)
-    } else {
-      unassignField(stepId, fieldId)
-      // Remove from previous approval step if any
-      if (selectedApprovalStepId) {
-        unassignApprovalField(selectedApprovalStepId, fieldId)
-      }
-      assignApprovalField(stepId, fieldId)
-    }
-
-    setConflictAction(null)
-    onClose()
-  }, [
-    conflictAction,
-    fieldId,
-    selectedApprovalStepId,
-    assignField,
-    unassignField,
-    assignApprovalField,
-    unassignApprovalField,
-    onClose,
-  ])
 
   if (!field || !fieldId) return <></>
 
@@ -225,7 +102,7 @@ export const FieldAssignPanel = (): JSX.Element => {
         zIndex={1}
       >
         <IconButton
-          aria-label="Back to assign fields"
+          aria-label="Back to choose fields"
           icon={<BiLeftArrowAlt fontSize="1.25rem" />}
           variant="clear"
           colorScheme="secondary"
@@ -291,30 +168,6 @@ export const FieldAssignPanel = (): JSX.Element => {
           />
         </Stack>
 
-        {/* Approval field section (yes_no only) */}
-        {isYesNo && reviewStepItems.length > 0 && (
-          <>
-            <Divider mx="-1.5rem" w="auto" mt="1.5rem" mb="1.5rem" />
-            <Stack spacing="0.75rem">
-              <Text textStyle="subhead-1" color="secondary.500">
-                Approval field assignment
-              </Text>
-              <Text textStyle="body-2" color="secondary.400">
-                A Yes/No field can be a regular field or an approval indicator
-                in a review step, not both.
-              </Text>
-              <SingleSelect
-                name="approvalStepAssignment"
-                items={reviewStepItems}
-                value={selectedApprovalStepId}
-                onChange={handleApprovalChange}
-                placeholder="Select a review step"
-                isClearable
-              />
-            </Stack>
-          </>
-        )}
-
         {/* Footer */}
         <Divider mx="-1.5rem" w="auto" mt="1.5rem" />
         <Flex justify="flex-end" py="1rem">
@@ -323,48 +176,6 @@ export const FieldAssignPanel = (): JSX.Element => {
           </Button>
         </Flex>
       </Flex>
-
-      {/* Conflict confirmation modal */}
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={() => {
-          setConflictAction(null)
-          onClose()
-        }}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader color="secondary.700">
-              Reassign field?
-            </AlertDialogHeader>
-            <AlertDialogBody color="secondary.500" textStyle="body-2">
-              {conflictAction?.direction === 'to_regular'
-                ? `This field is currently an approval field in "${conflictAction.stepName}". Reassign it as a regular field?`
-                : `This field is currently a regular field in "${conflictAction?.stepName}". Reassign it as an approval field?`}
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button
-                ref={cancelRef}
-                onClick={() => {
-                  setConflictAction(null)
-                  onClose()
-                }}
-                variant="clear"
-              >
-                Cancel
-              </Button>
-              <Button
-                colorScheme="primary"
-                onClick={handleConfirmReassign}
-                ml={3}
-              >
-                Reassign
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </Flex>
   )
 }

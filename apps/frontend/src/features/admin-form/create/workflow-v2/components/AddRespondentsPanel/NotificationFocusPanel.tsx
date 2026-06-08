@@ -137,7 +137,7 @@ export const NotificationFocusPanel = (): JSX.Element => {
           mt="0.5rem"
           onClick={handleAddNewRespondent}
         >
-          Add a new respondent
+          Add a new person
         </Button>
 
         {/* CTA */}

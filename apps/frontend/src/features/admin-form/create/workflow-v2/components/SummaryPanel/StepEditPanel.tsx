@@ -70,7 +70,7 @@ export const StepEditPanel = (): JSX.Element => {
   if (!step || !stepId) return <></>
 
   const hasRespondents = step.respondentIds.length > 0
-  const hasFields = step.fieldIds.length > 0 || step.approvalFieldIds.length > 0
+  const hasFields = step.fieldIds.length > 0
 
   const handleConfirmDelete = () => {
     onClose()
@@ -206,7 +206,7 @@ export const StepEditPanel = (): JSX.Element => {
                 flex={1}
                 noOfLines={1}
               >
-                Add respondents
+                Add people
               </Text>
               <Icon
                 as={BiChevronRight}
@@ -271,7 +271,7 @@ export const StepEditPanel = (): JSX.Element => {
                 flex={1}
                 noOfLines={1}
               >
-                Assign fields
+                Choose fields
               </Text>
               <Icon
                 as={BiChevronRight}

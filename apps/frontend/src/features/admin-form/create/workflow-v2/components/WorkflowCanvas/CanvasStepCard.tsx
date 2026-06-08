@@ -35,6 +35,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+import { SingleSelect } from '~components/Dropdown'
 import Tooltip from '~components/Tooltip'
 
 import type { WorkflowStep } from '../../types'
@@ -62,7 +63,6 @@ type CanvasStepCardProps = {
   mode?: StepCardMode
   isFocused?: boolean
   isDraggingField?: boolean
-  isDraggingYesNo?: boolean
   isDraggingRespondent?: boolean
   justDroppedStepId?: string | null
 }
@@ -72,7 +72,6 @@ export const CanvasStepCard = ({
   mode = 'summary',
   isFocused = false,
   isDraggingField = false,
-  isDraggingYesNo = false,
   isDraggingRespondent = false,
   justDroppedStepId = null,
 }: CanvasStepCardProps): JSX.Element => {
@@ -84,8 +83,8 @@ export const CanvasStepCard = ({
     (s) => s.unassignRespondent,
   )
   const unassignField = useWorkflowBuilderStore((s) => s.unassignField)
-  const unassignApprovalField = useWorkflowBuilderStore(
-    (s) => s.unassignApprovalField,
+  const setApprovalDecisionField = useWorkflowBuilderStore(
+    (s) => s.setApprovalDecisionField,
   )
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
 
@@ -122,7 +121,6 @@ export const CanvasStepCard = ({
   const isFirstStep = step.order === 0
 
   // Whole-card droppable zones for drag
-  const showSplitZones = isDraggingYesNo && step.type === 'review'
   const { setNodeRef: setFieldDropRef, isOver: isFieldDropOver } = useDroppable(
     {
       id: `card-field-drop-${step.id}`,
@@ -130,12 +128,6 @@ export const CanvasStepCard = ({
       disabled: !isDraggingField,
     },
   )
-  const { setNodeRef: setApprovalDropRef, isOver: isApprovalDropOver } =
-    useDroppable({
-      id: `card-approval-drop-${step.id}`,
-      data: { type: 'approval_field_drop', stepId: step.id },
-      disabled: !(isDraggingYesNo && step.type === 'review'),
-    })
   const { setNodeRef: setRespondentDropRef, isOver: isRespondentDropOver } =
     useDroppable({
       id: `card-respondent-drop-${step.id}`,
@@ -163,13 +155,16 @@ export const CanvasStepCard = ({
     [fields, step.fieldIds],
   )
 
-  const approvalFields = useMemo(
-    () => fields.filter((f) => step.approvalFieldIds.includes(f.id)),
-    [fields, step.approvalFieldIds],
-  )
-
   const allFieldsAssigned = useMemo(
     () => fields.length > 0 && step.fieldIds.length === fields.length,
+    [fields, step.fieldIds],
+  )
+
+  const yesNoFieldsOnStep = useMemo(
+    () =>
+      fields.filter(
+        (f) => f.fieldType === 'yes_no' && step.fieldIds.includes(f.id),
+      ),
     [fields, step.fieldIds],
   )
 
@@ -317,7 +312,7 @@ export const CanvasStepCard = ({
           bg="white"
           border="1px solid"
           borderColor={
-            isFieldDropOver || isApprovalDropOver || isRespondentDropOver
+            isFieldDropOver || isRespondentDropOver
               ? 'primary.500'
               : 'neutral.300'
           }
@@ -328,84 +323,35 @@ export const CanvasStepCard = ({
           justifyContent="center"
         >
           <Stack spacing="0.5rem" flex={1}>
-            {isFieldDrag && showSplitZones ? (
-              <>
-                <Center
-                  ref={setFieldDropRef}
-                  w="100%"
-                  flex={1}
-                  py="1rem"
-                  px="1rem"
-                  borderRadius="4px"
-                  border="2px dashed"
-                  borderColor={isFieldDropOver ? 'primary.500' : 'primary.400'}
-                  bg={isFieldDropOver ? 'primary.200' : 'primary.100'}
-                  transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
-                  transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
-                >
-                  <Text
-                    textStyle="subhead-2"
-                    color="primary.500"
-                    textAlign="center"
-                  >
-                    + Drag into normal fields {step.name}
-                  </Text>
-                </Center>
-                <Center
-                  ref={setApprovalDropRef}
-                  w="100%"
-                  flex={1}
-                  py="1rem"
-                  px="1rem"
-                  borderRadius="4px"
-                  border="2px dashed"
-                  borderColor={
-                    isApprovalDropOver ? 'primary.500' : 'primary.400'
-                  }
-                  bg={isApprovalDropOver ? 'primary.200' : 'primary.100'}
-                  transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
-                  transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
-                >
-                  <Text
-                    textStyle="subhead-2"
-                    color="primary.500"
-                    textAlign="center"
-                  >
-                    + Drag into approvals for {step.name}
-                  </Text>
-                </Center>
-              </>
-            ) : (
-              <Center
-                ref={isFieldDrag ? setFieldDropRef : setRespondentDropRef}
-                w="100%"
-                flex={1}
-                py="1rem"
-                px="1rem"
-                borderRadius="4px"
-                border="2px dashed"
-                borderColor={
-                  (isFieldDrag ? isFieldDropOver : isRespondentDropOver)
-                    ? 'primary.500'
-                    : 'primary.400'
-                }
-                bg={
-                  (isFieldDrag ? isFieldDropOver : isRespondentDropOver)
-                    ? 'primary.200'
-                    : 'primary.100'
-                }
-                transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
-                transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
+            <Center
+              ref={isFieldDrag ? setFieldDropRef : setRespondentDropRef}
+              w="100%"
+              flex={1}
+              py="1rem"
+              px="1rem"
+              borderRadius="4px"
+              border="2px dashed"
+              borderColor={
+                (isFieldDrag ? isFieldDropOver : isRespondentDropOver)
+                  ? 'primary.500'
+                  : 'primary.400'
+              }
+              bg={
+                (isFieldDrag ? isFieldDropOver : isRespondentDropOver)
+                  ? 'primary.200'
+                  : 'primary.100'
+              }
+              transform={isJustDropped ? 'scale(0.95)' : 'scale(1)'}
+              transition="transform 0.2s ease, background 0.15s, border-color 0.15s"
+            >
+              <Text
+                textStyle="subhead-2"
+                color="primary.500"
+                textAlign="center"
               >
-                <Text
-                  textStyle="subhead-2"
-                  color="primary.500"
-                  textAlign="center"
-                >
-                  + Drag into {step.name}
-                </Text>
-              </Center>
-            )}
+                + Drag into {step.name}
+              </Text>
+            </Center>
           </Stack>
         </Box>
       </Box>
@@ -566,7 +512,7 @@ export const CanvasStepCard = ({
               {/* Respondent section */}
               <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
                 <Text textStyle="subhead-2" color="secondary.500">
-                  Respondents
+                  People involved
                 </Text>
                 <Wrap spacing="0.25rem">
                   {stepRespondents.map((r) => (
@@ -717,84 +663,67 @@ export const CanvasStepCard = ({
                     )}
                   </Stack>
 
-                  {/* Approval fields (review steps only) */}
-                  {step.type === 'review' && (
-                    <Stack spacing="0.5rem" px="1.5rem" mt="1rem">
-                      <Text textStyle="subhead-2" color="secondary.500">
-                        Approval fields
+                  {/* Approval decision (review steps only, field phase) */}
+                  {step.type === 'review' && isFieldPhase && (
+                    <Box
+                      mx="1.5rem"
+                      mt="0.75rem"
+                      p="0.75rem"
+                      bg="primary.100"
+                      borderRadius="8px"
+                      border="1px solid"
+                      borderColor="primary.200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Text
+                        textStyle="subhead-2"
+                        color="secondary.500"
+                        mb="0.25rem"
+                      >
+                        Approval decision
                       </Text>
-                      <Wrap spacing="0.25rem">
-                        {approvalFields.length > 0 ? (
-                          approvalFields.map((f) => (
-                            <WrapItem key={f.id}>
-                              <Tag
-                                size="sm"
-                                bg="primary.100"
-                                borderRadius="4px"
-                                px="0.5rem"
-                                animation="chipAppear 0.3s ease"
-                                sx={{
-                                  '@keyframes chipAppear': {
-                                    from: {
-                                      opacity: 0,
-                                      transform: 'scale(0.8)',
-                                    },
-                                    to: {
-                                      opacity: 1,
-                                      transform: 'scale(1)',
-                                    },
-                                  },
-                                }}
-                                py="0.25rem"
-                              >
-                                <TagLabel
-                                  textStyle="caption-1"
-                                  color="secondary.500"
-                                >
-                                  {f.number}. {f.name}
-                                </TagLabel>
-                                {showFieldRemove && (
-                                  <TagCloseButton
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      unassignApprovalField(step.id, f.id)
-                                    }}
-                                  />
-                                )}
-                              </Tag>
-                            </WrapItem>
-                          ))
-                        ) : (
-                          <Tag
-                            size="sm"
-                            bg="primary.100"
-                            borderRadius="4px"
-                            px="0.5rem"
-                            py="0.25rem"
-                          >
-                            <TagLabel
-                              textStyle="caption-1"
-                              color="secondary.500"
-                            >
-                              None
-                            </TagLabel>
-                          </Tag>
-                        )}
-                      </Wrap>
-
-                      {/* Approval field drop zone */}
-                      {showFieldRemove && (
-                        <FieldDropZone
-                          droppableId={`approval-field-drop-${step.id}`}
-                          droppableData={{
-                            type: 'approval_field_drop',
-                            stepId: step.id,
+                      <Text
+                        textStyle="caption-1"
+                        color="secondary.400"
+                        mb="0.5rem"
+                      >
+                        Select the Yes/No field that determines if this step is
+                        approved.
+                      </Text>
+                      {yesNoFieldsOnStep.length > 0 ? (
+                        <SingleSelect
+                          name={`approval-decision-${step.id}`}
+                          items={yesNoFieldsOnStep.map((f) => ({
+                            value: f.id,
+                            label: `${f.number}. ${f.name}`,
+                          }))}
+                          value={step.approvalDecisionFieldId ?? ''}
+                          onChange={(value) => {
+                            setApprovalDecisionField(step.id, value || null)
                           }}
-                          variant={isFocused ? 'step_focus' : 'pool'}
-                          text="Drag a Yes/No field from the left panel"
+                          placeholder="Select a Yes/No field..."
+                          isClearable
                         />
+                      ) : (
+                        <>
+                          <SingleSelect
+                            name={`approval-decision-${step.id}-disabled`}
+                            items={[]}
+                            value=""
+                            onChange={() => {}}
+                            placeholder="No Yes/No fields assigned"
+                            isDisabled
+                          />
+                          <Text
+                            textStyle="caption-1"
+                            color="warning.500"
+                            mt="0.25rem"
+                          >
+                            Assign a Yes/No field to this step first.
+                          </Text>
+                        </>
                       )}
-                    </Stack>
+                    </Box>
                   )}
                 </>
               )}

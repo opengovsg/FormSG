@@ -58,9 +58,15 @@ function loadPersistedState(formId?: string): PersistedState {
     const parsed = JSON.parse(raw) as Partial<PersistedState>
     const merged = { ...DEFAULT_PERSISTED, ...parsed }
     // Migration: add isCustomName to steps that don't have it
+    // Migration: approvalFieldIds[] → approvalDecisionFieldId
     merged.steps = merged.steps.map((s) => ({
       ...s,
       isCustomName: s.isCustomName ?? false,
+      approvalDecisionFieldId:
+        s.approvalDecisionFieldId ??
+        (s as unknown as { approvalFieldIds?: string[] })
+          .approvalFieldIds?.[0] ??
+        null,
     }))
     return merged
   } catch {
@@ -122,7 +128,11 @@ export function completedPhases(state: WorkflowStore): Phase[] {
   // assign_fields: done if every step has at least one field
   if (
     steps.length > 1 &&
-    steps.every((s) => s.fieldIds.length > 0 || s.approvalFieldIds.length > 0)
+    steps.every(
+      (s) =>
+        s.fieldIds.length > 0 &&
+        (s.type !== 'review' || s.approvalDecisionFieldId !== null),
+    )
   ) {
     completed.push('assign_fields')
   }
@@ -240,7 +250,7 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
           order: 0,
           respondentIds: [],
           fieldIds: [],
-          approvalFieldIds: [],
+          approvalDecisionFieldId: null,
         }
         const next = [...state.steps]
         next.splice(insertIndex, 0, newStep)
@@ -389,9 +399,6 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
                 fieldIds: s.fieldIds.includes(fieldId)
                   ? s.fieldIds
                   : [...s.fieldIds, fieldId],
-                approvalFieldIds: s.approvalFieldIds.filter(
-                  (id) => id !== fieldId,
-                ),
               }
             : s,
         ),
@@ -401,35 +408,14 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
       set((state) => ({
         steps: state.steps.map((s) =>
           s.id === stepId
-            ? { ...s, fieldIds: s.fieldIds.filter((id) => id !== fieldId) }
-            : s,
-        ),
-      })),
-
-    assignApprovalField: (stepId, fieldId) =>
-      set((state) => ({
-        steps: state.steps.map((s) =>
-          s.id === stepId
             ? {
                 ...s,
-                approvalFieldIds: s.approvalFieldIds.includes(fieldId)
-                  ? s.approvalFieldIds
-                  : [...s.approvalFieldIds, fieldId],
                 fieldIds: s.fieldIds.filter((id) => id !== fieldId),
-              }
-            : s,
-        ),
-      })),
-
-    unassignApprovalField: (stepId, fieldId) =>
-      set((state) => ({
-        steps: state.steps.map((s) =>
-          s.id === stepId
-            ? {
-                ...s,
-                approvalFieldIds: s.approvalFieldIds.filter(
-                  (id) => id !== fieldId,
-                ),
+                // Clear approval decision if the unassigned field was it
+                approvalDecisionFieldId:
+                  s.approvalDecisionFieldId === fieldId
+                    ? null
+                    : s.approvalDecisionFieldId,
               }
             : s,
         ),
@@ -448,6 +434,14 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
       set((state) => ({
         steps: state.steps.map((s) =>
           s.id === stepId ? { ...s, fieldIds: [] } : s,
+        ),
+      })),
+
+    // Sprint 14: approval decision field
+    setApprovalDecisionField: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId ? { ...s, approvalDecisionFieldId: fieldId } : s,
         ),
       })),
   })),

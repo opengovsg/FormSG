@@ -183,7 +183,7 @@ export const EditRespondentForm = (): JSX.Element => {
           flex={1}
           textAlign="center"
         >
-          Edit respondent
+          Edit person
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
@@ -194,7 +194,7 @@ export const EditRespondentForm = (): JSX.Element => {
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
-              Respondent name
+              Name
             </FormLabel>
             <Input
               value={name}
@@ -215,7 +215,7 @@ export const EditRespondentForm = (): JSX.Element => {
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
-              Respondent type
+              Person type
             </FormLabel>
             <RadioGroup
               value={respondentType}
@@ -355,7 +355,7 @@ export const EditRespondentForm = (): JSX.Element => {
         <Divider />
         <Flex justify="space-between" align="center" px="1.5rem" py="1rem">
           <IconButton
-            aria-label="Delete respondent"
+            aria-label="Delete person"
             icon={<Icon as={BiTrash} fontSize="1.25rem" />}
             variant="clear"
             colorScheme="danger"
@@ -384,7 +384,7 @@ export const EditRespondentForm = (): JSX.Element => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete respondent</ModalHeader>
+          <ModalHeader>Delete person?</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Text color="secondary.500">
