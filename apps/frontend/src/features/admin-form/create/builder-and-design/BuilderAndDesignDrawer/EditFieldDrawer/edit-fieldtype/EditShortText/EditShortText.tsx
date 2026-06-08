@@ -189,11 +189,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={isLoading}
-        isInvalid={!!errors.description}
-      >
+      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
         <FormLabel>
           {t(
             'features.adminForm.sidebar.fields.commonFieldComponents.description',
