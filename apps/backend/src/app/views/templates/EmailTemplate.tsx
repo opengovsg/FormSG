@@ -22,7 +22,6 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-
 import { BasicField } from 'formsg-shared/types'
 import React from 'react'
 

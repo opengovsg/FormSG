@@ -663,7 +663,7 @@ describe('multirespondent-submission.utils', () => {
       expect(result).toEqual([
         {
           question: 'Checkbox',
-          answer: 'Option 1,Option 2,Custom Option',
+          answer: 'Option 1, Option 2, Others: Custom Option',
           fieldType: BasicField.Checkbox,
         },
       ])
@@ -742,7 +742,7 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         {
-          question: '[signature] Signature',
+          question: '[Signature] Signature',
           answer: 'Signature captured',
           fieldType: BasicField.Signature,
           signatureDataPngDataUri: expectedSignatureDataPngDataUri,
@@ -776,7 +776,7 @@ describe('multirespondent-submission.utils', () => {
 
       expect(result).toEqual([
         {
-          question: '[signature] Signature',
+          question: '[Signature] Signature',
           answer: 'Signature captured',
           fieldType: BasicField.Signature,
           signatureDataPngDataUri: undefined,

@@ -171,7 +171,7 @@ describe('encrypt-submission.utils', () => {
       expect(actual).toEqual(parsedResponses)
     })
 
-    it('should prefix MyInfo fields in responses when hashed fields are provided', () => {
+    it('should prefix Myinfo fields in responses when hashed fields are provided', () => {
       // Arrange
       const parsedResponses: any[] = [
         {
@@ -210,7 +210,7 @@ describe('encrypt-submission.utils', () => {
       expect(actual).toEqual([
         {
           _id: 'field1',
-          question: '[MyInfo] Question 1',
+          question: '[Myinfo] Question 1',
           myInfo: { attr: 'NAME' },
           answer: 'John Doe',
           fieldType: 'textfield',
@@ -223,7 +223,7 @@ describe('encrypt-submission.utils', () => {
         },
         {
           _id: 'childrenbirthrecords.692411846d1da146b503aada.childname.0',
-          question: '[MyInfo] Question Child',
+          question: '[Myinfo] Question Child',
           myInfo: { attr: 'childname' },
           answer: 'Child Name',
           fieldType: 'children',

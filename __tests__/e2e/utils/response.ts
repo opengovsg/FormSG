@@ -57,7 +57,7 @@ export const getResponseTitle = (
     responseView.mode === FormResponseMode.Encrypt && responseView.csv
   // MyInfo fields
   if (isMyInfoableFieldType(field) && field.myInfo) {
-    if (field.myInfo.verified) return `[MyInfo] ${field.title}`
+    if (field.myInfo.verified) return `[Myinfo] ${field.title}`
     return field.title
   }
 

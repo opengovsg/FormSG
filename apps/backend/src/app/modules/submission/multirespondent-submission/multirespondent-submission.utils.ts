@@ -11,7 +11,10 @@ import {
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
-import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import {
+  answerKey,
+  handleAddressResponseDisplay,
+} from 'formsg-shared/utils/address'
 import { NON_RESPONSE_FIELD_SET } from 'formsg-shared/utils/field'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
@@ -557,8 +560,8 @@ export const getResponsesDataFromMrfResponses = ({
 
 /**
  * Serialises MRF submission responses into a JSON string for email attachment.
- * Built directly from raw form fields and responses so that specific field
- * types (e.g. Address) can be handled in custom ways than the generic question-answer pair extraction
+ * Built directly from raw form fields and responses so that specific field types
+ * (e.g. Address) can be handled in custom ways than the generic question-answer pair extraction
  * fields are handled consistently with the email body.
  */
 export const buildMrfResponseJson = ({
@@ -577,6 +580,8 @@ export const buildMrfResponseJson = ({
     { question: 'Timestamp', answer: timestamp },
   ]
 
+  if (!formFields || !responses) return JSON.stringify(entries)
+
   for (const field of formFields) {
     // Skip non-response fields and fields without titles
     if (NON_RESPONSE_FIELD_SET.has(field.fieldType as BasicField)) continue
@@ -590,10 +595,12 @@ export const buildMrfResponseJson = ({
 
     switch (response.fieldType) {
       case BasicField.Address: {
-        for (const [key, value] of Object.entries(
-          response.answer.addressSubFields,
-        )) {
-          entries.push({ question: `${field.title} - ${key}`, answer: value })
+        const subFields = response.answer.addressSubFields
+        for (const key of answerKey) {
+          entries.push({
+            question: `${field.title} - ${key}`,
+            answer: subFields[key as keyof typeof subFields],
+          })
         }
         break
       }
