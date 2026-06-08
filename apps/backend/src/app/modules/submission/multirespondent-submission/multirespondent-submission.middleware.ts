@@ -844,7 +844,14 @@ export const encryptSubmission = async (
     const error = new SubmissionEncryptionVerificationError()
     logger.error({
       message: error.message,
-      meta: { action: 'encryptSubmission', ...createReqMeta(req) },
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
       error,
     })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
