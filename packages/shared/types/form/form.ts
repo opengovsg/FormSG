@@ -116,6 +116,7 @@ export interface FormMetadata {
   num_mrf_reminder_emails_sent?: number
   mfb_vision_prompt_count?: number
   template_form_id?: Schema.Types.ObjectId
+  delimiter?: string
 }
 
 export type FormPaymentsChannel = {

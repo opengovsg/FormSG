@@ -4,6 +4,7 @@ import {
   FieldResponsesV3,
   FieldResponseV3,
   FormFieldDto,
+  FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   NdiResponseV3,
@@ -103,6 +104,9 @@ export const createPublicMultirespondentSubmissionDto = (
     workflow: stripWorkflowEmails(submissionData.workflow),
   }
 }
+
+export const getFormDelimiter = (metadata?: FormMetadata): string =>
+  metadata?.delimiter ?? ', '
 
 export const getEmailFromResponses = (
   fieldId: string,
@@ -325,10 +329,12 @@ const getQuestionAnswerPairsForOneField = ({
   formField,
   response,
   includeSignatureDataPngDataUri,
+  delimiter = '; ',
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV3
   includeSignatureDataPngDataUri: boolean
+  delimiter?: string
 }): QuestionAnswerPair[] => {
   let questionTitle = formField.title
   let answer = ''
@@ -400,11 +406,11 @@ const getQuestionAnswerPairsForOneField = ({
             const colTitle = idToColTitleMap[colId]
             return `${colTitle}`
           })
-          .join('; ')
+          .join(delimiter)
 
         const delimitedColumnAnswers = validColumns
           .map(([, colAns]) => colAns ?? '')
-          .join('; ')
+          .join(delimiter)
 
         const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
         const answer = delimitedColumnAnswers
@@ -569,11 +575,13 @@ export const buildMrfResponseJson = ({
   responses,
   responseId,
   timestamp,
+  delimiter = ', ',
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
   responseId: string
   timestamp: string
+  delimiter?: string
 }): string => {
   const entries: Array<{ question: string; answer: string }> = [
     { question: 'Response ID', answer: responseId },
@@ -613,6 +621,7 @@ export const buildMrfResponseJson = ({
           formField: field,
           response,
           includeSignatureDataPngDataUri: false,
+          delimiter,
         })
         for (const pair of pairs) {
           entries.push({ question: pair.question, answer: pair.answer })

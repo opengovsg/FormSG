@@ -68,10 +68,12 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
+  buildMrfResponseJson,
   extractEmailAnswersFromResponses,
   extractRespondentCopyEmailDatas,
   formatSubmittedStepTimestamp,
   getEmailFromResponses,
+  getFormDelimiter,
   getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
   retrieveWorkflowStepEmailAddresses,
@@ -447,6 +449,7 @@ const sendMrfOutcomeEmails = ({
     | '_id'
     | 'title'
     | 'emails'
+    | 'metadata'
     | 'stepOneEmailNotificationFieldId'
     | 'stepsToNotify'
     | 'workflow'
@@ -521,6 +524,7 @@ const sendMrfOutcomeEmails = ({
           responses,
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
+          delimiter: getFormDelimiter(form.metadata),
         })
 
         const emailAttachments = []
