@@ -1,3 +1,7 @@
+import type {
+  FieldResponsesV4,
+  ResponseProvenance,
+} from '@opengovsg/formsg-sdk'
 import { BasicField, FieldResponsesV3, FormAuthType } from 'formsg-shared/types'
 import { hasProp } from 'formsg-shared/utils/has-prop'
 import {
@@ -136,6 +140,45 @@ export const createNdiResponsesV3FromRecord = (
       responses[title] = {
         fieldType: BasicField.Nric,
         answer: value as string,
+      }
+    }
+  })
+
+  return responses
+}
+
+export const createNdiResponsesV4FromRecord = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ndiResponses: Record<string, any>,
+  stepNumber?: number,
+): FieldResponsesV4 => {
+  const responses: FieldResponsesV4 = {}
+  const provenance: ResponseProvenance =
+    stepNumber !== undefined ? { stepNumber } : {}
+
+  Object.entries(ndiResponses).forEach(([key, value]) => {
+    const title = mapVerifiedKeyToSPCPTitle(key)
+
+    if (key.startsWith(VerifiedKeys.SpUinFin)) {
+      responses[title] = {
+        fieldType: BasicField.Nric,
+        answer: { value: value as string },
+        question: title,
+        provenance,
+      }
+    } else if (key.startsWith(VerifiedKeys.CpUen)) {
+      responses[title] = {
+        fieldType: BasicField.ShortText,
+        answer: { value: value as string },
+        question: title,
+        provenance,
+      }
+    } else if (key.startsWith(VerifiedKeys.CpUid)) {
+      responses[title] = {
+        fieldType: BasicField.Nric,
+        answer: { value: value as string },
+        question: title,
+        provenance,
       }
     }
   })
