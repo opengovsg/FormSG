@@ -1,3 +1,4 @@
+import type { AttachmentAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
   AttachmentResponseV3,
   MyInfoAttribute,
@@ -11,6 +12,7 @@ import { IPopulatedMultirespondentForm } from 'src/types'
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearFormFieldResponsesV3,
   ParsedMultirespondentSubmissionBody,
 } from '../../../../types/api'
@@ -92,6 +94,16 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
+}
+
+export type StrippedAttachmentResponseV4 = Omit<
+  ParsedClearAttachmentFieldResponseV4,
+  'answer'
+> & {
+  answer: AttachmentAnswerV4 & {
+    filename: undefined
+    content: undefined
+  }
 }
 
 export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
