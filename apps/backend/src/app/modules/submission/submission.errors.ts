@@ -86,6 +86,18 @@ export class ValidateFieldErrorV3 extends ApplicationError {
 }
 
 /**
+ * A custom error class returned when given submission has field level response validation failure
+ */
+export class ValidateFieldErrorV4 extends ApplicationError {
+  constructor(
+    message = 'Error when validating V4 field response',
+    status = 400,
+  ) {
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V4)
+  }
+}
+
+/**
  * Error while sending confirmation email to recipients.
  */
 export class SendEmailConfirmationError extends ApplicationError {

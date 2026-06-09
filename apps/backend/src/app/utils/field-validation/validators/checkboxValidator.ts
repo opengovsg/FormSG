@@ -1,9 +1,13 @@
+import { CheckboxAnswerV4 } from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { BasicField, CheckboxResponseV3 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   ICheckboxFieldSchema,
   OmitUnusedValidatorProps,
@@ -330,4 +334,129 @@ export const constructCheckboxValidatorV3: ResponseValidatorConstructor<
     chain(makeMaxOptionsValidatorV3(checkboxField)),
     chain(makeValidOptionsValidatorV3(checkboxField)),
     chain(isDuplicateSelectedOptionsPresent),
+  )
+
+// V4
+// V4 checkbox answer shape is { value: string[], othersInput?: string }
+// which is the same as CheckboxFieldResponsesV3
+
+type CheckboxResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Checkbox
+  answer: CheckboxAnswerV4
+}
+
+const isCheckboxFieldTypeV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  CheckboxResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Checkbox) {
+    return left(
+      'CheckboxValidatorV4.fieldTypeMismatch:\tfield type is not checkbox',
+    )
+  }
+  return right(response as CheckboxResponseV4)
+}
+
+const isCheckboxAnswerOrOthersInputEmptyV4: ResponseValidator<
+  CheckboxResponseV4
+> = (response) => {
+  const { answer } = response
+
+  const isValueEmpty = answer.value.length === 0
+  const isOthersInputPresentAndEmpty =
+    answer.value.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
+    (!answer.othersInput || answer.othersInput.trim() === '')
+
+  return isValueEmpty || isOthersInputPresentAndEmpty
+    ? left(`CheckboxValidatorV4:\t Answer is empty`)
+    : right(response)
+}
+
+const makeMinOptionsValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV4
+> = (checkboxField) => (response) => {
+  const { validateByValue } = checkboxField
+  const { customMin } = checkboxField.ValidationOptions
+  const { answer } = response
+
+  if (!validateByValue || !customMin) return right(response)
+
+  const numSelected = answer.value.length
+  return numSelected >= customMin
+    ? right(response)
+    : left(
+        `CheckboxValidatorV4:\t answer has less options selected than minimum specified`,
+      )
+}
+
+const makeMaxOptionsValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV4
+> = (checkboxField) => (response) => {
+  const { validateByValue } = checkboxField
+  const { customMax } = checkboxField.ValidationOptions
+  const { answer } = response
+
+  if (!validateByValue || !customMax) return right(response)
+
+  const numSelected = answer.value.length
+
+  return numSelected <= customMax
+    ? right(response)
+    : left(
+        `CheckboxValidatorV4:\t answer has more options selected than maximum specified`,
+      )
+}
+
+const makeValidOptionsValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV4
+> = (checkboxField) => (response) => {
+  const { fieldOptions, othersRadioButton } = checkboxField
+  const { answer } = response
+
+  return answer.value.every(
+    (selectedOption) =>
+      fieldOptions.includes(selectedOption) ||
+      (selectedOption === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE &&
+        othersRadioButton &&
+        answer.othersInput),
+  ) &&
+    (!answer.value.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ||
+      othersRadioButton)
+    ? right(response)
+    : left(`CheckboxValidatorV4:\t answer is not valid`)
+}
+
+const isDuplicateSelectedOptionsPresentV4: ResponseValidator<
+  CheckboxResponseV4
+> = (response) => {
+  const { answer } = response
+
+  const selectedOptions = [...answer.value]
+  if (
+    selectedOptions.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
+    answer.othersInput
+  ) {
+    selectedOptions.push(`Others: ${answer.othersInput}`)
+  }
+
+  return selectedOptions.length === new Set(selectedOptions).size
+    ? right(response)
+    : left(`CheckboxValidatorV4:\t duplicate answers in response`)
+}
+
+export const constructCheckboxValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  CheckboxResponseV4
+> = (checkboxField) =>
+  flow(
+    isCheckboxFieldTypeV4,
+    chain(isCheckboxAnswerOrOthersInputEmptyV4),
+    chain(makeMinOptionsValidatorV4(checkboxField)),
+    chain(makeMaxOptionsValidatorV4(checkboxField)),
+    chain(makeValidOptionsValidatorV4(checkboxField)),
+    chain(isDuplicateSelectedOptionsPresentV4),
   )

@@ -3,7 +3,10 @@ import { BasicField, FormField, FormFieldDto } from 'formsg-shared/types'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../types/api/submission'
 import {
   FieldValidationSchema,
   ITableFieldSchema,
@@ -14,6 +17,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import {
   ValidateFieldError,
   ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
 } from '../../modules/submission/submission.errors'
 import {
   ProcessedAddressResponse,
@@ -31,6 +35,7 @@ import {
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
+  constructFieldResponseValidatorV4,
   constructOptionalAddressFieldValidator,
   constructSignatureFieldValidator,
   constructSingleAnswerValidator,
@@ -562,4 +567,57 @@ export const validateFieldV3 = ({
     isVisible,
   })
   return validateResponseWithValidatorV3(validator, formId, formField, response)
+}
+
+const validateResponseWithValidatorV4 = (
+  validator: ResponseValidator<ParsedClearFormFieldResponseV4>,
+  formId: string,
+  formField: FormFieldDto,
+  response: ParsedClearFormFieldResponseV4,
+): Result<true, ValidateFieldErrorV4> => {
+  const validEither = validator(response)
+  if (isLeft(validEither)) {
+    logInvalidAnswer(formId, formField, validEither.left)
+    return err(new ValidateFieldErrorV4('Invalid answer submitted'))
+  }
+  return ok(true)
+}
+
+export const validateFieldV4 = ({
+  formId,
+  formField,
+  response,
+  isVisible,
+}: {
+  formId: string
+  formField: FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  isVisible: boolean
+}): Result<true, ValidateFieldErrorV4> => {
+  const responseFieldType = response.fieldType as BasicField
+
+  if (!isValidResponseFieldType(responseFieldType)) {
+    return err(
+      new ValidateFieldErrorV4(`Rejected field type "${responseFieldType}"`),
+    )
+  }
+
+  const fieldTypeEither = doFieldTypesMatch(
+    formField.fieldType,
+    responseFieldType,
+  )
+
+  if (isLeft(fieldTypeEither)) {
+    return err(new ValidateFieldErrorV4(fieldTypeEither.left))
+  }
+
+  // For V4, skip the hidden-field and validation-required checks
+  // (these are handled by the caller in the MRF submission flow)
+  // and proceed directly to field-level validation.
+  const validator = constructFieldResponseValidatorV4({
+    formId,
+    formField,
+    isVisible,
+  })
+  return validateResponseWithValidatorV4(validator, formId, formField, response)
 }
