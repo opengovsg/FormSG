@@ -29,7 +29,7 @@ import { FieldCard } from './FieldCard'
  * Map backend BasicField values to our local FieldType.
  * Unmapped types default to 'short_text'.
  */
-const BASIC_FIELD_TO_FIELD_TYPE: Record<string, FieldType> = {
+export const BASIC_FIELD_TO_FIELD_TYPE: Record<string, FieldType> = {
   textfield: 'short_text',
   email: 'email',
   dropdown: 'dropdown',

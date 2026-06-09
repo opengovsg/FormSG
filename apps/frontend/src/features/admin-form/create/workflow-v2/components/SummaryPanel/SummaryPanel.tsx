@@ -1,11 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { BiLinkExternal, BiPlayCircle } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Box, Divider, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
-import type { Phase, PhaseStatus } from '../../types'
+import type { FormField, Phase, PhaseStatus } from '../../types'
 import {
   fieldsSelector,
   focusStateSelector,
@@ -14,6 +15,7 @@ import {
   stepsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
+import { BASIC_FIELD_TO_FIELD_TYPE } from '../AssignFieldsPanel/AssignFieldsPanel'
 
 import { SectionCard } from './SectionCard'
 
@@ -53,7 +55,21 @@ export const SummaryPanel = (): JSX.Element => {
 
   const steps = useWorkflowBuilderStore(stepsSelector)
   const fields = useWorkflowBuilderStore(fieldsSelector)
+  const syncFields = useWorkflowBuilderStore((s) => s.syncFields)
   const storeState = useWorkflowBuilderStore((state) => state)
+  const { data: adminForm } = useAdminForm()
+
+  // Sync real form fields from API so phase statuses are accurate
+  useEffect(() => {
+    if (!adminForm?.form_fields) return
+    const mapped: FormField[] = adminForm.form_fields.map((f, i) => ({
+      id: f._id,
+      name: f.title,
+      fieldType: BASIC_FIELD_TO_FIELD_TYPE[f.fieldType] ?? 'short_text',
+      number: i + 1,
+    }))
+    syncFields(mapped)
+  }, [adminForm?.form_fields, syncFields])
 
   const phaseStatuses = useMemo((): Record<Phase, PhaseStatus> => {
     return {
