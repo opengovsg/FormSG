@@ -528,10 +528,14 @@ const sendMrfOutcomeEmails = ({
             formId: form._id,
             formTitle: form.title,
             responseId: submissionId,
+            submissionId,
             timestamp: latestSubmissionTimestamp,
             isRejected,
             formQuestionAnswers,
             attachments: emailAttachments,
+            replyTo:
+              extractEmailAnswersFromResponses(responses).join(', ') ||
+              undefined,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',

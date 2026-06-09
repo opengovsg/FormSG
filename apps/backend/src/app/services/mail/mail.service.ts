@@ -1227,19 +1227,23 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    submissionId,
     timestamp,
     isRejected,
     formQuestionAnswers,
     attachments,
+    replyTo,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
+    submissionId?: string
     timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
+    replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
@@ -1261,6 +1265,8 @@ export class MailService {
       attachments,
       emailType: EmailType.WorkflowApproval,
       actionName: 'sendMrfApprovalEmail',
+      submissionId,
+      replyTo,
     })
   }
 
