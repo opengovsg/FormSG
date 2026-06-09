@@ -112,6 +112,7 @@ export const getEmailFromResponses = (
 export const extractEmailAnswersFromResponses = (
   responses: FieldResponsesV3,
 ): string[] => {
+  if (!responses) return []
   return Object.values(responses)
     .filter(
       (

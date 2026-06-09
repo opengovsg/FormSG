@@ -525,7 +525,7 @@ const sendMrfOutcomeEmails = ({
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
-            formId: form._id,
+            formId: String(form._id),
             formTitle: form.title,
             responseId: submissionId,
             submissionId,
@@ -552,7 +552,7 @@ const sendMrfOutcomeEmails = ({
 
         return MailService.sendMrfWorkflowCompletionEmail({
           emails: destinationEmails,
-          formId: form._id,
+          formId: String(form._id),
           formTitle: form.title,
           responseId: submissionId,
           submissionId,
