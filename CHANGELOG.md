@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.26.1](https://github.com/opengovsg/formsg/compare/v7.26.0...v7.26.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* add replyTo and X-Formsg-Submission-ID headers to MRF outcome emails (#9570) ([#9570](https://github.com/opengovsg/formsg/commit/b7e9c320686c326dc9c6518da4b3a97875cdc980))
+
+
+### Miscellaneous
+
+* Merge pull request #9568 from opengovsg/chore/revert-number-field-buttons-removal ([#9568](https://github.com/opengovsg/formsg/commit/d1698445285a9b0be20d5ecf02d955cbb2500081))
+
 ## [7.26.0](https://github.com/opengovsg/formsg/compare/v7.25.0...v7.26.0) (2026-06-08)
 
 
