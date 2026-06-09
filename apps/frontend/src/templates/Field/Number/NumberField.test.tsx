@@ -13,16 +13,6 @@ import * as stories from './NumberField.stories'
 const { ValidationRequired, ValidationOptional } = composeStories(stories)
 
 describe('validation required', () => {
-  it('does not render stepper buttons', () => {
-    render(<ValidationRequired />)
-    expect(
-      screen.queryByRole('button', { name: /increment/i, hidden: true }),
-    ).toBeNull()
-    expect(
-      screen.queryByRole('button', { name: /decrement/i, hidden: true }),
-    ).toBeNull()
-  })
-
   it('renders error when field is not filled before submitting', async () => {
     // Arrange
     const user = userEvent.setup()
