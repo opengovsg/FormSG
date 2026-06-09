@@ -1,8 +1,12 @@
+import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
 import { BasicField, DropdownResponseV3 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   IDropdownFieldSchema,
   OmitUnusedValidatorProps,
@@ -99,4 +103,59 @@ export const constructDropdownValidatorV3: ResponseValidatorConstructor<
     isDropdownResponseV3,
     chain(notEmptySingleAnswerResponseV3),
     chain(makeDropdownValidatorV3(dropdownField)),
+  )
+
+// V4
+
+type DropdownResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Dropdown
+  answer: StringAnswerV4
+}
+
+const isDropdownResponseV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  DropdownResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Dropdown) {
+    return left(
+      `DropdownValidatorV4.fieldTypeMismatch:\tfieldType is not dropdown`,
+    )
+  }
+  return right(response as DropdownResponseV4)
+}
+
+const notEmptyDropdownAnswerV4: ResponseValidator<DropdownResponseV4> = (
+  response,
+) => {
+  if (!response.answer.value || response.answer.value.trim().length === 0) {
+    return left(
+      'DropdownValidatorV4.notEmpty:\tanswer is an undefined or empty string',
+    )
+  }
+  return right(response)
+}
+
+const makeDropdownValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDropdownFieldSchema>,
+  DropdownResponseV4
+> = (dropdownField) => (response) => {
+  const { myInfo, fieldOptions } = dropdownField
+  const validOptions = myInfo?.attr
+    ? getMyInfoFieldOptions(myInfo.attr)
+    : fieldOptions.map((opt) => opt.trim())
+  const trimmedAnswer = response.answer.value.trim()
+  return isOneOfOptions(validOptions, trimmedAnswer)
+    ? right(response)
+    : left(`DropdownValidatorV4:\t answer is not a valid dropdown option`)
+}
+
+export const constructDropdownValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDropdownFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  DropdownResponseV4
+> = (dropdownField) =>
+  flow(
+    isDropdownResponseV4,
+    chain(notEmptyDropdownAnswerV4),
+    chain(makeDropdownValidatorV4(dropdownField)),
   )

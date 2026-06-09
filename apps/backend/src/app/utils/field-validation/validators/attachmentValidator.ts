@@ -4,8 +4,10 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import {
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
 } from '../../../../types/api'
 import {
   IAttachmentFieldSchema,
@@ -146,4 +148,70 @@ export const constructAttachmentFieldValidatorV3: ResponseValidatorConstructor<
     chain(attachmentAnswerNotEmptyValidatorV3),
     chain(attachmentContentDefinedValidatorV3),
     chain(makeAttachmentSizeValidatorV3(attachmentField)),
+  )
+
+// V4
+// V4 attachment: answer = { value: string (filename), hasBeenScanned: boolean, md5Hash? }
+// Plus content: Buffer and filename: string injected by the server (ParsedClearAttachmentFieldResponseV4)
+
+const isParsedClearAttachmentResponseV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  ParsedClearAttachmentFieldResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Attachment) {
+    return left(
+      `AttachmentValidatorV4.fieldTypeMismatch:\tfield type is not attachment`,
+    )
+  }
+  return right(response as ParsedClearAttachmentFieldResponseV4)
+}
+
+const attachmentAnswerNotEmptyValidatorV4: ResponseValidator<
+  ParsedClearAttachmentFieldResponseV4
+> = (response) => {
+  const { value } = response.answer
+
+  return value.trim().length === 0
+    ? left(`AttachmentValidatorV4:\t Answer is an empty string`)
+    : right(response)
+}
+
+const attachmentContentDefinedValidatorV4: ResponseValidator<
+  ParsedClearAttachmentFieldResponseV4
+> = (response) => {
+  const { content } = response.answer
+
+  return content === undefined
+    ? left(`AttachmentValidatorV4:\t No attachment content`)
+    : right(response)
+}
+
+const makeAttachmentSizeValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAttachmentFieldSchema>,
+  ParsedClearAttachmentFieldResponseV4
+> = (attachmentField) => (response) => {
+  const { attachmentSize } = attachmentField
+  const byteSizeLimit = parseInt(attachmentSize) * MB
+
+  const { content } = response.answer
+
+  if (content.byteLength === 0) {
+    return left(`AttachmentValidatorV4:\t File is empty.`)
+  }
+
+  return content.byteLength <= byteSizeLimit
+    ? right(response)
+    : left(`AttachmentValidatorV4:\t File size more than limit`)
+}
+
+export const constructAttachmentFieldValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAttachmentFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  ParsedClearAttachmentFieldResponseV4
+> = (attachmentField) =>
+  flow(
+    isParsedClearAttachmentResponseV4,
+    chain(attachmentAnswerNotEmptyValidatorV4),
+    chain(attachmentContentDefinedValidatorV4),
+    chain(makeAttachmentSizeValidatorV4(attachmentField)),
   )
