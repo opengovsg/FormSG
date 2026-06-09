@@ -68,6 +68,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
+  extractEmailAnswersFromResponses,
   extractRespondentCopyEmailDatas,
   formatSubmittedStepTimestamp,
   getEmailFromResponses,
@@ -550,9 +551,12 @@ const sendMrfOutcomeEmails = ({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
+          submissionId,
           timestamp: latestSubmissionTimestamp,
           formQuestionAnswers,
           attachments: emailAttachments,
+          replyTo:
+            extractEmailAnswersFromResponses(responses).join(', ') || undefined,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',

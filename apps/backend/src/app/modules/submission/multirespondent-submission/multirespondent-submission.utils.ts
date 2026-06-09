@@ -109,6 +109,22 @@ export const getEmailFromResponses = (
   return field.answer.value
 }
 
+export const extractEmailAnswersFromResponses = (
+  responses: FieldResponsesV3,
+): string[] => {
+  return Object.values(responses)
+    .filter(
+      (
+        response,
+      ): response is Extract<
+        FieldResponseV3,
+        { fieldType: BasicField.Email }
+      > => response.fieldType === BasicField.Email,
+    )
+    .map((response) => response.answer.value)
+    .filter(Boolean)
+}
+
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
   fieldId: string,

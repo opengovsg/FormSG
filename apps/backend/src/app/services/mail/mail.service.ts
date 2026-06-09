@@ -1186,17 +1186,21 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    submissionId,
     timestamp,
     formQuestionAnswers,
     attachments,
+    replyTo,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
+    submissionId?: string
     timestamp: string
     formQuestionAnswers: QuestionAnswer[]
     attachments?: Mail.Attachment[]
+    replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const emailTemplateData: EmailData = {
       formTitle,
@@ -1213,6 +1217,8 @@ export class MailService {
       attachments,
       emailType: EmailType.WorkflowCompletion,
       actionName: 'sendMrfWorkflowCompletionEmail',
+      submissionId,
+      replyTo,
     })
   }
 
