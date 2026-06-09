@@ -15,6 +15,7 @@ import {
   EmailModeFeedbackScreen,
 } from './EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
+import { StorageModeOriginScreen } from './StorageModeOriginScreen'
 
 /**
  * @preconditions Requires CreateFormWizardProvider parent
@@ -32,6 +33,9 @@ export const CreateFormModalContent = () => {
         )}
         {currentStep === CreateFormFlowStates.Origin && (
           <CreateFormOriginScreen />
+        )}
+        {currentStep === CreateFormFlowStates.StorageModeOrigin && (
+          <StorageModeOriginScreen />
         )}
         {currentStep === CreateFormFlowStates.StorageModeDetails && (
           <CreateFormStorageModeScreen />

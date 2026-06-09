@@ -15,6 +15,7 @@ export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
   Origin = 'origin',
+  StorageModeOrigin = 'storageModeOrigin',
   StorageModeDetails = 'storageModeDetails',
   EmailFeedback = 'emailFeedback',
   EmailModeCreation = 'emailModeCreation',
@@ -51,6 +52,7 @@ export type CreateFormWizardContextReturn = {
   hasMyInfoChildren: boolean
   onClose: () => void
   isMrfCutoverEnabled: boolean
+  goToStorageModeOrigin: () => void
   goToStorageModeDetails: () => void
   goToMrfDetails: () => void
   goToLanding: () => void

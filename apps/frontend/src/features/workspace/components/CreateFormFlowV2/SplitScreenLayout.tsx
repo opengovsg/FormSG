@@ -1,16 +1,31 @@
 import { Box, Flex } from '@chakra-ui/react'
 
-export type WizardStep = 'name' | 'origin' | 'secretKey'
+export type WizardStep =
+  | 'name'
+  | 'origin'
+  | 'secretKey'
+  | 'storageName'
+  | 'storageOrigin'
 
 const STEP_ORDER: WizardStep[] = ['name', 'origin', 'secretKey']
+
+const STORAGE_STEP_ORDER: WizardStep[] = [
+  'name',
+  'storageName',
+  'storageOrigin',
+  'secretKey',
+]
 
 interface ProgressBarProps {
   currentStep: WizardStep
 }
 
 const ProgressBar = ({ currentStep }: ProgressBarProps): JSX.Element => {
-  const currentIndex = STEP_ORDER.indexOf(currentStep)
-  const progress = ((currentIndex + 1) / STEP_ORDER.length) * 100
+  const isStoragePath =
+    currentStep === 'storageName' || currentStep === 'storageOrigin'
+  const order = isStoragePath ? STORAGE_STEP_ORDER : STEP_ORDER
+  const currentIndex = order.indexOf(currentStep)
+  const progress = ((currentIndex + 1) / order.length) * 100
 
   return (
     <Box w="100%" mb="2rem">

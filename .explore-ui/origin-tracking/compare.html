@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore UI: Origin Tracking Step</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Tabs */
+    nav { display: flex; align-items: center; gap: 4px; padding: 8px 16px; background: #16213e; border-bottom: 1px solid #2a2a4a; flex-shrink: 0; }
+    nav .tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #8888aa; background: transparent; border: none; transition: all 0.15s; }
+    nav .tab:hover { color: #c0c0e0; background: #1a1a3e; }
+    nav .tab.active { color: #fff; background: #4A61C0; }
+    nav .spacer { flex: 1; }
+    nav .ranking-toggle { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #8888aa; background: #1a1a3e; border: 1px solid #2a2a4a; transition: all 0.15s; }
+    nav .ranking-toggle:hover { color: #c0c0e0; border-color: #4A61C0; }
+
+    /* Preview area */
+    #preview-area { flex: 1; position: relative; overflow: hidden; }
+    .preview-single { position: absolute; inset: 0; display: none; }
+    .preview-single.active { display: block; }
+    .preview-single iframe { width: 100%; height: 100%; border: none; }
+    .preview-grid { position: absolute; inset: 0; display: none; padding: 12px; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+    .preview-grid.active { display: grid; }
+    .preview-grid .grid-item { border-radius: 8px; overflow: hidden; border: 1px solid #2a2a4a; display: flex; flex-direction: column; }
+    .preview-grid .grid-label { padding: 6px 12px; background: #16213e; font-size: 12px; font-weight: 600; color: #8888aa; flex-shrink: 0; }
+    .preview-grid iframe { flex: 1; width: 100%; border: none; }
+
+    /* Ranking panel */
+    #ranking-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 340px; background: #16213e; border-left: 1px solid #2a2a4a; z-index: 100; transform: translateX(100%); transition: transform 0.25s ease; padding: 24px; overflow-y: auto; }
+    #ranking-panel.open { transform: translateX(0); }
+    #ranking-panel h2 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px; }
+    .rank-item { margin-bottom: 20px; padding: 16px; background: #1a1a2e; border-radius: 8px; border: 1px solid #2a2a4a; }
+    .rank-item.recommended { border-color: #4A61C0; }
+    .rank-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .rank-number { width: 24px; height: 24px; border-radius: 50%; background: #2a2a4a; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .rank-item.recommended .rank-number { background: #4A61C0; }
+    .rank-name { font-size: 14px; font-weight: 600; color: #fff; }
+    .rank-badge { font-size: 10px; font-weight: 600; color: #4A61C0; background: rgba(74,97,192,0.15); padding: 2px 8px; border-radius: 10px; }
+    .rank-desc { font-size: 13px; color: #9999bb; line-height: 1.5; margin-bottom: 10px; }
+    .rank-pros, .rank-cons { font-size: 12px; line-height: 1.6; }
+    .rank-pros { color: #5cb85c; }
+    .rank-cons { color: #d9534f; }
+    .rank-label { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <nav>
+    <button class="tab active" onclick="showTab('all')">All</button>
+    <button class="tab" onclick="showTab(0)">Tile Grid</button>
+    <button class="tab" onclick="showTab(1)">Stacked List</button>
+    <button class="tab" onclick="showTab(2)">Icon Chips</button>
+    <span class="spacer"></span>
+    <button class="ranking-toggle" onclick="toggleRanking()">Rankings</button>
+  </nav>
+
+  <div id="preview-area">
+    <div class="preview-grid active" id="grid-view">
+      <div class="grid-item">
+        <div class="grid-label">Option 1: Tile Grid</div>
+        <iframe src="option-1-tile-grid.html"></iframe>
+      </div>
+      <div class="grid-item">
+        <div class="grid-label">Option 2: Stacked List</div>
+        <iframe src="option-2-stacked-list.html"></iframe>
+      </div>
+      <div class="grid-item">
+        <div class="grid-label">Option 3: Icon Chips</div>
+        <iframe src="option-3-icon-chips.html"></iframe>
+      </div>
+    </div>
+    <div class="preview-single" id="single-0">
+      <iframe src="option-1-tile-grid.html"></iframe>
+    </div>
+    <div class="preview-single" id="single-1">
+      <iframe src="option-2-stacked-list.html"></iframe>
+    </div>
+    <div class="preview-single" id="single-2">
+      <iframe src="option-3-icon-chips.html"></iframe>
+    </div>
+  </div>
+
+  <div id="ranking-panel">
+    <h2>Rankings</h2>
+    <div class="rank-item recommended">
+      <div class="rank-header">
+        <span class="rank-number">1</span>
+        <span class="rank-name">Stacked List</span>
+        <span class="rank-badge">Recommended</span>
+      </div>
+      <div class="rank-desc">Full-width cards with explicit checkboxes. Clearest affordance for multi-select. Scales well if options change.</div>
+      <div class="rank-pros"><span class="rank-label">+ </span>Obvious multi-select (visible checkboxes). Easy to scan vertically. "Others" text input fits naturally inline. Matches FormSG's existing form field patterns.</div>
+      <div class="rank-cons"><span class="rank-label">- </span>Takes more vertical space. Less visually distinctive than tiles.</div>
+    </div>
+    <div class="rank-item">
+      <div class="rank-header">
+        <span class="rank-number">2</span>
+        <span class="rank-name">Tile Grid</span>
+      </div>
+      <div class="rank-desc">2x3 grid of equal tiles with icons. Visually bold and scannable. Matches Figma draft references (beehiiv, Copy.ai).</div>
+      <div class="rank-pros"><span class="rank-label">+ </span>Compact layout. Visually appealing. Icons help quick recognition. Matches the Figma "possible future" draft.</div>
+      <div class="rank-cons"><span class="rank-label">- </span>Multi-select less obvious without visible checkboxes. Harder to add descriptions per option. "Others" text input placement less natural.</div>
+    </div>
+    <div class="rank-item">
+      <div class="rank-header">
+        <span class="rank-number">3</span>
+        <span class="rank-name">Icon Chips</span>
+      </div>
+      <div class="rank-desc">Horizontal pill-shaped chips. Casual, lightweight feel. Good for quick tagging.</div>
+      <div class="rank-pros"><span class="rank-label">+ </span>Most compact. Feels fast and lightweight. Good for mobile.</div>
+      <div class="rank-cons"><span class="rank-label">- </span>Least formal for an important data collection step. Multi-select less discoverable. Doesn't match FormSG's existing patterns. May feel too casual for a mandatory question.</div>
+    </div>
+  </div>
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        if (id === 'all') t.classList.toggle('active', i === 0);
+        else t.classList.toggle('active', i === id + 1);
+      });
+      document.getElementById('grid-view').classList.toggle('active', id === 'all');
+      for (let i = 0; i < 3; i++) {
+        document.getElementById('single-' + i).classList.toggle('active', id === i);
+      }
+    }
+    function toggleRanking() {
+      document.getElementById('ranking-panel').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

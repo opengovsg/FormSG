@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FormSG — Origin Tracking (Option 1: Tile Grid)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: {
+              100: '#E8EAFA',
+              500: '#4A61C0',
+            },
+            secondary: {
+              400: '#9B9FA7',
+              700: '#293044',
+            },
+            neutral: {
+              100: '#FBFCFD',
+              300: '#E1E2E4',
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; }
+
+    .tile {
+      width: 100%;
+      aspect-ratio: 160 / 100;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+      user-select: none;
+    }
+
+    .tile:hover {
+      border-color: #4A61C0;
+      box-shadow: 0 0 0 1px #4A61C0;
+    }
+
+    .tile.selected {
+      border: 2px solid #4A61C0;
+      background: #F0F2FB;
+    }
+
+    .tile.selected:hover {
+      box-shadow: none;
+    }
+
+    .btn-next {
+      width: 100%;
+      height: 56px;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+      border: none;
+    }
+
+    .btn-next.disabled {
+      background: #B7C0E6;
+      color: #fff;
+      cursor: not-allowed;
+    }
+
+    .btn-next.enabled {
+      background: #4A61C0;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn-next.enabled:hover {
+      background: #3d52a8;
+    }
+
+    .others-input {
+      width: 100%;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #293044;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .others-input:focus {
+      border-color: #4A61C0;
+      box-shadow: 0 0 0 1px #4A61C0;
+    }
+
+    .others-input::placeholder {
+      color: #9B9FA7;
+    }
+
+    /* Form preview mockup */
+    .form-preview {
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(41, 48, 68, 0.12);
+      width: 280px;
+    }
+
+    .form-preview-header {
+      background: #4A61C0;
+      padding: 16px 20px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .form-preview-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .placeholder-label {
+      height: 10px;
+      background: #E1E2E4;
+      border-radius: 2px;
+    }
+
+    .placeholder-field {
+      height: 36px;
+      background: #FBFCFD;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+    }
+
+    .placeholder-field-short {
+      height: 36px;
+      background: #FBFCFD;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body class="bg-white">
+
+<div style="display:flex; height:100vh; overflow:hidden;">
+
+  <!-- Left panel -->
+  <div style="width:50%; background:#fff; overflow-y:auto; display:flex; flex-direction:column;">
+
+    <!-- Progress bar -->
+    <div style="height:4px; background:#E1E2E4; flex-shrink:0;">
+      <div style="width:40%; height:100%; background:#4A61C0; border-radius:0 2px 2px 0;"></div>
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1; padding:2rem 3rem; max-width:32rem; width:100%;">
+
+      <div style="margin-bottom:2rem;">
+        <h2 style="font-size:24px; font-weight:600; color:#293044; margin:0 0 8px;">What was this form before?</h2>
+        <p style="font-size:16px; font-weight:400; color:#9B9FA7; margin:0;">Select all that apply.</p>
+      </div>
+
+      <!-- Tile grid -->
+      <div id="tile-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px;">
+
+        <button class="tile" data-id="paper" onclick="toggleTile(this)">
+          <span style="font-size:24px;">📄</span>
+          <span style="font-size:14px; font-weight:500; color:#293044;">Paper form</span>
+        </button>
+
+        <button class="tile" data-id="pdf" onclick="toggleTile(this)">
+          <span style="font-size:24px;">📋</span>
+          <span style="font-size:14px; font-weight:500; color:#293044;">PDF</span>
+        </button>
+
+        <button class="tile" data-id="email" onclick="toggleTile(this)">
+          <span style="font-size:24px;">✉️</span>
+          <span style="font-size:14px; font-weight:500; color:#293044;">Email</span>
+        </button>
+
+        <button class="tile" data-id="word" onclick="toggleTile(this)">
+          <span style="font-size:24px;">📝</span>
+          <span style="font-size:14px; font-weight:500; color:#293044;">Word document</span>
+        </button>
+
+        <button class="tile" data-id="new" onclick="toggleTile(this)">
+          <span style="font-size:24px;">✨</span>
+          <span style="font-size:14px; font-weight:500; color:#293044; text-align:center; line-height:1.3;">This is a new form</span>
+        </button>
+
+        <button class="tile" data-id="others" onclick="toggleTile(this)">
+          <span style="font-size:24px;">⋯</span>
+          <span style="font-size:14px; font-weight:500; color:#293044;">Others</span>
+        </button>
+
+      </div>
+
+      <!-- Others text input (hidden by default) -->
+      <div id="others-input-wrap" style="display:none; margin-bottom:16px;">
+        <input
+          class="others-input"
+          type="text"
+          placeholder="Please specify"
+          id="others-text"
+        />
+      </div>
+
+      <!-- Next button -->
+      <button id="next-btn" class="btn-next disabled" disabled onclick="handleNext()">
+        Next step →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div style="width:50%; background:#E8EAFA; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+    <div class="form-preview">
+      <div class="form-preview-header">Your form name</div>
+      <div class="form-preview-body">
+        <div class="field-group">
+          <div class="placeholder-label" style="width:55%;"></div>
+          <div class="placeholder-field"></div>
+        </div>
+        <div class="field-group">
+          <div class="placeholder-label" style="width:40%;"></div>
+          <div class="placeholder-field"></div>
+        </div>
+        <div class="field-group">
+          <div class="placeholder-label" style="width:65%;"></div>
+          <div style="height:72px; background:#FBFCFD; border:1px solid #E1E2E4; border-radius:4px;"></div>
+        </div>
+        <div class="field-group">
+          <div class="placeholder-label" style="width:35%;"></div>
+          <div class="placeholder-field-short" style="width:60%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const EXCLUSIVE_ID = 'new';
+  const OTHERS_ID = 'others';
+
+  let selected = new Set();
+
+  function toggleTile(el) {
+    const id = el.dataset.id;
+
+    if (id === EXCLUSIVE_ID) {
+      if (selected.has(EXCLUSIVE_ID)) {
+        selected.delete(EXCLUSIVE_ID);
+        el.classList.remove('selected');
+      } else {
+        // Deselect everything else
+        selected.clear();
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+        selected.add(EXCLUSIVE_ID);
+        el.classList.add('selected');
+        // Hide others input
+        toggleOthersInput(false);
+      }
+    } else {
+      // If "new form" was selected, deselect it
+      if (selected.has(EXCLUSIVE_ID)) {
+        selected.delete(EXCLUSIVE_ID);
+        document.querySelector('[data-id="new"]').classList.remove('selected');
+      }
+
+      if (selected.has(id)) {
+        selected.delete(id);
+        el.classList.remove('selected');
+        if (id === OTHERS_ID) toggleOthersInput(false);
+      } else {
+        selected.add(id);
+        el.classList.add('selected');
+        if (id === OTHERS_ID) toggleOthersInput(true);
+      }
+    }
+
+    updateNextButton();
+  }
+
+  function toggleOthersInput(show) {
+    const wrap = document.getElementById('others-input-wrap');
+    wrap.style.display = show ? 'block' : 'none';
+    if (show) {
+      document.getElementById('others-text').focus();
+    } else {
+      document.getElementById('others-text').value = '';
+    }
+  }
+
+  function updateNextButton() {
+    const btn = document.getElementById('next-btn');
+    const hasSelection = selected.size > 0;
+    if (hasSelection) {
+      btn.classList.remove('disabled');
+      btn.classList.add('enabled');
+      btn.disabled = false;
+    } else {
+      btn.classList.remove('enabled');
+      btn.classList.add('disabled');
+      btn.disabled = true;
+    }
+  }
+
+  function handleNext() {
+    if (selected.size === 0) return;
+    const choices = [...selected];
+    const othersText = document.getElementById('others-text').value.trim();
+    let summary = choices.map(id => {
+      if (id === 'others' && othersText) return `Others: "${othersText}"`;
+      return {
+        paper: 'Paper form',
+        pdf: 'PDF',
+        email: 'Email',
+        word: 'Word document',
+        new: 'This is a new form',
+        others: 'Others',
+      }[id] || id;
+    }).join(', ');
+    alert(`Selected: ${summary}\n\n(This is a prototype — next step not wired up.)`);
+  }
+</script>
+
+</body>
+</html>

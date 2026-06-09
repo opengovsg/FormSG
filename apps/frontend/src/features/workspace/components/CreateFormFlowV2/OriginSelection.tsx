@@ -1,30 +1,31 @@
 import { useCallback } from 'react'
-import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 
 import Checkbox from '~components/Checkbox'
 import Input from '~components/Input'
 
 export type FormOriginValue =
   | 'paper'
-  | 'pdf'
+  | 'new_process'
   | 'email'
-  | 'word'
-  | 'new'
-  | 'others'
+  | 'documents'
+  | 'spreadsheets'
+  | 'other_builders'
+  | 'other'
 
 interface OriginOption {
   value: FormOriginValue
   label: string
-  icon: string
 }
 
 const ORIGIN_OPTIONS: OriginOption[] = [
-  { value: 'paper', label: 'Paper form', icon: '📄' },
-  { value: 'pdf', label: 'PDF document', icon: '📋' },
-  { value: 'email', label: 'Email', icon: '✉️' },
-  { value: 'word', label: 'Word document', icon: '📝' },
-  { value: 'new', label: 'This is a new form', icon: '✨' },
-  { value: 'others', label: 'Others', icon: '⋯' },
+  { value: 'paper', label: 'Paper form' },
+  { value: 'new_process', label: 'This is a new process' },
+  { value: 'email', label: 'Emails' },
+  { value: 'documents', label: 'Documents (e.g. PDF, Word)' },
+  { value: 'spreadsheets', label: 'Spreadsheets (e.g. Excel, Sheets)' },
+  { value: 'other_builders', label: 'Other form builders' },
+  { value: 'other', label: 'Other' },
 ]
 
 interface OriginSelectionProps {
@@ -42,24 +43,22 @@ export const OriginSelection = ({
 }: OriginSelectionProps): JSX.Element => {
   const handleToggle = useCallback(
     (value: FormOriginValue) => {
-      if (value === 'new') {
-        // "This is a new form" is mutually exclusive
-        if (selected.includes('new')) {
+      if (value === 'new_process') {
+        if (selected.includes('new_process')) {
           onSelectionChange([])
         } else {
-          onSelectionChange(['new'])
+          onSelectionChange(['new_process'])
           onOthersTextChange('')
         }
         return
       }
 
-      // Selecting any other option deselects "new"
-      const withoutNew = selected.filter((v) => v !== 'new')
+      const withoutNew = selected.filter((v) => v !== 'new_process')
 
       if (withoutNew.includes(value)) {
         const next = withoutNew.filter((v) => v !== value)
         onSelectionChange(next)
-        if (value === 'others') {
+        if (value === 'other') {
           onOthersTextChange('')
         }
       } else {
@@ -70,43 +69,21 @@ export const OriginSelection = ({
   )
 
   return (
-    <Stack spacing="0.5rem">
+    <Stack spacing="0.25rem">
       {ORIGIN_OPTIONS.map((option) => {
         const isSelected = selected.includes(option.value)
 
         return (
           <Box key={option.value}>
-            <Flex
-              as="button"
-              type="button"
-              align="center"
-              w="100%"
-              p="0.875rem"
-              border="2px solid"
-              borderColor={isSelected ? '#445FCD' : 'neutral.300'}
-              borderRadius="8px"
-              bg={isSelected ? '#F0F2FB' : 'white'}
-              cursor="pointer"
-              transition="all 0.15s"
-              _hover={{ bg: isSelected ? '#F0F2FB' : 'neutral.100' }}
-              onClick={() => handleToggle(option.value)}
+            <Checkbox
+              isChecked={isSelected}
+              onChange={() => handleToggle(option.value)}
             >
-              <Checkbox
-                isChecked={isSelected}
-                onChange={() => handleToggle(option.value)}
-                pointerEvents="none"
-              >
-                <Flex align="center" gap="0.5rem">
-                  <Text fontSize="1.125rem">{option.icon}</Text>
-                  <Text textStyle="body-1" color="secondary.700">
-                    {option.label}
-                  </Text>
-                </Flex>
-              </Checkbox>
-            </Flex>
+              {option.label}
+            </Checkbox>
 
-            {option.value === 'others' && isSelected && (
-              <Box mt="0.5rem" pl="3rem">
+            {option.value === 'other' && isSelected && (
+              <Box mt="0.25rem" pl="2.5rem">
                 <Input
                   placeholder="Please specify"
                   value={othersText}

@@ -7,6 +7,7 @@ import { FormResponseMode } from 'formsg-shared/types'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import formsgSdk from '~utils/formSdk'
 
+import { useUser } from '~features/user/queries'
 import { useCreateFormMutations } from '~features/workspace/mutations'
 
 import { FormNamePreview } from './FormNamePreview'
@@ -15,6 +16,8 @@ import { FormOriginValue } from './OriginSelection'
 import { OriginStep } from './OriginStep'
 import { SecretKeyStep } from './SecretKeyStep'
 import { SplitScreenLayout, type WizardStep } from './SplitScreenLayout'
+import { StorageModeNameStep } from './StorageModeNameStep'
+import { StorageModeOriginStep } from './StorageModeOriginStep'
 
 export interface CreateFormFlowV2Inputs {
   title: string
@@ -35,8 +38,15 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
     defaultValues: { title: '' },
   })
 
-  const { createMultirespondentModeFormMutation } = useCreateFormMutations()
+  const { user } = useUser()
+  const adminEmail = user?.email
 
+  const {
+    createMultirespondentModeFormMutation,
+    createStorageModeFormMutation,
+  } = useCreateFormMutations()
+
+  // MRF form creation
   const handleCreateForm = useCallback(() => {
     const title = formMethods.getValues('title')
     if (!title) return
@@ -56,14 +66,57 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
     )
   }, [formMethods, createMultirespondentModeFormMutation, keypair.publicKey])
 
+  // Storage mode form creation
+  const handleCreateStorageForm = useCallback(() => {
+    const title = formMethods.getValues('title')
+    if (!title) return
+
+    const defaultEmails = adminEmail ? [adminEmail] : []
+    createStorageModeFormMutation.mutate(
+      {
+        title,
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: keypair.publicKey,
+        emails: defaultEmails,
+      },
+      {
+        onSuccess: (data) => {
+          setFormId(data._id)
+          setCurrentStep('storageOrigin')
+        },
+      },
+    )
+  }, [
+    formMethods,
+    createStorageModeFormMutation,
+    keypair.publicKey,
+    adminEmail,
+  ])
+
   const handleCancel = useCallback(() => {
     navigate(DASHBOARD_ROUTE)
   }, [navigate])
+
+  const handleEscapeHatch = useCallback(() => {
+    setCurrentStep('storageName')
+  }, [])
 
   const handleOriginNext = useCallback(
     (selected: FormOriginValue[], othersText: string) => {
       setOriginData({ selected, othersText })
       // TODO: persist origin data to form metadata via API
+      setCurrentStep('secretKey')
+    },
+    [],
+  )
+
+  const handleStorageOriginNext = useCallback(
+    (
+      _storageReasons: string[],
+      _originSelected: FormOriginValue[],
+      _othersText: string,
+    ) => {
+      // TODO: persist storage reasons + origin data via API
       setCurrentStep('secretKey')
     },
     [],
@@ -83,11 +136,22 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
             formMethods={formMethods}
             onSubmit={handleCreateForm}
             onCancel={handleCancel}
+            onEscapeHatch={handleEscapeHatch}
             isLoading={createMultirespondentModeFormMutation.isLoading}
           />
         )
       case 'origin':
         return <OriginStep onNext={handleOriginNext} />
+      case 'storageName':
+        return (
+          <StorageModeNameStep
+            formMethods={formMethods}
+            onSubmit={handleCreateStorageForm}
+            isLoading={createStorageModeFormMutation.isLoading}
+          />
+        )
+      case 'storageOrigin':
+        return <StorageModeOriginStep onNext={handleStorageOriginNext} />
       case 'secretKey':
         return (
           <SecretKeyStep
@@ -102,16 +166,7 @@ export const CreateFormFlowV2Page = (): JSX.Element => {
     }
   })()
 
-  const rightPanel = (() => {
-    switch (currentStep) {
-      case 'name':
-      case 'origin':
-      case 'secretKey':
-        return <FormNamePreview title={title} />
-      default:
-        return null
-    }
-  })()
+  const rightPanel = <FormNamePreview title={title} />
 
   return (
     <SplitScreenLayout

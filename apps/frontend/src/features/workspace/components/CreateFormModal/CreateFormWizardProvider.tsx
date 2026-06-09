@@ -57,6 +57,9 @@ export const useCommonFormWizardProvider = ({
   const { setValue } = formMethods
 
   // TODO [MRF-CUTOVER]: Remove after cutover. -1 is used temporarily as there is an existing animation bug with +1.
+  const goToStorageModeOrigin = () => {
+    setCurrentStep([CreateFormFlowStates.StorageModeOrigin, 1])
+  }
   const goToStorageModeDetails = () => {
     setValue('responseMode', FormResponseMode.Encrypt)
     setCurrentStep([CreateFormFlowStates.StorageModeDetails, -1])
@@ -76,6 +79,7 @@ export const useCommonFormWizardProvider = ({
     direction,
     setCurrentStep,
     isMrfCutoverEnabled,
+    goToStorageModeOrigin,
     goToStorageModeDetails,
     goToMrfDetails,
     goToLanding,
@@ -93,6 +97,7 @@ const useCreateFormWizardContext = (
     keypair,
     setCurrentStep,
     isMrfCutoverEnabled,
+    goToStorageModeOrigin,
     goToStorageModeDetails,
     goToMrfDetails,
     goToLanding,
@@ -136,7 +141,7 @@ const useCreateFormWizardContext = (
             },
             {
               onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Origin, 1])
+                setCurrentStep([CreateFormFlowStates.StorageModeOrigin, 1])
               },
             },
           )
@@ -232,6 +237,7 @@ const useCreateFormWizardContext = (
     modalHeader: t('features.workspace.modals.forms.create.title.setup'),
     onClose,
     isMrfCutoverEnabled,
+    goToStorageModeOrigin,
     goToStorageModeDetails,
     goToMrfDetails,
     goToLanding,

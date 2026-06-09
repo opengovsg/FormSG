@@ -8,25 +8,19 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
-import { EscapeHatchLink } from '../CreateFormModal/CreateFormModalContent/EscapeHatchLink'
-
 import { CreateFormFlowV2Inputs } from './CreateFormFlowV2Page'
 
-interface FormNameStepProps {
+interface StorageModeNameStepProps {
   formMethods: UseFormReturn<CreateFormFlowV2Inputs>
   onSubmit: () => void
-  onCancel: () => void
-  onEscapeHatch?: () => void
   isLoading: boolean
 }
 
-export const FormNameStep = ({
+export const StorageModeNameStep = ({
   formMethods,
   onSubmit,
-  onCancel,
-  onEscapeHatch,
   isLoading,
-}: FormNameStepProps): JSX.Element => {
+}: StorageModeNameStepProps): JSX.Element => {
   const {
     register,
     formState: { errors },
@@ -38,10 +32,11 @@ export const FormNameStep = ({
     <Stack spacing="2rem" maxW="32rem">
       <Box>
         <Text textStyle="h2" color="secondary.700" mb="0.5rem">
-          Name your form
+          Set up a Storage mode form
         </Text>
         <Text textStyle="body-1" color="secondary.400">
-          You can always change this later.
+          Storage mode is outdated and no longer receives new features. Only use
+          this if you need a feature not yet available in the current version.
         </Text>
       </Box>
 
@@ -61,23 +56,14 @@ export const FormNameStep = ({
         <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
       </FormControl>
 
-      <Stack spacing="0.75rem">
-        <Button
-          rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-          onClick={onSubmit}
-          isLoading={isLoading}
-        >
-          Next step
-        </Button>
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        {onEscapeHatch && (
-          <Box mt="0.5rem">
-            <EscapeHatchLink onClick={onEscapeHatch} />
-          </Box>
-        )}
-      </Stack>
+      <Button
+        rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+        onClick={onSubmit}
+        isLoading={isLoading}
+        isFullWidth
+      >
+        Create form
+      </Button>
     </Stack>
   )
 }

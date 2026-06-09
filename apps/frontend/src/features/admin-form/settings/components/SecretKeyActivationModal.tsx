@@ -215,12 +215,9 @@ const SecretKeyActivationWithOriginModal = ({
               <StepCard
                 status={step2Status}
                 stepNumber={2}
-                title="What was this form before?"
+                title="Where is this being filled today?"
               >
                 <Stack spacing="0.75rem">
-                  <Text textStyle="body-2" color="secondary.400">
-                    Select all that apply.
-                  </Text>
                   <OriginSelection
                     selected={originSelected}
                     onSelectionChange={setOriginSelected}

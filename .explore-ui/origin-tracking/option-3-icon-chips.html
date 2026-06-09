@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Origin Tracking — Option 3: Icon Chips</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+
+    .progress-bar-track {
+      height: 4px;
+      background: #E1E2E4;
+      width: 100%;
+    }
+    .progress-bar-fill {
+      height: 4px;
+      background: #4A61C0;
+      width: 40%;
+      transition: width 300ms ease;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: 1px solid #E1E2E4;
+      border-radius: 20px;
+      background: #ffffff;
+      cursor: pointer;
+      user-select: none;
+      transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+      font-size: 14px;
+      font-weight: 500;
+      color: #293044;
+      white-space: nowrap;
+    }
+    .chip:hover:not(.chip--selected) {
+      background: #F3F4F6;
+    }
+    .chip--selected {
+      background: #4A61C0;
+      border-color: #4A61C0;
+      color: #ffffff;
+      transform: scale(1.03);
+      box-shadow: 0 2px 8px rgba(74, 97, 192, 0.25);
+    }
+    .chip .chip-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .next-btn {
+      width: 100%;
+      height: 56px;
+      background: #4A61C0;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 150ms ease, background 150ms ease;
+    }
+    .next-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .next-btn:not(:disabled):hover {
+      background: #3a4fa3;
+    }
+
+    .others-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #293044;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+      margin-top: 8px;
+    }
+    .others-input:focus {
+      border-color: #4A61C0;
+      box-shadow: 0 0 0 3px rgba(74, 97, 192, 0.12);
+    }
+    .others-input::placeholder {
+      color: #9B9FA7;
+    }
+
+    .others-container {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 200ms ease, opacity 200ms ease;
+    }
+    .others-container.visible {
+      max-height: 80px;
+      opacity: 1;
+    }
+
+    /* Form preview elements */
+    .preview-card {
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(41, 48, 68, 0.10);
+      overflow: hidden;
+      width: 100%;
+      max-width: 320px;
+    }
+    .preview-header {
+      background: #4A61C0;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+    .preview-header-bar {
+      background: rgba(255,255,255,0.3);
+      height: 10px;
+      border-radius: 4px;
+      width: 60%;
+    }
+    .preview-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .preview-line {
+      background: #E1E2E4;
+      border-radius: 3px;
+      height: 8px;
+    }
+    .preview-line--short { width: 40%; }
+    .preview-line--medium { width: 65%; }
+    .preview-line--long { width: 85%; }
+    .preview-field {
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+      height: 36px;
+      background: #FBFCFD;
+    }
+  </style>
+</head>
+<body style="background: #ffffff;">
+
+  <!-- Progress bar -->
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill"></div>
+  </div>
+
+  <!-- Split screen -->
+  <div style="display: flex; min-height: calc(100vh - 4px);">
+
+    <!-- Left panel -->
+    <div style="width: 50%; background: #ffffff; padding: 2rem 3rem; display: flex; flex-direction: column; justify-content: center;">
+      <div style="max-width: 32rem;">
+
+        <p style="font-size: 12px; font-weight: 500; color: #9B9FA7; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 12px;">Step 1 of 5</p>
+
+        <h1 style="font-size: 24px; font-weight: 600; color: #293044; margin: 0 0 8px; line-height: 1.3;">
+          What was this form before?
+        </h1>
+        <p style="font-size: 16px; color: #9B9FA7; margin: 0 0 28px;">
+          Select all that apply.
+        </p>
+
+        <!-- Chips -->
+        <div id="chips-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;">
+
+          <button class="chip" data-id="paper" data-exclusive="false">
+            <span class="chip-icon">📄</span>
+            <span>Paper form</span>
+          </button>
+
+          <button class="chip" data-id="pdf" data-exclusive="false">
+            <span class="chip-icon">📋</span>
+            <span>PDF</span>
+          </button>
+
+          <button class="chip" data-id="email" data-exclusive="false">
+            <span class="chip-icon">✉️</span>
+            <span>Email</span>
+          </button>
+
+          <button class="chip" data-id="word" data-exclusive="false">
+            <span class="chip-icon">📝</span>
+            <span>Word document</span>
+          </button>
+
+          <button class="chip" data-id="new" data-exclusive="true">
+            <span class="chip-icon">✨</span>
+            <span>This is a new form</span>
+          </button>
+
+          <button class="chip" data-id="others" data-exclusive="false">
+            <span class="chip-icon">⋯</span>
+            <span>Others</span>
+          </button>
+
+        </div>
+
+        <!-- Others text input -->
+        <div class="others-container" id="others-container">
+          <input
+            class="others-input"
+            id="others-input"
+            type="text"
+            placeholder="Please specify"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Spacer -->
+        <div style="height: 28px;"></div>
+
+        <!-- Next button -->
+        <button class="next-btn" id="next-btn" disabled>
+          Next step →
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div style="width: 50%; background: #E8EAFA; display: flex; align-items: center; justify-content: center; padding: 3rem;">
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%;">
+
+        <!-- Label -->
+        <p style="font-size: 12px; font-weight: 500; color: #4A61C0; letter-spacing: 0.06em; text-transform: uppercase; margin: 0;">
+          Form preview
+        </p>
+
+        <!-- Preview card -->
+        <div class="preview-card">
+          <div class="preview-header">
+            <div class="preview-header-bar"></div>
+          </div>
+          <div class="preview-body">
+            <div class="preview-line preview-line--short"></div>
+            <div class="preview-line preview-line--long"></div>
+            <div class="preview-field"></div>
+            <div class="preview-line preview-line--medium"></div>
+            <div class="preview-field"></div>
+            <div class="preview-line preview-line--short"></div>
+            <div class="preview-field"></div>
+          </div>
+        </div>
+
+        <!-- Hint text -->
+        <p style="font-size: 12px; color: #9B9FA7; margin: 0; text-align: center; max-width: 220px; line-height: 1.5;">
+          Your form will appear here as you build it.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const chips = document.querySelectorAll('.chip');
+    const nextBtn = document.getElementById('next-btn');
+    const othersContainer = document.getElementById('others-container');
+    const othersInput = document.getElementById('others-input');
+
+    const selected = new Set();
+
+    function updateUI() {
+      chips.forEach(chip => {
+        const id = chip.dataset.id;
+        if (selected.has(id)) {
+          chip.classList.add('chip--selected');
+        } else {
+          chip.classList.remove('chip--selected');
+        }
+      });
+
+      const othersSelected = selected.has('others');
+      if (othersSelected) {
+        othersContainer.classList.add('visible');
+        // small delay so layout settles before focusing
+        setTimeout(() => othersInput.focus(), 60);
+      } else {
+        othersContainer.classList.remove('visible');
+        othersInput.value = '';
+      }
+
+      const hasSelection = selected.size > 0;
+      nextBtn.disabled = !hasSelection;
+    }
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const id = chip.dataset.id;
+        const isExclusive = chip.dataset.exclusive === 'true';
+
+        if (selected.has(id)) {
+          // Deselect
+          selected.delete(id);
+        } else {
+          if (isExclusive) {
+            // "This is a new form" clears everything else
+            selected.clear();
+            selected.add(id);
+          } else {
+            // Clear exclusive chip if another is picked
+            selected.delete('new');
+            selected.add(id);
+          }
+        }
+
+        updateUI();
+      });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (nextBtn.disabled) return;
+      // Placeholder — in real flow this advances the step
+      alert('Next step! Selected: ' + [...selected].join(', '));
+    });
+  </script>
+
+</body>
+</html>

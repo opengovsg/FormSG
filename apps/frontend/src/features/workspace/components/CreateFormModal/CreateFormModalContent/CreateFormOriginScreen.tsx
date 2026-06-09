@@ -24,7 +24,7 @@ export const CreateFormOriginScreen = (): JSX.Element => {
 
   const isValid =
     selected.length > 0 &&
-    (!selected.includes('others') || othersText.trim().length > 0)
+    (!selected.includes('other') || othersText.trim().length > 0)
 
   const handleNext = () => {
     // TODO: persist origin data to form metadata via API
@@ -34,15 +34,11 @@ export const CreateFormOriginScreen = (): JSX.Element => {
   return (
     <>
       <ModalHeader color="secondary.500">
-        <Container maxW="42.5rem">What was this form before?</Container>
+        <Container maxW="42.5rem">Where is this being filled today?</Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem">
           <Stack spacing="1.5rem">
-            <Text textStyle="body-1" color="secondary.400">
-              Select all that apply.
-            </Text>
-
             <OriginSelection
               selected={selected}
               onSelectionChange={setSelected}
