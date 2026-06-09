@@ -23,7 +23,6 @@
  */
 
 import crypto from 'crypto'
-import type { JWK } from 'jose'
 import { Mongoose, Schema } from 'mongoose'
 
 const SCHEMA_ID = 'MyInfoV5Session'
@@ -34,15 +33,17 @@ export interface IMyInfoV5Session {
   /** PKCE code verifier (RFC 7636) for the token exchange. */
   codeVerifier: string
   /**
-   * Private JWK for the DPoP keypair. We persist as `Object` rather than
-   * Mixed so the deserialized doc preserves the JWK shape directly.
+   * AES-256-GCM-encrypted envelope holding the DPoP keypair's private JWK,
+   * produced by `encryptJwkAtRest` with a key derived from `config.sessionSecret`.
+   * Absent when DPoP is off. Storing the ciphertext (not the JWK directly)
+   * means a DB-only compromise can't reuse the keypair within the 5-minute
+   * session window.
    */
-  dpopPrivateJwk: JWK
+  dpopPrivateJwkEnc?: string
   /**
    * OIDC nonce we sent on the authorize request. The IdP echoes it back in
    * the ID token; we verify equality after token exchange to defeat token-
-   * replay attempts. Optional for backward-compat with sessions created
-   * before nonce verification landed.
+   * replay attempts.
    */
   nonce?: string
   expireAt: Date
@@ -51,7 +52,7 @@ export interface IMyInfoV5Session {
 export interface IMyInfoV5SessionModel {
   createSession(args: {
     codeVerifier: string
-    dpopPrivateJwk: JWK
+    dpopPrivateJwkEnc?: string
     nonce?: string
   }): Promise<IMyInfoV5Session>
   /** One-shot: returns the session and deletes it. */
@@ -68,7 +69,10 @@ const schema = new Schema<IMyInfoV5Session>(
       required: true,
     },
     codeVerifier: { type: String, required: true },
-    dpopPrivateJwk: { type: Object, required: true },
+    // Typed as String (the encrypted envelope) rather than Object/Mixed. This
+    // keeps the column to a single shape and prevents tampered rows from
+    // smuggling arbitrary JWK material into `jose.importJWK`.
+    dpopPrivateJwkEnc: { type: String, required: false },
     nonce: { type: String, required: false },
     expireAt: { type: Date, required: true },
   },
@@ -82,14 +86,14 @@ schema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 schema.statics.createSession = async function (args: {
   codeVerifier: string
-  dpopPrivateJwk: JWK
+  dpopPrivateJwkEnc?: string
   nonce?: string
 }): Promise<IMyInfoV5Session> {
   const sessionId = crypto.randomUUID()
   return this.create({
     _id: sessionId,
     codeVerifier: args.codeVerifier,
-    dpopPrivateJwk: args.dpopPrivateJwk,
+    dpopPrivateJwkEnc: args.dpopPrivateJwkEnc,
     nonce: args.nonce,
     expireAt: new Date(Date.now() + SESSION_TTL_MS),
   })

@@ -29,6 +29,8 @@ import crypto from 'crypto'
 import type { JWK } from 'jose'
 import * as jose from 'jose'
 
+import { assertEcP256PrivateJwk } from './myinfo.v5.crypto'
+
 export interface DpopKeyPair {
   /** Public JWK to be embedded in the DPoP proof JWT header. */
   publicJwk: JWK
@@ -57,6 +59,10 @@ export async function generateDpopKeyPair(): Promise<DpopKeyPair> {
  * need to store it twice.
  */
 export async function importDpopKeyPair(privateJwk: JWK): Promise<DpopKeyPair> {
+  // Reject anything that isn't the EC P-256 private JWK we wrote. Defends
+  // against tampered session rows or a future schema drift surfacing the
+  // wrong key material to jose.
+  assertEcP256PrivateJwk(privateJwk)
   const privateKey = (await jose.importJWK(privateJwk, 'ES256')) as jose.KeyLike
   const {
     d: _d,
@@ -98,18 +104,22 @@ export function computeAccessTokenHash(accessToken: string): string {
  * @param htm       HTTP method (e.g. 'POST'); normalised to uppercase
  * @param htu       request URL — strip query and fragment per RFC 9449 §4.2
  * @param accessToken  if present, include `ath` for resource-server calls
+ * @param nonce     server-issued DPoP nonce (RFC 9449 §8). Set on retries
+ *                  after the AS/RS responds with a `DPoP-Nonce` header.
  */
 export async function createDpopProof({
   keypair,
   htm,
   htu,
   accessToken,
+  nonce,
   lifetimeSeconds = 120,
 }: {
   keypair: DpopKeyPair
   htm: string
   htu: string
   accessToken?: string
+  nonce?: string
   lifetimeSeconds?: number
 }): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
@@ -125,6 +135,9 @@ export async function createDpopProof({
   }
   if (accessToken) {
     payload.ath = computeAccessTokenHash(accessToken)
+  }
+  if (nonce) {
+    payload.nonce = nonce
   }
   return new jose.SignJWT(payload)
     .setProtectedHeader({

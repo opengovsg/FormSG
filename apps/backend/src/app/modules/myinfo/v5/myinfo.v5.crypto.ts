@@ -84,3 +84,91 @@ export async function createClientAssertion({
     .setJti(crypto.randomUUID())
     .sign(signingKey)
 }
+
+/**
+ * Encrypted-at-rest envelope for a JWK. AES-256-GCM with a key derived from
+ * the supplied secret via PBKDF2-SHA256. Fresh per-record salt + IV so two
+ * identical JWKs never encrypt to the same ciphertext.
+ *
+ * Envelope: `v1.<salt>.<iv>.<tag>.<ciphertext>` — five base64url segments,
+ * dot-delimited. The leading version tag lets us rotate algorithms later
+ * without ambiguity. PBKDF2 iteration count is conservative for a high-entropy
+ * input like `sessionSecret`; a stronger KDF isn't required here, but PBKDF2
+ * is what the surrounding code already uses for key stretching.
+ */
+const JWK_ENCRYPT_VERSION = 'v1'
+const JWK_ENCRYPT_SALT_BYTES = 16
+const JWK_ENCRYPT_IV_BYTES = 12
+const JWK_ENCRYPT_KEY_BYTES = 32
+const JWK_ENCRYPT_PBKDF2_ITERATIONS = 100_000
+const JWK_ENCRYPT_PBKDF2_DIGEST = 'sha256'
+
+function deriveJwkEncryptionKey(secret: string, salt: Buffer): Buffer {
+  return crypto.pbkdf2Sync(
+    secret,
+    salt,
+    JWK_ENCRYPT_PBKDF2_ITERATIONS,
+    JWK_ENCRYPT_KEY_BYTES,
+    JWK_ENCRYPT_PBKDF2_DIGEST,
+  )
+}
+
+export function encryptJwkAtRest(jwk: JWK, secret: string): string {
+  const salt = crypto.randomBytes(JWK_ENCRYPT_SALT_BYTES)
+  const iv = crypto.randomBytes(JWK_ENCRYPT_IV_BYTES)
+  const key = deriveJwkEncryptionKey(secret, salt)
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+  const plaintext = Buffer.from(JSON.stringify(jwk), 'utf8')
+  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()])
+  const tag = cipher.getAuthTag()
+  return [
+    JWK_ENCRYPT_VERSION,
+    salt.toString('base64url'),
+    iv.toString('base64url'),
+    tag.toString('base64url'),
+    ciphertext.toString('base64url'),
+  ].join('.')
+}
+
+export function decryptJwkAtRest(envelope: string, secret: string): JWK {
+  const parts = envelope.split('.')
+  if (parts.length !== 5 || parts[0] !== JWK_ENCRYPT_VERSION) {
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw new Error('Unsupported encrypted JWK envelope')
+  }
+  const [, saltB64, ivB64, tagB64, ciphertextB64] = parts
+  const salt = Buffer.from(saltB64, 'base64url')
+  const iv = Buffer.from(ivB64, 'base64url')
+  const tag = Buffer.from(tagB64, 'base64url')
+  const ciphertext = Buffer.from(ciphertextB64, 'base64url')
+  const key = deriveJwkEncryptionKey(secret, salt)
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
+  decipher.setAuthTag(tag)
+  const plaintext = Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final(),
+  ])
+  return JSON.parse(plaintext.toString('utf8')) as JWK
+}
+
+/**
+ * Defense-in-depth shape check before handing a persisted private JWK to
+ * `jose.importJWK`. Catches DB rows that have been tampered with into
+ * pointing at unexpected key material (different curve, different kty, or
+ * a public-only JWK missing `d`).
+ */
+export function assertEcP256PrivateJwk(jwk: unknown): asserts jwk is JWK {
+  const j = jwk as Partial<JWK> | null
+  if (
+    !j ||
+    typeof j !== 'object' ||
+    j.kty !== 'EC' ||
+    j.crv !== 'P-256' ||
+    typeof j.x !== 'string' ||
+    typeof j.y !== 'string' ||
+    typeof j.d !== 'string'
+  ) {
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw new Error('Expected EC P-256 private JWK')
+  }
+}

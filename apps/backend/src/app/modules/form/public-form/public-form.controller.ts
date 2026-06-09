@@ -18,10 +18,10 @@ import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import * as jose from 'jose'
 import mongoose from 'mongoose'
-import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
-import { isTest } from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -48,9 +48,15 @@ import {
   v5ClaimsToMyInfoData,
 } from '../../myinfo/v5/myinfo.v5.adapter'
 import {
+  decryptJwkAtRest,
+  encryptJwkAtRest,
+} from '../../myinfo/v5/myinfo.v5.crypto'
+import {
+  type DpopKeyPair,
   generateDpopKeyPair,
   importDpopKeyPair,
 } from '../../myinfo/v5/myinfo.v5.dpop'
+import { MyInfoV5UserinfoError } from '../../myinfo/v5/myinfo.v5.errors'
 import { MyInfoV5Service } from '../../myinfo/v5/myinfo.v5.factory'
 import getMyInfoV5SessionModel from '../../myinfo/v5/myinfo.v5.session.model'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
@@ -91,6 +97,10 @@ const logger = createLoggerWithLabel(module)
  * Create the per-session v5 OAuth scratch row (PKCE verifier + optional DPoP
  * private JWK) and return its opaque id. The id is what the cookie carries —
  * keeping the private key off the wire.
+ *
+ * The DPoP private JWK is encrypted at rest with AES-256-GCM under a key
+ * derived from `config.sessionSecret`. A DB-only compromise therefore can't
+ * extract the keypair without also lifting the application secret.
  */
 async function persistV5Session({
   codeVerifier,
@@ -102,19 +112,15 @@ async function persistV5Session({
   nonce: string
 }): Promise<string> {
   const SessionModel = getMyInfoV5SessionModel(mongoose)
-  let dpopPrivateJwk: import('jose').JWK
+  let dpopPrivateJwkEnc: string | undefined
   if (dpopEnabled) {
     const keypair = await generateDpopKeyPair()
-    dpopPrivateJwk = await jose.exportJWK(keypair.privateKey)
-  } else {
-    // When DPoP is off we still create a session row so the cookie remains
-    // the single signal that "v5 was used"; the JWK field is a sentinel and
-    // is ignored downstream.
-    dpopPrivateJwk = { kty: 'oct', k: '' }
+    const privateJwk = await jose.exportJWK(keypair.privateKey)
+    dpopPrivateJwkEnc = encryptJwkAtRest(privateJwk, config.sessionSecret)
   }
   const session = await SessionModel.createSession({
     codeVerifier,
-    dpopPrivateJwk,
+    dpopPrivateJwkEnc,
     nonce,
   })
   return session._id
@@ -289,9 +295,40 @@ export const handleGetPublicForm: ControllerHandler<
             isIntranetUser,
           })
         }
-        const dpopKeypair = MyInfoV5Service.dpopEnabled
-          ? await importDpopKeyPair(session.dpopPrivateJwk)
-          : undefined
+        let dpopKeypair: DpopKeyPair | undefined
+        if (MyInfoV5Service.dpopEnabled) {
+          if (!session.dpopPrivateJwkEnc) {
+            logger.error({
+              message:
+                'MyInfo v5 session missing DPoP private JWK while DPoP is enabled',
+              meta: logMeta,
+            })
+            return res.json({
+              form: publicForm,
+              errorCodes: [ErrorCode.myInfo],
+              isIntranetUser,
+            })
+          }
+          try {
+            const privateJwk = decryptJwkAtRest(
+              session.dpopPrivateJwkEnc,
+              config.sessionSecret,
+            )
+            dpopKeypair = await importDpopKeyPair(privateJwk)
+          } catch (error) {
+            logger.error({
+              message:
+                'Failed to decrypt or import DPoP private JWK from session',
+              meta: logMeta,
+              error,
+            })
+            return res.json({
+              form: publicForm,
+              errorCodes: [ErrorCode.myInfo],
+              isIntranetUser,
+            })
+          }
+        }
         const v5Result = await extractAuthCode(authCodeCookie)
           .asyncAndThen((authCode) =>
             MyInfoV5Service.exchangeCodeForTokens({
@@ -301,31 +338,23 @@ export const handleGetPublicForm: ControllerHandler<
             }),
           )
           .andThen((tokenResp) => {
-            // OIDC §3.1.3.7: verify the id_token's nonce against the one we
-            // sent on the authorize request. Backward-compat: skip when
-            // either side of the pair is missing (older session row without
-            // a nonce, or IdP that didn't return an id_token), with a logged
-            // warning rather than a hard failure. A nonce *mismatch* is
-            // hard-fail since that's the replay case we exist to defeat.
+            // OIDC §3.1.3.7: the id_token's nonce MUST equal the one we sent on
+            // the authorize request. Hard-fail if either side of the pair is
+            // missing — without nonce verification we lose the only defense
+            // against auth-code/id_token replay. (No backward-compat path:
+            // every session this controller produces persists a nonce, and
+            // sessions older than 5 min have already been TTL-expired.)
             const sessionNonce =
               typeof session.nonce === 'string' && session.nonce.length > 0
                 ? session.nonce
                 : undefined
             const idToken = tokenResp.id_token
             if (!sessionNonce || !idToken) {
-              logger.warn({
-                message:
-                  'v5 nonce verification skipped: missing session nonce or id_token',
-                meta: {
-                  ...logMeta,
-                  hasSessionNonce: !!sessionNonce,
-                  hasIdToken: !!idToken,
-                },
-              })
-              return MyInfoV5Service.fetchUserinfo({
-                accessToken: tokenResp.access_token,
-                dpopKeypair,
-              })
+              return errAsync(
+                new MyInfoV5UserinfoError(
+                  'id_token nonce verification not possible — missing session nonce or id_token',
+                ),
+              )
             }
             return MyInfoV5Service.verifyIdToken({
               idToken,

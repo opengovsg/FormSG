@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import type { JSONWebKeySet } from 'jose'
 import * as jose from 'jose'
 import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -23,6 +23,40 @@ import type {
   MyInfoV5TokenResponse,
   MyInfoV5UserinfoClaims,
 } from './myinfo.v5.types'
+
+/**
+ * Number of seconds of clock skew to tolerate when verifying JWTs from
+ * Singpass. Pods and the IdP can drift by a handful of seconds; without this
+ * tolerance, well-formed tokens at the boundary of their validity window
+ * surface as verification failures.
+ */
+const JWT_CLOCK_TOLERANCE_SECONDS = 30
+
+/**
+ * RFC 9449 §8 dance: an AS or RS can demand that DPoP proofs include a
+ * server-issued nonce. The first request is sent without one; if the server
+ * responds 4xx with a `DPoP-Nonce` header (token endpoint uses 400 +
+ * `error: "use_dpop_nonce"`, resource endpoints use 401 +
+ * `WWW-Authenticate: DPoP error="use_dpop_nonce"`), retry once with the
+ * supplied nonce baked into the proof. A failure on the second attempt
+ * propagates without further retry — the lambda is only invoked twice at
+ * most, so this can't loop.
+ */
+async function withDpopNonceRetry<T>(
+  attempt: (dpopNonce?: string) => Promise<AxiosResponse<T>>,
+): Promise<AxiosResponse<T>> {
+  try {
+    return await attempt()
+  } catch (e) {
+    if (!axios.isAxiosError(e)) throw e
+    const resp = e.response
+    if (!resp || (resp.status !== 400 && resp.status !== 401)) throw e
+    const headers = resp.headers as Record<string, string | undefined>
+    const dpopNonce = headers['dpop-nonce']
+    if (typeof dpopNonce !== 'string' || dpopNonce.length === 0) throw e
+    return attempt(dpopNonce)
+  }
+}
 
 const logger = createLoggerWithLabel(module)
 
@@ -239,23 +273,29 @@ export class MyInfoV5ServiceClass {
           code_verifier: codeVerifier,
         })
 
-        const headers: Record<string, string> = {
-          'content-type': 'application/x-www-form-urlencoded',
-        }
-        if (this.#dpopEnabled && dpopKeypair) {
-          // RFC 9449 §5: attach a DPoP proof to the token request so the AS
-          // binds the issued access token to our session keypair's thumbprint.
-          headers.dpop = await createDpopProof({
-            keypair: dpopKeypair,
-            htm: 'POST',
-            htu: disc.token_endpoint,
-          })
-        }
-
-        const response = await axios.post<MyInfoV5TokenResponse>(
-          disc.token_endpoint,
-          body.toString(),
-          { headers, timeout: 10000 },
+        // RFC 9449 §5: attach a DPoP proof to the token request so the AS
+        // binds the issued access token to our session keypair's thumbprint.
+        // RFC 9449 §8: the AS may demand a server-provided nonce — `withDpopNonceRetry`
+        // catches `use_dpop_nonce` and retries once with the supplied nonce.
+        const response = await withDpopNonceRetry<MyInfoV5TokenResponse>(
+          async (dpopNonce) => {
+            const headers: Record<string, string> = {
+              'content-type': 'application/x-www-form-urlencoded',
+            }
+            if (this.#dpopEnabled && dpopKeypair) {
+              headers.dpop = await createDpopProof({
+                keypair: dpopKeypair,
+                htm: 'POST',
+                htu: disc.token_endpoint,
+                nonce: dpopNonce,
+              })
+            }
+            return axios.post<MyInfoV5TokenResponse>(
+              disc.token_endpoint,
+              body.toString(),
+              { headers, timeout: 10000 },
+            )
+          },
         )
         return response.data
       }),
@@ -304,28 +344,33 @@ export class MyInfoV5ServiceClass {
     return ResultAsync.fromPromise(
       (async () => {
         const disc = await this.#fetchDiscovery()
-        const headers: Record<string, string> = {
-          accept: 'application/jwt',
-        }
-        if (this.#dpopEnabled && dpopKeypair) {
-          // RFC 9449 §7: present the access token under the `DPoP` scheme and
-          // attach a proof that includes `ath` so the RS can confirm the token
-          // is being used by the same keypair that was DPoP-bound at issuance.
-          headers.authorization = `DPoP ${accessToken}`
-          headers.dpop = await createDpopProof({
-            keypair: dpopKeypair,
-            htm: 'GET',
-            htu: disc.userinfo_endpoint,
-            accessToken,
+        // RFC 9449 §7: present the access token under the `DPoP` scheme and
+        // attach a proof that includes `ath` so the RS can confirm the token
+        // is being used by the same keypair that was DPoP-bound at issuance.
+        // RFC 9449 §8: the RS may also demand a server-provided nonce — handled
+        // by the retry helper.
+        const response = await withDpopNonceRetry<string>(async (dpopNonce) => {
+          const headers: Record<string, string> = {
+            accept: 'application/jwt',
+          }
+          if (this.#dpopEnabled && dpopKeypair) {
+            headers.authorization = `DPoP ${accessToken}`
+            headers.dpop = await createDpopProof({
+              keypair: dpopKeypair,
+              htm: 'GET',
+              htu: disc.userinfo_endpoint,
+              accessToken,
+              nonce: dpopNonce,
+            })
+          } else {
+            headers.authorization = `Bearer ${accessToken}`
+          }
+          return axios.get<string>(disc.userinfo_endpoint, {
+            headers,
+            // userinfo body is a JWT string; let axios keep it as text.
+            transformResponse: (raw) => raw,
+            timeout: 10000,
           })
-        } else {
-          headers.authorization = `Bearer ${accessToken}`
-        }
-        const response = await axios.get<string>(disc.userinfo_endpoint, {
-          headers,
-          // userinfo body is a JWT string; let axios keep it as text.
-          transformResponse: (raw) => raw,
-          timeout: 10000,
         })
         const jweCompact: string =
           typeof response.data === 'string'
@@ -340,10 +385,16 @@ export class MyInfoV5ServiceClass {
         const { plaintext } = await jose.compactDecrypt(jweCompact, encKey)
 
         // Step 2: the JWE payload is a JWS (compact). Verify it against the
-        //         IdP's published signing key.
+        //         IdP's published signing key, and pin `iss` + `aud` to the
+        //         discovery doc's values so a JWT signed by the same JWKS but
+        //         minted for a different RP cannot pass.
         const jws = new TextDecoder().decode(plaintext)
         const idpJwks = await this.#getIdpJwks()
-        const { payload } = await jose.jwtVerify(jws, idpJwks)
+        const { payload } = await jose.jwtVerify(jws, idpJwks, {
+          issuer: disc.issuer,
+          audience: this.#clientId,
+          clockTolerance: JWT_CLOCK_TOLERANCE_SECONDS,
+        })
 
         return payload as MyInfoV5UserinfoClaims
       })(),
@@ -362,16 +413,13 @@ export class MyInfoV5ServiceClass {
    * OIDC §3.1.3.7: the `nonce` claim in the ID Token MUST equal the nonce we
    * generated for the authorize request. This defeats replay of a leaked auth
    * code: an attacker who didn't observe our nonce cannot get a matching ID
-   * Token.
+   * Token. `iss` is pinned to the discovery doc's issuer and `aud` to our
+   * client_id at the same time, so a token signed by Singpass for a different
+   * RP cannot satisfy the check either.
    *
    * The ID Token from Singpass arrives as either a JWE wrapping a JWS, or a
    * bare JWS (depending on `id_token_encryption_alg_values_supported` and the
    * mockpass profile). We detect by segment count and handle both.
-   *
-   * Backward-compat: callers can opt in by passing `expectedNonce`. If the
-   * caller doesn't know what to expect (e.g. session predates this feature),
-   * skipping this check entirely is the right thing — we leave that decision
-   * to the controller.
    */
   verifyIdToken({
     idToken,
@@ -402,6 +450,7 @@ export class MyInfoV5ServiceClass {
     }
     return ResultAsync.fromPromise(
       (async () => {
+        const disc = await this.#fetchDiscovery()
         let jws: string
         if (segments === 5 && encJwk) {
           const encKey = (await jose.importJWK(
@@ -414,7 +463,14 @@ export class MyInfoV5ServiceClass {
           jws = idToken
         }
         const idpJwks = await this.#getIdpJwks()
-        const { payload } = await jose.jwtVerify(jws, idpJwks)
+        // OIDC §3.1.3.7: `iss` MUST match the discovery doc, `aud` MUST contain
+        // our client_id, `exp` MUST be in the future. `jose` checks exp by
+        // default; iss + aud need to be passed explicitly.
+        const { payload } = await jose.jwtVerify(jws, idpJwks, {
+          issuer: disc.issuer,
+          audience: this.#clientId,
+          clockTolerance: JWT_CLOCK_TOLERANCE_SECONDS,
+        })
         return payload
       })(),
       (error) => {
