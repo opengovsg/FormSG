@@ -34,7 +34,6 @@ export const NumberField = ({
         defaultValue=""
         render={({ field: { value, onChange, ...rest } }) => (
           <NumberInput
-            showSteppers={false}
             min={0}
             inputMode="numeric"
             colorScheme={`theme-${colorTheme}`}
