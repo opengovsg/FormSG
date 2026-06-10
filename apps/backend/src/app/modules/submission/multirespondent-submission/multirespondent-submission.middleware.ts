@@ -5,6 +5,7 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
+import _ from 'lodash'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
@@ -60,6 +61,7 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  SubmissionEncryptionMismatchError,
   SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
@@ -803,7 +805,7 @@ export const encryptSubmission = async (
   }
 
   const useV4Encryption =
-    req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false
+    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) && !formDef.webhook) ?? false
 
   let responsesToEncrypt:
     | Record<
@@ -813,6 +815,14 @@ export const encryptSubmission = async (
     | FieldResponsesV4 = strippedAttachmentResponses
 
   if (useV4Encryption) {
+    logger.info({
+      message: 'Using V4 encryption for submission',
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+      },
+    })
     // Build FormFieldMeta map from form definition for question text
     const formFieldMeta: Record<string, FormFieldMeta> = {}
     for (const field of formDef.form_fields) {
@@ -836,6 +846,7 @@ export const encryptSubmission = async (
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   // Verify the encrypted content can be decrypted using the generated submission secret key before saving
+  // Perform a diff check between original & recently decrypted responses to ensure round trip encryption-decryption
   const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
     submissionSecretKey,
     { encryptedContent, version: req.body.version },
@@ -853,6 +864,36 @@ export const encryptSubmission = async (
         ...createReqMeta(req),
       },
       error,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
+
+  const decryptedResponsesV3 = isFieldResponsesV4(
+    decryptionVerification.responses,
+  )
+    ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
+    : decryptionVerification.responses
+
+  const responseMismatch = !_.isEqual(
+    strippedAttachmentResponses,
+    decryptedResponsesV3,
+  )
+
+  if (responseMismatch) {
+    const mismatchError = new SubmissionEncryptionMismatchError()
+    logger.error({
+      message: mismatchError.message,
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
+      error: mismatchError,
     })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'An error occurred while processing your submission',
