@@ -99,6 +99,8 @@ export function getStepColourThemes(formColorTheme?: string): string[] {
 export type FocusState =
   | { type: 'default' }
   | { type: 'step_edit'; stepId: string }
+  | { type: 'field_edit'; fieldId: string }
+  | { type: 'end_workflow_edit' }
 
 // Store interface
 export type WorkflowStore = {

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BiCalendar, BiCheck, BiChevronDown, BiStar } from 'react-icons/bi'
+import { BiCalendar, BiCheck, BiChevronDown, BiStar, BiX } from 'react-icons/bi'
 import { Box, Center, Checkbox, Flex, Icon, Text } from '@chakra-ui/react'
 
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
@@ -108,24 +108,38 @@ const MockInput = ({ fieldType }: { fieldType: string }): JSX.Element => {
         </Box>
       )
 
-    // Yes/No
+    // Yes/No — toggle button style matching real form builder
     case 'yes_no':
       return (
-        <Flex gap="1.5rem" pt="0.25rem">
-          {['Yes', 'No'].map((label) => (
-            <Flex key={label} align="center" gap="0.5rem">
-              <Box
-                w="18px"
-                h="18px"
-                borderRadius="full"
-                border="2px solid"
-                borderColor="neutral.400"
-              />
-              <Text textStyle="body-2" color="secondary.500">
-                {label}
-              </Text>
-            </Flex>
-          ))}
+        <Flex border="1px solid" borderColor="neutral.400" borderRadius="4px">
+          <Flex
+            flex={1}
+            align="center"
+            justify="center"
+            gap="0.5rem"
+            h="2.75rem"
+            borderRight="1px solid"
+            borderColor="neutral.400"
+            cursor="default"
+          >
+            <Icon as={BiX} fontSize="1.25rem" color="secondary.500" />
+            <Text textStyle="body-1" color="secondary.500">
+              No
+            </Text>
+          </Flex>
+          <Flex
+            flex={1}
+            align="center"
+            justify="center"
+            gap="0.5rem"
+            h="2.75rem"
+            cursor="default"
+          >
+            <Icon as={BiCheck} fontSize="1.25rem" color="secondary.500" />
+            <Text textStyle="body-1" color="secondary.500">
+              Yes
+            </Text>
+          </Flex>
         </Flex>
       )
 
@@ -210,21 +224,30 @@ export const FormFieldCard = ({
   // Chakra colorScheme for the checkbox (maps FormColorTheme to theme-X)
   const checkboxColorScheme = colorTheme ? `theme-${colorTheme}` : 'theme-blue'
 
+  const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
+
+  const isFieldEdit =
+    focusState.type === 'field_edit' && focusState.fieldId === field._id
+
   const handleCheckboxChange = () => {
     if (activeStepId) {
       toggleFieldAssignment(activeStepId, field._id)
     }
   }
 
+  const handleFieldClick = () => {
+    if (isStepEdit) {
+      handleCheckboxChange()
+    } else {
+      setFocus({ type: 'field_edit', fieldId: field._id })
+    }
+  }
+
   const displayNumber = field.questionNumber ?? fieldIndex + 1
 
   return (
-    <Flex
-      py="0.375rem"
-      opacity={isStepEdit && !isAssignedToActiveStep ? 0.4 : 1}
-      transition="opacity 0.2s ease"
-    >
-      {/* Pill zone */}
+    <Flex py="0.375rem">
+      {/* Pill zone - always full opacity */}
       <Flex
         w="32px"
         flexShrink={0}
@@ -272,13 +295,18 @@ export const FormFieldCard = ({
       {/* Field body - matches FieldRowContainer */}
       <Box
         flex={1}
-        bg="white"
+        bg={isFieldEdit ? 'primary.100' : 'white'}
         borderRadius="4px"
         my="2px"
-        _hover={!isStepEdit ? { bg: 'secondary.100' } : undefined}
-        transition="background 0.2s ease"
-        cursor={isStepEdit ? 'pointer' : 'default'}
-        onClick={isStepEdit ? handleCheckboxChange : undefined}
+        opacity={isStepEdit && !isAssignedToActiveStep ? 0.4 : 1}
+        _hover={
+          isFieldEdit
+            ? undefined
+            : { bg: isStepEdit ? undefined : 'secondary.100' }
+        }
+        transition="background 0.2s ease, opacity 0.2s ease"
+        cursor="pointer"
+        onClick={handleFieldClick}
       >
         <Box
           px={{ base: '0.75rem', md: '1.5rem' }}

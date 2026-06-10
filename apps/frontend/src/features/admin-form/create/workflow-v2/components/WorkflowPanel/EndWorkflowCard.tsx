@@ -12,13 +12,28 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import {
+  focusStateSelector,
+  useWorkflowBuilderStore,
+} from '../../workflowBuilderStore'
+
 export const EndWorkflowCard = (): JSX.Element => {
+  const focusState = useWorkflowBuilderStore(focusStateSelector)
+  const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
+  const isActive = focusState.type === 'end_workflow_edit'
+
   return (
     <Box
       bg="white"
       borderRadius="12px"
-      border="1px solid"
-      borderColor="neutral.300"
+      border={isActive ? '2px solid' : '1px solid'}
+      borderColor={isActive ? 'primary.500' : 'neutral.300'}
+      cursor="pointer"
+      onClick={() => setFocus({ type: 'end_workflow_edit' })}
+      transition="border-color 0.2s, background 0.2s"
+      _hover={
+        isActive ? undefined : { borderColor: 'primary.500', bg: 'primary.100' }
+      }
     >
       {/* Header */}
       <Flex justify="space-between" align="center" px="1.5rem" py="1rem">

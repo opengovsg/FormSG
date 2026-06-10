@@ -4,6 +4,7 @@ import { Box, Center, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
 import { getStepColourThemes } from '../../types'
@@ -14,6 +15,8 @@ import {
 } from '../../workflowBuilderStore'
 
 import { EndWorkflowCard } from './EndWorkflowCard'
+import { EndWorkflowDetailPanel } from './EndWorkflowDetailPanel'
+import { FieldDetailPanel } from './FieldDetailPanel'
 import { StepCard } from './StepCard'
 import { StepDetailPanel } from './StepDetailPanel'
 
@@ -82,6 +85,7 @@ export const WorkflowPanel = (): JSX.Element => {
   const addStep = useWorkflowBuilderStore((s) => s.addStep)
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
   const createWorkflow = useWorkflowBuilderStore((s) => s.createWorkflow)
+  const { data: form } = useAdminForm()
 
   const handleAddStepAt = useCallback(
     (insertIndex: number) => {
@@ -97,6 +101,34 @@ export const WorkflowPanel = (): JSX.Element => {
     },
     [addStep, setFocus],
   )
+
+  // Field edit mode: render field detail panel
+  if (focusState.type === 'field_edit') {
+    const formFields = form?.form_fields ?? []
+    const fieldIndex = formFields.findIndex((f) => f._id === focusState.fieldId)
+    const field = formFields[fieldIndex]
+
+    if (field) {
+      return (
+        <Flex w="100%" h="100%" flexDir="column" bg="white">
+          <FieldDetailPanel
+            fieldId={field._id}
+            fieldTitle={field.title}
+            fieldNumber={fieldIndex + 1}
+          />
+        </Flex>
+      )
+    }
+  }
+
+  // End workflow edit mode: render notification settings panel
+  if (focusState.type === 'end_workflow_edit') {
+    return (
+      <Flex w="100%" h="100%" flexDir="column" bg="white">
+        <EndWorkflowDetailPanel />
+      </Flex>
+    )
+  }
 
   // Step edit mode: render detail panel instead of the step list
   if (focusState.type === 'step_edit') {

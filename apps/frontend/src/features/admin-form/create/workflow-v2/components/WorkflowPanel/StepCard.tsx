@@ -108,7 +108,7 @@ export const StepCard = ({
               {step.name}
             </Text>
             <Text textStyle="caption-1" color="secondary.400" noOfLines={1}>
-              {stepTypeLabel}
+              {respondentSummary}
             </Text>
           </Stack>
         </HStack>
@@ -138,24 +138,23 @@ export const StepCard = ({
 
       {/* Body */}
       <Box px="1.5rem" py="1rem">
-        {/* People involved */}
+        {/* What they do */}
         <Stack spacing="0.5rem">
           <Text textStyle="subhead-2" color="secondary.500">
-            People involved
+            What they do
           </Text>
-          <Wrap spacing="0.25rem">
-            <Tag
-              size="sm"
-              bg="primary.100"
-              borderRadius="4px"
-              px="0.5rem"
-              py="0.25rem"
-            >
-              <TagLabel textStyle="caption-1" color="secondary.500">
-                {respondentSummary}
-              </TagLabel>
-            </Tag>
-          </Wrap>
+          <Tag
+            size="sm"
+            bg="primary.100"
+            borderRadius="4px"
+            px="0.5rem"
+            py="0.25rem"
+            w="fit-content"
+          >
+            <TagLabel textStyle="caption-1" color="secondary.500">
+              {stepTypeLabel}
+            </TagLabel>
+          </Tag>
         </Stack>
 
         {/* Fields */}

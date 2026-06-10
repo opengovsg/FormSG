@@ -77,6 +77,7 @@ export const FormCanvas = (): JSX.Element => {
           w="100%"
           h="fit-content"
           spacing={{ base: 0, md: '1.5rem' }}
+          pb={{ base: 0, md: '2.5rem' }}
           bg={formBg}
         >
           <StartPageView />
@@ -87,22 +88,21 @@ export const FormCanvas = (): JSX.Element => {
             w="100%"
             px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
           >
-            {/* Mode banner when editing a step */}
+            {/* Section label when editing a step */}
             {isStepEdit && activeStep && activeStepColourTheme && (
-              <Box
-                bg={`${activeStepColourTheme}.100`}
-                borderRadius="4px"
-                px="1rem"
-                py="0.5rem"
-                mb="0.5rem"
-                maxW="57rem"
-                alignSelf="center"
-                w="100%"
-              >
-                <Text textStyle="body-2" color={`${activeStepColourTheme}.500`}>
-                  Editing: {activeStep.name} — check fields to assign
-                </Text>
-              </Box>
+              <Flex maxW="57rem" alignSelf="center" w="100%" mb="-1px">
+                <Flex
+                  bg={`${activeStepColourTheme}.500`}
+                  borderTopRadius="6px"
+                  px="0.75rem"
+                  py="0.25rem"
+                  align="center"
+                >
+                  <Text textStyle="caption-1" color="white" fontWeight="500">
+                    Select fields to be filled in for {activeStep.name}
+                  </Text>
+                </Flex>
+              </Flex>
             )}
 
             <Box
@@ -112,6 +112,15 @@ export const FormCanvas = (): JSX.Element => {
               alignSelf="center"
               px={{ base: '1.5rem', md: '1.625rem' }}
               py={{ base: '1.5rem', md: '2.5rem' }}
+              border={
+                isStepEdit && activeStepColourTheme ? '2px solid' : undefined
+              }
+              borderColor={
+                isStepEdit && activeStepColourTheme
+                  ? `${activeStepColourTheme}.500`
+                  : undefined
+              }
+              borderRadius={isStepEdit ? '4px' : undefined}
             >
               {fields.length === 0 ? (
                 <EmptyFieldsPlaceholder />

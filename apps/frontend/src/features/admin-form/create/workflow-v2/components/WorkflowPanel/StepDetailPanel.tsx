@@ -1,11 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import {
-  BiChevronDown,
-  BiEnvelope,
-  BiLeftArrowAlt,
-  BiTrash,
-  BiX,
-} from 'react-icons/bi'
+import { BiEnvelope, BiLeftArrowAlt, BiTrash } from 'react-icons/bi'
 import {
   Box,
   Checkbox,
@@ -18,12 +12,17 @@ import {
   RadioGroup,
   Stack,
   Text,
+  Textarea,
 } from '@chakra-ui/react'
 
+import Button from '~components/Button'
+import { SingleSelect } from '~components/Dropdown'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
 
-import type { StepType, WorkflowStep } from '../../types'
+import type { RespondentType, StepType, WorkflowStep } from '../../types'
 import {
   fieldsSelector,
   respondentsSelector,
@@ -36,67 +35,6 @@ type StepDetailPanelProps = {
   stepIndex: number
   colourTheme: string
 }
-
-// Mock select dropdown (display only)
-const MockSelect = ({ placeholder }: { placeholder: string }): JSX.Element => (
-  <Flex
-    border="1px solid"
-    borderColor="neutral.400"
-    borderRadius="4px"
-    px="1rem"
-    h="2.75rem"
-    align="center"
-    justify="space-between"
-    bg="white"
-    mt="0.5rem"
-    ml="1.75rem"
-  >
-    <Text textStyle="body-1" color="neutral.500">
-      {placeholder}
-    </Text>
-    <Icon as={BiChevronDown} fontSize="1.25rem" color="secondary.400" />
-  </Flex>
-)
-
-// Mock email tag input (display only)
-const MockEmailTags = ({ emails }: { emails: string[] }): JSX.Element => (
-  <Flex
-    border="1px solid"
-    borderColor="neutral.400"
-    borderRadius="4px"
-    px="0.5rem"
-    py="0.375rem"
-    wrap="wrap"
-    gap="0.25rem"
-    bg="white"
-    mt="0.5rem"
-    ml="1.75rem"
-    minH="2.75rem"
-    align="center"
-  >
-    {emails.map((email) => (
-      <Flex
-        key={email}
-        bg="primary.100"
-        borderRadius="4px"
-        px="0.5rem"
-        py="0.25rem"
-        align="center"
-        gap="0.25rem"
-      >
-        <Text textStyle="body-2" color="primary.500">
-          {email}
-        </Text>
-        <Icon
-          as={BiX}
-          fontSize="0.75rem"
-          color="primary.500"
-          cursor="pointer"
-        />
-      </Flex>
-    ))}
-  </Flex>
-)
 
 export const StepDetailPanel = ({
   step,
@@ -112,8 +50,21 @@ export const StepDetailPanel = ({
   )
   const renameStep = useWorkflowBuilderStore((s) => s.renameStep)
   const removeStep = useWorkflowBuilderStore((s) => s.removeStep)
+  const setApprovalDecisionField = useWorkflowBuilderStore(
+    (s) => s.setApprovalDecisionField,
+  )
+  const assignField = useWorkflowBuilderStore((s) => s.assignField)
+  const assignRespondent = useWorkflowBuilderStore((s) => s.assignRespondent)
+  const unassignRespondent = useWorkflowBuilderStore(
+    (s) => s.unassignRespondent,
+  )
+  const addRespondent = useWorkflowBuilderStore((s) => s.addRespondent)
+  const updateRespondent = useWorkflowBuilderStore((s) => s.updateRespondent)
+
+  const { data: form } = useAdminForm()
 
   const [editName, setEditName] = useState(step.name)
+  const [emailsText, setEmailsText] = useState('')
 
   const colorTheme = useDesignColorTheme()
   const checkboxColorScheme = colorTheme ? `theme-${colorTheme}` : 'theme-blue'
@@ -130,6 +81,115 @@ export const StepDetailPanel = ({
     if (stepRespondents.length > 0) return stepRespondents[0].type
     return 'email_field'
   }, [step.order, stepRespondents])
+
+  // Current respondent's linked field ID (for email_field and dropdown_field)
+  const currentLinkedFieldId = useMemo(() => {
+    if (stepRespondents.length > 0) return stepRespondents[0].linkedFieldId
+    return undefined
+  }, [stepRespondents])
+
+  // Initialise email text from respondent data
+  useState(() => {
+    if (
+      currentRespondentType === 'specific_email' &&
+      stepRespondents[0]?.email
+    ) {
+      setEmailsText(stepRespondents[0].email)
+    }
+  })
+
+  // Email fields in form (for email_field respondent type)
+  const emailFieldItems = useMemo(() => {
+    if (!form?.form_fields) return []
+    return form.form_fields
+      .filter((f) => f.fieldType === 'email')
+      .map((f, _i) => ({
+        value: f._id,
+        label: f.title,
+      }))
+  }, [form?.form_fields])
+
+  // Dropdown fields in form (for dropdown_field respondent type)
+  const dropdownFieldItems = useMemo(() => {
+    if (!form?.form_fields) return []
+    return form.form_fields
+      .filter((f) => f.fieldType === 'dropdown')
+      .map((f) => ({
+        value: f._id,
+        label: f.title,
+      }))
+  }, [form?.form_fields])
+
+  // Yes/No fields in form (for approval selector)
+  const yesNoFields = useMemo(() => {
+    if (!form?.form_fields) return []
+    return form.form_fields
+      .filter((f) => f.fieldType === 'yes_no')
+      .map((f, _i) => ({
+        value: f._id,
+        label: f.title,
+      }))
+  }, [form?.form_fields])
+
+  const handleRespondentTypeChange = useCallback(
+    (newType: string) => {
+      // Remove existing respondents from this step
+      for (const rid of step.respondentIds) {
+        unassignRespondent(step.id, rid)
+      }
+      // Find or create a respondent of the new type
+      const allRespondents = useWorkflowBuilderStore.getState().respondents
+      let respondent = allRespondents.find((r) => r.type === newType)
+      if (!respondent) {
+        const name =
+          newType === 'specific_email'
+            ? 'Specific email(s)'
+            : newType === 'email_field'
+              ? 'Email field'
+              : 'Dropdown field'
+        addRespondent({
+          type: newType as RespondentType,
+          name,
+          isCustom: true,
+        })
+        const updated = useWorkflowBuilderStore.getState().respondents
+        respondent = updated[updated.length - 1]
+      }
+      if (respondent) {
+        assignRespondent(step.id, respondent.id)
+      }
+    },
+    [
+      step.id,
+      step.respondentIds,
+      unassignRespondent,
+      addRespondent,
+      assignRespondent,
+    ],
+  )
+
+  const handleFieldSelect = useCallback(
+    (fieldId: string | null) => {
+      if (!fieldId || stepRespondents.length === 0) return
+      updateRespondent(stepRespondents[0].id, { linkedFieldId: fieldId })
+    },
+    [stepRespondents, updateRespondent],
+  )
+
+  const handleEmailsBlur = useCallback(() => {
+    if (stepRespondents.length === 0) return
+    const trimmed = emailsText.trim()
+    updateRespondent(stepRespondents[0].id, { email: trimmed })
+  }, [stepRespondents, emailsText, updateRespondent])
+
+  const handleApprovalFieldChange = useCallback(
+    (fieldId: string | null) => {
+      if (!fieldId) return
+      setApprovalDecisionField(step.id, fieldId)
+      assignField(step.id, fieldId)
+    },
+    [step.id, setApprovalDecisionField, assignField],
+  )
 
   const handleBack = useCallback(() => {
     setFocus({ type: 'default' })
@@ -184,33 +244,7 @@ export const StepDetailPanel = ({
 
       {/* Scrollable content area */}
       <Box flex={1} overflow="auto">
-        {/* Section: Step type */}
-        <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
-            Step type
-          </Text>
-          <RadioGroup
-            value={step.type}
-            onChange={(val) => setStepType(step.id, val as StepType)}
-          >
-            <Stack spacing="0.5rem">
-              <Radio value="collect" colorScheme={checkboxColorScheme}>
-                <Text textStyle="body-1" color="secondary.500">
-                  Fill up a response
-                </Text>
-              </Radio>
-              <Radio value="review" colorScheme={checkboxColorScheme}>
-                <Text textStyle="body-1" color="secondary.500">
-                  Fill up a response and approve
-                </Text>
-              </Radio>
-            </Stack>
-          </RadioGroup>
-        </Box>
-
-        <Divider />
-
-        {/* Section: Step name */}
+        {/* Section 1: Step name */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
             Step name
@@ -230,10 +264,10 @@ export const StepDetailPanel = ({
 
         <Divider />
 
-        {/* Section: Respondent */}
+        {/* Section 2: People involved */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
-            Respondent
+            People involved
           </Text>
 
           {step.order === 0 ? (
@@ -244,7 +278,10 @@ export const StepDetailPanel = ({
               </Text>
             </Flex>
           ) : (
-            <RadioGroup value={currentRespondentType}>
+            <RadioGroup
+              value={currentRespondentType}
+              onChange={handleRespondentTypeChange}
+            >
               <Stack spacing="0.75rem">
                 <Box>
                   <Radio value="email_field" colorScheme={checkboxColorScheme}>
@@ -253,7 +290,16 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'email_field' && (
-                    <MockSelect placeholder="Select an email field" />
+                    <Box pl="1.75rem" pt="0.5rem">
+                      <SingleSelect
+                        name="emailFieldSelect"
+                        isClearable={false}
+                        placeholder="Select an email field"
+                        items={emailFieldItems}
+                        value={currentLinkedFieldId ?? ''}
+                        onChange={handleFieldSelect}
+                      />
+                    </Box>
                   )}
                 </Box>
 
@@ -267,11 +313,15 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'specific_email' && (
-                    <MockEmailTags
-                      emails={stepRespondents
-                        .filter((r) => r.email)
-                        .map((r) => r.email!)}
-                    />
+                    <Box pl="1.75rem" pt="0.5rem">
+                      <Textarea
+                        value={emailsText}
+                        onChange={(e) => setEmailsText(e.target.value)}
+                        onBlur={handleEmailsBlur}
+                        placeholder="e.g. bigboss@open.gov.sg, admin@open.gov.sg"
+                        rows={3}
+                      />
+                    </Box>
                   )}
                 </Box>
 
@@ -285,7 +335,16 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'dropdown_field' && (
-                    <MockSelect placeholder="Select a dropdown field" />
+                    <Box pl="1.75rem" pt="0.5rem">
+                      <SingleSelect
+                        name="dropdownFieldSelect"
+                        isClearable={false}
+                        placeholder="Select a dropdown field"
+                        items={dropdownFieldItems}
+                        value={currentLinkedFieldId ?? ''}
+                        onChange={handleFieldSelect}
+                      />
+                    </Box>
                   )}
                 </Box>
               </Stack>
@@ -295,7 +354,75 @@ export const StepDetailPanel = ({
 
         <Divider />
 
-        {/* Section: Fields in this step */}
+        {/* Section 3: What they do (step type) */}
+        <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
+          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
+            What they do
+          </Text>
+          <RadioGroup
+            value={step.type}
+            onChange={(val) => setStepType(step.id, val as StepType)}
+          >
+            <Stack spacing="0.75rem">
+              <Box>
+                <Radio value="collect" colorScheme={checkboxColorScheme}>
+                  <Stack spacing="0.25rem">
+                    <Text textStyle="body-1" color="secondary.500">
+                      Fill up a response
+                    </Text>
+                    <Text textStyle="caption-1" color="secondary.400">
+                      This person fills in their selected fields.
+                    </Text>
+                  </Stack>
+                </Radio>
+              </Box>
+              <Box>
+                <Radio value="review" colorScheme={checkboxColorScheme}>
+                  <Stack spacing="0.25rem">
+                    <Text textStyle="body-1" color="secondary.500">
+                      Fill up a response and approve
+                    </Text>
+                    <Text textStyle="caption-1" color="secondary.400">
+                      This person fills in their selected fields and makes an
+                      approval decision. If they select No, the workflow will
+                      stop.
+                    </Text>
+                  </Stack>
+                </Radio>
+                {step.type === 'review' && (
+                  <Box ml="1.75rem" mt="0.75rem">
+                    <Text
+                      textStyle="subhead-2"
+                      color="secondary.500"
+                      mb="0.5rem"
+                    >
+                      Approval field (Yes/No)
+                    </Text>
+                    {yesNoFields.length > 0 ? (
+                      <SingleSelect
+                        name="approvalFieldSelect"
+                        isClearable={false}
+                        placeholder="Select a Yes/No field"
+                        items={yesNoFields}
+                        value={step.approvalDecisionFieldId ?? ''}
+                        onChange={handleApprovalFieldChange}
+                      />
+                    ) : (
+                      <Text textStyle="caption-1" color="secondary.400">
+                        No Yes/No fields in this form yet. Create one in the
+                        Fields tab.
+                      </Text>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </Stack>
+          </RadioGroup>
+        </Box>
+
+        <Divider />
+
+        {/* Section 4: Fields in this step */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Flex justify="space-between" align="center" mb="0.75rem">
             <Text textStyle="subhead-1" color="secondary.500">
@@ -325,29 +452,41 @@ export const StepDetailPanel = ({
             })}
           </Stack>
         </Box>
-
-        {/* Delete step (not for Step 1) */}
-        {step.order > 0 && (
-          <>
-            <Divider />
-            <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-              <Flex
-                as="button"
-                align="center"
-                gap="0.5rem"
-                cursor="pointer"
-                onClick={() => removeStep(step.id)}
-                _hover={{ opacity: 0.8 }}
-              >
-                <Icon as={BiTrash} fontSize="1rem" color="danger.500" />
-                <Text textStyle="body-1" color="danger.500">
-                  Delete step
-                </Text>
-              </Flex>
-            </Box>
-          </>
-        )}
       </Box>
+
+      {/* Sticky footer: delete (left) + Cancel / Done (right) */}
+      <Divider />
+      <Flex
+        justify="space-between"
+        align="center"
+        px="1.5rem"
+        py="1rem"
+        bg="white"
+      >
+        {step.order > 0 ? (
+          <IconButton
+            aria-label="Delete step"
+            icon={<BiTrash fontSize="1.25rem" />}
+            variant="clear"
+            colorScheme="danger"
+            size="sm"
+            onClick={() => {
+              removeStep(step.id)
+              handleBack()
+            }}
+          />
+        ) : (
+          <Box />
+        )}
+        <Flex gap="0.75rem">
+          <Button variant="clear" colorScheme="secondary" onClick={handleBack}>
+            Cancel
+          </Button>
+          <Button colorScheme="primary" onClick={handleBack}>
+            Done
+          </Button>
+        </Flex>
+      </Flex>
     </Flex>
   )
 }
