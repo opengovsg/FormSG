@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.3.1](https://github.com/opengovsg/formsg/compare/sdk-v7.3.0...sdk-v7.3.1) (2026-06-10)
+
+
+### Miscellaneous
+
+* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+
 ## [7.3.0](https://github.com/opengovsg/formsg/compare/sdk-v7.1.4...sdk-v7.3.0) (2026-06-08)
 
 
