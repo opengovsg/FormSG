@@ -355,6 +355,56 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'signature (drawn)',
+    id: '6200000000000000000000b3',
+    v1: {
+      _id: '6200000000000000000000b3',
+      question: 'Sign here',
+      fieldType: 'signature',
+      // V1 producer: [type, JSON-stringified vector array]
+      answerArray: [
+        'draw',
+        JSON.stringify([
+          [
+            [1, 2, 0],
+            [3, 4, 1],
+          ],
+        ]),
+      ],
+    },
+    v4: {
+      fieldType: 'signature',
+      question: 'Sign here',
+      answer: {
+        type: 'draw',
+        value: [
+          [
+            [1, 2, 0],
+            [3, 4, 1],
+          ],
+        ],
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'signature (empty)',
+    id: '6200000000000000000000b4',
+    v1: {
+      _id: '6200000000000000000000b4',
+      question: 'Optional signature',
+      fieldType: 'signature',
+      // V1 producer renders an unsigned signature as ['', '']
+      answerArray: ['', ''],
+    },
+    v4: {
+      fieldType: 'signature',
+      question: 'Optional signature',
+      answer: { type: 'draw', value: [] },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>

@@ -11,6 +11,7 @@ import {
   CheckboxAnswerV4,
   FieldResponsesV4,
   RadioAnswerV4,
+  SignatureAnswerV4,
   StringAnswerV4,
   TableAnswerV4,
   VerifiableAnswerV4,
@@ -52,6 +53,17 @@ function convertAnswerToV1(
             : v
         ),
       }
+    }
+    case 'signature': {
+      const { type, value } = answer as SignatureAnswerV4
+      if (!Array.isArray(value)) {
+        throw new Error('Expected signature answer value to be an array')
+      }
+      // The V1 producer renders an unsigned signature as ['', ''].
+      if (value.length === 0) {
+        return { answerArray: ['', ''] }
+      }
+      return { answerArray: [type, JSON.stringify(value)] }
     }
     case 'address': {
       const subfields = answer as AddressAnswerV4
