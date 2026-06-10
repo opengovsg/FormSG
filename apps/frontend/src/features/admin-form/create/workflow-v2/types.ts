@@ -48,7 +48,7 @@ export type FormField = {
   options?: string[] // dropdown field options
 }
 
-// Phases
+// Legacy types (kept for backwards compat with creation flow and settings)
 export type Phase =
   | 'add_steps'
   | 'add_respondents'
@@ -57,7 +57,6 @@ export type Phase =
 
 export type PhaseStatus = 'not_started' | 'in_progress' | 'done'
 
-// Phase sequence for wizard navigation
 export const PHASE_ORDER: Phase[] = [
   'add_steps',
   'add_respondents',
@@ -65,35 +64,41 @@ export const PHASE_ORDER: Phase[] = [
   'assign_fields',
 ]
 
-export const PHASE_TITLES: Record<Phase, string> = {
-  add_steps: 'Plan your workflow steps',
-  add_respondents: 'Add people',
-  create_fields: 'Create fields',
-  assign_fields: 'Choose fields for each step',
+// Step colours as hex (fallback)
+export const STEP_COLOURS_HEX = [
+  '#4A61C0', // Blue (form theme)
+  '#357867', // Green
+  '#F66F23', // Orange
+  '#DC2A2A', // Red
+  '#7F6F5E', // Brown
+  '#495C66', // Grey
+] as const
+
+// Keep old name as alias for any existing consumers
+export const STEP_COLOURS = STEP_COLOURS_HEX
+
+// Theme color names for steps (Chakra token prefix, e.g. 'theme-blue.500')
+export const STEP_COLOUR_THEMES = [
+  'theme-blue',
+  'theme-green',
+  'theme-orange',
+  'theme-red',
+  'theme-brown',
+  'theme-grey',
+] as const
+
+// Given the form's color theme, return ordered step colour themes.
+// Step 1 uses the form theme; remaining steps use the rest in order.
+export function getStepColourThemes(formColorTheme?: string): string[] {
+  const formTheme = formColorTheme ? `theme-${formColorTheme}` : 'theme-blue'
+  const others = STEP_COLOUR_THEMES.filter((t) => t !== formTheme)
+  return [formTheme, ...others]
 }
 
-// Focus state (discriminated union)
+// Focus state for form-as-canvas (simplified from wizard phases)
 export type FocusState =
-  | { type: 'summary' }
-  | { type: 'phase'; phase: Phase }
-  | { type: 'step_focus'; phase: Phase; stepId: string; fromStepEdit?: boolean }
-  | {
-      type: 'step_edit'
-      stepId: string
-      fromSummary?: boolean
-      returnTo?: Phase
-    }
-  | { type: 'step_naming'; stepType: StepType; insertIndex: number }
-  | { type: 'new_respondent'; fromStepId?: string }
-  | { type: 'edit_respondent'; respondentId: string }
-  | { type: 'notification_edit'; fromAddSteps?: boolean }
-  | { type: 'notification_focus'; fromNotificationEdit?: boolean }
-  | {
-      type: 'create_field'
-      fieldType: 'email' | 'dropdown'
-      fromStepId?: string
-    }
-  | { type: 'field_assign'; fieldId: string }
+  | { type: 'default' }
+  | { type: 'step_edit'; stepId: string }
 
 // Store interface
 export type WorkflowStore = {
@@ -107,59 +112,45 @@ export type WorkflowStore = {
 
   // UI state (not persisted)
   focusState: FocusState
-  progressCardExpanded: boolean
-  pendingInsertIndex: number | null
-  previewStepName: string | null
-  pendingFieldSelection: string | null
-  deletingRespondentId: string | null
-  justDraggedId: string | null
 
-  // Actions - UI
-  setJustDraggedId: (id: string | null) => void
-
-  // Actions - Sprint 1
+  // Actions - Navigation
   setFocus: (state: FocusState) => void
-  toggleProgressCard: () => void
   resetWorkflow: () => void
-  setPendingInsertIndex: (index: number | null) => void
-  setPreviewStepName: (name: string | null) => void
 
-  // Actions - Sprint 2
+  // Actions - Workflow lifecycle
+  createWorkflow: () => void // Creates Step 1 with defaults, assigns all fields
+  hasWorkflow: () => boolean
+
+  // Actions - Steps
   addStep: (type: StepType, name: string, insertIndex: number) => void
   removeStep: (stepId: string) => void
   renameStep: (stepId: string, name: string) => void
   reorderSteps: (fromIndex: number, toIndex: number) => void
+  setStepType: (stepId: string, type: StepType) => void
   toggleStatusTracking: () => void
 
-  // Actions - Sprint 3
+  // Actions - Respondents
   assignRespondent: (stepId: string, respondentId: string) => void
   unassignRespondent: (stepId: string, respondentId: string) => void
   addRespondent: (data: Omit<Respondent, 'id'>) => void
   updateRespondent: (id: string, data: Partial<Omit<Respondent, 'id'>>) => void
   assignNotificationRecipient: (respondentId: string) => void
   unassignNotificationRecipient: (respondentId: string) => void
-
   removeRespondent: (respondentId: string) => void
   renameNotificationLabel: (name: string) => void
 
-  // Actions - Sprint 3b
+  // Actions - Fields
   addField: (data: Omit<FormField, 'id' | 'number'>) => void
-  setPendingFieldSelection: (id: string | null) => void
   syncFields: (fields: FormField[]) => void
-
-  // Actions - Store scoping
-  loadForForm: (formId: string, initialFocus?: FocusState) => void
-
-  // Actions - Sprint 13 (linear wizard navigation)
-  nextPhase: () => void
-  prevPhase: () => void
-
-  // Actions - Sprint 4
+  toggleFieldAssignment: (stepId: string, fieldId: string) => void
   assignField: (stepId: string, fieldId: string) => void
   unassignField: (stepId: string, fieldId: string) => void
   assignAllFields: (stepId: string) => void
   unassignAllFields: (stepId: string) => void
 
-  // Actions - Sprint 14 (approval decision)
+  // Actions - Approval
   setApprovalDecisionField: (stepId: string, fieldId: string | null) => void
+
+  // Actions - Store scoping
+  loadForForm: (formId: string, initialFocus?: FocusState) => void
 }

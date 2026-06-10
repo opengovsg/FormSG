@@ -10,9 +10,6 @@ import {
 import {
   type FocusState,
   type FormField,
-  type Phase,
-  PHASE_ORDER,
-  type PhaseStatus,
   type Respondent,
   type WorkflowStep,
   type WorkflowStore,
@@ -26,7 +23,6 @@ type PersistedState = {
   respondents: Respondent[]
   fields: FormField[]
   statusTrackingEnabled: boolean
-  progressCardExpanded: boolean
   notificationRecipientIds: string[]
   notificationLabel: string
 }
@@ -36,7 +32,6 @@ const DEFAULT_PERSISTED: PersistedState = {
   respondents: DEFAULT_RESPONDENTS,
   fields: DEFAULT_FIELDS,
   statusTrackingEnabled: false,
-  progressCardExpanded: false,
   notificationRecipientIds: DEFAULT_NOTIFICATION_RECIPIENT_IDS,
   notificationLabel: 'Receive final email notification',
 }
@@ -50,7 +45,6 @@ function storageKeyFor(formId: string): string {
 
 function loadPersistedState(formId?: string): PersistedState {
   try {
-    // Load form-scoped key only
     const key = formId ? storageKeyFor(formId) : null
     const raw = key ? localStorage.getItem(key) : null
 
@@ -58,7 +52,6 @@ function loadPersistedState(formId?: string): PersistedState {
     const parsed = JSON.parse(raw) as Partial<PersistedState>
     const merged = { ...DEFAULT_PERSISTED, ...parsed }
     // Migration: add isCustomName to steps that don't have it
-    // Migration: approvalFieldIds[] → approvalDecisionFieldId
     merged.steps = merged.steps.map((s) => ({
       ...s,
       isCustomName: s.isCustomName ?? false,
@@ -95,37 +88,32 @@ export const respondentsSelector = (state: WorkflowStore) => state.respondents
 export const fieldsSelector = (state: WorkflowStore) => state.fields
 export const focusStateSelector = (state: WorkflowStore) => state.focusState
 export const setFocusSelector = (state: WorkflowStore) => state.setFocus
-export const progressCardExpandedSelector = (state: WorkflowStore) =>
-  state.progressCardExpanded
-export const pendingInsertIndexSelector = (state: WorkflowStore) =>
-  state.pendingInsertIndex
-export const previewStepNameSelector = (state: WorkflowStore) =>
-  state.previewStepName
 export const notificationRecipientIdsSelector = (state: WorkflowStore) =>
   state.notificationRecipientIds
-export const pendingFieldSelectionSelector = (state: WorkflowStore) =>
-  state.pendingFieldSelection
 export const notificationLabelSelector = (state: WorkflowStore) =>
   state.notificationLabel
-export const justDraggedIdSelector = (state: WorkflowStore) =>
-  state.justDraggedId
 
-export function completedPhases(state: WorkflowStore): Phase[] {
-  const completed: Phase[] = []
+// Legacy selectors (kept for backwards compat with creation flow)
+export const pendingInsertIndexSelector = () => null
+export const previewStepNameSelector = () => null
+export const progressCardExpandedSelector = () => false
+export const justDraggedIdSelector = () => null
+
+// Legacy phase status helper (kept for backwards compat)
+export function phaseStatus(): string {
+  return 'not_started'
+}
+
+// Workflow readiness check (used by Settings and Build tab)
+export function completedPhases(state: WorkflowStore): string[] {
+  const completed: string[] = []
   const { steps, fields } = state
 
-  // add_steps: done if more than 1 step
   if (steps.length > 1) completed.push('add_steps')
-
-  // add_respondents: done if every step has at least one respondent
   if (steps.length > 1 && steps.every((s) => s.respondentIds.length > 0)) {
     completed.push('add_respondents')
   }
-
-  // create_fields: done if there are fields
   if (fields.length > 0) completed.push('create_fields')
-
-  // assign_fields: done if every step has at least one field
   if (
     steps.length > 1 &&
     steps.every(
@@ -138,18 +126,6 @@ export function completedPhases(state: WorkflowStore): Phase[] {
   }
 
   return completed
-}
-
-export function phaseStatus(state: WorkflowStore, phase: Phase): PhaseStatus {
-  const done = completedPhases(state)
-  if (done.includes(phase)) return 'done'
-
-  // A phase is "in progress" if the phase before it is done (or it's the first phase)
-  const idx = PHASE_ORDER.indexOf(phase)
-  if (idx === 0) return 'in_progress'
-  if (done.includes(PHASE_ORDER[idx - 1])) return 'in_progress'
-
-  return 'not_started'
 }
 
 function recalculateOrder(steps: WorkflowStep[]): WorkflowStep[] {
@@ -171,74 +147,46 @@ function renumberStepNames(steps: WorkflowStep[]): WorkflowStep[] {
 
 export const useWorkflowBuilderStore = create<WorkflowStore>()(
   devtools((set) => ({
-    // Persisted data - starts with defaults, loadForForm replaces with form-specific data
+    // Persisted data
     steps: DEFAULT_PERSISTED.steps,
     respondents: DEFAULT_PERSISTED.respondents,
     fields: DEFAULT_PERSISTED.fields,
     statusTrackingEnabled: DEFAULT_PERSISTED.statusTrackingEnabled,
-    progressCardExpanded: DEFAULT_PERSISTED.progressCardExpanded,
     notificationRecipientIds: DEFAULT_PERSISTED.notificationRecipientIds,
     notificationLabel: DEFAULT_PERSISTED.notificationLabel,
 
     // UI state
-    focusState: { type: 'summary' } as FocusState,
-    pendingInsertIndex: null,
-    previewStepName: null,
-    pendingFieldSelection: null,
-    deletingRespondentId: null,
-    justDraggedId: null,
+    focusState: { type: 'default' } as FocusState,
 
-    // UI actions
-    setJustDraggedId: (id) => set({ justDraggedId: id }),
-
-    // Sprint 1 actions
+    // Navigation
     setFocus: (focusState) => set({ focusState }),
-    setPendingInsertIndex: (index) => set({ pendingInsertIndex: index }),
-    setPreviewStepName: (name) => set({ previewStepName: name }),
-
-    // Sprint 13 actions (linear wizard navigation)
-    nextPhase: () =>
-      set((state) => {
-        if (state.focusState.type !== 'phase') return state
-        const currentIdx = PHASE_ORDER.indexOf(state.focusState.phase)
-        if (currentIdx === -1 || currentIdx >= PHASE_ORDER.length - 1) {
-          return { focusState: { type: 'summary' } as FocusState }
-        }
-        return {
-          focusState: {
-            type: 'phase',
-            phase: PHASE_ORDER[currentIdx + 1],
-          } as FocusState,
-        }
-      }),
-
-    prevPhase: () =>
-      set((state) => {
-        if (state.focusState.type !== 'phase') return state
-        const currentIdx = PHASE_ORDER.indexOf(state.focusState.phase)
-        if (currentIdx <= 0) {
-          return { focusState: { type: 'summary' } as FocusState }
-        }
-        return {
-          focusState: {
-            type: 'phase',
-            phase: PHASE_ORDER[currentIdx - 1],
-          } as FocusState,
-        }
-      }),
-
-    toggleProgressCard: () =>
-      set((state) => ({
-        progressCardExpanded: !state.progressCardExpanded,
-      })),
 
     resetWorkflow: () =>
       set({
         ...DEFAULT_PERSISTED,
-        focusState: { type: 'summary' } as FocusState,
+        focusState: { type: 'default' } as FocusState,
       }),
 
-    // Sprint 2 actions
+    // Workflow lifecycle
+    createWorkflow: () =>
+      set((state) => {
+        // Create Step 1 with all current fields assigned
+        const step1: WorkflowStep = {
+          id: `step-${Date.now()}`,
+          type: 'collect',
+          name: 'Step 1',
+          isCustomName: false,
+          order: 0,
+          respondentIds: ['resp-form-link'],
+          fieldIds: state.fields.map((f) => f.id),
+          approvalDecisionFieldId: null,
+        }
+        return { steps: [step1] }
+      }),
+
+    hasWorkflow: () => useWorkflowBuilderStore.getState().steps.length > 0,
+
+    // Step actions
     addStep: (type, name, insertIndex) =>
       set((state) => {
         const defaultName = `Step ${insertIndex + 1}`
@@ -260,10 +208,11 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
     removeStep: (stepId) =>
       set((state) => {
         const next = state.steps.filter((s) => s.id !== stepId)
+        // If we were editing this step, go back to default
         const focusState =
-          state.focusState.type === 'step_focus' &&
+          state.focusState.type === 'step_edit' &&
           state.focusState.stepId === stepId
-            ? ({ type: 'phase', phase: 'add_steps' } as FocusState)
+            ? ({ type: 'default' } as FocusState)
             : state.focusState
         return { steps: renumberStepNames(recalculateOrder(next)), focusState }
       }),
@@ -283,12 +232,19 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
         return { steps: renumberStepNames(recalculateOrder(next)) }
       }),
 
+    setStepType: (stepId, type) =>
+      set((state) => ({
+        steps: state.steps.map((s) =>
+          s.id === stepId ? { ...s, type, approvalDecisionFieldId: null } : s,
+        ),
+      })),
+
     toggleStatusTracking: () =>
       set((state) => ({
         statusTrackingEnabled: !state.statusTrackingEnabled,
       })),
 
-    // Sprint 3 actions
+    // Respondent actions
     assignRespondent: (stepId, respondentId) =>
       set((state) => ({
         steps: state.steps.map((s) =>
@@ -357,39 +313,50 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
 
     renameNotificationLabel: (name) => set({ notificationLabel: name }),
 
-    // Sprint 3b actions
+    // Field actions
     addField: (data) =>
-      set((state) => ({
-        fields: [
-          ...state.fields,
-          {
-            ...data,
-            id: `field-${Date.now()}`,
-            number: state.fields.length + 1,
-          },
-        ],
-      })),
-
-    setPendingFieldSelection: (id) => set({ pendingFieldSelection: id }),
+      set((state) => {
+        const newField = {
+          ...data,
+          id: `field-${Date.now()}`,
+          number: state.fields.length + 1,
+        }
+        // Auto-assign new fields to Step 1 (sprint 15 design decision)
+        const step1 = state.steps[0]
+        const updatedSteps = step1
+          ? state.steps.map((s) =>
+              s.id === step1.id
+                ? { ...s, fieldIds: [...s.fieldIds, newField.id] }
+                : s,
+            )
+          : state.steps
+        return {
+          fields: [...state.fields, newField],
+          steps: updatedSteps,
+        }
+      }),
 
     syncFields: (fields) => set({ fields }),
 
-    loadForForm: (formId, initialFocus?) => {
-      if (currentFormId === formId) return
-      currentFormId = formId
-      const persisted = loadPersistedState(formId)
-      set({
-        ...persisted,
-        focusState: initialFocus ?? ({ type: 'summary' } as FocusState),
-        pendingInsertIndex: null,
-        previewStepName: null,
-        pendingFieldSelection: null,
-        deletingRespondentId: null,
-        justDraggedId: null,
-      })
-    },
+    toggleFieldAssignment: (stepId, fieldId) =>
+      set((state) => ({
+        steps: state.steps.map((s) => {
+          if (s.id !== stepId) return s
+          const isAssigned = s.fieldIds.includes(fieldId)
+          return {
+            ...s,
+            fieldIds: isAssigned
+              ? s.fieldIds.filter((id) => id !== fieldId)
+              : [...s.fieldIds, fieldId],
+            // Clear approval field if unassigning it
+            approvalDecisionFieldId:
+              isAssigned && s.approvalDecisionFieldId === fieldId
+                ? null
+                : s.approvalDecisionFieldId,
+          }
+        }),
+      })),
 
-    // Sprint 4 actions
     assignField: (stepId, fieldId) =>
       set((state) => ({
         steps: state.steps.map((s) =>
@@ -411,7 +378,6 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
             ? {
                 ...s,
                 fieldIds: s.fieldIds.filter((id) => id !== fieldId),
-                // Clear approval decision if the unassigned field was it
                 approvalDecisionFieldId:
                   s.approvalDecisionFieldId === fieldId
                     ? null
@@ -437,13 +403,24 @@ export const useWorkflowBuilderStore = create<WorkflowStore>()(
         ),
       })),
 
-    // Sprint 14: approval decision field
+    // Approval
     setApprovalDecisionField: (stepId, fieldId) =>
       set((state) => ({
         steps: state.steps.map((s) =>
           s.id === stepId ? { ...s, approvalDecisionFieldId: fieldId } : s,
         ),
       })),
+
+    // Store scoping
+    loadForForm: (formId, initialFocus?) => {
+      if (currentFormId === formId) return
+      currentFormId = formId
+      const persisted = loadPersistedState(formId)
+      set({
+        ...persisted,
+        focusState: initialFocus ?? ({ type: 'default' } as FocusState),
+      })
+    },
   })),
 )
 
@@ -454,7 +431,6 @@ useWorkflowBuilderStore.subscribe((state) => {
     respondents: state.respondents,
     fields: state.fields,
     statusTrackingEnabled: state.statusTrackingEnabled,
-    progressCardExpanded: state.progressCardExpanded,
     notificationRecipientIds: state.notificationRecipientIds,
     notificationLabel: state.notificationLabel,
   })

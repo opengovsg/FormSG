@@ -1,340 +1,54 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-} from '@chakra-ui/react'
-import {
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  MouseSensor,
-  pointerWithin,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
 
-import { ModalCloseButton } from '~components/Modal'
+import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { RespondentCardOverlay } from './components/AddRespondentsPanel'
-import { StepTypeCardOverlay } from './components/AddStepsPanel/StepTypeCard'
-import { FieldCardOverlay } from './components/AssignFieldsPanel'
-import { StepCardOverlay } from './components/WorkflowCanvas/CanvasStepCard'
-import { WorkflowCanvas } from './components/WorkflowCanvas/WorkflowCanvas'
-import { WorkflowDrawer } from './components/WorkflowDrawer'
-import type { FormField, Respondent, StepType, WorkflowStep } from './types'
-import {
-  focusStateSelector,
-  respondentsSelector,
-  setFocusSelector,
-  stepsSelector,
-  useWorkflowBuilderStore,
-} from './workflowBuilderStore'
+import { CreatePageDrawerContainer } from '../common/CreatePageDrawer'
+import { CreatePageSideBarLayoutProvider } from '../common/CreatePageSideBarLayoutContext'
+
+import { FormCanvas } from './components/FormCanvas'
+import { WorkflowPanel } from './components/WorkflowPanel'
+import type { FormField } from './types'
+import { useWorkflowBuilderStore } from './workflowBuilderStore'
 
 export const CreatePageWorkflowTabV2 = (): JSX.Element => {
   const { formId } = useParams()
   const loadForForm = useWorkflowBuilderStore((s) => s.loadForForm)
+  const syncFields = useWorkflowBuilderStore((s) => s.syncFields)
+  const { data: form } = useAdminForm()
 
+  // Load form-scoped store state on mount
   useEffect(() => {
     if (formId) loadForForm(formId)
   }, [formId, loadForForm])
 
-  const setFocus = useWorkflowBuilderStore(setFocusSelector)
-  const reorderSteps = useWorkflowBuilderStore((s) => s.reorderSteps)
-  const steps = useWorkflowBuilderStore(stepsSelector)
-  const respondents = useWorkflowBuilderStore(respondentsSelector)
-  const focusState = useWorkflowBuilderStore(focusStateSelector)
-  const assignRespondent = useWorkflowBuilderStore((s) => s.assignRespondent)
-  const unassignRespondent = useWorkflowBuilderStore(
-    (s) => s.unassignRespondent,
-  )
-  const assignNotificationRecipient = useWorkflowBuilderStore(
-    (s) => s.assignNotificationRecipient,
-  )
-  const assignField = useWorkflowBuilderStore((s) => s.assignField)
-  const setPendingInsertIndex = useWorkflowBuilderStore(
-    (s) => s.setPendingInsertIndex,
-  )
-  const setJustDraggedId = useWorkflowBuilderStore((s) => s.setJustDraggedId)
+  // Sync real form fields into the store so step assignments can reference them
+  const storeFields: FormField[] = useMemo(() => {
+    if (!form?.form_fields) return []
+    return form.form_fields.map((f, i) => ({
+      id: f._id,
+      name: f.title,
+      fieldType: f.fieldType as FormField['fieldType'],
+      number: i + 1,
+    }))
+  }, [form?.form_fields])
 
-  const [activeStepType, setActiveStepType] = useState<StepType | null>(null)
-  const [activeDragStep, setActiveDragStep] = useState<WorkflowStep | null>(
-    null,
-  )
-  const [activeRespondent, setActiveRespondent] = useState<Respondent | null>(
-    null,
-  )
-  const [activeField, setActiveField] = useState<FormField | null>(null)
-  const [draggingFieldType, setDraggingFieldType] = useState<string | null>(
-    null,
-  )
-  const [justDroppedStepId, setJustDroppedStepId] = useState<string | null>(
-    null,
-  )
-
-  // Step 1 reorder confirmation modal
-  const [pendingReorder, setPendingReorder] = useState<{
-    fromIndex: number
-    toIndex: number
-  } | null>(null)
-
-  // Require 8px of movement before activating drag, so clicks work normally
-  const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: { distance: 8 },
-  })
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: { delay: 200, tolerance: 5 },
-  })
-  const sensors = useSensors(mouseSensor, touchSensor)
-
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const data = event.active.data.current
-      if (data?.type === 'step_type') {
-        setActiveStepType(data.stepType as StepType)
-      } else if (data?.type === 'step_card') {
-        const step = steps.find((s) => s.id === event.active.id)
-        if (step) setActiveDragStep(step)
-      } else if (data?.type === 'respondent_card') {
-        setActiveRespondent(data.respondent as Respondent)
-      } else if (data?.type === 'field_card') {
-        setActiveField(data.field as FormField)
-        setDraggingFieldType((data.field as FormField).fieldType)
-      }
-    },
-    [steps],
-  )
-
-  const executeReorder = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      // Check if this reorder involves position 0 (step 1)
-      const involvesStep1 = fromIndex === 0 || toIndex === 0
-
-      if (involvesStep1) {
-        // Clear respondents from both involved steps after reorder
-        const stepAtFrom = steps[fromIndex]
-        const stepAtTo = steps[toIndex]
-
-        reorderSteps(fromIndex, toIndex)
-
-        // Clear respondents from both steps
-        if (stepAtFrom) {
-          stepAtFrom.respondentIds.forEach((rId) =>
-            unassignRespondent(stepAtFrom.id, rId),
-          )
-        }
-        if (stepAtTo) {
-          stepAtTo.respondentIds.forEach((rId) =>
-            unassignRespondent(stepAtTo.id, rId),
-          )
-        }
-
-        // Auto-assign "Anyone with the form link" to the new step 1
-        // After reorder, the step at index 0 is the new step 1
-        const reorderedSteps = useWorkflowBuilderStore.getState().steps
-        if (reorderedSteps[0]) {
-          assignRespondent(reorderedSteps[0].id, 'resp-form-link')
-        }
-      } else {
-        reorderSteps(fromIndex, toIndex)
-      }
-    },
-    [steps, reorderSteps, unassignRespondent, assignRespondent],
-  )
-
-  const handleConfirmReorder = useCallback(() => {
-    if (pendingReorder) {
-      executeReorder(pendingReorder.fromIndex, pendingReorder.toIndex)
-      setPendingReorder(null)
+  useEffect(() => {
+    if (storeFields.length > 0) {
+      syncFields(storeFields)
     }
-  }, [pendingReorder, executeReorder])
+  }, [storeFields, syncFields])
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      // Track which card was just dragged so it can fade back in gently
-      setJustDraggedId(event.active.id as string)
-      setTimeout(() => setJustDraggedId(null), 200)
-
-      // Clear drag type flags immediately so drop zones hide
-      setDraggingFieldType(null)
-
-      // Delay clearing overlay content so the drop animation can play
-      setTimeout(() => {
-        setActiveStepType(null)
-        setActiveDragStep(null)
-        setActiveRespondent(null)
-        setActiveField(null)
-      }, 300)
-
-      const { active, over } = event
-      if (!over) return
-
-      const activeData = active.data.current
-      const overData = over.data.current
-
-      // Drag-to-add: step type dropped on a drop zone
-      if (activeData?.type === 'step_type' && overData?.type === 'drop_zone') {
-        setPendingInsertIndex(null)
-        setFocus({
-          type: 'step_naming',
-          stepType: activeData.stepType as StepType,
-          insertIndex: overData.insertIndex as number,
-        })
-        return
-      }
-
-      // Step reorder: canvas step card moved
-      if (activeData?.type === 'step_card' && overData?.type === 'step_card') {
-        const fromIndex = activeData.sortIndex as number
-        const toIndex = overData.sortIndex as number
-        if (fromIndex !== toIndex) {
-          // If this involves step 1, show confirmation modal
-          if (fromIndex === 0 || toIndex === 0) {
-            setPendingReorder({ fromIndex, toIndex })
-          } else {
-            reorderSteps(fromIndex, toIndex)
-          }
-        }
-        return
-      }
-
-      // Respondent dropped on step card
-      if (
-        activeData?.type === 'respondent_card' &&
-        overData?.type === 'respondent_drop'
-      ) {
-        const respondentId = active.id as string
-        const stepId = overData.stepId as string
-        assignRespondent(stepId, respondentId)
-        setJustDroppedStepId(stepId)
-        setTimeout(() => setJustDroppedStepId(null), 400)
-        // Auto-focus the step after drop
-        setFocus({
-          type: 'step_focus',
-          phase: 'add_respondents',
-          stepId,
-        })
-        return
-      }
-
-      // Respondent dropped on notification card
-      if (
-        activeData?.type === 'respondent_card' &&
-        overData?.type === 'notification_drop'
-      ) {
-        assignNotificationRecipient(active.id as string)
-        setJustDroppedStepId('notification')
-        setTimeout(() => setJustDroppedStepId(null), 400)
-        return
-      }
-
-      // Field dropped on step card (regular fields)
-      if (
-        activeData?.type === 'field_card' &&
-        overData?.type === 'field_drop'
-      ) {
-        const fieldId = active.id as string
-        const stepId = overData.stepId as string
-        assignField(stepId, fieldId)
-        setJustDroppedStepId(stepId)
-        setTimeout(() => setJustDroppedStepId(null), 400)
-        setFocus({
-          type: 'step_focus',
-          phase: 'assign_fields',
-          stepId,
-        })
-        return
-      }
-    },
-    [
-      setFocus,
-      reorderSteps,
-      assignRespondent,
-      assignNotificationRecipient,
-      assignField,
-      setPendingInsertIndex,
-      setJustDraggedId,
-    ],
-  )
-
+  // Render drawer + canvas as siblings (no wrapper Flex)
+  // so they participate in the parent Flex from CreatePage.tsx
   return (
     <>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={pointerWithin}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <WorkflowDrawer />
-        <WorkflowCanvas
-          isDragging={activeStepType !== null}
-          isDraggingRespondent={activeRespondent !== null}
-          draggingFieldType={draggingFieldType}
-          justDroppedStepId={justDroppedStepId}
-        />
-        <DragOverlay dropAnimation={null}>
-          {activeStepType ? (
-            <StepTypeCardOverlay stepType={activeStepType} />
-          ) : activeDragStep ? (
-            <StepCardOverlay step={activeDragStep} />
-          ) : activeRespondent ? (
-            <RespondentCardOverlay respondent={activeRespondent} />
-          ) : activeField ? (
-            <FieldCardOverlay field={activeField} />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-
-      {/* Step 1 reorder confirmation modal */}
-      <Modal
-        isOpen={pendingReorder !== null}
-        onClose={() => setPendingReorder(null)}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalHeader color="secondary.700" pr="4rem">
-            Moving step to position 1
-          </ModalHeader>
-          <ModalBody color="secondary.500" textStyle="body-2">
-            Step 1 is always accessed via the form link. Moving this step to
-            position 1 will:
-            <Box as="ul" pl="1.25rem" mt="0.5rem">
-              <li>Clear respondents from both steps</li>
-              <li>
-                Assign &ldquo;Anyone with the form link&rdquo; to the new Step 1
-              </li>
-            </Box>
-          </ModalBody>
-          <ModalFooter>
-            <Stack
-              spacing="1rem"
-              w="100%"
-              direction={{ base: 'column', md: 'row-reverse' }}
-            >
-              <Button colorScheme="primary" onClick={handleConfirmReorder}>
-                Confirm
-              </Button>
-              <Button
-                colorScheme="secondary"
-                variant="clear"
-                onClick={() => setPendingReorder(null)}
-              >
-                Cancel
-              </Button>
-            </Stack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <CreatePageSideBarLayoutProvider>
+        <CreatePageDrawerContainer>
+          <WorkflowPanel />
+        </CreatePageDrawerContainer>
+      </CreatePageSideBarLayoutProvider>
+      <FormCanvas />
     </>
   )
 }
