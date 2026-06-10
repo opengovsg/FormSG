@@ -405,6 +405,39 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'children (one row per child, values only)',
+    id: '6200000000000000000000b5',
+    v1: {
+      _id: '6200000000000000000000b5',
+      question: 'Your children',
+      fieldType: 'children',
+      // V1 producer: answerArray is the child rows (values only, no attrs)
+      answerArray: [
+        ['ALICE TAN', 'T1234567A'],
+        ['BOB TAN', 'T7654321B'],
+      ],
+    },
+    v4: {
+      fieldType: 'children',
+      question: 'Your children',
+      answer: {
+        child1: {
+          value: {
+            name: { value: 'ALICE TAN', myInfo: { attr: 'childname' } },
+            birthCertNo: { value: 'T1234567A' },
+          },
+        },
+        child2: {
+          value: {
+            name: { value: 'BOB TAN' },
+            birthCertNo: { value: 'T7654321B' },
+          },
+        },
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>

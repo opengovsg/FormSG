@@ -9,6 +9,7 @@ import {
   AddressAnswerV4,
   AnswerV4,
   CheckboxAnswerV4,
+  ChildrenAnswerV4,
   FieldResponsesV4,
   RadioAnswerV4,
   SignatureAnswerV4,
@@ -51,6 +52,23 @@ function convertAnswerToV1(
           v === CHECKBOX_OTHERS_INPUT_VALUE && othersInput !== undefined
             ? `${OTHERS_PREFIX}${othersInput}`
             : v
+        ),
+      }
+    }
+    case 'children': {
+      // One row per child, values only — the V1 producer's answerArray shape.
+      // Attribute order follows the first child's record keys, like the
+      // V4→V3 adapter. Unreachable in production today (MRF submissions
+      // cannot contain children fields yet), so the V1 producer wins.
+      const children = answer as ChildrenAnswerV4
+      const childEntries = Object.values(children)
+      if (childEntries.length === 0) {
+        return { answerArray: [] }
+      }
+      const childAttrs = Object.keys(childEntries[0].value)
+      return {
+        answerArray: childEntries.map((child) =>
+          childAttrs.map((attr) => child.value[attr]?.value ?? '')
         ),
       }
     }
