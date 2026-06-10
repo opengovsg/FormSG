@@ -1,7 +1,12 @@
-import { GENERIC_STRING_FIELD_TYPES, OTHERS_PREFIX } from './constants-v4'
+import {
+  CHECKBOX_OTHERS_INPUT_VALUE,
+  GENERIC_STRING_FIELD_TYPES,
+  OTHERS_PREFIX,
+} from './constants-v4'
 import { FieldType, FormField } from './types'
 import {
   AnswerV4,
+  CheckboxAnswerV4,
   FieldResponsesV4,
   RadioAnswerV4,
   StringAnswerV4,
@@ -31,6 +36,19 @@ function convertAnswerToV1(
       const { isOthersInput } = answer as RadioAnswerV4
       const value = convertToStringAnswer(answer)
       return { answer: isOthersInput ? `${OTHERS_PREFIX}${value}` : value }
+    }
+    case 'checkbox': {
+      const { value, othersInput } = answer as CheckboxAnswerV4
+      if (!Array.isArray(value)) {
+        throw new Error('Expected checkbox answer value to be an array')
+      }
+      return {
+        answerArray: value.map((v) =>
+          v === CHECKBOX_OTHERS_INPUT_VALUE && othersInput !== undefined
+            ? `${OTHERS_PREFIX}${othersInput}`
+            : v
+        ),
+      }
     }
     case 'email':
     case 'mobile': {

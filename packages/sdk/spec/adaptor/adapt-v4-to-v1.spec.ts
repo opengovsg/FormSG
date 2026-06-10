@@ -188,6 +188,76 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'checkbox (regular options)',
+    id: '6200000000000000000000ab',
+    v1: {
+      _id: '6200000000000000000000ab',
+      question: 'Toppings',
+      fieldType: 'checkbox',
+      answerArray: ['Cheese', 'Mushroom'],
+    },
+    v4: {
+      fieldType: 'checkbox',
+      question: 'Toppings',
+      answer: { value: ['Cheese', 'Mushroom'] },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'checkbox (Others checked)',
+    id: '6200000000000000000000ac',
+    v1: {
+      _id: '6200000000000000000000ac',
+      question: 'Sauces',
+      fieldType: 'checkbox',
+      answerArray: ['Ketchup', 'Others: sambal'],
+    },
+    v4: {
+      fieldType: 'checkbox',
+      question: 'Sauces',
+      answer: {
+        value: ['Ketchup', '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+        othersInput: 'sambal',
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'checkbox (only Others checked)',
+    id: '6200000000000000000000ad',
+    v1: {
+      _id: '6200000000000000000000ad',
+      question: 'Allergies',
+      fieldType: 'checkbox',
+      answerArray: ['Others: pollen'],
+    },
+    v4: {
+      fieldType: 'checkbox',
+      question: 'Allergies',
+      answer: {
+        value: ['!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+        othersInput: 'pollen',
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'checkbox (no options selected)',
+    id: '6200000000000000000000ae',
+    v1: {
+      _id: '6200000000000000000000ae',
+      question: 'Optional extras',
+      fieldType: 'checkbox',
+      answerArray: [],
+    },
+    v4: {
+      fieldType: 'checkbox',
+      question: 'Optional extras',
+      answer: { value: [] },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>
@@ -242,6 +312,55 @@ describe('adaptV4ToV1', () => {
   })
 
   describe('direct adapter behaviour', () => {
+    it('should replace the checkbox Others sentinel in place, following the frontend flatten', () => {
+      // The V1 producer removes the sentinel and appends 'Others: x' at the
+      // end; the frontend flatten replaces it in place. In production the
+      // client always appends the sentinel last so the two agree — for the
+      // unreachable not-last case, the fidelity contract follows the flatten.
+      const v4: FieldResponsesV4 = {
+        field1: {
+          fieldType: 'checkbox',
+          question: 'Q',
+          answer: {
+            value: ['!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!', 'B'],
+            othersInput: 'first',
+          },
+          provenance: {},
+        },
+      }
+
+      expect(adaptV4ToV1(v4)).toEqual([
+        {
+          _id: 'field1',
+          question: 'Q',
+          fieldType: 'checkbox',
+          answerArray: ['Others: first', 'B'],
+        },
+      ])
+    })
+
+    it('should leave the checkbox Others sentinel untouched when no others input exists, following the frontend flatten', () => {
+      const v4: FieldResponsesV4 = {
+        field1: {
+          fieldType: 'checkbox',
+          question: 'Q',
+          answer: {
+            value: ['A', '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+          },
+          provenance: {},
+        },
+      }
+
+      expect(adaptV4ToV1(v4)).toEqual([
+        {
+          _id: 'field1',
+          question: 'Q',
+          fieldType: 'checkbox',
+          answerArray: ['A', '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'],
+        },
+      ])
+    })
+
     it('should adapt an empty record to an empty array', () => {
       expect(adaptV4ToV1({})).toEqual([])
     })
