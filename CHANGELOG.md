@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.27.0](https://github.com/opengovsg/formsg/compare/v7.26.1...v7.27.0) (2026-06-10)
+
+
+### Features
+
+* short answer prefill progressive disclosure (#9565) ([#9565](https://github.com/opengovsg/formsg/commit/4623122db933dfdf0fc007d43f99e9a4e9c5fd5a))
+
+
+### Miscellaneous
+
+* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+
 ## [7.26.1](https://github.com/opengovsg/formsg/compare/v7.26.0...v7.26.1) (2026-06-09)
 
 
