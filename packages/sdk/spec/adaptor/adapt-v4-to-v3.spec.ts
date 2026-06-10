@@ -398,8 +398,8 @@ describe('adaptV4ToV3', () => {
     })
   })
 
-  describe('myInfo preservation', () => {
-    it('should preserve myInfo metadata in v3 output', () => {
+  describe('myInfo', () => {
+    it('should strip myInfo from v3 output even when present on v4 response', () => {
       const v4: FieldResponsesV4 = {
         field1: {
           fieldType: 'textfield',
@@ -415,8 +415,8 @@ describe('adaptV4ToV3', () => {
       expect(result.field1).toEqual({
         fieldType: 'textfield',
         answer: 'Alice',
-        myInfo: { attr: 'name' },
       })
+      expect(result.field1).not.toHaveProperty('myInfo')
     })
 
     it('should not include myInfo when not present', () => {
