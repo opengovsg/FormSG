@@ -83,7 +83,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  isSingpassEnforcedOnStep,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -916,11 +919,13 @@ export const handleNdiResponses = async (
   const isSingpassAuthType =
     authType === FormAuthType.CP || authType === FormAuthType.MyInfo
 
-  // 1. Handle Ndi data for current step
-  if (
-    isSingpassAuthType &&
-    stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
-  ) {
+  // 1. Handle Ndi data for current step.
+  // isSingpassEnforcedOnStep answers only the shared step rule (true on the
+  // first step today); the CP/MyInfo authType gate above stays here. When
+  // per-step Singpass config is added (issue #9513 follow-up), changing the
+  // helper extends this step gate, but see the helper's note: the controller's
+  // step-2+ path must be wired separately.
+  if (isSingpassAuthType && isSingpassEnforcedOnStep(formDef, stepNumber)) {
     let userName
     let userInfo
     let jwtPayloadResult

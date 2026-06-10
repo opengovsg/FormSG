@@ -10,6 +10,7 @@ import {
   ChildBirthRecordsResponseV3,
   EmailResponseV3,
   FieldResponsesV3,
+  FormAuthType,
   FormFieldDto,
   FormWorkflowStepConditional,
   FormWorkflowStepDto,
@@ -49,6 +50,7 @@ import {
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
   getQuestionAnswerPairsForMultipleFields,
+  isSingpassEnforcedOnStep,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -1051,5 +1053,38 @@ describe('multirespondent-submission.utils', () => {
       responses: null as unknown as FieldResponsesV3,
     })
     expect(nullResult).toEqual([])
+  })
+
+  describe('isSingpassEnforcedOnStep', () => {
+    it.each([
+      FormAuthType.SP,
+      FormAuthType.CP,
+      FormAuthType.MyInfo,
+      FormAuthType.SGID,
+      FormAuthType.SGID_MyInfo,
+    ])('should return true on step 1 when authType is %s', (authType) => {
+      expect(isSingpassEnforcedOnStep({ authType }, 1)).toBe(true)
+    })
+
+    it('should return false on step 1 when authType is NIL', () => {
+      expect(isSingpassEnforcedOnStep({ authType: FormAuthType.NIL }, 1)).toBe(
+        false,
+      )
+    })
+
+    it('should return false on step 0', () => {
+      expect(isSingpassEnforcedOnStep({ authType: FormAuthType.SP }, 0)).toBe(
+        false,
+      )
+    })
+
+    it.each([2, 3, 10])(
+      'should return false on step %i even with a Singpass authType',
+      (stepNumber) => {
+        expect(
+          isSingpassEnforcedOnStep({ authType: FormAuthType.SP }, stepNumber),
+        ).toBe(false)
+      },
+    )
   })
 })
