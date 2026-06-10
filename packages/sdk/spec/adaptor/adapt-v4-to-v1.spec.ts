@@ -545,6 +545,170 @@ describe('adaptV4ToV1', () => {
       expect(adaptV4ToV1({})).toEqual([])
     })
 
+    it('should preserve the record insertion order, not field id or form order', () => {
+      const v4: FieldResponsesV4 = {
+        zzz999: {
+          fieldType: 'textfield',
+          question: 'Third question on the form',
+          answer: { value: 'first inserted' },
+          provenance: { stepNumber: 2 },
+        },
+        aaa111: {
+          fieldType: 'textfield',
+          question: 'First question on the form',
+          answer: { value: 'second inserted' },
+          provenance: { stepNumber: 1 },
+        },
+        mmm555: {
+          fieldType: 'textfield',
+          question: 'Second question on the form',
+          answer: { value: 'third inserted' },
+          provenance: { stepNumber: 1 },
+        },
+      }
+
+      expect(adaptV4ToV1(v4).map((f) => f._id)).toEqual([
+        'zzz999',
+        'aaa111',
+        'mmm555',
+      ])
+    })
+
+    it('should drop myInfo and previousAnswers metadata from the output', () => {
+      const withMetadata: FieldResponsesV4 = {
+        field1: {
+          fieldType: 'textfield',
+          question: 'Name',
+          answer: { value: 'TAN AH KOW' },
+          provenance: { stepNumber: 2 },
+          myInfo: { attr: 'name' },
+          previousAnswers: [
+            {
+              answer: { value: 'OLD NAME' },
+              provenance: { stepNumber: 1 },
+            },
+          ],
+        },
+      }
+      const withoutMetadata: FieldResponsesV4 = {
+        field1: {
+          fieldType: 'textfield',
+          question: 'Name',
+          answer: { value: 'TAN AH KOW' },
+          provenance: { stepNumber: 2 },
+        },
+      }
+
+      expect(adaptV4ToV1(withMetadata)).toEqual(adaptV4ToV1(withoutMetadata))
+      expect(adaptV4ToV1(withMetadata)).toEqual([
+        {
+          _id: 'field1',
+          question: 'Name',
+          fieldType: 'textfield',
+          answer: 'TAN AH KOW',
+        },
+      ])
+    })
+
+    it('should pass through an unknown field type as a string answer', () => {
+      const v4 = {
+        field1: {
+          fieldType: 'hologram',
+          question: 'Future field',
+          answer: { value: 'beamed' },
+          provenance: {},
+        },
+      } as unknown as FieldResponsesV4
+
+      expect(adaptV4ToV1(v4)).toEqual([
+        {
+          _id: 'field1',
+          question: 'Future field',
+          fieldType: 'hologram',
+          answer: 'beamed',
+        },
+      ])
+    })
+
+    describe('malformed entries throw, so the decrypt layer can return null', () => {
+      it('should throw when a string field answer value is missing', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'textfield',
+            question: 'Q',
+            answer: {},
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+
+      it('should throw when a string field answer value has the wrong type', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'textfield',
+            question: 'Q',
+            answer: { value: 42 },
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+
+      it('should throw when the answer is missing entirely', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'textfield',
+            question: 'Q',
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+
+      it('should throw when a checkbox answer value is not an array', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'checkbox',
+            question: 'Q',
+            answer: { value: 'not-an-array' },
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+
+      it('should throw when a signature answer value is not an array', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'signature',
+            question: 'Q',
+            answer: { type: 'draw', value: 'scribble' },
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+
+      it('should throw when an address answer is missing subfields', () => {
+        const v4 = {
+          field1: {
+            fieldType: 'address',
+            question: 'Q',
+            answer: { postalCode: { value: '654321' } },
+            provenance: {},
+          },
+        } as unknown as FieldResponsesV4
+
+        expect(() => adaptV4ToV1(v4)).toThrow()
+      })
+    })
+
     it('should adapt a section response without isHeader, following the frontend flatten', () => {
       // Deviation from the V1 producer (which emits isHeader: true) — the
       // ADR 0001 fidelity contract prefers the frontend flatten's rendering
