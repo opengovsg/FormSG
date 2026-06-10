@@ -1,8 +1,9 @@
-import { GENERIC_STRING_FIELD_TYPES } from './constants-v4'
+import { GENERIC_STRING_FIELD_TYPES, OTHERS_PREFIX } from './constants-v4'
 import { FieldType, FormField } from './types'
 import {
   AnswerV4,
   FieldResponsesV4,
+  RadioAnswerV4,
   StringAnswerV4,
   VerifiableAnswerV4,
 } from './types-v4'
@@ -26,6 +27,11 @@ function convertAnswerToV1(
   switch (fieldType) {
     case 'yes_no':
       return { answer: convertToStringAnswer(answer) }
+    case 'radiobutton': {
+      const { isOthersInput } = answer as RadioAnswerV4
+      const value = convertToStringAnswer(answer)
+      return { answer: isOthersInput ? `${OTHERS_PREFIX}${value}` : value }
+    }
     case 'email':
     case 'mobile': {
       const { signature } = answer as VerifiableAnswerV4

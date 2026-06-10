@@ -140,6 +140,54 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'radiobutton (regular option)',
+    id: '6200000000000000000000a8',
+    v1: {
+      _id: '6200000000000000000000a8',
+      question: 'Favourite colour',
+      fieldType: 'radiobutton',
+      answer: 'Blue',
+    },
+    v4: {
+      fieldType: 'radiobutton',
+      question: 'Favourite colour',
+      answer: { value: 'Blue', isOthersInput: false },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'radiobutton (Others selected)',
+    id: '6200000000000000000000a9',
+    v1: {
+      _id: '6200000000000000000000a9',
+      question: 'Favourite fruit',
+      fieldType: 'radiobutton',
+      answer: 'Others: durian',
+    },
+    v4: {
+      fieldType: 'radiobutton',
+      question: 'Favourite fruit',
+      answer: { value: 'durian', isOthersInput: true },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'radiobutton (Others selected, empty input)',
+    id: '6200000000000000000000aa',
+    v1: {
+      _id: '6200000000000000000000aa',
+      question: 'Favourite veg',
+      fieldType: 'radiobutton',
+      answer: 'Others: ',
+    },
+    v4: {
+      fieldType: 'radiobutton',
+      question: 'Favourite veg',
+      answer: { value: '', isOthersInput: true },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>
