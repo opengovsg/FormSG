@@ -1,12 +1,10 @@
+import type { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   BasicField,
-  FieldResponsesV3,
-  FieldResponseV3,
   FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
-  NdiResponseV3,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
@@ -25,18 +23,18 @@ import {
   IMultirespondentSubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
-import { validateFieldV3 } from '../../../utils/field-validation'
+import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
-  ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
 
@@ -102,34 +100,27 @@ export const createPublicMultirespondentSubmissionDto = (
 
 export const getEmailFromResponses = (
   fieldId: string,
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): string | null => {
   const field = responses[fieldId]
   if (!field || field.fieldType !== BasicField.Email) return null // Not an error, misconfigured or respondent has not filled.
-  return field.answer.value
+  return (field.answer as { value: string }).value
 }
 
 export const extractEmailAnswersFromResponses = (
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): string[] => {
   if (!responses) return []
   return Object.values(responses)
-    .filter(
-      (
-        response,
-      ): response is Extract<
-        FieldResponseV3,
-        { fieldType: BasicField.Email }
-      > => response.fieldType === BasicField.Email,
-    )
-    .map((response) => response.answer.value)
+    .filter((response) => response.fieldType === BasicField.Email)
+    .map((response) => (response.answer as { value: string }).value)
     .filter(Boolean)
 }
 
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
   fieldId: string,
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): string[] => {
   const conditionalField = form_fields.find(
     (field) => field._id.toString() === fieldId.toString(),
@@ -149,10 +140,10 @@ const getConditionalFieldEmailRecipient = (
     return [] // Not an error, misconfigured or respondent has not filled.
   }
 
+  const answerValue = (conditionalFieldResponse.answer as { value: string })
+    .value
   const emailRecipients =
-    conditionalField?.optionsToRecipientsMap?.[
-      conditionalFieldResponse.answer
-    ] ?? []
+    conditionalField?.optionsToRecipientsMap?.[answerValue] ?? []
 
   return emailRecipients
 }
@@ -160,7 +151,7 @@ const getConditionalFieldEmailRecipient = (
 export const retrieveWorkflowStepEmailAddresses = (
   form: { form_fields: FormFieldSchema[] | FormFieldDto[] },
   step: FormWorkflowStepDto,
-  responses: FieldResponsesV3,
+  responses: FieldResponsesV4,
 ): Result<string[], InvalidWorkflowTypeError> => {
   if (!step) return ok([]) // Not an error, just that the form has gone past its predefined workflow
   switch (step.workflow_type) {
@@ -199,16 +190,14 @@ export const validateMrfFieldResponses = ({
   visibleFieldIds,
   formFields,
   responses,
-  previousResponses,
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
   formFields: FormFieldDto[]
-  responses: ParsedClearFormFieldResponsesV3
-  previousResponses?: ParsedClearFormFieldResponsesV3
+  responses: ParsedClearFormFieldResponsesV4
 }): Result<
-  ParsedClearFormFieldResponsesV3,
-  ValidateFieldErrorV3 | ProcessingError
+  ParsedClearFormFieldResponsesV4,
+  ValidateFieldErrorV4 | ProcessingError
 > => {
   const idToFieldMap = formFields.reduce<{
     [fieldId: string]: FormFieldDto
@@ -228,21 +217,20 @@ export const validateMrfFieldResponses = ({
     // Since Myinfo fields are not currently supported for MRF
     if (response.fieldType === BasicField.Children) {
       return err(
-        new ValidateFieldErrorV3(
+        new ValidateFieldErrorV4(
           'Children field type is not supported for MRF submisisons',
         ),
       )
     }
 
-    const validateFieldV3Result = validateFieldV3({
+    const validateFieldV4Result = validateFieldV4({
       formId,
       formField,
       response,
-      prevResponse: previousResponses?.[responseId],
       isVisible: visibleFieldIds.has(responseId),
     })
-    if (validateFieldV3Result.isErr()) {
-      return err(validateFieldV3Result.error)
+    if (validateFieldV4Result.isErr()) {
+      return err(validateFieldV4Result.error)
     }
   }
 
@@ -261,7 +249,7 @@ export const extractRespondentCopyEmailDatas = ({
   formFields,
   currentStepActiveFields,
 }: {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }): AutoReplyMailData[] => {
@@ -276,10 +264,10 @@ export const extractRespondentCopyEmailDatas = ({
       field.fieldType === BasicField.Email &&
       field.autoReplyOptions?.hasAutoReply &&
       response &&
-      // checks if response has an answer (email)
+      // checks if response has an answer (email) - V4 email answer is always { value: string }
       typeof response.answer === 'object' &&
       'value' in response.answer &&
-      typeof response.answer.value === 'string'
+      typeof (response.answer as { value: string }).value === 'string'
     ) {
       const {
         autoReplyMessage,
@@ -289,7 +277,7 @@ export const extractRespondentCopyEmailDatas = ({
       } = field.autoReplyOptions
       return [
         {
-          email: response.answer.value,
+          email: (response.answer as { value: string }).value,
           subject: autoReplySubject,
           sender: autoReplySender,
           body: autoReplyMessage,
@@ -309,12 +297,12 @@ export type QuestionAnswerPair = {
 }
 
 /**
- * Given a single form field and its response, extracts question-answer pairs.
+ * Given a single form field and its response (V4), extracts question-answer pairs.
  * Used for email body/pdf outputs and individualResponsePage displays
  * Returns an array since some fields (e.g. table, children) will have
  * multiple question-answer pairs per response
  * @param formField - Single form field schema. Does not include Ndi responses, @see getQuestionAnswerPairsForMultipleFields on how to include ndi responses.
- * @param response - Response for the given form field
+ * @param response - V4 Response for the given form field
  * @returns An array of QuestionAnswer objects representing the extracted question-answer pairs for the given form field.
  */
 const getQuestionAnswerPairsForOneField = ({
@@ -323,48 +311,60 @@ const getQuestionAnswerPairsForOneField = ({
   includeSignatureDataPngDataUri,
 }: {
   formField: FormFieldSchema | FormFieldDto
-  response: FieldResponseV3
+  response: FieldResponseV4
   includeSignatureDataPngDataUri: boolean
 }): QuestionAnswerPair[] => {
-  let questionTitle = formField.title
+  // V4 responses embed question text in response.question
+  const questionTitle = response.question || formField.title
   let answer = ''
-  let answerArray: string[] = []
   const questionAnswerPairs: QuestionAnswerPair[] = []
 
+  const fieldType = response.fieldType as BasicField
   switch (response.fieldType) {
-    case BasicField.Attachment:
-      questionTitle = `[Attachment] ${questionTitle}`
-      answer = response.answer.answer
-      break
+    case BasicField.Attachment: {
+      const attachmentAnswer = response.answer as {
+        value: string
+        hasBeenScanned: boolean
+        md5Hash?: string
+      }
+      return [
+        {
+          question: `[Attachment] ${questionTitle}`,
+          answer: attachmentAnswer.value,
+          fieldType,
+        },
+      ]
+    }
     case BasicField.Address: {
-      const {
-        postalCode,
-        blockNumber,
-        streetName,
-        buildingName,
-        levelNumber,
-        unitNumber,
-      } = response.answer.addressSubFields
-      answerArray = [
-        blockNumber,
-        streetName,
-        buildingName,
-        levelNumber,
-        unitNumber,
-        postalCode,
+      const addressAnswer = response.answer as {
+        postalCode: { value: string }
+        blockNumber: { value: string }
+        streetName: { value: string }
+        buildingName: { value: string }
+        levelNumber: { value: string }
+        unitNumber: { value: string }
+      }
+      const answerArray = [
+        addressAnswer.blockNumber.value,
+        addressAnswer.streetName.value,
+        addressAnswer.buildingName.value,
+        addressAnswer.levelNumber.value,
+        addressAnswer.unitNumber.value,
+        addressAnswer.postalCode.value,
       ] // move postal code to end of array
-      answer = handleAddressResponseDisplay(Object.values(answerArray)).join(
-        ', ',
-      )
+      answer = handleAddressResponseDisplay(answerArray).join(', ')
       break
     }
     case BasicField.Email:
     case BasicField.Mobile:
-      answer = response.answer.value
+      answer = (response.answer as { value: string }).value
       break
-    case BasicField.Table:
-      if (formField.fieldType !== BasicField.Table || !response.answer) break
-      // eslint-disable-next-line no-case-declarations
+    case BasicField.Table: {
+      if (formField.fieldType !== BasicField.Table) break
+      const tableAnswer = response.answer as Record<
+        string,
+        { rowNum: number; value: Record<string, string | number> }
+      >
       const idToColTitleMap = formField.columns.reduce(
         (acc, col) => {
           acc[col._id] = col.title
@@ -373,8 +373,13 @@ const getQuestionAnswerPairsForOneField = ({
         {} as Record<string, string>,
       )
 
-      for (const row of response.answer) {
-        const validColumns = Object.entries(row).filter(
+      // Sort rows by rowNum for consistent ordering
+      const sortedRows = Object.values(tableAnswer).sort(
+        (a, b) => a.rowNum - b.rowNum,
+      )
+
+      for (const row of sortedRows) {
+        const validColumns = Object.entries(row.value).filter(
           ([colId]) => colId in idToColTitleMap,
         )
 
@@ -386,70 +391,73 @@ const getQuestionAnswerPairsForOneField = ({
           .join('; ')
 
         const delimitedColumnAnswers = validColumns
-          .map(([, colAns]) => colAns ?? '')
+          .map(([, colAns]) =>
+            colAns !== null && colAns !== undefined ? String(colAns) : '',
+          )
           .join('; ')
 
         const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
-        const answer = delimitedColumnAnswers
 
         questionAnswerPairs.push({
           question,
-          answer,
-          fieldType: response.fieldType,
+          answer: delimitedColumnAnswers,
+          fieldType,
         })
       }
       return questionAnswerPairs
-    case BasicField.Radio:
-      answer =
-        'value' in response.answer
-          ? response.answer.value
-          : 'othersInput' in response.answer
-            ? response.answer.othersInput
-            : ''
+    }
+    case BasicField.Radio: {
+      const radioAnswer = response.answer as {
+        value: string
+        isOthersInput: boolean
+      }
+      if (radioAnswer.isOthersInput) {
+        answer = `Others: ${radioAnswer.value}`
+      } else {
+        answer = radioAnswer.value
+      }
       break
-    case BasicField.Checkbox:
-      // eslint-disable-next-line no-case-declarations
-      const selectedAnswers =
-        (response.answer.othersInput
-          ? [...response.answer.value, response.answer.othersInput]
-          : [...response.answer.value]
-        ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
+    }
+    case BasicField.Checkbox: {
+      const checkboxAnswer = response.answer as {
+        value: string[]
+        othersInput?: string
+      }
+      const selectedAnswers = checkboxAnswer.value.filter(
+        (val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+      )
 
-      answer = selectedAnswers.toString()
+      if (checkboxAnswer.othersInput) {
+        selectedAnswers.push(checkboxAnswer.othersInput)
+      }
+
+      answer = selectedAnswers.join(', ')
       break
+    }
     case BasicField.Signature: {
-      const signatureQuestionAnswer = {
+      const signatureAnswer = response.answer as {
+        value: [number, number, number][][]
+        type: string
+      }
+      const signatureQuestionAnswer: QuestionAnswerPair = {
         question: `[signature] ${questionTitle}`,
         answer: SIGNATURE_CAPTURED_STRING,
         signatureDataPngDataUri: includeSignatureDataPngDataUri
-          ? convertToSignaturePngDataUri(response.answer.value)
+          ? convertToSignaturePngDataUri(signatureAnswer.value)
           : undefined,
-        fieldType: response.fieldType,
+        fieldType,
       }
       return [signatureQuestionAnswer]
     }
-    case BasicField.Children:
-      if (!response.answer.childFields || !response.answer.child) {
-        break
-      }
-      for (const [index, child] of response.answer.child.entries()) {
-        questionAnswerPairs.push({
-          question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
-          answer: child
-            ? child.toString()
-            : response.answer.childFields.map(() => '').toString(),
-          fieldType: response.fieldType,
-        })
-      }
-      return questionAnswerPairs
     default:
-      answer = response.answer
+      // For all string-answer fields (number, decimal, text, homeNo, dropdown, rating, nric, uen, date, countryRegion, section, yesNo)
+      answer = (response.answer as { value: string }).value ?? ''
   }
 
   questionAnswerPairs.push({
     question: questionTitle,
     answer,
-    fieldType: response.fieldType,
+    fieldType,
   })
   return questionAnswerPairs
 }
@@ -466,7 +474,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   includeSignatureDataPngDataUri = false,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
@@ -488,14 +496,15 @@ export const getQuestionAnswerPairsForMultipleFields = ({
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
   }
 
-  // Add Ndi responses if they exist
+  // Add Ndi responses if they exist (keyed by SPCP field title in both V3 and V4)
   for (const key in responses) {
     if (startsWithSPCPFieldTitle(key)) {
-      const { answer, fieldType } = responses[key] as NdiResponseV3
+      const ndiResponse = responses[key]
+      const answerValue = (ndiResponse.answer as { value: string }).value
       questionAnswerPairs.push({
         question: key,
-        answer,
-        fieldType,
+        answer: answerValue,
+        fieldType: ndiResponse.fieldType as unknown as BasicField,
       })
     }
   }
@@ -513,7 +522,7 @@ export const getResponsesDataFromMrfResponses = ({
   responses,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 

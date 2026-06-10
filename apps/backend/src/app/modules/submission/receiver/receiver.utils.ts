@@ -1,16 +1,13 @@
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
-import {
-  BasicField,
-  FieldResponse,
-  FieldResponsesV3,
-} from 'formsg-shared/types'
+import { BasicField, FieldResponse } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
-  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -63,7 +60,7 @@ export const mapRouteError: MapRouteError = (error) => {
  * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
-  body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>,
+  body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>,
   attachments: IAttachmentInfo[],
 ): void => {
   // default to 0 for email mode forms where version is undefined
@@ -103,7 +100,9 @@ export const addAttachmentToResponses = (
 
   if (isBodyVersion3AndAbove(body)) {
     Object.keys(body.responses).forEach((id) => {
-      const response = body.responses[id] as ParsedClearFormFieldResponseV3
+      const response = body.responses[
+        id
+      ] as unknown as ParsedClearAttachmentFieldResponseV4
       if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
         const file = attachmentMap[id]
         response.answer.filename = file.filename

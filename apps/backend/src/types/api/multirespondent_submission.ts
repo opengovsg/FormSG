@@ -1,5 +1,5 @@
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
-  FieldResponsesV3,
   FormFieldDto,
   FormLogic,
   FormResponseMode,
@@ -11,7 +11,7 @@ import { IPopulatedMultirespondentForm } from '../form'
 import { IMultirespondentSubmissionSchema } from '../submission'
 
 export type ParsedMultirespondentSubmissionBody = {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   responseMetadata?: ResponseMetadata
   version: number
   workflowStep: number
@@ -63,6 +63,6 @@ export type MultirespondentSubmissionDto = {
   workflowStep: number
   hashedSubmitterId?: string
   submitterId?: string
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   mrfVersion: number
 }
