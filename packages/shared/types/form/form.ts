@@ -461,6 +461,15 @@ export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string
 }
 
+/**
+ * Body of the use-template flow. Unlike duplication, using a template re-asks
+ * the origin question, so the request may carry the admin's answer.
+ */
+export type CopyTemplateFormBodyDto = DuplicateFormBodyDto & {
+  // Only formOrigins is admin-writable; the rest of FormMetadata is server-managed.
+  metadata?: Pick<FormMetadata, 'formOrigins'>
+}
+
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,
   'emails' | 'responseMode' | 'title'

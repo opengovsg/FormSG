@@ -11,6 +11,7 @@ import {
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  CopyTemplateFormBodyDto,
   CreateFormBodyDto,
   DeserializeTransform,
   DuplicateFormBodyDto,
@@ -104,6 +105,34 @@ const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 const logger = createLoggerWithLabel(module)
 
 // Validators
+
+// Paper-forms tracking: origin capture rides on the post-MRF-cutover flows
+// (create and use-template), so metadata is MRF-only and only formOrigins is
+// admin-writable. Presence is optional — Joi skips the key rules when it is
+// absent. Per-entry rules live in the shared helper — "Others" embeds its
+// free-text detail in the entry, which Joi can't enum-validate.
+const formOriginsMetadataValidator = Joi.when('responseMode', {
+  is: FormResponseMode.Multirespondent,
+  then: Joi.object({
+    formOrigins: Joi.array()
+      .items(Joi.string().trim())
+      .min(1)
+      .unique()
+      .custom((value, helpers) => {
+        const originsError = validateFormOriginsSelection(value)
+        if (originsError) {
+          return helpers.message({
+            custom: `{{#label}} is invalid: ${originsError}`,
+          })
+        }
+        // Returning the converted value: celebrate writes it back to
+        // req.body, so only canonical Others entries persist.
+        return normalizeFormOrigins(value)
+      }),
+  }),
+  otherwise: Joi.forbidden(),
+})
+
 const createFormValidator = celebrate({
   [Segments.BODY]: {
     form: BaseJoi.object<CreateFormBodyDto>()
@@ -147,33 +176,7 @@ const createFormValidator = celebrate({
           otherwise: Joi.forbidden(),
         }),
         workspaceId: Joi.string(),
-        // Paper-forms tracking: origins are captured only on the post-MRF-cutover
-        // create flow, so metadata is MRF-only and only formOrigins is
-        // admin-writable. Presence is optional — Joi skips the key rules when
-        // it is absent. Per-entry rules live in the shared helper — "Others"
-        // embeds its free-text detail in the entry, which Joi can't
-        // enum-validate.
-        metadata: Joi.when('responseMode', {
-          is: FormResponseMode.Multirespondent,
-          then: Joi.object({
-            formOrigins: Joi.array()
-              .items(Joi.string().trim())
-              .min(1)
-              .unique()
-              .custom((value, helpers) => {
-                const originsError = validateFormOriginsSelection(value)
-                if (originsError) {
-                  return helpers.message({
-                    custom: `{{#label}} is invalid: ${originsError}`,
-                  })
-                }
-                // Returning the converted value: celebrate writes it back to
-                // req.body, so only canonical Others entries persist.
-                return normalizeFormOrigins(value)
-              }),
-          }),
-          otherwise: Joi.forbidden(),
-        }),
+        metadata: formOriginsMetadataValidator,
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
@@ -224,6 +227,16 @@ const duplicateFormValidator = celebrate({
     }),
     workspaceId: Joi.string(),
   }),
+})
+
+const copyTemplateFormValidator = celebrate({
+  // The use-template flow re-asks the origin question (paper-forms tracking),
+  // so this endpoint accepts the same MRF-only metadata.formOrigins as the
+  // create flow. The rest of the historically unvalidated use-template body is
+  // intentionally left untouched (unknown(true)).
+  [Segments.BODY]: BaseJoi.object<CopyTemplateFormBodyDto>({
+    metadata: formOriginsMetadataValidator,
+  }).unknown(true),
 })
 
 const transferFormOwnershipValidator = celebrate({
@@ -1071,10 +1084,10 @@ export const handleGetTemplateForm: ControllerHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCopyTemplateForm: ControllerHandler<
+export const copyTemplateForm: ControllerHandler<
   { formId: string },
   AdminDashboardFormMetaDto | ErrorDto,
-  DuplicateFormBodyDto
+  CopyTemplateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as AuthedSessionData).user._id
@@ -1095,6 +1108,11 @@ export const handleCopyTemplateForm: ControllerHandler<
           AdminFormService.duplicateForm(originalForm, userId, overrideParams, {
             overrideEmails: [user.email],
             isFromTemplate: true,
+            // The origin question is re-asked on use-template; origins are
+            // never copied from the source form.
+            ...(overrideParams.metadata?.formOrigins && {
+              formOrigins: overrideParams.metadata.formOrigins,
+            }),
           })
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
@@ -1126,6 +1144,11 @@ export const handleCopyTemplateForm: ControllerHandler<
       })
   )
 }
+
+export const handleCopyTemplateForm = [
+  copyTemplateFormValidator,
+  copyTemplateForm,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /admin/forms/all-transfer-owner.

@@ -1752,6 +1752,213 @@ describe('admin-form.form.routes', () => {
     })
   })
 
+  describe('POST /admin/forms/:formId/use-template', () => {
+    /** A public form usable as a template source for the tests below. */
+    const createPublicTemplateForm = () =>
+      EncryptFormModel.create({
+        title: 'public template form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+        status: FormStatus.Public,
+      })
+
+    it('should persist form origins onto metadata when creating an MRF form from a template', async () => {
+      // Arrange
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with origins',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      // Persisted in the single create write, alongside the template tracking id.
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.metadata?.formOrigins).toEqual([
+        FormOrigin.Paper,
+        FormOrigin.DigitalSpreadsheet,
+      ])
+      expect(String(saved?.metadata?.template_form_id)).toEqual(
+        String(templateForm._id),
+      )
+    })
+
+    it('should return 400 when an unrecognised form origin code is provided', async () => {
+      // Arrange
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with bad origin',
+          publicKey: 'some random public key',
+          metadata: { formOrigins: ['not-a-real-origin'] },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when "Other" is selected without its free-text detail', async () => {
+      // Arrange
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with bare other',
+          publicKey: 'some random public key',
+          metadata: { formOrigins: [FormOrigin.DigitalOthers] },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'metadata.formOrigins',
+            message: '"metadata.formOrigins" is invalid: OTHER_DETAIL_REQUIRED',
+          },
+        }),
+      )
+    })
+
+    it('should persist a padded "Other" detail in canonical form', async () => {
+      // Arrange
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with padded other',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: [`${FORM_ORIGIN_OTHERS_PREFIX}   Carrier pigeon  `],
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.metadata?.formOrigins).toEqual([
+        `${FORM_ORIGIN_OTHERS_PREFIX}Carrier pigeon`,
+      ])
+    })
+
+    it('should return 400 when form origins are provided on a non-MRF use-template', async () => {
+      // Origin capture is scoped to the post-MRF-cutover flows only.
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Encrypt,
+          title: 'storage form from template with origins',
+          publicKey: 'some random public key',
+          emails: [],
+          metadata: { formOrigins: [FormOrigin.Paper] },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+
+    it('should not copy form origins over from the source form', async () => {
+      // The admin's answer describes their own process, never the template
+      // author's — when no answer is sent, the new form carries no origins.
+      const templateForm = await EncryptFormModel.create({
+        title: 'public template form with origins',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+        status: FormStatus.Public,
+        metadata: { formOrigins: [FormOrigin.Paper] },
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template without origins',
+          publicKey: 'some random public key',
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.metadata?.formOrigins).toBeUndefined()
+      expect(String(saved?.metadata?.template_form_id)).toEqual(
+        String(templateForm._id),
+      )
+    })
+
+    it('should return 400 when metadata contains keys other than formOrigins', async () => {
+      // The rest of FormMetadata (e.g. internal counters) is server-managed.
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with smuggled metadata',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: [FormOrigin.Paper],
+            mfb_text_prompt_count: 9000,
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when form origins are provided on the duplicate endpoint', async () => {
+      // Duplicates carry no origins and the admin is not re-asked — only the
+      // use-template flow re-asks the origin question.
+      const formToDupe = await EncryptFormModel.create({
+        title: 'form to duplicate',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToDupe._id}/duplicate`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'duplicated mrf form with origins',
+          publicKey: 'some random public key',
+          metadata: { formOrigins: [FormOrigin.Paper] },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+  })
+
   describe('POST /admin/forms/:formId/collaborators/transfer-owner', () => {
     it('should return 200 with updated form and owner transferred', async () => {
       // Arrange
