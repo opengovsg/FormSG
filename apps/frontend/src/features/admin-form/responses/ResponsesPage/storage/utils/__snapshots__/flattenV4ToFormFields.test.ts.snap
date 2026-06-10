@@ -1,0 +1,307 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`flattenV4ToFormFields > appends a response whose _id is not in the form definition 1`] = `
+[
+  {
+    "_id": "f-textfield",
+    "answer": "",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+  {
+    "_id": "unknown-field-id",
+    "answer": "orphaned answer",
+    "fieldType": "textfield",
+    "question": "Orphaned question",
+  },
+]
+`;
+
+exports[`flattenV4ToFormFields > appends extra verified entries not present in the form definition 1`] = `
+[
+  {
+    "_id": "f-textfield",
+    "answer": "TAN AH KOW",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+  {
+    "_id": "SP NRIC",
+    "answer": "S1234567A",
+    "fieldType": "nric",
+    "question": "SingPass Validated NRIC",
+  },
+]
+`;
+
+exports[`flattenV4ToFormFields > renders a duplicated form field once per occurrence 1`] = `
+[
+  {
+    "_id": "f-textfield",
+    "answer": "TAN AH KOW",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+  {
+    "_id": "f-textfield",
+    "answer": "TAN AH KOW",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+]
+`;
+
+exports[`flattenV4ToFormFields > renders every answered field type identically to the pre-refactor implementation 1`] = `
+[
+  {
+    "_id": "f-section",
+    "answer": "",
+    "fieldType": "section",
+    "question": "Part A",
+  },
+  {
+    "_id": "f-textfield",
+    "answer": "TAN AH KOW",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+  {
+    "_id": "f-dropdown",
+    "answer": "SINGAPORE CITIZEN",
+    "fieldType": "dropdown",
+    "question": "Citizenship",
+  },
+  {
+    "_id": "f-yesno",
+    "answer": "Yes",
+    "fieldType": "yes_no",
+    "question": "Do you agree?",
+  },
+  {
+    "_id": "f-email-verified",
+    "answer": "user@example.com",
+    "fieldType": "email",
+    "question": "Your email",
+    "signature": "dGVzdC1zaWduYXR1cmU=",
+  },
+  {
+    "_id": "f-email-plain",
+    "answer": "other@example.com",
+    "fieldType": "email",
+    "question": "Alternate email",
+  },
+  {
+    "_id": "f-mobile-verified",
+    "answer": "+6598765432",
+    "fieldType": "mobile",
+    "question": "Your mobile",
+    "signature": "bW9iaWxlLXNpZw==",
+  },
+  {
+    "_id": "f-radio-plain",
+    "answer": "Blue",
+    "fieldType": "radiobutton",
+    "question": "Favourite colour",
+  },
+  {
+    "_id": "f-radio-others",
+    "answer": "Others: durian",
+    "fieldType": "radiobutton",
+    "question": "Favourite fruit",
+  },
+  {
+    "_id": "f-checkbox",
+    "answerArray": [
+      "Cheese",
+      "Mushroom",
+    ],
+    "fieldType": "checkbox",
+    "question": "Toppings",
+  },
+  {
+    "_id": "f-checkbox-others",
+    "answerArray": [
+      "Ketchup",
+      "Others: sambal",
+    ],
+    "fieldType": "checkbox",
+    "question": "Sauces",
+  },
+  {
+    "_id": "f-checkbox-empty",
+    "answerArray": [],
+    "fieldType": "checkbox",
+    "question": "Optional extras",
+  },
+  {
+    "_id": "f-attachment",
+    "answer": "resume.pdf",
+    "fieldType": "attachment",
+    "question": "Upload your CV",
+  },
+  {
+    "_id": "f-table",
+    "answerArray": [
+      [
+        "OGP",
+        "Engineer",
+      ],
+      [
+        "GovTech",
+        "Manager",
+      ],
+    ],
+    "fieldType": "table",
+    "question": "Employment history",
+  },
+  {
+    "_id": "f-address",
+    "answerArray": [
+      "123",
+      "Main Street",
+      "Sunshine Tower",
+      "10",
+      "01",
+      "654321",
+    ],
+    "fieldType": "address",
+    "question": "Home address",
+  },
+  {
+    "_id": "f-address-partial",
+    "answerArray": [
+      "1",
+      "Short Road",
+      "",
+      "",
+      "",
+      "111111",
+    ],
+    "fieldType": "address",
+    "question": "Office address",
+  },
+  {
+    "_id": "f-signature",
+    "answerArray": [
+      "draw",
+      "[[[1,2,0],[3,4,1]]]",
+    ],
+    "fieldType": "signature",
+    "question": "Sign here",
+  },
+]
+`;
+
+exports[`flattenV4ToFormFields > synthesizes empty entries for unanswered fields 1`] = `
+[
+  {
+    "_id": "f-section",
+    "answer": "",
+    "fieldType": "section",
+    "isHeader": true,
+    "question": "Part A",
+  },
+  {
+    "_id": "f-textfield",
+    "answer": "TAN AH KOW",
+    "fieldType": "textfield",
+    "question": "Your name",
+  },
+  {
+    "_id": "f-dropdown",
+    "answer": "",
+    "fieldType": "dropdown",
+    "question": "Citizenship",
+  },
+  {
+    "_id": "f-yesno",
+    "answer": "",
+    "fieldType": "yes_no",
+    "question": "Do you agree?",
+  },
+  {
+    "_id": "f-email-verified",
+    "answer": "",
+    "fieldType": "email",
+    "question": "Your email",
+    "signature": undefined,
+  },
+  {
+    "_id": "f-email-plain",
+    "answer": "",
+    "fieldType": "email",
+    "question": "Alternate email",
+    "signature": undefined,
+  },
+  {
+    "_id": "f-mobile-verified",
+    "answer": "",
+    "fieldType": "mobile",
+    "question": "Your mobile",
+    "signature": undefined,
+  },
+  {
+    "_id": "f-radio-plain",
+    "answer": "",
+    "fieldType": "radiobutton",
+    "question": "Favourite colour",
+  },
+  {
+    "_id": "f-radio-others",
+    "answer": "",
+    "fieldType": "radiobutton",
+    "question": "Favourite fruit",
+  },
+  {
+    "_id": "f-checkbox",
+    "answerArray": [],
+    "fieldType": "checkbox",
+    "question": "Toppings",
+  },
+  {
+    "_id": "f-checkbox-others",
+    "answerArray": [],
+    "fieldType": "checkbox",
+    "question": "Sauces",
+  },
+  {
+    "_id": "f-checkbox-empty",
+    "answerArray": [],
+    "fieldType": "checkbox",
+    "question": "Optional extras",
+  },
+  {
+    "_id": "f-attachment",
+    "answer": "",
+    "fieldType": "attachment",
+    "question": "Upload your CV",
+  },
+  {
+    "_id": "f-table",
+    "answerArray": [],
+    "fieldType": "table",
+    "question": "Employment history (Company, Role)",
+  },
+  {
+    "_id": "f-address",
+    "answerArray": [],
+    "fieldType": "address",
+    "question": "Home address",
+  },
+  {
+    "_id": "f-address-partial",
+    "answerArray": [],
+    "fieldType": "address",
+    "question": "Office address",
+  },
+  {
+    "_id": "f-signature",
+    "answerArray": [
+      "",
+      "",
+    ],
+    "fieldType": "signature",
+    "question": "Sign here",
+  },
+]
+`;
