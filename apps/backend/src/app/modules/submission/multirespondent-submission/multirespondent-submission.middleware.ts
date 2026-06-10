@@ -759,12 +759,14 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
+  const formDef = req.formsg.formDef
+
   void req.growthbook?.setAttributes({
     ...req.growthbook.getAttributes(),
     formId: req.params.formId,
+    formCreated: formDef.created?.toISOString(),
   })
 
-  const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
 
