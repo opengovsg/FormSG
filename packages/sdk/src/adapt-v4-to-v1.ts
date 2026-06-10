@@ -1,6 +1,11 @@
 import { GENERIC_STRING_FIELD_TYPES } from './constants-v4'
 import { FieldType, FormField } from './types'
-import { AnswerV4, FieldResponsesV4, StringAnswerV4 } from './types-v4'
+import {
+  AnswerV4,
+  FieldResponsesV4,
+  StringAnswerV4,
+  VerifiableAnswerV4,
+} from './types-v4'
 
 function convertToStringAnswer(answer: AnswerV4): string {
   const { value } = answer as StringAnswerV4
@@ -13,7 +18,7 @@ function convertToStringAnswer(answer: AnswerV4): string {
 function convertAnswerToV1(
   fieldType: FieldType,
   answer: AnswerV4
-): Pick<FormField, 'answer' | 'answerArray'> {
+): Pick<FormField, 'answer' | 'answerArray' | 'signature'> {
   if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
     return { answer: convertToStringAnswer(answer) }
   }
@@ -21,6 +26,14 @@ function convertAnswerToV1(
   switch (fieldType) {
     case 'yes_no':
       return { answer: convertToStringAnswer(answer) }
+    case 'email':
+    case 'mobile': {
+      const { signature } = answer as VerifiableAnswerV4
+      return {
+        answer: convertToStringAnswer(answer),
+        ...(signature !== undefined && { signature }),
+      }
+    }
     default:
       return { answer: convertToStringAnswer(answer) }
   }

@@ -74,6 +74,72 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'email (verified, with signature)',
+    id: '6200000000000000000000a4',
+    v1: {
+      _id: '6200000000000000000000a4',
+      question: 'Your email',
+      fieldType: 'email',
+      answer: 'user@example.com',
+      signature: 'dGVzdC1zaWduYXR1cmU=',
+    },
+    v4: {
+      fieldType: 'email',
+      question: 'Your email',
+      answer: { value: 'user@example.com', signature: 'dGVzdC1zaWduYXR1cmU=' },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'email (unverified, no signature)',
+    id: '6200000000000000000000a5',
+    v1: {
+      _id: '6200000000000000000000a5',
+      question: 'Alternate email',
+      fieldType: 'email',
+      answer: 'other@example.com',
+    },
+    v4: {
+      fieldType: 'email',
+      question: 'Alternate email',
+      answer: { value: 'other@example.com' },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'mobile (verified, with signature)',
+    id: '6200000000000000000000a6',
+    v1: {
+      _id: '6200000000000000000000a6',
+      question: 'Your mobile',
+      fieldType: 'mobile',
+      answer: '+6598765432',
+      signature: 'bW9iaWxlLXNpZw==',
+    },
+    v4: {
+      fieldType: 'mobile',
+      question: 'Your mobile',
+      answer: { value: '+6598765432', signature: 'bW9iaWxlLXNpZw==' },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'mobile (unverified, no signature)',
+    id: '6200000000000000000000a7',
+    v1: {
+      _id: '6200000000000000000000a7',
+      question: 'Backup mobile',
+      fieldType: 'mobile',
+      answer: '+6591234567',
+    },
+    v4: {
+      fieldType: 'mobile',
+      question: 'Backup mobile',
+      answer: { value: '+6591234567' },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>
