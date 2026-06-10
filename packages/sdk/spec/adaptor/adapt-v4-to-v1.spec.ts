@@ -258,6 +258,49 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'attachment',
+    id: '6200000000000000000000af',
+    v1: {
+      _id: '6200000000000000000000af',
+      question: 'Upload your CV',
+      fieldType: 'attachment',
+      answer: 'resume.pdf',
+    },
+    v4: {
+      fieldType: 'attachment',
+      question: 'Upload your CV',
+      answer: {
+        value: 'resume.pdf',
+        hasBeenScanned: true,
+        md5Hash: 'd41d8cd98f00b204e9800998ecf8427e',
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'table (rows out of record order)',
+    id: '6200000000000000000000b0',
+    v1: {
+      _id: '6200000000000000000000b0',
+      question: 'Employment history',
+      fieldType: 'table',
+      answerArray: [
+        ['OGP', 'Engineer'],
+        ['GovTech', 'Manager'],
+      ],
+    },
+    v4: {
+      fieldType: 'table',
+      question: 'Employment history',
+      answer: {
+        // record order deliberately disagrees with rowNum order
+        row2: { rowNum: 1, value: { col1: 'GovTech', col2: 'Manager' } },
+        row1: { rowNum: 0, value: { col1: 'OGP', col2: 'Engineer' } },
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>

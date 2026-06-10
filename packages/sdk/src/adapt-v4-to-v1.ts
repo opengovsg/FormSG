@@ -10,6 +10,7 @@ import {
   FieldResponsesV4,
   RadioAnswerV4,
   StringAnswerV4,
+  TableAnswerV4,
   VerifiableAnswerV4,
 } from './types-v4'
 
@@ -48,6 +49,14 @@ function convertAnswerToV1(
             ? `${OTHERS_PREFIX}${othersInput}`
             : v
         ),
+      }
+    }
+    case 'table': {
+      const rows = Object.values(answer as TableAnswerV4).sort(
+        (a, b) => a.rowNum - b.rowNum
+      )
+      return {
+        answerArray: rows.map((row) => Object.values(row.value).map(String)),
       }
     }
     case 'email':
