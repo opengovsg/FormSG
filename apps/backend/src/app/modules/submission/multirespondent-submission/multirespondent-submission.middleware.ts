@@ -806,7 +806,7 @@ export const encryptSubmission = async (
 
   const useV4Encryption =
     (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook) ??
+      !formDef.webhook?.url) ??
     false
 
   let responsesToEncrypt:
@@ -878,8 +878,13 @@ export const encryptSubmission = async (
     ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
     : decryptionVerification.responses
 
+  // cryptoV3.encrypt serializes via JSON.stringify, which drops `undefined` object keys.
+  const normalizedOriginalResponses = JSON.parse(
+    JSON.stringify(strippedAttachmentResponses),
+  ) as typeof strippedAttachmentResponses
+
   const responseMismatch = !_.isEqual(
-    strippedAttachmentResponses,
+    normalizedOriginalResponses,
     decryptedResponsesV3,
   )
 
