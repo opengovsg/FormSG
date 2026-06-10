@@ -5,7 +5,6 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
-import _ from 'lodash'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
@@ -18,6 +17,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import _ from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -805,7 +805,9 @@ export const encryptSubmission = async (
   }
 
   const useV4Encryption =
-    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) && !formDef.webhook) ?? false
+    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
+      !formDef.webhook) ??
+    false
 
   let responsesToEncrypt:
     | Record<
