@@ -75,3 +75,12 @@ PrefillWithFieldId.args = {
     _id: 'mock-field-id-allow-copy',
   },
 }
+
+export const PrefillLocked = Template.bind({})
+PrefillLocked.args = {
+  field: {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    ...PrefillWithFieldId.args.field!,
+    lockPrefill: true,
+  },
+}

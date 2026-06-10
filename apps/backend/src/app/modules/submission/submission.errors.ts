@@ -336,3 +336,11 @@ export class SubmissionEncryptionVerificationError extends ApplicationError {
     )
   }
 }
+
+export class SubmissionEncryptionMismatchError extends ApplicationError {
+  constructor(
+    message = 'Round-trip encryption-decryption mismatch. Submission not saved.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_ENCRYPTION_MISMATCH)
+  }
+}

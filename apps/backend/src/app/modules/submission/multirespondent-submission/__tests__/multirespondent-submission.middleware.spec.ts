@@ -902,7 +902,7 @@ describe('Multirespondent Submission Middleware', () => {
       })
       const mockDecrypt = formsgSdk.cryptoV3
         .decryptFromSubmissionKey as jest.Mock
-      mockDecrypt.mockReturnValue({ field1: { answer: 'hello' } })
+      mockDecrypt.mockReturnValue({ responses: MOCK_RESPONSES })
     })
 
     it('should encrypt responses as V3 and set mrfVersion to 1 when feature flag is off', async () => {
